@@ -1,6 +1,6 @@
-https://minesweeper.org
-Website where you can play minesweeper in your browser.
-Daily high scores
+https://minesweeper.org  
+Website where you can play minesweeper in your browser.  
+Daily high scores are saved in the database.
 
 move database_template.py to database.py and update your credentials
 
