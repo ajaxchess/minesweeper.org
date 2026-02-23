@@ -1,5 +1,6 @@
-# minesweeper.org
-Website where you can play minesweeper in your browser
+https://minesweeper.org
+Website where you can play minesweeper in your browser.
+Daily high scores
 
 move database_template.py to database.py and update your credentials
 
