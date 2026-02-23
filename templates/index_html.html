@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}{{ mode | capitalize }} Minesweeper — {{ rows }}×{{ cols }}, {{ mines }} mines{% endblock %}
+
+{% block content %}
+<div class="game-wrapper">
+
+  <!-- Left sidebar ad (tasteful, doesn't interrupt gameplay) -->
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="1111111111"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="game-section">
+    <div class="game-info">
+      <div class="mode-badge">{{ mode | capitalize }}</div>
+      <div class="stat-row">
+        <div class="stat" id="mine-count">
+          <span class="stat-icon">💣</span>
+          <span class="stat-value" id="mines-left">{{ mines }}</span>
+        </div>
+        <button id="reset-btn" title="New Game">🙂</button>
+        <div class="stat" id="timer-display">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="timer">000</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="board"
+         data-rows="{{ rows }}"
+         data-cols="{{ cols }}"
+         data-mines="{{ mines }}"
+         data-mode="{{ mode }}">
+    </div>
+
+    <p class="instructions">
+      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
+      <strong>Right-click</strong> to flag &nbsp;|&nbsp;
+      <strong>🙂</strong> to reset
+    </p>
+  </section>
+
+  <!-- Right sidebar ad -->
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="2222222222"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+{% endblock %}

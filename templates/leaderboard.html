@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard{% endblock %}
+{% block description %}Top times for Minesweeper Beginner, Intermediate, Expert, and Custom modes.{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">🏆 Leaderboard</h1>
+
+  <div class="lb-tabs" role="tablist">
+    <button class="lb-tab active" data-mode="beginner"     role="tab">Beginner</button>
+    <button class="lb-tab"        data-mode="intermediate" role="tab">Intermediate</button>
+    <button class="lb-tab"        data-mode="expert"       role="tab">Expert</button>
+    <button class="lb-tab"        data-mode="custom"       role="tab">Custom</button>
+  </div>
+
+  <div class="lb-meta" id="lb-meta"></div>
+
+  <div class="lb-table-wrap">
+    <table class="lb-table" id="lb-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Time</th>
+          <th>Board</th>
+          <th>Mines</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="lb-body">
+        <tr><td colspan="6" class="lb-loading">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← Play Beginner</a>
+    <a href="/intermediate">Play Intermediate</a>
+    <a href="/expert">Play Expert</a>
+    <a href="/custom">Play Custom</a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const MEDALS = ['🥇','🥈','🥉'];
+
+let currentMode = 'beginner';
+
+async function loadScores(mode) {
+  currentMode = mode;
+  const body  = document.getElementById('lb-body');
+  const meta  = document.getElementById('lb-meta');
+  body.innerHTML = '<tr><td colspan="6" class="lb-loading">Loading…</td></tr>';
+  meta.textContent = '';
+
+  try {
+    const res  = await fetch(`/api/scores/${mode}`);
+    const data = await res.json();
+
+    if (!data.length) {
+      body.innerHTML = '<tr><td colspan="6" class="lb-empty">No scores yet — be the first!</td></tr>';
+      return;
+    }
+
+    body.innerHTML = data.map((s, i) => `
+      <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
+        <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
+        <td class="lb-name">${escHtml(s.name)}</td>
+        <td class="lb-time">${s.time_secs}s</td>
+        <td class="lb-board">${s.rows}×${s.cols}</td>
+        <td class="lb-mines">${s.mines}</td>
+        <td class="lb-date">${s.created_at}</td>
+      </tr>
+    `).join('');
+
+    meta.textContent = `Top ${data.length} time${data.length !== 1 ? 's' : ''}`;
+  } catch {
+    body.innerHTML = '<tr><td colspan="6" class="lb-empty">⚠️ Could not load scores.</td></tr>';
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.querySelectorAll('.lb-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadScores(btn.dataset.mode);
+  });
+});
+
+loadScores('beginner');
+</script>
+{% endblock %}

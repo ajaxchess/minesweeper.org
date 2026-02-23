@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Custom Minesweeper{% endblock %}
+
+{% block content %}
+<div class="game-wrapper">
+
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="3333333333"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="game-section">
+    <div class="game-info">
+      <div class="mode-badge">Custom</div>
+      <form id="custom-form" class="custom-form">
+        <label>Rows <input type="number" id="c-rows" value="10" min="5" max="30"></label>
+        <label>Cols <input type="number" id="c-cols" value="10" min="5" max="50"></label>
+        <label>Mines <input type="number" id="c-mines" value="10" min="1" max="999"></label>
+        <button type="submit">Start</button>
+      </form>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat">
+        <span class="stat-icon">💣</span>
+        <span class="stat-value" id="mines-left">10</span>
+      </div>
+      <button id="reset-btn" title="New Game">🙂</button>
+      <div class="stat">
+        <span class="stat-icon">⏱</span>
+        <span class="stat-value" id="timer">000</span>
+      </div>
+    </div>
+
+    <div id="board" data-rows="10" data-cols="10" data-mines="10" data-mode="custom"></div>
+
+    <p class="instructions">
+      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
+      <strong>Right-click</strong> to flag &nbsp;|&nbsp;
+      <strong>🙂</strong> to reset
+    </p>
+  </section>
+
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="4444444444"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('custom-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const rows  = parseInt(document.getElementById('c-rows').value);
+    const cols  = parseInt(document.getElementById('c-cols').value);
+    let mines   = parseInt(document.getElementById('c-mines').value);
+    const max   = Math.floor(rows * cols * 0.85);
+    mines       = Math.min(mines, max);
+    const board = document.getElementById('board');
+    board.dataset.rows  = rows;
+    board.dataset.cols  = cols;
+    board.dataset.mines = mines;
+    document.getElementById('mines-left').textContent = String(mines).padStart(3,'0');
+    initGame(rows, cols, mines);
+  });
+</script>
+{% endblock %}
