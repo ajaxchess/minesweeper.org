@@ -54,6 +54,12 @@ async def leaderboard_page(request: Request):
         "request": request, "mode": "leaderboard"
     })
 
+@app.get("/help", response_class=HTMLResponse)
+async def help_page(request: Request):
+    return templates.TemplateResponse("help.html", {
+        "request": request, "mode": "help"
+    })
+
 # ── Leaderboard API ───────────────────────────────────────────────────────────
 
 class ScoreSubmit(BaseModel):

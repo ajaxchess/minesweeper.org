@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}How to Play{% endblock %}
+{% block description %}Learn how to play Minesweeper — rules, controls, and tips for beginners and experts.{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">How to Play Minesweeper</h1>
+
+  <div class="help-section">
+    <h2>Objective</h2>
+    <p>Clear the board by revealing all safe cells without detonating any mines. Flag every mine and uncover every safe square to win.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Controls</h2>
+    <ul>
+      <li><strong>Left-click</strong> — Reveal a cell.</li>
+      <li><strong>Right-click</strong> — Place or remove a flag on a cell you believe contains a mine.</li>
+      <li><strong>Left-click on a revealed number</strong> (chord) — If the correct number of adjacent flags are placed, automatically reveal all remaining neighbors.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>The Numbers</h2>
+    <p>Each revealed cell shows a number indicating how many of its up to 8 neighboring cells contain mines.</p>
+    <ul>
+      <li>A blank cell has zero mine neighbors — its neighbors are revealed automatically.</li>
+      <li>Use the numbers to deduce which hidden cells are safe and which contain mines.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Flags</h2>
+    <p>Right-click a hidden cell to place a flag (🚩) marking it as a mine. The mine counter in the header decreases with each flag placed. Right-click a flagged cell to remove the flag.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Winning &amp; Losing</h2>
+    <ul>
+      <li><strong>Win</strong> — All non-mine cells are revealed.</li>
+      <li><strong>Lose</strong> — You click a cell containing a mine. The board reveals all mine locations.</li>
+    </ul>
+    <p>The first click is always safe — mines are placed after your first move.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Difficulty Levels</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>Level</th><th>Board</th><th>Mines</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Beginner</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>Intermediate</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>Expert</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>Custom</td><td>your choice</td><td>your choice</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>Tips</h2>
+    <ul>
+      <li>Start near the center — it gives you more neighbors to work with.</li>
+      <li>When a number equals the count of its hidden neighbors, all of them are mines — flag them all.</li>
+      <li>When a number equals the count of its flagged neighbors, all remaining hidden neighbors are safe — reveal them.</li>
+      <li>Use the chord click to quickly clear areas once flags are placed correctly.</li>
+      <li>If you're stuck, make an educated guess in a corner or edge where probability is lower.</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← Play Beginner</a>
+    <a href="/intermediate">Play Intermediate</a>
+    <a href="/expert">Play Expert</a>
+    <a href="/custom">Play Custom</a>
+  </div>
+
+</div>
+{% endblock %}

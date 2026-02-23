@@ -454,13 +454,74 @@ footer {
 
 .lb-back a:hover { background: var(--surface2); }
 
+/* ── Help Page ───────────────────────────────────────────────────────────── */
+.help-section {
+  margin-bottom: 2rem;
+}
+
+.help-section h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: var(--accent);
+  border-bottom: 1px solid var(--surface2);
+  padding-bottom: 0.25rem;
+}
+
+.help-section p,
+.help-section ul {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--fg);
+}
+
+.help-section ul {
+  padding-left: 1.4rem;
+}
+
+.help-section li {
+  margin-bottom: 0.35rem;
+}
+
+.help-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.help-table th,
+.help-table td {
+  text-align: left;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--surface2);
+}
+
+.help-table th {
+  background: var(--surface2);
+  font-weight: 600;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 860px) {
   .ad-sidebar { display: none; }
   :root { --cell-size: 30px; }
 }
 
+@media (max-width: 600px) {
+  .header-inner {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0.5rem 0;
+  }
+  nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+  nav a { padding: 0.35rem 0.55rem; font-size: 0.8rem; }
+}
+
 @media (max-width: 500px) {
   :root { --cell-size: 26px; }
-  nav a { padding: 0.35rem 0.55rem; font-size: 0.8rem; }
 }
