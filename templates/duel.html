@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+{% block title %}Duel — Head-to-Head Minesweeper{% endblock %}
+
+{% block content %}
+<div class="duel-wrapper">
+
+  <!-- ── Status bar ── -->
+  <div class="duel-status-bar">
+    <div id="duel-status" class="duel-status-msg">Connecting…</div>
+
+    {% if is_creator %}
+    <div id="share-box" class="share-box" style="display:none">
+      <span>Share this link with your opponent:</span>
+      <input id="share-link" type="text" readonly />
+      <button onclick="copyLink()">Copy</button>
+    </div>
+    <button id="start-btn" class="duel-start-btn" style="display:none"
+            onclick="sendStart()">▶ Start Game</button>
+    {% endif %}
+  </div>
+
+  <!-- ── Score strip ── -->
+  <div class="duel-scoreboard">
+    <div class="duel-player-score" id="my-score-box">
+      <span class="score-label">You</span>
+      <span class="score-value" id="my-score">0</span>
+      <span class="score-sub" id="my-tiles">0 tiles</span>
+    </div>
+    <div class="duel-vs">VS</div>
+    <div class="duel-player-score opp" id="opp-score-box">
+      <span class="score-label">Opponent</span>
+      <span class="score-value" id="opp-score">0</span>
+      <span class="score-sub" id="opp-tiles">0 tiles</span>
+    </div>
+  </div>
+
+  <!-- ── Timer ── -->
+  <div class="duel-timer-row">
+    <span class="stat-icon">⏱</span>
+    <span class="stat-value" id="duel-timer">000</span>
+  </div>
+
+  <!-- ── Board ── -->
+  <div class="duel-board-wrap">
+    <div id="board"
+         data-rows="{{ rows }}"
+         data-cols="{{ cols }}"
+         data-mines="{{ mines }}"
+         data-mode="duel"
+         data-game-id="{{ game_id }}"
+         data-player-id="{{ player_id }}"
+         data-is-creator="{{ 'true' if is_creator else 'false' }}">
+    </div>
+    <div id="duel-overlay" class="duel-overlay" style="display:none"></div>
+  </div>
+
+  <p class="instructions">
+    <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
+    <strong>Right-click</strong> to flag (local only)
+  </p>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+const boardEl   = document.getElementById('board');
+const ROWS      = parseInt(boardEl.dataset.rows);
+const COLS      = parseInt(boardEl.dataset.cols);
+const GAME_ID   = boardEl.dataset.gameId;
+const PLAYER_ID = boardEl.dataset.playerId;
+const IS_CREATOR = boardEl.dataset.isCreator === 'true';
+
+const NUM_COLORS = ['','#1976D2','#388E3C','#D32F2F','#7B1FA2',
+                    '#F57F17','#00838F','#212121','#757575'];
+
+// ── Local state ───────────────────────────────────────────────────────────────
+let revealed   = Array.from({length: ROWS}, () => Array(COLS).fill(false));
+let flagged    = Array.from({length: ROWS}, () => Array(COLS).fill(false));
+let boardVals  = Array.from({length: ROWS}, () => Array(COLS).fill(null));
+let gameActive = false;
+let exploded   = false;
+let timerID    = null;
+let elapsed    = 0;
+
+// ── Build board DOM ───────────────────────────────────────────────────────────
+function buildBoard() {
+  boardEl.innerHTML = '';
+  boardEl.style.setProperty('--cols', COLS);
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = document.createElement('div');
+      cell.className   = 'cell hidden';
+      cell.dataset.r   = r;
+      cell.dataset.c   = c;
+      cell.addEventListener('click',       () => onReveal(r, c));
+      cell.addEventListener('contextmenu', e  => { e.preventDefault(); onFlag(r, c); });
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function cellEl(r, c) {
+  return boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+}
+
+function renderCell(r, c) {
+  const el  = cellEl(r, c);
+  const val = boardVals[r][c];
+  el.className = 'cell';
+
+  if (flagged[r][c] && !revealed[r][c]) {
+    el.classList.add('flagged');
+    el.textContent = '🚩';
+    return;
+  }
+  if (!revealed[r][c]) {
+    el.classList.add('hidden');
+    el.textContent = '';
+    return;
+  }
+  el.classList.add('revealed');
+  if (val === -1) {
+    el.classList.add(exploded ? 'mine-detonated' : 'mine');
+    el.textContent = '💣';
+  } else if (val === 0) {
+    el.textContent = '';
+  } else {
+    el.textContent = val;
+    el.style.color = NUM_COLORS[val];
+  }
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────────
+function startTimer() {
+  if (timerID) return;
+  timerID = setInterval(() => {
+    elapsed = Math.min(elapsed + 1, 999);
+    document.getElementById('duel-timer').textContent =
+      String(elapsed).padStart(3, '0');
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerID);
+  timerID = null;
+}
+
+// ── Score display ─────────────────────────────────────────────────────────────
+function updateScores(myScore, myTiles, oppScore, oppTiles) {
+  document.getElementById('my-score').textContent  = myScore  ?? document.getElementById('my-score').textContent;
+  document.getElementById('opp-score').textContent = oppScore ?? document.getElementById('opp-score').textContent;
+  if (myTiles  != null) document.getElementById('my-tiles').textContent  = `${myTiles} tiles`;
+  if (oppTiles != null) document.getElementById('opp-tiles').textContent = `${oppTiles} tiles`;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+function onReveal(r, c) {
+  if (!gameActive || revealed[r][c] || exploded) return;
+  ws.send(JSON.stringify({type: 'reveal', r, c}));
+}
+
+function onFlag(r, c) {
+  if (!gameActive || revealed[r][c]) return;
+  flagged[r][c] = !flagged[r][c];
+  renderCell(r, c);
+}
+
+function sendStart() {
+  ws.send(JSON.stringify({type: 'start'}));
+  document.getElementById('start-btn').style.display = 'none';
+}
+
+function copyLink() {
+  const inp = document.getElementById('share-link');
+  inp.select();
+  navigator.clipboard.writeText(inp.value).catch(() => inp.select());
+  document.querySelector('.share-box button').textContent = 'Copied!';
+}
+
+// ── Overlay ───────────────────────────────────────────────────────────────────
+function showDuelOverlay(html) {
+  const ov   = document.getElementById('duel-overlay');
+  ov.innerHTML = html;
+  ov.style.display = 'flex';
+}
+
+function setStatus(msg) {
+  document.getElementById('duel-status').textContent = msg;
+}
+
+// ── WebSocket ─────────────────────────────────────────────────────────────────
+const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+const ws    = new WebSocket(`${proto}://${location.host}/ws/${GAME_ID}/${PLAYER_ID}`);
+
+ws.addEventListener('open', () => {
+  if (IS_CREATOR) {
+    const link = `${location.origin}/duel/${GAME_ID}`;
+    const inp  = document.getElementById('share-link');
+    if (inp) { inp.value = link; }
+    document.getElementById('share-box').style.display = 'flex';
+  }
+});
+
+ws.addEventListener('message', e => {
+  const msg = JSON.parse(e.data);
+
+  switch (msg.type) {
+
+    case 'connected':
+      setStatus(msg.msg);
+      break;
+
+    case 'ready':
+      setStatus(msg.msg);
+      if (IS_CREATOR) {
+        const btn = document.getElementById('start-btn');
+        if (btn) btn.style.display = 'inline-block';
+      }
+      break;
+
+    case 'start':
+      setStatus('⚔️ Game on!');
+      gameActive = true;
+      startTimer();
+      // Dim the board until first click — already ready
+      break;
+
+    case 'update': {
+      // Apply newly revealed cells to local state
+      const newCells   = msg.newly_revealed;  // [[r,c], ...]
+      const boardValsM = msg.board_values;    // {"r,c": val}
+      newCells.forEach(([r, c]) => {
+        revealed[r][c]  = true;
+        boardVals[r][c] = boardValsM[`${r},${c}`];
+        renderCell(r, c);
+      });
+      if (msg.exploded) {
+        exploded = true;
+        setStatus('💥 You hit a mine!');
+      }
+      updateScores(msg.score, msg.tiles, msg.opp_score, null);
+      break;
+    }
+
+    case 'opp_update':
+      updateScores(null, null, msg.opp_score, msg.opp_tiles);
+      break;
+
+    case 'game_over': {
+      stopTimer();
+      gameActive = false;
+      const myScore  = msg.scores[PLAYER_ID] ?? 0;
+      const oppId    = Object.keys(msg.scores).find(id => id !== PLAYER_ID);
+      const oppScore = oppId ? msg.scores[oppId] : 0;
+      updateScores(myScore, null, oppScore, null);
+
+      let headline, sub;
+      if (!msg.winner_id) {
+        headline = "💥 Double KO!";
+        sub      = "Both players hit a mine.";
+      } else if (msg.winner_id === PLAYER_ID) {
+        headline = "🏆 You Win!";
+        sub      = `Final score: ${myScore} vs ${oppScore}`;
+      } else {
+        headline = "😵 You Lose!";
+        sub      = `Final score: ${myScore} vs ${oppScore}`;
+      }
+
+      showDuelOverlay(`
+        <div class="duel-result">
+          <h2>${headline}</h2>
+          <p>${sub}</p>
+          <p class="result-time">Time: ${msg.elapsed}s</p>
+          <a href="/duel" class="duel-play-again">⚔️ New Duel</a>
+        </div>
+      `);
+      break;
+    }
+
+    case 'opp_disconnected':
+      setStatus('⚠️ ' + msg.msg);
+      stopTimer();
+      gameActive = false;
+      break;
+
+    case 'error':
+      setStatus('❌ ' + msg.msg);
+      break;
+  }
+});
+
+ws.addEventListener('close', () => {
+  if (gameActive) setStatus('⚠️ Connection lost.');
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildBoard();
+</script>
+{% endblock %}
