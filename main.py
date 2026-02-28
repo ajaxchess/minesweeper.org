@@ -4,10 +4,17 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, field_validator
-from database import Score, GameMode, get_db, init_db
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+from database import Score, GameMode, get_db, init_db, SessionLocal
+from duel_routes import duel_router
+from duel import cleanup_old_games
+import logging
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Minesweeper")
-
+app.include_router(duel_router)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
@@ -17,10 +24,34 @@ GAME_MODES = {
     "expert":       {"rows": 16, "cols": 30, "mines": 99},
 }
 
-# Create DB tables on startup
+# ── Daily score reset ─────────────────────────────────────────────────────────
+def reset_scores():
+    db = SessionLocal()
+    try:
+        deleted = db.query(Score).delete()
+        db.commit()
+        logger.info(f"Daily score reset complete — {deleted} rows removed.")
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Score reset failed: {e}")
+    finally:
+        db.close()
+
+scheduler = BackgroundScheduler(timezone="UTC")
+scheduler.add_job(reset_scores,      CronTrigger(hour=0, minute=0))   # midnight UTC
+scheduler.add_job(cleanup_old_games, CronTrigger(hour="*"))             # hourly
+
+# Create DB tables and start scheduler on startup
 @app.on_event("startup")
 def startup():
     init_db()
+    scheduler.start()
+    logger.info("Scheduler started — scores reset daily at midnight UTC.")
+
+@app.on_event("shutdown")
+def shutdown():
+    scheduler.shutdown()
+    logger.info("Scheduler shut down.")
 
 # ── Page Routes ───────────────────────────────────────────────────────────────
 
@@ -52,12 +83,6 @@ async def custom(request: Request):
 async def leaderboard_page(request: Request):
     return templates.TemplateResponse("leaderboard.html", {
         "request": request, "mode": "leaderboard"
-    })
-
-@app.get("/help", response_class=HTMLResponse)
-async def help_page(request: Request):
-    return templates.TemplateResponse("help.html", {
-        "request": request, "mode": "help"
     })
 
 # ── Leaderboard API ───────────────────────────────────────────────────────────
