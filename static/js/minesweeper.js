@@ -320,6 +320,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const board = document.getElementById('board');
   if (!board) return;
 
+  // Don't run the solo game init on the duel page
+  if (board.dataset.mode === 'duel') return;
+
   const rows  = parseInt(board.dataset.rows);
   const cols  = parseInt(board.dataset.cols);
   const mines = parseInt(board.dataset.mines);
