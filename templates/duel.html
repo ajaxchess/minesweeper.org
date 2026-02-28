@@ -59,6 +59,14 @@
     <strong>Right-click</strong> to flag (local only)
   </p>
 
+  <div class="duel-scoring-info">
+    <strong>How scoring works:</strong>
+    Your score is calculated by awarding <strong>5 points per tile revealed</strong>, plus a time bonus.
+    The time bonus is calculated with the formula
+    <code>(300 − secondsFromStart) × percentRevealed</code>,
+    however it will never drop below 0.
+  </div>
+
 </div>
 {% endblock %}
 
