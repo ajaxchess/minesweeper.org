@@ -152,7 +152,7 @@ class DuelGame:
         # Hit a mine
         if p.board[r][c] == -1:
             p.exploded = True
-            p.score    = p.compute_score(self.elapsed())
+            p.score    = p.tiles_revealed * POINTS_PER_TILE  # no time bonus on explosion
             result     = {"newly_revealed": [(r, c)], "exploded": True,
                           "score": p.score}
             # Check if game is now over
