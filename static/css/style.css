@@ -644,6 +644,26 @@ footer {
 
 .duel-play-again:hover { opacity: 0.85; }
 
+.duel-scoring-info {
+  max-width: 560px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.duel-scoring-info strong { color: var(--text); }
+.duel-scoring-info code {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--accent2);
+  white-space: nowrap;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 860px) {
   .ad-sidebar { display: none; }
