@@ -155,18 +155,16 @@ class DuelGame:
             p.score    = p.tiles_revealed * POINTS_PER_TILE  # no time bonus on explosion
             result     = {"newly_revealed": [(r, c)], "exploded": True,
                           "score": p.score}
-            # Check if game is now over
+            # Only end the game if the opponent is also done
             opp = self.opponent(pid)
-            if opp and not opp.exploded and opp.tiles_revealed < opp.safe_tiles():
-                # Opponent wins automatically
-                opp.score     = opp.compute_score(self.elapsed())
-                self.finished = True
+            if not opp or opp.exploded or opp.tiles_revealed >= opp.safe_tiles():
+                self.finished      = True
                 result["finished"] = True
-                result["winner"]   = opp.player_id
-            elif not opp or opp.exploded:
-                self.finished = True
-                result["finished"] = True
-                result["winner"]   = None   # both exploded
+                result["winner"]   = self._determine_winner()
+            else:
+                # Opponent still playing — notify them but keep going
+                result["finished"]       = False
+                result["opp_still_alive"] = True
             return result
 
         # Safe reveal (BFS)
@@ -178,14 +176,28 @@ class DuelGame:
 
         # Check win condition: all safe tiles revealed
         if p.tiles_revealed >= p.safe_tiles():
-            self.finished = True
             opp = self.opponent(pid)
             if opp:
                 opp.score = opp.compute_score(self.elapsed())
-            result["finished"] = True
-            result["winner"]   = pid
+            # Only end if opponent is also done
+            if not opp or opp.exploded or opp.tiles_revealed >= opp.safe_tiles():
+                self.finished      = True
+                result["finished"] = True
+                result["winner"]   = self._determine_winner()
+            else:
+                result["finished"]        = False
+                result["opp_still_alive"] = True
 
         return result
+
+    def _determine_winner(self):
+        """Pick winner by score. Returns player_id or None for a draw."""
+        if len(self.players) < 2:
+            return self.players[0].player_id if self.players else None
+        p1, p2 = self.players
+        if p1.score > p2.score:   return p1.player_id
+        if p2.score > p1.score:   return p2.player_id
+        return None  # draw
 
     def scores_payload(self):
         return {p.player_id: p.score for p in self.players}
