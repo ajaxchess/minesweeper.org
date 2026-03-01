@@ -180,7 +180,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (msg.exploded) {
           exploded = true;
-          setStatus('💥 You hit a mine!');
+          gameActive = false;
+          stopTimer();
+          setStatus('💥 You hit a mine! Waiting for opponent to finish…');
         }
         updateScores(msg.score, msg.tiles, msg.opp_score, null);
         break;
@@ -188,6 +190,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       case 'opp_update':
         updateScores(null, null, msg.opp_score, msg.opp_tiles);
+        if (msg.opp_exploded) {
+          setStatus('💥 Opponent hit a mine! Keep playing…');
+        } else if (msg.opp_cleared) {
+          setStatus('🎉 Opponent cleared their board! Keep playing…');
+        }
         break;
 
       case 'game_over': {
