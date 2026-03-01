@@ -144,6 +144,10 @@ async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
                         "type":      "opp_update",
                         "opp_score": result["score"],
                         "opp_tiles": p.tiles_revealed,
+                        # Alert opponent if this player just exploded or cleared
+                        "opp_exploded": result.get("exploded", False),
+                        "opp_cleared":  (not result.get("exploded") and
+                                         result.get("opp_still_alive", False)),
                     })
 
                 # Broadcast game-over if finished
