@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Request, Depends, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -9,12 +10,14 @@ from apscheduler.triggers.cron import CronTrigger
 from database import Score, GameMode, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
+from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
 import logging
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Minesweeper")
 app.include_router(duel_router)
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
@@ -58,32 +61,60 @@ def shutdown():
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {
-        "request": request, "mode": "beginner", **GAME_MODES["beginner"]
+        "request": request, "mode": "beginner",
+        "user": get_current_user(request),
+        **GAME_MODES["beginner"]
     })
 
 @app.get("/intermediate", response_class=HTMLResponse)
 async def intermediate(request: Request):
     return templates.TemplateResponse("index.html", {
-        "request": request, "mode": "intermediate", **GAME_MODES["intermediate"]
+        "request": request, "mode": "intermediate",
+        "user": get_current_user(request),
+        **GAME_MODES["intermediate"]
     })
 
 @app.get("/expert", response_class=HTMLResponse)
 async def expert(request: Request):
     return templates.TemplateResponse("index.html", {
-        "request": request, "mode": "expert", **GAME_MODES["expert"]
+        "request": request, "mode": "expert",
+        "user": get_current_user(request),
+        **GAME_MODES["expert"]
     })
 
 @app.get("/custom", response_class=HTMLResponse)
 async def custom(request: Request):
     return templates.TemplateResponse("custom.html", {
-        "request": request, "mode": "custom"
+        "request": request, "mode": "custom",
+        "user": get_current_user(request),
     })
 
 @app.get("/leaderboard", response_class=HTMLResponse)
 async def leaderboard_page(request: Request):
     return templates.TemplateResponse("leaderboard.html", {
-        "request": request, "mode": "leaderboard"
+        "request": request, "mode": "leaderboard",
+        "user": get_current_user(request),
     })
+
+# ── Auth routes ───────────────────────────────────────────────────────────────
+
+@app.get("/auth/login")
+async def login(request: Request):
+    redirect_uri = request.url_for("auth_callback")
+    return await oauth.google.authorize_redirect(request, redirect_uri)
+
+@app.get("/auth/callback")
+async def auth_callback(request: Request):
+    token = await oauth.google.authorize_access_token(request)
+    user  = token.get("userinfo")
+    if user:
+        set_session_user(request, user)
+    return RedirectResponse(url="/")
+
+@app.get("/auth/logout")
+async def logout(request: Request):
+    clear_session(request)
+    return RedirectResponse(url="/")
 
 # ── Leaderboard API ───────────────────────────────────────────────────────────
 
