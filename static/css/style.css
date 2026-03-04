@@ -339,7 +339,55 @@ footer {
   cursor: pointer;
 }
 
-/* ── Leaderboard page ────────────────────────────────────────────────────── */
+/* ── Auth area ────────────────────────────────────────────────────────────── */
+.auth-area {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--surface2);
+  object-fit: cover;
+}
+
+.auth-name {
+  font-size: 0.85rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.auth-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.login-btn {
+  background: #fff;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.logout-btn {
+  background: var(--surface2);
+  color: var(--text-dim);
+}
+
+.auth-btn:hover { opacity: 0.85; }
+
+/* ── Auth area ────────────────────────────────────────────────────────────── */
 .lb-wrapper {
   max-width: 780px;
   margin: 0 auto;
