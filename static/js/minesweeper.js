@@ -189,14 +189,26 @@ function showOverlay(msg, won) {
   }
   el.className = won ? 'overlay win' : 'overlay loss';
 
-  const scoreForm = won ? `
-    <div class="overlay-score-form">
-      <input id="player-name" type="text" maxlength="32"
-             placeholder="Enter your name" autocomplete="off" />
-      <button onclick="submitScore()">Save Score</button>
-    </div>
-    <div id="score-msg" style="font-size:0.85rem;min-height:1.2em"></div>
-  ` : '';
+  const board    = document.getElementById('board');
+  const username = board.dataset.username || '';
+
+  let scoreForm = '';
+  if (won) {
+    if (username) {
+      // Logged-in: auto-submit immediately, show a confirmation
+      scoreForm = `<div id="score-msg" style="font-size:0.9rem">Saving score…</div>`;
+    } else {
+      scoreForm = `
+        <div class="overlay-score-form">
+          <input id="player-name" type="text" maxlength="32"
+                 placeholder="Enter your name" autocomplete="off" />
+          <button onclick="submitScore()">Save Score</button>
+        </div>
+        <div id="score-msg" style="font-size:0.85rem;min-height:1.2em"></div>
+        <a class="overlay-lb-link" href="/auth/login">Sign in with Google to skip this step</a>
+      `;
+    }
+  }
 
   el.innerHTML = `
     <span>${msg}</span>
@@ -206,16 +218,22 @@ function showOverlay(msg, won) {
   `;
   el.style.display = 'flex';
 
-  if (won) setTimeout(() => document.getElementById('player-name')?.focus(), 50);
+  if (won && username) {
+    // Auto-submit for logged-in users
+    submitScore(username);
+  } else if (won) {
+    setTimeout(() => document.getElementById('player-name')?.focus(), 50);
+  }
 }
 
-async function submitScore() {
-  const nameEl = document.getElementById('player-name');
-  const msgEl  = document.getElementById('score-msg');
-  const name   = nameEl.value.trim();
-  if (!name) { msgEl.textContent = '⚠️ Please enter your name.'; return; }
+async function submitScore(autoName = null) {
+  const board    = document.getElementById('board');
+  const msgEl    = document.getElementById('score-msg');
+  const nameEl   = document.getElementById('player-name');
+  const name     = autoName || nameEl?.value.trim();
 
-  const board = document.getElementById('board');
+  if (!name) { if (msgEl) msgEl.textContent = '⚠️ Please enter your name.'; return; }
+
   const payload = {
     name,
     mode:      board.dataset.mode,
@@ -232,15 +250,16 @@ async function submitScore() {
       body:    JSON.stringify(payload),
     });
     if (res.ok) {
-      msgEl.textContent = '✅ Score saved!';
-      nameEl.disabled   = true;
-      document.querySelector('.overlay-score-form button').disabled = true;
+      if (msgEl) msgEl.textContent = `✅ Score saved for ${name}!`;
+      if (nameEl) nameEl.disabled = true;
+      const saveBtn = document.querySelector('.overlay-score-form button');
+      if (saveBtn) saveBtn.disabled = true;
     } else {
       const err = await res.json();
-      msgEl.textContent = `❌ ${err.detail || 'Could not save score.'}`;
+      if (msgEl) msgEl.textContent = `❌ ${err.detail || 'Could not save score.'}`;
     }
   } catch {
-    msgEl.textContent = '❌ Network error. Score not saved.';
+    if (msgEl) msgEl.textContent = '❌ Network error. Score not saved.';
   }
 }
 
