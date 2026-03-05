@@ -152,14 +152,16 @@ class ScoreSubmit(BaseModel):
 
 
 @app.post("/api/scores", status_code=201)
-def submit_score(payload: ScoreSubmit, db: Session = Depends(get_db)):
+def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user  = get_current_user(request)
     score = Score(
-        name      = payload.name,
-        mode      = payload.mode,
-        time_secs = payload.time_secs,
-        rows      = payload.rows,
-        cols      = payload.cols,
-        mines     = payload.mines,
+        name       = payload.name,
+        user_email = user["email"] if user else None,
+        mode       = payload.mode,
+        time_secs  = payload.time_secs,
+        rows       = payload.rows,
+        cols       = payload.cols,
+        mines      = payload.mines,
     )
     db.add(score)
     db.commit()
@@ -177,3 +179,47 @@ def get_scores(mode: GameMode, db: Session = Depends(get_db)):
         .all()
     )
     return [s.to_dict() for s in top]
+
+
+@app.get("/profile", response_class=HTMLResponse)
+async def profile_page(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/auth/login")
+    return templates.TemplateResponse("profile.html", {
+        "request": request,
+        "mode":    "profile",
+        "user":    user,
+    })
+
+
+@app.get("/api/profile/stats")
+def profile_stats(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+
+    email  = user["email"]
+    modes  = ["beginner", "intermediate", "expert", "custom"]
+    stats  = {}
+
+    for mode in modes:
+        scores = (
+            db.query(Score)
+            .filter(Score.user_email == email, Score.mode == mode)
+            .order_by(Score.created_at.desc())
+            .all()
+        )
+        if not scores:
+            stats[mode] = None
+            continue
+        times      = [s.time_secs for s in scores]
+        stats[mode] = {
+            "games_played": len(scores),
+            "best_time":    min(times),
+            "avg_time":     round(sum(times) / len(times), 1),
+            "worst_time":   max(times),
+            "recent":       [s.to_dict() for s in scores[:10]],
+        }
+
+    return stats
