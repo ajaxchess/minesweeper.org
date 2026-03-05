@@ -11,7 +11,7 @@ function freshState(rows, cols, mines) {
     rows, cols, mines,
     board:      Array.from({length: rows}, () => Array(cols).fill(0)),
     revealed:   Array.from({length: rows}, () => Array(cols).fill(false)),
-    flagged:    Array.from({length: rows}, () => Array(cols).fill(false)),
+    flagged:    Array.from({length: rows}, () => Array(cols).fill(0)),
     mineSet:    new Set(),
     minesLeft:  mines,
     started:    false,
@@ -89,7 +89,7 @@ function stopTimer() {
 
 // ── Reveal Logic ─────────────────────────────────────────────────────────────
 function reveal(r, c) {
-  if (state.over || state.revealed[r][c] || state.flagged[r][c]) return;
+  if (state.over || state.revealed[r][c] || state.flagged[r][c] === 1) return;
 
   // First click — place mines now (guarantees safe first click)
   if (!state.started) {
@@ -128,17 +128,21 @@ function reveal(r, c) {
 // ── Chord (middle-click / double-click) ──────────────────────────────────────
 function chord(r, c) {
   if (!state.revealed[r][c] || state.board[r][c] <= 0) return;
-  const nb   = neighbors(r, c, state.rows, state.cols);
-  const flags = nb.filter(([nr, nc]) => state.flagged[nr][nc]).length;
+  const nb    = neighbors(r, c, state.rows, state.cols);
+  const flags = nb.filter(([nr, nc]) => state.flagged[nr][nc] === 1).length;
   if (flags === state.board[r][c])
     nb.forEach(([nr, nc]) => reveal(nr, nc));
 }
 
-// ── Flag ─────────────────────────────────────────────────────────────────────
+// ── Flag (cycles: none → flag → question → none) ──────────────────────────────
 function flag(r, c) {
   if (state.over || state.revealed[r][c]) return;
-  state.flagged[r][c] = !state.flagged[r][c];
-  state.minesLeft += state.flagged[r][c] ? -1 : 1;
+  const cur = state.flagged[r][c];   // 0 = none, 1 = flag, 2 = question
+  const next = (cur + 1) % 3;
+  state.flagged[r][c] = next;
+  // Only decrement mine count when placing a flag, increment when removing one
+  if (cur === 0 && next === 1) state.minesLeft--;
+  if (cur === 1 && next === 2) state.minesLeft++;
   document.getElementById('mines-left').textContent =
     String(state.minesLeft).padStart(3, '0');
   renderCell(r, c);
@@ -270,23 +274,25 @@ const NUM_COLORS = ['','#1976D2','#388E3C','#D32F2F','#7B1FA2',
 function renderCell(r, c, isDetonated = false) {
   const el  = cellEl(r, c);
   const val = state.board[r][c];
+  const f   = state.flagged[r][c];
 
   el.className = 'cell';
 
-  if (state.flagged[r][c] && !state.revealed[r][c]) {
-    el.classList.add('flagged');
-    el.textContent = '🚩';
-    return;
-  }
-
   if (!state.revealed[r][c]) {
-    el.classList.add('hidden');
-    el.textContent = '';
+    if (f === 1) {
+      el.classList.add('flagged');
+      el.textContent = '🚩';
+    } else if (f === 2) {
+      el.classList.add('question');
+      el.textContent = '❓';
+    } else {
+      el.classList.add('hidden');
+      el.textContent = '';
+    }
     return;
   }
 
   el.classList.add('revealed');
-
   if (val === -1) {
     el.classList.add(isDetonated ? 'mine-detonated' : 'mine');
     el.textContent = '💣';
