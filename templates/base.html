@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}Minesweeper{% endblock %} | Minesweeper.org</title>
   <meta name="description" content="{% block description %}Play free Minesweeper online. Beginner, Intermediate, Expert and Custom modes.{% endblock %}">
-  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/style.css?v=2" />
 
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8102958922361899"
@@ -23,6 +23,7 @@
         <a href="/custom" class="{% if mode == 'custom' %}active{% endif %}">Custom</a>
         <a href="/leaderboard" class="{% if mode == 'leaderboard' %}active{% endif %}">🏆 Leaderboard</a>
         <a href="/duel" class="{% if mode == 'duel' %}active{% endif %}">⚔️ Duel</a>
+        <a href="/pvp" class="{% if mode == 'pvp' %}active{% endif %}">🎮 PvP</a>
       </nav>
       <div class="auth-area">
         {% if user %}
@@ -71,7 +72,7 @@
     <p>© 2026 Minesweeper.org &mdash; Built with Python &amp; FastAPI</p>
   </footer>
 
-  <script src="/static/js/minesweeper.js"></script>
+  <script src="/static/js/minesweeper.js?v=2"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

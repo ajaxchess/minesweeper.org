@@ -503,6 +503,17 @@ footer {
 
 .lb-back a:hover { background: var(--surface2); }
 
+.pvp-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent2);
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  padding: 0.3rem 0.85rem;
+  letter-spacing: 0.5px;
+}
+
 /* ── Duel page ───────────────────────────────────────────────────────────── */
 .duel-wrapper {
   display: flex;

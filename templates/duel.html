@@ -17,6 +17,10 @@
     <button id="start-btn" class="duel-start-btn" style="display:none"
             onclick="sendStart()">▶ Start Game</button>
     {% endif %}
+
+    {% if mode == 'pvp' %}
+    <div class="pvp-badge">⚔️ PvP Matchmaking — 16×24, 75 mines</div>
+    {% endif %}
   </div>
 
   <!-- ── Score strip ── -->
@@ -46,11 +50,10 @@
          data-rows="{{ rows }}"
          data-cols="{{ cols }}"
          data-mines="{{ mines }}"
-         data-mode="duel"
+         data-mode="{{ mode }}"
          data-game-id="{{ game_id }}"
          data-player-id="{{ player_id }}"
-         data-is-creator="{{ 'true' if is_creator else 'false' }}">
-    </div>
+         data-is-creator="{{ 'true' if is_creator else 'false' }}"></div>
     <div id="duel-overlay" class="duel-overlay" style="display:none"></div>
   </div>
 
@@ -71,5 +74,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/duel.js"></script>
+<script src="/static/js/duel.js?v=2"></script>
 {% endblock %}
