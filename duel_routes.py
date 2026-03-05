@@ -193,6 +193,7 @@ async def _game_loop(ws: WebSocket, game, player_id: str):
                 "type": "opp_disconnected",
                 "msg":  "Your opponent disconnected.",
             })
+@duel_router.websocket("/ws/{game_id}/{player_id}")
 async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
     game = get_game(game_id)
     if not game:
@@ -248,56 +249,7 @@ async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
 
             # ── Reveal a cell ─────────────────────────────────────────────
             elif mtype == "reveal":
-                if not game.active or game.finished:
-                    continue
-                r = int(msg.get("r", -1))
-                c = int(msg.get("c", -1))
-                if not (0 <= r < ROWS and 0 <= c < COLS):
-                    continue
-
-                result = game.reveal(player_id, r, c)
-                if not result:
-                    continue
-
-                p   = game.get_player(player_id)
-                opp = game.opponent(player_id)
-
-                # Send the acting player their board update
-                await manager.send(ws, {
-                    "type":           "update",
-                    "newly_revealed": result["newly_revealed"],
-                    "board_values":   {
-                        f"{r},{c}": p.board[r][c]
-                        for r, c in result["newly_revealed"]
-                    },
-                    "exploded":  result.get("exploded", False),
-                    "score":     result["score"],
-                    "opp_score": opp.score if opp else 0,
-                    "tiles":     p.tiles_revealed,
-                })
-
-                # Send opponent a score-only update (they don't see your board)
-                if opp and opp.ws:
-                    await manager.send(opp.ws, {
-                        "type":      "opp_update",
-                        "opp_score": result["score"],
-                        "opp_tiles": p.tiles_revealed,
-                        # Alert opponent if this player just exploded or cleared
-                        "opp_exploded": result.get("exploded", False),
-                        "opp_cleared":  (not result.get("exploded") and
-                                         result.get("opp_still_alive", False)),
-                    })
-
-                # Broadcast game-over if finished
-                if result.get("finished"):
-                    winner_id = result.get("winner")
-                    scores    = game.scores_payload()
-                    await manager.broadcast(game, {
-                        "type":      "game_over",
-                        "winner_id": winner_id,
-                        "scores":    scores,
-                        "elapsed":   round(game.elapsed()),
-                    })
+                 await _handle_reveal(ws, game, player_id, msg)
 
     except WebSocketDisconnect:
         p = game.get_player(player_id)
