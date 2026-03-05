@@ -26,8 +26,10 @@
       </nav>
       <div class="auth-area">
         {% if user %}
-          <img src="{{ user.picture }}" class="avatar" alt="{{ user.name }}" title="{{ user.name }}">
-          <span class="auth-name">{{ user.name.split()[0] }}</span>
+          <a href="/profile" class="avatar-link" title="View profile">
+            <img src="{{ user.picture }}" class="avatar" alt="{{ user.name }}">
+          </a>
+          <a href="/profile" class="auth-name">{{ user.name.split()[0] }}</a>
           <a href="/auth/logout" class="auth-btn logout-btn">Sign out</a>
         {% else %}
           <a href="/auth/login" class="auth-btn login-btn">

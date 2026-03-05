@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Profile — {{ user.name }}{% endblock %}
+
+{% block content %}
+<div class="profile-wrapper">
+
+  <!-- ── Hero ── -->
+  <div class="profile-hero">
+    <img src="{{ user.picture }}" class="profile-avatar" alt="{{ user.name }}">
+    <div class="profile-hero-info">
+      <h1 class="profile-name">{{ user.name }}</h1>
+      <p class="profile-email">{{ user.email }}</p>
+    </div>
+  </div>
+
+  <!-- ── Summary cards (filled by JS) ── -->
+  <div class="profile-summary" id="profile-summary">
+    <div class="summary-card loading" id="card-beginner">
+      <div class="card-mode">Beginner</div>
+      <div class="card-body">Loading…</div>
+    </div>
+    <div class="summary-card loading" id="card-intermediate">
+      <div class="card-mode">Intermediate</div>
+      <div class="card-body">Loading…</div>
+    </div>
+    <div class="summary-card loading" id="card-expert">
+      <div class="card-mode">Expert</div>
+      <div class="card-body">Loading…</div>
+    </div>
+    <div class="summary-card loading" id="card-custom">
+      <div class="card-mode">Custom</div>
+      <div class="card-body">Loading…</div>
+    </div>
+  </div>
+
+  <!-- ── Recent games tabs ── -->
+  <div class="profile-recent">
+    <h2 class="section-title">Recent Games</h2>
+
+    <div class="lb-tabs" role="tablist">
+      <button class="lb-tab active" data-mode="beginner">Beginner</button>
+      <button class="lb-tab" data-mode="intermediate">Intermediate</button>
+      <button class="lb-tab" data-mode="expert">Expert</button>
+      <button class="lb-tab" data-mode="custom">Custom</button>
+    </div>
+
+    <div class="lb-table-wrap" style="margin-top:0.75rem">
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Time</th>
+            <th>Board</th>
+            <th>Mines</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="recent-body">
+          <tr><td colspan="5" class="lb-loading">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let allStats = null;
+
+async function loadStats() {
+  const res  = await fetch('/api/profile/stats');
+  allStats   = await res.json();
+  const modes = ['beginner', 'intermediate', 'expert', 'custom'];
+
+  modes.forEach(mode => {
+    const card = document.getElementById(`card-${mode}`);
+    const data = allStats[mode];
+    card.classList.remove('loading');
+
+    if (!data) {
+      card.querySelector('.card-body').innerHTML =
+        `<span class="no-data">No games yet</span>
+         <a href="${mode === 'beginner' ? '/' : '/' + mode}" class="card-play-link">Play now →</a>`;
+      return;
+    }
+
+    card.querySelector('.card-body').innerHTML = `
+      <div class="card-stat">
+        <span class="cs-label">Games</span>
+        <span class="cs-value">${data.games_played}</span>
+      </div>
+      <div class="card-stat highlight">
+        <span class="cs-label">Best</span>
+        <span class="cs-value">${data.best_time}s</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">Avg</span>
+        <span class="cs-value">${data.avg_time}s</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">Worst</span>
+        <span class="cs-value">${data.worst_time}s</span>
+      </div>
+    `;
+  });
+
+  // Load beginner recent games by default
+  renderRecent('beginner');
+}
+
+function renderRecent(mode) {
+  const body = document.getElementById('recent-body');
+  const data = allStats?.[mode];
+
+  if (!data) {
+    body.innerHTML = '<tr><td colspan="5" class="lb-empty">No games recorded yet.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = data.recent.map((s, i) => `
+    <tr>
+      <td class="lb-rank">${i + 1}</td>
+      <td class="lb-time">${s.time_secs}s</td>
+      <td class="lb-board">${s.rows}×${s.cols}</td>
+      <td class="lb-mines">${s.mines}</td>
+      <td class="lb-date">${s.created_at}</td>
+    </tr>
+  `).join('');
+}
+
+// Tab switching
+document.querySelectorAll('.lb-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (allStats) renderRecent(btn.dataset.mode);
+  });
+});
+
+loadStats();
+</script>
+{% endblock %}
