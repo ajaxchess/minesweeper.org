@@ -158,7 +158,7 @@ class DuelGame:
 
         # First click for this player — place mines now
         if not p.started:
-            p.mine_set, p.board = _place_mines(r, c)
+            p.mine_set, p.board = _place_mines(self.rows, self.cols, self.mines, r, c)
             p.started = True
 
         if p.revealed[r][c]:
@@ -183,7 +183,7 @@ class DuelGame:
             return result
 
         # Safe reveal (BFS)
-        newly = _bfs_reveal(p.board, p.revealed, r, c)
+        newly = _bfs_reveal(p.board, p.revealed, self.rows, self.cols, r, c)
         p.tiles_revealed += len(newly)
         p.score           = p.compute_score(self.elapsed())
 
