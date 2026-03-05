@@ -16,3 +16,5 @@ If you change requirements.txt, you need to reinstall
 cd ~/minesweeper
 source venv/bin/activate
 pip install -r requirements.txt
+
+sudo systemctl restart minesweeper
