@@ -15,9 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const COLS      = parseInt(boardEl.dataset.cols);
   const GAME_ID   = boardEl.dataset.gameId;
   const PLAYER_ID = boardEl.dataset.playerId;
-  const IS_CREATOR = boardEl.dataset.isCreator === 'true';
+  const IS_PVP     = boardEl.dataset.mode === 'pvp';
 
-  console.log('GAME_ID:', GAME_ID, 'PLAYER_ID:', PLAYER_ID);
+  const IS_CREATOR = boardEl.dataset.isCreator === 'true';
+  const IS_PVP     = boardEl.dataset.mode === 'pvp';
+
+  console.log('GAME_ID:', GAME_ID, 'PLAYER_ID:', PLAYER_ID, 'IS_PVP:', IS_PVP);
 
   // ── Local state ───────────────────────────────────────────────────────────
   let revealed   = Array.from({length: ROWS}, () => Array(COLS).fill(false));
@@ -135,8 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ── WebSocket ─────────────────────────────────────────────────────────────
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  const ws    = new WebSocket(`${proto}://${location.host}/ws/${GAME_ID}/${PLAYER_ID}`);
+  const proto  = location.protocol === 'https:' ? 'wss' : 'ws';
+  const wsUrl  = IS_PVP
+    ? `${proto}://${location.host}/ws/pvp/${PLAYER_ID}`
+    : `${proto}://${location.host}/ws/${GAME_ID}/${PLAYER_ID}`;
+  const ws     = new WebSocket(wsUrl);
 
   ws.addEventListener('open', () => {
     if (IS_CREATOR) {
@@ -151,6 +157,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const msg = JSON.parse(e.data);
 
     switch (msg.type) {
+
+      case 'queued':
+        setStatus(`🔍 ${msg.msg} (${msg.queue_pos} in queue)`);
+        break;
+
+      case 'matched':
+        setStatus('🎯 ' + msg.msg);
+        break;
 
       case 'connected':
         setStatus(msg.msg);
