@@ -18,3 +18,23 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 sudo systemctl restart minesweeper
+
+The start script looks like this:
+systemctl cat minesweeper
+# /etc/systemd/system/minesweeper.service
+[Unit]
+Description=Minesweeper FastAPI App
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/minesweeper
+ExecStart=/home/ubuntu/minesweeper/venv/bin/uvicorn main:app --host 127.0.0.1 ->
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+To debug the uvicorn application, this command is useful:
+sudo journalctl -u minesweeper -f
+
