@@ -33,7 +33,8 @@
           <a href="/profile" class="auth-name">{{ user.name.split()[0] }}</a>
           <a href="/auth/logout" class="auth-btn logout-btn">Sign out</a>
         {% else %}
-          <a href="/auth/login" class="auth-btn login-btn">
+          <a href="/auth/login?next={{ request.url.path }}" class="auth-btn login-btn">
+
             <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.93 6.36h-1.65c-.19 0-.4.25-.4.59v1.19h2.05l-.27 2.08H14.88V18h-2.15v-5.78h-1.4v-2.08h1.4v-1.37C12.73 7.47 13.83 6 15.72 6c.86 0 1.21.06 1.21.06v1.3z"/></svg>
             Sign in with Google
           </a>
