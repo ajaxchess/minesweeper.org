@@ -8,11 +8,11 @@ from typing import Optional
 from fastapi import WebSocket
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-ROWS, COLS, MINES         = 16, 30, 99   # Expert (private duel)
+ROWS, COLS, MINES             = 16, 30, 99   # Expert (private duel)
 PVP_ROWS, PVP_COLS, PVP_MINES = 24, 16, 75  # PvP matchmaking
 
-POINTS_PER_TILE   = 5
-TIME_BONUS_BASE   = 300
+POINTS_PER_TILE = 5
+TIME_BONUS_BASE = 300
 
 # ── Board helpers ─────────────────────────────────────────────────────────────
 def _neighbors(r, c, rows, cols):
@@ -32,7 +32,7 @@ def _place_mines(rows, cols, mines, safe_r, safe_c):
     }
     pool = [(r, c) for r in range(rows) for c in range(cols)
             if (r, c) not in forbidden]
-    chosen = random.sample(pool, mines)
+    chosen   = random.sample(pool, mines)
     mine_set = set(map(tuple, chosen))
 
     board = [[0] * cols for _ in range(rows)]
@@ -44,7 +44,7 @@ def _place_mines(rows, cols, mines, safe_r, safe_c):
     return mine_set, board
 
 def _bfs_reveal(board, revealed, rows, cols, r, c):
-    """Returns list of newly revealed (r,c) cells."""
+    """Returns list of newly revealed (r, c) cells."""
     newly = []
     queue = [(r, c)]
     while queue:
@@ -63,18 +63,18 @@ def _bfs_reveal(board, revealed, rows, cols, r, c):
 # ── Player state ──────────────────────────────────────────────────────────────
 @dataclass
 class PlayerState:
-    player_id:  str
-    rows:       int
-    cols:       int
-    mines:      int
-    ws:         Optional[WebSocket] = None
-    revealed:   list = field(default_factory=list)
-    mine_set:   set  = field(default_factory=set)
-    board:      list = field(default_factory=list)
-    started:    bool = False
-    exploded:   bool = False
-    tiles_revealed: int = 0
-    score:      int = 0
+    player_id: str
+    rows:      int
+    cols:      int
+    mines:     int
+    ws:        Optional[WebSocket] = None
+    revealed:  list = field(default_factory=list)
+    mine_set:  set  = field(default_factory=set)
+    board:     list = field(default_factory=list)
+    started:        bool = False
+    exploded:       bool = False
+    tiles_revealed: int  = 0
+    score:          int  = 0
 
     def __post_init__(self):
         if not self.revealed:
@@ -97,14 +97,14 @@ class PlayerState:
 # ── Duel game ─────────────────────────────────────────────────────────────────
 class DuelGame:
     def __init__(self, game_id: str, rows: int = ROWS, cols: int = COLS, mines: int = MINES):
-        self.game_id    = game_id
-        self.rows       = rows
-        self.cols       = cols
-        self.mines      = mines
-        self.players:   list[PlayerState] = []
-        self.start_time: Optional[float]  = None
-        self.active:    bool = False
-        self.finished:  bool = False
+        self.game_id     = game_id
+        self.rows        = rows
+        self.cols        = cols
+        self.mines       = mines
+        self.players:    list[PlayerState] = []
+        self.start_time: Optional[float]   = None
+        self.active:     bool = False
+        self.finished:   bool = False
         self.created_at: float = time.time()
 
     # ── Accessors ─────────────────────────────────────────────────────────────
@@ -144,21 +144,16 @@ class DuelGame:
         return time.time() - self.start_time
 
     def reveal(self, pid: str, r: int, c: int) -> dict:
-        """
-        Process a reveal action. Returns a result dict with keys:
-          - newly_revealed: [(r,c), ...]
-          - exploded: bool
-          - score: int
-          - finished: bool  (did this action end the game?)
-          - winner: str | None
-        """
         p = self.get_player(pid)
         if not p or p.exploded or self.finished or not self.active:
             return {}
 
-        # First click for this player — place mines now
+        if not (0 <= r < self.rows and 0 <= c < self.cols):
+            return {}
+
+        # First click — place mines now (safe first click guaranteed)
         if not p.started:
-            p.mine_set, p.board = _place_mines(r, c)
+            p.mine_set, p.board = _place_mines(self.rows, self.cols, self.mines, r, c)
             p.started = True
 
         if p.revealed[r][c]:
@@ -168,33 +163,29 @@ class DuelGame:
         if p.board[r][c] == -1:
             p.exploded = True
             p.score    = p.tiles_revealed * POINTS_PER_TILE  # no time bonus on explosion
-            result     = {"newly_revealed": [(r, c)], "exploded": True,
-                          "score": p.score}
-            # Only end the game if the opponent is also done
+            result     = {"newly_revealed": [(r, c)], "exploded": True, "score": p.score}
             opp = self.opponent(pid)
             if not opp or opp.exploded or opp.tiles_revealed >= opp.safe_tiles():
                 self.finished      = True
                 result["finished"] = True
                 result["winner"]   = self._determine_winner()
             else:
-                # Opponent still playing — notify them but keep going
-                result["finished"]       = False
+                result["finished"]        = False
                 result["opp_still_alive"] = True
             return result
 
-        # Safe reveal (BFS)
-        newly = _bfs_reveal(p.board, p.revealed, r, c)
+        # Safe reveal (BFS flood fill)
+        newly = _bfs_reveal(p.board, p.revealed, self.rows, self.cols, r, c)
         p.tiles_revealed += len(newly)
         p.score           = p.compute_score(self.elapsed())
 
         result = {"newly_revealed": newly, "exploded": False, "score": p.score}
 
-        # Check win condition: all safe tiles revealed
+        # Check win condition
         if p.tiles_revealed >= p.safe_tiles():
             opp = self.opponent(pid)
             if opp:
                 opp.score = opp.compute_score(self.elapsed())
-            # Only end if opponent is also done
             if not opp or opp.exploded or opp.tiles_revealed >= opp.safe_tiles():
                 self.finished      = True
                 result["finished"] = True
@@ -210,8 +201,8 @@ class DuelGame:
         if len(self.players) < 2:
             return self.players[0].player_id if self.players else None
         p1, p2 = self.players
-        if p1.score > p2.score:   return p1.player_id
-        if p2.score > p1.score:   return p2.player_id
+        if p1.score > p2.score: return p1.player_id
+        if p2.score > p1.score: return p2.player_id
         return None  # draw
 
     def scores_payload(self):
@@ -236,16 +227,14 @@ def cleanup_old_games():
     for gid in stale:
         del _games[gid]
 
-# ── PvP Matchmaking queue ─────────────────────────────────────────────────────
-# Each entry: {"player_id": str, "ws": WebSocket}
+# ── PvP matchmaking queue ─────────────────────────────────────────────────────
 _pvp_queue: list[dict] = []
 
 async def pvp_enqueue(player_id: str, ws: WebSocket) -> Optional[DuelGame]:
     """
-    Add player to the queue. If another player is already waiting,
-    pair them into a new PvP game and return it. Otherwise return None.
+    Add player to the queue. If another player is waiting, pair them
+    into a new PvP game and return it. Otherwise return None.
     """
-    # Remove any stale entries (disconnected sockets)
     global _pvp_queue
     _pvp_queue = [e for e in _pvp_queue if e["player_id"] != player_id]
 
@@ -254,7 +243,6 @@ async def pvp_enqueue(player_id: str, ws: WebSocket) -> Optional[DuelGame]:
         game = create_game(rows=PVP_ROWS, cols=PVP_COLS, mines=PVP_MINES)
         game.add_player(opponent["player_id"], opponent["ws"])
         game.add_player(player_id, ws)
-        # Notify the waiting opponent they've been matched
         try:
             await opponent["ws"].send_json({
                 "type":    "matched",
@@ -276,7 +264,7 @@ def pvp_dequeue(player_id: str):
 def pvp_queue_length() -> int:
     return len(_pvp_queue)
 
-# ── WebSocket manager ─────────────────────────────────────────────────────────
+# ── WebSocket connection manager ──────────────────────────────────────────────
 class ConnectionManager:
     async def send(self, ws: WebSocket, data: dict):
         try:
