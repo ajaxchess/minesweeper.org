@@ -6,6 +6,7 @@ F1 User Profile
 F2 Multiplayer game mode
   Implement Websockets
   Modify game to make it easier to find matches
+  Save game history to database
 
 D1 Document the environment
   Development is done on a Mac and pushed to an Ubuntu server on AWS
