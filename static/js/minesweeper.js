@@ -195,6 +195,7 @@ function showOverlay(msg, won) {
 
   const board    = document.getElementById('board');
   const username = board.dataset.username || '';
+  const mode     = board.dataset.mode || 'beginner';
 
   let scoreForm = '';
   if (won) {
@@ -218,7 +219,7 @@ function showOverlay(msg, won) {
     <span>${msg}</span>
     ${scoreForm}
     <button onclick="resetGame()">Play Again</button>
-    <a class="overlay-lb-link" href="/leaderboard">View Leaderboard →</a>
+    <a class="overlay-lb-link" href="/leaderboard?mode=${mode}">View Leaderboard →</a>
   `;
   el.style.display = 'flex';
 

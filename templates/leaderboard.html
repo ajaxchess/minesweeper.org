@@ -95,6 +95,12 @@ document.querySelectorAll('.lb-tab').forEach(btn => {
   });
 });
 
-loadScores('beginner');
+const initialMode = new URLSearchParams(window.location.search).get('mode') || 'beginner';
+const initialTab  = document.querySelector(`.lb-tab[data-mode="${initialMode}"]`);
+if (initialTab) {
+  document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+  initialTab.classList.add('active');
+}
+loadScores(initialMode);
 </script>
 {% endblock %}
