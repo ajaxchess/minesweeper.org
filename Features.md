@@ -8,5 +8,7 @@ F2 Multiplayer game mode
   Modify game to make it easier to find matches
   Save game history to database
 
+F3 Implement No Guessing mode
+
 D1 Document the environment
   Development is done on a Mac and pushed to an Ubuntu server on AWS
