@@ -6,6 +6,7 @@ import uuid, json, asyncio
 from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from auth import get_current_user
 from duel import (
     create_game, get_game, manager,
     pvp_enqueue, pvp_dequeue, pvp_queue_length,
@@ -21,14 +22,15 @@ async def duel_lobby(request: Request):
     game      = create_game()
     player_id = uuid.uuid4().hex[:8]
     return templates.TemplateResponse("duel.html", {
-        "request":   request,
-        "game_id":   game.game_id,
-        "player_id": player_id,
-        "rows":      ROWS,
-        "cols":      COLS,
-        "mines":     MINES,
-        "mode":      "duel",
+        "request":    request,
+        "game_id":    game.game_id,
+        "player_id":  player_id,
+        "rows":       ROWS,
+        "cols":       COLS,
+        "mines":      MINES,
+        "mode":       "duel",
         "is_creator": True,
+        "user":       get_current_user(request),   # ← added
     })
 
 # ── Page: join an existing duel ───────────────────────────────────────────────
@@ -41,7 +43,7 @@ async def duel_join(request: Request, game_id: str):
         return HTMLResponse("<h2>This game has already ended.</h2>", status_code=410)
 
     player_id  = uuid.uuid4().hex[:8]
-    is_creator = len(game.players) == 0   # edge case: direct link before creator WS connects
+    is_creator = len(game.players) == 0
 
     return templates.TemplateResponse("duel.html", {
         "request":    request,
@@ -52,6 +54,7 @@ async def duel_join(request: Request, game_id: str):
         "mines":      MINES,
         "mode":       "duel",
         "is_creator": is_creator,
+        "user":       get_current_user(request),   # ← added
     })
 
 # ── Page: PvP matchmaking lobby ───────────────────────────────────────────────
@@ -60,13 +63,14 @@ async def pvp_lobby(request: Request):
     player_id = uuid.uuid4().hex[:8]
     return templates.TemplateResponse("duel.html", {
         "request":    request,
-        "game_id":    "",           # not known yet — assigned after matching
+        "game_id":    "",
         "player_id":  player_id,
         "rows":       PVP_ROWS,
         "cols":       PVP_COLS,
         "mines":      PVP_MINES,
         "mode":       "pvp",
-        "is_creator": False,        # no creator in PvP — server starts game
+        "is_creator": False,
+        "user":       get_current_user(request),   # ← added
     })
 
 # ── WebSocket: PvP matchmaking ────────────────────────────────────────────────
@@ -82,38 +86,28 @@ async def pvp_ws(ws: WebSocket, player_id: str):
     game = await pvp_enqueue(player_id, ws)
 
     if game:
-        # This player completed the pair — send them the matched message too
         await ws.send_json({
             "type":    "matched",
             "game_id": game.game_id,
             "msg":     "Opponent found! Get ready…",
         })
-        # Auto-start after a short countdown
         await asyncio.sleep(3)
         game.start()
         await manager.broadcast(game, {
             "type": "start",
             "msg":  "⚔️ PvP match started! Good luck!",
         })
-        # Hand off to the shared game loop for both players
-        # The creator's WS is now handled by the opponent's loop below —
-        # we just keep this socket alive with the game loop
         await _game_loop(ws, game, player_id)
     else:
-        # Waiting in queue — handle matched signal from opponent's enqueue
         await _pvp_wait_loop(ws, player_id)
 
 
 async def _pvp_wait_loop(ws: WebSocket, player_id: str):
-    """Keeps the queued player's socket open until matched, then runs game loop."""
     try:
         while True:
             raw = await ws.receive_text()
             msg = json.loads(raw)
-            # Once matched, the server sends us a matched event via send_json —
-            # that's handled in pvp_enqueue. Here we just wait for game reveals.
             if msg.get("type") == "reveal":
-                # Find which game this player is now in
                 from duel import _games
                 game = next((g for g in _games.values()
                              if g.get_player(player_id)), None)
@@ -124,7 +118,6 @@ async def _pvp_wait_loop(ws: WebSocket, player_id: str):
 
 
 async def _handle_reveal(ws, game, player_id, msg):
-    """Shared reveal handler used by both duel and PvP game loops."""
     if not game.active or game.finished:
         return
     r = int(msg.get("r", -1))
@@ -173,7 +166,6 @@ async def _handle_reveal(ws, game, player_id, msg):
 
 
 async def _game_loop(ws: WebSocket, game, player_id: str):
-    """Main message loop for an active game."""
     try:
         while True:
             raw = await ws.receive_text()
@@ -193,6 +185,7 @@ async def _game_loop(ws: WebSocket, game, player_id: str):
                 "type": "opp_disconnected",
                 "msg":  "Your opponent disconnected.",
             })
+
 @duel_router.websocket("/ws/{game_id}/{player_id}")
 async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
     game = get_game(game_id)
@@ -202,23 +195,19 @@ async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
 
     await ws.accept()
 
-    # Register this player
     if not game.add_player(player_id, ws):
         await ws.send_json({"type": "error", "msg": "Game is full."})
         await ws.close(code=4003)
         return
 
-    # Determine role labels
     role = "creator" if game.players[0].player_id == player_id else "challenger"
 
-    # Notify the newly connected player
     await manager.send(ws, {
-        "type":   "connected",
-        "role":   role,
-        "msg":    "Waiting for opponent…" if not game.both_connected() else "Opponent connected!",
+        "type": "connected",
+        "role": role,
+        "msg":  "Waiting for opponent…" if not game.both_connected() else "Opponent connected!",
     })
 
-    # If both are now connected, notify everyone
     if game.both_connected():
         creator_id = game.players[0].player_id
         for p in game.players:
@@ -228,7 +217,6 @@ async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
                 "msg":        "Both players connected! Waiting for creator to start…",
             })
 
-    # ── Message loop ─────────────────────────────────────────────────────────
     try:
         while True:
             raw  = await ws.receive_text()
@@ -239,7 +227,6 @@ async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
 
             mtype = msg.get("type")
 
-            # ── Start game (creator only) ─────────────────────────────────
             if mtype == "start":
                 creator = game.players[0]
                 if player_id != creator.player_id or game.active:
@@ -247,9 +234,8 @@ async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
                 game.start()
                 await manager.broadcast(game, {"type": "start", "msg": "Game started! Good luck!"})
 
-            # ── Reveal a cell ─────────────────────────────────────────────
             elif mtype == "reveal":
-                 await _handle_reveal(ws, game, player_id, msg)
+                await _handle_reveal(ws, game, player_id, msg)
 
     except WebSocketDisconnect:
         p = game.get_player(player_id)
