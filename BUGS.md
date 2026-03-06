@@ -1,0 +1,1 @@
+B1 Custom game does not know your ID even if you are logged in
