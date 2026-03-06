@@ -103,6 +103,8 @@ async def leaderboard_page(request: Request):
 
 @app.get("/auth/login")
 async def login(request: Request):
+    next_url = request.query_params.get("next", "/")
+    request.session["next"] = next_url
     redirect_uri = request.url_for("auth_callback")
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
@@ -112,7 +114,8 @@ async def auth_callback(request: Request):
     user  = token.get("userinfo")
     if user:
         set_session_user(request, user)
-    return RedirectResponse(url="/")
+    next_url = request.session.pop("next", "/")
+    return RedirectResponse(url=next_url)
 
 @app.get("/auth/logout")
 async def logout(request: Request):
