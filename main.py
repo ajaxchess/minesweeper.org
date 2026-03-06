@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameMode, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -167,6 +167,19 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
         mines      = payload.mines,
     )
     db.add(score)
+
+    # Persist permanent history for logged-in users
+    if user:
+        db.add(GameHistory(
+            user_email = user["email"],
+            name       = payload.name,
+            mode       = payload.mode,
+            time_secs  = payload.time_secs,
+            rows       = payload.rows,
+            cols       = payload.cols,
+            mines      = payload.mines,
+        ))
+
     db.commit()
     db.refresh(score)
     return {"ok": True, "id": score.id}
@@ -208,9 +221,9 @@ def profile_stats(request: Request, db: Session = Depends(get_db)):
 
     for mode in modes:
         scores = (
-            db.query(Score)
-            .filter(Score.user_email == email, Score.mode == mode)
-            .order_by(Score.created_at.desc())
+            db.query(GameHistory)
+            .filter(GameHistory.user_email == email, GameHistory.mode == mode)
+            .order_by(GameHistory.created_at.desc())
             .all()
         )
         if not scores:

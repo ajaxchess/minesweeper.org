@@ -72,6 +72,36 @@ class Score(Base):
             "created_at": self.created_at.strftime("%Y-%m-%d"),
         }
 
+# ── Game history model (permanent — never reset) ─────────────────────────────
+class GameHistory(Base):
+    __tablename__ = "game_history"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    user_email = Column(String(256), nullable=False, index=True)
+    name       = Column(String(32), nullable=False)
+    mode       = Column(Enum(GameMode), nullable=False)
+    time_secs  = Column(Integer, nullable=False)
+    rows       = Column(Integer, nullable=False)
+    cols       = Column(Integer, nullable=False)
+    mines      = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_game_history_email_mode", "user_email", "mode"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":         self.id,
+            "name":       self.name,
+            "mode":       self.mode,
+            "time_secs":  self.time_secs,
+            "rows":       self.rows,
+            "cols":       self.cols,
+            "mines":      self.mines,
+            "created_at": self.created_at.strftime("%Y-%m-%d"),
+        }
+
 # ── DB session dependency (used in FastAPI routes) ───────────────────────────
 def get_db():
     db = SessionLocal()
