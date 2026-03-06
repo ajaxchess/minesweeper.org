@@ -8,7 +8,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const boardEl = document.getElementById('board');
-  if (!boardEl || boardEl.dataset.mode !== 'duel') return;
+  if (!boardEl || (boardEl.dataset.mode !== 'duel' && boardEl.dataset.mode !== 'pvp')) return;
 
   // ── Config ────────────────────────────────────────────────────────────────
   const ROWS      = parseInt(boardEl.dataset.rows);
@@ -16,9 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const GAME_ID   = boardEl.dataset.gameId;
   const PLAYER_ID = boardEl.dataset.playerId;
   const IS_PVP     = boardEl.dataset.mode === 'pvp';
-
   const IS_CREATOR = boardEl.dataset.isCreator === 'true';
-  const IS_PVP     = boardEl.dataset.mode === 'pvp';
 
   console.log('GAME_ID:', GAME_ID, 'PLAYER_ID:', PLAYER_ID, 'IS_PVP:', IS_PVP);
 
