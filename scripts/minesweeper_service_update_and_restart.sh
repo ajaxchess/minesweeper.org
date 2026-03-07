@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # --- Configuration ---
-REPO_DIR="/home/ubuntu/minesweepe"
+REPO_DIR="/home/ubuntu/minesweeper"
 SERVICE_NAME="minesweeper" # e.g., nginx, apache2, custom_app
 
 # --- Navigate to repository and fetch changes ---
