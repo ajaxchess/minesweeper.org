@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Custom Minesweeper{% endblock %}
+{% block title %}{{ t.nav_custom }} Minesweeper{% endblock %}
 
 {% block content %}
 <div class="game-wrapper">
@@ -15,12 +15,12 @@
 
   <section class="game-section">
     <div class="game-info">
-      <div class="mode-badge">Custom</div>
+      <div class="mode-badge">{{ t.nav_custom }}</div>
       <form id="custom-form" class="custom-form">
-        <label>Rows <input type="number" id="c-rows" value="10" min="5" max="30"></label>
-        <label>Cols <input type="number" id="c-cols" value="10" min="5" max="50"></label>
-        <label>Mines <input type="number" id="c-mines" value="10" min="1" max="999"></label>
-        <button type="submit">Start</button>
+        <label>{{ t.custom_rows }} <input type="number" id="c-rows" value="10" min="5" max="30"></label>
+        <label>{{ t.custom_cols }} <input type="number" id="c-cols" value="10" min="5" max="50"></label>
+        <label>{{ t.custom_mines }} <input type="number" id="c-mines" value="10" min="1" max="999"></label>
+        <button type="submit">{{ t.custom_start }}</button>
       </form>
     </div>
 
@@ -29,7 +29,7 @@
         <span class="stat-icon">💣</span>
         <span class="stat-value" id="mines-left">10</span>
       </div>
-      <button id="reset-btn" title="New Game">🙂</button>
+      <button id="reset-btn" title="{{ t.game_new_game }}">🙂</button>
       <div class="stat">
         <span class="stat-icon">⏱</span>
         <span class="stat-value" id="timer">000</span>
@@ -39,9 +39,9 @@
     <div id="board" data-rows="10" data-cols="10" data-mines="10" data-mode="custom"></div>
 
     <p class="instructions">
-      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
-      <strong>Right-click</strong> to flag &nbsp;|&nbsp;
-      <strong>🙂</strong> to reset
+      <strong>{{ t.game_left_click }}</strong> {{ t.game_to_reveal }} &nbsp;|&nbsp;
+      <strong>{{ t.game_right_click }}</strong> {{ t.game_to_flag }} &nbsp;|&nbsp;
+      <strong>🙂</strong> {{ t.game_to_reset }}
     </p>
   </section>
 

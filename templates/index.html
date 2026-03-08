@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ mode | capitalize }} Minesweeper — {{ rows }}×{{ cols }}, {{ mines }} mines{% endblock %}
+{% block title %}{{ t['nav_' + mode] }} Minesweeper — {{ rows }}×{{ cols }}, {{ mines }} mines{% endblock %}
 
 {% block content %}
 <div class="game-wrapper">
@@ -17,13 +17,13 @@
 
   <section class="game-section">
     <div class="game-info">
-      <div class="mode-badge">{{ mode | capitalize }}</div>
+      <div class="mode-badge">{{ t['nav_' + mode] }}</div>
       <div class="stat-row">
         <div class="stat" id="mine-count">
           <span class="stat-icon">💣</span>
           <span class="stat-value" id="mines-left">{{ mines }}</span>
         </div>
-        <button id="reset-btn" title="New Game">🙂</button>
+        <button id="reset-btn" title="{{ t.game_new_game }}">🙂</button>
         <div class="stat" id="timer-display">
           <span class="stat-icon">⏱</span>
           <span class="stat-value" id="timer">000</span>
@@ -40,9 +40,9 @@
     </div>
 
     <p class="instructions">
-      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
-      <strong>Right-click</strong> to flag &nbsp;|&nbsp;
-      <strong>🙂</strong> to reset
+      <strong>{{ t.game_left_click }}</strong> {{ t.game_to_reveal }} &nbsp;|&nbsp;
+      <strong>{{ t.game_right_click }}</strong> {{ t.game_to_flag }} &nbsp;|&nbsp;
+      <strong>🙂</strong> {{ t.game_to_reset }}
     </p>
   </section>
 

@@ -13,6 +13,7 @@ from database import Score, GameHistory, GameMode, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
+from translations import get_lang, get_t
 import logging
 
 logger = logging.getLogger(__name__)
@@ -61,11 +62,23 @@ def shutdown():
 
 # ── Page Routes ───────────────────────────────────────────────────────────────
 
+@app.get("/set-lang")
+async def set_lang(request: Request, lang: str = "en"):
+    from fastapi.responses import Response
+    if lang not in ("en", "eo"):
+        lang = "en"
+    next_url = request.headers.get("referer", "/")
+    response = RedirectResponse(url=next_url)
+    response.set_cookie("lang", lang, max_age=365 * 24 * 3600, samesite="lax")
+    return response
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {
         "request": request, "mode": "beginner",
         "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
         **GAME_MODES["beginner"]
     })
 
@@ -74,6 +87,7 @@ async def intermediate(request: Request):
     return templates.TemplateResponse("index.html", {
         "request": request, "mode": "intermediate",
         "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
         **GAME_MODES["intermediate"]
     })
 
@@ -82,6 +96,7 @@ async def expert(request: Request):
     return templates.TemplateResponse("index.html", {
         "request": request, "mode": "expert",
         "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
         **GAME_MODES["expert"]
     })
 
@@ -90,6 +105,7 @@ async def custom(request: Request):
     return templates.TemplateResponse("custom.html", {
         "request": request, "mode": "custom",
         "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
     })
 
 @app.get("/leaderboard", response_class=HTMLResponse)
@@ -97,6 +113,7 @@ async def leaderboard_page(request: Request):
     return templates.TemplateResponse("leaderboard.html", {
         "request": request, "mode": "leaderboard",
         "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
     })
 
 # ── Auth routes ───────────────────────────────────────────────────────────────
@@ -197,6 +214,15 @@ def get_scores(mode: GameMode, db: Session = Depends(get_db)):
     return [s.to_dict() for s in top]
 
 
+@app.get("/help", response_class=HTMLResponse)
+async def help_page(request: Request):
+    return templates.TemplateResponse("help.html", {
+        "request": request, "mode": "help",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 @app.get("/profile", response_class=HTMLResponse)
 async def profile_page(request: Request):
     user = get_current_user(request)
@@ -206,6 +232,7 @@ async def profile_page(request: Request):
         "request": request,
         "mode":    "profile",
         "user":    user,
+        "lang": get_lang(request), "t": get_t(request),
     })
 
 

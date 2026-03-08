@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Duel — Head-to-Head Minesweeper{% endblock %}
+{% block title %}{{ t.nav_duel }} — Head-to-Head Minesweeper{% endblock %}
 
 {% block content %}
 <div class="duel-wrapper">
@@ -10,12 +10,12 @@
 
     {% if is_creator %}
     <div id="share-box" class="share-box" style="display:none">
-      <span>Share this link with your opponent:</span>
+      <span>{{ t.duel_share }}</span>
       <input id="share-link" type="text" readonly />
-      <button onclick="copyLink()">Copy</button>
+      <button onclick="copyLink()">{{ t.duel_copy }}</button>
     </div>
     <button id="start-btn" class="duel-start-btn" style="display:none"
-            onclick="sendStart()">▶ Start Game</button>
+            onclick="sendStart()">{{ t.duel_start_btn }}</button>
     {% endif %}
 
     {% if mode == 'pvp' %}
@@ -26,13 +26,13 @@
   <!-- ── Score strip ── -->
   <div class="duel-scoreboard">
     <div class="duel-player-score" id="my-score-box">
-      <span class="score-label">You</span>
+      <span class="score-label">{{ t.duel_you }}</span>
       <span class="score-value" id="my-score">0</span>
       <span class="score-sub" id="my-tiles">0 tiles</span>
     </div>
     <div class="duel-vs">VS</div>
     <div class="duel-player-score opp" id="opp-score-box">
-      <span class="score-label">Opponent</span>
+      <span class="score-label">{{ t.duel_opponent }}</span>
       <span class="score-value" id="opp-score">0</span>
       <span class="score-sub" id="opp-tiles">0 tiles</span>
     </div>
@@ -58,16 +58,13 @@
   </div>
 
   <p class="instructions">
-    <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
-    <strong>Right-click</strong> to flag (local only)
+    <strong>{{ t.game_left_click }}</strong> {{ t.game_to_reveal }} &nbsp;|&nbsp;
+    <strong>{{ t.game_right_click }}</strong> {{ t.game_to_flag_local }}
   </p>
 
   <div class="duel-scoring-info">
-    <strong>How scoring works:</strong>
-    Your score is calculated by awarding <strong>5 points per tile revealed</strong>, plus a time bonus.
-    The time bonus is calculated with the formula
-    <code>(300 − secondsFromStart) × percentRevealed</code>,
-    however it will never drop below 0.
+    <strong>{{ t.duel_scoring }}</strong>
+    {{ t.duel_scoring_body | safe }}
   </div>
 
 </div>

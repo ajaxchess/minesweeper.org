@@ -7,6 +7,7 @@ from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from auth import get_current_user
+from translations import get_lang, get_t
 from duel import (
     create_game, get_game, manager,
     pvp_enqueue, pvp_dequeue, pvp_queue_length,
@@ -30,7 +31,8 @@ async def duel_lobby(request: Request):
         "mines":      MINES,
         "mode":       "duel",
         "is_creator": True,
-        "user":       get_current_user(request),   # ← added
+        "user":       get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
     })
 
 # ── Page: join an existing duel ───────────────────────────────────────────────
@@ -54,7 +56,8 @@ async def duel_join(request: Request, game_id: str):
         "mines":      MINES,
         "mode":       "duel",
         "is_creator": is_creator,
-        "user":       get_current_user(request),   # ← added
+        "user":       get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
     })
 
 # ── Page: PvP matchmaking lobby ───────────────────────────────────────────────
@@ -70,7 +73,8 @@ async def pvp_lobby(request: Request):
         "mines":      PVP_MINES,
         "mode":       "pvp",
         "is_creator": False,
-        "user":       get_current_user(request),   # ← added
+        "user":       get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
     })
 
 # ── WebSocket: PvP matchmaking ────────────────────────────────────────────────

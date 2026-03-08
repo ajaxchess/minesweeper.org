@@ -388,6 +388,14 @@ footer {
 
 .auth-btn:hover { opacity: 0.85; }
 
+.lang-btn {
+  background: var(--surface2);
+  color: var(--accent2);
+  border: 1px solid var(--accent2);
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+}
+
 /* ── Auth area ────────────────────────────────────────────────────────────── */
 .lb-wrapper {
   max-width: 780px;

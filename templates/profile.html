@@ -16,32 +16,32 @@
   <!-- ── Summary cards (filled by JS) ── -->
   <div class="profile-summary" id="profile-summary">
     <div class="summary-card loading" id="card-beginner">
-      <div class="card-mode">Beginner</div>
-      <div class="card-body">Loading…</div>
+      <div class="card-mode">{{ t.nav_beginner }}</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
     </div>
     <div class="summary-card loading" id="card-intermediate">
-      <div class="card-mode">Intermediate</div>
-      <div class="card-body">Loading…</div>
+      <div class="card-mode">{{ t.nav_intermediate }}</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
     </div>
     <div class="summary-card loading" id="card-expert">
-      <div class="card-mode">Expert</div>
-      <div class="card-body">Loading…</div>
+      <div class="card-mode">{{ t.nav_expert }}</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
     </div>
     <div class="summary-card loading" id="card-custom">
-      <div class="card-mode">Custom</div>
-      <div class="card-body">Loading…</div>
+      <div class="card-mode">{{ t.nav_custom }}</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
     </div>
   </div>
 
   <!-- ── Recent games tabs ── -->
   <div class="profile-recent">
-    <h2 class="section-title">Recent Games</h2>
+    <h2 class="section-title">{{ t.profile_recent_games }}</h2>
 
     <div class="lb-tabs" role="tablist">
-      <button class="lb-tab active" data-mode="beginner">Beginner</button>
-      <button class="lb-tab" data-mode="intermediate">Intermediate</button>
-      <button class="lb-tab" data-mode="expert">Expert</button>
-      <button class="lb-tab" data-mode="custom">Custom</button>
+      <button class="lb-tab active" data-mode="beginner">{{ t.nav_beginner }}</button>
+      <button class="lb-tab" data-mode="intermediate">{{ t.nav_intermediate }}</button>
+      <button class="lb-tab" data-mode="expert">{{ t.nav_expert }}</button>
+      <button class="lb-tab" data-mode="custom">{{ t.nav_custom }}</button>
     </div>
 
     <div class="lb-table-wrap" style="margin-top:0.75rem">
@@ -49,14 +49,14 @@
         <thead>
           <tr>
             <th>#</th>
-            <th>Time</th>
-            <th>Board</th>
-            <th>Mines</th>
-            <th>Date</th>
+            <th>{{ t.lb_col_time }}</th>
+            <th>{{ t.lb_col_board }}</th>
+            <th>{{ t.lb_col_mines }}</th>
+            <th>{{ t.lb_col_date }}</th>
           </tr>
         </thead>
         <tbody id="recent-body">
-          <tr><td colspan="5" class="lb-loading">Loading…</td></tr>
+          <tr><td colspan="5" class="lb-loading">{{ t.profile_loading }}</td></tr>
         </tbody>
       </table>
     </div>
@@ -80,33 +80,33 @@ async function loadStats() {
     card.classList.remove('loading');
 
     if (!data) {
+      const playHref = mode === 'beginner' ? '/' : '/' + mode;
       card.querySelector('.card-body').innerHTML =
-        `<span class="no-data">No games yet</span>
-         <a href="${mode === 'beginner' ? '/' : '/' + mode}" class="card-play-link">Play now →</a>`;
+        `<span class="no-data">${window.T.profile_no_games}</span>
+         <a href="${playHref}" class="card-play-link">${window.T.profile_play_now}</a>`;
       return;
     }
 
     card.querySelector('.card-body').innerHTML = `
       <div class="card-stat">
-        <span class="cs-label">Games</span>
+        <span class="cs-label">${window.T.profile_games}</span>
         <span class="cs-value">${data.games_played}</span>
       </div>
       <div class="card-stat highlight">
-        <span class="cs-label">Best</span>
+        <span class="cs-label">${window.T.profile_best}</span>
         <span class="cs-value">${data.best_time}s</span>
       </div>
       <div class="card-stat">
-        <span class="cs-label">Avg</span>
+        <span class="cs-label">${window.T.profile_avg}</span>
         <span class="cs-value">${data.avg_time}s</span>
       </div>
       <div class="card-stat">
-        <span class="cs-label">Worst</span>
+        <span class="cs-label">${window.T.profile_worst}</span>
         <span class="cs-value">${data.worst_time}s</span>
       </div>
     `;
   });
 
-  // Load beginner recent games by default
   renderRecent('beginner');
 }
 
@@ -115,7 +115,7 @@ function renderRecent(mode) {
   const data = allStats?.[mode];
 
   if (!data) {
-    body.innerHTML = '<tr><td colspan="5" class="lb-empty">No games recorded yet.</td></tr>';
+    body.innerHTML = `<tr><td colspan="5" class="lb-empty">${window.T.profile_no_recent}</td></tr>`;
     return;
   }
 
@@ -130,7 +130,6 @@ function renderRecent(mode) {
   `).join('');
 }
 
-// Tab switching
 document.querySelectorAll('.lb-tab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));

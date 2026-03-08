@@ -1,9 +1,85 @@
 {% extends "base.html" %}
-{% block title %}How to Play{% endblock %}
+{% block title %}{{ t.help_title }}{% endblock %}
 {% block description %}Learn how to play Minesweeper — rules, controls, and tips for beginners and experts.{% endblock %}
 
 {% block content %}
 <div class="lb-wrapper">
+
+{% if lang == 'eo' %}
+
+  <h1 class="lb-title">Kiel Ludi Minosvepiston</h1>
+
+  <div class="help-section">
+    <h2>Celo</h2>
+    <p>Purigu la tabulon malkaŝante ĉiujn sekurajn kahelojn sen eksplodigi iun minon. Flagu ĉiun minon kaj malkaŝu ĉiun sekuran kvadraton por venki.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Kontroloj</h2>
+    <ul>
+      <li><strong>Maldekstra klako</strong> — Malkaŝi kaheton.</li>
+      <li><strong>Dekstra klako</strong> — Meti aŭ forigi flagon sur kaheton kiun vi kredas enhavi minon.</li>
+      <li><strong>Maldekstra klako sur malkaŝitan nombron</strong> (kordo) — Se la ĝusta nombro de apudaj flagoj estas metita, aŭtomate malkaŝu ĉiujn ceterajn najbarojn.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>La Nombroj</h2>
+    <p>Ĉiu malkaŝita kahelo montras nombron indikante kiom da ĝiaj ĝis 8 najbaraj kaheloj enhavas minojn.</p>
+    <ul>
+      <li>Malplena kahelo havas nul minoajn najbarojn — ĝiaj najbaroj estas malkaŝitaj aŭtomate.</li>
+      <li>Uzu la nombrojn por dedukti kiuj kaŝitaj kaheloj estas sekuraj kaj kiuj enhavas minojn.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Flagoj</h2>
+    <p>Dekstre klaku kaŝitan kaheton por meti flagon (🚩) markante ĝin kiel minon. La minokomptilo en la kaplinio malpliiĝas kun ĉiu metita flago. Dekstre klaku flagitan kaheton por forigi la flagon.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Venko kaj Malvenko</h2>
+    <ul>
+      <li><strong>Venko</strong> — Ĉiuj ne-minaj kaheloj estas malkaŝitaj.</li>
+      <li><strong>Malvenko</strong> — Vi klakas kaheton enhavante minon. La tabulo malkaŝas ĉiujn minlokojn.</li>
+    </ul>
+    <p>La unua klako estas ĉiam sekura — minoj estas metitaj post via unua movo.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Malfacilaj Niveloj</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>Nivelo</th><th>Tabulo</th><th>Minoj</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Komencanto</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>Mez-nivela</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>Sperta</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>Propra</td><td>via elekto</td><td>via elekto</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>Konsiloj</h2>
+    <ul>
+      <li>Komencu proksime al la centro — ĝi donas al vi pli da najbaroj por labori.</li>
+      <li>Kiam nombro egalas la kvanton de ĝiaj kaŝitaj najbaroj, ĉiuj estas minoj — flagu ilin ĉiujn.</li>
+      <li>Kiam nombro egalas la kvanton de ĝiaj flagitaj najbaroj, ĉiuj ceteraj kaŝitaj najbaroj estas sekuraj — malkaŝu ilin.</li>
+      <li>Uzu la kordklako por rapide purigi areojn post kiam flagoj estas ĝuste metitaj.</li>
+      <li>Se vi estas blokita, faru kleran divenon en angulo aŭ rando kie la verŝajneco estas pli malalta.</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← Ludu Komencante</a>
+    <a href="/intermediate">Ludu Mez-nivele</a>
+    <a href="/expert">Ludu Sperte</a>
+    <a href="/custom">Ludu Propre</a>
+  </div>
+
+{% else %}
 
   <h1 class="lb-title">How to Play Minesweeper</h1>
 
@@ -76,6 +152,8 @@
     <a href="/expert">Play Expert</a>
     <a href="/custom">Play Custom</a>
   </div>
+
+{% endif %}
 
 </div>
 {% endblock %}

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}Minesweeper{% endblock %} | Minesweeper.org</title>
   <meta name="description" content="{% block description %}Play free Minesweeper online. Beginner, Intermediate, Expert and Custom modes.{% endblock %}">
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=2" />
+  <link rel="stylesheet" href="/static/css/style.css?v=3" />
 
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8102958922361899"
@@ -18,28 +18,28 @@
     <div class="header-inner">
       <a href="/" class="logo">💣 Minesweeper.org</a>
       <nav>
-        <a href="/" class="{% if mode == 'beginner' %}active{% endif %}">Beginner</a>
-        <a href="/intermediate" class="{% if mode == 'intermediate' %}active{% endif %}">Intermediate</a>
-        <a href="/expert" class="{% if mode == 'expert' %}active{% endif %}">Expert</a>
-        <a href="/custom" class="{% if mode == 'custom' %}active{% endif %}">Custom</a>
-        <a href="/leaderboard" class="{% if mode == 'leaderboard' %}active{% endif %}">🏆 Leaderboard</a>
-        <a href="/duel" class="{% if mode == 'duel' %}active{% endif %}">⚔️ Duel</a>
-        <a href="/pvp" class="{% if mode == 'pvp' %}active{% endif %}">🎮 PvP</a>
+        <a href="/" class="{% if mode == 'beginner' %}active{% endif %}">{{ t.nav_beginner }}</a>
+        <a href="/intermediate" class="{% if mode == 'intermediate' %}active{% endif %}">{{ t.nav_intermediate }}</a>
+        <a href="/expert" class="{% if mode == 'expert' %}active{% endif %}">{{ t.nav_expert }}</a>
+        <a href="/custom" class="{% if mode == 'custom' %}active{% endif %}">{{ t.nav_custom }}</a>
+        <a href="/leaderboard" class="{% if mode == 'leaderboard' %}active{% endif %}">🏆 {{ t.nav_leaderboard }}</a>
+        <a href="/duel" class="{% if mode == 'duel' %}active{% endif %}">⚔️ {{ t.nav_duel }}</a>
+        <a href="/pvp" class="{% if mode == 'pvp' %}active{% endif %}">🎮 {{ t.nav_pvp }}</a>
       </nav>
       <div class="auth-area">
         {% if user %}
-          <a href="/profile" class="avatar-link" title="View profile">
+          <a href="/profile" class="avatar-link" title="{{ t.auth_view_profile }}">
             <img src="{{ user.picture }}" class="avatar" alt="{{ user.name }}">
           </a>
           <a href="/profile" class="auth-name">{{ user.name.split()[0] }}</a>
-          <a href="/auth/logout" class="auth-btn logout-btn">Sign out</a>
+          <a href="/auth/logout" class="auth-btn logout-btn">{{ t.auth_sign_out }}</a>
         {% else %}
           <a href="/auth/login?next={{ request.url.path }}" class="auth-btn login-btn">
-
             <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.93 6.36h-1.65c-.19 0-.4.25-.4.59v1.19h2.05l-.27 2.08H14.88V18h-2.15v-5.78h-1.4v-2.08h1.4v-1.37C12.73 7.47 13.83 6 15.72 6c.86 0 1.21.06 1.21.06v1.3z"/></svg>
-            Sign in with Google
+            {{ t.auth_sign_in }}
           </a>
         {% endif %}
+        <a href="/set-lang?lang={{ t.lang_other }}" class="auth-btn lang-btn" title="{{ t.lang_label }}">🌐 {{ t.lang_label }}</a>
       </div>
     </div>
   </header>
@@ -71,8 +71,28 @@
   </div>
 
   <footer>
-    <p>© 2026 Minesweeper.org &mdash; Built by Richard Cross with Python &amp; FastAPI</p>
+    <p>© 2026 Minesweeper.org &mdash; {{ t.footer | safe }}</p>
   </footer>
+
+  <!-- Translations available to all page scripts -->
+  <script>
+  window.T = {
+    lb_loading:         {{ t.lb_loading | tojson }},
+    lb_no_scores:       {{ t.lb_no_scores | tojson }},
+    lb_error:           {{ t.lb_error | tojson }},
+    lb_top_prefix:      {{ t.lb_top_prefix | tojson }},
+    lb_top_suffix_one:  {{ t.lb_top_suffix_one | tojson }},
+    lb_top_suffix_many: {{ t.lb_top_suffix_many | tojson }},
+    profile_loading:    {{ t.profile_loading | tojson }},
+    profile_games:      {{ t.profile_games | tojson }},
+    profile_best:       {{ t.profile_best | tojson }},
+    profile_avg:        {{ t.profile_avg | tojson }},
+    profile_worst:      {{ t.profile_worst | tojson }},
+    profile_no_games:   {{ t.profile_no_games | tojson }},
+    profile_play_now:   {{ t.profile_play_now | tojson }},
+    profile_no_recent:  {{ t.profile_no_recent | tojson }},
+  };
+  </script>
 
   <script src="/static/js/minesweeper.js?v=2"></script>
   {% block scripts %}{% endblock %}

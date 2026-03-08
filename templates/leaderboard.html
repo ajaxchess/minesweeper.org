@@ -1,17 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Leaderboard{% endblock %}
+{% block title %}{{ t.nav_leaderboard }}{% endblock %}
 {% block description %}Top times for Minesweeper Beginner, Intermediate, Expert, and Custom modes.{% endblock %}
 
 {% block content %}
 <div class="lb-wrapper">
 
-  <h1 class="lb-title">🏆 Leaderboard</h1>
+  <h1 class="lb-title">{{ t.lb_title }}</h1>
 
   <div class="lb-tabs" role="tablist">
-    <button class="lb-tab active" data-mode="beginner"     role="tab">Beginner</button>
-    <button class="lb-tab"        data-mode="intermediate" role="tab">Intermediate</button>
-    <button class="lb-tab"        data-mode="expert"       role="tab">Expert</button>
-    <button class="lb-tab"        data-mode="custom"       role="tab">Custom</button>
+    <button class="lb-tab active" data-mode="beginner"     role="tab">{{ t.nav_beginner }}</button>
+    <button class="lb-tab"        data-mode="intermediate" role="tab">{{ t.nav_intermediate }}</button>
+    <button class="lb-tab"        data-mode="expert"       role="tab">{{ t.nav_expert }}</button>
+    <button class="lb-tab"        data-mode="custom"       role="tab">{{ t.nav_custom }}</button>
   </div>
 
   <div class="lb-meta" id="lb-meta"></div>
@@ -20,25 +20,25 @@
     <table class="lb-table" id="lb-table">
       <thead>
         <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Time</th>
-          <th>Board</th>
-          <th>Mines</th>
-          <th>Date</th>
+          <th>{{ t.lb_col_rank }}</th>
+          <th>{{ t.lb_col_name }}</th>
+          <th>{{ t.lb_col_time }}</th>
+          <th>{{ t.lb_col_board }}</th>
+          <th>{{ t.lb_col_mines }}</th>
+          <th>{{ t.lb_col_date }}</th>
         </tr>
       </thead>
       <tbody id="lb-body">
-        <tr><td colspan="6" class="lb-loading">Loading…</td></tr>
+        <tr><td colspan="6" class="lb-loading">{{ t.lb_loading }}</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="lb-back">
-    <a href="/">← Play Beginner</a>
-    <a href="/intermediate">Play Intermediate</a>
-    <a href="/expert">Play Expert</a>
-    <a href="/custom">Play Custom</a>
+    <a href="/">{{ t.lb_play_beginner }}</a>
+    <a href="/intermediate">{{ t.lb_play_intermediate }}</a>
+    <a href="/expert">{{ t.lb_play_expert }}</a>
+    <a href="/custom">{{ t.lb_play_custom }}</a>
   </div>
 
 </div>
@@ -54,7 +54,7 @@ async function loadScores(mode) {
   currentMode = mode;
   const body  = document.getElementById('lb-body');
   const meta  = document.getElementById('lb-meta');
-  body.innerHTML = '<tr><td colspan="6" class="lb-loading">Loading…</td></tr>';
+  body.innerHTML = `<tr><td colspan="6" class="lb-loading">${window.T.lb_loading}</td></tr>`;
   meta.textContent = '';
 
   try {
@@ -62,7 +62,7 @@ async function loadScores(mode) {
     const data = await res.json();
 
     if (!data.length) {
-      body.innerHTML = '<tr><td colspan="6" class="lb-empty">No scores yet — be the first!</td></tr>';
+      body.innerHTML = `<tr><td colspan="6" class="lb-empty">${window.T.lb_no_scores}</td></tr>`;
       return;
     }
 
@@ -77,9 +77,10 @@ async function loadScores(mode) {
       </tr>
     `).join('');
 
-    meta.textContent = `Top ${data.length} time${data.length !== 1 ? 's' : ''}`;
+    const suffix = data.length !== 1 ? window.T.lb_top_suffix_many : window.T.lb_top_suffix_one;
+    meta.textContent = `${window.T.lb_top_prefix} ${data.length} ${suffix}`;
   } catch {
-    body.innerHTML = '<tr><td colspan="6" class="lb-empty">⚠️ Could not load scores.</td></tr>';
+    body.innerHTML = `<tr><td colspan="6" class="lb-empty">${window.T.lb_error}</td></tr>`;
   }
 }
 
