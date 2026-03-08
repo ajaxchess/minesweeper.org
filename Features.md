@@ -12,5 +12,7 @@ F3 Implement No Guessing mode
 
 F4 Implement run off git repo and restart on successful commit
 
+F5 Multilanguage support
+
 D1 Document the environment
   Development is done on a Mac and pushed to an Ubuntu server on AWS
