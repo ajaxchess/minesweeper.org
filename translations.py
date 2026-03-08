@@ -1,4 +1,4 @@
-"""UI string translations for EN (English), EO (Esperanto), and DE (German)."""
+"""UI string translations for EN, EO, DE, ES, TH, PGL, UK."""
 
 TRANSLATIONS: dict[str, dict[str, str]] = {
     "en": {
@@ -456,6 +456,84 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "help_title": "Owhay otay Ayplay Inesweepermay",
         # Footer
         "footer": "Uiltbay ybay Ichardray Osscray ithway Ythonpay &amp; FastAPI",
+        # Language switcher (unused by template — kept for symmetry)
+        "lang_other": "en",
+        "lang_label": "EN \u2014 English",
+    },
+
+    "uk": {
+        # Nav
+        "nav_beginner":     "\u041f\u043e\u0447\u0430\u0442\u043a\u0456\u0432\u0435\u0446\u044c",
+        "nav_intermediate": "\u0421\u0435\u0440\u0435\u0434\u043d\u0456\u0439",
+        "nav_expert":       "\u0415\u043a\u0441\u043f\u0435\u0440\u0442",
+        "nav_custom":       "\u0412\u043b\u0430\u0441\u043d\u0438\u0439",
+        "nav_leaderboard":  "\u0420\u0435\u0439\u0442\u0438\u043d\u0433",
+        "nav_duel":         "\u0414\u0443\u0435\u043b\u044c",
+        "nav_pvp":          "PvP",
+        # Auth
+        "auth_sign_out":     "\u0412\u0438\u0439\u0442\u0438",
+        "auth_sign_in":      "\u0423\u0432\u0456\u0439\u0442\u0438 \u0447\u0435\u0440\u0435\u0437 Google",
+        "auth_view_profile": "\u041f\u0435\u0440\u0435\u0433\u043b\u044f\u043d\u0443\u0442\u0438 \u043f\u0440\u043e\u0444\u0456\u043b\u044c",
+        # Game board
+        "game_left_click":    "\u041b\u0456\u0432\u0438\u0439 \u043a\u043b\u0456\u043a",
+        "game_to_reveal":     "\u0449\u043e\u0431 \u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0438",
+        "game_right_click":   "\u041f\u0440\u0430\u0432\u0438\u0439 \u043a\u043b\u0456\u043a",
+        "game_to_flag":       "\u0449\u043e\u0431 \u043f\u043e\u0437\u043d\u0430\u0447\u0438\u0442\u0438",
+        "game_to_flag_local": "\u0449\u043e\u0431 \u043f\u043e\u0437\u043d\u0430\u0447\u0438\u0442\u0438 (\u0442\u0456\u043b\u044c\u043a\u0438 \u043b\u043e\u043a\u0430\u043b\u044c\u043d\u043e)",
+        "game_to_reset":      "\u0449\u043e\u0431 \u0441\u043a\u0438\u043d\u0443\u0442\u0438",
+        "game_new_game":      "\u041d\u043e\u0432\u0430 \u0433\u0440\u0430",
+        # Custom form
+        "custom_rows":  "\u0420\u044f\u0434\u043a\u0438",
+        "custom_cols":  "\u0421\u0442\u043e\u0432\u043f\u0446\u0456",
+        "custom_mines": "\u041c\u0456\u043d\u0438",
+        "custom_start": "\u041f\u043e\u0447\u0430\u0442\u0438",
+        # Duel page
+        "duel_you":       "\u0412\u0438",
+        "duel_opponent":  "\u0421\u0443\u043f\u0435\u0440\u043d\u0438\u043a",
+        "duel_share":     "\u041f\u043e\u0434\u0456\u043b\u0456\u0442\u044c\u0441\u044f \u0446\u0438\u043c \u043f\u043e\u0441\u0438\u043b\u0430\u043d\u043d\u044f\u043c \u0437 \u0441\u0443\u043f\u0435\u0440\u043d\u0438\u043a\u043e\u043c:",
+        "duel_copy":      "\u041a\u043e\u043f\u0456\u044e\u0432\u0430\u0442\u0438",
+        "duel_start_btn": "\u25b6 \u041f\u043e\u0447\u0430\u0442\u0438 \u0433\u0440\u0443",
+        "duel_scoring":   "\u042f\u043a \u043d\u0430\u0440\u0430\u0445\u043e\u0432\u0443\u044e\u0442\u044c\u0441\u044f \u043e\u0447\u043a\u0438:",
+        "duel_scoring_body": (
+            "\u0412\u0430\u0448 \u0440\u0430\u0445\u0443\u043d\u043e\u043a \u043e\u0431\u0447\u0438\u0441\u043b\u044e\u0454\u0442\u044c\u0441\u044f \u0448\u043b\u044f\u0445\u043e\u043c \u043d\u0430\u0440\u0430\u0445\u0443\u0432\u0430\u043d\u043d\u044f "
+            "<strong>5 \u043e\u0447\u043a\u0456\u0432 \u0437\u0430 \u043a\u043e\u0436\u043d\u0443 \u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0443 \u043a\u043b\u0456\u0442\u0438\u043d\u043a\u0443</strong>, "
+            "\u043f\u043b\u044e\u0441 \u0447\u0430\u0441\u043e\u0432\u0438\u0439 \u0431\u043e\u043d\u0443\u0441. "
+            "\u0427\u0430\u0441\u043e\u0432\u0438\u0439 \u0431\u043e\u043d\u0443\u0441 \u043e\u0431\u0447\u0438\u0441\u043b\u044e\u0454\u0442\u044c\u0441\u044f \u0437\u0430 \u0444\u043e\u0440\u043c\u0443\u043b\u043e\u044e "
+            "<code>(300 &minus; \u0441\u0435\u043a\u0443\u043d\u0434\u0438\u0412\u0456\u0434\u041f\u043e\u0447\u0430\u0442\u043a\u0443) &times; \u0432\u0456\u0434\u0441\u043e\u0442\u043e\u043a\u0412\u0456\u0434\u043a\u0440\u0438\u0442\u043e\u0433\u043e</code>, "
+            "\u043e\u0434\u043d\u0430\u043a \u0432\u0456\u043d \u043d\u0456\u043a\u043e\u043b\u0438 \u043d\u0435 \u043e\u043f\u0443\u0441\u0442\u0438\u0442\u044c\u0441\u044f \u043d\u0438\u0436\u0095 0."
+        ),
+        # Leaderboard
+        "lb_title":           "\U0001f3c6 \u0420\u0435\u0439\u0442\u0438\u043d\u0433",
+        "lb_col_rank":        "#",
+        "lb_col_name":        "\u0406\u043c\u2019\u044f",
+        "lb_col_time":        "\u0427\u0430\u0441",
+        "lb_col_board":       "\u041f\u043e\u043b\u0435",
+        "lb_col_mines":       "\u041c\u0456\u043d\u0438",
+        "lb_col_date":        "\u0414\u0430\u0442\u0430",
+        "lb_loading":         "\u0417\u0430\u0432\u0430\u043d\u0442\u0430\u0436\u0435\u043d\u043d\u044f\u2026",
+        "lb_no_scores":       "\u0429\u0435 \u043d\u0435\u043c\u0430\u0454 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u0456\u0432 \u2014 \u0431\u0443\u0434\u044c\u0442\u0435 \u043f\u0435\u0440\u0448\u0438\u043c!",
+        "lb_error":           "\u26a0\ufe0f \u041d\u0435 \u0432\u0434\u0430\u043b\u043e\u0441\u044f \u0437\u0430\u0432\u0430\u043d\u0442\u0430\u0436\u0438\u0442\u0438 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u0438.",
+        "lb_top_prefix":      "\u0422\u043e\u043f",
+        "lb_top_suffix_one":  "\u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442",
+        "lb_top_suffix_many": "\u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u0456\u0432",
+        "lb_play_beginner":     "\u2190 \u0413\u0440\u0430\u0442\u0438 (\u041f\u043e\u0447\u0430\u0442\u043a\u0456\u0432\u0435\u0446\u044c)",
+        "lb_play_intermediate": "\u0413\u0440\u0430\u0442\u0438 (\u0421\u0435\u0440\u0435\u0434\u043d\u0456\u0439)",
+        "lb_play_expert":       "\u0413\u0440\u0430\u0442\u0438 (\u0415\u043a\u0441\u043f\u0435\u0440\u0442)",
+        "lb_play_custom":       "\u0413\u0440\u0430\u0442\u0438 (\u0412\u043b\u0430\u0441\u043d\u0438\u0439)",
+        # Profile
+        "profile_recent_games": "\u041e\u0441\u0442\u0430\u043d\u043d\u0456 \u0456\u0433\u0440\u0438",
+        "profile_loading":      "\u0417\u0430\u0432\u0430\u043d\u0442\u0430\u0436\u0435\u043d\u043d\u044f\u2026",
+        "profile_games":        "\u0406\u0433\u0440\u0438",
+        "profile_best":         "\u041d\u0430\u0439\u043a\u0440\u0430\u0449\u0438\u0439",
+        "profile_avg":          "\u0421\u0435\u0440\u0435\u0434\u043d\u0456\u0439",
+        "profile_worst":        "\u041d\u0430\u0439\u0433\u0456\u0440\u0448\u0438\u0439",
+        "profile_no_games":     "\u0429\u0435 \u043d\u0435\u043c\u0430\u0454 \u0456\u0433\u043e\u0440",
+        "profile_play_now":     "\u0413\u0440\u0430\u0442\u0438 \u0437\u0430\u0440\u0430\u0437 \u2192",
+        "profile_no_recent":    "\u0429\u0435 \u043d\u0435\u043c\u0430\u0454 \u0437\u0430\u043f\u0438\u0441\u0430\u043d\u0438\u0445 \u0456\u0433\u043e\u0440.",
+        # Help
+        "help_title": "\u042f\u043a \u0433\u0440\u0430\u0442\u0438 \u0432 \u0421\u0430\u043f\u0435\u0440",
+        # Footer
+        "footer": "\u0421\u0442\u0432\u043e\u0440\u0435\u043d\u043e \u0420\u0456\u0447\u0430\u0440\u0434\u043e\u043c \u041a\u0440\u043e\u0441\u043e\u043c \u0437\u0430 \u0434\u043e\u043f\u043e\u043c\u043e\u0433\u043e\u044e Python &amp; FastAPI",
         # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
