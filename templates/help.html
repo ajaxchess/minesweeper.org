@@ -79,6 +79,80 @@
     <a href="/custom">Eigene spielen</a>
   </div>
 
+{% elif lang == 'es' %}
+
+  <h1 class="lb-title">Cómo jugar al Buscaminas</h1>
+
+  <div class="help-section">
+    <h2>Objetivo</h2>
+    <p>Despeja el tablero revelando todas las casillas seguras sin detonar ninguna mina. Marca cada mina y descubre cada casilla segura para ganar.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Controles</h2>
+    <ul>
+      <li><strong>Clic izquierdo</strong> — Revelar una casilla.</li>
+      <li><strong>Clic derecho</strong> — Colocar o quitar una bandera en una casilla que crees que contiene una mina.</li>
+      <li><strong>Clic izquierdo en un número revelado</strong> (acorde) — Si el número correcto de banderas adyacentes está colocado, se revelan automáticamente todos los vecinos restantes.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Los Números</h2>
+    <p>Cada casilla revelada muestra un número que indica cuántas de sus hasta 8 casillas vecinas contienen minas.</p>
+    <ul>
+      <li>Una casilla en blanco no tiene vecinos con minas — sus vecinos se revelan automáticamente.</li>
+      <li>Usa los números para deducir qué casillas ocultas son seguras y cuáles contienen minas.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Banderas</h2>
+    <p>Haz clic derecho en una casilla oculta para colocar una bandera (🚩) marcándola como mina. El contador de minas en el encabezado disminuye con cada bandera colocada. Haz clic derecho en una casilla marcada para quitar la bandera.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Ganar y Perder</h2>
+    <ul>
+      <li><strong>Ganar</strong> — Todas las casillas que no son minas están reveladas.</li>
+      <li><strong>Perder</strong> — Haces clic en una casilla que contiene una mina. El tablero revela todas las posiciones de las minas.</li>
+    </ul>
+    <p>El primer clic siempre es seguro — las minas se colocan después de tu primer movimiento.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Niveles de Dificultad</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>Nivel</th><th>Tablero</th><th>Minas</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Principiante</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>Intermedio</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>Experto</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>Personalizado</td><td>tu elección</td><td>tu elección</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>Consejos</h2>
+    <ul>
+      <li>Empieza cerca del centro — te da más vecinos con los que trabajar.</li>
+      <li>Cuando un número es igual al recuento de sus vecinos ocultos, todos ellos son minas — márcalos todos.</li>
+      <li>Cuando un número es igual al recuento de sus vecinos marcados, todos los vecinos ocultos restantes son seguros — revélalos.</li>
+      <li>Usa el clic de acorde para limpiar áreas rápidamente una vez que las banderas estén correctamente colocadas.</li>
+      <li>Si estás atascado, haz una suposición informada en una esquina o borde donde la probabilidad sea menor.</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← Jugar Principiante</a>
+    <a href="/intermediate">Jugar Intermedio</a>
+    <a href="/expert">Jugar Experto</a>
+    <a href="/custom">Jugar Personalizado</a>
+  </div>
+
 {% elif lang == 'eo' %}
 
   <h1 class="lb-title">Kiel Ludi Minosvepiston</h1>

@@ -228,6 +228,82 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
     },
+
+    "es": {
+        # Nav
+        "nav_beginner":     "Principiante",
+        "nav_intermediate": "Intermedio",
+        "nav_expert":       "Experto",
+        "nav_custom":       "Personalizado",
+        "nav_leaderboard":  "Clasificaci\u00f3n",
+        "nav_duel":         "Duelo",
+        "nav_pvp":          "PvP",
+        # Auth
+        "auth_sign_out":     "Cerrar sesi\u00f3n",
+        "auth_sign_in":      "Iniciar sesi\u00f3n con Google",
+        "auth_view_profile": "Ver perfil",
+        # Game board
+        "game_left_click":    "Clic izquierdo",
+        "game_to_reveal":     "para revelar",
+        "game_right_click":   "Clic derecho",
+        "game_to_flag":       "para marcar",
+        "game_to_flag_local": "para marcar (solo local)",
+        "game_to_reset":      "para reiniciar",
+        "game_new_game":      "Nueva Partida",
+        # Custom form
+        "custom_rows":  "Filas",
+        "custom_cols":  "Columnas",
+        "custom_mines": "Minas",
+        "custom_start": "Comenzar",
+        # Duel page
+        "duel_you":       "T\u00fa",
+        "duel_opponent":  "Oponente",
+        "duel_share":     "Comparte este enlace con tu oponente:",
+        "duel_copy":      "Copiar",
+        "duel_start_btn": "\u25b6 Iniciar Partida",
+        "duel_scoring":   "C\u00f3mo funciona la puntuaci\u00f3n:",
+        "duel_scoring_body": (
+            "Tu puntuaci\u00f3n se calcula otorgando <strong>5 puntos por cada casilla revelada</strong>, "
+            "m\u00e1s un bono de tiempo. El bono de tiempo se calcula con la f\u00f3rmula "
+            "<code>(300 &minus; segundosDesdeInicio) &times; porcentajeRevelado</code>, "
+            "aunque nunca bajar\u00e1 de 0."
+        ),
+        # Leaderboard
+        "lb_title":           "\U0001f3c6 Clasificaci\u00f3n",
+        "lb_col_rank":        "#",
+        "lb_col_name":        "Nombre",
+        "lb_col_time":        "Tiempo",
+        "lb_col_board":       "Tablero",
+        "lb_col_mines":       "Minas",
+        "lb_col_date":        "Fecha",
+        "lb_loading":         "Cargando\u2026",
+        "lb_no_scores":       "A\u00fan no hay puntuaciones \u2014 \u00a1s\u00e9 el primero!",
+        "lb_error":           "\u26a0\ufe0f No se pudieron cargar las puntuaciones.",
+        "lb_top_prefix":      "Top",
+        "lb_top_suffix_one":  "resultado",
+        "lb_top_suffix_many": "resultados",
+        "lb_play_beginner":     "\u2190 Jugar Principiante",
+        "lb_play_intermediate": "Jugar Intermedio",
+        "lb_play_expert":       "Jugar Experto",
+        "lb_play_custom":       "Jugar Personalizado",
+        # Profile
+        "profile_recent_games": "Partidas Recientes",
+        "profile_loading":      "Cargando\u2026",
+        "profile_games":        "Partidas",
+        "profile_best":         "Mejor",
+        "profile_avg":          "Promedio",
+        "profile_worst":        "Peor",
+        "profile_no_games":     "A\u00fan no hay partidas",
+        "profile_play_now":     "Jugar ahora \u2192",
+        "profile_no_recent":    "A\u00fan no hay partidas registradas.",
+        # Help
+        "help_title": "C\u00f3mo jugar al Buscaminas",
+        # Footer
+        "footer": "Creado por Richard Cross con Python &amp; FastAPI",
+        # Language switcher (unused by template — kept for symmetry)
+        "lang_other": "en",
+        "lang_label": "EN \u2014 English",
+    },
 }
 
 
