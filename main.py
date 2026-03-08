@@ -65,7 +65,7 @@ def shutdown():
 @app.get("/set-lang")
 async def set_lang(request: Request, lang: str = "en"):
     from fastapi.responses import Response
-    if lang not in ("en", "eo"):
+    if lang not in ("en", "eo", "de"):
         lang = "en"
     next_url = request.headers.get("referer", "/")
     response = RedirectResponse(url=next_url)

@@ -1,4 +1,4 @@
-"""UI string translations for EN (English) and EO (Esperanto)."""
+"""UI string translations for EN (English), EO (Esperanto), and DE (German)."""
 
 TRANSLATIONS: dict[str, dict[str, str]] = {
     "en": {
@@ -148,7 +148,83 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "help_title": "Kiel Ludi Minosvepiston",
         # Footer
         "footer": "Konstruita de Richard Cross per Python kaj FastAPI",
-        # Language switcher
+        # Language switcher (unused by template — kept for symmetry)
+        "lang_other": "en",
+        "lang_label": "EN \u2014 English",
+    },
+
+    "de": {
+        # Nav
+        "nav_beginner":     "Anf\u00e4nger",
+        "nav_intermediate": "Mittel",
+        "nav_expert":       "Experte",
+        "nav_custom":       "Eigene",
+        "nav_leaderboard":  "Bestenliste",
+        "nav_duel":         "Duell",
+        "nav_pvp":          "PvP",
+        # Auth
+        "auth_sign_out":     "Abmelden",
+        "auth_sign_in":      "Mit Google anmelden",
+        "auth_view_profile": "Profil anzeigen",
+        # Game board
+        "game_left_click":    "Linksklick",
+        "game_to_reveal":     "zum Aufdecken",
+        "game_right_click":   "Rechtsklick",
+        "game_to_flag":       "zum Markieren",
+        "game_to_flag_local": "zum Markieren (nur lokal)",
+        "game_to_reset":      "zum Zur\u00fccksetzen",
+        "game_new_game":      "Neues Spiel",
+        # Custom form
+        "custom_rows":  "Zeilen",
+        "custom_cols":  "Spalten",
+        "custom_mines": "Minen",
+        "custom_start": "Start",
+        # Duel page
+        "duel_you":       "Du",
+        "duel_opponent":  "Gegner",
+        "duel_share":     "Teile diesen Link mit deinem Gegner:",
+        "duel_copy":      "Kopieren",
+        "duel_start_btn": "\u25b6 Spiel starten",
+        "duel_scoring":   "So funktioniert die Punktewertung:",
+        "duel_scoring_body": (
+            "Deine Punktzahl wird berechnet, indem <strong>5 Punkte pro aufgedecktem Feld</strong> "
+            "vergeben werden, plus ein Zeitbonus. Der Zeitbonus wird mit der Formel "
+            "<code>(300 &minus; SekundenSeitStart) &times; aufgedeckterProzentsatz</code> "
+            "berechnet, wird jedoch nie unter 0 fallen."
+        ),
+        # Leaderboard
+        "lb_title":           "\U0001f3c6 Bestenliste",
+        "lb_col_rank":        "#",
+        "lb_col_name":        "Name",
+        "lb_col_time":        "Zeit",
+        "lb_col_board":       "Feld",
+        "lb_col_mines":       "Minen",
+        "lb_col_date":        "Datum",
+        "lb_loading":         "L\u00e4dt\u2026",
+        "lb_no_scores":       "Noch keine Ergebnisse \u2014 sei der Erste!",
+        "lb_error":           "\u26a0\ufe0f Ergebnisse konnten nicht geladen werden.",
+        "lb_top_prefix":      "Top",
+        "lb_top_suffix_one":  "Ergebnis",
+        "lb_top_suffix_many": "Ergebnisse",
+        "lb_play_beginner":     "\u2190 Anf\u00e4nger spielen",
+        "lb_play_intermediate": "Mittel spielen",
+        "lb_play_expert":       "Experte spielen",
+        "lb_play_custom":       "Eigene spielen",
+        # Profile
+        "profile_recent_games": "Letzte Spiele",
+        "profile_loading":      "L\u00e4dt\u2026",
+        "profile_games":        "Spiele",
+        "profile_best":         "Beste",
+        "profile_avg":          "Durchschnitt",
+        "profile_worst":        "Schlechteste",
+        "profile_no_games":     "Noch keine Spiele",
+        "profile_play_now":     "Jetzt spielen \u2192",
+        "profile_no_recent":    "Noch keine Spiele aufgezeichnet.",
+        # Help
+        "help_title": "Wie man Minesweeper spielt",
+        # Footer
+        "footer": "Erstellt von Richard Cross mit Python &amp; FastAPI",
+        # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
     },

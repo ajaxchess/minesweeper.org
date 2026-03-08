@@ -39,7 +39,11 @@
             {{ t.auth_sign_in }}
           </a>
         {% endif %}
-        <a href="/set-lang?lang={{ t.lang_other }}" class="auth-btn lang-btn" title="{{ t.lang_label }}">🌐 {{ t.lang_label }}</a>
+        <div class="lang-switcher">
+          <a href="/set-lang?lang=en" class="lang-btn{% if lang == 'en' %} lang-active{% endif %}">EN</a>
+          <a href="/set-lang?lang=eo" class="lang-btn{% if lang == 'eo' %} lang-active{% endif %}">EO</a>
+          <a href="/set-lang?lang=de" class="lang-btn{% if lang == 'de' %} lang-active{% endif %}">DE</a>
+        </div>
       </div>
     </div>
   </header>

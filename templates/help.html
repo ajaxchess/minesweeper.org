@@ -5,7 +5,81 @@
 {% block content %}
 <div class="lb-wrapper">
 
-{% if lang == 'eo' %}
+{% if lang == 'de' %}
+
+  <h1 class="lb-title">Wie man Minesweeper spielt</h1>
+
+  <div class="help-section">
+    <h2>Ziel</h2>
+    <p>Räume das Spielfeld, indem du alle sicheren Felder aufdeckst, ohne eine Mine zu zünden. Markiere jede Mine und decke jedes sichere Feld auf, um zu gewinnen.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Steuerung</h2>
+    <ul>
+      <li><strong>Linksklick</strong> — Ein Feld aufdecken.</li>
+      <li><strong>Rechtsklick</strong> — Eine Flagge auf einem Feld setzen oder entfernen, das deiner Meinung nach eine Mine enthält.</li>
+      <li><strong>Linksklick auf eine aufgedeckte Zahl</strong> (Chord) — Wenn die richtige Anzahl benachbarter Flaggen gesetzt ist, werden alle verbleibenden Nachbarn automatisch aufgedeckt.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Die Zahlen</h2>
+    <p>Jedes aufgedeckte Feld zeigt eine Zahl, die angibt, wie viele seiner bis zu 8 benachbarten Felder Minen enthalten.</p>
+    <ul>
+      <li>Ein leeres Feld hat keine benachbarten Minen — seine Nachbarn werden automatisch aufgedeckt.</li>
+      <li>Nutze die Zahlen, um abzuleiten, welche versteckten Felder sicher sind und welche Minen enthalten.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Flaggen</h2>
+    <p>Rechtsklick auf ein verstecktes Feld, um eine Flagge (🚩) zu setzen und es als Mine zu markieren. Der Minenzähler in der Kopfzeile verringert sich mit jeder gesetzten Flagge. Rechtsklick auf ein markiertes Feld, um die Flagge zu entfernen.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Gewinnen &amp; Verlieren</h2>
+    <ul>
+      <li><strong>Gewinnen</strong> — Alle nicht-Minen-Felder sind aufgedeckt.</li>
+      <li><strong>Verlieren</strong> — Du klickst auf ein Feld mit einer Mine. Das Spielfeld zeigt alle Minenpositionen.</li>
+    </ul>
+    <p>Der erste Klick ist immer sicher — Minen werden nach deinem ersten Zug platziert.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Schwierigkeitsstufen</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>Stufe</th><th>Feld</th><th>Minen</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Anfänger</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>Mittel</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>Experte</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>Eigene</td><td>deine Wahl</td><td>deine Wahl</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>Tipps</h2>
+    <ul>
+      <li>Beginne in der Mitte — dort hast du mehr Nachbarn zum Arbeiten.</li>
+      <li>Wenn eine Zahl der Anzahl ihrer versteckten Nachbarn entspricht, sind alle davon Minen — markiere sie alle.</li>
+      <li>Wenn eine Zahl der Anzahl ihrer markierten Nachbarn entspricht, sind alle verbleibenden versteckten Nachbarn sicher — decke sie auf.</li>
+      <li>Nutze den Chord-Klick, um Bereiche schnell zu räumen, sobald Flaggen korrekt gesetzt sind.</li>
+      <li>Wenn du feststeckst, rate in einer Ecke oder an einem Rand, wo die Wahrscheinlichkeit geringer ist.</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← Anfänger spielen</a>
+    <a href="/intermediate">Mittel spielen</a>
+    <a href="/expert">Experte spielen</a>
+    <a href="/custom">Eigene spielen</a>
+  </div>
+
+{% elif lang == 'eo' %}
 
   <h1 class="lb-title">Kiel Ludi Minosvepiston</h1>
 
