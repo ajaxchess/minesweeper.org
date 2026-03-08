@@ -383,7 +383,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lang_label": "EN \u2014 English",
     },
 
-    "pl": {
+    "pgl": {
         # Nav
         "nav_beginner":     "Eginnerbay",
         "nav_intermediate": "Intermediateway",
