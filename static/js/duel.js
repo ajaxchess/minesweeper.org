@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <h2>${headline}</h2>
             <p>${sub}</p>
             <p class="result-time">Time: ${msg.elapsed}s</p>
-            <a href="/duel" class="duel-play-again">⚔️ New Duel</a>
+            <a href="${IS_PVP ? '/pvp' : '/duel'}" class="duel-play-again">⚔️ New Duel</a>
           </div>
         `);
         break;
