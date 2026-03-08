@@ -382,6 +382,84 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
     },
+
+    "pl": {
+        # Nav
+        "nav_beginner":     "Eginnerbay",
+        "nav_intermediate": "Intermediateway",
+        "nav_expert":       "Expertway",
+        "nav_custom":       "Ustomcay",
+        "nav_leaderboard":  "Eaderboardlay",
+        "nav_duel":         "Uelday",
+        "nav_pvp":          "PvP",
+        # Auth
+        "auth_sign_out":     "Ignsay outway",
+        "auth_sign_in":      "Ignsay inway ithway Ooglegay",
+        "auth_view_profile": "Iewvay ofilepray",
+        # Game board
+        "game_left_click":    "Eftlay-ickclay",
+        "game_to_reveal":     "otay evealray",
+        "game_right_click":   "Ightray-ickclay",
+        "game_to_flag":       "otay agflay",
+        "game_to_flag_local": "otay agflay (ocallay onlyway)",
+        "game_to_reset":      "otay esetray",
+        "game_new_game":      "Ewnay Amegay",
+        # Custom form
+        "custom_rows":  "Owsray",
+        "custom_cols":  "Olscay",
+        "custom_mines": "Inesmay",
+        "custom_start": "Artstay",
+        # Duel page
+        "duel_you":       "Ouyay",
+        "duel_opponent":  "Opponentway",
+        "duel_share":     "Areshay isthay inklay ithway ouryay opponentway:",
+        "duel_copy":      "Opycay",
+        "duel_start_btn": "\u25b6 Artstay Amegay",
+        "duel_scoring":   "Owhay oringsscay orksway:",
+        "duel_scoring_body": (
+            "Ouryay oresscay isway alculatedcay ybay awardingway "
+            "<strong>5 ointspay erpay iletay evealedray</strong>, "
+            "usplay away imetay onusbay. Ethay imetay onusbay isway alculatedcay "
+            "ithway ethay ormulafay "
+            "<code>(300 &minus; econdssay omfray artstay) &times; ercentpay evealedray</code>, "
+            "oweverhay itway illway evernay opday elowbay 0."
+        ),
+        # Leaderboard
+        "lb_title":           "\U0001f3c6 Eaderboardlay",
+        "lb_col_rank":        "#",
+        "lb_col_name":        "Amenay",
+        "lb_col_time":        "Imetay",
+        "lb_col_board":       "Oardbay",
+        "lb_col_mines":       "Inesmay",
+        "lb_col_date":        "Ateday",
+        "lb_loading":         "Oadinglay\u2026",
+        "lb_no_scores":       "Onay oresscay etyay \u2014 ebay ethay irstfay!",
+        "lb_error":           "\u26a0\ufe0f Ouldcay otnay oadlay oresscay.",
+        "lb_top_prefix":      "Optay",
+        "lb_top_suffix_one":  "imetay",
+        "lb_top_suffix_many": "imestay",
+        "lb_play_beginner":     "\u2190 Ayplay Eginnerbay",
+        "lb_play_intermediate": "Ayplay Intermediateway",
+        "lb_play_expert":       "Ayplay Expertway",
+        "lb_play_custom":       "Ayplay Ustomcay",
+        # Profile
+        "profile_recent_games": "Ecentray Amesgay",
+        "profile_loading":      "Oadinglay\u2026",
+        "profile_games":        "Amesgay",
+        "profile_best":         "Estbay",
+        "profile_avg":          "Avgway",
+        "profile_worst":        "Orstway",
+        "profile_no_games":     "Onay amesgay etyay",
+        "profile_play_now":     "Ayplay ownay \u2192",
+        "profile_no_recent":    "Onay amesgay ecordedray etyay.",
+        # Help
+        "help_title": "Owhay otay Ayplay Inesweepermay",
+        # Footer
+        "footer": "Uiltbay ybay Ichardray Osscray ithway Ythonpay &amp; FastAPI",
+        # Language switcher (unused by template — kept for symmetry)
+        "lang_other": "en",
+        "lang_label": "EN \u2014 English",
+    },
 }
 
 
