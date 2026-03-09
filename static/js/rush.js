@@ -12,6 +12,7 @@
  *  - Safety net: if no guaranteed safe move exists, mine hits carry no penalty.
  */
 
+(function () {
 'use strict';
 
 // ── Mode configs ──────────────────────────────────────────────────────────────
@@ -697,3 +698,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initRush('easy');
   loadRushLeaderboard('easy');
 });
+
+})(); // end IIFE
