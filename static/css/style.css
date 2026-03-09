@@ -1075,6 +1075,7 @@ footer {
 #rush-board {
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   gap: 2px;
   background: var(--surface);
   padding: 8px;
@@ -1082,10 +1083,9 @@ footer {
   border: 2px solid var(--surface2);
   box-shadow: 0 4px 24px rgba(0,0,0,0.4);
   user-select: none;
-  height: calc(var(--rush-rows, 12) * var(--cell-size));
-  overflow-y: auto;
+  height: calc(var(--rush-rows, 12) * (var(--cell-size) + 2px) + 14px);
+  overflow-y: hidden;
   overflow-x: hidden;
-  scroll-behavior: smooth;
 }
 
 /* ── Rush row ────────────────────────────────────────────────────────────── */

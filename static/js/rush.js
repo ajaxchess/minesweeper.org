@@ -344,7 +344,6 @@ function prependRowDOM(r) {
 
   const board = boardEl();
   board.insertBefore(div, board.firstChild);
-  board.scrollTop = 0;
 }
 
 // ── Fill animation: ✕ marks appear left-to-right ─────────────────────────────
