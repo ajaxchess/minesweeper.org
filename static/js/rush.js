@@ -312,6 +312,8 @@ function checkEmptyRowButtons(r) {
     div.replaceChild(makeRushClearBtn(r, 'No mines — click to clear row'), div.firstChild);
   if (isReplaceable(div.lastChild))
     div.replaceChild(makeRushClearBtn(r, 'No mines — click to clear row'), div.lastChild);
+  div.classList.add('clearable');
+  div.onclick = () => clearRow(r);
 }
 
 // Check all active mine-free rows (called after BFS may have revealed many cells)
@@ -436,7 +438,7 @@ function renderCell(r, c, isDetonated = false) {
     if (disp) {
       el.textContent = disp.text;
       el.style.color = disp.color;
-      if (disp.text === '?') el.classList.add('rush-stale');
+      el.classList.toggle('rush-stale', disp.text === '?');
     }
   }
 }
@@ -545,11 +547,15 @@ function checkMineRowButtons(r) {
       div.replaceChild(makeRushClearBtn(r, 'All mines flagged — click to clear row'), div.firstChild);
     if (div.lastChild?.classList?.contains('rush-row-spacer'))
       div.replaceChild(makeRushClearBtn(r, 'All mines flagged — click to clear row'), div.lastChild);
+    div.classList.add('clearable');
+    div.onclick = () => clearRow(r);
   } else {
     if (div.firstChild?.classList?.contains('rush-clear-row-btn'))
       div.replaceChild(makeSpacer(), div.firstChild);
     if (div.lastChild?.classList?.contains('rush-clear-row-btn'))
       div.replaceChild(makeSpacer(), div.lastChild);
+    div.classList.remove('clearable');
+    div.onclick = null;
   }
 }
 
@@ -637,8 +643,14 @@ function clearRow(r) {
     div.classList.add('rush-row-cleared');
     setTimeout(() => div.remove(), CLEAR_DELAY);
   }
-  // Recalculate numbers for cells adjacent to this row
-  updateRevealedNearRow(r);
+  // Re-render every revealed cell on the board — clearing a row can affect
+  // stale (?) counts and effective numbers anywhere on the active board.
+  for (let row = 0; row < rush.numRows; row++) {
+    if (rush.rowStatus[row] !== 'active') continue;
+    for (let c = 0; c < rush.cols; c++) {
+      if (rush.revealed[row][c]) renderCell(row, c);
+    }
+  }
   updateActiveCount();
   checkMinRows();
   checkSalvageButton();

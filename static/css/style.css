@@ -1104,6 +1104,7 @@ footer {
 
 .rush-row.incoming  { opacity: 0.7; }
 .rush-row.exploded  { border-top: 2px solid #e53935; border-bottom: 2px solid #e53935; }
+.rush-row.clearable { cursor: pointer; }
 
 /* ── Stale cell (shows ?): clickable to refresh count ───────────────────── */
 .cell.rush-stale          { cursor: pointer; }

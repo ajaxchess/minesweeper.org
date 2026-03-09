@@ -1,5 +1,7 @@
 List of active features
 
+F8 Improved Mobile Browser Support
+
 -- Addressed --
 
 F1 User Profile
@@ -17,7 +19,9 @@ F4 Implement run off git repo and restart on successful commit
 
 F5 Multilanguage support
 
-F6 Allow chording as an optional feature: https://minesweeper.fandom.com/wiki/Chording
+F6 Rush
+
+F7 Allow chording as an optional feature: https://minesweeper.fandom.com/wiki/Chording
 
 D1 Document the environment
   Development is done on a Mac and pushed to an Ubuntu server on AWS
