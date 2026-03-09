@@ -53,9 +53,10 @@ function freshRush(mode) {
     rowFillCol: [],   // fill animation progress (how many ✕ shown)
     rowIsInitial: [], // true for initial build rows; false for dynamically added rows
 
-    numRows: 0,
-    score:   0,       // correctly-flagged mines (current total)
-    elapsed: 0,
+    numRows:      0,
+    score:        0,  // correctly-flagged mines (current total)
+    rowsCleared:  0,
+    elapsed:      0,
 
     started:    false,
     over:       false,
@@ -481,6 +482,10 @@ function checkRowCleared(r) {
 function clearRow(r) {
   if (rush.rowStatus[r] !== 'active') return;
   rush.rowStatus[r] = 'cleared';
+  rush.rowsCleared++;
+  const el = document.getElementById('rush-rows-cleared');
+  if (el) el.textContent = rush.rowsCleared;
+
   const div = rowEl(r);
   if (div) {
     div.classList.add('rush-row-cleared');
@@ -624,6 +629,8 @@ function showRushOverlay() {
     <span>💥 Game Over</span>
     <span style="font-size:1rem">
       Mines Found: <strong>${rush.score}</strong>
+      &nbsp;|&nbsp;
+      Rows Cleared: <strong>${rush.rowsCleared}</strong>
       &nbsp;|&nbsp;
       Time: <strong>${timeStr}</strong>
     </span>
@@ -791,6 +798,7 @@ function initRush(mode) {
   document.getElementById('rush-score').textContent = '  0';
   document.getElementById('rush-speed').textContent = '×1';
   document.getElementById('rush-max-rows').textContent = RUSH_CFGS[mode].maxActive;
+  document.getElementById('rush-rows-cleared').textContent = '0';
 
   const overlay = document.getElementById('rush-overlay');
   if (overlay) overlay.style.display = 'none';
