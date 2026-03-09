@@ -948,6 +948,7 @@ function initRush(mode) {
   if (safeEl) safeEl.style.display = 'none';
 
   boardEl().style.setProperty('--cols', rush.cols);
+  boardEl().style.setProperty('--rush-rows', rush.maxActive);
   buildInitialBoard();
   updateActiveCount();
   updateSafetyNet();
