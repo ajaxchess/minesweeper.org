@@ -511,7 +511,6 @@ function recomputeScore() {
       if (rush.board[r][c] === -1 && rush.flagged[r][c] === 1) total++;
   }
   rush.score = total;
-  document.getElementById('rush-score').textContent = String(rush.score).padStart(3, '0');
   updateSpeed();
 }
 
@@ -985,5 +984,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initRush('easy');
   loadRushLeaderboard('easy');
 });
+
+// Expose functions needed by inline onclick handlers in overlay
+window.initRush = initRush;
+window.submitRushScore = submitRushScore;
 
 })(); // end IIFE
