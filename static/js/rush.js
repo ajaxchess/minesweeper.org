@@ -482,6 +482,7 @@ function rushReveal(r, c) {
 
   checkAllEmptyRowButtons();
   updateSafetyNet();
+  checkBoardSolved();
 }
 
 // ── Flag ──────────────────────────────────────────────────────────────────────
@@ -499,6 +500,22 @@ function rushFlag(r, c) {
   recomputeScore();
   checkMineRowButtons(r);
   updateSafetyNet();
+  checkBoardSolved();
+}
+
+// ── Board solved: if every active row is clearable, bring the next row in now ─
+function checkBoardSolved() {
+  if (!rush.started || rush.over) return;
+  let hasActive = false;
+  for (let r = 0; r < rush.numRows; r++) {
+    if (rush.rowStatus[r] === 'active') {
+      hasActive = true;
+      if (!isRowClearable(r)) return;
+    }
+  }
+  if (!hasActive) return;
+  addRow();
+  scheduleNextRow(); // reset the timer so the next row doesn't arrive too soon
 }
 
 // ── Score: count correctly-flagged mines across all active rows ───────────────
