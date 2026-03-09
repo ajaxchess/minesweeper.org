@@ -6,7 +6,7 @@
 // ── State ────────────────────────────────────────────────────────────────────
 let state = {};
 
-function freshState(rows, cols, mines) {
+function freshState(rows, cols, mines, noGuess = false) {
   return {
     rows, cols, mines,
     board:      Array.from({length: rows}, () => Array(cols).fill(0)),
@@ -19,6 +19,7 @@ function freshState(rows, cols, mines) {
     won:        false,
     elapsed:    0,
     timerID:    null,
+    noGuess,
   };
 }
 
@@ -53,6 +54,100 @@ function placeMines(rows, cols, mines, safeR, safeC) {
     });
   }
   return {mineSet, board};
+}
+
+// ── No-Guess Solver ───────────────────────────────────────────────────────────
+// Returns true if the board can be fully solved using constraint propagation
+// (no random guessing required). Uses single-cell and subset deductions.
+function isSolvable(rows, cols, mineSet, board, startR, startC) {
+  const n = rows * cols;
+  const revealed  = new Uint8Array(n);
+  const knownMine = new Uint8Array(n);
+
+  function bfsReveal(startIdx) {
+    const q = [startIdx];
+    while (q.length) {
+      const idx = q.pop();
+      if (revealed[idx] || mineSet.has(idx)) continue;
+      revealed[idx] = 1;
+      if (board[Math.floor(idx / cols)][idx % cols] === 0) {
+        for (const [nr, nc] of neighbors(Math.floor(idx / cols), idx % cols, rows, cols)) {
+          const ni = nr * cols + nc;
+          if (!revealed[ni] && !mineSet.has(ni)) q.push(ni);
+        }
+      }
+    }
+  }
+
+  bfsReveal(startR * cols + startC);
+
+  let progress = true;
+  while (progress) {
+    progress = false;
+    const constraints = [];
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const i = r * cols + c;
+        if (!revealed[i] || board[r][c] <= 0) continue;
+
+        const hidden = [];
+        let mineCount = 0;
+        for (const [nr, nc] of neighbors(r, c, rows, cols)) {
+          const ni = nr * cols + nc;
+          if (knownMine[ni]) mineCount++;
+          else if (!revealed[ni]) hidden.push(ni);
+        }
+        const remaining = board[r][c] - mineCount;
+        if (remaining < 0 || remaining > hidden.length) continue;
+
+        if (remaining === 0 && hidden.length > 0) {
+          hidden.forEach(ni => bfsReveal(ni));
+          progress = true;
+        } else if (remaining > 0 && remaining === hidden.length) {
+          hidden.forEach(ni => { knownMine[ni] = 1; });
+          progress = true;
+        } else if (hidden.length > 0) {
+          constraints.push({ cells: hidden, count: remaining });
+        }
+      }
+    }
+
+    // Subset deduction: if constraint A ⊆ constraint B, derive (B − A)
+    for (let i = 0; i < constraints.length; i++) {
+      for (let j = 0; j < constraints.length; j++) {
+        if (i === j) continue;
+        const ci = constraints[i], cj = constraints[j];
+        if (ci.cells.length >= cj.cells.length) continue;
+        const ciSet = new Set(ci.cells);
+        if (!ci.cells.every(x => cj.cells.indexOf(x) >= 0)) continue;
+        const diff      = cj.cells.filter(x => !ciSet.has(x));
+        const diffCount = cj.count - ci.count;
+        if (diffCount < 0 || diffCount > diff.length) continue;
+        if (diffCount === 0 && diff.length > 0) {
+          diff.forEach(ni => bfsReveal(ni));
+          progress = true;
+        } else if (diffCount > 0 && diffCount === diff.length) {
+          diff.forEach(ni => { knownMine[ni] = 1; });
+          progress = true;
+        }
+      }
+    }
+  }
+
+  for (let i = 0; i < n; i++) {
+    if (!mineSet.has(i) && !revealed[i]) return false;
+  }
+  return true;
+}
+
+function placeMinesNoGuess(rows, cols, mines, safeR, safeC) {
+  for (let attempt = 0; attempt < 500; attempt++) {
+    const result = placeMines(rows, cols, mines, safeR, safeC);
+    if (isSolvable(rows, cols, result.mineSet, result.board, safeR, safeC))
+      return result;
+  }
+  return placeMines(rows, cols, mines, safeR, safeC); // fallback
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -93,9 +188,8 @@ function reveal(r, c) {
 
   // First click — place mines now (guarantees safe first click)
   if (!state.started) {
-    const {mineSet, board} = placeMines(
-      state.rows, state.cols, state.mines, r, c
-    );
+    const placer = state.noGuess ? placeMinesNoGuess : placeMines;
+    const {mineSet, board} = placer(state.rows, state.cols, state.mines, r, c);
     state.mineSet = mineSet;
     state.board   = board;
     state.started = true;
@@ -199,7 +293,9 @@ function showOverlay(msg, won) {
 
   let scoreForm = '';
   if (won) {
-    if (username) {
+    if (state.noGuess) {
+      scoreForm = `<div id="score-msg" style="font-size:0.85rem;opacity:0.8">No-Guess mode — scores not saved to leaderboard</div>`;
+    } else if (username) {
       // Logged-in: auto-submit immediately, show a confirmation
       scoreForm = `<div id="score-msg" style="font-size:0.9rem">Saving score…</div>`;
     } else {
@@ -223,10 +319,10 @@ function showOverlay(msg, won) {
   `;
   el.style.display = 'flex';
 
-  if (won && username) {
+  if (won && !state.noGuess && username) {
     // Auto-submit for logged-in users
     submitScore(username);
-  } else if (won) {
+  } else if (won && !state.noGuess) {
     setTimeout(() => document.getElementById('player-name')?.focus(), 50);
   }
 }
@@ -328,17 +424,30 @@ function buildBoard(rows, cols) {
 }
 
 // ── Init / Reset ─────────────────────────────────────────────────────────────
-function initGame(rows, cols, mines) {
+function initGame(rows, cols, mines, noGuess = false) {
   stopTimer();
-  state = freshState(rows, cols, mines);
+  state = freshState(rows, cols, mines, noGuess);
   document.getElementById('timer').textContent      = '000';
   document.getElementById('mines-left').textContent = String(mines).padStart(3,'0');
   document.getElementById('reset-btn').textContent  = '🙂';
   buildBoard(rows, cols);
+  updateNoGuessUI(noGuess);
 }
 
 function resetGame() {
-  initGame(state.rows, state.cols, state.mines);
+  initGame(state.rows, state.cols, state.mines, state.noGuess);
+}
+
+// ── No-Guess Toggle ───────────────────────────────────────────────────────────
+function toggleNoGuess() {
+  const newVal = !state.noGuess;
+  localStorage.setItem('noGuess', newVal);
+  initGame(state.rows, state.cols, state.mines, newVal);
+}
+
+function updateNoGuessUI(active) {
+  const btn = document.getElementById('noguess-toggle');
+  if (btn) btn.classList.toggle('active', active);
 }
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
@@ -349,11 +458,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Don't run the solo game init on the duel or pvp page
   if (board.dataset.mode === 'duel' || board.dataset.mode === 'pvp') return;
 
-  const rows  = parseInt(board.dataset.rows);
-  const cols  = parseInt(board.dataset.cols);
-  const mines = parseInt(board.dataset.mines);
+  const rows    = parseInt(board.dataset.rows);
+  const cols    = parseInt(board.dataset.cols);
+  const mines   = parseInt(board.dataset.mines);
+  const noGuess = localStorage.getItem('noGuess') === 'true';
 
-  initGame(rows, cols, mines);
+  initGame(rows, cols, mines, noGuess);
 
   document.getElementById('reset-btn')
     .addEventListener('click', resetGame);

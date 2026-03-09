@@ -15,7 +15,10 @@
 
   <section class="game-section">
     <div class="game-info">
-      <div class="mode-badge">{{ t.nav_custom }}</div>
+      <div class="mode-row">
+        <div class="mode-badge">{{ t.nav_custom }}</div>
+        <button id="noguess-toggle" onclick="toggleNoGuess()" title="Generate boards that require no guessing">No Guess</button>
+      </div>
       <form id="custom-form" class="custom-form">
         <label>{{ t.custom_rows }} <input type="number" id="c-rows" value="10" min="5" max="30"></label>
         <label>{{ t.custom_cols }} <input type="number" id="c-cols" value="10" min="5" max="50"></label>
@@ -71,7 +74,7 @@
     board.dataset.cols  = cols;
     board.dataset.mines = mines;
     document.getElementById('mines-left').textContent = String(mines).padStart(3,'0');
-    initGame(rows, cols, mines);
+    initGame(rows, cols, mines, state.noGuess);
   });
 </script>
 {% endblock %}

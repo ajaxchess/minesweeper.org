@@ -110,12 +110,43 @@ main { flex: 1; padding: 1rem 0.5rem; }
   max-width: 600px;
 }
 
+.mode-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .mode-badge {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--accent2);
+}
+
+#noguess-toggle {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  background: var(--surface2);
+  color: var(--text-dim);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+#noguess-toggle:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+
+#noguess-toggle.active {
+  color: var(--accent2);
+  border-color: var(--accent2);
+  background: rgba(83, 216, 251, 0.1);
 }
 
 .stat-row {
