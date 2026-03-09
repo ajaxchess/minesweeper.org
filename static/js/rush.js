@@ -256,10 +256,10 @@ function makeSpacer() {
 }
 
 // ── Clear-button helper ───────────────────────────────────────────────────────
-function makeRushClearBtn(r) {
+function makeRushClearBtn(r, title) {
   const btn = document.createElement('button');
   btn.className   = 'rush-clear-row-btn';
-  btn.title       = 'No mines — click to clear row';
+  btn.title       = title || 'Click to clear row';
   btn.textContent = '✓';
   btn.addEventListener('click', () => clearRow(r));
   return btn;
@@ -279,11 +279,11 @@ function checkEmptyRowButtons(r) {
 
   // Replace left spacer (firstChild) if it's still a spacer
   if (div.firstChild?.classList?.contains('rush-row-spacer'))
-    div.replaceChild(makeRushClearBtn(r), div.firstChild);
+    div.replaceChild(makeRushClearBtn(r, 'No mines — click to clear row'), div.firstChild);
 
   // Replace right spacer (lastChild) if it's still a spacer
   if (div.lastChild?.classList?.contains('rush-row-spacer'))
-    div.replaceChild(makeRushClearBtn(r), div.lastChild);
+    div.replaceChild(makeRushClearBtn(r, 'No mines — click to clear row'), div.lastChild);
 }
 
 // Check all active mine-free rows (called after BFS may have revealed many cells)
@@ -469,7 +469,7 @@ function rushFlag(r, c) {
   renderCell(r, c);
 
   recomputeScore();
-  checkRowCleared(r);
+  checkMineRowButtons(r);
   updateSafetyNet();
 }
 
@@ -486,12 +486,27 @@ function recomputeScore() {
   updateSpeed();
 }
 
-// ── Check if an active row has all mines flagged ──────────────────────────────
-function checkRowCleared(r) {
+// ── Promote/demote clear button on mine rows based on flagging state ──────────
+function checkMineRowButtons(r) {
   if (rush.rowStatus[r] !== 'active') return;
-  for (const c of rush.rowMines[r])
-    if (rush.flagged[r][c] !== 1) return;
-  clearRow(r);
+  if (rush.rowMines[r].size === 0) return;  // mine-free rows handled by checkEmptyRowButtons
+
+  const div = rowEl(r);
+  if (!div) return;
+
+  const allFlagged = [...rush.rowMines[r]].every(c => rush.flagged[r][c] === 1);
+
+  if (allFlagged) {
+    if (div.firstChild?.classList?.contains('rush-row-spacer'))
+      div.replaceChild(makeRushClearBtn(r, 'All mines flagged — click to clear row'), div.firstChild);
+    if (div.lastChild?.classList?.contains('rush-row-spacer'))
+      div.replaceChild(makeRushClearBtn(r, 'All mines flagged — click to clear row'), div.lastChild);
+  } else {
+    if (div.firstChild?.classList?.contains('rush-clear-row-btn'))
+      div.replaceChild(makeSpacer(), div.firstChild);
+    if (div.lastChild?.classList?.contains('rush-clear-row-btn'))
+      div.replaceChild(makeSpacer(), div.lastChild);
+  }
 }
 
 function clearRow(r) {
