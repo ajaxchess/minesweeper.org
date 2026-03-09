@@ -33,6 +33,20 @@
     </div>
   </div>
 
+  <!-- ── Settings ── -->
+  <div class="profile-settings">
+    <h2 class="section-title">Settings</h2>
+    <div class="settings-list">
+      <div class="setting-row">
+        <div class="setting-info">
+          <span class="setting-name">Chording</span>
+          <span class="setting-desc">Double-click a revealed number to auto-reveal its neighbors when the correct number of mines are flagged.</span>
+        </div>
+        <button class="setting-toggle" id="chord-toggle" onclick="toggleChording()"></button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Recent games tabs ── -->
   <div class="profile-recent">
     <h2 class="section-title">{{ t.profile_recent_games }}</h2>
@@ -139,5 +153,21 @@ document.querySelectorAll('.lb-tab').forEach(btn => {
 });
 
 loadStats();
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+function updateChordingUI() {
+  const on  = localStorage.getItem('chording') !== 'false';
+  const btn = document.getElementById('chord-toggle');
+  btn.textContent = on ? 'ON' : 'OFF';
+  btn.classList.toggle('active', on);
+}
+
+function toggleChording() {
+  const on = localStorage.getItem('chording') !== 'false';
+  localStorage.setItem('chording', !on);
+  updateChordingUI();
+}
+
+updateChordingUI();
 </script>
 {% endblock %}

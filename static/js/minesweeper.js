@@ -6,7 +6,7 @@
 // ── State ────────────────────────────────────────────────────────────────────
 let state = {};
 
-function freshState(rows, cols, mines, noGuess = false) {
+function freshState(rows, cols, mines, noGuess = false, chording = true) {
   return {
     rows, cols, mines,
     board:      Array.from({length: rows}, () => Array(cols).fill(0)),
@@ -20,6 +20,7 @@ function freshState(rows, cols, mines, noGuess = false) {
     elapsed:    0,
     timerID:    null,
     noGuess,
+    chording,
   };
 }
 
@@ -221,7 +222,7 @@ function reveal(r, c) {
 
 // ── Chord (middle-click / double-click) ──────────────────────────────────────
 function chord(r, c) {
-  if (!state.revealed[r][c] || state.board[r][c] <= 0) return;
+  if (!state.chording || !state.revealed[r][c] || state.board[r][c] <= 0) return;
   const nb    = neighbors(r, c, state.rows, state.cols);
   const flags = nb.filter(([nr, nc]) => state.flagged[nr][nc] === 1).length;
   if (flags === state.board[r][c])
@@ -424,9 +425,9 @@ function buildBoard(rows, cols) {
 }
 
 // ── Init / Reset ─────────────────────────────────────────────────────────────
-function initGame(rows, cols, mines, noGuess = false) {
+function initGame(rows, cols, mines, noGuess = false, chording = true) {
   stopTimer();
-  state = freshState(rows, cols, mines, noGuess);
+  state = freshState(rows, cols, mines, noGuess, chording);
   document.getElementById('timer').textContent      = '000';
   document.getElementById('mines-left').textContent = String(mines).padStart(3,'0');
   document.getElementById('reset-btn').textContent  = '🙂';
@@ -435,14 +436,14 @@ function initGame(rows, cols, mines, noGuess = false) {
 }
 
 function resetGame() {
-  initGame(state.rows, state.cols, state.mines, state.noGuess);
+  initGame(state.rows, state.cols, state.mines, state.noGuess, state.chording);
 }
 
 // ── No-Guess Toggle ───────────────────────────────────────────────────────────
 function toggleNoGuess() {
   const newVal = !state.noGuess;
   localStorage.setItem('noGuess', newVal);
-  initGame(state.rows, state.cols, state.mines, newVal);
+  initGame(state.rows, state.cols, state.mines, newVal, state.chording);
 }
 
 function updateNoGuessUI(active) {
@@ -461,9 +462,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const rows    = parseInt(board.dataset.rows);
   const cols    = parseInt(board.dataset.cols);
   const mines   = parseInt(board.dataset.mines);
-  const noGuess = localStorage.getItem('noGuess') === 'true';
+  const noGuess  = localStorage.getItem('noGuess')   === 'true';
+  const chording = localStorage.getItem('chording') !== 'false';
 
-  initGame(rows, cols, mines, noGuess);
+  initGame(rows, cols, mines, noGuess, chording);
 
   document.getElementById('reset-btn')
     .addEventListener('click', resetGame);

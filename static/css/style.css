@@ -891,6 +891,76 @@ footer {
 
 .card-play-link:hover { text-decoration: underline; }
 
+/* ── Profile settings ────────────────────────────────────────────────────── */
+.profile-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.settings-list {
+  background: var(--surface);
+  border: 2px solid var(--surface2);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--surface2);
+}
+
+.setting-row:first-child { border-top: none; }
+
+.setting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.setting-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.setting-desc {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  max-width: 480px;
+  line-height: 1.5;
+}
+
+.setting-toggle {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 0.3rem 0.75rem;
+  background: var(--surface2);
+  color: var(--text-dim);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  min-width: 48px;
+}
+
+.setting-toggle:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+
+.setting-toggle.active {
+  color: var(--accent2);
+  border-color: var(--accent2);
+  background: rgba(83, 216, 251, 0.1);
+}
+
 /* ── Recent games section ────────────────────────────────────────────────── */
 .profile-recent {
   display: flex;

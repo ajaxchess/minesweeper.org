@@ -1,7 +1,5 @@
 List of active features
 
-F3 Implement No Guessing mode
-
 -- Addressed --
 
 F1 User Profile
@@ -13,9 +11,13 @@ F2 Multiplayer game mode
   Modify game to make it easier to find matches
   Save game history to database
 
+F3 Implement No Guessing mode
+
 F4 Implement run off git repo and restart on successful commit
 
 F5 Multilanguage support
+
+F6 Allow chording as an optional feature: https://minesweeper.fandom.com/wiki/Chording
 
 D1 Document the environment
   Development is done on a Mac and pushed to an Ubuntu server on AWS

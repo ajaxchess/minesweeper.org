@@ -74,7 +74,7 @@
     board.dataset.cols  = cols;
     board.dataset.mines = mines;
     document.getElementById('mines-left').textContent = String(mines).padStart(3,'0');
-    initGame(rows, cols, mines, state.noGuess);
+    initGame(rows, cols, mines, state.noGuess, state.chording);
   });
 </script>
 {% endblock %}
