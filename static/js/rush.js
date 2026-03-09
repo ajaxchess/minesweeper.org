@@ -684,6 +684,25 @@ function hasSafeMove() {
 
 // ── Overflow: too many active rows = game over ────────────────────────────────
 function checkOverflow() {
+  if (activeCount() <= rush.maxActive) return;
+
+  // Last-ditch: spend all salvage tokens on exploded-mine rows (bottom-first)
+  for (let r = 0; r < rush.numRows && rush.salvageTokens > 0; r++) {
+    if (rush.rowStatus[r] === 'active' && rowHasExplodedMine(r)) {
+      rush.salvageTokens--;
+      clearRow(r);
+    }
+  }
+
+  // Then auto-clear every row that's already fully flagged / fully revealed
+  for (let r = 0; r < rush.numRows; r++) {
+    if (isRowClearable(r)) clearRow(r);
+  }
+
+  updateActiveCount();
+  updateSalvageDisplay();
+  checkSalvageButton();
+
   if (activeCount() > rush.maxActive) rushGameOver();
 }
 
