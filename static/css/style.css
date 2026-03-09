@@ -1182,6 +1182,15 @@ footer {
   to { opacity: 0; transform: scaleY(0.2); }
 }
 
+@keyframes rush-cascade-flash {
+  0%   { background: rgba(83, 216, 251, 0.45); }
+  100% { background: transparent; }
+}
+
+.cell.rush-cascade {
+  animation: rush-cascade-flash 0.8s ease-out forwards;
+}
+
 /* ── Incoming fill marks ─────────────────────────────────────────────────── */
 .rush-incoming-cell {
   background: var(--surface2);

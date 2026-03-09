@@ -102,7 +102,7 @@ function neighborMineCount(r, c) {
 //   "n"  – effective remaining mine count after subtracting cleared/flagged mines.
 //   ""   – all neighbouring mines are accounted for (show blank like a 0-cell).
 function getCellDisplay(r, c) {
-  if (!rush.revealed[r][c] || rush.board[r][c] <= 0) return null;
+  if (!rush.revealed[r][c] || rush.board[r][c] < 0) return null;
 
   let newAboveUnknown = 0; // mines from later rows above not yet resolved
   let knownAboveBelow = 0; // mines that ARE in board[r][c] and are now resolved
@@ -431,14 +431,14 @@ function renderCell(r, c, isDetonated = false) {
   if (val === -1) {
     el.classList.add(isDetonated ? 'mine-detonated' : 'mine');
     el.textContent = '💣';
-  } else if (val === 0) {
-    el.textContent = '';
   } else {
     const disp = getCellDisplay(r, c);
     if (disp) {
       el.textContent = disp.text;
       el.style.color = disp.color;
       el.classList.toggle('rush-stale', disp.text === '?');
+    } else {
+      el.textContent = '';
     }
   }
 }
@@ -474,7 +474,9 @@ function rushReveal(r, c) {
     if (rush.rowStatus[cr] !== 'active') continue;
     rush.revealed[cr][cc] = true;
     renderCell(cr, cc);
-    if (rush.board[cr][cc] === 0) {
+    const disp = getCellDisplay(cr, cc);
+    const isBlank = disp ? disp.text === '' : rush.board[cr][cc] === 0;
+    if (isBlank) {
       rushNbs(cr, cc).forEach(([nr, nc]) => {
         if (!rush.revealed[nr][nc] && rush.flagged[nr][nc] !== 1)
           queue.push([nr, nc]);
@@ -676,6 +678,7 @@ function clearRow(r) {
       if (rush.board[nr][nc] === -1) continue; // don't auto-reveal mines
       rush.revealed[nr][nc] = true;
       renderCell(nr, nc);
+      cellEl(nr, nc)?.classList.add('rush-cascade');
       const nDisp = getCellDisplay(nr, nc);
       if (!nDisp || nDisp.text === '') bfsQueue.push([nr, nc]);
     }
