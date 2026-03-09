@@ -114,12 +114,10 @@ function getCellDisplay(r, c) {
 
     if (!wasCounted) {
       // Mine from a row added after this cell's row was initialised
-      const resolved = rush.rowStatus[nr] === 'cleared' || rush.flagged[nr][nc] === 1;
-      if (!resolved) newAboveUnknown++;
+      if (rush.rowStatus[nr] !== 'cleared') newAboveUnknown++;
     } else {
       // Mine was in the original count
-      if (rush.rowStatus[nr] === 'cleared' || rush.flagged[nr][nc] === 1)
-        knownAboveBelow++;
+      if (rush.rowStatus[nr] === 'cleared') knownAboveBelow++;
     }
   }
 
@@ -454,7 +452,6 @@ function rushFlag(r, c) {
 
   recomputeScore();
   checkRowCleared(r);
-  updateRevealedNearRow(r);  // flagging a mine updates adjacent number displays
   updateSafetyNet();
 }
 
