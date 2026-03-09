@@ -29,7 +29,7 @@
         </div>
       </div>
       <div class="stat-row">
-        <div class="stat" title="Mines found">
+        <div class="stat" title="Cleared mines (flagged in cleared rows)">
           <span class="stat-icon">💣</span>
           <span class="stat-value" id="rush-score">0</span>
         </div>
@@ -54,6 +54,9 @@
       </div>
       <div id="rush-safe-indicator" class="rush-safe-msg" style="display:none">
         ⚠️ No safe move — no penalty for guessing
+      </div>
+      <div id="rush-salvage-indicator" class="rush-salvage-msg" style="display:none">
+        🔥 <span id="rush-salvage-tokens">0</span> salvage token(s) — click 🔥 on bottom exploded row
       </div>
       <div id="rush-penalty" class="rush-penalty-msg" style="opacity:0" aria-live="polite"></div>
     </div>

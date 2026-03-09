@@ -228,11 +228,12 @@ async def rush(request: Request):
 RUSH_MODES_VALID = {"easy", "normal", "hard"}
 
 class RushScoreSubmit(BaseModel):
-    name:      str = Field(..., min_length=1, max_length=32)
-    rush_mode: str = Field(..., pattern="^(easy|normal|hard)$")
-    score:     int = Field(..., ge=0, le=9999)
-    time_secs: int = Field(..., ge=1, le=99999)
-    cols:      int = Field(..., ge=9, le=30)
+    name:          str = Field(..., min_length=1, max_length=32)
+    rush_mode:     str = Field(..., pattern="^(easy|normal|hard)$")
+    score:         int = Field(..., ge=0, le=9_999_999)   # elapsed + cleared_mines*5
+    cleared_mines: int = Field(..., ge=0, le=99999)
+    time_secs:     int = Field(..., ge=1, le=99999)
+    cols:          int = Field(..., ge=9, le=30)
 
     @field_validator("name")
     @classmethod
@@ -248,12 +249,13 @@ class RushScoreSubmit(BaseModel):
 def submit_rush_score(payload: RushScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
     entry = RushScore(
-        name       = payload.name,
-        user_email = user["email"] if user else None,
-        score      = payload.score,
-        time_secs  = payload.time_secs,
-        cols       = payload.cols,
-        rush_mode  = payload.rush_mode,
+        name          = payload.name,
+        user_email    = user["email"] if user else None,
+        score         = payload.score,
+        cleared_mines = payload.cleared_mines,
+        time_secs     = payload.time_secs,
+        cols          = payload.cols,
+        rush_mode     = payload.rush_mode,
     )
     db.add(entry)
     db.commit()
@@ -268,7 +270,7 @@ def get_rush_scores(rush_mode: str, db: Session = Depends(get_db)):
     top = (
         db.query(RushScore)
         .filter(RushScore.rush_mode == rush_mode)
-        .order_by(RushScore.score.desc(), RushScore.time_secs.desc())
+        .order_by(RushScore.score.desc())
         .limit(15)
         .all()
     )

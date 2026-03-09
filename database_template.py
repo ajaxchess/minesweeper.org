@@ -117,9 +117,10 @@ class RushScore(Base):
     id         = Column(Integer, primary_key=True, index=True)
     name       = Column(String(32), nullable=False)
     user_email = Column(String(256), nullable=True, index=True)
-    score      = Column(Integer, nullable=False)   # mines found
-    time_secs  = Column(Integer, nullable=False)   # game duration
-    cols       = Column(Integer, nullable=False)   # board width
+    score         = Column(Integer, nullable=False)          # elapsed + cleared_mines*5
+    cleared_mines = Column(Integer, nullable=True)           # mines in cleared rows
+    time_secs     = Column(Integer, nullable=False)          # game duration (seconds)
+    cols          = Column(Integer, nullable=False)          # board width
     rush_mode  = Column(String(16), nullable=False)  # easy/normal/hard
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -129,13 +130,14 @@ class RushScore(Base):
 
     def to_dict(self):
         return {
-            "id":        self.id,
-            "name":      self.name,
-            "score":     self.score,
-            "time_secs": self.time_secs,
-            "cols":      self.cols,
-            "rush_mode": self.rush_mode,
-            "created_at":self.created_at.strftime("%Y-%m-%d"),
+            "id":           self.id,
+            "name":         self.name,
+            "score":        self.score,
+            "cleared_mines":self.cleared_mines,
+            "time_secs":    self.time_secs,
+            "cols":         self.cols,
+            "rush_mode":    self.rush_mode,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
         }
 
 # ── Create tables if they don't exist ────────────────────────────────────────

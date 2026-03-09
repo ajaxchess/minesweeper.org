@@ -1148,6 +1148,30 @@ footer {
 .rush-clear-row-btn:hover  { background: rgba(83, 216, 251, 0.35); transform: scale(1.1); }
 .rush-clear-row-btn:active { transform: scale(0.95); }
 
+/* ── Salvage button (earned every 20 rows cleared) ───────────────────────── */
+.rush-salvage-btn {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #ff6b35;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+.rush-salvage-btn:hover  { background: rgba(255,107,53,0.3); transform: scale(1.1); }
+.rush-salvage-btn:active { transform: scale(0.95); }
+
+.rush-salvage-msg {
+  font-size: 0.8rem;
+  color: #ff6b35;
+  text-align: center;
+  padding: 2px 0;
+}
+
 .rush-row-cleared {
   animation: rush-clear-fade 0.5s ease forwards;
 }

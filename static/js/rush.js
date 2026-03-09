@@ -53,9 +53,11 @@ function freshRush(mode) {
     rowFillCol: [],   // fill animation progress (how many ✕ shown)
     rowIsInitial: [], // true for initial build rows; false for dynamically added rows
 
-    numRows:       0,
-    score:         0,  // correctly-flagged mines (current total)
-    rowsCleared:   0,
+    numRows:        0,
+    score:          0,  // currently-flagged mines (internal; drives speed only)
+    clearedMines:   0,  // mines in cleared rows (drives display, leaderboard score)
+    rowsCleared:    0,
+    salvageTokens:  0,  // earned every 20 rows cleared
     cellCountedAt: [],  // cellCountedAt[r][c] = numRows when board[r][c] was last computed
     elapsed:      0,
 
@@ -190,9 +192,9 @@ function scheduleNextRow() {
 }
 
 function updateSpeed() {
-  const reduction = Math.floor(rush.score / 5) * SPEED_PER_5;
+  const reduction = Math.floor(rush.clearedMines / 5) * SPEED_PER_5;
   rush.curInterval = Math.max(MIN_INTERVAL, rush.baseInterval - reduction);
-  const level = Math.floor(rush.score / 5) + 1;
+  const level = Math.floor(rush.clearedMines / 5) + 1;
   document.getElementById('rush-speed').textContent = '×' + level;
 }
 
@@ -516,12 +518,84 @@ function checkMineRowButtons(r) {
   }
 }
 
+// ── Salvage: earned every 20 rows cleared; removes bottom exploded-mine row ───
+function rowHasExplodedMine(r) {
+  for (let c = 0; c < rush.cols; c++)
+    if (rush.board[r][c] === -1 && rush.revealed[r][c]) return true;
+  return false;
+}
+
+function makeSalvageBtn(r) {
+  const btn = document.createElement('button');
+  btn.className   = 'rush-salvage-btn';
+  btn.title       = 'Use salvage token — remove this exploded row';
+  btn.textContent = '🔥';
+  btn.addEventListener('click', () => salvageRow(r));
+  return btn;
+}
+
+function salvageRow(r) {
+  if (rush.salvageTokens <= 0) return;
+  rush.salvageTokens--;
+  updateSalvageDisplay();
+  clearRow(r);
+}
+
+function updateSalvageDisplay() {
+  const ind = document.getElementById('rush-salvage-indicator');
+  const cnt = document.getElementById('rush-salvage-tokens');
+  if (!ind) return;
+  if (rush.salvageTokens > 0) {
+    ind.style.display = 'block';
+    if (cnt) cnt.textContent = rush.salvageTokens;
+  } else {
+    ind.style.display = 'none';
+  }
+}
+
+function checkSalvageButton() {
+  // Remove any existing salvage buttons (replace with spacers)
+  document.querySelectorAll('.rush-salvage-btn').forEach(btn => {
+    if (btn.parentElement) btn.parentElement.replaceChild(makeSpacer(), btn);
+  });
+
+  if (rush.salvageTokens <= 0) return;
+
+  // Find the lowest active row that has an exploded mine
+  for (let r = 0; r < rush.numRows; r++) {
+    if (rush.rowStatus[r] === 'active' && rowHasExplodedMine(r)) {
+      const div = rowEl(r);
+      if (!div) return;
+      if (div.firstChild?.classList?.contains('rush-row-spacer'))
+        div.replaceChild(makeSalvageBtn(r), div.firstChild);
+      if (div.lastChild?.classList?.contains('rush-row-spacer'))
+        div.replaceChild(makeSalvageBtn(r), div.lastChild);
+      return;  // only the bottom-most qualifying row
+    }
+  }
+}
+
 function clearRow(r) {
   if (rush.rowStatus[r] !== 'active') return;
+
+  // Count flagged mines in this row before clearing
+  for (const c of rush.rowMines[r])
+    if (rush.flagged[r][c] === 1) rush.clearedMines++;
+  const minesEl = document.getElementById('rush-score');
+  if (minesEl) minesEl.textContent = String(rush.clearedMines).padStart(3, '0');
+  updateSpeed();
+
   rush.rowStatus[r] = 'cleared';
   rush.rowsCleared++;
   const el = document.getElementById('rush-rows-cleared');
   if (el) el.textContent = rush.rowsCleared;
+
+  // Grant a salvage token every 20 rows cleared
+  if (rush.rowsCleared % 20 === 0) {
+    rush.salvageTokens++;
+    updateSalvageDisplay();
+    flashMessage('🔥 Salvage token!', false);
+  }
 
   const div = rowEl(r);
   if (div) {
@@ -532,6 +606,7 @@ function clearRow(r) {
   updateRevealedNearRow(r);
   updateActiveCount();
   checkMinRows();
+  checkSalvageButton();
 }
 
 // ── Mine hit ──────────────────────────────────────────────────────────────────
@@ -550,6 +625,7 @@ function rushBoom(r, c) {
   updateActiveCount();
   checkOverflow();
   updateSafetyNet();
+  checkSalvageButton();
 }
 
 function flashMessage(text, isWarn) {
@@ -644,8 +720,9 @@ function showRushOverlay() {
   }
   el.className = 'overlay loss';
 
-  const username = document.getElementById('rush-board').dataset.username || '';
-  const timeStr  = fmtTime(rush.elapsed);
+  const username    = document.getElementById('rush-board').dataset.username || '';
+  const timeStr     = fmtTime(rush.elapsed);
+  const finalScore  = rush.elapsed + rush.clearedMines * 5;
 
   let scoreForm;
   if (username) {
@@ -665,11 +742,15 @@ function showRushOverlay() {
   el.innerHTML = `
     <span>💥 Game Over</span>
     <span style="font-size:1rem">
-      Mines Found: <strong>${rush.score}</strong>
+      Mines Cleared: <strong>${rush.clearedMines}</strong>
       &nbsp;|&nbsp;
       Rows Cleared: <strong>${rush.rowsCleared}</strong>
       &nbsp;|&nbsp;
       Time: <strong>${timeStr}</strong>
+    </span>
+    <span style="font-size:1.1rem;color:var(--accent2)">
+      Score: <strong>${finalScore}</strong>
+      <span style="font-size:0.8rem;opacity:0.7">(${timeStr} + ${rush.clearedMines}×5)</span>
     </span>
     ${scoreForm}
     <button onclick="initRush(rush.mode)">Play Again</button>
@@ -696,10 +777,11 @@ async function submitRushScore(autoName = null) {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         name,
-        rush_mode: rush.mode,
-        score:     rush.score,
-        time_secs: rush.elapsed,
-        cols:      rush.cols,
+        rush_mode:     rush.mode,
+        score:         rush.elapsed + rush.clearedMines * 5,
+        cleared_mines: rush.clearedMines,
+        time_secs:     rush.elapsed,
+        cols:          rush.cols,
       }),
     });
     if (res.ok) {
@@ -740,7 +822,8 @@ async function loadRushLeaderboard(mode) {
       return `<tr class="${cls}">
         <td class="lb-rank">${rank}</td>
         <td class="lb-name">${escHtml(s.name)}</td>
-        <td class="lb-score">${s.score} mines</td>
+        <td class="lb-score">${s.score}</td>
+        <td class="lb-score">${s.cleared_mines ?? '—'} mines</td>
         <td class="lb-time">${time}</td>
         <td class="lb-date">${s.created_at}</td>
       </tr>`;
@@ -750,7 +833,7 @@ async function loadRushLeaderboard(mode) {
       <div class="lb-table-wrap">
         <table class="lb-table">
           <thead><tr>
-            <th>#</th><th>Name</th><th>Score</th><th>Time</th><th>Date</th>
+            <th>#</th><th>Name</th><th>Score</th><th>Mines</th><th>Time</th><th>Date</th>
           </tr></thead>
           <tbody>${trs}</tbody>
         </table>
@@ -834,9 +917,10 @@ function initRush(mode) {
   document.getElementById('rush-board').dataset.mode = mode;
   document.getElementById('rush-timer').textContent = '0:00';
   document.getElementById('rush-score').textContent = '  0';
+  document.getElementById('rush-rows-cleared').textContent = '0';
   document.getElementById('rush-speed').textContent = '×1';
   document.getElementById('rush-max-rows').textContent = RUSH_CFGS[mode].maxActive;
-  document.getElementById('rush-rows-cleared').textContent = '0';
+  updateSalvageDisplay();
 
   const overlay = document.getElementById('rush-overlay');
   if (overlay) overlay.style.display = 'none';
