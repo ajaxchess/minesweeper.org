@@ -813,10 +813,9 @@ function buildInitialBoard() {
       grid.appendChild(cell);
     }
 
-    const side = () => rush.rowMines[r].size === 0 ? makeRushHintMark() : makeSpacer();
-    div.appendChild(side());
+    div.appendChild(makeSpacer());
     div.appendChild(grid);
-    div.appendChild(side());
+    div.appendChild(makeSpacer());
 
     board.appendChild(div);
   }
