@@ -17,9 +17,9 @@
 
 // ── Mode configs ──────────────────────────────────────────────────────────────
 const RUSH_CFGS = {
-  easy:   { cols: 9,  density: 0.10, intervalMs: 12000, maxActive: 12 },
-  normal: { cols: 16, density: 0.15, intervalMs:  9000, maxActive: 16 },
-  hard:   { cols: 30, density: 0.20, intervalMs:  7000, maxActive: 20 },
+  easy:   { cols: 9,  density: 0.10, intervalMs: 15000, maxActive: 12 },
+  normal: { cols: 16, density: 0.15, intervalMs: 20000, maxActive: 16 },
+  hard:   { cols: 30, density: 0.20, intervalMs: 25000, maxActive: 20 },
 };
 
 const INITIAL_ROWS  = 8;    // rows to start with (pre-built, no animation)
