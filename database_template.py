@@ -110,6 +110,34 @@ def get_db():
     finally:
         db.close()
 
+# ── Rush Score model (separate table — never reset) ───────────────────────────
+class RushScore(Base):
+    __tablename__ = "rush_scores"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String(32), nullable=False)
+    user_email = Column(String(256), nullable=True, index=True)
+    score      = Column(Integer, nullable=False)   # mines found
+    time_secs  = Column(Integer, nullable=False)   # game duration
+    cols       = Column(Integer, nullable=False)   # board width
+    rush_mode  = Column(String(16), nullable=False)  # easy/normal/hard
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_rush_scores_mode_score", "rush_mode", "score"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":        self.id,
+            "name":      self.name,
+            "score":     self.score,
+            "time_secs": self.time_secs,
+            "cols":      self.cols,
+            "rush_mode": self.rush_mode,
+            "created_at":self.created_at.strftime("%Y-%m-%d"),
+        }
+
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
     Base.metadata.create_all(bind=engine)

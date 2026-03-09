@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Rush Minesweeper{% endblock %}
+{% block description %}Minesweeper Rush — endless rows grow from the top. Flag mines to clear rows before the board overflows!{% endblock %}
+
+{% block content %}
+<div class="rush-wrapper">
+
+  <!-- Left sidebar ad -->
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="game-section">
+
+    <!-- Info panel -->
+    <div class="game-info rush-info">
+      <div class="mode-row">
+        <div class="mode-badge">⚡ Rush</div>
+        <div class="rush-mode-btns">
+          <button class="rush-mode-btn active" data-mode="easy">Easy</button>
+          <button class="rush-mode-btn" data-mode="normal">Normal</button>
+          <button class="rush-mode-btn" data-mode="hard">Hard</button>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat" title="Mines found">
+          <span class="stat-icon">💣</span>
+          <span class="stat-value" id="rush-score">0</span>
+        </div>
+        <button id="rush-reset-btn" title="New game">🙂</button>
+        <div class="stat" title="Time survived">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value rush-timer-val" id="rush-timer">0:00</span>
+        </div>
+      </div>
+      <div class="rush-meta-row">
+        <span class="rush-meta-label">Speed</span>
+        <span class="rush-speed-val" id="rush-speed">×1</span>
+        <span class="rush-meta-sep">|</span>
+        <span class="rush-meta-label">Active rows</span>
+        <span class="rush-speed-val" id="rush-active-rows">0</span>
+        <span class="rush-meta-sep">|</span>
+        <span class="rush-meta-label">Max</span>
+        <span class="rush-speed-val" id="rush-max-rows">—</span>
+      </div>
+      <div id="rush-safe-indicator" class="rush-safe-msg" style="display:none">
+        ⚠️ No safe move — no penalty for guessing
+      </div>
+      <div id="rush-penalty" class="rush-penalty-msg" style="opacity:0" aria-live="polite"></div>
+    </div>
+
+    <!-- Board -->
+    <div id="rush-board-wrap">
+      <div id="rush-board"
+           data-mode="easy"
+           data-username="{{ user.name if user else '' }}">
+      </div>
+    </div>
+
+    <p class="instructions">
+      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
+      <strong>Right-click</strong> to flag mines &nbsp;|&nbsp;
+      Flag all mines in a row to <strong>clear</strong> it &nbsp;|&nbsp;
+      Hitting a mine adds <strong>+2 rows</strong>
+    </p>
+
+    <!-- Rush leaderboard -->
+    <div class="rush-lb-section">
+      <div class="rush-lb-tabs">
+        <button class="rush-lb-tab active" data-mode="easy">Easy</button>
+        <button class="rush-lb-tab" data-mode="normal">Normal</button>
+        <button class="rush-lb-tab" data-mode="hard">Hard</button>
+      </div>
+      <div id="rush-lb-content" class="rush-lb-content">
+        <div class="lb-loading">Loading…</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Right sidebar ad -->
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/rush.js?v=1"></script>
+{% endblock %}

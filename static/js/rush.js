@@ -1,0 +1,699 @@
+/**
+ * Minesweeper Rush — Game Engine
+ *
+ * Rules:
+ *  - New rows appear at the top on a timer, filling with ✕ marks (incoming).
+ *  - When a row finishes filling, it becomes playable (active).
+ *  - Left-click to reveal; right-click to flag.
+ *  - Hitting a mine adds 2 penalty rows instead of ending the game.
+ *  - A row is cleared when all its mines are flagged.
+ *  - If unfinished rows drop below MIN_ROWS, 4 new rows are added immediately.
+ *  - Game over when active rows exceed maxActive.
+ *  - Safety net: if no guaranteed safe move exists, mine hits carry no penalty.
+ */
+
+'use strict';
+
+// ── Mode configs ──────────────────────────────────────────────────────────────
+const RUSH_CFGS = {
+  easy:   { cols: 9,  density: 0.10, intervalMs: 12000, maxActive: 12 },
+  normal: { cols: 16, density: 0.15, intervalMs:  9000, maxActive: 16 },
+  hard:   { cols: 30, density: 0.20, intervalMs:  7000, maxActive: 20 },
+};
+
+const INITIAL_ROWS  = 8;    // rows to start with (pre-built, no animation)
+const MIN_ROWS      = 4;    // if unfinished rows < this, add 4 immediately
+const CLEAR_DELAY   = 500;  // ms before cleared row fades from DOM
+const MIN_INTERVAL  = 3000; // fastest possible row-arrival interval (ms)
+const SPEED_PER_5   = 400;  // interval reduction per 5 mines found
+
+const NUM_COLORS = ['','#1976D2','#388E3C','#D32F2F','#7B1FA2',
+                    '#F57F17','#00838F','#212121','#757575'];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let rush = {};
+
+function freshRush(mode) {
+  const cfg = RUSH_CFGS[mode] || RUSH_CFGS.easy;
+  return {
+    cols:         cfg.cols,
+    density:      cfg.density,
+    baseInterval: cfg.intervalMs,
+    curInterval:  cfg.intervalMs,
+    maxActive:    cfg.maxActive,
+    mode,
+
+    // Board arrays; index 0 = oldest (bottom of display), high = newest (top)
+    board:      [],   // board[r][c] = -1 (mine) or neighbor count
+    revealed:   [],   // bool
+    flagged:    [],   // 0=none 1=flag 2=question
+    rowStatus:  [],   // 'active' | 'incoming' | 'cleared'
+    rowMines:   [],   // Set of mine column-indices per row
+    rowFillCol: [],   // fill animation progress (how many ✕ shown)
+
+    numRows: 0,
+    score:   0,       // correctly-flagged mines (current total)
+    elapsed: 0,
+
+    started:    false,
+    over:       false,
+    noSafeMove: false,
+
+    timerID:     null,
+    rowTimerID:  null,
+    fillIDs:     {},  // rowIdx → setInterval ID
+  };
+}
+
+// ── Neighbour helpers ─────────────────────────────────────────────────────────
+function rushNbs(r, c) {
+  const out = [];
+  for (let dr = -1; dr <= 1; dr++)
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const nr = r + dr, nc = c + dc;
+      if (nr >= 0 && nr < rush.numRows && nc >= 0 && nc < rush.cols)
+        out.push([nr, nc]);
+    }
+  return out;
+}
+
+function neighborMineCount(r, c) {
+  let n = 0;
+  for (const [nr, nc] of rushNbs(r, c))
+    if (rush.board[nr][nc] === -1) n++;
+  return n;
+}
+
+// ── DOM helpers ───────────────────────────────────────────────────────────────
+function rowEl(r)    { return document.querySelector(`.rush-row[data-row="${r}"]`); }
+function cellEl(r,c) { return document.querySelector(`.rush-row[data-row="${r}"] [data-r="${r}"][data-c="${c}"]`); }
+
+function boardEl()  { return document.getElementById('rush-board'); }
+
+// ── Stats helpers ─────────────────────────────────────────────────────────────
+function activeCount() {
+  return rush.rowStatus.filter(s => s === 'active').length;
+}
+function unfinishedCount() {
+  return rush.rowStatus.filter(s => s === 'active' || s === 'incoming').length;
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────────
+function startRushTimer() {
+  if (rush.timerID) return;
+  rush.timerID = setInterval(() => {
+    rush.elapsed++;
+    document.getElementById('rush-timer').textContent = fmtTime(rush.elapsed);
+  }, 1000);
+}
+
+function stopRushTimer() {
+  clearInterval(rush.timerID);
+  rush.timerID = null;
+}
+
+function fmtTime(s) {
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+}
+
+// ── Row interval timer ────────────────────────────────────────────────────────
+function scheduleNextRow() {
+  if (rush.rowTimerID) clearTimeout(rush.rowTimerID);
+  rush.rowTimerID = setTimeout(() => {
+    if (!rush.over) {
+      addRow();
+      scheduleNextRow();
+    }
+  }, rush.curInterval);
+}
+
+function updateSpeed() {
+  const reduction = Math.floor(rush.score / 5) * SPEED_PER_5;
+  rush.curInterval = Math.max(MIN_INTERVAL, rush.baseInterval - reduction);
+  const level = Math.floor(rush.score / 5) + 1;
+  document.getElementById('rush-speed').textContent = '×' + level;
+}
+
+// ── Add a new row at the top (incoming) ───────────────────────────────────────
+function addRow() {
+  const r = rush.numRows;
+
+  // Extend arrays
+  rush.board.push(new Array(rush.cols).fill(0));
+  rush.revealed.push(new Array(rush.cols).fill(false));
+  rush.flagged.push(new Array(rush.cols).fill(0));
+  rush.rowStatus.push('incoming');
+  rush.rowFillCol.push(0);
+
+  // Place mines
+  const mines = new Set();
+  for (let c = 0; c < rush.cols; c++)
+    if (Math.random() < rush.density) mines.add(c);
+  rush.rowMines.push(mines);
+  for (const c of mines) rush.board[r][c] = -1;
+
+  rush.numRows++;
+
+  // Recompute neighbor counts for new row (row r-1 now exists below it)
+  for (let c = 0; c < rush.cols; c++)
+    if (rush.board[r][c] !== -1)
+      rush.board[r][c] = neighborMineCount(r, c);
+
+  // Update counts for unrevealed cells in the row below
+  if (r > 0) {
+    const below = r - 1;
+    for (let c = 0; c < rush.cols; c++) {
+      if (rush.board[below][c] !== -1 && !rush.revealed[below][c]) {
+        rush.board[below][c] = neighborMineCount(below, c);
+        if (rush.rowStatus[below] === 'active') renderCell(below, c);
+      }
+    }
+  }
+
+  // Build DOM row (prepend = visible at top)
+  prependRowDOM(r);
+
+  // Start ✕-fill animation
+  startFill(r);
+
+  updateActiveCount();
+}
+
+// ── Build a row DOM element and prepend it ────────────────────────────────────
+function prependRowDOM(r) {
+  const div = document.createElement('div');
+  div.className  = 'rush-row incoming';
+  div.dataset.row = r;
+
+  for (let c = 0; c < rush.cols; c++) {
+    const cell = document.createElement('div');
+    cell.className  = 'cell rush-incoming-cell';
+    cell.dataset.r = r;
+    cell.dataset.c = c;
+    div.appendChild(cell);
+  }
+
+  const board = boardEl();
+  board.insertBefore(div, board.firstChild);
+  // Auto-scroll so newest row is visible
+  board.scrollTop = 0;
+}
+
+// ── Fill animation: ✕ marks appear left-to-right ─────────────────────────────
+function startFill(r) {
+  const stepMs = Math.max(40, Math.floor(rush.curInterval / rush.cols));
+  let col = 0;
+
+  const id = setInterval(() => {
+    if (rush.over || rush.rowStatus[r] !== 'incoming') {
+      clearInterval(id);
+      delete rush.fillIDs[r];
+      return;
+    }
+
+    const el = cellEl(r, col);
+    if (el) { el.textContent = '✕'; el.classList.add('rush-fill-mark'); }
+    rush.rowFillCol[r] = ++col;
+
+    if (col >= rush.cols) {
+      clearInterval(id);
+      delete rush.fillIDs[r];
+      setTimeout(() => activateRow(r), 150);
+    }
+  }, stepMs);
+
+  rush.fillIDs[r] = id;
+}
+
+// ── Activate row (incoming → active, cells become interactive) ────────────────
+function activateRow(r) {
+  if (rush.rowStatus[r] !== 'incoming') return;
+  rush.rowStatus[r] = 'active';
+
+  const div = rowEl(r);
+  if (!div) return;
+  div.className = 'rush-row active';
+  div.innerHTML = '';
+
+  for (let c = 0; c < rush.cols; c++) {
+    const cell = document.createElement('div');
+    cell.className   = 'cell hidden';
+    cell.dataset.r   = r;
+    cell.dataset.c   = c;
+    cell.addEventListener('click',       () => rushReveal(r, c));
+    cell.addEventListener('contextmenu', e  => { e.preventDefault(); rushFlag(r, c); });
+    div.appendChild(cell);
+  }
+
+  updateActiveCount();
+  checkOverflow();
+  checkMinRows();
+  updateSafetyNet();
+}
+
+// ── Render a single cell ──────────────────────────────────────────────────────
+function renderCell(r, c, isDetonated = false) {
+  const el  = cellEl(r, c);
+  if (!el) return;
+  const val = rush.board[r][c];
+  const f   = rush.flagged[r][c];
+
+  el.className  = 'cell';
+  el.style.color = '';
+
+  if (!rush.revealed[r][c]) {
+    if (f === 1)      { el.classList.add('flagged');  el.textContent = '🚩'; }
+    else if (f === 2) { el.classList.add('question'); el.textContent = '❓'; }
+    else              { el.classList.add('hidden');   el.textContent = ''; }
+    return;
+  }
+
+  el.classList.add('revealed');
+  if (val === -1) {
+    el.classList.add(isDetonated ? 'mine-detonated' : 'mine');
+    el.textContent = '💣';
+  } else if (val === 0) {
+    el.textContent = '';
+  } else {
+    el.textContent = val;
+    el.style.color  = NUM_COLORS[val] || '';
+  }
+}
+
+// ── Reveal (BFS flood-fill, stops at active-row boundary) ────────────────────
+function rushReveal(r, c) {
+  if (rush.over) return;
+  if (rush.rowStatus[r] !== 'active') return;
+  if (rush.revealed[r][c] || rush.flagged[r][c] === 1) return;
+
+  if (!rush.started) startGame();
+
+  if (rush.board[r][c] === -1) {
+    rushBoom(r, c);
+    return;
+  }
+
+  // BFS
+  const queue = [[r, c]];
+  while (queue.length) {
+    const [cr, cc] = queue.shift();
+    if (rush.revealed[cr][cc]) continue;
+    if (rush.rowStatus[cr] !== 'active') continue;
+    rush.revealed[cr][cc] = true;
+    renderCell(cr, cc);
+    if (rush.board[cr][cc] === 0) {
+      rushNbs(cr, cc).forEach(([nr, nc]) => {
+        if (!rush.revealed[nr][nc] && rush.flagged[nr][nc] !== 1)
+          queue.push([nr, nc]);
+      });
+    }
+  }
+
+  updateSafetyNet();
+}
+
+// ── Flag ──────────────────────────────────────────────────────────────────────
+function rushFlag(r, c) {
+  if (rush.over) return;
+  if (rush.rowStatus[r] !== 'active') return;
+  if (rush.revealed[r][c]) return;
+
+  if (!rush.started) startGame();
+
+  const prev = rush.flagged[r][c];
+  rush.flagged[r][c] = (prev + 1) % 3;
+  renderCell(r, c);
+
+  recomputeScore();
+  checkRowCleared(r);
+  updateSafetyNet();
+}
+
+// ── Score: count correctly-flagged mines across all active rows ───────────────
+function recomputeScore() {
+  let total = 0;
+  for (let r = 0; r < rush.numRows; r++) {
+    if (rush.rowStatus[r] === 'cleared') continue;
+    for (let c = 0; c < rush.cols; c++)
+      if (rush.board[r][c] === -1 && rush.flagged[r][c] === 1) total++;
+  }
+  rush.score = total;
+  document.getElementById('rush-score').textContent = String(rush.score).padStart(3, '0');
+  updateSpeed();
+}
+
+// ── Check if an active row has all mines flagged ──────────────────────────────
+function checkRowCleared(r) {
+  if (rush.rowStatus[r] !== 'active') return;
+  for (const c of rush.rowMines[r])
+    if (rush.flagged[r][c] !== 1) return;
+  clearRow(r);
+}
+
+function clearRow(r) {
+  rush.rowStatus[r] = 'cleared';
+  const div = rowEl(r);
+  if (div) {
+    div.classList.add('rush-row-cleared');
+    setTimeout(() => div.remove(), CLEAR_DELAY);
+  }
+  updateActiveCount();
+  checkMinRows();
+}
+
+// ── Mine hit ──────────────────────────────────────────────────────────────────
+function rushBoom(r, c) {
+  rush.revealed[r][c] = true;
+  renderCell(r, c, true);
+
+  if (rush.noSafeMove) {
+    flashMessage('No penalty!', false);
+  } else {
+    flashMessage('+2 rows!', true);
+    addRow();
+    addRow();
+  }
+
+  updateActiveCount();
+  checkOverflow();
+  updateSafetyNet();
+}
+
+function flashMessage(text, isWarn) {
+  const el = document.getElementById('rush-penalty');
+  if (!el) return;
+  el.textContent  = text;
+  el.style.color  = isWarn ? '#e94560' : '#53d8fb';
+  el.style.opacity = '1';
+  setTimeout(() => { el.style.opacity = '0'; }, 1600);
+}
+
+// ── Safety net: detect if any guaranteed-safe reveal exists ──────────────────
+function updateSafetyNet() {
+  rush.noSafeMove = !hasSafeMove();
+  const el = document.getElementById('rush-safe-indicator');
+  if (el) el.style.display = rush.noSafeMove ? 'block' : 'none';
+}
+
+function hasSafeMove() {
+  for (let r = 0; r < rush.numRows; r++) {
+    if (rush.rowStatus[r] !== 'active') continue;
+    for (let c = 0; c < rush.cols; c++) {
+      // An unrevealed zero is always safe
+      if (!rush.revealed[r][c] && rush.board[r][c] === 0 && rush.flagged[r][c] !== 1)
+        return true;
+      // A revealed number whose flag count matches — remaining hidden are safe
+      if (rush.revealed[r][c] && rush.board[r][c] > 0) {
+        const nbs     = rushNbs(r, c).filter(([nr, nc]) => rush.rowStatus[nr] === 'active');
+        const flagged = nbs.filter(([nr, nc]) => rush.flagged[nr][nc] === 1).length;
+        const hidden  = nbs.filter(([nr, nc]) => !rush.revealed[nr][nc] && rush.flagged[nr][nc] !== 1);
+        if (flagged === rush.board[r][c] && hidden.length > 0) return true;
+      }
+    }
+  }
+  return false;
+}
+
+// ── Overflow: too many active rows = game over ────────────────────────────────
+function checkOverflow() {
+  if (activeCount() > rush.maxActive) rushGameOver();
+}
+
+// ── Min rows: fewer than MIN_ROWS unfinished → add 4 immediately ─────────────
+function checkMinRows() {
+  if (!rush.over && unfinishedCount() < MIN_ROWS) {
+    for (let i = 0; i < 4; i++) addRow();
+  }
+}
+
+// ── Update active-row counter in UI ──────────────────────────────────────────
+function updateActiveCount() {
+  const el = document.getElementById('rush-active-rows');
+  if (el) el.textContent = activeCount();
+}
+
+// ── Start game (on first interaction) ────────────────────────────────────────
+function startGame() {
+  rush.started = true;
+  startRushTimer();
+  scheduleNextRow();
+}
+
+// ── Game Over ─────────────────────────────────────────────────────────────────
+function rushGameOver() {
+  if (rush.over) return;
+  rush.over = true;
+  stopRushTimer();
+  clearTimeout(rush.rowTimerID);
+  for (const id of Object.values(rush.fillIDs)) clearInterval(id);
+
+  // Reveal all mine positions in active rows
+  for (let r = 0; r < rush.numRows; r++) {
+    if (rush.rowStatus[r] !== 'active') continue;
+    for (const c of rush.rowMines[r]) {
+      if (!rush.revealed[r][c]) {
+        rush.revealed[r][c] = true;
+        renderCell(r, c);
+      }
+    }
+  }
+
+  showRushOverlay();
+}
+
+// ── Overlay ───────────────────────────────────────────────────────────────────
+function showRushOverlay() {
+  let el = document.getElementById('rush-overlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'rush-overlay';
+    document.getElementById('rush-board-wrap').appendChild(el);
+  }
+  el.className = 'overlay loss';
+
+  const username = document.getElementById('rush-board').dataset.username || '';
+  const timeStr  = fmtTime(rush.elapsed);
+
+  let scoreForm;
+  if (username) {
+    scoreForm = `<div id="rush-score-msg" style="font-size:0.9rem">Saving score…</div>`;
+  } else {
+    scoreForm = `
+      <div class="overlay-score-form">
+        <input id="rush-player-name" type="text" maxlength="32"
+               placeholder="Enter your name" autocomplete="off" />
+        <button onclick="submitRushScore()">Save Score</button>
+      </div>
+      <div id="rush-score-msg" style="font-size:0.85rem;min-height:1.2em"></div>
+      <a class="overlay-lb-link" href="/auth/login">Sign in to skip this step</a>
+    `;
+  }
+
+  el.innerHTML = `
+    <span>💥 Game Over</span>
+    <span style="font-size:1rem">
+      Mines Found: <strong>${rush.score}</strong>
+      &nbsp;|&nbsp;
+      Time: <strong>${timeStr}</strong>
+    </span>
+    ${scoreForm}
+    <button onclick="initRush(rush.mode)">Play Again</button>
+  `;
+  el.style.display = 'flex';
+
+  if (username) {
+    submitRushScore(username);
+  } else {
+    setTimeout(() => document.getElementById('rush-player-name')?.focus(), 50);
+  }
+}
+
+async function submitRushScore(autoName = null) {
+  const msgEl  = document.getElementById('rush-score-msg');
+  const nameEl = document.getElementById('rush-player-name');
+  const name   = autoName || nameEl?.value.trim();
+
+  if (!name) { if (msgEl) msgEl.textContent = '⚠️ Please enter your name.'; return; }
+
+  try {
+    const res = await fetch('/api/rush-scores', {
+      method:  'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        name,
+        rush_mode: rush.mode,
+        score:     rush.score,
+        time_secs: rush.elapsed,
+        cols:      rush.cols,
+      }),
+    });
+    if (res.ok) {
+      if (msgEl) msgEl.textContent = `✅ Score saved for ${name}!`;
+      if (nameEl) nameEl.disabled = true;
+      const btn = document.querySelector('#rush-overlay .overlay-score-form button');
+      if (btn) btn.disabled = true;
+      loadRushLeaderboard(rush.mode);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      if (msgEl) msgEl.textContent = `❌ ${err.detail || 'Could not save score.'}`;
+    }
+  } catch {
+    if (msgEl) msgEl.textContent = '❌ Network error.';
+  }
+}
+
+// ── Leaderboard ───────────────────────────────────────────────────────────────
+async function loadRushLeaderboard(mode) {
+  const wrap = document.getElementById('rush-lb-content');
+  if (!wrap) return;
+  wrap.innerHTML = '<div class="lb-loading">Loading…</div>';
+
+  try {
+    const res  = await fetch(`/api/rush-scores/${mode}`);
+    const rows = await res.json();
+
+    if (!rows.length) {
+      wrap.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
+      return;
+    }
+
+    const medals = ['🥇','🥈','🥉'];
+    const trs = rows.map((s, i) => {
+      const cls  = i < 3 ? `top-${i+1}` : '';
+      const rank = medals[i] || `#${i+1}`;
+      const time = fmtTime(s.time_secs);
+      return `<tr class="${cls}">
+        <td class="lb-rank">${rank}</td>
+        <td class="lb-name">${escHtml(s.name)}</td>
+        <td class="lb-score">${s.score} mines</td>
+        <td class="lb-time">${time}</td>
+        <td class="lb-date">${s.created_at}</td>
+      </tr>`;
+    }).join('');
+
+    wrap.innerHTML = `
+      <div class="lb-table-wrap">
+        <table class="lb-table">
+          <thead><tr>
+            <th>#</th><th>Name</th><th>Score</th><th>Time</th><th>Date</th>
+          </tr></thead>
+          <tbody>${trs}</tbody>
+        </table>
+      </div>`;
+  } catch {
+    wrap.innerHTML = '<div class="lb-empty">Could not load scores.</div>';
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Build initial board (no animation) ───────────────────────────────────────
+function buildInitialBoard() {
+  // Add INITIAL_ROWS rows to arrays without animation
+  for (let i = 0; i < INITIAL_ROWS; i++) {
+    const r = rush.numRows;
+    rush.board.push(new Array(rush.cols).fill(0));
+    rush.revealed.push(new Array(rush.cols).fill(false));
+    rush.flagged.push(new Array(rush.cols).fill(0));
+    rush.rowStatus.push('active');
+    rush.rowFillCol.push(rush.cols);
+
+    const mines = new Set();
+    for (let c = 0; c < rush.cols; c++)
+      if (Math.random() < rush.density) mines.add(c);
+    rush.rowMines.push(mines);
+    for (const c of mines) rush.board[r][c] = -1;
+
+    rush.numRows++;
+  }
+
+  // Compute all neighbor counts now that all mines are placed
+  for (let r = 0; r < rush.numRows; r++)
+    for (let c = 0; c < rush.cols; c++)
+      if (rush.board[r][c] !== -1)
+        rush.board[r][c] = neighborMineCount(r, c);
+
+  // Render DOM: highest index first (newest = top), lowest last (oldest = bottom)
+  const board = boardEl();
+  board.innerHTML = '';
+  board.style.setProperty('--cols', rush.cols);
+  for (let r = rush.numRows - 1; r >= 0; r--) {
+    const div = document.createElement('div');
+    div.className   = 'rush-row active';
+    div.dataset.row = r;
+
+    for (let c = 0; c < rush.cols; c++) {
+      const cell = document.createElement('div');
+      cell.className   = 'cell hidden';
+      cell.dataset.r   = r;
+      cell.dataset.c   = c;
+      cell.addEventListener('click',       () => rushReveal(r, c));
+      cell.addEventListener('contextmenu', e  => { e.preventDefault(); rushFlag(r, c); });
+      div.appendChild(cell);
+    }
+    board.appendChild(div);
+  }
+}
+
+// ── Init / Reset ─────────────────────────────────────────────────────────────
+function initRush(mode) {
+  // Stop any running timers from previous game
+  if (rush.timerID)    clearInterval(rush.timerID);
+  if (rush.rowTimerID) clearTimeout(rush.rowTimerID);
+  if (rush.fillIDs) for (const id of Object.values(rush.fillIDs)) clearInterval(id);
+
+  rush = freshRush(mode);
+
+  // Update UI
+  document.getElementById('rush-board').dataset.mode = mode;
+  document.getElementById('rush-timer').textContent = '0:00';
+  document.getElementById('rush-score').textContent = '  0';
+  document.getElementById('rush-speed').textContent = '×1';
+  document.getElementById('rush-max-rows').textContent = RUSH_CFGS[mode].maxActive;
+
+  const overlay = document.getElementById('rush-overlay');
+  if (overlay) overlay.style.display = 'none';
+
+  const safeEl = document.getElementById('rush-safe-indicator');
+  if (safeEl) safeEl.style.display = 'none';
+
+  boardEl().style.setProperty('--cols', rush.cols);
+  buildInitialBoard();
+  updateActiveCount();
+  updateSafetyNet();
+}
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const boardEl = document.getElementById('rush-board');
+  if (!boardEl) return;
+
+  // Mode buttons
+  document.querySelectorAll('.rush-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.rush-mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      initRush(btn.dataset.mode);
+    });
+  });
+
+  // Reset button
+  document.getElementById('rush-reset-btn')
+    .addEventListener('click', () => initRush(rush.mode));
+
+  // Leaderboard tabs
+  document.querySelectorAll('.rush-lb-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.rush-lb-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      loadRushLeaderboard(tab.dataset.mode);
+    });
+  });
+
+  // Start on easy
+  initRush('easy');
+  loadRushLeaderboard('easy');
+});

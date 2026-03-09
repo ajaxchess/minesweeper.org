@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -208,6 +208,67 @@ def get_scores(mode: GameMode, db: Session = Depends(get_db)):
         db.query(Score)
         .filter(Score.mode == mode)
         .order_by(Score.time_secs.asc(), Score.created_at.asc())
+        .limit(15)
+        .all()
+    )
+    return [s.to_dict() for s in top]
+
+
+@app.get("/rush", response_class=HTMLResponse)
+async def rush(request: Request):
+    return templates.TemplateResponse("rush.html", {
+        "request": request, "mode": "rush",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+# ── Rush Leaderboard API ───────────────────────────────────────────────────────
+
+RUSH_MODES_VALID = {"easy", "normal", "hard"}
+
+class RushScoreSubmit(BaseModel):
+    name:      str = Field(..., min_length=1, max_length=32)
+    rush_mode: str = Field(..., pattern="^(easy|normal|hard)$")
+    score:     int = Field(..., ge=0, le=9999)
+    time_secs: int = Field(..., ge=1, le=99999)
+    cols:      int = Field(..., ge=9, le=30)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+
+@app.post("/api/rush-scores", status_code=201)
+def submit_rush_score(payload: RushScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user  = get_current_user(request)
+    entry = RushScore(
+        name       = payload.name,
+        user_email = user["email"] if user else None,
+        score      = payload.score,
+        time_secs  = payload.time_secs,
+        cols       = payload.cols,
+        rush_mode  = payload.rush_mode,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/rush-scores/{rush_mode}")
+def get_rush_scores(rush_mode: str, db: Session = Depends(get_db)):
+    if rush_mode not in RUSH_MODES_VALID:
+        raise HTTPException(status_code=400, detail="Invalid mode")
+    top = (
+        db.query(RushScore)
+        .filter(RushScore.rush_mode == rush_mode)
+        .order_by(RushScore.score.desc(), RushScore.time_secs.desc())
         .limit(15)
         .all()
     )
