@@ -419,30 +419,24 @@ footer {
 
 .auth-btn:hover { opacity: 0.85; }
 
-.lang-switcher {
-  display: flex;
-  gap: 2px;
-  align-items: center;
-}
-
-.lang-btn {
+.lang-select {
   background: var(--surface2);
   color: var(--text-dim);
-  border: 1px solid transparent;
+  border: 1px solid var(--surface2);
   border-radius: var(--radius);
-  padding: 0.25rem 0.45rem;
-  font-size: 0.7rem;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.5px;
-  text-decoration: none;
+  cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
 }
 
-.lang-btn:hover,
-.lang-btn.lang-active {
+.lang-select:hover,
+.lang-select:focus {
   color: var(--accent2);
   border-color: var(--accent2);
-  opacity: 1;
+  outline: none;
 }
 
 /* ── Auth area ────────────────────────────────────────────────────────────── */

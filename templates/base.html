@@ -39,15 +39,15 @@
             {{ t.auth_sign_in }}
           </a>
         {% endif %}
-        <div class="lang-switcher">
-          <a href="/set-lang?lang=en" class="lang-btn{% if lang == 'en' %} lang-active{% endif %}">EN</a>
-          <a href="/set-lang?lang=eo" class="lang-btn{% if lang == 'eo' %} lang-active{% endif %}">EO</a>
-          <a href="/set-lang?lang=de" class="lang-btn{% if lang == 'de' %} lang-active{% endif %}">DE</a>
-          <a href="/set-lang?lang=es" class="lang-btn{% if lang == 'es' %} lang-active{% endif %}">ES</a>
-          <a href="/set-lang?lang=th" class="lang-btn{% if lang == 'th' %} lang-active{% endif %}">TH</a>
-          <a href="/set-lang?lang=pgl" class="lang-btn{% if lang == 'pgl' %} lang-active{% endif %}">PGL</a>
-          <a href="/set-lang?lang=uk" class="lang-btn{% if lang == 'uk' %} lang-active{% endif %}">UK</a>
-        </div>
+        <select class="lang-select" onchange="window.location='/set-lang?lang='+this.value">
+          <option value="en"  {% if lang == 'en'  %}selected{% endif %}>EN</option>
+          <option value="eo"  {% if lang == 'eo'  %}selected{% endif %}>EO</option>
+          <option value="de"  {% if lang == 'de'  %}selected{% endif %}>DE</option>
+          <option value="es"  {% if lang == 'es'  %}selected{% endif %}>ES</option>
+          <option value="th"  {% if lang == 'th'  %}selected{% endif %}>TH</option>
+          <option value="pgl" {% if lang == 'pgl' %}selected{% endif %}>PGL</option>
+          <option value="uk"  {% if lang == 'uk'  %}selected{% endif %}>UK</option>
+        </select>
       </div>
     </div>
   </header>
