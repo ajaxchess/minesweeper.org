@@ -248,6 +248,26 @@ function addRow() {
   if (r > 0) updateRevealedNearRow(r - 1);
 
   updateActiveCount();
+  autoClearIfOverflow();
+}
+
+// ── Auto-clear bottom clearable row when > 4 clearable rows accumulate ────────
+function isRowClearable(r) {
+  if (rush.rowStatus[r] !== 'active') return false;
+  if (rush.rowMines[r].size === 0) {
+    for (let c = 0; c < rush.cols; c++)
+      if (!rush.revealed[r][c]) return false;
+    return true;
+  }
+  return [...rush.rowMines[r]].every(c => rush.flagged[r][c] === 1);
+}
+
+function autoClearIfOverflow() {
+  const clearable = [];
+  for (let r = 0; r < rush.numRows; r++)
+    if (isRowClearable(r)) clearable.push(r);
+  if (clearable.length > 4)
+    clearRow(clearable[0]);  // clearable[0] is the bottom-most (lowest index)
 }
 
 // ── Spacer helper (keeps all rows aligned with button-bearing rows) ───────────
