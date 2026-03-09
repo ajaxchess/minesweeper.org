@@ -1104,6 +1104,10 @@ footer {
 
 .rush-row.incoming { opacity: 0.7; }
 
+/* ── Stale cell (shows ?): clickable to refresh count ───────────────────── */
+.cell.rush-stale          { cursor: pointer; }
+.cell.rush-stale:hover    { background: var(--cell-hover); }
+
 /* ── Spacer: keeps all rows aligned with button-bearing rows ─────────────── */
 .rush-row-spacer {
   flex-shrink: 0;

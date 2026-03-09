@@ -53,9 +53,10 @@ function freshRush(mode) {
     rowFillCol: [],   // fill animation progress (how many ✕ shown)
     rowIsInitial: [], // true for initial build rows; false for dynamically added rows
 
-    numRows:      0,
-    score:        0,  // correctly-flagged mines (current total)
-    rowsCleared:  0,
+    numRows:       0,
+    score:         0,  // correctly-flagged mines (current total)
+    rowsCleared:   0,
+    cellCountedAt: [],  // cellCountedAt[r][c] = numRows when board[r][c] was last computed
     elapsed:      0,
 
     started:    false,
@@ -108,9 +109,9 @@ function getCellDisplay(r, c) {
     if (rush.board[nr][nc] !== -1) continue; // not a mine
 
     const isAbove = nr > r;
-    // Was this mine counted in board[r][c] at init time?
-    // Yes if same row/below, or if both rows are initial (built together).
-    const wasCounted = !isAbove || (rush.rowIsInitial[r] && rush.rowIsInitial[nr]);
+    // Was this mine counted in board[r][c] when the cell was last computed?
+    // nr < cellCountedAt[r][c] means row nr existed at that time.
+    const wasCounted = !isAbove || nr < rush.cellCountedAt[r][c];
 
     if (!wasCounted) {
       // Mine from a row added after this cell's row was initialised
@@ -205,7 +206,8 @@ function addRow() {
   rush.flagged.push(new Array(rush.cols).fill(0));
   rush.rowStatus.push('incoming');
   rush.rowFillCol.push(0);
-  rush.rowIsInitial.push(false);  // dynamically added rows are never "initial"
+  rush.rowIsInitial.push(false);
+  rush.cellCountedAt.push(new Array(rush.cols).fill(0));  // filled after numRows++ below
 
   // Place mines
   const mines = new Set();
@@ -217,9 +219,10 @@ function addRow() {
   rush.numRows++;
 
   // Recompute neighbor counts for new row (row r-1 now exists below it)
-  for (let c = 0; c < rush.cols; c++)
-    if (rush.board[r][c] !== -1)
-      rush.board[r][c] = neighborMineCount(r, c);
+  for (let c = 0; c < rush.cols; c++) {
+    if (rush.board[r][c] !== -1) rush.board[r][c] = neighborMineCount(r, c);
+    rush.cellCountedAt[r][c] = rush.numRows;
+  }
 
   // Update counts for unrevealed cells in the row below
   if (r > 0) {
@@ -227,6 +230,7 @@ function addRow() {
     for (let c = 0; c < rush.cols; c++) {
       if (rush.board[below][c] !== -1 && !rush.revealed[below][c]) {
         rush.board[below][c] = neighborMineCount(below, c);
+        rush.cellCountedAt[below][c] = rush.numRows;
         if (rush.rowStatus[below] === 'active') renderCell(below, c);
       }
     }
@@ -401,7 +405,11 @@ function renderCell(r, c, isDetonated = false) {
     el.textContent = '';
   } else {
     const disp = getCellDisplay(r, c);
-    if (disp) { el.textContent = disp.text; el.style.color = disp.color; }
+    if (disp) {
+      el.textContent = disp.text;
+      el.style.color = disp.color;
+      if (disp.text === '?') el.classList.add('rush-stale');
+    }
   }
 }
 
@@ -409,7 +417,17 @@ function renderCell(r, c, isDetonated = false) {
 function rushReveal(r, c) {
   if (rush.over) return;
   if (rush.rowStatus[r] !== 'active') return;
-  if (rush.revealed[r][c] || rush.flagged[r][c] === 1) return;
+  if (rush.flagged[r][c] === 1) return;
+  if (rush.revealed[r][c]) {
+    // Re-click a stale '?' cell to refresh its count
+    const disp = getCellDisplay(r, c);
+    if (disp && disp.text === '?') {
+      rush.board[r][c] = neighborMineCount(r, c);
+      rush.cellCountedAt[r][c] = rush.numRows;
+      renderCell(r, c);
+    }
+    return;
+  }
 
   if (!rush.started) startGame();
 
@@ -734,7 +752,8 @@ function buildInitialBoard() {
     rush.flagged.push(new Array(rush.cols).fill(0));
     rush.rowStatus.push('active');
     rush.rowFillCol.push(rush.cols);
-    rush.rowIsInitial.push(true);  // all initial rows know about each other
+    rush.rowIsInitial.push(true);
+    rush.cellCountedAt.push(new Array(rush.cols).fill(INITIAL_ROWS));
 
     const mines = new Set();
     for (let c = 0; c < rush.cols; c++)
