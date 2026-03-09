@@ -631,6 +631,7 @@ function clearRow(r) {
 function rushBoom(r, c) {
   rush.revealed[r][c] = true;
   renderCell(r, c, true);
+  rowEl(r)?.classList.add('exploded');
 
   if (rush.noSafeMove) {
     flashMessage('No penalty!', false);
