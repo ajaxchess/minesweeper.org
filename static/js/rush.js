@@ -772,7 +772,7 @@ function showRushOverlay() {
       <span style="font-size:0.8rem;opacity:0.7">(${timeStr} + ${rush.clearedMines}×5)</span>
     </span>
     ${scoreForm}
-    <button onclick="initRush(rush.mode)">Play Again</button>
+    <button onclick="initRush('${rush.mode}')">Play Again</button>
   `;
   el.style.display = 'flex';
 
