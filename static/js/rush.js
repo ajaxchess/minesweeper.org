@@ -255,6 +255,14 @@ function makeSpacer() {
   return s;
 }
 
+// ── Hint mark: shown on mine-free rows before all cells are revealed ─────────
+function makeRushHintMark() {
+  const d = document.createElement('div');
+  d.className = 'rush-row-hint';
+  d.textContent = '?';
+  return d;
+}
+
 // ── Clear-button helper ───────────────────────────────────────────────────────
 function makeRushClearBtn(r, title) {
   const btn = document.createElement('button');
@@ -277,12 +285,10 @@ function checkEmptyRowButtons(r) {
   const div = rowEl(r);
   if (!div) return;
 
-  // Replace left spacer (firstChild) if it's still a spacer
-  if (div.firstChild?.classList?.contains('rush-row-spacer'))
+  const isReplaceable = el => el?.classList?.contains('rush-row-spacer') || el?.classList?.contains('rush-row-hint');
+  if (isReplaceable(div.firstChild))
     div.replaceChild(makeRushClearBtn(r, 'No mines — click to clear row'), div.firstChild);
-
-  // Replace right spacer (lastChild) if it's still a spacer
-  if (div.lastChild?.classList?.contains('rush-row-spacer'))
+  if (isReplaceable(div.lastChild))
     div.replaceChild(makeRushClearBtn(r, 'No mines — click to clear row'), div.lastChild);
 }
 
@@ -368,11 +374,12 @@ function activateRow(r) {
     grid.appendChild(cell);
   }
 
-  // Always add spacers for consistent alignment; mine-free rows promote
-  // spacers → ✓ buttons once all cells are revealed (see checkEmptyRowButtons).
-  div.appendChild(makeSpacer());
+  // Mine-free rows show a '?' hint mark until all cells are revealed, then ✓ buttons.
+  // Mine rows use invisible spacers (buttons appear when all mines are flagged).
+  const side = () => rush.rowMines[r].size === 0 ? makeRushHintMark() : makeSpacer();
+  div.appendChild(side());
   div.appendChild(grid);
-  div.appendChild(makeSpacer());
+  div.appendChild(side());
 
   updateActiveCount();
   checkOverflow();
@@ -806,9 +813,10 @@ function buildInitialBoard() {
       grid.appendChild(cell);
     }
 
-    div.appendChild(makeSpacer());
+    const side = () => rush.rowMines[r].size === 0 ? makeRushHintMark() : makeSpacer();
+    div.appendChild(side());
     div.appendChild(grid);
-    div.appendChild(makeSpacer());
+    div.appendChild(side());
 
     board.appendChild(div);
   }
