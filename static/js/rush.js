@@ -651,6 +651,35 @@ function clearRow(r) {
       if (rush.revealed[row][c]) renderCell(row, c);
     }
   }
+
+  // BFS from any revealed cell that now has effective 0 mine neighbors —
+  // clearing mines can open up safe cascades that weren't possible before.
+  const bfsQueue = [];
+  for (let row = 0; row < rush.numRows; row++) {
+    if (rush.rowStatus[row] !== 'active') continue;
+    for (let c = 0; c < rush.cols; c++) {
+      if (!rush.revealed[row][c]) continue;
+      const disp = getCellDisplay(row, c);
+      const effectiveZero = disp ? disp.text === '' : rush.board[row][c] === 0;
+      if (effectiveZero) bfsQueue.push([row, c]);
+    }
+  }
+  const seen = new Set();
+  while (bfsQueue.length) {
+    const [cr, cc] = bfsQueue.shift();
+    const key = cr + ',' + cc;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    for (const [nr, nc] of rushNbs(cr, cc)) {
+      if (rush.rowStatus[nr] !== 'active') continue;
+      if (rush.revealed[nr][nc] || rush.flagged[nr][nc] === 1) continue;
+      if (rush.board[nr][nc] === -1) continue; // don't auto-reveal mines
+      rush.revealed[nr][nc] = true;
+      renderCell(nr, nc);
+      const nDisp = getCellDisplay(nr, nc);
+      if (!nDisp || nDisp.text === '') bfsQueue.push([nr, nc]);
+    }
+  }
   updateActiveCount();
   checkMinRows();
   checkSalvageButton();
