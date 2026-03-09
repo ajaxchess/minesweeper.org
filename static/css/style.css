@@ -1104,6 +1104,12 @@ footer {
 
 .rush-row.incoming { opacity: 0.7; }
 
+/* ── Spacer: keeps all rows aligned with button-bearing rows ─────────────── */
+.rush-row-spacer {
+  flex-shrink: 0;
+  width: 22px;
+}
+
 /* ── Clear-row button (shown on mine-free rows) ──────────────────────────── */
 .rush-clear-row-btn {
   flex-shrink: 0;

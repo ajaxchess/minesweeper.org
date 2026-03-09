@@ -245,6 +245,50 @@ function addRow() {
   updateActiveCount();
 }
 
+// ── Spacer helper (keeps all rows aligned with button-bearing rows) ───────────
+function makeSpacer() {
+  const s = document.createElement('div');
+  s.className = 'rush-row-spacer';
+  return s;
+}
+
+// ── Clear-button helper ───────────────────────────────────────────────────────
+function makeRushClearBtn(r) {
+  const btn = document.createElement('button');
+  btn.className   = 'rush-clear-row-btn';
+  btn.title       = 'No mines — click to clear row';
+  btn.textContent = '✓';
+  btn.addEventListener('click', () => clearRow(r));
+  return btn;
+}
+
+// ── Promote spacers → buttons when a mine-free row is fully revealed ──────────
+function checkEmptyRowButtons(r) {
+  if (rush.rowStatus[r] !== 'active') return;
+  if (rush.rowMines[r].size !== 0) return;
+
+  // Only show buttons if every cell has been revealed
+  for (let c = 0; c < rush.cols; c++)
+    if (!rush.revealed[r][c]) return;
+
+  const div = rowEl(r);
+  if (!div) return;
+
+  // Replace left spacer (firstChild) if it's still a spacer
+  if (div.firstChild?.classList?.contains('rush-row-spacer'))
+    div.replaceChild(makeRushClearBtn(r), div.firstChild);
+
+  // Replace right spacer (lastChild) if it's still a spacer
+  if (div.lastChild?.classList?.contains('rush-row-spacer'))
+    div.replaceChild(makeRushClearBtn(r), div.lastChild);
+}
+
+// Check all active mine-free rows (called after BFS may have revealed many cells)
+function checkAllEmptyRowButtons() {
+  for (let r = 0; r < rush.numRows; r++)
+    checkEmptyRowButtons(r);
+}
+
 // ── Build a row DOM element and prepend it ────────────────────────────────────
 function prependRowDOM(r) {
   const div = document.createElement('div');
@@ -261,7 +305,11 @@ function prependRowDOM(r) {
     cell.dataset.c  = c;
     grid.appendChild(cell);
   }
+
+  // Spacers keep every row at the same width as rows with buttons
+  div.appendChild(makeSpacer());
   div.appendChild(grid);
+  div.appendChild(makeSpacer());
 
   const board = boardEl();
   board.insertBefore(div, board.firstChild);
@@ -317,22 +365,11 @@ function activateRow(r) {
     grid.appendChild(cell);
   }
 
-  // For mine-free rows: show clear buttons on both sides
-  if (rush.rowMines[r].size === 0) {
-    const makeBtn = () => {
-      const btn = document.createElement('button');
-      btn.className = 'rush-clear-row-btn';
-      btn.title     = 'No mines — click to clear row';
-      btn.textContent = '✓';
-      btn.addEventListener('click', () => clearRow(r));
-      return btn;
-    };
-    div.appendChild(makeBtn());
-    div.appendChild(grid);
-    div.appendChild(makeBtn());
-  } else {
-    div.appendChild(grid);
-  }
+  // Always add spacers for consistent alignment; mine-free rows promote
+  // spacers → ✓ buttons once all cells are revealed (see checkEmptyRowButtons).
+  div.appendChild(makeSpacer());
+  div.appendChild(grid);
+  div.appendChild(makeSpacer());
 
   updateActiveCount();
   checkOverflow();
@@ -398,6 +435,7 @@ function rushReveal(r, c) {
     }
   }
 
+  checkAllEmptyRowButtons();
   updateSafetyNet();
 }
 
@@ -730,21 +768,9 @@ function buildInitialBoard() {
       grid.appendChild(cell);
     }
 
-    if (rush.rowMines[r].size === 0) {
-      const makeBtn = () => {
-        const btn = document.createElement('button');
-        btn.className   = 'rush-clear-row-btn';
-        btn.title       = 'No mines — click to clear row';
-        btn.textContent = '✓';
-        btn.addEventListener('click', () => clearRow(r));
-        return btn;
-      };
-      div.appendChild(makeBtn());
-      div.appendChild(grid);
-      div.appendChild(makeBtn());
-    } else {
-      div.appendChild(grid);
-    }
+    div.appendChild(makeSpacer());
+    div.appendChild(grid);
+    div.appendChild(makeSpacer());
 
     board.appendChild(div);
   }
