@@ -51,6 +51,7 @@ function freshRush(mode) {
     rowStatus:  [],   // 'active' | 'incoming' | 'cleared'
     rowMines:   [],   // Set of mine column-indices per row
     rowFillCol: [],   // fill animation progress (how many ✕ shown)
+    rowIsInitial: [], // true for initial build rows; false for dynamically added rows
 
     numRows: 0,
     score:   0,       // correctly-flagged mines (current total)
@@ -84,6 +85,65 @@ function neighborMineCount(r, c) {
   for (const [nr, nc] of rushNbs(r, c))
     if (rush.board[nr][nc] === -1) n++;
   return n;
+}
+
+// ── Stale-number display ───────────────────────────────────────────────────────
+// board[r][c] was computed when row r was initialised.  For initial rows every
+// neighbour row that existed at build time is included; for dynamically-added
+// rows only rows < r were present.  A mine in row nr > r that was added after
+// row r was built is NOT counted in board[r][c].
+//
+// Returns { text, color } for a revealed number cell, or null if not applicable.
+//   "?"  – the displayed number is stale because a later row above added unknown mines.
+//   "n"  – effective remaining mine count after subtracting cleared/flagged mines.
+//   ""   – all neighbouring mines are accounted for (show blank like a 0-cell).
+function getCellDisplay(r, c) {
+  if (!rush.revealed[r][c] || rush.board[r][c] <= 0) return null;
+
+  let newAboveUnknown = 0; // mines from later rows above not yet resolved
+  let knownAboveBelow = 0; // mines that ARE in board[r][c] and are now resolved
+
+  for (const [nr, nc] of rushNbs(r, c)) {
+    if (rush.board[nr][nc] !== -1) continue; // not a mine
+
+    const isAbove = nr > r;
+    // Was this mine counted in board[r][c] at init time?
+    // Yes if same row/below, or if both rows are initial (built together).
+    const wasCounted = !isAbove || (rush.rowIsInitial[r] && rush.rowIsInitial[nr]);
+
+    if (!wasCounted) {
+      // Mine from a row added after this cell's row was initialised
+      const resolved = rush.rowStatus[nr] === 'cleared' || rush.flagged[nr][nc] === 1;
+      if (!resolved) newAboveUnknown++;
+    } else {
+      // Mine was in the original count
+      if (rush.rowStatus[nr] === 'cleared' || rush.flagged[nr][nc] === 1)
+        knownAboveBelow++;
+    }
+  }
+
+  if (newAboveUnknown > 0) return { text: '?', color: 'var(--text-dim)' };
+
+  const effective = rush.board[r][c] - knownAboveBelow;
+  if (effective <= 0) return { text: '', color: '' };
+  return { text: String(effective), color: NUM_COLORS[Math.min(effective, 8)] || '' };
+}
+
+// Re-render all revealed number cells in rows adjacent to row r.
+function updateRevealedNearRow(r) {
+  for (let adjRow = r - 1; adjRow <= r + 1; adjRow++) {
+    if (adjRow < 0 || adjRow >= rush.numRows) continue;
+    if (rush.rowStatus[adjRow] !== 'active') continue;
+    for (let c = 0; c < rush.cols; c++) {
+      if (!rush.revealed[adjRow][c] || rush.board[adjRow][c] <= 0) continue;
+      const el = cellEl(adjRow, c);
+      if (!el) continue;
+      const disp = getCellDisplay(adjRow, c);
+      if (!disp) continue;
+      el.textContent = disp.text;
+      el.style.color  = disp.color;
+    }
+  }
 }
 
 // ── DOM helpers ───────────────────────────────────────────────────────────────
@@ -146,6 +206,7 @@ function addRow() {
   rush.flagged.push(new Array(rush.cols).fill(0));
   rush.rowStatus.push('incoming');
   rush.rowFillCol.push(0);
+  rush.rowIsInitial.push(false);  // dynamically added rows are never "initial"
 
   // Place mines
   const mines = new Set();
@@ -178,26 +239,32 @@ function addRow() {
   // Start ✕-fill animation
   startFill(r);
 
+  // Update revealed cells just below the new row — they may now show "?"
+  if (r > 0) updateRevealedNearRow(r - 1);
+
   updateActiveCount();
 }
 
 // ── Build a row DOM element and prepend it ────────────────────────────────────
 function prependRowDOM(r) {
   const div = document.createElement('div');
-  div.className  = 'rush-row incoming';
+  div.className   = 'rush-row incoming';
   div.dataset.row = r;
+
+  const grid = document.createElement('div');
+  grid.className  = 'rush-cells';
 
   for (let c = 0; c < rush.cols; c++) {
     const cell = document.createElement('div');
     cell.className  = 'cell rush-incoming-cell';
-    cell.dataset.r = r;
-    cell.dataset.c = c;
-    div.appendChild(cell);
+    cell.dataset.r  = r;
+    cell.dataset.c  = c;
+    grid.appendChild(cell);
   }
+  div.appendChild(grid);
 
   const board = boardEl();
   board.insertBefore(div, board.firstChild);
-  // Auto-scroll so newest row is visible
   board.scrollTop = 0;
 }
 
@@ -237,6 +304,9 @@ function activateRow(r) {
   div.className = 'rush-row active';
   div.innerHTML = '';
 
+  // Inner cell grid
+  const grid = document.createElement('div');
+  grid.className = 'rush-cells';
   for (let c = 0; c < rush.cols; c++) {
     const cell = document.createElement('div');
     cell.className   = 'cell hidden';
@@ -244,7 +314,24 @@ function activateRow(r) {
     cell.dataset.c   = c;
     cell.addEventListener('click',       () => rushReveal(r, c));
     cell.addEventListener('contextmenu', e  => { e.preventDefault(); rushFlag(r, c); });
-    div.appendChild(cell);
+    grid.appendChild(cell);
+  }
+
+  // For mine-free rows: show clear buttons on both sides
+  if (rush.rowMines[r].size === 0) {
+    const makeBtn = () => {
+      const btn = document.createElement('button');
+      btn.className = 'rush-clear-row-btn';
+      btn.title     = 'No mines — click to clear row';
+      btn.textContent = '✓';
+      btn.addEventListener('click', () => clearRow(r));
+      return btn;
+    };
+    div.appendChild(makeBtn());
+    div.appendChild(grid);
+    div.appendChild(makeBtn());
+  } else {
+    div.appendChild(grid);
   }
 
   updateActiveCount();
@@ -277,8 +364,8 @@ function renderCell(r, c, isDetonated = false) {
   } else if (val === 0) {
     el.textContent = '';
   } else {
-    el.textContent = val;
-    el.style.color  = NUM_COLORS[val] || '';
+    const disp = getCellDisplay(r, c);
+    if (disp) { el.textContent = disp.text; el.style.color = disp.color; }
   }
 }
 
@@ -328,6 +415,7 @@ function rushFlag(r, c) {
 
   recomputeScore();
   checkRowCleared(r);
+  updateRevealedNearRow(r);  // flagging a mine updates adjacent number displays
   updateSafetyNet();
 }
 
@@ -353,12 +441,15 @@ function checkRowCleared(r) {
 }
 
 function clearRow(r) {
+  if (rush.rowStatus[r] !== 'active') return;
   rush.rowStatus[r] = 'cleared';
   const div = rowEl(r);
   if (div) {
     div.classList.add('rush-row-cleared');
     setTimeout(() => div.remove(), CLEAR_DELAY);
   }
+  // Recalculate numbers for cells adjacent to this row
+  updateRevealedNearRow(r);
   updateActiveCount();
   checkMinRows();
 }
@@ -601,6 +692,7 @@ function buildInitialBoard() {
     rush.flagged.push(new Array(rush.cols).fill(0));
     rush.rowStatus.push('active');
     rush.rowFillCol.push(rush.cols);
+    rush.rowIsInitial.push(true);  // all initial rows know about each other
 
     const mines = new Set();
     for (let c = 0; c < rush.cols; c++)
@@ -626,6 +718,8 @@ function buildInitialBoard() {
     div.className   = 'rush-row active';
     div.dataset.row = r;
 
+    const grid = document.createElement('div');
+    grid.className  = 'rush-cells';
     for (let c = 0; c < rush.cols; c++) {
       const cell = document.createElement('div');
       cell.className   = 'cell hidden';
@@ -633,8 +727,25 @@ function buildInitialBoard() {
       cell.dataset.c   = c;
       cell.addEventListener('click',       () => rushReveal(r, c));
       cell.addEventListener('contextmenu', e  => { e.preventDefault(); rushFlag(r, c); });
-      div.appendChild(cell);
+      grid.appendChild(cell);
     }
+
+    if (rush.rowMines[r].size === 0) {
+      const makeBtn = () => {
+        const btn = document.createElement('button');
+        btn.className   = 'rush-clear-row-btn';
+        btn.title       = 'No mines — click to clear row';
+        btn.textContent = '✓';
+        btn.addEventListener('click', () => clearRow(r));
+        return btn;
+      };
+      div.appendChild(makeBtn());
+      div.appendChild(grid);
+      div.appendChild(makeBtn());
+    } else {
+      div.appendChild(grid);
+    }
+
     board.appendChild(div);
   }
 }
