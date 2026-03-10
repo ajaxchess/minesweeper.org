@@ -1,5 +1,6 @@
+from datetime import date
 from fastapi import FastAPI, Request, Depends, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -24,6 +25,33 @@ app.include_router(duel_router)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+
+# ── SEO: robots.txt and sitemap ───────────────────────────────────────────────
+@app.get("/robots.txt", include_in_schema=False)
+async def robots():
+    content = (
+        "User-agent: *\n"
+        "Allow: /\n\n"
+        "Disallow: /game/\n"
+        "Disallow: /duel/room/\n"
+        "Disallow: /api/\n"
+        "Disallow: /ws/\n"
+        "Disallow: /login\n"
+        "Disallow: /logout\n"
+        "Disallow: /register\n"
+        "Disallow: /account/\n"
+        "Disallow: /static/\n\n"
+        "Sitemap: https://minesweeper.org/sitemap.xml\n"
+    )
+    return PlainTextResponse(content)
+
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap(request: Request):
+    return templates.TemplateResponse(
+        "sitemap.xml",
+        {"request": request, "today": date.today().isoformat()},
+        media_type="application/xml",
+    )
 
 GAME_MODES = {
     "beginner":     {"rows": 10, "cols": 10, "mines": 10},
