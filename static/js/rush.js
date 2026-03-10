@@ -74,13 +74,21 @@ function freshRush(mode) {
 // ── Neighbour helpers ─────────────────────────────────────────────────────────
 function rushNbs(r, c) {
   const out = [];
-  for (let dr = -1; dr <= 1; dr++)
+  // Same-row horizontal neighbours
+  for (const dc of [-1, 1]) {
+    const nc = c + dc;
+    if (nc >= 0 && nc < rush.cols) out.push([r, nc]);
+  }
+  // Row neighbours: skip over cleared rows so removed rows don't create gaps
+  for (const dir of [-1, 1]) {
+    let nr = r + dir;
+    while (nr >= 0 && nr < rush.numRows && rush.rowStatus[nr] === 'cleared') nr += dir;
+    if (nr < 0 || nr >= rush.numRows) continue;
     for (let dc = -1; dc <= 1; dc++) {
-      if (dr === 0 && dc === 0) continue;
-      const nr = r + dr, nc = c + dc;
-      if (nr >= 0 && nr < rush.numRows && nc >= 0 && nc < rush.cols)
-        out.push([nr, nc]);
+      const nc = c + dc;
+      if (nc >= 0 && nc < rush.cols) out.push([nr, nc]);
     }
+  }
   return out;
 }
 
@@ -629,6 +637,19 @@ function clearRow(r) {
   updateSpeed();
 
   rush.rowStatus[r] = 'cleared';
+
+  // Clearing a row changes adjacency: rows that were 2 apart are now neighbours.
+  // Recompute board[row][c] for every active non-mine cell so stored counts
+  // reflect the new topology before re-rendering.
+  for (let row = 0; row < rush.numRows; row++) {
+    if (rush.rowStatus[row] !== 'active') continue;
+    for (let c = 0; c < rush.cols; c++) {
+      if (rush.board[row][c] === -1) continue;
+      rush.board[row][c]       = neighborMineCount(row, c);
+      rush.cellCountedAt[row][c] = rush.numRows;
+    }
+  }
+
   rush.rowsCleared++;
   const el = document.getElementById('rush-rows-cleared');
   if (el) el.textContent = rush.rowsCleared;
