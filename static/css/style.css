@@ -204,7 +204,9 @@ main { flex: 1; padding: 1rem 0.5rem; }
   border-radius: var(--radius);
   border: 2px solid var(--surface2);
   position: relative;
+  -webkit-user-select: none;
   user-select: none;
+  touch-action: manipulation;
   box-shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
@@ -220,6 +222,10 @@ main { flex: 1; padding: 1rem 0.5rem; }
   border-radius: 3px;
   cursor: pointer;
   transition: background 0.08s;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
 }
 
 .cell.hidden {
@@ -1082,7 +1088,9 @@ footer {
   border-radius: var(--radius);
   border: 2px solid var(--surface2);
   box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  -webkit-user-select: none;
   user-select: none;
+  touch-action: manipulation;
   height: calc(var(--rush-rows, 12) * (var(--cell-size) + 2px) + 26px);
   overflow-y: hidden;
   overflow-x: hidden;

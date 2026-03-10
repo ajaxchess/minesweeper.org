@@ -15,6 +15,38 @@
 (function () {
 'use strict';
 
+// ── Touch helpers ──────────────────────────────────────────────────────────────
+const LONG_PRESS_MS = 500;
+
+function addTouchHandlers(el, onTap, onLongPress) {
+  let timer = null;
+  let moved = false;
+  let startX, startY;
+
+  el.addEventListener('touchstart', e => {
+    e.preventDefault();
+    moved  = false;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    timer  = setTimeout(() => { timer = null; if (!moved) onLongPress(); }, LONG_PRESS_MS);
+  }, { passive: false });
+
+  el.addEventListener('touchmove', e => {
+    if (!timer) return;
+    if (Math.abs(e.touches[0].clientX - startX) > 10 ||
+        Math.abs(e.touches[0].clientY - startY) > 10) {
+      moved = true; clearTimeout(timer); timer = null;
+    }
+  }, { passive: true });
+
+  el.addEventListener('touchend', e => {
+    e.preventDefault();
+    if (timer) { clearTimeout(timer); timer = null; if (!moved) onTap(); }
+  }, { passive: false });
+
+  el.addEventListener('touchcancel', () => { clearTimeout(timer); timer = null; });
+}
+
 // ── Mode configs ──────────────────────────────────────────────────────────────
 const RUSH_CFGS = {
   easy:   { cols: 9,  density: 0.10, intervalMs: 15000, maxActive: 12 },
@@ -402,6 +434,7 @@ function activateRow(r) {
     cell.dataset.c   = c;
     cell.addEventListener('click',       () => rushReveal(r, c));
     cell.addEventListener('contextmenu', e  => { e.preventDefault(); rushFlag(r, c); });
+    addTouchHandlers(cell, () => rushReveal(r, c), () => rushFlag(r, c));
     grid.appendChild(cell);
   }
 
@@ -1013,6 +1046,7 @@ function buildInitialBoard() {
       cell.dataset.c   = c;
       cell.addEventListener('click',       () => rushReveal(r, c));
       cell.addEventListener('contextmenu', e  => { e.preventDefault(); rushFlag(r, c); });
+      addTouchHandlers(cell, () => rushReveal(r, c), () => rushFlag(r, c));
       grid.appendChild(cell);
     }
 

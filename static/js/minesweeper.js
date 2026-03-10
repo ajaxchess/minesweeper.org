@@ -3,6 +3,43 @@
  * Pure vanilla JS, zero dependencies.
  */
 
+// ── Touch helpers ─────────────────────────────────────────────────────────────
+// On iOS Safari there is no contextmenu event for touch; we simulate it with a
+// long-press (touchstart held ≥ 500 ms). Calling preventDefault() on touchstart
+// suppresses the browser's text-selection callout AND the synthetic click event
+// that would otherwise fire after the touch, so mouse listeners still work on
+// desktop while touch devices get their own path.
+const LONG_PRESS_MS = 500;
+
+function addTouchHandlers(el, onTap, onLongPress) {
+  let timer = null;
+  let moved = false;
+  let startX, startY;
+
+  el.addEventListener('touchstart', e => {
+    e.preventDefault();
+    moved  = false;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    timer  = setTimeout(() => { timer = null; if (!moved) onLongPress(); }, LONG_PRESS_MS);
+  }, { passive: false });
+
+  el.addEventListener('touchmove', e => {
+    if (!timer) return;
+    if (Math.abs(e.touches[0].clientX - startX) > 10 ||
+        Math.abs(e.touches[0].clientY - startY) > 10) {
+      moved = true; clearTimeout(timer); timer = null;
+    }
+  }, { passive: true });
+
+  el.addEventListener('touchend', e => {
+    e.preventDefault();
+    if (timer) { clearTimeout(timer); timer = null; if (!moved) onTap(); }
+  }, { passive: false });
+
+  el.addEventListener('touchcancel', () => { clearTimeout(timer); timer = null; });
+}
+
 // ── State ────────────────────────────────────────────────────────────────────
 let state = {};
 
@@ -418,6 +455,7 @@ function buildBoard(rows, cols) {
       cell.addEventListener('click',       () => reveal(r, c));
       cell.addEventListener('contextmenu', e  => { e.preventDefault(); flag(r, c); });
       cell.addEventListener('dblclick',    () => chord(r, c));
+      addTouchHandlers(cell, () => reveal(r, c), () => flag(r, c));
 
       boardEl.appendChild(cell);
     }
