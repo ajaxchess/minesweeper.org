@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Block transient game/session state URLs
+Disallow: /game/
+Disallow: /duel/room/
+Disallow: /api/
+Disallow: /ws/
+
+# Block auth and user account paths if present
+Disallow: /login
+Disallow: /logout
+Disallow: /register
+Disallow: /account/
+
+# Block static assets from being indexed (saves crawl budget)
+Disallow: /static/
+
+# Sitemap
+Sitemap: https://minesweeper.org/sitemap.xml
