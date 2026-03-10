@@ -449,6 +449,80 @@
     <a href="/custom">Грати (Власний)</a>
   </div>
 
+{% elif lang == 'fr' %}
+
+  <h1 class="lb-title">Comment jouer au Démineur</h1>
+
+  <div class="help-section">
+    <h2>Objectif</h2>
+    <p>Déminéez le plateau en révélant toutes les cases sûres sans faire exploser de mine. Marquez chaque mine et découvrez chaque case sûre pour gagner.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Contrôles</h2>
+    <ul>
+      <li><strong>Clic gauche</strong> — Révéler une case.</li>
+      <li><strong>Clic droit</strong> — Placer ou retirer un drapeau sur une case que vous pensez contenir une mine.</li>
+      <li><strong>Clic gauche sur un chiffre révélé</strong> (accord) — Si le bon nombre de drapeaux adjacents est placé, tous les voisins restants sont révélés automatiquement.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Les Chiffres</h2>
+    <p>Chaque case révélée affiche un chiffre indiquant combien de ses jusqu'à 8 cases voisines contiennent des mines.</p>
+    <ul>
+      <li>Une case vide n'a aucune mine voisine — ses voisins sont révélés automatiquement.</li>
+      <li>Utilisez les chiffres pour déduire quelles cases cachées sont sûres et lesquelles contiennent des mines.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Drapeaux</h2>
+    <p>Cliquez droit sur une case cachée pour placer un drapeau (🚩) la marquant comme mine. Le compteur de mines dans l'en-tête diminue à chaque drapeau placé. Cliquez droit sur une case marquée pour retirer le drapeau.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Gagner &amp; Perdre</h2>
+    <ul>
+      <li><strong>Gagner</strong> — Toutes les cases non-minées sont révélées.</li>
+      <li><strong>Perdre</strong> — Vous cliquez sur une case contenant une mine. Le plateau révèle toutes les positions des mines.</li>
+    </ul>
+    <p>Le premier clic est toujours sûr — les mines sont placées après votre premier coup.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Niveaux de Difficulté</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>Niveau</th><th>Plateau</th><th>Mines</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Débutant</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>Intermédiaire</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>Expert</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>Personnalisé</td><td>votre choix</td><td>votre choix</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>Conseils</h2>
+    <ul>
+      <li>Commencez près du centre — vous aurez plus de voisins pour travailler.</li>
+      <li>Quand un chiffre égale le nombre de ses voisins cachés, ils sont tous des mines — marquez-les tous.</li>
+      <li>Quand un chiffre égale le nombre de ses voisins marqués, tous les voisins cachés restants sont sûrs — révélez-les.</li>
+      <li>Utilisez le clic d'accord pour dégager rapidement des zones une fois les drapeaux correctement placés.</li>
+      <li>Si vous êtes bloqué, faites une supposition éclairée dans un coin ou un bord où la probabilité est plus faible.</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← Jouer Débutant</a>
+    <a href="/intermediate">Jouer Intermédiaire</a>
+    <a href="/expert">Jouer Expert</a>
+    <a href="/custom">Jouer Personnalisé</a>
+  </div>
+
 {% else %}
 
   <h1 class="lb-title">How to Play Minesweeper</h1>
