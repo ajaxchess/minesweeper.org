@@ -71,7 +71,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "How to Play Minesweeper",
         # Footer
-        "footer": "Built by Richard Cross with Python &amp; FastAPI",
+        "footer": "Built by <a href=\"https://regis.consulting\">Regis Consulting</a> with Python &amp; FastAPI",
         # Language switcher
         "lang_other": "eo",
         "lang_label": "EO \u2014 Esperanto",
@@ -182,7 +182,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Kiel Ludi Minosvepiston",
         # Footer
-        "footer": "Konstruita de Richard Cross per Python kaj FastAPI",
+        "footer": "Konstruita de <a href=\"https://regis.consulting\">Regis Consulting</a> per Python kaj FastAPI",
         # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
@@ -293,7 +293,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Wie man Minesweeper spielt",
         # Footer
-        "footer": "Erstellt von Richard Cross mit Python &amp; FastAPI",
+        "footer": "Erstellt von <a href=\"https://regis.consulting\">Regis Consulting</a> mit Python &amp; FastAPI",
         # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
@@ -404,7 +404,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "C\u00f3mo jugar al Buscaminas",
         # Footer
-        "footer": "Creado por Richard Cross con Python &amp; FastAPI",
+        "footer": "Creado por <a href=\"https://regis.consulting\">Regis Consulting</a> con Python &amp; FastAPI",
         # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
@@ -517,7 +517,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "\u0e27\u0e34\u0e18\u0e35\u0e40\u0e25\u0e48\u0e19 Minesweeper",
         # Footer
-        "footer": "\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e42\u0e14\u0e22 Richard Cross \u0e14\u0e49\u0e27\u0e22 Python &amp; FastAPI",
+        "footer": "\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e42\u0e14\u0e22 <a href=\"https://regis.consulting\">Regis Consulting</a> \u0e14\u0e49\u0e27\u0e22 Python &amp; FastAPI",
         # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
@@ -630,7 +630,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Owhay otay Ayplay Inesweepermay",
         # Footer
-        "footer": "Uiltbay ybay Ichardray Osscray ithway Ythonpay &amp; FastAPI",
+        "footer": "Uiltbay ybay <a href=\"https://regis.consulting\">Egisray Onsultingcay</a> ithway Ythonpay &amp; FastAPI",
         # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
@@ -743,7 +743,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "\u042f\u043a \u0433\u0440\u0430\u0442\u0438 \u0432 \u0421\u0430\u043f\u0435\u0440",
         # Footer
-        "footer": "\u0421\u0442\u0432\u043e\u0440\u0435\u043d\u043e \u0420\u0456\u0447\u0430\u0440\u0434\u043e\u043c \u041a\u0440\u043e\u0441\u043e\u043c \u0437\u0430 \u0434\u043e\u043f\u043e\u043c\u043e\u0433\u043e\u044e Python &amp; FastAPI",
+        "footer": "\u0421\u0442\u0432\u043e\u0440\u0435\u043d\u043e <a href=\"https://regis.consulting\">Regis Consulting</a> \u0437\u0430 \u0434\u043e\u043f\u043e\u043c\u043e\u0433\u043e\u044e Python &amp; FastAPI",
         # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
@@ -854,7 +854,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Comment jouer au D\u00e9mineur",
         # Footer
-        "footer": "Cr\u00e9\u00e9 par Richard Cross avec Python &amp; FastAPI",
+        "footer": "Cr\u00e9\u00e9 par <a href=\"https://regis.consulting\">Regis Consulting</a> avec Python &amp; FastAPI",
         # Language switcher
         "lang_other": "fr",
         "lang_label": "FR \u2014 Fran\u00e7ais",
