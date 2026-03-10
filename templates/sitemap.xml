@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- Homepage -->
+  <!-- Homepage (Beginner) -->
   <url>
     <loc>https://minesweeper.org/</loc>
     <lastmod>{{ today }}</lastmod>
@@ -11,36 +11,43 @@
 
   <!-- Game modes -->
   <url>
-    <loc>https://minesweeper.org/duel</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/beginner</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
     <loc>https://minesweeper.org/intermediate</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://minesweeper.org/expert</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/custom</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/rush</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/duel</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Content pages -->
   <url>
-    <loc>https://minesweeper.org/how-to-play</loc>
+    <loc>https://minesweeper.org/help</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
