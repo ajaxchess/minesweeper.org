@@ -45,6 +45,13 @@
     <priority>0.8</priority>
   </url>
 
+  <url>
+    <loc>https://minesweeper.org/pvp</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Content pages -->
   <url>
     <loc>https://minesweeper.org/help</loc>

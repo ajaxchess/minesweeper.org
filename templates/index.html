@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% if mode == 'beginner' %}
-  {% set _title = "Play Free Minesweeper Online — Beginner | minesweeper.org" %}
-  {% set _desc  = "Play free Minesweeper Beginner online — " ~ rows ~ "×" ~ cols ~ " board, " ~ mines ~ " mines. Choose Beginner, Intermediate, or Expert. No download required." %}
+  {% set _title = "Minesweeper — Play Free Online | Multiplayer & Classic Modes" %}
+  {% set _desc  = "Play free Minesweeper online — classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo." %}
   {% set _kw    = "minesweeper, minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game" %}
   {% set _canon = "https://minesweeper.org/" %}
 {% elif mode == 'intermediate' %}
@@ -41,6 +41,7 @@
   </aside>
 
   <section class="game-section">
+    {% if mode == 'beginner' %}<h1 class="visually-hidden">Play Minesweeper Online — Free</h1>{% endif %}
     <div class="game-info">
       <div class="mode-row">
         <div class="mode-badge">{{ t['nav_' + mode] }}</div>
