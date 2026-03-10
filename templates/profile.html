@@ -45,6 +45,28 @@
         </div>
         <button class="setting-toggle" id="chord-toggle" onclick="toggleChording()"></button>
       </div>
+      <div class="setting-row skin-row">
+        <div class="setting-info">
+          <span class="setting-name">Skin</span>
+          <span class="setting-desc">Choose the visual style of the game board.</span>
+        </div>
+        <div class="skin-options" id="skin-options">
+          <div class="skin-card active" data-skin="dark" onclick="setSkin('dark')">
+            <div class="skin-preview skin-preview-dark">
+              <div class="sp-cell sp-hidden"></div>
+              <div class="sp-cell sp-hidden"></div>
+              <div class="sp-cell sp-hidden"></div>
+              <div class="sp-cell sp-revealed sp-n1">1</div>
+              <div class="sp-cell sp-revealed sp-n2">2</div>
+              <div class="sp-cell sp-hidden"></div>
+              <div class="sp-cell sp-revealed"></div>
+              <div class="sp-cell sp-revealed sp-n1">1</div>
+              <div class="sp-cell sp-revealed"></div>
+            </div>
+            <span class="skin-label">Dark</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -170,5 +192,22 @@ function toggleChording() {
 }
 
 updateChordingUI();
+
+// ── Skin ──────────────────────────────────────────────────────────────────────
+function setSkin(skin) {
+  localStorage.setItem('skin', skin);
+  document.querySelectorAll('.skin-card').forEach(c =>
+    c.classList.toggle('active', c.dataset.skin === skin)
+  );
+}
+
+function updateSkinUI() {
+  const skin = localStorage.getItem('skin') || 'dark';
+  document.querySelectorAll('.skin-card').forEach(c =>
+    c.classList.toggle('active', c.dataset.skin === skin)
+  );
+}
+
+updateSkinUI();
 </script>
 {% endblock %}
