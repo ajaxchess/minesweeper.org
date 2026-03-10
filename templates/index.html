@@ -1,6 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t['nav_' + mode] }} Minesweeper — {{ rows }}×{{ cols }}, {{ mines }} mines{% endblock %}
+{% if mode == 'beginner' %}
+  {% set _title = "Play Free Minesweeper Online — Beginner | minesweeper.org" %}
+  {% set _desc  = "Play free Minesweeper Beginner online — " ~ rows ~ "×" ~ cols ~ " board, " ~ mines ~ " mines. Choose Beginner, Intermediate, or Expert. No download required." %}
+  {% set _kw    = "minesweeper, minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game" %}
+  {% set _canon = "https://minesweeper.org/" %}
+{% elif mode == 'intermediate' %}
+  {% set _title = "Minesweeper Intermediate — Play Free Online | minesweeper.org" %}
+  {% set _desc  = "Play Minesweeper Intermediate online — " ~ rows ~ "×" ~ cols ~ " board with " ~ mines ~ " mines. Free, no download required." %}
+  {% set _kw    = "minesweeper intermediate, minesweeper online, play minesweeper, free minesweeper" %}
+  {% set _canon = "https://minesweeper.org/intermediate" %}
+{% else %}
+  {% set _title = "Minesweeper Expert — Play Free Online | minesweeper.org" %}
+  {% set _desc  = "Play Minesweeper Expert online — " ~ rows ~ "×" ~ cols ~ " board with " ~ mines ~ " mines. Free, no download required." %}
+  {% set _kw    = "minesweeper expert, minesweeper hard, minesweeper online, play minesweeper, free minesweeper" %}
+  {% set _canon = "https://minesweeper.org/expert" %}
+{% endif %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block keywords %}<meta name="keywords" content="{{ _kw }}">{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+{% block tw_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block tw_description %}{{ _desc }}{% endblock %}
 
 {% block content %}
 <div class="game-wrapper">
