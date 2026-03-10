@@ -2,6 +2,8 @@ List of active features
 
 F8 Improved Mobile Browser Support
 
+F9 SEO improvements
+
 -- Addressed --
 
 F1 User Profile
