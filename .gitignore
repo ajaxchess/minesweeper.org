@@ -5,6 +5,9 @@ database.py
 #Runtime environment
 venv/
 
+#Business documents
+business/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
