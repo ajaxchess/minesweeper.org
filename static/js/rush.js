@@ -317,9 +317,9 @@ function checkEmptyRowButtons(r) {
 
   const isReplaceable = el => el?.classList?.contains('rush-row-spacer') || el?.classList?.contains('rush-row-hint');
   if (isReplaceable(div.firstChild))
-    div.replaceChild(makeRushClearBtn(r, 'No mines — click to clear row'), div.firstChild);
+    div.replaceChild(makeRushClearBtn(r, window.T.rush_btn_no_mines), div.firstChild);
   if (isReplaceable(div.lastChild))
-    div.replaceChild(makeRushClearBtn(r, 'No mines — click to clear row'), div.lastChild);
+    div.replaceChild(makeRushClearBtn(r, window.T.rush_btn_no_mines), div.lastChild);
   div.classList.add('clearable');
   div.onclick = () => clearRow(r);
 }
@@ -554,9 +554,9 @@ function checkMineRowButtons(r) {
 
   if (allFlagged) {
     if (div.firstChild?.classList?.contains('rush-row-spacer'))
-      div.replaceChild(makeRushClearBtn(r, 'All mines flagged — click to clear row'), div.firstChild);
+      div.replaceChild(makeRushClearBtn(r, window.T.rush_btn_all_flagged), div.firstChild);
     if (div.lastChild?.classList?.contains('rush-row-spacer'))
-      div.replaceChild(makeRushClearBtn(r, 'All mines flagged — click to clear row'), div.lastChild);
+      div.replaceChild(makeRushClearBtn(r, window.T.rush_btn_all_flagged), div.lastChild);
     div.classList.add('clearable');
     div.onclick = () => clearRow(r);
   } else {
@@ -579,7 +579,7 @@ function rowHasExplodedMine(r) {
 function makeSalvageBtn(r) {
   const btn = document.createElement('button');
   btn.className   = 'rush-salvage-btn';
-  btn.title       = 'Use salvage token — remove this exploded row';
+  btn.title       = window.T.rush_btn_salvage_title;
   btn.textContent = '🔥';
   btn.addEventListener('click', () => salvageRow(r));
   return btn;
@@ -658,7 +658,7 @@ function clearRow(r) {
   if (rush.rowsCleared % 20 === 0) {
     rush.salvageTokens++;
     updateSalvageDisplay();
-    flashMessage('🔥 Salvage token!', false);
+    flashMessage(window.T.rush_flash_salvage, false);
   }
 
   const div = rowEl(r);
@@ -716,9 +716,9 @@ function rushBoom(r, c) {
   rowEl(r)?.classList.add('exploded');
 
   if (rush.noSafeMove) {
-    flashMessage('No penalty!', false);
+    flashMessage(window.T.rush_flash_no_penalty, false);
   } else {
-    flashMessage('+2 rows!', true);
+    flashMessage(window.T.rush_flash_rows, true);
     addRow();
     addRow();
   }
@@ -846,34 +846,34 @@ function showRushOverlay() {
 
   let scoreForm;
   if (username) {
-    scoreForm = `<div id="rush-score-msg" style="font-size:0.9rem">Saving score…</div>`;
+    scoreForm = `<div id="rush-score-msg" style="font-size:0.9rem">${window.T.rush_saving}</div>`;
   } else {
     scoreForm = `
       <div class="overlay-score-form">
         <input id="rush-player-name" type="text" maxlength="32"
-               placeholder="Enter your name" autocomplete="off" />
-        <button onclick="submitRushScore()">Save Score</button>
+               placeholder="${window.T.rush_name_placeholder}" autocomplete="off" />
+        <button onclick="submitRushScore()">${window.T.rush_save_score}</button>
       </div>
       <div id="rush-score-msg" style="font-size:0.85rem;min-height:1.2em"></div>
-      <a class="overlay-lb-link" href="/auth/login">Sign in to skip this step</a>
+      <a class="overlay-lb-link" href="/auth/login">${window.T.rush_sign_in}</a>
     `;
   }
 
   el.innerHTML = `
-    <span>💥 Game Over</span>
+    <span>${window.T.rush_game_over}</span>
     <span style="font-size:1rem">
-      Mines Cleared: <strong>${rush.clearedMines}</strong>
+      ${window.T.rush_mines_cleared} <strong>${rush.clearedMines}</strong>
       &nbsp;|&nbsp;
-      Rows Cleared: <strong>${rush.rowsCleared}</strong>
+      ${window.T.rush_rows_cleared} <strong>${rush.rowsCleared}</strong>
       &nbsp;|&nbsp;
-      Time: <strong>${timeStr}</strong>
+      ${window.T.rush_time} <strong>${timeStr}</strong>
     </span>
     <span style="font-size:1.1rem;color:var(--accent2)">
-      Score: <strong>${finalScore}</strong>
+      ${window.T.rush_score} <strong>${finalScore}</strong>
       <span style="font-size:0.8rem;opacity:0.7">(${timeStr} + ${rush.clearedMines}×5)</span>
     </span>
     ${scoreForm}
-    <button onclick="initRush('${rush.mode}')">Play Again</button>
+    <button onclick="initRush('${rush.mode}')">${window.T.rush_play_again}</button>
   `;
   el.style.display = 'flex';
 
@@ -905,14 +905,14 @@ async function submitRushScore(autoName = null) {
       }),
     });
     if (res.ok) {
-      if (msgEl) msgEl.textContent = `✅ Score saved for ${name}!`;
+      if (msgEl) msgEl.textContent = `${window.T.rush_saved_for} ${name}!`;
       if (nameEl) nameEl.disabled = true;
       const btn = document.querySelector('#rush-overlay .overlay-score-form button');
       if (btn) btn.disabled = true;
       loadRushLeaderboard(rush.mode);
     } else {
       const err = await res.json().catch(() => ({}));
-      if (msgEl) msgEl.textContent = `❌ ${err.detail || 'Could not save score.'}`;
+      if (msgEl) msgEl.textContent = err.detail ? `❌ ${err.detail}` : window.T.rush_save_failed;
     }
   } catch {
     if (msgEl) msgEl.textContent = '❌ Network error.';
@@ -923,7 +923,7 @@ async function submitRushScore(autoName = null) {
 async function loadRushLeaderboard(mode) {
   const wrap = document.getElementById('rush-lb-content');
   if (!wrap) return;
-  wrap.innerHTML = '<div class="lb-loading">Loading…</div>';
+  wrap.innerHTML = `<div class="lb-loading">${window.T.rush_lb_loading}</div>`;
 
   try {
     const res  = await fetch(`/api/rush-scores/${mode}`);

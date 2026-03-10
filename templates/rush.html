@@ -23,9 +23,9 @@
       <div class="mode-row">
         <div class="mode-badge">⚡ Rush</div>
         <div class="rush-mode-btns">
-          <button class="rush-mode-btn active" data-mode="easy">Easy</button>
-          <button class="rush-mode-btn" data-mode="normal">Normal</button>
-          <button class="rush-mode-btn" data-mode="hard">Hard</button>
+          <button class="rush-mode-btn active" data-mode="easy">{{ t.rush_easy }}</button>
+          <button class="rush-mode-btn" data-mode="normal">{{ t.rush_normal }}</button>
+          <button class="rush-mode-btn" data-mode="hard">{{ t.rush_hard }}</button>
         </div>
       </div>
       <div class="stat-row">
@@ -40,23 +40,23 @@
         </div>
       </div>
       <div class="rush-meta-row">
-        <span class="rush-meta-label">Speed</span>
+        <span class="rush-meta-label">{{ t.rush_speed }}</span>
         <span class="rush-speed-val" id="rush-speed">×1</span>
         <span class="rush-meta-sep">|</span>
-        <span class="rush-meta-label">Active rows</span>
+        <span class="rush-meta-label">{{ t.rush_active_rows }}</span>
         <span class="rush-speed-val" id="rush-active-rows">0</span>
         <span class="rush-meta-sep">|</span>
-        <span class="rush-meta-label">Max</span>
+        <span class="rush-meta-label">{{ t.rush_max }}</span>
         <span class="rush-speed-val" id="rush-max-rows">—</span>
         <span class="rush-meta-sep">|</span>
-        <span class="rush-meta-label">Cleared</span>
+        <span class="rush-meta-label">{{ t.rush_cleared }}</span>
         <span class="rush-speed-val" id="rush-rows-cleared">0</span>
       </div>
       <div id="rush-safe-indicator" class="rush-safe-msg" style="display:none">
-        ⚠️ No safe move — no penalty for guessing
+        {{ t.rush_no_safe }}
       </div>
       <div id="rush-salvage-indicator" class="rush-salvage-msg" style="display:none">
-        🔥 <span id="rush-salvage-tokens">0</span> salvage token(s) — click 🔥 on bottom exploded row
+        🔥 <span id="rush-salvage-tokens">0</span> {{ t.rush_salvage_suffix }}
       </div>
       <div id="rush-penalty" class="rush-penalty-msg" style="opacity:0" aria-live="polite"></div>
     </div>
@@ -70,21 +70,21 @@
     </div>
 
     <p class="instructions">
-      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
-      <strong>Right-click</strong> to flag mines &nbsp;|&nbsp;
-      Flag all mines in a row to <strong>clear</strong> it &nbsp;|&nbsp;
-      Hitting a mine adds <strong>+2 rows</strong>
+      <strong>{{ t.rush_instr_left }}</strong> {{ t.rush_instr_reveal }} &nbsp;|&nbsp;
+      <strong>{{ t.rush_instr_right }}</strong> {{ t.rush_instr_flag }} &nbsp;|&nbsp;
+      {{ t.rush_instr_clear | safe }} &nbsp;|&nbsp;
+      {{ t.rush_instr_penalty | safe }}
     </p>
 
     <!-- Rush leaderboard -->
     <div class="rush-lb-section">
       <div class="rush-lb-tabs">
-        <button class="rush-lb-tab active" data-mode="easy">Easy</button>
-        <button class="rush-lb-tab" data-mode="normal">Normal</button>
-        <button class="rush-lb-tab" data-mode="hard">Hard</button>
+        <button class="rush-lb-tab active" data-mode="easy">{{ t.rush_easy }}</button>
+        <button class="rush-lb-tab" data-mode="normal">{{ t.rush_normal }}</button>
+        <button class="rush-lb-tab" data-mode="hard">{{ t.rush_hard }}</button>
       </div>
       <div id="rush-lb-content" class="rush-lb-content">
-        <div class="lb-loading">Loading…</div>
+        <div class="lb-loading">{{ t.rush_lb_loading }}</div>
       </div>
     </div>
 
