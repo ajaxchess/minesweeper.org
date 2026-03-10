@@ -1,5 +1,30 @@
 {% extends "base.html" %}
-{% block title %}{{ t.nav_duel }} — Head-to-Head Minesweeper{% endblock %}
+{% block title %}Multiplayer Minesweeper — 1v1 Duel Mode | minesweeper.org{% endblock %}
+{% block description %}Challenge a friend to a real-time Minesweeper duel. Race head-to-head on the same board — first to clear it wins. Free, no account needed.{% endblock %}
+{% block keywords %}<meta name="keywords" content="minesweeper multiplayer, minesweeper 1v1, minesweeper duel, 2 player minesweeper, play minesweeper with friends, online minesweeper">{% endblock %}
+{% block canonical %}https://minesweeper.org/duel{% endblock %}
+{% block og_url %}https://minesweeper.org/duel{% endblock %}
+{% block og_title %}Minesweeper 1v1 Duel — Challenge a Friend{% endblock %}
+{% block og_description %}Real-time head-to-head Minesweeper. Race your opponent to clear the board. Free, no download required.{% endblock %}
+{% block og_image %}https://minesweeper.org/static/img/og-duel.png{% endblock %}
+{% block tw_title %}Minesweeper 1v1 Duel — Challenge a Friend{% endblock %}
+{% block tw_description %}Real-time head-to-head Minesweeper. Race your opponent to clear the board.{% endblock %}
+{% block tw_image %}https://minesweeper.org/static/img/og-duel.png{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Minesweeper Duel",
+  "url": "https://minesweeper.org/duel",
+  "description": "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
+  "genre": ["Puzzle", "Strategy", "Multiplayer"],
+  "gamePlatform": "Web Browser",
+  "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 2, "maxValue": 2 },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="duel-wrapper">
