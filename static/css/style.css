@@ -1426,6 +1426,12 @@ footer {
   outline-offset: -2px;
 }
 
+/* Contradiction highlight: clue number whose neighbor flags are unsatisfiable */
+.cell.tz-clue-error {
+  outline: 2px solid #e53935;
+  outline-offset: -2px;
+}
+
 /* ── Tentaizu win overlay ─────────────────────────────────────────────────── */
 #tz-overlay {
   position: absolute;

@@ -101,6 +101,26 @@ function fmtTime(s) {
     return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
+// ── Clue contradiction check ──────────────────────────────────────────────────
+// Returns true if the current flag state makes the clue at idx unsatisfiable.
+function isClueInContradiction(idx) {
+    const r = Math.floor(idx / COLS), c = idx % COLS;
+    const clueVal = G.cells[idx].count;
+    let flagged = 0, unknown = 0;
+    for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const nr = r + dr, nc = c + dc;
+            if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
+            const s = G.cells[nr * COLS + nc].state;
+            if (s === 'flagged') flagged++;
+            else if (s === 'unknown') unknown++;
+        }
+    }
+    // Too many flags, or not enough remaining cells to reach the count
+    return flagged > clueVal || (flagged + unknown) < clueVal;
+}
+
 // ── Rendering ─────────────────────────────────────────────────────────────────
 function renderBoard() {
     const board = document.getElementById('tz-board');
@@ -132,6 +152,9 @@ function applyCell(el, cell) {
             el.textContent = cell.count;
             el.style.color = NUM_COLOR[cell.count] || '';
         }
+        const idx = parseInt(el.dataset.idx);
+        if (G.highlightErrors && !isNaN(idx) && isClueInContradiction(idx))
+            el.classList.add('tz-clue-error');
     } else if (cell.state === 'unknown') {
         el.classList.add('hidden');
     } else if (cell.state === 'flagged') {
@@ -150,6 +173,20 @@ function refreshCell(idx) {
     if (el) applyCell(el, G.cells[idx]);
 }
 
+function refreshNeighborClues(idx) {
+    if (!G.highlightErrors) return;
+    const r = Math.floor(idx / COLS), c = idx % COLS;
+    for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const nr = r + dr, nc = c + dc;
+            if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
+            const nIdx = nr * COLS + nc;
+            if (G.cells[nIdx].state === 'clue') refreshCell(nIdx);
+        }
+    }
+}
+
 // ── Interaction ───────────────────────────────────────────────────────────────
 function handleClick(idx) {
     if (G.won) return;
@@ -165,6 +202,7 @@ function handleClick(idx) {
     else                               cell.state = 'unknown';
 
     refreshCell(idx);
+    refreshNeighborClues(idx);
     updateFlagCount();
     checkWin();
 }
@@ -180,6 +218,7 @@ function handleRightClick(idx) {
     cell.state = cell.state === 'flagged' ? 'unknown' : 'flagged';
 
     refreshCell(idx);
+    refreshNeighborClues(idx);
     updateFlagCount();
     checkWin();
 }
