@@ -10,6 +10,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_leaderboard":  "Leaderboard",
         "nav_duel":         "Duel",
         "nav_pvp":          "PvP",
+        "nav_tentaizu":     "Tentaizu",
         # Auth
         "auth_sign_out":      "Sign out",
         "auth_sign_in":       "Sign in with Google",
@@ -121,6 +122,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_leaderboard":  "Rekordtabelo",
         "nav_duel":         "Duelo",
         "nav_pvp":          "PvP",
+        "nav_tentaizu":     "Tentaizu",
         # Auth
         "auth_sign_out":     "Elsalutu",
         "auth_sign_in":      "Ensalutu per Google",
@@ -232,6 +234,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_leaderboard":  "Bestenliste",
         "nav_duel":         "Duell",
         "nav_pvp":          "PvP",
+        "nav_tentaizu":     "Tentaizu",
         # Auth
         "auth_sign_out":     "Abmelden",
         "auth_sign_in":      "Mit Google anmelden",
@@ -343,6 +346,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_leaderboard":  "Clasificaci\u00f3n",
         "nav_duel":         "Duelo",
         "nav_pvp":          "PvP",
+        "nav_tentaizu":     "Tentaizu",
         # Auth
         "auth_sign_out":     "Cerrar sesi\u00f3n",
         "auth_sign_in":      "Iniciar sesi\u00f3n con Google",
@@ -454,6 +458,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_leaderboard":  "\u0e15\u0e32\u0e23\u0e32\u0e07\u0e04\u0e30\u0e41\u0e19\u0e19",
         "nav_duel":         "\u0e14\u0e27\u0e25",
         "nav_pvp":          "PvP",
+        "nav_tentaizu":     "Tentaizu",
         # Auth
         "auth_sign_out":     "\u0e2d\u0e2d\u0e01\u0e08\u0e32\u0e01\u0e23\u0e30\u0e1a\u0e1a",
         "auth_sign_in":      "\u0e40\u0e02\u0e49\u0e32\u0e2a\u0e39\u0e48\u0e23\u0e30\u0e1a\u0e1a\u0e14\u0e49\u0e27\u0e22 Google",
@@ -567,6 +572,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_leaderboard":  "Eaderboardlay",
         "nav_duel":         "Uelday",
         "nav_pvp":          "PvP",
+        "nav_tentaizu":     "Entaizutay",
         # Auth
         "auth_sign_out":     "Ignsay outway",
         "auth_sign_in":      "Ignsay inway ithway Ooglegay",
@@ -680,6 +686,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_leaderboard":  "\u0420\u0435\u0439\u0442\u0438\u043d\u0433",
         "nav_duel":         "\u0414\u0443\u0435\u043b\u044c",
         "nav_pvp":          "PvP",
+        "nav_tentaizu":     "Tentaizu",
         # Auth
         "auth_sign_out":     "\u0412\u0438\u0439\u0442\u0438",
         "auth_sign_in":      "\u0423\u0432\u0456\u0439\u0442\u0438 \u0447\u0435\u0440\u0435\u0437 Google",
@@ -793,6 +800,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_leaderboard":  "Classement",
         "nav_duel":         "Duel",
         "nav_pvp":          "PvP",
+        "nav_tentaizu":     "Tentaizu",
         # Auth
         "auth_sign_out":      "Se d\u00e9connecter",
         "auth_sign_in":       "Se connecter avec Google",

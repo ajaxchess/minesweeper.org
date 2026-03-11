@@ -1353,3 +1353,167 @@ footer {
 }
 
 #rush-overlay button:hover { opacity: 0.85; }
+
+/* ── Tentaizu ─────────────────────────────────────────────────────────────── */
+.tz-wrapper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+#tz-board-wrap { position: relative; }
+
+#tz-board {
+  display: grid;
+  grid-template-columns: repeat(7, var(--cell-size));
+  gap: 2px;
+  background: var(--surface);
+  padding: 8px;
+  border-radius: var(--radius);
+  border: 2px solid var(--surface2);
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+/* Flagged cell: red tint + mine emoji */
+.cell.tz-flagged {
+  background: rgba(233, 69, 96, 0.28);
+  font-size: 1.05rem;
+}
+
+/* Empty/safe cell: green tint + check */
+.cell.tz-empty {
+  background: rgba(87, 212, 116, 0.15);
+  color: #57d474;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* ── Tentaizu win overlay ─────────────────────────────────────────────────── */
+#tz-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: var(--radius);
+  font-weight: 700;
+  backdrop-filter: blur(4px);
+  z-index: 20;
+  text-align: center;
+  padding: 1rem;
+}
+
+#tz-overlay.win { background: rgba(46, 125, 50, 0.92); }
+
+.tz-overlay-title { font-size: 1.6rem; }
+.tz-overlay-time  { font-size: 0.95rem; font-weight: 400; opacity: 0.9; }
+
+.tz-overlay-btns {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.tz-overlay-btns button {
+  padding: 0.45rem 1.1rem;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.tz-overlay-btns button:hover { opacity: 0.85; }
+
+.tz-btn-potd   { background: var(--accent2); color: #111; }
+.tz-btn-random { background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); }
+
+/* ── Tentaizu mode buttons ────────────────────────────────────────────────── */
+.tz-mode-btns { display: flex; gap: 0.4rem; }
+
+.tz-mode-btn {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 0.2rem 0.6rem;
+  background: var(--surface2);
+  color: var(--text-dim);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.tz-mode-btn:hover { color: var(--text); border-color: var(--text-dim); }
+
+/* ── Tentaizu stat separator ─────────────────────────────────────────────── */
+.stat-sep {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--text-dim);
+}
+
+/* ── Tentaizu leaderboard section ────────────────────────────────────────── */
+.tz-lb-section {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tz-lb-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent2);
+  text-align: center;
+}
+
+/* ── Tentaizu how-to accordion ────────────────────────────────────────────── */
+.tz-howto {
+  width: 100%;
+  max-width: 600px;
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+}
+
+.tz-howto summary {
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-weight: 600;
+  list-style: none;
+  user-select: none;
+}
+
+.tz-howto summary::-webkit-details-marker { display: none; }
+.tz-howto summary::before { content: '▶ '; font-size: 0.7rem; }
+.tz-howto[open] summary::before { content: '▼ '; }
+
+.tz-howto summary:hover { color: var(--text); }
+
+.tz-howto-body {
+  padding: 0.5rem 1rem 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  border-top: 1px solid var(--surface2);
+}
+
+.tz-howto-body p  { margin-bottom: 0.5rem; }
+.tz-howto-body ul { padding-left: 1.2rem; }
+.tz-howto-body li { margin-bottom: 0.3rem; }
+.tz-howto-body strong { color: var(--text); }

@@ -140,6 +140,30 @@ class RushScore(Base):
             "created_at":   self.created_at.strftime("%Y-%m-%d"),
         }
 
+# ── Tentaizu Score model (permanent — one per player per day) ─────────────────
+class TentaizuScore(Base):
+    __tablename__ = "tentaizu_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD
+    time_secs   = Column(Integer, nullable=False)
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_tentaizu_scores_date_time", "puzzle_date", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "time_secs":   self.time_secs,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
     Base.metadata.create_all(bind=engine)

@@ -6,6 +6,13 @@ F9 SEO improvements
 
 F10 Multiple skin support (Default for minesweeper.org will be called Dark)
 
+F11 Implement Tentaizu on a sub-page https:/minesweeper.org/tentaizu
+    The puzzle of the day starts with 10 mines on a 7x7 board.  Some of the tiles that do not contain mines are revealed with the number of mines near them also shows.  The puzzle of the day should be solvable with the revealed numbers.
+    See https://puzzle-minesweeper.com
+    If your flag or blank contradicts a number, that number should highlight letting you know that you made a mistake
+    You should be able to toggle between flag, blank, and unknown
+    See also https://github.com/hellpig/minesweeper-puzzle-generator
+
 -- Addressed --
 
 F1 User Profile

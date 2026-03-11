@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Tentaizu — Daily Mine Logic Puzzle | minesweeper.org{% endblock %}
+{% block description %}Play Tentaizu: a daily 7×7 mine logic puzzle. Find all 10 mines using number clues. New puzzle every day with a leaderboard, plus unlimited random puzzles.{% endblock %}
+{% block keywords %}<meta name="keywords" content="tentaizu, mine puzzle, daily puzzle, logic puzzle, minesweeper puzzle, number puzzle">{% endblock %}
+{% block canonical %}https://minesweeper.org/tentaizu{% endblock %}
+{% block og_url %}https://minesweeper.org/tentaizu{% endblock %}
+{% block og_title %}Tentaizu — Daily Mine Logic Puzzle{% endblock %}
+{% block og_description %}Find all 10 mines on a 7×7 grid using number clues. A fresh puzzle every day with a leaderboard, plus unlimited random puzzles.{% endblock %}
+{% block tw_title %}Tentaizu — Daily Mine Logic Puzzle{% endblock %}
+{% block tw_description %}Find all 10 mines on a 7×7 grid using number clues. Daily puzzle + leaderboard + unlimited randoms.{% endblock %}
+
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Tentaizu",
+  "url": "https://minesweeper.org/tentaizu",
+  "description": "A daily 7×7 mine logic puzzle. Find all 10 mines using number clues. No guessing required.",
+  "genre": ["Puzzle", "Logic", "Browser Game"],
+  "gamePlatform": "Web Browser",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="tz-wrapper">
+
+  <!-- Left sidebar ad -->
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="game-section">
+
+    <!-- Info panel -->
+    <div class="game-info">
+      <div class="mode-row">
+        <span id="tz-mode-label" class="mode-badge">📅 Puzzle of the Day</span>
+        <div class="tz-mode-btns">
+          <button id="tz-potd-btn" class="tz-mode-btn">📅 Daily</button>
+          <button id="tz-random-btn" class="tz-mode-btn">🎲 Random</button>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat" title="Flags placed / total mines">
+          <span class="stat-icon">🚩</span>
+          <span class="stat-value" id="tz-flag-count">0</span>
+          <span class="stat-sep">/10</span>
+        </div>
+        <div class="stat" title="Time elapsed">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="tz-timer">0:00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Board -->
+    <div id="tz-board-wrap">
+      <div id="tz-board" data-today="{{ today }}"></div>
+
+      <!-- Win overlay -->
+      <div id="tz-overlay">
+        <div class="tz-overlay-title">🎉 Solved!</div>
+        <div class="tz-overlay-time">Time: <strong id="tz-win-time">0:00</strong></div>
+        <div id="tz-score-form" class="overlay-score-form" style="display:none">
+          <input id="tz-name-input" type="text" maxlength="32" placeholder="Your name" autocomplete="nickname">
+          <button id="tz-save-btn">Save Score</button>
+        </div>
+        <div class="tz-overlay-btns">
+          <button id="tz-overlay-potd" class="tz-btn-potd">📅 Replay Daily</button>
+          <button id="tz-overlay-random" class="tz-btn-random">🎲 New Random</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="instructions">
+      <strong>Click</strong> to cycle:
+      <strong>💣</strong> flag mine &rarr;
+      <strong>✓</strong> mark safe &rarr;
+      <strong>?</strong> reset &nbsp;|&nbsp;
+      Numbers show adjacent mine count &nbsp;|&nbsp;
+      Find all 10 mines to win!
+    </p>
+
+    <!-- How to play -->
+    <details class="tz-howto">
+      <summary>How to play Tentaizu</summary>
+      <div class="tz-howto-body">
+        <p>Tentaizu is a 7×7 logic puzzle with exactly 10 hidden mines.</p>
+        <ul>
+          <li><strong>Revealed numbers</strong> show how many mines are in the 8 surrounding cells.</li>
+          <li><strong>Click</strong> any unknown cell to cycle: 💣 (mine) → ✓ (safe) → ? (unknown).</li>
+          <li>Use logic to deduce which cells contain mines.</li>
+          <li>The game never ends on a wrong guess — keep refining until all 10 mines are correctly flagged.</li>
+          <li>You win when exactly the 10 mine cells are flagged and no safe cells are flagged.</li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- Leaderboard (shown for POTD only) -->
+    <div id="tz-lb-section" class="tz-lb-section">
+      <div class="tz-lb-title">🏆 Today's Best Times</div>
+      <div id="tz-lb-content">
+        <div class="lb-loading">Loading…</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Right sidebar ad -->
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/tentaizu.js?v=1"></script>
+{% endblock %}
