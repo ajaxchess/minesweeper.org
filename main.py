@@ -1,6 +1,6 @@
 from datetime import date
 from fastapi import FastAPI, Request, Depends, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -55,7 +55,7 @@ async def sitemap(request: Request):
 
 @app.get("/ads.txt", include_in_schema=False)
 async def ads_txt():
-    return PlainTextResponse("google.com, pub-8102958922361899, DIRECT, f08c47fec0942fa0\n")
+    return FileResponse("ads.txt", media_type="text/plain")
 
 GAME_MODES = {
     "beginner":     {"rows": 10, "cols": 10, "mines": 10},
