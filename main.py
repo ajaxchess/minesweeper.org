@@ -53,6 +53,10 @@ async def sitemap(request: Request):
         media_type="application/xml",
     )
 
+@app.get("/ads.txt", include_in_schema=False)
+async def ads_txt():
+    return PlainTextResponse("google.com, pub-8102958922361899, DIRECT, f08c47fec0942fa0\n")
+
 GAME_MODES = {
     "beginner":     {"rows": 10, "cols": 10, "mines": 10},
     "intermediate": {"rows": 16, "cols": 16, "mines": 40},
