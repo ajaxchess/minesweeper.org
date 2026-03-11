@@ -252,27 +252,38 @@ function showWinOverlay() {
 
     document.getElementById('tz-win-time').textContent = fmtTime(G.elapsed);
 
-    const form = document.getElementById('tz-score-form');
+    const form     = document.getElementById('tz-score-form');
+    const username = document.getElementById('tz-board').dataset.username || '';
+
     if (G.isPOTD) {
-        form.style.display = 'flex';
-        document.getElementById('tz-name-input').value = localStorage.getItem('tz_name') || '';
-        const btn = document.getElementById('tz-save-btn');
-        btn.disabled = false;
-        btn.textContent = 'Save Score';
+        if (username) {
+            form.style.display = 'none';
+            const msgEl = document.createElement('div');
+            msgEl.id = 'tz-score-msg';
+            msgEl.style.fontSize = '0.9rem';
+            msgEl.textContent = 'Saving score…';
+            ov.insertBefore(msgEl, ov.querySelector('.tz-overlay-btns'));
+            saveScore(username);
+        } else {
+            form.style.display = 'flex';
+            document.getElementById('tz-name-input').value = localStorage.getItem('tz_name') || '';
+            const btn = document.getElementById('tz-save-btn');
+            btn.disabled = false;
+            btn.textContent = 'Save Score';
+        }
     } else {
         form.style.display = 'none';
     }
 }
 
 // ── Score submission ──────────────────────────────────────────────────────────
-async function saveScore() {
-    const inp = document.getElementById('tz-name-input');
-    const btn = document.getElementById('tz-save-btn');
-    const name = inp.value.trim();
-    if (!name) { inp.focus(); return; }
+async function saveScore(autoName = null) {
+    const inp  = document.getElementById('tz-name-input');
+    const btn  = document.getElementById('tz-save-btn');
+    const name = autoName || inp?.value.trim();
+    if (!name) { inp?.focus(); return; }
 
-    btn.disabled = true;
-    btn.textContent = 'Saving…';
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
 
     try {
         const r = await fetch('/api/tentaizu-scores', {
@@ -282,15 +293,19 @@ async function saveScore() {
         });
         if (r.ok) {
             localStorage.setItem('tz_name', name);
-            btn.textContent = '✓ Saved!';
+            if (btn) btn.textContent = '✓ Saved!';
+            const msgEl = document.getElementById('tz-score-msg');
+            if (msgEl) msgEl.textContent = `✅ Score saved for ${name}!`;
             loadLeaderboard();
         } else {
-            btn.textContent = 'Error — retry';
-            btn.disabled = false;
+            if (btn) { btn.textContent = 'Error — retry'; btn.disabled = false; }
+            const msgEl = document.getElementById('tz-score-msg');
+            if (msgEl) msgEl.textContent = '❌ Could not save score.';
         }
     } catch {
-        btn.textContent = 'Error — retry';
-        btn.disabled = false;
+        if (btn) { btn.textContent = 'Error — retry'; btn.disabled = false; }
+        const msgEl = document.getElementById('tz-score-msg');
+        if (msgEl) msgEl.textContent = '❌ Network error.';
     }
 }
 
