@@ -43,13 +43,12 @@ function addTouchHandlers(el, onTap, onLongPress) {
 // ── State ────────────────────────────────────────────────────────────────────
 let state = {};
 
-function freshState(rows, cols, mines, noGuess = false, chording = true, highlightErrors = false) {
+function freshState(rows, cols, mines, noGuess = false, chording = true) {
   return {
     rows, cols, mines,
     board:      Array.from({length: rows}, () => Array(cols).fill(0)),
     revealed:   Array.from({length: rows}, () => Array(cols).fill(false)),
     flagged:    Array.from({length: rows}, () => Array(cols).fill(0)),
-    errorCells: Array.from({length: rows}, () => Array(cols).fill(false)),
     mineSet:    new Set(),
     minesLeft:  mines,
     started:    false,
@@ -59,7 +58,6 @@ function freshState(rows, cols, mines, noGuess = false, chording = true, highlig
     timerID:    null,
     noGuess,
     chording,
-    highlightErrors,
   };
 }
 
@@ -284,13 +282,6 @@ function flag(r, c) {
 
 // ── Win / Loss ────────────────────────────────────────────────────────────────
 function boom(r, c) {
-  if (state.highlightErrors) {
-    // In highlight-errors mode: mark the cell and keep playing
-    state.revealed[r][c] = true;
-    state.errorCells[r][c] = true;
-    renderCell(r, c);
-    return;
-  }
   state.over = true;
   stopTimer();
   // Reveal all mines
@@ -438,11 +429,7 @@ function renderCell(r, c, isDetonated = false) {
 
   el.classList.add('revealed');
   if (val === -1) {
-    if (state.errorCells && state.errorCells[r][c]) {
-      el.classList.add('mine-error');
-    } else {
-      el.classList.add(isDetonated ? 'mine-detonated' : 'mine');
-    }
+    el.classList.add(isDetonated ? 'mine-detonated' : 'mine');
     el.textContent = '💣';
   } else if (val === 0) {
     el.textContent = '';
@@ -476,42 +463,29 @@ function buildBoard(rows, cols) {
 }
 
 // ── Init / Reset ─────────────────────────────────────────────────────────────
-function initGame(rows, cols, mines, noGuess = false, chording = true, highlightErrors = false) {
+function initGame(rows, cols, mines, noGuess = false, chording = true) {
   stopTimer();
-  state = freshState(rows, cols, mines, noGuess, chording, highlightErrors);
+  state = freshState(rows, cols, mines, noGuess, chording);
   document.getElementById('timer').textContent      = '000';
   document.getElementById('mines-left').textContent = String(mines).padStart(3,'0');
   document.getElementById('reset-btn').textContent  = '🙂';
   buildBoard(rows, cols);
   updateNoGuessUI(noGuess);
-  updateHighlightErrorsUI(highlightErrors);
 }
 
 function resetGame() {
-  initGame(state.rows, state.cols, state.mines, state.noGuess, state.chording, state.highlightErrors);
+  initGame(state.rows, state.cols, state.mines, state.noGuess, state.chording);
 }
 
 // ── No-Guess Toggle ───────────────────────────────────────────────────────────
 function toggleNoGuess() {
   const newVal = !state.noGuess;
   localStorage.setItem('noGuess', newVal);
-  initGame(state.rows, state.cols, state.mines, newVal, state.chording, state.highlightErrors);
+  initGame(state.rows, state.cols, state.mines, newVal, state.chording);
 }
 
 function updateNoGuessUI(active) {
   const btn = document.getElementById('noguess-toggle');
-  if (btn) btn.classList.toggle('active', active);
-}
-
-// ── Highlight Errors Toggle ───────────────────────────────────────────────────
-function toggleHighlightErrors() {
-  const newVal = !state.highlightErrors;
-  localStorage.setItem('highlightErrors', newVal);
-  initGame(state.rows, state.cols, state.mines, state.noGuess, state.chording, newVal);
-}
-
-function updateHighlightErrorsUI(active) {
-  const btn = document.getElementById('highlight-errors-toggle');
   if (btn) btn.classList.toggle('active', active);
 }
 
@@ -524,14 +498,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (board.dataset.mode === 'duel' || board.dataset.mode === 'pvp' ||
       board.dataset.mode.startsWith('cylinder')) return;
 
-  const rows            = parseInt(board.dataset.rows);
-  const cols            = parseInt(board.dataset.cols);
-  const mines           = parseInt(board.dataset.mines);
-  const noGuess         = localStorage.getItem('noGuess')         === 'true';
-  const chording        = localStorage.getItem('chording')       !== 'false';
-  const highlightErrors = localStorage.getItem('highlightErrors') === 'true';
+  const rows    = parseInt(board.dataset.rows);
+  const cols    = parseInt(board.dataset.cols);
+  const mines   = parseInt(board.dataset.mines);
+  const noGuess  = localStorage.getItem('noGuess')   === 'true';
+  const chording = localStorage.getItem('chording') !== 'false';
 
-  initGame(rows, cols, mines, noGuess, chording, highlightErrors);
+  initGame(rows, cols, mines, noGuess, chording);
 
   document.getElementById('reset-btn')
     .addEventListener('click', resetGame);

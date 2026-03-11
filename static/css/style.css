@@ -273,7 +273,6 @@ main { flex: 1; padding: 1rem 0.5rem; }
 
 .cell.mine          { background: #6b1f1f; }
 .cell.mine-detonated { background: var(--accent); }
-.cell.mine-error     { background: #c0392b; outline: 2px solid #ff6b6b; outline-offset: -2px; }
 
 /* ── Overlay ─────────────────────────────────────────────────────────────── */
 .overlay {
@@ -1418,6 +1417,13 @@ footer {
   color: #57d474;
   font-size: 0.9rem;
   font-weight: 700;
+}
+
+/* Error highlight: wrong flag or wrong safe mark */
+.cell.tz-error {
+  background: rgba(233, 69, 96, 0.6) !important;
+  outline: 2px solid #e53935;
+  outline-offset: -2px;
 }
 
 /* ── Tentaizu win overlay ─────────────────────────────────────────────────── */

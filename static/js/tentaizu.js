@@ -34,13 +34,14 @@ const NUM_COLOR = [
 // ── Game state ────────────────────────────────────────────────────────────────
 // Each cell: { isMine: bool, count: 0-8, state: 'clue'|'unknown'|'flagged'|'empty' }
 let G = {
-    cells:     [],
-    isPOTD:    true,
-    puzzleId:  '',   // date string for POTD, random hex for randoms
-    startTime: null,
-    elapsed:   0,
-    timer:     null,
-    won:       false,
+    cells:          [],
+    isPOTD:         true,
+    puzzleId:       '',   // date string for POTD, random hex for randoms
+    startTime:      null,
+    elapsed:        0,
+    timer:          null,
+    won:            false,
+    highlightErrors: false,
 };
 
 // ── Puzzle generation ─────────────────────────────────────────────────────────
@@ -136,9 +137,11 @@ function applyCell(el, cell) {
     } else if (cell.state === 'flagged') {
         el.classList.add('hidden', 'tz-flagged');
         el.textContent = '💣';
+        if (G.highlightErrors && !cell.isMine) el.classList.add('tz-error');
     } else if (cell.state === 'empty') {
         el.classList.add('hidden', 'tz-empty');
         el.textContent = '✓';
+        if (G.highlightErrors && cell.isMine) el.classList.add('tz-error');
     }
 }
 
@@ -290,18 +293,28 @@ function esc(s) {
     return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
 
+// ── Highlight Errors Toggle ────────────────────────────────────────────────────
+function toggleHighlightErrors() {
+    G.highlightErrors = !G.highlightErrors;
+    localStorage.setItem('tzHighlightErrors', G.highlightErrors);
+    const btn = document.getElementById('highlight-errors-toggle');
+    if (btn) btn.classList.toggle('active', G.highlightErrors);
+    G.cells.forEach((_, idx) => refreshCell(idx));
+}
+
 // ── Game init ─────────────────────────────────────────────────────────────────
 function initGame(seedStr, isPOTD) {
     clearInterval(G.timer);
 
     G = {
-        cells:     generatePuzzle(seedStr),
+        cells:          generatePuzzle(seedStr),
         isPOTD,
-        puzzleId:  seedStr,
-        startTime: null,
-        elapsed:   0,
-        timer:     null,
-        won:       false,
+        puzzleId:       seedStr,
+        startTime:      null,
+        elapsed:        0,
+        timer:          null,
+        won:            false,
+        highlightErrors: localStorage.getItem('tzHighlightErrors') === 'true',
     };
 
     const ov = document.getElementById('tz-overlay');
@@ -317,6 +330,9 @@ function initGame(seedStr, isPOTD) {
 
     updateFlagCount();
     renderBoard();
+
+    const btn = document.getElementById('highlight-errors-toggle');
+    if (btn) btn.classList.toggle('active', G.highlightErrors);
 
     if (isPOTD) loadLeaderboard();
 }
