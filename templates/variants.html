@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}Minesweeper Variants — Play Different Modes | minesweeper.org{% endblock %}
-{% block description %}Explore Minesweeper variants: Cylinder (board wraps horizontally), and more. Free to play, no download required.{% endblock %}
+{% block description %}Explore Minesweeper variants: Cylinder (wraps horizontally), Toroid (wraps all sides), and more. Free to play, no download required.{% endblock %}
 {% block canonical %}https://minesweeper.org/variants{% endblock %}
 {% block og_url %}https://minesweeper.org/variants{% endblock %}
 {% block og_title %}Minesweeper Variants — Play Different Modes{% endblock %}
-{% block og_description %}Explore Minesweeper variants: Cylinder (board wraps horizontally), and more. Free to play.{% endblock %}
+{% block og_description %}Explore Minesweeper variants: Cylinder (wraps horizontally), Toroid (wraps all sides), and more. Free to play.{% endblock %}
 
 {% block content %}
 <div class="variants-page">
@@ -38,6 +38,33 @@
         <a href="/cylinder/intermediate" class="variant-play-btn">Medium</a>
         <a href="/cylinder/expert"       class="variant-play-btn">Hard</a>
         <a href="/cylinder/custom"       class="variant-play-btn variant-play-btn-outline">Custom</a>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-card-icon">🍩</div>
+      <h2 class="variant-card-title">Toroid</h2>
+      <p class="variant-card-desc">
+        The board wraps on all sides — left↔right and top↔bottom edges are connected.
+        Like playing on the surface of a donut: every cell always has exactly 8 neighbors,
+        even in the corners.
+      </p>
+      <div class="variant-card-example">
+        <span class="example-label">Example corner with one mine:</span>
+        <div class="example-row">
+          <span class="ex-cell ex-mine">💣</span>
+          <span class="ex-cell ex-num" style="color:#1976D2">1</span>
+          <span class="ex-cell ex-empty"></span>
+          <span class="ex-cell ex-num" style="color:#1976D2">1</span>
+          <span class="ex-cell ex-num" style="color:#1976D2">1</span>
+        </div>
+        <span class="example-label">↕ all edges connect ↔</span>
+      </div>
+      <div class="variant-card-links">
+        <a href="/toroid"              class="variant-play-btn">Easy</a>
+        <a href="/toroid/intermediate" class="variant-play-btn">Medium</a>
+        <a href="/toroid/expert"       class="variant-play-btn">Hard</a>
+        <a href="/toroid/custom"       class="variant-play-btn variant-play-btn-outline">Custom</a>
       </div>
     </div>
 
