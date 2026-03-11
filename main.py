@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, CylinderScore, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -384,6 +384,70 @@ async def cylinder_custom(request: Request):
         "lang": get_lang(request), "t": get_t(request),
         "rows": 10, "cols": 10, "mines": 10,
     })
+
+
+# ── Cylinder Leaderboard API ──────────────────────────────────────────────────
+
+CYLINDER_MODES_VALID = {"easy", "intermediate", "expert", "custom"}
+
+class CylinderScoreSubmit(BaseModel):
+    name:      str = Field(..., min_length=1, max_length=32)
+    cyl_mode:  str = Field(..., pattern="^(easy|intermediate|expert|custom)$")
+    time_secs: int = Field(..., ge=1, le=999)
+    rows:      int = Field(..., ge=5,  le=30)
+    cols:      int = Field(..., ge=5,  le=50)
+    mines:     int = Field(..., ge=1,  le=999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+    @field_validator("mines")
+    @classmethod
+    def mines_not_exceeding_board(cls, v, info):
+        rows = info.data.get("rows")
+        cols = info.data.get("cols")
+        if rows and cols:
+            if v > int(rows * cols * 0.85):
+                raise ValueError("Too many mines for this board size")
+        return v
+
+
+@app.post("/api/cylinder-scores", status_code=201)
+def submit_cylinder_score(payload: CylinderScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user  = get_current_user(request)
+    entry = CylinderScore(
+        name       = payload.name,
+        user_email = user["email"] if user else None,
+        cyl_mode   = payload.cyl_mode,
+        time_secs  = payload.time_secs,
+        rows       = payload.rows,
+        cols       = payload.cols,
+        mines      = payload.mines,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/cylinder-scores/{cyl_mode}")
+def get_cylinder_scores(cyl_mode: str, db: Session = Depends(get_db)):
+    if cyl_mode not in CYLINDER_MODES_VALID:
+        raise HTTPException(status_code=400, detail="Invalid mode")
+    top = (
+        db.query(CylinderScore)
+        .filter(CylinderScore.cyl_mode == cyl_mode)
+        .order_by(CylinderScore.time_secs.asc(), CylinderScore.created_at.asc())
+        .limit(15)
+        .all()
+    )
+    return [s.to_dict() for s in top]
 
 
 @app.get("/tentaizu", response_class=HTMLResponse)

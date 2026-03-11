@@ -260,6 +260,97 @@
     }
   }
 
+  // ── Score submission ───────────────────────────────────────────────────────
+  async function submitScore(autoName = null) {
+    const board   = document.getElementById('board');
+    const msgEl   = document.getElementById('cyl-score-msg');
+    const nameEl  = document.getElementById('cyl-player-name');
+    const name    = autoName || nameEl?.value.trim();
+
+    if (!name) { if (msgEl) msgEl.textContent = '⚠️ Please enter your name.'; return; }
+
+    const cylMode = cylModeKey(board.dataset.mode);
+    const payload = {
+      name,
+      cyl_mode:  cylMode,
+      time_secs: state.elapsed,
+      rows:      state.rows,
+      cols:      state.cols,
+      mines:     state.mines,
+    };
+
+    try {
+      const res = await fetch('/api/cylinder-scores', {
+        method:  'POST',
+        headers: {'Content-Type': 'application/json'},
+        body:    JSON.stringify(payload),
+      });
+      if (res.ok) {
+        if (msgEl) msgEl.textContent = `✅ Score saved for ${name}!`;
+        if (nameEl) nameEl.disabled = true;
+        const saveBtn = document.querySelector('#cyl-score-form button');
+        if (saveBtn) saveBtn.disabled = true;
+        loadLeaderboard(cylMode);
+      } else {
+        const err = await res.json();
+        if (msgEl) msgEl.textContent = `❌ ${err.detail || 'Could not save score.'}`;
+      }
+    } catch {
+      if (msgEl) msgEl.textContent = '❌ Network error. Score not saved.';
+    }
+  }
+
+  // Map data-mode to API cyl_mode key
+  function cylModeKey(dataMode) {
+    const map = {
+      'cylinder-beginner':     'easy',
+      'cylinder-intermediate': 'intermediate',
+      'cylinder-expert':       'expert',
+      'cylinder-custom':       'custom',
+    };
+    return map[dataMode] || 'easy';
+  }
+
+  // ── Leaderboard ────────────────────────────────────────────────────────────
+  async function loadLeaderboard(cylMode) {
+    const el = document.getElementById('cyl-lb-content');
+    if (!el) return;
+    el.innerHTML = '<div class="lb-loading">Loading…</div>';
+    try {
+      const res  = await fetch(`/api/cylinder-scores/${cylMode}`);
+      const data = await res.json();
+      if (!data.length) {
+        el.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
+        return;
+      }
+      const medals = ['🥇', '🥈', '🥉'];
+      const rows = data.map((s, i) => `
+        <tr class="${i < 3 ? 'top-' + (i + 1) : ''}">
+          <td class="lb-rank">${medals[i] || i + 1}</td>
+          <td class="lb-name">${esc(s.name)}</td>
+          <td class="lb-time">${fmtTime(s.time_secs)}</td>
+        </tr>`).join('');
+      el.innerHTML = `
+        <div class="lb-table-wrap">
+          <table class="lb-table">
+            <thead><tr><th>#</th><th>Name</th><th>Time</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    } catch {
+      el.innerHTML = '<div class="lb-empty">⚠️ Could not load scores.</div>';
+    }
+  }
+
+  function fmtTime(s) {
+    if (s < 60) return `${s}s`;
+    return `${Math.floor(s / 60)}m ${s % 60}s`;
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+
   // ── Overlay ────────────────────────────────────────────────────────────────
   function showOverlay(msg, won) {
     let el = document.getElementById('game-overlay');
@@ -269,12 +360,40 @@
       document.getElementById('board').appendChild(el);
     }
     el.className = won ? 'overlay win' : 'overlay loss';
+
+    const board    = document.getElementById('board');
+    const username = board.dataset.username || '';
+    const cylMode  = cylModeKey(board.dataset.mode);
+
+    let scoreForm = '';
+    if (won) {
+      if (username) {
+        scoreForm = `<div id="cyl-score-msg" style="font-size:0.9rem">Saving score…</div>`;
+      } else {
+        scoreForm = `
+          <div id="cyl-score-form" class="overlay-score-form">
+            <input id="cyl-player-name" type="text" maxlength="32"
+                   placeholder="Enter your name" autocomplete="off" />
+            <button onclick="cylSubmitScore()">Save Score</button>
+          </div>
+          <div id="cyl-score-msg" style="font-size:0.85rem;min-height:1.2em"></div>
+          <a class="overlay-lb-link" href="/auth/login">Sign in with Google to skip this step</a>
+        `;
+      }
+    }
+
     el.innerHTML = `
       <span>${msg}</span>
-      ${won ? '<div style="font-size:0.85rem;opacity:0.8">Cylinder variant — no leaderboard yet</div>' : ''}
+      ${scoreForm}
       <button onclick="cylResetGame()">Play Again</button>
     `;
     el.style.display = 'flex';
+
+    if (won && username) {
+      submitScore(username);
+    } else if (won) {
+      setTimeout(() => document.getElementById('cyl-player-name')?.focus(), 50);
+    }
   }
 
   // ── Render Cell ────────────────────────────────────────────────────────────
@@ -355,10 +474,11 @@
   }
 
   // ── Expose to window ───────────────────────────────────────────────────────
-  window.cylResetGame    = resetGame;
-  window.cylInitGame     = initGame;
+  window.cylResetGame     = resetGame;
+  window.cylInitGame      = initGame;
   window.cylToggleNoGuess = toggleNoGuess;
-  window.cylState        = () => state; // read-only access for custom form
+  window.cylSubmitScore   = submitScore;
+  window.cylState         = () => state; // read-only access for custom form
 
   // ── Bootstrap ──────────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
@@ -376,6 +496,9 @@
     initGame(rows, cols, mines, noGuess, chording);
 
     document.getElementById('reset-btn').addEventListener('click', resetGame);
+
+    // Load leaderboard on page open
+    loadLeaderboard(cylModeKey(board.dataset.mode));
   });
 
 })();
