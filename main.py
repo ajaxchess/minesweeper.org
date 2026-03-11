@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, CylinderScore, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, CylinderScore, ToroidScore, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -67,6 +67,12 @@ CYLINDER_MODES = {
     "cylinder-beginner":     {"rows": 10, "cols": 10, "mines": 10},
     "cylinder-intermediate": {"rows": 16, "cols": 16, "mines": 40},
     "cylinder-expert":       {"rows": 16, "cols": 30, "mines": 99},
+}
+
+TOROID_MODES = {
+    "toroid-beginner":     {"rows": 10, "cols": 10, "mines": 10},
+    "toroid-intermediate": {"rows": 16, "cols": 16, "mines": 40},
+    "toroid-expert":       {"rows": 16, "cols": 30, "mines": 99},
 }
 
 # ── Daily score reset ─────────────────────────────────────────────────────────
@@ -444,6 +450,112 @@ def get_cylinder_scores(cyl_mode: str, db: Session = Depends(get_db)):
         db.query(CylinderScore)
         .filter(CylinderScore.cyl_mode == cyl_mode)
         .order_by(CylinderScore.time_secs.asc(), CylinderScore.created_at.asc())
+        .limit(15)
+        .all()
+    )
+    return [s.to_dict() for s in top]
+
+
+# ── Toroid Routes ─────────────────────────────────────────────────────────────
+
+@app.get("/toroid", response_class=HTMLResponse)
+async def toroid_beginner(request: Request):
+    return templates.TemplateResponse("toroid.html", {
+        "request": request, "mode": "toroid-beginner",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **TOROID_MODES["toroid-beginner"]
+    })
+
+
+@app.get("/toroid/intermediate", response_class=HTMLResponse)
+async def toroid_intermediate(request: Request):
+    return templates.TemplateResponse("toroid.html", {
+        "request": request, "mode": "toroid-intermediate",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **TOROID_MODES["toroid-intermediate"]
+    })
+
+
+@app.get("/toroid/expert", response_class=HTMLResponse)
+async def toroid_expert(request: Request):
+    return templates.TemplateResponse("toroid.html", {
+        "request": request, "mode": "toroid-expert",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **TOROID_MODES["toroid-expert"]
+    })
+
+
+@app.get("/toroid/custom", response_class=HTMLResponse)
+async def toroid_custom(request: Request):
+    return templates.TemplateResponse("toroid.html", {
+        "request": request, "mode": "toroid-custom",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "rows": 10, "cols": 10, "mines": 10,
+    })
+
+
+# ── Toroid Leaderboard API ────────────────────────────────────────────────────
+
+TOROID_MODES_VALID = {"easy", "intermediate", "expert", "custom"}
+
+class ToroidScoreSubmit(BaseModel):
+    name:      str = Field(..., min_length=1, max_length=32)
+    tor_mode:  str = Field(..., pattern="^(easy|intermediate|expert|custom)$")
+    time_secs: int = Field(..., ge=1, le=999)
+    rows:      int = Field(..., ge=5,  le=30)
+    cols:      int = Field(..., ge=5,  le=50)
+    mines:     int = Field(..., ge=1,  le=999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+    @field_validator("mines")
+    @classmethod
+    def mines_not_exceeding_board(cls, v, info):
+        rows = info.data.get("rows")
+        cols = info.data.get("cols")
+        if rows and cols:
+            if v > int(rows * cols * 0.85):
+                raise ValueError("Too many mines for this board size")
+        return v
+
+
+@app.post("/api/toroid-scores", status_code=201)
+def submit_toroid_score(payload: ToroidScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user  = get_current_user(request)
+    entry = ToroidScore(
+        name       = payload.name,
+        user_email = user["email"] if user else None,
+        tor_mode   = payload.tor_mode,
+        time_secs  = payload.time_secs,
+        rows       = payload.rows,
+        cols       = payload.cols,
+        mines      = payload.mines,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/toroid-scores/{tor_mode}")
+def get_toroid_scores(tor_mode: str, db: Session = Depends(get_db)):
+    if tor_mode not in TOROID_MODES_VALID:
+        raise HTTPException(status_code=400, detail="Invalid mode")
+    top = (
+        db.query(ToroidScore)
+        .filter(ToroidScore.tor_mode == tor_mode)
+        .order_by(ToroidScore.time_secs.asc(), ToroidScore.created_at.asc())
         .limit(15)
         .all()
     )

@@ -194,6 +194,36 @@ class CylinderScore(Base):
             "created_at": self.created_at.strftime("%Y-%m-%d"),
         }
 
+# ── Toroid Score model (permanent — never reset) ──────────────────────────────
+class ToroidScore(Base):
+    __tablename__ = "toroid_scores"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String(32), nullable=False)
+    user_email = Column(String(256), nullable=True, index=True)
+    tor_mode   = Column(String(32), nullable=False)   # easy/intermediate/expert/custom
+    time_secs  = Column(Integer, nullable=False)
+    rows       = Column(Integer, nullable=False)
+    cols       = Column(Integer, nullable=False)
+    mines      = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_toroid_scores_mode_time", "tor_mode", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":        self.id,
+            "name":      self.name,
+            "tor_mode":  self.tor_mode,
+            "time_secs": self.time_secs,
+            "rows":      self.rows,
+            "cols":      self.cols,
+            "mines":     self.mines,
+            "created_at": self.created_at.strftime("%Y-%m-%d"),
+        }
+
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
     Base.metadata.create_all(bind=engine)

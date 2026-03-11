@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% if mode == 'toroid-beginner' %}
+  {% set _title = "Toroid Minesweeper — Easy | minesweeper.org" %}
+  {% set _desc  = "Play Toroid Minesweeper — all edges wrap: left↔right and top↔bottom. Easy mode: " ~ rows ~ "×" ~ cols ~ " board with " ~ mines ~ " mines." %}
+  {% set _canon = "https://minesweeper.org/toroid" %}
+{% elif mode == 'toroid-intermediate' %}
+  {% set _title = "Toroid Minesweeper — Medium | minesweeper.org" %}
+  {% set _desc  = "Play Toroid Minesweeper — all edges wrap: left↔right and top↔bottom. Medium mode: " ~ rows ~ "×" ~ cols ~ " board with " ~ mines ~ " mines." %}
+  {% set _canon = "https://minesweeper.org/toroid/intermediate" %}
+{% elif mode == 'toroid-expert' %}
+  {% set _title = "Toroid Minesweeper — Hard | minesweeper.org" %}
+  {% set _desc  = "Play Toroid Minesweeper — all edges wrap: left↔right and top↔bottom. Hard mode: " ~ rows ~ "×" ~ cols ~ " board with " ~ mines ~ " mines." %}
+  {% set _canon = "https://minesweeper.org/toroid/expert" %}
+{% else %}
+  {% set _title = "Toroid Minesweeper — Custom | minesweeper.org" %}
+  {% set _desc  = "Play Toroid Minesweeper with a custom board size. All edges wrap around." %}
+  {% set _canon = "https://minesweeper.org/toroid/custom" %}
+{% endif %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<div class="game-wrapper">
+
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="game-section">
+    <div class="game-info">
+      <div class="mode-row">
+        <div class="mode-badge">🍩 Toroid</div>
+        <button id="noguess-toggle" onclick="torToggleNoGuess()" title="Generate boards that require no guessing">No Guess</button>
+      </div>
+
+      <!-- Difficulty tabs -->
+      <div class="variant-tabs">
+        <a href="/toroid"              class="variant-tab {% if mode == 'toroid-beginner'     %}active{% endif %}">Easy</a>
+        <a href="/toroid/intermediate" class="variant-tab {% if mode == 'toroid-intermediate' %}active{% endif %}">Medium</a>
+        <a href="/toroid/expert"       class="variant-tab {% if mode == 'toroid-expert'       %}active{% endif %}">Hard</a>
+        <a href="/toroid/custom"       class="variant-tab {% if mode == 'toroid-custom'       %}active{% endif %}">Custom</a>
+      </div>
+
+      {% if mode == 'toroid-custom' %}
+      <form id="toroid-custom-form" class="custom-form">
+        <label>Rows  <input type="number" id="t-rows"  value="10" min="5" max="30"></label>
+        <label>Cols  <input type="number" id="t-cols"  value="10" min="5" max="50"></label>
+        <label>Mines <input type="number" id="t-mines" value="10" min="1" max="999"></label>
+        <button type="submit">Start</button>
+      </form>
+      {% endif %}
+
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-icon">💣</span>
+          <span class="stat-value" id="mines-left">{{ mines }}</span>
+        </div>
+        <button id="reset-btn" title="New game">🙂</button>
+        <div class="stat">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="timer">000</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toroid-wrap-label">↕ all edges connect ↔</div>
+
+    <div id="board"
+         data-rows="{{ rows }}"
+         data-cols="{{ cols }}"
+         data-mines="{{ mines }}"
+         data-mode="{{ mode }}"
+         data-username="{{ user.name if user else '' }}">
+    </div>
+
+    <p class="instructions">
+      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
+      <strong>Right-click</strong> to flag &nbsp;|&nbsp;
+      <strong>🙂</strong> to reset &nbsp;|&nbsp;
+      <em>All edges wrap around!</em>
+    </p>
+
+    <!-- Leaderboard -->
+    <div class="tz-lb-section" style="width:100%;max-width:600px">
+      {% set mode_label = {'toroid-beginner': 'Easy', 'toroid-intermediate': 'Medium', 'toroid-expert': 'Hard', 'toroid-custom': 'Custom'}[mode] %}
+      <div class="tz-lb-title">🏆 Best Times — {{ mode_label }}</div>
+      <div id="tor-lb-content">
+        <div class="lb-loading">Loading…</div>
+      </div>
+    </div>
+
+  </section>
+
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/toroid.js"></script>
+{% if mode == 'toroid-custom' %}
+<script>
+  document.getElementById('toroid-custom-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const rows  = parseInt(document.getElementById('t-rows').value);
+    const cols  = parseInt(document.getElementById('t-cols').value);
+    let mines   = parseInt(document.getElementById('t-mines').value);
+    const max   = Math.floor(rows * cols * 0.85);
+    mines       = Math.min(mines, max);
+    const board = document.getElementById('board');
+    board.dataset.rows  = rows;
+    board.dataset.cols  = cols;
+    board.dataset.mines = mines;
+    document.getElementById('mines-left').textContent = String(mines).padStart(3, '0');
+    const s = torState();
+    torInitGame(rows, cols, mines, s.noGuess, s.chording);
+  });
+</script>
+{% endif %}
+{% endblock %}
