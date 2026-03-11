@@ -1,3 +1,19 @@
+https://github.com/hellpig/minesweeper-puzzle-generator
+
+Google AI Overview:
+Tentaizu (meaning "star map" in Japanese) is a logic puzzle variant of Minesweeper designed for paper, which appeared in Southwest Airlines' Spirit magazine around 2008–2009. The puzzle features a grid with numbers indicating hidden stars in adjacent squares, requiring players to locate all stars, typically resulting in a unique solution. 
+Wikipedia
+Wikipedia
+Key Aspects of Tentaizu History
+Origin: The puzzle originated as a print-based, logic-driven version of the classic computer game Minesweeper.
+Name Meaning: The name 天体図 (tentaizu) is Japanese for "star map" or "celestial map".
+Publication: Tentaizu puzzles were notably featured in the Spirit magazine, published for Southwest Airlines, in the 2008–2009 timeframe.
+Format: Unlike traditional Minesweeper, which relies on clicking, Tentaizu requires logical deduction to mark hidden stars on a paper grid, ensuring a unique solution for each puzzle.
+
+>RC Why is there not a wikipedia page about this?
+
+Claude Analysis:
+
 I am developing https://minesweeper.org/tentaizu, a subsite of minesweeper.org.  There is a site at https://puzzle-minesweeper.com that has a lot of the features I am interested in replicating.  How can I make a superior site and attract more traffic than the puzzle-minesweeper.com site?9:21 AMSearched the webSearched the webGood intel gathered. Here's a comprehensive strategic breakdown for making minesweeper.org/tentaizu superior to puzzle-minesweeper.com and outranking it in traffic.
 
 Competitive Analysis: puzzle-minesweeper.com
