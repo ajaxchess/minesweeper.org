@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% if mode == 'cylinder-beginner' %}
+  {% set _title = "Cylinder Minesweeper — Easy | minesweeper.org" %}
+  {% set _desc  = "Play Cylinder Minesweeper — the board wraps horizontally. Easy mode: " ~ rows ~ "×" ~ cols ~ " board with " ~ mines ~ " mines." %}
+  {% set _canon = "https://minesweeper.org/cylinder" %}
+{% elif mode == 'cylinder-intermediate' %}
+  {% set _title = "Cylinder Minesweeper — Medium | minesweeper.org" %}
+  {% set _desc  = "Play Cylinder Minesweeper — the board wraps horizontally. Medium mode: " ~ rows ~ "×" ~ cols ~ " board with " ~ mines ~ " mines." %}
+  {% set _canon = "https://minesweeper.org/cylinder/intermediate" %}
+{% elif mode == 'cylinder-expert' %}
+  {% set _title = "Cylinder Minesweeper — Hard | minesweeper.org" %}
+  {% set _desc  = "Play Cylinder Minesweeper — the board wraps horizontally. Hard mode: " ~ rows ~ "×" ~ cols ~ " board with " ~ mines ~ " mines." %}
+  {% set _canon = "https://minesweeper.org/cylinder/expert" %}
+{% else %}
+  {% set _title = "Cylinder Minesweeper — Custom | minesweeper.org" %}
+  {% set _desc  = "Play Cylinder Minesweeper with a custom board size. The board wraps horizontally." %}
+  {% set _canon = "https://minesweeper.org/cylinder/custom" %}
+{% endif %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<div class="game-wrapper">
+
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="game-section">
+    <div class="game-info">
+      <div class="mode-row">
+        <div class="mode-badge">🔄 Cylinder</div>
+        <button id="noguess-toggle" onclick="cylToggleNoGuess()" title="Generate boards that require no guessing">No Guess</button>
+      </div>
+
+      <!-- Difficulty tabs -->
+      <div class="variant-tabs">
+        <a href="/cylinder"              class="variant-tab {% if mode == 'cylinder-beginner'     %}active{% endif %}">Easy</a>
+        <a href="/cylinder/intermediate" class="variant-tab {% if mode == 'cylinder-intermediate' %}active{% endif %}">Medium</a>
+        <a href="/cylinder/expert"       class="variant-tab {% if mode == 'cylinder-expert'       %}active{% endif %}">Hard</a>
+        <a href="/cylinder/custom"       class="variant-tab {% if mode == 'cylinder-custom'       %}active{% endif %}">Custom</a>
+      </div>
+
+      {% if mode == 'cylinder-custom' %}
+      <form id="cylinder-custom-form" class="custom-form">
+        <label>Rows  <input type="number" id="c-rows"  value="10" min="5" max="30"></label>
+        <label>Cols  <input type="number" id="c-cols"  value="10" min="5" max="50"></label>
+        <label>Mines <input type="number" id="c-mines" value="10" min="1" max="999"></label>
+        <button type="submit">Start</button>
+      </form>
+      {% endif %}
+
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-icon">💣</span>
+          <span class="stat-value" id="mines-left">{{ mines }}</span>
+        </div>
+        <button id="reset-btn" title="New game">🙂</button>
+        <div class="stat">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="timer">000</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cylinder-wrap-label">↩ left &amp; right edges connect ↪</div>
+
+    <div id="board"
+         data-rows="{{ rows }}"
+         data-cols="{{ cols }}"
+         data-mines="{{ mines }}"
+         data-mode="{{ mode }}">
+    </div>
+
+    <p class="instructions">
+      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
+      <strong>Right-click</strong> to flag &nbsp;|&nbsp;
+      <strong>🙂</strong> to reset &nbsp;|&nbsp;
+      <em>Columns wrap around!</em>
+    </p>
+  </section>
+
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/cylinder.js"></script>
+{% if mode == 'cylinder-custom' %}
+<script>
+  document.getElementById('cylinder-custom-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const rows  = parseInt(document.getElementById('c-rows').value);
+    const cols  = parseInt(document.getElementById('c-cols').value);
+    let mines   = parseInt(document.getElementById('c-mines').value);
+    const max   = Math.floor(rows * cols * 0.85);
+    mines       = Math.min(mines, max);
+    const board = document.getElementById('board');
+    board.dataset.rows  = rows;
+    board.dataset.cols  = cols;
+    board.dataset.mines = mines;
+    document.getElementById('mines-left').textContent = String(mines).padStart(3, '0');
+    const s = cylState();
+    cylInitGame(rows, cols, mines, s.noGuess, s.chording);
+  });
+</script>
+{% endif %}
+{% endblock %}

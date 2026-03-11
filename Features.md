@@ -13,6 +13,8 @@ F11 Implement Tentaizu on a sub-page https:/minesweeper.org/tentaizu
     You should be able to toggle between flag, blank, and unknown
     See also https://github.com/hellpig/minesweeper-puzzle-generator
 
+F12 Cylinder variant
+
 -- Addressed --
 
 F1 User Profile

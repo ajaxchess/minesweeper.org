@@ -63,6 +63,12 @@ GAME_MODES = {
     "expert":       {"rows": 16, "cols": 30, "mines": 99},
 }
 
+CYLINDER_MODES = {
+    "cylinder-beginner":     {"rows": 10, "cols": 10, "mines": 10},
+    "cylinder-intermediate": {"rows": 16, "cols": 16, "mines": 40},
+    "cylinder-expert":       {"rows": 16, "cols": 30, "mines": 99},
+}
+
 # ── Daily score reset ─────────────────────────────────────────────────────────
 def reset_scores():
     db = SessionLocal()
@@ -328,6 +334,55 @@ async def profile_page(request: Request):
         "mode":    "profile",
         "user":    user,
         "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+@app.get("/variants", response_class=HTMLResponse)
+async def variants_page(request: Request):
+    return templates.TemplateResponse("variants.html", {
+        "request": request, "mode": "variants",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+@app.get("/cylinder", response_class=HTMLResponse)
+async def cylinder_beginner(request: Request):
+    return templates.TemplateResponse("cylinder.html", {
+        "request": request, "mode": "cylinder-beginner",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **CYLINDER_MODES["cylinder-beginner"]
+    })
+
+
+@app.get("/cylinder/intermediate", response_class=HTMLResponse)
+async def cylinder_intermediate(request: Request):
+    return templates.TemplateResponse("cylinder.html", {
+        "request": request, "mode": "cylinder-intermediate",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **CYLINDER_MODES["cylinder-intermediate"]
+    })
+
+
+@app.get("/cylinder/expert", response_class=HTMLResponse)
+async def cylinder_expert(request: Request):
+    return templates.TemplateResponse("cylinder.html", {
+        "request": request, "mode": "cylinder-expert",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **CYLINDER_MODES["cylinder-expert"]
+    })
+
+
+@app.get("/cylinder/custom", response_class=HTMLResponse)
+async def cylinder_custom(request: Request):
+    return templates.TemplateResponse("cylinder.html", {
+        "request": request, "mode": "cylinder-custom",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "rows": 10, "cols": 10, "mines": 10,
     })
 
 

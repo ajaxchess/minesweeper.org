@@ -494,8 +494,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const board = document.getElementById('board');
   if (!board) return;
 
-  // Don't run the solo game init on the duel or pvp page
-  if (board.dataset.mode === 'duel' || board.dataset.mode === 'pvp') return;
+  // Don't run the solo game init on the duel, pvp, or cylinder pages
+  if (board.dataset.mode === 'duel' || board.dataset.mode === 'pvp' ||
+      board.dataset.mode.startsWith('cylinder')) return;
 
   const rows    = parseInt(board.dataset.rows);
   const cols    = parseInt(board.dataset.cols);
