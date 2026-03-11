@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Quests — minesweeper.org{% endblock %}
+{% block description %}Complete daily and monthly quests in Minesweeper. Track your streak, earn rewards, and get ads disabled for your dedication.{% endblock %}
+{% block canonical %}https://minesweeper.org/quests{% endblock %}
+{% block og_url %}https://minesweeper.org/quests{% endblock %}
+{% block og_title %}Minesweeper Quests{% endblock %}
+{% block og_description %}Complete daily and monthly Minesweeper quests. Earn a 20-day streak or finish 10 quests in a season to disable ads.{% endblock %}
+
+{% block content %}
+<div class="quests-page">
+
+  <h1 class="quests-title">🎯 Quests</h1>
+  <p class="quests-subtitle">Complete quests to earn rewards. Progress is saved in your browser.</p>
+
+  <!-- Reward status banner -->
+  <div id="q-reward-banner" class="q-reward-banner" style="display:none">
+    🎁 <strong>Reward active:</strong> Ads are disabled — keep it up!
+  </div>
+
+  <div class="quests-layout">
+
+    <!-- Daily Quest -->
+    <section class="quest-section">
+      <div class="quest-section-hdr">
+        <h2>📅 Daily Quest</h2>
+        <span id="q-daily-meta" class="quest-section-meta"></span>
+      </div>
+      <p class="quest-section-note">One quest per day, rotates every 24 hours.</p>
+      <div id="q-daily-card"></div>
+    </section>
+
+    <!-- Seasonal Quests -->
+    <section class="quest-section">
+      <div class="quest-section-hdr">
+        <h2>🗓️ Seasonal Quests</h2>
+        <span id="q-season-meta" class="quest-section-meta"></span>
+      </div>
+      <p class="quest-section-note">All three are active for the whole month. Progress carries over day to day.</p>
+      <div id="q-seasonal-cards"></div>
+    </section>
+
+    <!-- Rewards -->
+    <section class="quest-section quest-section-rewards">
+      <div class="quest-section-hdr">
+        <h2>🎁 Rewards</h2>
+      </div>
+      <p class="quest-section-note">Earn either reward to permanently disable ads on this device.</p>
+
+      <div class="q-reward-card">
+        <div class="q-reward-icon">🔥</div>
+        <div class="q-reward-body">
+          <div class="q-reward-label">20-Day Daily Quest Streak</div>
+          <div class="q-reward-desc">Complete your daily quest on 20 consecutive days.</div>
+          <div class="quest-progress-bar">
+            <div id="q-streak-fill" class="quest-progress-fill" style="width:0%"></div>
+          </div>
+          <div id="q-streak-text" class="quest-progress-text">0 / 20 days</div>
+        </div>
+      </div>
+
+      <div class="q-reward-card">
+        <div class="q-reward-icon">📆</div>
+        <div class="q-reward-body">
+          <div class="q-reward-label">10 Daily Quests This Season</div>
+          <div class="q-reward-desc">Complete your daily quest on any 10 days this month.</div>
+          <div class="quest-progress-bar">
+            <div id="q-season-fill" class="quest-progress-fill" style="width:0%"></div>
+          </div>
+          <div id="q-season-text" class="quest-progress-text">0 / 10 days</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  function questCardHTML(icon, label, link, progress, target, completed) {
+    const pct      = Math.min(100, Math.round(progress / target * 100));
+    const doneClass = completed ? ' quest-card-done' : '';
+    const progText  = target === 1
+      ? (completed ? 'Complete! ✅' : 'Not yet completed')
+      : `${progress} / ${target}${completed ? ' ✅' : ''}`;
+    const btn = (link && !completed)
+      ? `<a class="quest-play-btn" href="${link}">Play →</a>`
+      : '';
+    return `
+      <div class="quest-card${doneClass}">
+        <div class="quest-card-icon">${icon}</div>
+        <div class="quest-card-body">
+          <div class="quest-card-label">${label}</div>
+          <div class="quest-progress-bar">
+            <div class="quest-progress-fill" style="width:${pct}%"></div>
+          </div>
+          <div class="quest-progress-text">${progText}</div>
+        </div>
+        ${btn}
+      </div>`;
+  }
+
+  function render() {
+    const s = window.questsGetState();
+
+    // Reward banner
+    document.getElementById('q-reward-banner').style.display = s.ads_disabled ? 'flex' : 'none';
+
+    // Daily meta
+    const dateLabel = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+    document.getElementById('q-daily-meta').textContent = dateLabel;
+
+    // Daily card
+    const dd = s.daily;
+    const isRush = dd.def.id === 'rush_5_mines';
+    const dailyProgress = isRush ? dd.rush_progress : (dd.completed ? 1 : 0);
+    document.getElementById('q-daily-card').innerHTML =
+      questCardHTML(dd.def.icon, dd.def.label, dd.def.link, dailyProgress, isRush ? 5 : 1, dd.completed);
+
+    // Season meta
+    const [year, mon] = s.month.split('-');
+    document.getElementById('q-season-meta').textContent =
+      new Date(year, mon - 1).toLocaleString(undefined, { month: 'long', year: 'numeric' });
+
+    // Seasonal cards
+    document.getElementById('q-seasonal-cards').innerHTML = s.seasonal.map(q => {
+      const progress = q.def.type === 'count' ? q.value : (q.completed ? 1 : 0);
+      const target   = q.def.type === 'count' ? q.def.target : 1;
+      return questCardHTML(q.def.icon, q.def.label, null, progress, target, q.completed);
+    }).join('');
+
+    // Streak reward
+    const streakPct = Math.min(100, Math.round(s.streak / 20 * 100));
+    document.getElementById('q-streak-fill').style.width = streakPct + '%';
+    document.getElementById('q-streak-text').textContent =
+      s.streak >= 20 ? '✅ Unlocked!' : `${s.streak} / 20 days`;
+
+    // Season reward
+    const seasonPct = Math.min(100, Math.round(s.season_days / 10 * 100));
+    document.getElementById('q-season-fill').style.width = seasonPct + '%';
+    document.getElementById('q-season-text').textContent =
+      s.season_days >= 10 ? '✅ Unlocked!' : `${s.season_days} / 10 days`;
+  }
+
+  window._renderQuests = render;
+  render();
+});
+</script>
+{% endblock %}

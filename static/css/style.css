@@ -1572,6 +1572,167 @@ footer {
   margin-bottom: -0.5rem;
 }
 
+/* ── Quest system ────────────────────────────────────────────────────────── */
+.quests-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+.quests-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.quests-subtitle {
+  color: var(--text-muted, #888);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+.q-reward-banner {
+  background: linear-gradient(135deg, var(--accent2, #00838f), #2e7d32);
+  color: #fff;
+  padding: 0.7rem 1.2rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.quests-layout {
+  display: grid;
+  gap: 2rem;
+}
+.quest-section {
+  background: var(--card-bg, #1e1e1e);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border, #333);
+}
+.quest-section-hdr {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+.quest-section-hdr h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+.quest-section-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted, #888);
+}
+.quest-section-note {
+  font-size: 0.82rem;
+  color: var(--text-muted, #888);
+  margin: 0 0 1rem;
+}
+.quest-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--bg, #121212);
+  border: 1px solid var(--border, #333);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+}
+.quest-card:last-child { margin-bottom: 0; }
+.quest-card-done {
+  border-color: #2e7d32;
+  background: color-mix(in srgb, #2e7d32 10%, var(--bg, #121212));
+}
+.quest-card-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+.quest-card-body {
+  flex: 1;
+  min-width: 0;
+}
+.quest-card-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+.quest-progress-bar {
+  background: var(--border, #333);
+  border-radius: 99px;
+  height: 6px;
+  overflow: hidden;
+  margin-bottom: 0.3rem;
+}
+.quest-progress-fill {
+  height: 100%;
+  background: var(--accent2, #00838f);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+.quest-card-done .quest-progress-fill {
+  background: #43a047;
+}
+.quest-progress-text {
+  font-size: 0.78rem;
+  color: var(--text-muted, #888);
+}
+.quest-play-btn {
+  display: inline-block;
+  background: var(--accent2, #00838f);
+  color: #fff;
+  text-decoration: none;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.quest-play-btn:hover { opacity: 0.85; }
+
+/* Rewards section */
+.quest-section-rewards .quest-card { flex-wrap: nowrap; }
+.q-reward-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: var(--bg, #121212);
+  border: 1px solid var(--border, #333);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+}
+.q-reward-card:last-child { margin-bottom: 0; }
+.q-reward-icon { font-size: 1.6rem; flex-shrink: 0; }
+.q-reward-body { flex: 1; min-width: 0; }
+.q-reward-label { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.2rem; }
+.q-reward-desc  { font-size: 0.82rem; color: var(--text-muted, #888); margin-bottom: 0.5rem; }
+
+/* Toast notification */
+.quest-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(120%);
+  background: #1b5e20;
+  color: #fff;
+  padding: 0.7rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  z-index: 9999;
+  white-space: nowrap;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+.quest-toast-show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
 /* ── Tentaizu permalink row ──────────────────────────────────────────────── */
 .tz-permalink-row {
   font-size: 0.8rem;

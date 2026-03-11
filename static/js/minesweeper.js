@@ -312,6 +312,13 @@ function checkWin() {
     }
     document.getElementById('mines-left').textContent = '000';
     showOverlay(`🎉 You Won! — ${state.elapsed}s`, true);
+
+    // Quest hooks
+    if (typeof window.questsHook === 'function') {
+      const mode = document.getElementById('board')?.dataset.mode;
+      if (mode === 'beginner')     window.questsHook('easy_won');
+      if (mode === 'intermediate') window.questsHook('intermediate_won');
+    }
   }
 }
 

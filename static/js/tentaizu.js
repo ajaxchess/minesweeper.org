@@ -240,6 +240,7 @@ function checkWin() {
 
     G.won = true;
     stopTimer();
+    if (G.isPOTD && typeof window.questsHook === 'function') window.questsHook('tentaizu_solved');
     showWinOverlay();
 }
 

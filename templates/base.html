@@ -46,6 +46,9 @@
   </script>
   {% endblock %}
 
+  <!-- Quest reward: disable ads if earned -->
+  <script>try{if(localStorage.getItem('quests_ads_disabled')==='true'){window.adsbygoogle={push:function(){}};document.head.insertAdjacentHTML('beforeend','<style>.ad-sidebar,.ad-left,.ad-right,.ad-container{display:none!important}</style>');}}catch(e){}</script>
+
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8102958922361899"
      crossorigin="anonymous"></script>
@@ -65,7 +68,8 @@
         <a href="/duel" class="{% if mode == 'duel' %}active{% endif %}">⚔️ {{ t.nav_duel }}</a>
         <a href="/pvp" class="{% if mode == 'pvp' %}active{% endif %}">🎮 {{ t.nav_pvp }}</a>
         <a href="/tentaizu" class="{% if mode == 'tentaizu' %}active{% endif %}">🔢 {{ t.nav_tentaizu }}</a>
-        <a href="/variants" class="{% if mode == 'variants' or 'cylinder' in mode %}active{% endif %}">🔄 Variants</a>
+        <a href="/variants" class="{% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode %}active{% endif %}">🔄 Variants</a>
+        <a href="/quests"   class="{% if mode == 'quests' %}active{% endif %}">🎯 Quests</a>
       </nav>
       <div class="auth-area">
         {% if user %}
@@ -164,6 +168,7 @@
   </script>
 
   <script src="/static/js/minesweeper.js?v=3"></script>
+  <script src="/static/js/quests.js"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

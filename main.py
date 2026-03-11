@@ -343,6 +343,15 @@ async def profile_page(request: Request):
     })
 
 
+@app.get("/quests", response_class=HTMLResponse)
+async def quests_page(request: Request):
+    return templates.TemplateResponse("quests.html", {
+        "request": request, "mode": "quests",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 @app.get("/variants", response_class=HTMLResponse)
 async def variants_page(request: Request):
     return templates.TemplateResponse("variants.html", {

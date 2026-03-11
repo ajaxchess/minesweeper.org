@@ -663,8 +663,12 @@ function clearRow(r) {
   if (rush.rowStatus[r] !== 'active') return;
 
   // Count flagged mines in this row before clearing
-  for (const c of rush.rowMines[r])
-    if (rush.flagged[r][c] === 1) rush.clearedMines++;
+  for (const c of rush.rowMines[r]) {
+    if (rush.flagged[r][c] === 1) {
+      rush.clearedMines++;
+      if (typeof window.questsHook === 'function') window.questsHook('rush_mine_cleared');
+    }
+  }
   const minesEl = document.getElementById('rush-score');
   if (minesEl) minesEl.textContent = String(rush.clearedMines).padStart(3, '0');
   updateSpeed();

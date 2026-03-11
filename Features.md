@@ -15,6 +15,8 @@ F11 Implement Tentaizu on a sub-page https:/minesweeper.org/tentaizu
 
 F12 Cylinder variant
 
+F13 Quests
+
 -- Addressed --
 
 F1 User Profile
