@@ -113,10 +113,7 @@ function renderBoard() {
 
         if (cell.state !== 'clue') {
             el.addEventListener('click', () => handleClick(idx));
-
-            // Mobile: long-press not needed (left-click only), but ensure tap works
-            // Prevent context menu on long-press mobile
-            el.addEventListener('contextmenu', e => e.preventDefault());
+            el.addEventListener('contextmenu', e => { e.preventDefault(); handleRightClick(idx); });
         }
         board.appendChild(el);
     });
@@ -163,6 +160,21 @@ function handleClick(idx) {
     if      (cell.state === 'unknown') cell.state = 'flagged';
     else if (cell.state === 'flagged') cell.state = 'empty';
     else                               cell.state = 'unknown';
+
+    refreshCell(idx);
+    updateFlagCount();
+    checkWin();
+}
+
+function handleRightClick(idx) {
+    if (G.won) return;
+    const cell = G.cells[idx];
+    if (cell.state === 'clue') return;
+
+    if (!G.startTime) startTimer();
+
+    // Toggle: unknown/empty → flagged, flagged → unknown
+    cell.state = cell.state === 'flagged' ? 'unknown' : 'flagged';
 
     refreshCell(idx);
     updateFlagCount();
