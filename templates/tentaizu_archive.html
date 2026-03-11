@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Tentaizu Puzzle Archive — Replay Past Daily Puzzles | minesweeper.org{% endblock %}
+{% block description %}Browse and replay past Tentaizu daily puzzles. Every day's puzzle is preserved — practice on yesterday's challenge or go back weeks in the archive.{% endblock %}
+{% block keywords %}<meta name="keywords" content="tentaizu archive, past tentaizu puzzles, old tentaizu, tentaizu history, replay tentaizu, tentaizu puzzle history, daily tentaizu archive">{% endblock %}
+{% block canonical %}https://minesweeper.org/tentaizu/archive{% endblock %}
+{% block og_url %}https://minesweeper.org/tentaizu/archive{% endblock %}
+{% block og_title %}Tentaizu Puzzle Archive — Replay Past Daily Puzzles{% endblock %}
+{% block og_description %}Every past Tentaizu daily puzzle, preserved and replayable. Click any date to solve that day's puzzle again.{% endblock %}
+
+{% block content %}
+<div class="tz-content-page">
+
+  <nav class="tz-breadcrumb" aria-label="Breadcrumb">
+    <a href="/tentaizu">Tentaizu</a>
+    <span aria-hidden="true">›</span>
+    <span>Archive</span>
+  </nav>
+
+  <h1 class="tz-content-h1">Tentaizu Puzzle Archive</h1>
+  <p class="tz-content-lead">
+    Every daily Tentaizu puzzle is preserved here. Click any date to replay that
+    day's puzzle — perfect for practice, catching up on missed days, or comparing
+    your solving approach on puzzles you've already solved.
+  </p>
+
+  <a href="/tentaizu" class="tz-play-cta">Play Today's Puzzle →</a>
+
+  <section class="tz-section">
+    <h2>Today's Puzzle</h2>
+    <div class="tz-archive-featured">
+      <a href="/tentaizu" class="tz-archive-today-card">
+        <span class="tz-archive-date-label">{{ today }}</span>
+        <span class="tz-archive-today-text">🔢 Today's Puzzle</span>
+        <span class="tz-archive-cta">Play Now →</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="tz-section">
+    <h2>Past Puzzles</h2>
+    <p class="tz-archive-note">
+      Puzzles are generated from the date — every date produces the same unique
+      puzzle for all players worldwide. Past puzzles do not have a leaderboard
+      (only today's puzzle has live scoring), but they are great for solo practice.
+    </p>
+    <div class="tz-archive-grid">
+      {% for d in past_dates %}
+      <a href="/tentaizu?date={{ d }}" class="tz-archive-card">
+        <span class="tz-archive-date-label">{{ d }}</span>
+        <span class="tz-archive-play">Replay →</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="tz-section">
+    <h2>About the Daily Puzzle Format</h2>
+    <p>
+      Each day's Tentaizu puzzle is generated from the date as a seed — the same
+      date always produces the same puzzle. This means you can share a puzzle date
+      with a friend and you'll both solve an identical grid, comparing times and
+      approaches even if you played at different hours.
+    </p>
+    <p>
+      All generated puzzles are verified to have a <strong>unique solution</strong>
+      reachable through pure logical deduction — no guessing required. If you
+      encounter a puzzle that seems to require guessing, try revisiting your
+      deductions; there will always be a logical path.
+    </p>
+    <p>
+      The daily puzzle resets at <strong>midnight UTC</strong>. The live leaderboard
+      is only active for the current day's puzzle — past puzzles can be replayed
+      freely for practice.
+    </p>
+  </section>
+
+  <nav class="tz-subnav" aria-label="More Tentaizu guides">
+    <a href="/tentaizu" class="tz-subnav-card">
+      <span class="tz-subnav-icon">🔢</span>
+      <strong>Play Tentaizu</strong>
+      <span>Today's daily puzzle</span>
+    </a>
+    <a href="/tentaizu/how-to-play" class="tz-subnav-card">
+      <span class="tz-subnav-icon">📖</span>
+      <strong>How to Play</strong>
+      <span>Rules &amp; walkthrough</span>
+    </a>
+    <a href="/tentaizu/strategy" class="tz-subnav-card">
+      <span class="tz-subnav-icon">🧠</span>
+      <strong>Strategy Guide</strong>
+      <span>Advanced solving techniques</span>
+    </a>
+  </nav>
+
+</div>
+{% endblock %}

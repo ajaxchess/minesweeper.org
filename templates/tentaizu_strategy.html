@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Tentaizu Strategy Guide — Advanced Tips & Solving Techniques | minesweeper.org{% endblock %}
+{% block description %}Master Tentaizu with advanced strategy: constraint subtraction, global mine counting, pigeonhole deductions, and pattern recognition. Improve your daily puzzle time today.{% endblock %}
+{% block keywords %}<meta name="keywords" content="tentaizu strategy, tentaizu tips, how to solve tentaizu, tentaizu techniques, tentaizu solving guide, tentaizu advanced, tentaizu tricks">{% endblock %}
+{% block canonical %}https://minesweeper.org/tentaizu/strategy{% endblock %}
+{% block og_url %}https://minesweeper.org/tentaizu/strategy{% endblock %}
+{% block og_title %}Tentaizu Strategy Guide — Advanced Tips & Solving Techniques{% endblock %}
+{% block og_description %}Advanced Tentaizu strategy: constraint subtraction, global mine tracking, forced-mine deductions, and pattern shortcuts. Solve faster with these expert techniques.{% endblock %}
+
+{% block content %}
+<div class="tz-content-page">
+
+  <nav class="tz-breadcrumb" aria-label="Breadcrumb">
+    <a href="/tentaizu">Tentaizu</a>
+    <span aria-hidden="true">›</span>
+    <span>Strategy Guide</span>
+  </nav>
+
+  <h1 class="tz-content-h1">Tentaizu Strategy Guide</h1>
+  <p class="tz-content-lead">
+    Every Tentaizu puzzle is solvable by pure logic — no guessing required. These
+    techniques, applied in order, will crack every legitimate puzzle and cut your
+    solving time significantly.
+  </p>
+
+  <a href="/tentaizu" class="tz-play-cta">Play Today's Puzzle →</a>
+
+  <section class="tz-section">
+    <h2>Tier 1: Immediate Deductions (Always Check First)</h2>
+
+    <h3>The Zero Rule</h3>
+    <p>
+      Any cell showing <strong>0</strong> has zero mines in all eight neighbors.
+      Mark every unknown neighbor as safe (✓) immediately. This is the fastest
+      deduction in the game and often cascades — a newly-safe cell may be adjacent
+      to another constrained clue that now resolves.
+    </p>
+
+    <h3>The Eight Rule</h3>
+    <p>
+      Any cell showing <strong>8</strong> has a mine in every one of its eight
+      neighbors. Flag all of them (💣) at once. An 8 in the center of the board
+      instantly accounts for 8 of the 10 mines — a massive head start.
+    </p>
+
+    <h3>Satisfied Constraints → Safe Neighbors</h3>
+    <p>
+      When a numbered cell already has exactly as many mine flags around it as its
+      number, <strong>all remaining unknown neighbors are definitively safe</strong>.
+      Mark them ✓. This is arguably the most-used deduction in the game; re-check
+      every clue whenever you place a new flag.
+    </p>
+
+    <h3>Forced Mines (Pigeonhole)</h3>
+    <p>
+      When a numbered cell's remaining mine count equals its number of unknown
+      neighbors, <strong>every one of those neighbors must be a mine</strong>. For
+      example: a cell showing <em>3</em> already has 1 flag, leaving a mine count
+      of 2 — and exactly 2 unknown neighbors remaining. Both unknowns are mines.
+      Flag them immediately.
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>Tier 2: Constraint Arithmetic</h2>
+
+    <h3>Constraint Subtraction</h3>
+    <p>
+      This is the most powerful intermediate technique. When two number cells share
+      some (but not all) of their unknown neighbors, you can subtract one constraint
+      from the other to learn about their <em>exclusive</em> neighbors.
+    </p>
+    <p>
+      <strong>Example:</strong> Cell A has value 2 and three unknown neighbors — two
+      shared with cell B and one exclusive to A. Cell B has value 1 and two unknown
+      neighbors (both shared with A). Because B's single mine must be one of the
+      two shared cells, A's exclusive neighbor is responsible for exactly
+      2 − 1 = <strong>1 mine</strong>. You now know A's exclusive cell is a mine
+      without directly seeing it confirmed.
+    </p>
+    <p>
+      Practice spotting overlapping clue regions. Any time two clues share a
+      neighbor subset, subtraction may reveal hidden information.
+    </p>
+
+    <h3>Set Inclusion</h3>
+    <p>
+      A stronger version of subtraction: if cell A's unknown neighbors are a
+      <em>strict subset</em> of cell B's unknown neighbors, then B's mines include
+      all of A's mines plus some extras. Specifically:
+    </p>
+    <ul class="tz-list">
+      <li>B_value − A_value = number of mines in B's exclusive neighbors.</li>
+      <li>If B_value = A_value, B's exclusive neighbors are all safe.</li>
+      <li>If B_value − A_value = number of B's exclusive neighbors, all of B's exclusive neighbors are mines.</li>
+    </ul>
+    <p>
+      This deduction appears frequently near edges and corners where neighbor sets
+      overlap heavily.
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>Tier 3: Global Mine Counting</h2>
+
+    <h3>The Running Tally</h3>
+    <p>
+      Always track how many mines you've flagged. Subtract from 10 to know how many
+      remain. This global constraint becomes decisive late in the puzzle:
+    </p>
+    <ul class="tz-list">
+      <li>
+        <strong>1 mine remaining, large unknown area:</strong> Often you can identify
+        multiple cells that <em>cannot</em> be the last mine through existing clues,
+        leaving only one candidate.
+      </li>
+      <li>
+        <strong>0 mines remaining:</strong> Every unflagged cell is safe. Mark them
+        all ✓ and the puzzle is essentially solved.
+      </li>
+      <li>
+        <strong>N mines remaining, N unknown cells total:</strong> Every unknown cell
+        is a mine. Flag them all.
+      </li>
+    </ul>
+
+    <h3>Counting Unknown Cells</h3>
+    <p>
+      Count the total number of cells that are still unknown (not flagged or marked
+      safe). If this count equals the remaining mines, every unknown cell is a mine.
+      If remaining mines = 0, every unknown is safe. These global deductions sidestep
+      the need for local constraint analysis entirely.
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>Tier 4: Advanced Patterns</h2>
+
+    <h3>The 1-2-1 Pattern</h3>
+    <p>
+      Three cells in a row along an edge, showing 1-2-1, with unknown cells
+      above (or below), is a classic Minesweeper pattern that applies equally to
+      Tentaizu. The two outer clues (1 and 1) each have exactly one mine among
+      their respective exclusive neighbors, forcing the mine of the middle clue (2)
+      to lie in the shared center neighbor. This resolves all three clues at once.
+    </p>
+
+    <h3>The 1-2-2-1 Edge Pattern</h3>
+    <p>
+      Along a board edge, 1-2-2-1 in a row means the two middle cells share mines
+      in a symmetric way. The two outer 1s constrain where mines can be in the
+      middle pair's exclusive cells. Combined with the global count, this often
+      forces the entire strip.
+    </p>
+
+    <h3>Corner Cell Logic</h3>
+    <p>
+      Corner cells have only 3 neighbors. A corner clue of <em>3</em> means all
+      three neighbors are mines — even if none of the other clues point there yet.
+      A corner clue of <em>2</em> with one flag placed means both remaining
+      neighbors split: one is the mine, one is safe — determine which using
+      adjacent clues.
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>Speed Strategies for Faster Times</h2>
+    <ul class="tz-list">
+      <li>
+        <strong>Scan before touching.</strong> Before placing a single flag, scan
+        the whole board for 0s, 8s, and obviously satisfied constraints. Building
+        a mental map first prevents backtracking.
+      </li>
+      <li>
+        <strong>Work from the most constrained areas outward.</strong> Corners and
+        edges resolve fastest. Solve the periphery, then let those deductions
+        cascade inward.
+      </li>
+      <li>
+        <strong>Use the mine counter actively.</strong> Glance at remaining mines
+        after every flag. Late-game, the counter alone often collapses the puzzle.
+      </li>
+      <li>
+        <strong>Practice recognizing satisfied constraints immediately.</strong>
+        Train yourself to spot — at a glance — when a clue's flag count matches
+        its number. This is the most frequently applicable deduction and the one
+        that separates fast solvers from slow ones.
+      </li>
+      <li>
+        <strong>Don't mark safe cells unless they help.</strong> Marking ✓ is
+        optional — only do it when it helps you visually track progress. Excessive
+        marking slows you down.
+      </li>
+    </ul>
+  </section>
+
+  <section class="tz-section">
+    <h2>When You Feel Stuck</h2>
+    <p>
+      If you've applied all the above techniques and still can't make progress, try
+      these approaches:
+    </p>
+    <ol class="tz-list">
+      <li>
+        <strong>Re-examine every satisfied constraint.</strong> A newly-placed flag
+        may have satisfied a clue you previously overlooked. Do a full re-sweep.
+      </li>
+      <li>
+        <strong>Look for overlapping clue pairs you haven't tried.</strong>
+        Systematically apply constraint subtraction to every pair of adjacent
+        numbered cells that share unknown neighbors.
+      </li>
+      <li>
+        <strong>Count all unknowns and compare to remaining mines.</strong>
+        The global deduction catches cases that local analysis misses.
+      </li>
+      <li>
+        <strong>Remember: every Tentaizu puzzle is solvable.</strong>
+        If you're genuinely stuck after all the above, there is a deduction you've
+        missed — not a guess required. Stay calm and look again.
+      </li>
+    </ol>
+  </section>
+
+  <nav class="tz-subnav" aria-label="More Tentaizu guides">
+    <a href="/tentaizu" class="tz-subnav-card">
+      <span class="tz-subnav-icon">🔢</span>
+      <strong>Play Tentaizu</strong>
+      <span>Today's daily puzzle</span>
+    </a>
+    <a href="/tentaizu/how-to-play" class="tz-subnav-card">
+      <span class="tz-subnav-icon">📖</span>
+      <strong>How to Play</strong>
+      <span>Rules &amp; walkthrough</span>
+    </a>
+    <a href="/tentaizu/archive" class="tz-subnav-card">
+      <span class="tz-subnav-icon">📅</span>
+      <strong>Puzzle Archive</strong>
+      <span>Replay past daily puzzles</span>
+    </a>
+  </nav>
+
+</div>
+{% endblock %}

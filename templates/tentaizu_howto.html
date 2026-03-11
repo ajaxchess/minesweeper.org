@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}How to Play Tentaizu — Rules, Controls & Walkthrough | minesweeper.org{% endblock %}
+{% block description %}Learn how to play Tentaizu: complete rules, controls, and a step-by-step solving walkthrough. Understand the 7×7 grid, number clues, and how to flag mines without ever guessing.{% endblock %}
+{% block keywords %}<meta name="keywords" content="how to play tentaizu, tentaizu rules, tentaizu tutorial, tentaizu instructions, tentaizu controls, learn tentaizu, tentaizu walkthrough">{% endblock %}
+{% block canonical %}https://minesweeper.org/tentaizu/how-to-play{% endblock %}
+{% block og_url %}https://minesweeper.org/tentaizu/how-to-play{% endblock %}
+{% block og_title %}How to Play Tentaizu — Rules, Controls & Walkthrough{% endblock %}
+{% block og_description %}Complete guide to Tentaizu rules and controls. Learn how to read number clues, flag mines, and solve the daily 7×7 logic puzzle without guessing.{% endblock %}
+
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Play Tentaizu",
+  "description": "Step-by-step guide to solving a Tentaizu puzzle — the daily 7×7 mine logic puzzle.",
+  "url": "https://minesweeper.org/tentaizu/how-to-play",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "name": "Examine the clues",
+      "text": "Look at all pre-placed numbers on the 7×7 grid. Each number tells you how many of its eight surrounding cells contain a mine."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Start with zeros and eights",
+      "text": "A 0 means all neighbors are safe — mark them. An 8 means all neighbors are mines — flag them all."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Use satisfied constraints",
+      "text": "When a number cell's mine count is fully flagged, mark every remaining unknown neighbor as safe."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Track remaining mines",
+      "text": "Keep the mine counter in mind. 10 mines total minus flagged mines equals mines still hidden."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Flag all 10 mines",
+      "text": "When exactly the 10 mine cells are flagged and no safe cells are incorrectly flagged, you win."
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="tz-content-page">
+
+  <nav class="tz-breadcrumb" aria-label="Breadcrumb">
+    <a href="/tentaizu">Tentaizu</a>
+    <span aria-hidden="true">›</span>
+    <span>How to Play</span>
+  </nav>
+
+  <h1 class="tz-content-h1">How to Play Tentaizu</h1>
+  <p class="tz-content-lead">
+    Tentaizu is a pure-logic puzzle — no guessing, no luck, no randomness. This guide walks
+    you through the rules, controls, and core solving techniques so you can tackle any
+    daily puzzle with confidence.
+  </p>
+
+  <a href="/tentaizu" class="tz-play-cta">Play Today's Puzzle →</a>
+
+  <section class="tz-section">
+    <h2>The Board</h2>
+    <p>
+      Every Tentaizu puzzle uses the same format: a <strong>7×7 grid of 49 cells</strong>.
+      Exactly <strong>10 of those cells hide mines</strong>. The remaining 39 are safe.
+      Some cells are pre-revealed with a number from 0 to 8. These numbers are your only
+      clues — use them to deduce where every mine is hidden.
+    </p>
+    <p>
+      Unlike Minesweeper, the board does not change as you play. You never click to reveal
+      a new cell. All clues are visible from the very first moment; your job is to interpret
+      them.
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>Reading the Number Clues</h2>
+    <p>
+      Each number on the board tells you the <strong>exact count of mines</strong> in the
+      eight cells surrounding it (horizontally, vertically, and diagonally). This is
+      identical to the mine-count logic in Minesweeper.
+    </p>
+    <div class="tz-rule-example">
+      <div class="tz-rule-row">
+        <div class="tz-ex-cell tz-ex-hidden"></div>
+        <div class="tz-ex-cell tz-ex-hidden"></div>
+        <div class="tz-ex-cell tz-ex-hidden"></div>
+      </div>
+      <div class="tz-rule-row">
+        <div class="tz-ex-cell tz-ex-hidden"></div>
+        <div class="tz-ex-cell tz-ex-clue">2</div>
+        <div class="tz-ex-cell tz-ex-hidden"></div>
+      </div>
+      <div class="tz-rule-row">
+        <div class="tz-ex-cell tz-ex-hidden"></div>
+        <div class="tz-ex-cell tz-ex-hidden"></div>
+        <div class="tz-ex-cell tz-ex-hidden"></div>
+      </div>
+    </div>
+    <p>
+      The <strong>2</strong> above means exactly 2 of its 8 neighbors contain mines.
+      At the corner of the board, a cell has only 3 neighbors; on an edge, only 5.
+      The same counting rule applies — the number never exceeds the cell's actual
+      neighbor count.
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>Controls</h2>
+    <p>
+      Every unknown cell cycles through three states when you interact with it:
+    </p>
+    <ul class="tz-list">
+      <li>
+        <strong>💣 Mine flag</strong> — you believe this cell is a mine.
+      </li>
+      <li>
+        <strong>✓ Safe mark</strong> — you have logically confirmed this cell is safe.
+      </li>
+      <li>
+        <strong>? Unknown</strong> — not yet determined; the starting state of all cells.
+      </li>
+    </ul>
+    <p>
+      <strong>Click</strong> (or tap on mobile) to advance the state forward.
+      There is no penalty for incorrect flags — the puzzle only checks your answer
+      when you've placed all 10 mine flags. Keep refining your deductions until
+      all 10 mines are correctly identified and no safe cells are mistakenly flagged.
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>Win Condition</h2>
+    <p>
+      You win when <strong>exactly the 10 mine cells are flagged as mines</strong> and
+      no safe cells are flagged. The moment this condition is met, the puzzle registers
+      as solved and you can submit your time to the daily leaderboard.
+    </p>
+    <p>
+      The puzzle does not end on a wrong flag — you will not accidentally trigger a mine.
+      This means you can test hypotheses: if a tentative flag leads to a contradiction,
+      you know that cell must be safe.
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>Step-by-Step: Your First Solve</h2>
+    <ol class="tz-list tz-steps">
+      <li>
+        <strong>Scan for 0s and 8s first.</strong>
+        A clue of <em>0</em> means every neighbor is safe — mark them all ✓.
+        A clue of <em>8</em> means every neighbor is a mine — flag them all 💣.
+        These are free deductions that cost no reasoning.
+      </li>
+      <li>
+        <strong>Look for satisfied constraints.</strong>
+        If a clue cell already has exactly as many mine flags around it as its number,
+        all remaining unknown neighbors must be safe. Mark them ✓ with confidence.
+      </li>
+      <li>
+        <strong>Look for forced mines.</strong>
+        If a clue cell has exactly as many unknown neighbors as its remaining mine count
+        (number minus flags already placed), every one of those unknowns must be a mine.
+        Flag them all.
+      </li>
+      <li>
+        <strong>Track the global count.</strong>
+        You have 10 mines total. Subtract your current flag count to know how many remain.
+        As the number gets small (2, 1), the remaining unknowns are heavily constrained
+        and often resolve quickly.
+      </li>
+      <li>
+        <strong>Compare overlapping clues.</strong>
+        When two number cells share some neighbors, subtract one constraint from the other.
+        If clue A = 2 and clue B = 1, and B's mine must lie among A's neighbors too,
+        then A has exactly one mine in its <em>exclusive</em> neighbors. This subtraction
+        technique is the key to cracking harder puzzles.
+      </li>
+      <li>
+        <strong>Repeat until all 10 mines are flagged.</strong>
+        Every Tentaizu puzzle is designed to be fully solvable by these logical steps alone.
+        If you feel stuck, look for a clue whose unknown neighbor count equals its remaining
+        mine count — that clue will unlock the next deduction.
+      </li>
+    </ol>
+  </section>
+
+  <section class="tz-section">
+    <h2>Daily Puzzle vs. Random Mode</h2>
+    <p>
+      The <strong>Daily puzzle</strong> is the same for every player worldwide. It resets
+      at midnight UTC. Solve it to post your time to the global leaderboard and compare
+      results with other players.
+    </p>
+    <p>
+      <strong>Random mode</strong> generates a fresh unique-solution puzzle on demand.
+      Use it to practice techniques, warm up before the daily, or simply keep playing
+      after you've already solved the day's puzzle.
+    </p>
+  </section>
+
+  <nav class="tz-subnav" aria-label="More Tentaizu guides">
+    <a href="/tentaizu" class="tz-subnav-card">
+      <span class="tz-subnav-icon">🔢</span>
+      <strong>Play Tentaizu</strong>
+      <span>Today's daily puzzle</span>
+    </a>
+    <a href="/tentaizu/strategy" class="tz-subnav-card">
+      <span class="tz-subnav-icon">🧠</span>
+      <strong>Strategy Guide</strong>
+      <span>Advanced solving techniques</span>
+    </a>
+    <a href="/tentaizu/archive" class="tz-subnav-card">
+      <span class="tz-subnav-icon">📅</span>
+      <strong>Puzzle Archive</strong>
+      <span>Replay past daily puzzles</span>
+    </a>
+  </nav>
+
+</div>
+{% endblock %}

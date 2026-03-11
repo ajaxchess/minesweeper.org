@@ -1,5 +1,5 @@
 from datetime import date
-from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi import FastAPI, Request, Depends, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -451,12 +451,48 @@ def get_cylinder_scores(cyl_mode: str, db: Session = Depends(get_db)):
 
 
 @app.get("/tentaizu", response_class=HTMLResponse)
-async def tentaizu_page(request: Request):
+async def tentaizu_page(request: Request, date_param: str = Query(None, alias="date")):
+    import re
+    puzzle_date = date.today().isoformat()
+    if date_param and re.match(r"^\d{4}-\d{2}-\d{2}$", date_param):
+        puzzle_date = date_param
     return templates.TemplateResponse("tentaizu.html", {
         "request": request, "mode": "tentaizu",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
-        "today": date.today().isoformat(),
+        "today": puzzle_date,
+    })
+
+
+@app.get("/tentaizu/how-to-play", response_class=HTMLResponse)
+async def tentaizu_howto(request: Request):
+    return templates.TemplateResponse("tentaizu_howto.html", {
+        "request": request, "mode": "tentaizu-howto",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+@app.get("/tentaizu/strategy", response_class=HTMLResponse)
+async def tentaizu_strategy(request: Request):
+    return templates.TemplateResponse("tentaizu_strategy.html", {
+        "request": request, "mode": "tentaizu-strategy",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+@app.get("/tentaizu/archive", response_class=HTMLResponse)
+async def tentaizu_archive(request: Request):
+    from datetime import timedelta
+    today = date.today()
+    past_dates = [(today - timedelta(days=i)).isoformat() for i in range(1, 91)]
+    return templates.TemplateResponse("tentaizu_archive.html", {
+        "request": request, "mode": "tentaizu-archive",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": today.isoformat(),
+        "past_dates": past_dates,
     })
 
 

@@ -1670,3 +1670,277 @@ footer {
   border: 2px solid var(--accent);
   color: var(--accent);
 }
+
+/* ── Tentaizu Landing Content ────────────────────────────────────────────── */
+
+.tz-landing {
+  max-width: 860px;
+  margin: 2.5rem auto 0;
+  padding: 0 1rem 3rem;
+}
+
+.tz-landing-h1 {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 1.5rem;
+  line-height: 1.2;
+}
+
+.tz-landing-grid {
+  display: grid;
+  gap: 2rem;
+}
+
+/* ── Tentaizu Content Pages (how-to-play, strategy, archive) ─────────────── */
+
+.tz-content-page {
+  max-width: 860px;
+  margin: 2rem auto 3rem;
+  padding: 0 1rem;
+}
+
+.tz-breadcrumb {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tz-breadcrumb a {
+  color: var(--accent2);
+  text-decoration: none;
+}
+
+.tz-breadcrumb a:hover { text-decoration: underline; }
+
+.tz-content-h1 {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.75rem;
+  line-height: 1.2;
+}
+
+.tz-content-lead {
+  font-size: 1.05rem;
+  color: var(--text-dim);
+  margin: 0 0 1.5rem;
+  line-height: 1.6;
+}
+
+.tz-play-cta {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.55rem 1.3rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  margin-bottom: 2rem;
+  transition: opacity 0.15s;
+}
+
+.tz-play-cta:hover { opacity: 0.85; }
+
+/* ── Shared section styles ───────────────────────────────────────────────── */
+
+.tz-section {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.tz-section h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent2);
+  margin: 0 0 0.9rem;
+}
+
+.tz-section h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 1.25rem 0 0.4rem;
+}
+
+.tz-section h3:first-of-type { margin-top: 0; }
+
+.tz-section p {
+  color: var(--text);
+  line-height: 1.7;
+  margin: 0 0 0.75rem;
+}
+
+.tz-section p:last-child { margin-bottom: 0; }
+
+.tz-list {
+  color: var(--text);
+  line-height: 1.7;
+  padding-left: 1.4rem;
+  margin: 0.5rem 0 0;
+}
+
+.tz-list li { margin-bottom: 0.5rem; }
+.tz-list li:last-child { margin-bottom: 0; }
+
+.tz-steps li { margin-bottom: 0.85rem; }
+
+.tz-link {
+  color: var(--accent2);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.tz-link:hover { text-decoration: underline; }
+
+/* ── Rule example mini-grid ─────────────────────────────────────────────── */
+
+.tz-rule-example {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0.75rem 0;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 0.5rem;
+}
+
+.tz-rule-row {
+  display: flex;
+  gap: 2px;
+}
+
+.tz-ex-cell {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.tz-ex-hidden { background: var(--cell-hidden); }
+.tz-ex-clue   { background: var(--cell-rev); color: #1976D2; }
+
+/* ── Sub-page nav cards ──────────────────────────────────────────────────── */
+
+.tz-subnav {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.tz-subnav-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.tz-subnav-card:hover {
+  border-color: var(--accent2);
+  background: var(--surface2);
+}
+
+.tz-subnav-icon { font-size: 1.4rem; }
+
+.tz-subnav-card strong {
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.tz-subnav-card span:last-child {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+/* ── Archive page ────────────────────────────────────────────────────────── */
+
+.tz-archive-featured { margin-bottom: 0.5rem; }
+
+.tz-archive-today-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  text-decoration: none;
+  border: 1px solid var(--accent2);
+  transition: opacity 0.15s;
+}
+
+.tz-archive-today-card:hover { opacity: 0.85; }
+
+.tz-archive-today-text {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 1rem;
+  flex: 1;
+}
+
+.tz-archive-cta {
+  color: var(--accent2);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.tz-archive-note {
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  margin-bottom: 1rem !important;
+}
+
+.tz-archive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5rem;
+}
+
+.tz-archive-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.tz-archive-card:hover {
+  border-color: var(--accent2);
+  background: var(--surface2);
+}
+
+.tz-archive-date-label {
+  font-size: 0.82rem;
+  color: var(--text);
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.tz-archive-play {
+  font-size: 0.75rem;
+  color: var(--accent2);
+}
+
+@media (max-width: 600px) {
+  .tz-landing { padding: 0 0.75rem 2rem; }
+  .tz-content-page { padding: 0 0.75rem; }
+  .tz-archive-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+}
