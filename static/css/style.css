@@ -1572,6 +1572,21 @@ footer {
   margin-bottom: -0.5rem;
 }
 
+/* ── Tentaizu permalink row ──────────────────────────────────────────────── */
+.tz-permalink-row {
+  font-size: 0.8rem;
+  color: var(--text-muted, #888);
+  text-align: center;
+  margin: 0.4rem 0 0.2rem;
+}
+.tz-permalink-row a {
+  color: var(--accent2);
+  text-decoration: none;
+}
+.tz-permalink-row a:hover {
+  text-decoration: underline;
+}
+
 /* ── Toroid Minesweeper ───────────────────────────────────────────────────── */
 #board.toroid-board {
   border: 3px solid var(--accent2);

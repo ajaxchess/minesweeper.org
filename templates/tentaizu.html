@@ -68,7 +68,7 @@
 
     <!-- Board -->
     <div id="tz-board-wrap">
-      <div id="tz-board" data-today="{{ today }}"></div>
+      <div id="tz-board" data-today="{{ today }}" data-real-today="{{ real_today }}"></div>
 
       <!-- Win overlay -->
       <div id="tz-overlay">
@@ -109,9 +109,14 @@
       </div>
     </details>
 
-    <!-- Leaderboard (shown for POTD only) -->
+    <!-- Permalink -->
+    <div id="tz-permalink-row" class="tz-permalink-row" style="display:none">
+      🔗 <a id="tz-permalink-link" href="#"></a>
+    </div>
+
+    <!-- Leaderboard -->
     <div id="tz-lb-section" class="tz-lb-section">
-      <div class="tz-lb-title">🏆 Today's Best Times</div>
+      <div id="tz-lb-title" class="tz-lb-title">🏆 Today's Best Times</div>
       <div id="tz-lb-content">
         <div class="lb-loading">Loading…</div>
       </div>

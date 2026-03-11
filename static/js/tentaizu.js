@@ -293,6 +293,28 @@ async function saveScore() {
     }
 }
 
+// ── Permalink + leaderboard title ─────────────────────────────────────────────
+function updatePermalinkAndTitle(seedStr, isPOTD) {
+    const board     = document.getElementById('tz-board');
+    const realToday = board.dataset.realToday;
+    const lbTitle   = document.getElementById('tz-lb-title');
+    const permRow   = document.getElementById('tz-permalink-row');
+    const permLink  = document.getElementById('tz-permalink-link');
+
+    if (isPOTD) {
+        if (lbTitle) lbTitle.textContent = seedStr === realToday
+            ? '🏆 Today\'s Best Times'
+            : `🏆 Best Times — ${seedStr}`;
+        if (permRow && permLink) {
+            permLink.href        = `/tentaizu/${seedStr}`;
+            permLink.textContent = `minesweeper.org/tentaizu/${seedStr}`;
+            permRow.style.display = 'block';
+        }
+    } else {
+        if (permRow) permRow.style.display = 'none';
+    }
+}
+
 // ── Leaderboard ───────────────────────────────────────────────────────────────
 async function loadLeaderboard() {
     if (!G.isPOTD) return;
@@ -367,6 +389,7 @@ function initGame(seedStr, isPOTD) {
     const lb = document.getElementById('tz-lb-section');
     lb.style.display = isPOTD ? 'block' : 'none';
 
+    updatePermalinkAndTitle(seedStr, isPOTD);
     updateFlagCount();
     renderBoard();
 
@@ -385,14 +408,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mode buttons
     document.getElementById('tz-potd-btn').addEventListener('click', () =>
-        initGame(document.getElementById('tz-board').dataset.today, true));
+        initGame(document.getElementById('tz-board').dataset.realToday, true));
 
     document.getElementById('tz-random-btn').addEventListener('click', () =>
         initGame(Date.now().toString(36) + Math.random().toString(36).slice(2, 6), false));
 
     // Overlay buttons
     document.getElementById('tz-overlay-potd').addEventListener('click', () =>
-        initGame(document.getElementById('tz-board').dataset.today, true));
+        initGame(document.getElementById('tz-board').dataset.realToday, true));
 
     document.getElementById('tz-overlay-random').addEventListener('click', () =>
         initGame(Date.now().toString(36) + Math.random().toString(36).slice(2, 6), false));

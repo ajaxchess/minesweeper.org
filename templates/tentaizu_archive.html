@@ -41,12 +41,12 @@
     <h2>Past Puzzles</h2>
     <p class="tz-archive-note">
       Puzzles are generated from the date — every date produces the same unique
-      puzzle for all players worldwide. Past puzzles do not have a leaderboard
-      (only today's puzzle has live scoring), but they are great for solo practice.
+      puzzle for all players worldwide. Each puzzle has its own permanent leaderboard,
+      so you can compare times with anyone who played that day.
     </p>
     <div class="tz-archive-grid">
       {% for d in past_dates %}
-      <a href="/tentaizu?date={{ d }}" class="tz-archive-card">
+      <a href="/tentaizu/{{ d }}" class="tz-archive-card">
         <span class="tz-archive-date-label">{{ d }}</span>
         <span class="tz-archive-play">Replay →</span>
       </a>
@@ -69,9 +69,9 @@
       deductions; there will always be a logical path.
     </p>
     <p>
-      The daily puzzle resets at <strong>midnight UTC</strong>. The live leaderboard
-      is only active for the current day's puzzle — past puzzles can be replayed
-      freely for practice.
+      The daily puzzle resets at <strong>midnight UTC</strong>. Every puzzle has
+      its own permanent leaderboard — scores submitted for a past puzzle remain
+      visible on that puzzle's permalink page.
     </p>
   </section>
 

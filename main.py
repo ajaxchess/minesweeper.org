@@ -565,7 +565,8 @@ def get_toroid_scores(tor_mode: str, db: Session = Depends(get_db)):
 @app.get("/tentaizu", response_class=HTMLResponse)
 async def tentaizu_page(request: Request, date_param: str = Query(None, alias="date")):
     import re
-    puzzle_date = date.today().isoformat()
+    real_today = date.today().isoformat()
+    puzzle_date = real_today
     if date_param and re.match(r"^\d{4}-\d{2}-\d{2}$", date_param):
         puzzle_date = date_param
     return templates.TemplateResponse("tentaizu.html", {
@@ -573,6 +574,7 @@ async def tentaizu_page(request: Request, date_param: str = Query(None, alias="d
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": puzzle_date,
+        "real_today": real_today,
     })
 
 
@@ -605,6 +607,22 @@ async def tentaizu_archive(request: Request):
         "lang": get_lang(request), "t": get_t(request),
         "today": today.isoformat(),
         "past_dates": past_dates,
+    })
+
+
+# Must be declared AFTER static sub-routes so /tentaizu/how-to-play etc. match first
+@app.get("/tentaizu/{date_str}", response_class=HTMLResponse)
+async def tentaizu_permalink(request: Request, date_str: str):
+    import re
+    real_today = date.today().isoformat()
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
+        return RedirectResponse("/tentaizu", status_code=302)
+    return templates.TemplateResponse("tentaizu.html", {
+        "request": request, "mode": "tentaizu",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": date_str,
+        "real_today": real_today,
     })
 
 
