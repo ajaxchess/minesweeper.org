@@ -10,7 +10,9 @@
   <link rel="canonical" href="{% block canonical %}https://minesweeper.org/{% endblock %}">
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=4" />
+  <link rel="stylesheet" href="/static/css/style.css?v=5" />
+  <!-- Apply skin before render to avoid flash -->
+  <script>document.documentElement.dataset.skin = localStorage.getItem('skin') || 'dark';</script>
 
   <!-- Open Graph -->
   <meta property="og:type"         content="website">
@@ -57,7 +59,10 @@
 
   <header>
     <div class="header-inner">
-      <a href="/" class="logo">💣 Minesweeper.org</a>
+      <a href="/" class="logo">
+        <img src="/static/img/LadyDisMinesLogo.png" class="logo-classic" alt="Lady Di's Mines">
+        <span class="logo-text">💣 Minesweeper.org</span>
+      </a>
       <nav>
         <a href="/" class="{% if mode == 'beginner' %}active{% endif %}">{{ t.nav_beginner }}</a>
         <a href="/intermediate" class="{% if mode == 'intermediate' %}active{% endif %}">{{ t.nav_intermediate }}</a>

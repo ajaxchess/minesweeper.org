@@ -85,6 +85,20 @@
             </div>
             <span class="skin-label">Dark</span>
           </div>
+          <div class="skin-card" data-skin="classic" onclick="setSkin('classic')">
+            <div class="skin-preview skin-preview-classic">
+              <div class="sp-cell sp-hidden"></div>
+              <div class="sp-cell sp-hidden"></div>
+              <div class="sp-cell sp-hidden"></div>
+              <div class="sp-cell sp-revealed sp-n1">1</div>
+              <div class="sp-cell sp-revealed sp-n2">2</div>
+              <div class="sp-cell sp-hidden"></div>
+              <div class="sp-cell sp-revealed"></div>
+              <div class="sp-cell sp-revealed sp-n1">1</div>
+              <div class="sp-cell sp-revealed"></div>
+            </div>
+            <span class="skin-label">Lady Di's Mines Classic</span>
+          </div>
         </div>
       </div>
     </div>
@@ -325,6 +339,7 @@ updateChordingUI();
 // ── Skin ──────────────────────────────────────────────────────────────────────
 function setSkin(skin) {
   localStorage.setItem('skin', skin);
+  document.documentElement.dataset.skin = skin;
   document.querySelectorAll('.skin-card').forEach(c =>
     c.classList.toggle('active', c.dataset.skin === skin)
   );

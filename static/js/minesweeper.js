@@ -410,8 +410,14 @@ async function submitScore(autoName = null) {
 }
 
 // ── Render a single cell ─────────────────────────────────────────────────────
-const NUM_COLORS = ['','#1976D2','#388E3C','#D32F2F','#7B1FA2',
-                    '#F57F17','#00838F','#212121','#757575'];
+const NUM_COLORS_DARK    = ['','#1976D2','#388E3C','#D32F2F','#7B1FA2',
+                             '#F57F17','#00838F','#212121','#757575'];
+const NUM_COLORS_CLASSIC = ['','#0000ff','#008000','#ff0000','#000080',
+                             '#800000','#008080','#000000','#808080'];
+function getNumColors() {
+  return document.documentElement.dataset.skin === 'classic'
+    ? NUM_COLORS_CLASSIC : NUM_COLORS_DARK;
+}
 
 function renderCell(r, c, isDetonated = false) {
   const el  = cellEl(r, c);
@@ -442,7 +448,7 @@ function renderCell(r, c, isDetonated = false) {
     el.textContent = '';
   } else {
     el.textContent = val;
-    el.style.color = NUM_COLORS[val];
+    el.style.color = getNumColors()[val];
   }
 }
 
