@@ -38,3 +38,11 @@ WantedBy=multi-user.target
 To debug the uvicorn application, this command is useful:
 sudo journalctl -u minesweeper -f
 
+[About]
+Minesweeper.org was originally launched in 2001 and was dedicated to Diana, the Princess of
+Wales and the charity she supported, the HALO Truse.
+https://www.halousa.org/
+
+The original website can be seen here:
+https://web.archive.org/web/20040325004955/http://www.minesweeper.org/
+One goal of this project is to bring back the original website look, feel, and mission.
