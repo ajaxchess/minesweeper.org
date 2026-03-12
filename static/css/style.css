@@ -2365,6 +2365,7 @@ html[data-skin="classic"] nav {
 html[data-skin="classic"] nav a {
   color: #ffffff;
   font-weight: 700;
+  text-shadow: 1px 1px 3px #000, 0 0 6px #000;
   padding: 0.4rem 0.6rem;
   border-radius: 0;
   font-size: 0.82rem;
@@ -2407,17 +2408,21 @@ html[data-skin="classic"] .auth-area {
 }
 
 html[data-skin="classic"] .auth-name {
-  color: #d0d8e8;
+  color: #ffffff;
   font-size: 0.8rem;
+  font-weight: 700;
+  text-shadow: 1px 1px 3px #000, 0 0 6px #000;
 }
 
 html[data-skin="classic"] .auth-btn {
   font-size: 0.75rem;
   padding: 0.25rem 0.6rem;
   border-radius: 0;
-  background: rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.45);
   color: #fff;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.5);
+  font-weight: 700;
+  text-shadow: 1px 1px 2px #000;
 }
 
 html[data-skin="classic"] .login-btn {
@@ -2609,7 +2614,7 @@ html[data-skin="classic"] a { color: #ff3300; }
 html[data-skin="classic"] a:visited { color: #0033ff; }
 /* Nav links stay white — more specific selector */
 html[data-skin="classic"] nav a,
-html[data-skin="classic"] nav a:visited { color: #ffffff; font-weight: 700; }
+html[data-skin="classic"] nav a:visited { color: #ffffff; font-weight: 700; text-shadow: 1px 1px 3px #000, 0 0 6px #000; }
 
 /* ── Classic skin preview (in profile picker) ────────────────────────────── */
 .skin-preview-classic {
