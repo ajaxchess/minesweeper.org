@@ -248,9 +248,10 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
 
 @app.get("/api/scores/{mode}")
 def get_scores(mode: GameMode, db: Session = Depends(get_db)):
+    today = date.today()
     top = (
         db.query(Score)
-        .filter(Score.mode == mode)
+        .filter(Score.mode == mode, Score.created_at >= today)
         .order_by(Score.time_secs.asc(), Score.created_at.asc())
         .limit(15)
         .all()
@@ -710,5 +711,43 @@ def profile_stats(request: Request, db: Session = Depends(get_db)):
             "worst_time":   max(times),
             "recent":       [s.to_dict() for s in scores[:10]],
         }
+
+    # Rush stats
+    rush_scores = (
+        db.query(RushScore)
+        .filter(RushScore.user_email == email)
+        .order_by(RushScore.created_at.desc())
+        .all()
+    )
+    if rush_scores:
+        scores_list = [s.score for s in rush_scores]
+        mines_list  = [s.cleared_mines or 0 for s in rush_scores]
+        stats["rush"] = {
+            "games_played":  len(rush_scores),
+            "best_score":    max(scores_list),
+            "avg_score":     round(sum(scores_list) / len(scores_list), 1),
+            "total_mines":   sum(mines_list),
+            "recent":        [s.to_dict() for s in rush_scores[:10]],
+        }
+    else:
+        stats["rush"] = None
+
+    # Tentaizu stats
+    tz_scores = (
+        db.query(TentaizuScore)
+        .filter(TentaizuScore.user_email == email)
+        .order_by(TentaizuScore.created_at.desc())
+        .all()
+    )
+    if tz_scores:
+        times = [s.time_secs for s in tz_scores]
+        stats["tentaizu"] = {
+            "games_played": len(tz_scores),
+            "best_time":    min(times),
+            "avg_time":     round(sum(times) / len(times), 1),
+            "recent":       [s.to_dict() for s in tz_scores[:10]],
+        }
+    else:
+        stats["tentaizu"] = None
 
     return stats

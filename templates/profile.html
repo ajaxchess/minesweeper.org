@@ -32,6 +32,14 @@
       <div class="card-mode">{{ t.nav_custom }}</div>
       <div class="card-body">{{ t.profile_loading }}</div>
     </div>
+    <div class="summary-card loading" id="card-rush">
+      <div class="card-mode">⚡ Rush</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
+    </div>
+    <div class="summary-card loading" id="card-tentaizu">
+      <div class="card-mode">🔢 Tentaizu</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
+    </div>
   </div>
 
   <!-- ── Settings ── -->
@@ -79,11 +87,13 @@
       <button class="lb-tab" data-mode="intermediate">{{ t.nav_intermediate }}</button>
       <button class="lb-tab" data-mode="expert">{{ t.nav_expert }}</button>
       <button class="lb-tab" data-mode="custom">{{ t.nav_custom }}</button>
+      <button class="lb-tab" data-mode="rush">⚡ Rush</button>
+      <button class="lb-tab" data-mode="tentaizu">🔢 Tentaizu</button>
     </div>
 
     <div class="lb-table-wrap" style="margin-top:0.75rem">
-      <table class="lb-table">
-        <thead>
+      <table class="lb-table" id="recent-table">
+        <thead id="recent-thead">
           <tr>
             <th>#</th>
             <th>{{ t.lb_col_time }}</th>
@@ -144,27 +154,107 @@ async function loadStats() {
     `;
   });
 
+  // Rush card
+  const rushCard = document.getElementById('card-rush');
+  rushCard.classList.remove('loading');
+  const rd = allStats['rush'];
+  if (!rd) {
+    rushCard.querySelector('.card-body').innerHTML =
+      `<span class="no-data">${window.T.profile_no_games}</span>
+       <a href="/rush" class="card-play-link">${window.T.profile_play_now}</a>`;
+  } else {
+    rushCard.querySelector('.card-body').innerHTML = `
+      <div class="card-stat">
+        <span class="cs-label">${window.T.profile_games}</span>
+        <span class="cs-value">${rd.games_played}</span>
+      </div>
+      <div class="card-stat highlight">
+        <span class="cs-label">Best Score</span>
+        <span class="cs-value">${rd.best_score}</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">Avg Score</span>
+        <span class="cs-value">${rd.avg_score}</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">Total Mines</span>
+        <span class="cs-value">${rd.total_mines}</span>
+      </div>
+    `;
+  }
+
+  // Tentaizu card
+  const tzCard = document.getElementById('card-tentaizu');
+  tzCard.classList.remove('loading');
+  const td = allStats['tentaizu'];
+  if (!td) {
+    tzCard.querySelector('.card-body').innerHTML =
+      `<span class="no-data">${window.T.profile_no_games}</span>
+       <a href="/tentaizu" class="card-play-link">${window.T.profile_play_now}</a>`;
+  } else {
+    tzCard.querySelector('.card-body').innerHTML = `
+      <div class="card-stat">
+        <span class="cs-label">Puzzles Solved</span>
+        <span class="cs-value">${td.games_played}</span>
+      </div>
+      <div class="card-stat highlight">
+        <span class="cs-label">${window.T.profile_best}</span>
+        <span class="cs-value">${td.best_time}s</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">${window.T.profile_avg}</span>
+        <span class="cs-value">${td.avg_time}s</span>
+      </div>
+    `;
+  }
+
   renderRecent('beginner');
 }
 
 function renderRecent(mode) {
-  const body = document.getElementById('recent-body');
-  const data = allStats?.[mode];
+  const body  = document.getElementById('recent-body');
+  const thead = document.getElementById('recent-thead');
+  const data  = allStats?.[mode];
 
   if (!data) {
+    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>${window.T.lb_col_board}</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th></tr>`;
     body.innerHTML = `<tr><td colspan="5" class="lb-empty">${window.T.profile_no_recent}</td></tr>`;
     return;
   }
 
-  body.innerHTML = data.recent.map((s, i) => `
-    <tr>
-      <td class="lb-rank">${i + 1}</td>
-      <td class="lb-time">${s.time_secs}s</td>
-      <td class="lb-board">${s.rows}×${s.cols}</td>
-      <td class="lb-mines">${s.mines}</td>
-      <td class="lb-date">${s.created_at}</td>
-    </tr>
-  `).join('');
+  if (mode === 'rush') {
+    thead.innerHTML = `<tr><th>#</th><th>Score</th><th>Mines</th><th>Mode</th><th>${window.T.lb_col_date}</th></tr>`;
+    body.innerHTML = data.recent.map((s, i) => `
+      <tr>
+        <td class="lb-rank">${i + 1}</td>
+        <td class="lb-time">${s.score}</td>
+        <td class="lb-mines">${s.cleared_mines ?? '—'}</td>
+        <td class="lb-board">${s.rush_mode}</td>
+        <td class="lb-date">${s.created_at}</td>
+      </tr>
+    `).join('');
+  } else if (mode === 'tentaizu') {
+    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>Puzzle Date</th><th>${window.T.lb_col_date}</th></tr>`;
+    body.innerHTML = data.recent.map((s, i) => `
+      <tr>
+        <td class="lb-rank">${i + 1}</td>
+        <td class="lb-time">${s.time_secs}s</td>
+        <td class="lb-board"><a href="/tentaizu/${s.puzzle_date}">${s.puzzle_date}</a></td>
+        <td class="lb-date">${s.created_at}</td>
+      </tr>
+    `).join('');
+  } else {
+    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>${window.T.lb_col_board}</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th></tr>`;
+    body.innerHTML = data.recent.map((s, i) => `
+      <tr>
+        <td class="lb-rank">${i + 1}</td>
+        <td class="lb-time">${s.time_secs}s</td>
+        <td class="lb-board">${s.rows}×${s.cols}</td>
+        <td class="lb-mines">${s.mines}</td>
+        <td class="lb-date">${s.created_at}</td>
+      </tr>
+    `).join('');
+  }
 }
 
 document.querySelectorAll('.lb-tab').forEach(btn => {

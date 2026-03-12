@@ -22,6 +22,7 @@
   </div>
 
   <div class="lb-meta" id="lb-meta"></div>
+  <p class="lb-daily-note">Scores reset daily at midnight UTC — can you top today's board?</p>
 
   <div class="lb-table-wrap">
     <table class="lb-table" id="lb-table">
@@ -69,7 +70,7 @@ async function loadScores(mode) {
     const data = await res.json();
 
     if (!data.length) {
-      body.innerHTML = `<tr><td colspan="6" class="lb-empty">${window.T.lb_no_scores}</td></tr>`;
+      body.innerHTML = `<tr><td colspan="6" class="lb-empty">No scores yet today — be the first!</td></tr>`;
       return;
     }
 

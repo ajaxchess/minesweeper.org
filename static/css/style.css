@@ -517,6 +517,13 @@ footer {
   min-height: 1.2em;
 }
 
+.lb-daily-note {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin: 0.25rem 0 0.75rem;
+}
+
 .lb-table-wrap {
   background: var(--surface);
   border-radius: var(--radius);
