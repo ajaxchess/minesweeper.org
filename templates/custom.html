@@ -48,7 +48,7 @@
     </div>
 
     <div id="board" data-rows="10" data-cols="10" data-mines="10" data-mode="custom"
-         data-username="{{ user.name if user else '' }}"></div>
+         data-username="{{ user.display_name if user else '' }}"></div>
 
     <p class="instructions">
       <strong>{{ t.game_left_click }}</strong> {{ t.game_to_reveal }} &nbsp;|&nbsp;

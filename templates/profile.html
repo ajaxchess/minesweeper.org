@@ -48,6 +48,18 @@
     <div class="settings-list">
       <div class="setting-row">
         <div class="setting-info">
+          <span class="setting-name">Display Name</span>
+          <span class="setting-desc">This name appears on the leaderboard when you set a high score.</span>
+        </div>
+        <div class="display-name-edit">
+          <input id="display-name-input" type="text" maxlength="32"
+                 value="{{ user.display_name }}" autocomplete="off" />
+          <button id="display-name-save" onclick="saveDisplayName()">Save</button>
+          <span id="display-name-msg" class="setting-msg"></span>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
           <span class="setting-name">Chording</span>
           <span class="setting-desc">Double-click a revealed number to auto-reveal its neighbors when the correct number of mines are flagged.</span>
         </div>
@@ -266,6 +278,33 @@ document.querySelectorAll('.lb-tab').forEach(btn => {
 });
 
 loadStats();
+
+// ── Display Name ──────────────────────────────────────────────────────────────
+async function saveDisplayName() {
+  const input = document.getElementById('display-name-input');
+  const msg   = document.getElementById('display-name-msg');
+  const btn   = document.getElementById('display-name-save');
+  const name  = input.value.trim();
+  if (!name) { msg.textContent = 'Name cannot be empty.'; return; }
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/profile/display-name', {
+      method:  'POST',
+      headers: {'Content-Type': 'application/json'},
+      body:    JSON.stringify({ display_name: name }),
+    });
+    if (res.ok) {
+      msg.textContent = 'Saved!';
+      setTimeout(() => { msg.textContent = ''; }, 2000);
+    } else {
+      const err = await res.json();
+      msg.textContent = err.detail || 'Could not save.';
+    }
+  } catch {
+    msg.textContent = 'Network error.';
+  }
+  btn.disabled = false;
+}
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 function updateChordingUI() {

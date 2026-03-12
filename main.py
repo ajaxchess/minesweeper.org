@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, CylinderScore, ToroidScore, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, CylinderScore, ToroidScore, UserProfile, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -170,11 +170,17 @@ async def login(request: Request):
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 @app.get("/auth/callback")
-async def auth_callback(request: Request):
+async def auth_callback(request: Request, db: Session = Depends(get_db)):
     token = await oauth.google.authorize_access_token(request)
     user  = token.get("userinfo")
     if user:
-        set_session_user(request, user)
+        email = user.get("email", "")
+        profile = db.query(UserProfile).filter(UserProfile.email == email).first()
+        if not profile:
+            profile = UserProfile(email=email, display_name=user.get("name", "")[:32])
+            db.add(profile)
+            db.commit()
+        set_session_user(request, user, display_name=profile.display_name)
     next_url = request.session.pop("next", "/")
     return RedirectResponse(url=next_url)
 
@@ -757,3 +763,42 @@ def profile_stats(request: Request, db: Session = Depends(get_db)):
         stats["tentaizu"] = None
 
     return stats
+
+
+class DisplayNameUpdate(BaseModel):
+    display_name: str = Field(..., min_length=1, max_length=32)
+
+    @field_validator("display_name")
+    @classmethod
+    def sanitize(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Display name must contain printable characters")
+        return v[:32]
+
+
+@app.get("/api/profile/display-name")
+def get_display_name(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    return {"display_name": user.get("display_name", user.get("name", ""))}
+
+
+@app.post("/api/profile/display-name")
+def update_display_name(payload: DisplayNameUpdate, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    email = user["email"]
+    profile = db.query(UserProfile).filter(UserProfile.email == email).first()
+    if not profile:
+        profile = UserProfile(email=email, display_name=payload.display_name)
+        db.add(profile)
+    else:
+        profile.display_name = payload.display_name
+    db.commit()
+    # Update session so the new name is used immediately
+    request.session["user"]["display_name"] = payload.display_name
+    return {"ok": True, "display_name": payload.display_name}

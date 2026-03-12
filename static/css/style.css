@@ -1001,6 +1001,55 @@ footer {
   background: rgba(83, 216, 251, 0.1);
 }
 
+/* ── Display name edit ───────────────────────────────────────────────────── */
+.display-name-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.display-name-edit input {
+  font-size: 0.85rem;
+  padding: 0.3rem 0.6rem;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  width: 180px;
+  transition: border-color 0.15s;
+}
+
+.display-name-edit input:focus {
+  outline: none;
+  border-color: var(--accent2);
+}
+
+.display-name-edit button {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 0.3rem 0.75rem;
+  background: var(--surface2);
+  color: var(--text-dim);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.display-name-edit button:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+
+.setting-msg {
+  font-size: 0.78rem;
+  color: var(--accent2);
+  white-space: nowrap;
+}
+
 /* ── Skin picker ─────────────────────────────────────────────────────────── */
 .skin-row {
   flex-direction: column;

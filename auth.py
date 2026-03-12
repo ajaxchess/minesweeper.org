@@ -26,11 +26,12 @@ def get_current_user(request: Request) -> dict | None:
     """Returns the logged-in user dict or None."""
     return request.session.get("user")
 
-def set_session_user(request: Request, user: dict):
+def set_session_user(request: Request, user: dict, display_name: str | None = None):
     request.session["user"] = {
-        "name":    user.get("name", ""),
-        "email":   user.get("email", ""),
-        "picture": user.get("picture", ""),
+        "name":         user.get("name", ""),
+        "email":        user.get("email", ""),
+        "picture":      user.get("picture", ""),
+        "display_name": display_name or user.get("name", ""),
     }
 
 def clear_session(request: Request):

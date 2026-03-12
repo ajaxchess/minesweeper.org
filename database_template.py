@@ -224,6 +224,13 @@ class ToroidScore(Base):
             "created_at": self.created_at.strftime("%Y-%m-%d"),
         }
 
+# ── User profile model (display name, one row per user) ──────────────────────
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
+
+    email        = Column(String(256), primary_key=True)
+    display_name = Column(String(32), nullable=False)
+
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
     Base.metadata.create_all(bind=engine)
