@@ -2321,7 +2321,7 @@ html[data-skin="classic"] body {
 html[data-skin="classic"] header {
   grid-column: 1;
   grid-row: 1 / 99;          /* span all rows */
-  background: #1a4040;
+  background: #1a4040 url('/static/img/LadyDiLeftMenuBackground.png') center top / cover no-repeat;
   border-right: 2px solid #000;
   border-bottom: none;
   min-height: 100vh;
@@ -2363,7 +2363,8 @@ html[data-skin="classic"] nav {
 }
 
 html[data-skin="classic"] nav a {
-  color: #d0d8e8;
+  color: #ffffff;
+  font-weight: 700;
   padding: 0.4rem 0.6rem;
   border-radius: 0;
   font-size: 0.82rem;
@@ -2596,7 +2597,7 @@ html[data-skin="classic"] a { color: #ff3300; }
 html[data-skin="classic"] a:visited { color: #0033ff; }
 /* Nav links stay white — more specific selector */
 html[data-skin="classic"] nav a,
-html[data-skin="classic"] nav a:visited { color: #d0d8e8; }
+html[data-skin="classic"] nav a:visited { color: #ffffff; font-weight: 700; }
 
 /* ── Classic skin preview (in profile picker) ────────────────────────────── */
 .skin-preview-classic {
