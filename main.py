@@ -671,7 +671,7 @@ async def tentaizu_permalink(request: Request, date_str: str):
 class TentaizuScoreSubmit(BaseModel):
     name:        str = Field(..., min_length=1, max_length=32)
     puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
-    time_secs:   int = Field(..., ge=1, le=99999)
+    time_secs:   int = Field(..., ge=0, le=99999)
 
     @field_validator("name")
     @classmethod

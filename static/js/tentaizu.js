@@ -291,7 +291,7 @@ async function saveScore(autoName = null) {
         const r = await fetch('/api/tentaizu-scores', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, puzzle_date: G.puzzleId, time_secs: G.elapsed }),
+            body: JSON.stringify({ name, puzzle_date: G.puzzleId, time_secs: Math.max(1, G.elapsed) }),
         });
         if (r.ok) {
             localStorage.setItem('tz_name', name);
