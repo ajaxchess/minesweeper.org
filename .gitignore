@@ -8,6 +8,8 @@ venv/
 #Business documents
 business/
 
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
