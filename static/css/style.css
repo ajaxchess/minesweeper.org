@@ -2321,7 +2321,7 @@ html[data-skin="classic"] body {
 html[data-skin="classic"] header {
   grid-column: 1;
   grid-row: 1 / 99;          /* span all rows */
-  background: #1a4040 url('/static/img/LadyDiLeftMenuBackground.png') center top / cover no-repeat;
+  background: #1a4040 url('/static/img/mwbg180.gif') left top repeat-y;
   border-right: 2px solid #000;
   border-bottom: none;
   min-height: 100vh;
@@ -2382,6 +2382,18 @@ html[data-skin="classic"] nav a.active {
   background: #c0c0c0;
   color: #000;
   font-weight: 700;
+}
+
+/* Red bullet buttons for the four main game modes */
+html[data-skin="classic"] nav a[href="/"]::before,
+html[data-skin="classic"] nav a[href="/intermediate"]::before,
+html[data-skin="classic"] nav a[href="/expert"]::before,
+html[data-skin="classic"] nav a[href="/custom"]::before {
+  content: url('/static/img/redbutton.gif');
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 5px;
+  line-height: 1;
 }
 
 html[data-skin="classic"] .auth-area {
