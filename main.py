@@ -676,7 +676,7 @@ def get_tentaizu_scores(puzzle_date: str, db: Session = Depends(get_db)):
         db.query(TentaizuScore)
         .filter(TentaizuScore.puzzle_date == puzzle_date)
         .order_by(TentaizuScore.time_secs.asc(), TentaizuScore.created_at.asc())
-        .limit(15)
+        .limit(20)
         .all()
     )
     return [s.to_dict() for s in top]

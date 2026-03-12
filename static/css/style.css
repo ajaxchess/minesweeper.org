@@ -1748,6 +1748,34 @@ footer {
   text-decoration: underline;
 }
 
+/* ── Tentaizu previous days ──────────────────────────────────────────────── */
+.tz-prev-days {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border, #333);
+  font-size: 0.8rem;
+}
+.tz-prev-days-label {
+  color: var(--text-muted, #888);
+  white-space: nowrap;
+}
+.tz-prev-day-link {
+  color: var(--accent2);
+  text-decoration: none;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--accent2);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.tz-prev-day-link:hover {
+  background: var(--accent2);
+  color: #fff;
+}
+
 /* ── Toroid Minesweeper ───────────────────────────────────────────────────── */
 #board.toroid-board {
   border: 3px solid var(--accent2);

@@ -196,9 +196,9 @@ function handleClick(idx) {
     // Start timer on first interaction
     if (!G.startTime) startTimer();
 
-    // Cycle: unknown → flagged → empty → unknown
-    if      (cell.state === 'unknown') cell.state = 'flagged';
-    else if (cell.state === 'flagged') cell.state = 'empty';
+    // Cycle: unknown → empty → flagged → unknown
+    if      (cell.state === 'unknown') cell.state = 'empty';
+    else if (cell.state === 'empty')   cell.state = 'flagged';
     else                               cell.state = 'unknown';
 
     refreshCell(idx);
@@ -214,8 +214,10 @@ function handleRightClick(idx) {
 
     if (!G.startTime) startTimer();
 
-    // Toggle: unknown/empty → flagged, flagged → unknown
-    cell.state = cell.state === 'flagged' ? 'unknown' : 'flagged';
+    // Cycle: unknown → flagged → empty → unknown
+    if      (cell.state === 'unknown') cell.state = 'flagged';
+    else if (cell.state === 'flagged') cell.state = 'empty';
+    else                               cell.state = 'unknown';
 
     refreshCell(idx);
     refreshNeighborClues(idx);
@@ -363,6 +365,19 @@ async function loadLeaderboard() {
             </div>`;
     } catch {
         el.innerHTML = '<div class="lb-empty">⚠️ Could not load scores.</div>';
+    }
+
+    // Previous days links
+    const prevEl = document.getElementById('tz-prev-days');
+    if (prevEl) {
+        const links = [];
+        for (let i = 1; i <= 7; i++) {
+            const d = new Date(Date.now() - i * 86400000);
+            const iso = d.toISOString().slice(0, 10);
+            const label = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            links.push(`<a href="/tentaizu/${iso}" class="tz-prev-day-link">${label}</a>`);
+        }
+        prevEl.innerHTML = `<span class="tz-prev-days-label">Previous puzzles:</span> ${links.join('')}`;
     }
 }
 
