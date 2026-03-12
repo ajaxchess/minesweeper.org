@@ -2612,6 +2612,29 @@ html[data-skin="classic"] .lb-tab.active {
 
 html[data-skin="classic"] .help-section { color: #000; }
 html[data-skin="classic"] .help-section h2 { color: #0033cc; }
+
+/* ── Classic skin: Quests page ───────────────────────────────────────────── */
+html[data-skin="classic"] .quest-section {
+  background: #f0f0f0;
+  border: 2px solid #808080;
+  border-top-color: #ffffff;
+  border-left-color: #ffffff;
+}
+html[data-skin="classic"] .quest-card {
+  background: #ffffff;
+  border: 1px solid #808080;
+}
+html[data-skin="classic"] .quest-card-done {
+  background: #e8f5e9;
+  border-color: #2e7d32;
+}
+html[data-skin="classic"] .quest-card-label { color: #000000; }
+html[data-skin="classic"] .quest-section-hdr h2 { color: #000000; }
+html[data-skin="classic"] .quest-section-meta,
+html[data-skin="classic"] .quest-section-note,
+html[data-skin="classic"] .quest-progress-text { color: #444444; }
+html[data-skin="classic"] .quest-progress-bar { background: #c0c0c0; }
+html[data-skin="classic"] .quests-subtitle { color: #444444; }
 html[data-skin="classic"] a { color: #ff3300; }
 html[data-skin="classic"] a:visited { color: #0033ff; }
 /* Nav links stay white — more specific selector */
