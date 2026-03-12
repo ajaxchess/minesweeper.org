@@ -2407,14 +2407,16 @@ html[data-skin="classic"] .auth-area {
   flex-shrink: 0;
 }
 
-html[data-skin="classic"] .auth-name {
+html[data-skin="classic"] .auth-name,
+html[data-skin="classic"] .auth-name:visited {
   color: #ffffff;
   font-size: 0.8rem;
   font-weight: 700;
   text-shadow: 1px 1px 3px #000, 0 0 6px #000;
 }
 
-html[data-skin="classic"] .auth-btn {
+html[data-skin="classic"] .auth-btn,
+html[data-skin="classic"] .auth-btn:visited {
   font-size: 0.75rem;
   padding: 0.25rem 0.6rem;
   border-radius: 0;
