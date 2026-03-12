@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Rush Leaderboard — All-Time High Scores | minesweeper.org{% endblock %}
+{% block description %}All-time top Rush Minesweeper scores for Easy, Normal, and Hard modes. See who's cleared the most mines.{% endblock %}
+{% block canonical %}https://minesweeper.org/rush/leaderboard{% endblock %}
+{% block og_url %}https://minesweeper.org/rush/leaderboard{% endblock %}
+{% block og_title %}Rush Leaderboard — All-Time High Scores{% endblock %}
+{% block og_description %}All-time top Rush Minesweeper scores for Easy, Normal, and Hard modes.{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <nav class="tz-breadcrumb" aria-label="Breadcrumb">
+    <a href="/rush">Rush</a>
+    <span aria-hidden="true">›</span>
+    <span>All-Time Leaderboard</span>
+  </nav>
+
+  <h1 class="lb-title">⚡ Rush — All-Time Leaderboard</h1>
+  <p class="lb-daily-note">Best scores of all time across all players.</p>
+
+  <div class="lb-tabs" role="tablist">
+    <button class="lb-tab active" data-mode="easy"   role="tab">{{ t.rush_easy }}</button>
+    <button class="lb-tab"        data-mode="normal" role="tab">{{ t.rush_normal }}</button>
+    <button class="lb-tab"        data-mode="hard"   role="tab">{{ t.rush_hard }}</button>
+  </div>
+
+  <div class="lb-table-wrap">
+    <table class="lb-table" id="lb-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Score</th>
+          <th>Mines</th>
+          <th>Time</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="lb-body">
+        <tr><td colspan="6" class="lb-loading">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lb-back">
+    <a href="/rush">← Play Rush</a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const MEDALS = ['🥇','🥈','🥉'];
+
+function fmtTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${String(sec).padStart(2,'0')}`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function loadScores(mode) {
+  const body = document.getElementById('lb-body');
+  body.innerHTML = `<tr><td colspan="6" class="lb-loading">Loading…</td></tr>`;
+
+  try {
+    const res  = await fetch(`/api/rush-scores/${mode}?alltime=true`);
+    const data = await res.json();
+
+    if (!data.length) {
+      body.innerHTML = `<tr><td colspan="6" class="lb-empty">No scores yet — be the first!</td></tr>`;
+      return;
+    }
+
+    body.innerHTML = data.map((s, i) => `
+      <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
+        <td class="lb-rank">${MEDALS[i] ?? '#' + (i+1)}</td>
+        <td class="lb-name">${escHtml(s.name)}</td>
+        <td class="lb-score">${s.score}</td>
+        <td class="lb-score">${s.cleared_mines ?? '—'} mines</td>
+        <td class="lb-time">${fmtTime(s.time_secs)}</td>
+        <td class="lb-date">${s.created_at}</td>
+      </tr>
+    `).join('');
+  } catch {
+    body.innerHTML = `<tr><td colspan="6" class="lb-empty">⚠️ Could not load scores.</td></tr>`;
+  }
+}
+
+document.querySelectorAll('.lb-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadScores(btn.dataset.mode);
+  });
+});
+
+loadScores('easy');
+</script>
+{% endblock %}

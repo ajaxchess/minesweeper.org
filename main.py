@@ -309,17 +309,23 @@ def submit_rush_score(payload: RushScoreSubmit, request: Request, db: Session = 
 
 
 @app.get("/api/rush-scores/{rush_mode}")
-def get_rush_scores(rush_mode: str, db: Session = Depends(get_db)):
+def get_rush_scores(rush_mode: str, alltime: bool = False, db: Session = Depends(get_db)):
     if rush_mode not in RUSH_MODES_VALID:
         raise HTTPException(status_code=400, detail="Invalid mode")
-    top = (
-        db.query(RushScore)
-        .filter(RushScore.rush_mode == rush_mode)
-        .order_by(RushScore.score.desc())
-        .limit(15)
-        .all()
-    )
+    q = db.query(RushScore).filter(RushScore.rush_mode == rush_mode)
+    if not alltime:
+        q = q.filter(RushScore.created_at >= date.today())
+    top = q.order_by(RushScore.score.desc()).limit(15).all()
     return [s.to_dict() for s in top]
+
+
+@app.get("/rush/leaderboard", response_class=HTMLResponse)
+async def rush_leaderboard(request: Request):
+    return templates.TemplateResponse("rush_leaderboard.html", {
+        "request": request, "mode": "rush",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
 
 
 @app.get("/help", response_class=HTMLResponse)

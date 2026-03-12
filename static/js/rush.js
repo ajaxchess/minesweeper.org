@@ -966,8 +966,10 @@ async function loadRushLeaderboard(mode) {
     const res  = await fetch(`/api/rush-scores/${mode}`);
     const rows = await res.json();
 
+    const allTimeLink = `<div class="rush-lb-alltime-link"><a href="/rush/leaderboard">View All-Time Leaderboard →</a></div>`;
+
     if (!rows.length) {
-      wrap.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
+      wrap.innerHTML = '<div class="lb-empty">No scores yet today — be the first!</div>' + allTimeLink;
       return;
     }
 
@@ -994,7 +996,8 @@ async function loadRushLeaderboard(mode) {
           </tr></thead>
           <tbody>${trs}</tbody>
         </table>
-      </div>`;
+      </div>
+      ${allTimeLink}`;
   } catch {
     wrap.innerHTML = '<div class="lb-empty">Could not load scores.</div>';
   }

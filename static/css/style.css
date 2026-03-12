@@ -1350,6 +1350,19 @@ footer {
 
 .rush-lb-content { min-height: 120px; }
 
+.rush-lb-alltime-link {
+  text-align: center;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.rush-lb-alltime-link a {
+  color: var(--accent2);
+  text-decoration: none;
+}
+
+.rush-lb-alltime-link a:hover { text-decoration: underline; }
+
 .lb-score {
   font-family: var(--font-mono);
   color: var(--accent2);
