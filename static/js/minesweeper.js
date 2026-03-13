@@ -40,6 +40,21 @@ function addTouchHandlers(el, onTap, onLongPress) {
   el.addEventListener('touchcancel', () => { clearTimeout(timer); timer = null; });
 }
 
+// ── Flag mode (mobile toggle) ─────────────────────────────────────────────────
+let flagMode = false;
+
+function toggleFlagMode() {
+  flagMode = !flagMode;
+  const btn = document.getElementById('flag-mode-btn');
+  if (btn) btn.classList.toggle('active', flagMode);
+}
+
+function clearFlagMode() {
+  flagMode = false;
+  const btn = document.getElementById('flag-mode-btn');
+  if (btn) btn.classList.remove('active');
+}
+
 // ── State ────────────────────────────────────────────────────────────────────
 let state = {};
 
@@ -468,7 +483,10 @@ function buildBoard(rows, cols) {
       cell.addEventListener('click',       () => reveal(r, c));
       cell.addEventListener('contextmenu', e  => { e.preventDefault(); flag(r, c); });
       cell.addEventListener('dblclick',    () => chord(r, c));
-      addTouchHandlers(cell, () => reveal(r, c), () => flag(r, c));
+      addTouchHandlers(cell,
+        () => { if (flagMode) flag(r, c); else reveal(r, c); },
+        () => { if (flagMode) reveal(r, c); else flag(r, c); }
+      );
 
       boardEl.appendChild(cell);
     }
@@ -478,6 +496,7 @@ function buildBoard(rows, cols) {
 // ── Init / Reset ─────────────────────────────────────────────────────────────
 function initGame(rows, cols, mines, noGuess = false, chording = true) {
   stopTimer();
+  clearFlagMode();
   state = freshState(rows, cols, mines, noGuess, chording);
   document.getElementById('timer').textContent      = '000';
   document.getElementById('mines-left').textContent = String(mines).padStart(3,'0');

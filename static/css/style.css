@@ -98,6 +98,36 @@ main { flex: 1; padding: 1rem 0.5rem; }
 
 .game-section { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
 
+/* ── Flag mode button (touch devices only) ───────────────────────────────── */
+.flag-mode-btn {
+  display: none; /* hidden on mouse/desktop */
+}
+
+@media (pointer: coarse) {
+  .flag-mode-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 1.1rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    background: var(--surface2);
+    color: var(--text);
+    border: 2px solid var(--surface2);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    width: 100%;
+    max-width: 600px;
+    justify-content: center;
+  }
+  .flag-mode-btn.active {
+    background: #b71c1c22;
+    border-color: #ef5350;
+    color: #ef5350;
+  }
+}
+
 /* ── Game Info Panel ─────────────────────────────────────────────────────── */
 .game-info {
   background: var(--surface);

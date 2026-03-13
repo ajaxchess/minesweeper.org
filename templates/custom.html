@@ -46,6 +46,7 @@
         <span class="stat-value" id="timer">000</span>
       </div>
     </div>
+    <button id="flag-mode-btn" class="flag-mode-btn" onclick="toggleFlagMode()" title="Toggle flag mode">🚩 Flag</button>
 
     <div id="board" data-rows="10" data-cols="10" data-mines="10" data-mode="custom"
          data-username="{{ user.display_name if user else '' }}"></div>
