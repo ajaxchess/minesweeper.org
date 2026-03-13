@@ -15,6 +15,21 @@
 (function () {
 'use strict';
 
+// ── Flag mode (touch devices) ─────────────────────────────────────────────────
+let rushFlagMode = false;
+
+function toggleRushFlagMode() {
+  rushFlagMode = !rushFlagMode;
+  const btn = document.getElementById('rush-flag-mode-btn');
+  if (btn) btn.classList.toggle('active', rushFlagMode);
+}
+
+function clearRushFlagMode() {
+  rushFlagMode = false;
+  const btn = document.getElementById('rush-flag-mode-btn');
+  if (btn) btn.classList.remove('active');
+}
+
 // ── Touch helpers ──────────────────────────────────────────────────────────────
 const LONG_PRESS_MS = 500;
 
