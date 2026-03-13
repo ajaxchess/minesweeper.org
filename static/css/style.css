@@ -1512,6 +1512,49 @@ footer {
 
 #rush-overlay button:hover { opacity: 0.85; }
 
+/* ── SEO content article (below game, all pages) ─────────────────────────── */
+.seo-content {
+  max-width: 760px;
+  margin: 2.5rem auto 1rem;
+  padding: 0 1rem 2rem;
+  color: var(--text);
+  line-height: 1.7;
+}
+
+.seo-content h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: var(--accent2);
+}
+
+.seo-content h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.6rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--surface2);
+  padding-bottom: 0.3rem;
+}
+
+.seo-content h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 1.1rem 0 0.35rem;
+  color: var(--text-dim);
+}
+
+.seo-content p  { margin-bottom: 0.85rem; }
+.seo-content ul { padding-left: 1.4rem; margin-bottom: 0.85rem; }
+.seo-content li { margin-bottom: 0.4rem; }
+
+.seo-content .faq-section h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  color: var(--text);
+}
+
 /* ── Tentaizu ─────────────────────────────────────────────────────────────── */
 .tz-wrapper {
   display: flex;

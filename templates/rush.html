@@ -1,14 +1,87 @@
 {% extends "base.html" %}
 
-{% block title %}Rush Minesweeper — Endless Mode, Beat the Clock | minesweeper.org{% endblock %}
-{% block description %}Minesweeper Rush: endless rows drop from the top. Flag mines and clear rows before the board overflows! Easy, Normal, and Hard modes.{% endblock %}
-{% block keywords %}<meta name="keywords" content="rush minesweeper, minesweeper endless mode, minesweeper challenge, minesweeper speed, minesweeper survival">{% endblock %}
+{% block title %}Minesweeper Rush — Play Free Online | Endless Mode, No Download | minesweeper.org{% endblock %}
+{% block description %}Play Minesweeper Rush free in your browser — an endless, fast-paced minesweeper mode where rows drop from the top. Flag mines, clear rows, and survive as long as you can. No download, no install.{% endblock %}
+{% block keywords %}<meta name="keywords" content="minesweeper rush, play minesweeper rush free, minesweeper rush browser, minesweeper rush no download, endless minesweeper, minesweeper endless mode, minesweeper speed game">{% endblock %}
 {% block canonical %}https://minesweeper.org/rush{% endblock %}
 {% block og_url %}https://minesweeper.org/rush{% endblock %}
-{% block og_title %}Rush Minesweeper — Endless Mode, Beat the Clock{% endblock %}
-{% block og_description %}Endless rows drop from the top — flag mines and clear rows before the board overflows. How long can you last?{% endblock %}
-{% block tw_title %}Rush Minesweeper — Endless Mode, Beat the Clock{% endblock %}
-{% block tw_description %}Endless rows drop from the top — flag mines and clear rows before the board overflows. How long can you last?{% endblock %}
+{% block og_title %}Minesweeper Rush — Play Free Online | Endless Mode, No Download{% endblock %}
+{% block og_description %}Play Minesweeper Rush free in your browser — endless rows drop from the top. Flag mines and clear rows before the board overflows. No download required.{% endblock %}
+{% block tw_title %}Minesweeper Rush — Play Free Online | Endless Mode, No Download{% endblock %}
+{% block tw_description %}Play Minesweeper Rush free in your browser — endless rows drop from the top. Flag mines and clear rows before the board overflows. No download required.{% endblock %}
+
+{% block jsonld %}
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Minesweeper Rush",
+    "url": "https://minesweeper.org/rush",
+    "description": "An endless, fast-paced minesweeper mode where rows of mines drop from the top. Flag mines and clear rows before the board overflows. Free to play in your browser with no download required.",
+    "genre": ["Puzzle", "Casual", "Logic"],
+    "gamePlatform": "Web Browser",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Minesweeper", "item": "https://minesweeper.org/" },
+      { "@type": "ListItem", "position": 2, "name": "Rush", "item": "https://minesweeper.org/rush" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Minesweeper Rush?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Minesweeper Rush is an endless survival mode where new rows of mines continuously drop from the top of the board. Your goal is to flag all mines and clear rows before the board fills up. The game speeds up over time, challenging you to think and act faster as you survive longer."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do you play Minesweeper Rush?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Left-click to reveal a safe cell, right-click (or long-press on mobile) to plant a flag on a mine. When every mine in a row is flagged, that row clears and you earn points. Avoid letting rows reach the bottom — if the board overflows, the game ends. Salvage tokens let you clear a dangerous row in an emergency."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the difficulty modes in Minesweeper Rush?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Rush has three difficulty modes: Easy (fewer mines per row, slower drop speed), Normal (balanced challenge for experienced players), and Hard (dense mines and a fast drop rate that demands quick reflexes). All modes are free to play in your browser."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Minesweeper Rush free to play?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Minesweeper Rush is completely free to play at minesweeper.org/rush. No download, no account required, and no paywalls. Just open it in any modern browser and start playing instantly."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is minesweeper.org Rush different from Minesweeper Rush on Steam?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "minesweeper.org/rush runs entirely in your browser — no download or install needed. You can play instantly on any device (desktop, tablet, or phone) without signing up. The Steam version requires a separate purchase and download. Our Rush mode is free, always available, and works on any platform with a modern browser."
+        }
+      }
+    ]
+  }
+]
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="rush-wrapper">
@@ -109,6 +182,117 @@
   </aside>
 
 </div>
+
+<!-- SEO content: crawlable body text below the game -->
+<article class="seo-content" aria-label="About Minesweeper Rush">
+  <h1>Minesweeper Rush — Play Free Online, No Download</h1>
+
+  <section>
+    <h2>What is Minesweeper Rush?</h2>
+    <p>
+      Minesweeper Rush is an endless, fast-paced twist on classic Minesweeper. Instead of clearing a
+      fixed grid, new rows of hidden mines continuously drop from the top of the board. Your job is
+      to identify and flag every mine in each row before the rows pile up and the board overflows.
+      Clear rows earn you points; let too many stack up and it's game over.
+    </p>
+    <p>
+      The longer you survive, the faster the rows drop — turning Rush into a test of reflexes and
+      pattern recognition as much as logical deduction. It's the same core Minesweeper you know,
+      but with a relentless sense of urgency that keeps every second exciting.
+    </p>
+  </section>
+
+  <section>
+    <h2>How to Play Minesweeper Rush</h2>
+    <p>
+      The controls are simple. <strong>Left-click</strong> (or tap on mobile) a cell to reveal it.
+      <strong>Right-click</strong> (or long-press on mobile) to plant a flag on a suspected mine.
+      When every mine in a row is flagged correctly, that row clears automatically and contributes
+      to your score. Rows without mines clear as soon as all their cells are revealed.
+    </p>
+    <h3>Difficulty Modes</h3>
+    <ul>
+      <li><strong>Easy</strong> — Fewer mines per row and a gentle drop speed. A great starting
+        point if you're new to Rush or want a more relaxed experience.</li>
+      <li><strong>Normal</strong> — A balanced challenge suited to players who are comfortable with
+        classic Minesweeper. Mine density and drop speed increase steadily as your score grows.</li>
+      <li><strong>Hard</strong> — Dense mine placement and an aggressive drop speed that demands
+        quick, confident decisions. Only the most experienced sweepers survive long here.</li>
+    </ul>
+    <h3>Scoring</h3>
+    <p>
+      Your score is the total number of mines you've cleared (flagged in successfully cleared rows).
+      The leaderboard resets at midnight UTC each day, so every player starts fresh. High scores
+      from all three difficulty modes are tracked separately, letting you compete across the board.
+    </p>
+    <h3>Salvage Tokens</h3>
+    <p>
+      In a tight spot? Salvage tokens let you instantly clear a dangerous row — even one you haven't
+      fully flagged. Tokens are earned by clearing rows efficiently. Use them wisely: they're your
+      emergency escape hatch when the board starts to overflow.
+    </p>
+  </section>
+
+  <section>
+    <h2>Tips &amp; Strategy</h2>
+    <ul>
+      <li><strong>Prioritize the bottom rows.</strong> Focus on the rows closest to the danger zone
+        first. A cleared bottom row buys you breathing room when things get hectic.</li>
+      <li><strong>Use number clues aggressively.</strong> Revealed numbers tell you exactly how many
+        mines are in adjacent cells — use them to flag mines in new rows before they drop further.</li>
+      <li><strong>Don't over-reveal.</strong> Unlike classic Minesweeper, you often don't need to
+        clear every cell. Flag the mines, clear the row, and move on.</li>
+      <li><strong>Save salvage tokens for emergencies.</strong> Don't burn them early — hold on to
+        them until a row is about to push the board over the edge.</li>
+      <li><strong>Learn the rhythm on Easy first.</strong> Spend time on Easy until you can clear
+        rows without hesitation. That muscle memory will carry you in Normal and Hard.</li>
+      <li><strong>Watch the drop speed indicator.</strong> The speed multiplier displayed in the
+        info panel tells you how fast things are escalating. Mentally prepare for each tier jump.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Free in Your Browser — No Download Required</h2>
+    <p>
+      Minesweeper Rush at <strong>minesweeper.org/rush</strong> is completely free. There's no
+      download, no install, and no account required to play. Open it in any modern browser on
+      desktop, tablet, or phone, and you're playing within seconds. Sign in with Google to save
+      your high scores to the daily leaderboard — entirely optional, always free.
+    </p>
+    <p>
+      Looking for a Minesweeper Rush game without the Steam price tag or the hassle of a PC
+      install? You've found it. Our browser version delivers the same endless, survival-style
+      gameplay with zero friction — just click and play.
+    </p>
+  </section>
+
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+
+    <h3>What is Minesweeper Rush?</h3>
+    <p>Minesweeper Rush is an endless survival mode where rows of mines drop from the top of the
+    board. Flag every mine in a row to clear it before the board fills up. The speed increases
+    over time, making it progressively harder to keep up.</p>
+
+    <h3>How do you play Minesweeper Rush?</h3>
+    <p>Left-click to reveal safe cells; right-click (or long-press on mobile) to flag mines. Clear
+    a row by flagging all its mines. Use salvage tokens when you're in danger of overflowing. The
+    game ends when rows reach the bottom and the board overflows.</p>
+
+    <h3>What difficulty modes are available?</h3>
+    <p>Rush has three modes: <strong>Easy</strong>, <strong>Normal</strong>, and
+    <strong>Hard</strong>. Each mode has its own daily leaderboard, so you can compete at the
+    level that suits you.</p>
+
+    <h3>Is Minesweeper Rush free?</h3>
+    <p>Yes — completely free, no download required. Play instantly at minesweeper.org/rush in any
+    modern browser on any device.</p>
+
+    <h3>How is this different from Minesweeper Rush on Steam?</h3>
+    <p>Our browser version requires no purchase, no download, and no installation. It runs on any
+    device with a browser — desktop, mobile, or tablet — and is always free to play.</p>
+  </section>
+</article>
 {% endblock %}
 
 {% block scripts %}
