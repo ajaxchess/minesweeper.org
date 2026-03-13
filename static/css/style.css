@@ -1194,6 +1194,10 @@ footer {
     margin-left:   calc(-7 * (var(--cell-size) + 1px));
     margin-right:  calc(-7 * (var(--cell-size) + 1px));
   }
+
+  #board[data-mode="expert"] .cell {
+    transform: rotate(90deg);
+  }
 }
 
 @media (max-width: 390px) and (pointer: coarse) {
