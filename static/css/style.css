@@ -1174,28 +1174,19 @@ footer {
   nav a { padding: 0.35rem 0.55rem; font-size: 0.8rem; }
 }
 
-/* ── Mobile: fit wide boards on small phones ─────────────────────────────── */
-@media (max-width: 430px) {
+/* ── Mobile touch phones: compact board + expert rotation ────────────────── *
+ * (pointer: coarse) targets touch screens; max-width covers all iPhones.
+ * Expert rotation formula: (W−H)/2 = 7×(cell-size + 1px)
+ *   W = 30×cell + 29×1px gap + 8px pad + 4px border
+ *   H = 16×cell + 15×1px gap + 8px pad + 4px border
+ * ─────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 500px) and (pointer: coarse) {
   :root { --cell-size: 22px; }
   main { padding-left: 2px; padding-right: 2px; }
   #board { padding: 4px; gap: 1px; }
   .cell { font-size: 0.6rem; border-radius: 2px; }
   .game-info { padding: 0.4rem 0.5rem; }
-}
 
-@media (max-width: 390px) {
-  :root { --cell-size: 20px; }
-}
-
-/* ── Mobile expert: rotate 30×16 board to 16×30 portrait layout ──────────── *
- * Formula: (W−H)/2 = 7×(cell-size + 1px)
- *   W = 30×cell + 29gaps + 8pad + 4border
- *   H = 16×cell + 15gaps + 8pad + 4border
- * Negative left/right margins shrink layout width W→H;
- * positive top/bottom margins grow layout height H→W.
- * CSS transform hit-testing is automatic so touch events work correctly.
- * ─────────────────────────────────────────────────────────────────────────── */
-@media (max-width: 430px) {
   #board[data-mode="expert"] {
     transform: rotate(-90deg);
     margin-top:    calc(7 * (var(--cell-size) + 1px));
@@ -1203,6 +1194,10 @@ footer {
     margin-left:   calc(-7 * (var(--cell-size) + 1px));
     margin-right:  calc(-7 * (var(--cell-size) + 1px));
   }
+}
+
+@media (max-width: 390px) and (pointer: coarse) {
+  :root { --cell-size: 20px; }
 }
 
 /* ── Rush mode ────────────────────────────────────────────────────────────── */
