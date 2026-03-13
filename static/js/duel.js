@@ -4,7 +4,7 @@
  * bootstrap guard skips init when data-mode="duel".
  */
 
-// NUM_COLORS is already defined in minesweeper.js — reuse it directly.
+// getNumColors() is defined in minesweeper.js — reuse it directly.
 
 document.addEventListener('DOMContentLoaded', () => {
   const boardEl = document.getElementById('board');
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
       el.textContent = '';
     } else {
       el.textContent = val;
-      el.style.color = NUM_COLORS[val];
+      el.style.color = getNumColors()[val];
     }
   }
 
