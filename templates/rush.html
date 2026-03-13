@@ -139,6 +139,7 @@
         🔥 <span id="rush-salvage-tokens">0</span> {{ t.rush_salvage_suffix }}
       </div>
       <div id="rush-penalty" class="rush-penalty-msg" style="opacity:0" aria-live="polite"></div>
+      <button id="rush-flag-mode-btn" class="flag-mode-btn" onclick="toggleRushFlagMode()" title="Toggle flag mode">🚩 Flag</button>
     </div>
 
     <!-- Board -->
@@ -296,5 +297,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/rush.js?v=3"></script>
+<script src="/static/js/rush.js?v=4"></script>
 {% endblock %}

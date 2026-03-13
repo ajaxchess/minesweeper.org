@@ -449,7 +449,7 @@ function activateRow(r) {
     cell.dataset.c   = c;
     cell.addEventListener('click',       () => rushReveal(r, c));
     cell.addEventListener('contextmenu', e  => { e.preventDefault(); rushFlag(r, c); });
-    addTouchHandlers(cell, () => rushReveal(r, c), () => rushFlag(r, c));
+    addTouchHandlers(cell, () => { if (rushFlagMode) rushFlag(r, c); else rushReveal(r, c); }, () => rushFlag(r, c));
     grid.appendChild(cell);
   }
 
@@ -1068,7 +1068,7 @@ function buildInitialBoard() {
       cell.dataset.c   = c;
       cell.addEventListener('click',       () => rushReveal(r, c));
       cell.addEventListener('contextmenu', e  => { e.preventDefault(); rushFlag(r, c); });
-      addTouchHandlers(cell, () => rushReveal(r, c), () => rushFlag(r, c));
+      addTouchHandlers(cell, () => { if (rushFlagMode) rushFlag(r, c); else rushReveal(r, c); }, () => rushFlag(r, c));
       grid.appendChild(cell);
     }
 
@@ -1088,6 +1088,7 @@ function initRush(mode) {
   if (rush.fillIDs) for (const id of Object.values(rush.fillIDs)) clearInterval(id);
 
   rush = freshRush(mode);
+  clearRushFlagMode();
 
   // Update UI
   document.getElementById('rush-board').dataset.mode = mode;
@@ -1146,5 +1147,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // Expose functions needed by inline onclick handlers in overlay
 window.initRush = initRush;
 window.submitRushScore = submitRushScore;
+window.toggleRushFlagMode = toggleRushFlagMode;
 
 })(); // end IIFE
