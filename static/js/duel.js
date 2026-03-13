@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Local state ───────────────────────────────────────────────────────────
   let revealed   = Array.from({length: ROWS}, () => Array(COLS).fill(false));
-  let flagged    = Array.from({length: ROWS}, () => Array(COLS).fill(false));
+  let flagged    = Array.from({length: ROWS}, () => Array(COLS).fill(0));
   let boardVals  = Array.from({length: ROWS}, () => Array(COLS).fill(null));
   let gameActive = false;
   let exploded   = false;
@@ -56,14 +56,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const val = boardVals[r][c];
     el.className = 'cell';
 
-    if (flagged[r][c] && !revealed[r][c]) {
-      el.classList.add('flagged');
-      el.textContent = '🚩';
-      return;
-    }
     if (!revealed[r][c]) {
-      el.classList.add('hidden');
-      el.textContent = '';
+      if (flagged[r][c] === 1) {
+        el.classList.add('flagged');
+        el.textContent = '🚩';
+      } else if (flagged[r][c] === 2) {
+        el.classList.add('question');
+        el.textContent = '❓';
+      } else {
+        el.classList.add('hidden');
+        el.textContent = '';
+      }
       return;
     }
     el.classList.add('revealed');
@@ -103,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Actions ───────────────────────────────────────────────────────────────
   function onReveal(r, c) {
-    if (!gameActive || revealed[r][c] || exploded) return;
+    if (!gameActive || revealed[r][c] || flagged[r][c] === 1 || exploded) return;
     ws.send(JSON.stringify({type: 'reveal', r, c}));
   }
 
@@ -118,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const nr = r + dr, nc = c + dc;
         if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) nbs.push([nr, nc]);
       }
-    const flagCount = nbs.filter(([nr, nc]) => flagged[nr][nc]).length;
+    const flagCount = nbs.filter(([nr, nc]) => flagged[nr][nc] === 1).length;
     if (flagCount !== boardVals[r][c]) return;
     nbs.forEach(([nr, nc]) => {
       if (!flagged[nr][nc] && !revealed[nr][nc])
@@ -128,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function onFlag(r, c) {
     if (!gameActive || revealed[r][c]) return;
-    flagged[r][c] = !flagged[r][c];
+    flagged[r][c] = (flagged[r][c] + 1) % 3;
     renderCell(r, c);
   }
 
