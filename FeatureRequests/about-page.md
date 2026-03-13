@@ -2,14 +2,14 @@
 
 Minesweeper.org is a free online minesweeper game built for players of all skill levels. Whether you're a first-time player learning the basics or a seasoned speedrunner chasing leaderboard times, this site offers classic gameplay alongside modern features like real-time multiplayer duels, daily quests, and puzzle variants you won't find anywhere else.
 
-The site is built and maintained by Richard Cross, founder of [Regis Consulting](https://regis.consulting), a software consultancy specializing in web development. Minesweeper.org is built from scratch using Python, FastAPI, and modern web technologies — no templates, no clones. Every game mode, every feature, and every line of code is original work.
+The site is built and maintained by [Your Name], founder of [Regis Consulting](https://regis.consulting), a software consultancy specializing in web development. Minesweeper.org is built from scratch using Python, FastAPI, and modern web technologies — no templates, no clones. Every game mode, every feature, and every line of code is original work.
 
 ## What Makes This Site Different
 
 Minesweeper.org goes well beyond the classic Windows game. Here's what sets it apart:
 
 - **No-guess mode:** Every puzzle generated on this site is logically solvable. You'll never have to make a 50/50 guess to win — every move can be deduced through logic alone.
-- **Multiple difficulty levels:** Choose from Beginner (10x10, 10 mines), Intermediate (16×16, 40 mines), and Expert (30×16, 99 mines), or create a custom board with your own dimensions and mine count.
+- **Multiple difficulty levels:** Choose from Beginner (9×9, 10 mines), Intermediate (16×16, 40 mines), and Expert (30×16, 99 mines), or create a custom board with your own dimensions and mine count.
 - **Multiplayer modes:** Challenge other players in real-time Duels and PvP matches. Race to clear your board before your opponent clears theirs.
 - **Rush mode:** A fast-paced, timed challenge designed to test your speed and pattern recognition under pressure.
 - **Tentaizu:** A minesweeper-inspired logic puzzle where you must locate hidden stars using numeric clues — no clicking to reveal, just pure deduction.
@@ -17,12 +17,6 @@ Minesweeper.org goes well beyond the classic Windows game. Here's what sets it a
 - **Daily quests:** Fresh challenges every day to keep the game interesting and give you new goals to work toward.
 - **Global leaderboard:** Compete for the fastest times. Scores reset daily at midnight UTC, so there's always a new chance to claim the top spot.
 - **Multilingual support:** The site is available in English, Esperanto, German, Spanish, Thai, Portuguese, Ukrainian, and French.
-
-## Why is minesweeper interesting?
-
-- **Minesweeper is [NP-complete](https://academic.timwylie.com/17CSCI4341/minesweeper_kay.pdf).
-- **The [2025 world championships](https://minesweeper.fandom.com/wiki/Madrid_World_Championship_2025) finished in September in Madrid.
-
 
 ## A Tribute to Diana, Princess of Wales
 
@@ -41,15 +35,14 @@ Diana's wish that all landmines be banned in her lifetime did not come true, but
 If you'd like to support landmine clearance efforts, consider learning more about or donating to these organizations:
 
 - **[The HALO Trust](https://halotrust.org/)** — The world's largest humanitarian mine clearance organization. HALO has destroyed over 3.2 million landmines and other explosive remnants of war across 30 countries and territories. Diana worked directly with HALO during her visit to Angola.
-- **[International Campaign to Ban Landmines (ICBL)](https://www.icbl.org/)** — The Nobel Peace Prize–winning coalition that advocates for a total ban on anti-personnel mines and works to support survivors.
+- **[International Campaign to Ban Landmines (ICBL)](http://www.icbl.org/)** — The Nobel Peace Prize–winning coalition that advocates for a total ban on anti-personnel mines and works to support survivors.
 - **[Mines Advisory Group (MAG)](https://www.maginternational.org/)** — A humanitarian organization that clears landmines, cluster munitions, and unexploded bombs from communities affected by conflict.
 
 ## About the Developer
 
-Minesweeper.org is built and maintained by Richard Cross and the team at Regis Consulting. I started building minesweeper.org in 1999 while working on my Physics PhD in order to teach myself web development.  I have been in software development ever since, working on everything from enterprise platforms to indie web projects. I built Minesweeper.org because I wanted to create the best free minesweeper experience on the web — one that's fast, fair, and fun — while raising awareness for a cause that matters.  You can see the original site on the internet wayback machine [here](https://web.archive.org/web/20020408093155/http://www.minesweeper.org/).
+Minesweeper.org is built and maintained by [Your Name / Regis Consulting]. [Add 2–3 sentences about yourself: your background in software development, how long you've been building web applications, and what motivated you to create this site. For example: "I've been a software engineer for over X years, working on everything from enterprise platforms to indie web projects. I built Minesweeper.org because I wanted to create the best free minesweeper experience on the web — one that's fast, fair, and fun — while raising awareness for a cause that matters."]
 
-
-Have questions, feedback, or a bug to report? Reach out at rcross@fiberxl.com.
+Have questions, feedback, or a bug to report? Reach out at [your contact email or link to a contact page].
 
 ## Technical Details
 
@@ -57,7 +50,7 @@ Minesweeper.org is built with:
 
 - **Backend:** Python and FastAPI
 - **Frontend:** Vanilla JavaScript with server-rendered HTML
-- **Hosting:** AWS
-- **Open source contributions:** The project is on [github](https://github.com/ajaxchess/minesweeper.org) and has contributions from Earl Gero and William Murray.
+- **Hosting:** [Your hosting provider, if you'd like to share]
+- **Open source contributions:** [If applicable]
 
 The site is designed to be fast, lightweight, and accessible. It works on desktop and mobile browsers without requiring any downloads or plugins.
