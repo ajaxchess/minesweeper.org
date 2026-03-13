@@ -54,6 +54,17 @@
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8102958922361899"
      crossorigin="anonymous"></script>
+
+  <!-- Google Analytics -->
+  {% if ga_tag %}
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_tag }}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '{{ ga_tag }}');
+  </script>
+  {% endif %}
 </head>
 <body>
 

@@ -14,6 +14,7 @@ from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, Cyl
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
+from starlette.config import Config
 from translations import get_lang, get_t
 import logging
 
@@ -25,6 +26,7 @@ app.include_router(duel_router)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+templates.env.globals["ga_tag"] = Config(".env")("GA_TAG", default="")
 
 # ── SEO: robots.txt and sitemap ───────────────────────────────────────────────
 @app.get("/robots.txt", include_in_schema=False)

@@ -17,6 +17,10 @@ F12 Cylinder variant
 
 F13 Quests
 
+F14 Website Analytics Google Analytics
+
+F15 Other Website Analytics AWStats https://awstats.sourceforge.io/
+
 -- Addressed --
 
 F1 User Profile
