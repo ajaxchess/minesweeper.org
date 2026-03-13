@@ -11,8 +11,8 @@
   --text-dim:    #8892a4;
   --cell-hidden: #2a3a5c;
   --cell-hover:  #3a4f7a;
-  --cell-rev:    #1e2f4a;
-  --cell-border: #1e3a5f;
+  --cell-rev:    #111b2a;
+  --cell-border: #3a5278;
   --radius:      6px;
   --cell-size:   36px;
   --font-mono:   'Courier New', Courier, monospace;
@@ -294,7 +294,7 @@ main { flex: 1; padding: 1rem 0.5rem; }
 
 .cell.revealed {
   background: var(--cell-rev);
-  border: 1px solid #1c2535;
+  border: 1px solid #0d1520;
   cursor: default;
 }
 
