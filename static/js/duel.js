@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cell.dataset.r = r;
         cell.dataset.c = c;
         cell.addEventListener('click',       () => onReveal(r, c));
+        cell.addEventListener('dblclick',    () => onChord(r, c));
         cell.addEventListener('contextmenu', e  => { e.preventDefault(); onFlag(r, c); });
         boardEl.appendChild(cell);
       }
@@ -104,6 +105,25 @@ document.addEventListener('DOMContentLoaded', () => {
   function onReveal(r, c) {
     if (!gameActive || revealed[r][c] || exploded) return;
     ws.send(JSON.stringify({type: 'reveal', r, c}));
+  }
+
+  function onChord(r, c) {
+    if (!gameActive || exploded) return;
+    if (localStorage.getItem('chording') === 'false') return;
+    if (!revealed[r][c] || boardVals[r][c] <= 0) return;
+    const nbs = [];
+    for (let dr = -1; dr <= 1; dr++)
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) nbs.push([nr, nc]);
+      }
+    const flagCount = nbs.filter(([nr, nc]) => flagged[nr][nc]).length;
+    if (flagCount !== boardVals[r][c]) return;
+    nbs.forEach(([nr, nc]) => {
+      if (!flagged[nr][nc] && !revealed[nr][nc])
+        ws.send(JSON.stringify({type: 'reveal', r: nr, c: nc}));
+    });
   }
 
   function onFlag(r, c) {
