@@ -1144,8 +1144,7 @@ footer {
   nav a { padding: 0.35rem 0.55rem; font-size: 0.8rem; }
 }
 
-/* ── Mobile: fit wide boards (intermediate/expert) on small phones ────────── */
-/* ── Mobile: fit wide boards (intermediate/expert) on small phones ────────── */
+/* ── Mobile: fit wide boards on small phones ─────────────────────────────── */
 @media (max-width: 430px) {
   :root { --cell-size: 22px; }
   main { padding-left: 2px; padding-right: 2px; }
@@ -1156,6 +1155,24 @@ footer {
 
 @media (max-width: 390px) {
   :root { --cell-size: 20px; }
+}
+
+/* ── Mobile expert: rotate 30×16 board to 16×30 portrait layout ──────────── *
+ * Formula: (W−H)/2 = 7×(cell-size + 1px)
+ *   W = 30×cell + 29gaps + 8pad + 4border
+ *   H = 16×cell + 15gaps + 8pad + 4border
+ * Negative left/right margins shrink layout width W→H;
+ * positive top/bottom margins grow layout height H→W.
+ * CSS transform hit-testing is automatic so touch events work correctly.
+ * ─────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 430px) {
+  #board[data-mode="expert"] {
+    transform: rotate(-90deg);
+    margin-top:    calc(7 * (var(--cell-size) + 1px));
+    margin-bottom: calc(7 * (var(--cell-size) + 1px));
+    margin-left:   calc(-7 * (var(--cell-size) + 1px));
+    margin-right:  calc(-7 * (var(--cell-size) + 1px));
+  }
 }
 
 /* ── Rush mode ────────────────────────────────────────────────────────────── */
