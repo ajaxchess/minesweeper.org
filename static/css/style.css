@@ -1198,6 +1198,10 @@ footer {
   #board[data-mode="expert"] .cell {
     transform: rotate(90deg);
   }
+
+  #board[data-mode="expert"] #game-overlay {
+    transform: rotate(90deg);
+  }
 }
 
 @media (max-width: 390px) and (pointer: coarse) {
