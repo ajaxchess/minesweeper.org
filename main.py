@@ -345,6 +345,15 @@ async def help_page(request: Request):
     })
 
 
+@app.get("/how-to-play", response_class=HTMLResponse)
+async def how_to_play_page(request: Request):
+    return templates.TemplateResponse("howtoplay.html", {
+        "request": request, "mode": "how-to-play",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 @app.get("/history", response_class=HTMLResponse)
 async def history_page(request: Request):
     return templates.TemplateResponse("history.html", {
