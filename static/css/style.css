@@ -1144,6 +1144,20 @@ footer {
   nav a { padding: 0.35rem 0.55rem; font-size: 0.8rem; }
 }
 
+/* ── Mobile: fit wide boards (intermediate/expert) on small phones ────────── */
+/* ── Mobile: fit wide boards (intermediate/expert) on small phones ────────── */
+@media (max-width: 430px) {
+  :root { --cell-size: 22px; }
+  main { padding-left: 2px; padding-right: 2px; }
+  #board { padding: 4px; gap: 1px; }
+  .cell { font-size: 0.6rem; border-radius: 2px; }
+  .game-info { padding: 0.4rem 0.5rem; }
+}
+
+@media (max-width: 390px) {
+  :root { --cell-size: 20px; }
+}
+
 /* ── Rush mode ────────────────────────────────────────────────────────────── */
 .rush-wrapper {
   display: flex;
