@@ -354,6 +354,15 @@ async def how_to_play_page(request: Request):
     })
 
 
+@app.get("/strategy", response_class=HTMLResponse)
+async def strategy_page(request: Request):
+    return templates.TemplateResponse("strategy.html", {
+        "request": request, "mode": "strategy",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 @app.get("/history", response_class=HTMLResponse)
 async def history_page(request: Request):
     return templates.TemplateResponse("history.html", {
