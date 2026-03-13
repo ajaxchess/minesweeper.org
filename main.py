@@ -60,19 +60,19 @@ async def ads_txt():
     return FileResponse("ads.txt", media_type="text/plain")
 
 GAME_MODES = {
-    "beginner":     {"rows": 10, "cols": 10, "mines": 10},
+    "beginner":     {"rows": 9, "cols": 9, "mines": 10},
     "intermediate": {"rows": 16, "cols": 16, "mines": 40},
     "expert":       {"rows": 16, "cols": 30, "mines": 99},
 }
 
 CYLINDER_MODES = {
-    "cylinder-beginner":     {"rows": 10, "cols": 10, "mines": 10},
+    "cylinder-beginner":     {"rows": 9, "cols": 9, "mines": 10},
     "cylinder-intermediate": {"rows": 16, "cols": 16, "mines": 40},
     "cylinder-expert":       {"rows": 16, "cols": 30, "mines": 99},
 }
 
 TOROID_MODES = {
-    "toroid-beginner":     {"rows": 10, "cols": 10, "mines": 10},
+    "toroid-beginner":     {"rows": 9, "cols": 9, "mines": 10},
     "toroid-intermediate": {"rows": 16, "cols": 16, "mines": 40},
     "toroid-expert":       {"rows": 16, "cols": 30, "mines": 99},
 }
