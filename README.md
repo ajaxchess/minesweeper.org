@@ -46,3 +46,8 @@ https://www.halousa.org/
 The original website can be seen here:
 https://web.archive.org/web/20040325004955/http://www.minesweeper.org/
 One goal of this project is to bring back the original website look, feel, and mission.
+
+[Blog]
+To add a future post: drop an .md file in blog/ and add one dict to BLOG_POSTS in main.py. No other changes needed.
+
+Note: the server will need pip install Markdown==3.7 on first deploy (the cron-based deploy pulls from git but won't auto-install). You may want to run that manually or ensure the deploy script runs pip install -r requirements.txt.
