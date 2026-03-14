@@ -2614,6 +2614,7 @@ html[data-skin="classic"] {
   --cell-rev:    #c0c0c0;
   --cell-border: #808080;
   --radius:      0px;
+  background:    #ffffff;  /* paint the viewport canvas white */
 }
 
 html[data-skin="classic"] body {
@@ -2887,7 +2888,7 @@ html[data-skin="classic"] .ad-container {
 }
 
 /* ── Classic leaderboard / content pages ─────────────────────────────────── */
-html[data-skin="classic"] main.page-blog {
+html[data-skin="classic"] main {
   background: #ffffff;
 }
 
