@@ -697,6 +697,57 @@ async def tentaizu_archive(request: Request):
     })
 
 
+# ── Easy 5×5 mode ─────────────────────────────────────────────────────────────
+
+@app.get("/tentaizu/easy-5x5-6", response_class=HTMLResponse)
+async def tentaizu_easy_page(request: Request):
+    real_today = date.today().isoformat()
+    return templates.TemplateResponse("tentaizu_easy.html", {
+        "request": request, "mode": "tentaizu-easy",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": real_today,
+        "real_today": real_today,
+    })
+
+
+@app.get("/tentaizu/easy-5x5-6/{date_str}", response_class=HTMLResponse)
+async def tentaizu_easy_permalink(request: Request, date_str: str):
+    import re
+    real_today = date.today().isoformat()
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
+        return RedirectResponse("/tentaizu/easy-5x5-6", status_code=302)
+    return templates.TemplateResponse("tentaizu_easy.html", {
+        "request": request, "mode": "tentaizu-easy",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": date_str,
+        "real_today": real_today,
+    })
+
+
+# /tentaizu/daily/20260314      →  301 /tentaizu/2026-03-14
+# /tentaizu/easy-5x5-6/20260314 →  301 /tentaizu/easy-5x5-6/2026-03-14
+@app.get("/tentaizu/{puzzle_type}/{date_str}", response_class=HTMLResponse)
+async def tentaizu_type_permalink(request: Request, puzzle_type: str, date_str: str):
+    import re
+    valid_types = {"daily", "easy-5x5-6"}
+    if puzzle_type not in valid_types:
+        return RedirectResponse("/tentaizu", status_code=302)
+    # Accept YYYYMMDD → convert to YYYY-MM-DD canonical form
+    m = re.match(r"^(\d{4})(\d{2})(\d{2})$", date_str)
+    if m:
+        canonical = f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+        if puzzle_type == "daily":
+            return RedirectResponse(f"/tentaizu/{canonical}", status_code=301)
+        return RedirectResponse(f"/tentaizu/{puzzle_type}/{canonical}", status_code=301)
+    # YYYY-MM-DD for daily → strip type prefix
+    if re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
+        if puzzle_type == "daily":
+            return RedirectResponse(f"/tentaizu/{date_str}", status_code=301)
+    return RedirectResponse("/tentaizu", status_code=302)
+
+
 # Must be declared AFTER static sub-routes so /tentaizu/how-to-play etc. match first
 @app.get("/tentaizu/{date_str}", response_class=HTMLResponse)
 async def tentaizu_permalink(request: Request, date_str: str):
