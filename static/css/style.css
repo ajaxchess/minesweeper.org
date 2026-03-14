@@ -1909,6 +1909,35 @@ footer {
   opacity: 1;
 }
 
+/* ── Tentaizu mode nav (Daily 7×7 ↔ Easy 5×5) ───────────────────────────── */
+.tz-mode-nav {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.6rem;
+  font-size: 0.85rem;
+}
+.tz-mode-nav-current {
+  font-weight: 600;
+  color: var(--text);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent2, #4a9eff) 15%, transparent);
+  border: 1px solid var(--accent2, #4a9eff);
+}
+.tz-mode-nav-link {
+  color: var(--accent2, #4a9eff);
+  text-decoration: none;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+.tz-mode-nav-link:hover {
+  border-color: var(--accent2, #4a9eff);
+  background: color-mix(in srgb, var(--accent2, #4a9eff) 10%, transparent);
+}
+
 /* ── Tentaizu permalink row ──────────────────────────────────────────────── */
 .tz-permalink-row {
   font-size: 0.8rem;
