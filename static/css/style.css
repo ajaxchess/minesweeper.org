@@ -2889,12 +2889,14 @@ html[data-skin="classic"] .ad-container {
 
 /* ── Classic leaderboard / content pages ─────────────────────────────────── */
 html[data-skin="classic"] main {
-  background: #ffffff;
+  background-image: none;
+  background-color: #ffffff;
 }
 
 html[data-skin="classic"] .lb-wrapper,
 html[data-skin="classic"] .blog-wrapper {
-  background: #ffffff;
+  background-image: none;
+  background-color: #ffffff;
   color: #000;
 }
 
