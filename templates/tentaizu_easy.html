@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Tentaizu Easy – Free Daily 5×5 Logic Puzzle | minesweeper.org{% endblock %}
+{% block description %}Play Tentaizu Easy free online — a daily 5×5 mine logic puzzle with 6 mines. Perfect for beginners. No guessing required. Fresh puzzle every day with a global leaderboard.{% endblock %}
+{% block keywords %}<meta name="keywords" content="tentaizu easy, tentaizu 5x5, easy tentaizu, daily tentaizu, tentaizu online, mine logic puzzle, beginner logic puzzle">{% endblock %}
+{% block canonical %}https://minesweeper.org/tentaizu/easy-5x5-6{% endblock %}
+{% block og_url %}https://minesweeper.org/tentaizu/easy-5x5-6{% endblock %}
+{% block og_title %}Tentaizu Easy – Free Daily 5×5 Logic Puzzle{% endblock %}
+{% block og_description %}A daily 5×5 mine logic puzzle with 6 mines. Find all mines using number clues — no guessing required. New puzzle every day, global leaderboard.{% endblock %}
+{% block tw_title %}Tentaizu Easy – Free Daily 5×5 Logic Puzzle{% endblock %}
+{% block tw_description %}A daily 5×5 mine logic puzzle with 6 mines. No guessing required. New puzzle every day.{% endblock %}
+
+{% block content %}
+<div class="tz-wrapper">
+
+  <!-- Left sidebar ad -->
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="game-section">
+
+    <!-- Mode nav -->
+    <div class="tz-mode-nav">
+      <a href="/tentaizu" class="tz-mode-nav-link">📅 Daily 7×7</a>
+      <span class="tz-mode-nav-current">⭐ Easy 5×5</span>
+    </div>
+
+    <!-- Info panel -->
+    <div class="game-info">
+      <div class="mode-row">
+        <span id="tz-mode-label" class="mode-badge">📅 Easy 5×5 Daily</span>
+        <div class="tz-mode-btns">
+          <button id="tz-potd-btn" class="tz-mode-btn">📅 Daily</button>
+          <button id="tz-random-btn" class="tz-mode-btn">🎲 Random</button>
+        </div>
+        <button id="highlight-errors-toggle" onclick="toggleHighlightErrors()" title="Highlight incorrectly placed flags and safe marks">Highlight Errors</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat" title="Flags placed / total mines">
+          <span class="stat-icon">🚩</span>
+          <span class="stat-value" id="tz-flag-count">0</span>
+          <span class="stat-sep">/6</span>
+        </div>
+        <div class="stat" title="Time elapsed">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="tz-timer">0:00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Board -->
+    <div id="tz-board-wrap">
+      <div id="tz-board" data-today="{{ today }}" data-real-today="{{ real_today }}"
+           data-username="{{ user.display_name if user else '' }}"></div>
+
+      <!-- Win overlay -->
+      <div id="tz-overlay">
+        <div class="tz-overlay-title">🎉 Solved!</div>
+        <div class="tz-overlay-time">Time: <strong id="tz-win-time">0:00</strong></div>
+        <div id="tz-score-form" class="overlay-score-form" style="display:none">
+          <input id="tz-name-input" type="text" maxlength="32" placeholder="Your name" autocomplete="nickname">
+          <button id="tz-save-btn">Save Score</button>
+        </div>
+        <div class="tz-overlay-btns">
+          <button id="tz-overlay-potd" class="tz-btn-potd">📅 Replay Daily</button>
+          <button id="tz-overlay-random" class="tz-btn-random">🎲 New Random</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="instructions">
+      <strong>Left-click</strong> to cycle:
+      <strong>✓</strong> mark safe &rarr;
+      <strong>💣</strong> flag mine &rarr;
+      <strong>?</strong> reset &nbsp;|&nbsp;
+      <strong>Right-click</strong> to cycle:
+      <strong>💣</strong> flag mine &rarr;
+      <strong>✓</strong> mark safe &rarr;
+      <strong>?</strong> reset &nbsp;|&nbsp;
+      Find all 6 mines to win!
+    </p>
+
+    <!-- Permalink -->
+    <div id="tz-permalink-row" class="tz-permalink-row" style="display:none">
+      🔗 <a id="tz-permalink-link" href="#"></a>
+    </div>
+
+    <!-- Leaderboard -->
+    <div id="tz-lb-section" class="tz-lb-section">
+      <div id="tz-lb-title" class="tz-lb-title">🏆 Today's Best Times</div>
+      <div id="tz-lb-content">
+        <div class="lb-loading">Loading…</div>
+      </div>
+      <div id="tz-prev-days" class="tz-prev-days"></div>
+    </div>
+
+  </section>
+
+  <!-- Right sidebar ad -->
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+
+<!-- SEO / navigation -->
+<div class="tz-landing">
+
+  <h1 class="tz-landing-h1">Tentaizu Easy – Daily 5×5 Logic Puzzle</h1>
+
+  <div class="tz-landing-grid">
+    <section class="tz-section">
+      <h2>About Easy Mode</h2>
+      <p>
+        Tentaizu Easy is a 5×5 grid with exactly 6 hidden mines — a gentler introduction to
+        the Tentaizu format. All the same rules apply: numbered clues show how many mines
+        are in the 8 surrounding cells, and your goal is to flag all 6 mines using pure
+        logic. No guessing ever required.
+      </p>
+      <p>
+        The smaller board and fewer mines make deductions faster and the solution more
+        immediate — ideal for a quick daily warm-up or for players new to logic puzzles.
+      </p>
+    </section>
+
+    <section class="tz-section">
+      <h2>How to Play</h2>
+      <ul class="tz-list">
+        <li><strong>Revealed numbers</strong> show how many mines are in the 8 surrounding cells.</li>
+        <li><strong>Left-click</strong> to cycle: ✓ safe → 💣 mine → ? unknown.</li>
+        <li><strong>Right-click</strong> to cycle: 💣 mine → ✓ safe → ? unknown.</li>
+        <li>You win when all 6 mine cells are flagged and no safe cell is flagged.</li>
+      </ul>
+      <p><a href="/tentaizu/how-to-play" class="tz-link">Full rules and walkthrough →</a></p>
+    </section>
+  </div>
+
+  <nav class="tz-subnav" aria-label="Tentaizu modes">
+    <a href="/tentaizu" class="tz-subnav-card">
+      <span class="tz-subnav-icon">📅</span>
+      <strong>Daily 7×7</strong>
+      <span>Classic Tentaizu — 10 mines</span>
+    </a>
+    <a href="/tentaizu/how-to-play" class="tz-subnav-card">
+      <span class="tz-subnav-icon">📖</span>
+      <strong>How to Play</strong>
+      <span>Complete rules &amp; walkthrough</span>
+    </a>
+    <a href="/tentaizu/strategy" class="tz-subnav-card">
+      <span class="tz-subnav-icon">🧠</span>
+      <strong>Strategy Guide</strong>
+      <span>Advanced solving techniques</span>
+    </a>
+  </nav>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/tentaizu_easy.js?v=1"></script>
+{% endblock %}
