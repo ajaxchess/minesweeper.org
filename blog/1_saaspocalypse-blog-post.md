@@ -81,4 +81,4 @@ The SaaSpocalypse is here. And honestly? For builders, it's never been a better 
 
 ---
 
-*This post was written for minesweeper.org, a site built entirely with Claude Code and the Vibe Coding approach. More posts coming soon.*
+*This post was written for minesweeper.org, a site built entirely with Claude Code and the Vibe Coding approach. The code for this blog — and the entire site — is open on GitHub at [github.com/ajaxchess/minesweeper.org](https://github.com/ajaxchess/minesweeper.org). If you have questions about how it was built, we'd be happy to discuss it. More posts coming soon.*
