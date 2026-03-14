@@ -59,7 +59,7 @@ This isn't a WordPress hit piece. WordPress is just the most visible example of 
 
 The TechCrunch piece makes this point well: the SaaSpocalypse isn't only about companies building their own tools. It's also threatening the per-seat pricing model that the entire SaaS industry runs on. When AI agents can do the work that human employees used to log in and do, charging by the number of seats stops making sense. The whole economic foundation shifts.
 
-We saw the early tremors when Klarna announced it had ditched Salesforce's CRM in favor of a homegrown AI system. That wasn't a one-off — it was a signal. AI-native startups are now reaching $10M in annual recurring revenue in just three months, completely redefining what it means to be a software company.
+We saw the early tremors when Klarna announced it had ditched Salesforce's CRM in favor of a homegrown AI system. That wasn't a one-off — it was a signal. AI-native startups are now [reaching $10M in annual recurring revenue in just three months](https://techcrunch.com/2026/02/24/more-startups-are-hitting-10m-arr-in-3-months-than-ever-before/), completely redefining what it means to be a software company.
 
 Any product whose core value is "we made the hard thing easy" needs to reckon with the fact that AI made *everything* easier — including the hard thing they were abstracting away.
 
