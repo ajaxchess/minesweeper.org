@@ -2,6 +2,7 @@
 
 # --- Configuration ---
 REPO_DIR="/home/ubuntu/minesweeper"
+VENV_DIR="/home/ubuntu/minesweeper/venv"   # adjust if your venv lives elsewhere
 SERVICE_NAME="minesweeper" # e.g., nginx, apache2, custom_app
 
 # --- Navigate to repository and fetch changes ---
@@ -32,6 +33,10 @@ else
         echo "Applying stashed changes..."
         git stash pop
     fi
+
+    # --- Sync Python dependencies ---
+    echo "Installing/updating Python dependencies..."
+    "$VENV_DIR/bin/pip" install -r "$REPO_DIR/requirements.txt" --quiet || { echo "Warning: pip install failed"; }
 
     # --- Restart the service ---
     echo "Restarting service: $SERVICE_NAME..."

@@ -2887,10 +2887,47 @@ html[data-skin="classic"] .ad-container {
 }
 
 /* ── Classic leaderboard / content pages ─────────────────────────────────── */
-html[data-skin="classic"] .lb-wrapper {
+html[data-skin="classic"] .lb-wrapper,
+html[data-skin="classic"] .blog-wrapper {
   background: #ffffff;
   color: #000;
 }
+
+html[data-skin="classic"] .blog-subtitle,
+html[data-skin="classic"] .blog-card-excerpt,
+html[data-skin="classic"] .blog-article-date {
+  color: #555;
+}
+
+html[data-skin="classic"] .blog-card {
+  border-color: #ccc;
+}
+
+html[data-skin="classic"] .blog-card:hover {
+  border-color: #0033cc;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+html[data-skin="classic"] .blog-card-title,
+html[data-skin="classic"] .blog-article-title {
+  color: #000;
+}
+
+html[data-skin="classic"] .blog-card-read-more,
+html[data-skin="classic"] .blog-breadcrumb a,
+html[data-skin="classic"] .blog-post-nav-link {
+  color: #0033cc;
+}
+
+html[data-skin="classic"] .blog-article-body { color: #111; }
+html[data-skin="classic"] .blog-article-body a { color: #0033cc; }
+html[data-skin="classic"] .blog-article-body em { color: #444; }
+html[data-skin="classic"] .blog-article-body code { background: #f0f0f0; }
+html[data-skin="classic"] .blog-article-body blockquote { border-left-color: #0033cc; color: #444; }
+html[data-skin="classic"] .blog-article-body hr,
+html[data-skin="classic"] .blog-header,
+html[data-skin="classic"] .blog-article-header,
+html[data-skin="classic"] .blog-post-nav { border-color: #ccc; }
 
 html[data-skin="classic"] .lb-title { color: #0033cc; }
 
