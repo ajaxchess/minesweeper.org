@@ -15,10 +15,10 @@
   </div>
 
   <article class="blog-article">
-    <header class="blog-article-header">
+    <div class="blog-article-header">
       <h1 class="blog-article-title">{{ post.title }}</h1>
       <time class="blog-article-date" datetime="{{ post.date }}">{{ post.date_display }}</time>
-    </header>
+    </div>
 
     <div class="blog-article-body">
       {{ content | safe }}
