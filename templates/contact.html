@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}Contact Us | minesweeper.org{% endblock %}
-{% block description %}Contact the team behind minesweeper.org. Operated by Regis Consulting, Chicago, IL.{% endblock %}
+{% block description %}Have a question, found a bug, or want to share feedback? Contact the minesweeper.org team — we'd love to hear from you.{% endblock %}
 {% block canonical %}https://minesweeper.org/contact{% endblock %}
 {% block og_url %}https://minesweeper.org/contact{% endblock %}
 {% block og_title %}Contact Us | minesweeper.org{% endblock %}
-{% block og_description %}Contact the team behind minesweeper.org. Operated by Regis Consulting, Chicago, IL.{% endblock %}
+{% block og_description %}Have a question, found a bug, or want to share feedback? Contact the minesweeper.org team — we'd love to hear from you.{% endblock %}
 
 {% block content %}
 <div class="tz-content-page">
@@ -17,15 +17,54 @@
   </nav>
 
   <h1 class="tz-content-h1">Contact Us</h1>
+  <p class="tz-content-lead">
+    Have a question, found a bug, or want to share feedback about Minesweeper.org?
+    We'd love to hear from you.
+  </p>
 
   <section class="tz-section">
-    <p>minesweeper.org is operated by:</p>
+    <h2>Get in Touch</h2>
+    <p>
+      <strong>Email:</strong>
+      <a href="mailto:rcross@fiberxl.com">rcross@fiberxl.com</a>
+    </p>
+    <p>
+      We typically respond within a few business days. When reporting a bug, please
+      include the browser and device you were using, the game mode you were playing,
+      and a description of what happened — this helps us track down the issue faster.
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>What to Contact Us About</h2>
+    <ul>
+      <li><strong>Bug reports</strong> — Something not working as expected? Let us know.</li>
+      <li><strong>Feature requests</strong> — Have an idea for a new game mode, variant, or improvement? We're always open to suggestions.</li>
+      <li><strong>Leaderboard issues</strong> — If you believe a score was recorded incorrectly or suspect foul play, reach out and we'll investigate.</li>
+      <li><strong>Privacy and data requests</strong> — To request access to, correction of, or deletion of your personal data, see our <a href="/privacy">Privacy Policy</a> or email us directly.</li>
+      <li><strong>General feedback</strong> — We appreciate hearing what players enjoy and what could be better.</li>
+    </ul>
+  </section>
+
+  <section class="tz-section">
+    <h2>Operated By</h2>
     <address style="font-style: normal; line-height: 1.8;">
-      <strong><a href="https://regis.consulting" target="_blank" rel="noopener">Regis Consulting</a></strong><br>
+      Regis Consulting<br>
       1841 S Calumet Ave APT 1104<br>
       Chicago, IL 60616
     </address>
   </section>
+
+  <section class="tz-section">
+    <h2>Open Source</h2>
+    <p>
+      Minesweeper.org is open source. If you're a developer and want to contribute
+      or report a technical issue, you can also find us on
+      <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>.
+    </p>
+  </section>
+
+  <p><a href="/">← Play Minesweeper</a></p>
 
 </div>
 {% endblock %}
