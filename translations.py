@@ -1,4 +1,4 @@
-"""UI string translations for EN, EO, DE, ES, TH, PGL, UK, FR, KO."""
+"""UI string translations for EN, EO, DE, ES, TH, PGL, UK, FR, KO, JA."""
 
 TRANSLATIONS: dict[str, dict[str, str]] = {
     "en": {
@@ -1022,6 +1022,119 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c 점수를 저장할 수 없습니다.",
         "rush_sign_in":           "이 단계를 건너뛰려면 로그인하세요",
         "rush_lb_loading":        "불러오는 중\u2026",
+    },
+
+    "ja": {
+        # Nav
+        "nav_beginner":     "\u521d\u7d1a",
+        "nav_intermediate": "\u4e2d\u7d1a",
+        "nav_expert":       "\u4e0a\u7d1a",
+        "nav_custom":       "\u30ab\u30b9\u30bf\u30e0",
+        "nav_leaderboard":  "\u30e9\u30f3\u30ad\u30f3\u30b0",
+        "nav_duel":         "\u5bfe\u6c7a",
+        "nav_pvp":          "PvP",
+        "nav_tentaizu":     "\u5929\u4f53\u56f3",
+        "nav_rush":         "\u30e9\u30c3\u30b7\u30e5",
+        # Auth
+        "auth_sign_out":      "\u30ed\u30b0\u30a2\u30a6\u30c8",
+        "auth_sign_in":       "Google\u3067\u30ed\u30b0\u30a4\u30f3",
+        "auth_view_profile":  "\u30d7\u30ed\u30d5\u30a3\u30fc\u30eb\u3092\u898b\u308b",
+        # Game board
+        "game_left_click":    "\u5de6\u30af\u30ea\u30c3\u30af",
+        "game_to_reveal":     "\u3067\u958b\u304f",
+        "game_right_click":   "\u53f3\u30af\u30ea\u30c3\u30af",
+        "game_to_flag":       "\u3067\u30d5\u30e9\u30b0\u3092\u7acb\u3066\u308b",
+        "game_to_flag_local": "\u3067\u30d5\u30e9\u30b0\u3092\u7acb\u3066\u308b\uff08\u30ed\u30fc\u30ab\u30eb\u306e\u307f\uff09",
+        "game_to_reset":      "\u3067\u30ea\u30bb\u30c3\u30c8",
+        "game_new_game":      "\u65b0\u3057\u3044\u30b2\u30fc\u30e0",
+        # Custom form
+        "custom_rows":  "\u884c",
+        "custom_cols":  "\u5217",
+        "custom_mines": "\u5730\u96f7",
+        "custom_start": "\u30b9\u30bf\u30fc\u30c8",
+        # Duel page
+        "duel_you":       "\u3042\u306a\u305f",
+        "duel_opponent":  "\u76f8\u624b",
+        "duel_share":     "\u3053\u306e\u30ea\u30f3\u30af\u3092\u76f8\u624b\u3068\u5171\u6709\u3057\u3066\u304f\u3060\u3055\u3044\uff1a",
+        "duel_copy":      "\u30b3\u30d4\u30fc",
+        "duel_start_btn": "\u25b6 \u30b2\u30fc\u30e0\u958b\u59cb",
+        "duel_scoring":   "\u5f97\u70b9\u306e\u8a08\u7b97\u65b9\u6cd5\uff1a",
+        "duel_scoring_body": (
+            "\u30b9\u30b3\u30a2\u306f<strong>\u958b\u793a\u30671\u30de\u30b9\u306b\u3064\u304d5\u70b9</strong>\u3092\u4ed8\u4e0e\u3057\u3001"
+            "\u6642\u9593\u30dc\u30fc\u30ca\u30b9\u3092\u52a0\u3048\u3066\u8a08\u7b97\u3055\u308c\u307e\u3059\u3002\u6642\u9593\u30dc\u30fc\u30ca\u30b9\u306f"
+            "<code>(300 &minus; \u7d4c\u904e\u79d2) &times; \u958b\u793a\u7387</code>\u306e\u516c\u5f0f\u3067\u8a08\u7b97\u3055\u308c\u3001"
+            "0\u672a\u6e80\u306b\u306f\u306a\u308a\u307e\u305b\u3093\u3002"
+        ),
+        # Leaderboard
+        "lb_title":           "\U0001f3c6 \u30e9\u30f3\u30ad\u30f3\u30b0",
+        "lb_col_rank":        "#",
+        "lb_col_name":        "\u540d\u524d",
+        "lb_col_time":        "\u30bf\u30a4\u30e0",
+        "lb_col_board":       "\u30dc\u30fc\u30c9",
+        "lb_col_mines":       "\u5730\u96f7",
+        "lb_col_date":        "\u65e5\u4ed8",
+        "lb_loading":         "\u8aad\u307f\u8fbc\u307f\u4e2d\u2026",
+        "lb_no_scores":       "\u307e\u3060\u8a18\u9332\u304c\u3042\u308a\u307e\u305b\u3093 \u2014 \u6700\u521d\u306b\u306a\u308a\u307e\u3057\u3087\u3046\uff01",
+        "lb_error":           "\u26a0\ufe0f \u30b9\u30b3\u30a2\u3092\u8aad\u307f\u8fbc\u3081\u307e\u305b\u3093\u3067\u3057\u305f\u3002",
+        "lb_top_prefix":      "\u4e0a\u4f4d",
+        "lb_top_suffix_one":  "\u56de",
+        "lb_top_suffix_many": "\u56de",
+        "lb_play_beginner":     "\u2190 \u521d\u7d1a\u3092\u30d7\u30ec\u30a4",
+        "lb_play_intermediate": "\u4e2d\u7d1a\u3092\u30d7\u30ec\u30a4",
+        "lb_play_expert":       "\u4e0a\u7d1a\u3092\u30d7\u30ec\u30a4",
+        "lb_play_custom":       "\u30ab\u30b9\u30bf\u30e0\u3092\u30d7\u30ec\u30a4",
+        # Profile
+        "profile_recent_games": "\u6700\u8fd1\u306e\u30b2\u30fc\u30e0",
+        "profile_loading":      "\u8aad\u307f\u8fbc\u307f\u4e2d\u2026",
+        "profile_games":        "\u30b2\u30fc\u30e0",
+        "profile_best":         "\u6700\u9ad8",
+        "profile_avg":          "\u5e73\u5747",
+        "profile_worst":        "\u6700\u4f4e",
+        "profile_no_games":     "\u30b2\u30fc\u30e0\u306a\u3057",
+        "profile_play_now":     "\u4eca\u3059\u3050\u30d7\u30ec\u30a4 \u2192",
+        "profile_no_recent":    "\u307e\u3060\u8a18\u9332\u3055\u308c\u305f\u30b2\u30fc\u30e0\u304c\u3042\u308a\u307e\u305b\u3093\u3002",
+        # Help
+        "help_title": "\u30de\u30a4\u30f3\u30b9\u30a4\u30fc\u30d1\u30fc\u306e\u9045\u3073\u65b9",
+        # Footer
+        "footer": "Python &amp; FastAPI\u3067<a href=\"https://regis.consulting\">Regis Consulting</a>\u304c\u5236\u4f5c",
+        # Language switcher
+        "lang_other": "ja",
+        "lang_label": "JA \u2014 \u65e5\u672c\u8a9e",
+        # Rush mode
+        "rush_easy":              "\u7c21\u5358",
+        "rush_normal":            "\u666e\u901a",
+        "rush_hard":              "\u96e3\u3057\u3044",
+        "rush_speed":             "\u30b9\u30d4\u30fc\u30c9",
+        "rush_active_rows":       "\u30a2\u30af\u30c6\u30a3\u30d6\u884c",
+        "rush_max":               "\u6700\u5927",
+        "rush_cleared":           "\u30af\u30ea\u30a2\u6e08\u307f",
+        "rush_no_safe":           "\u26a0\ufe0f \u5b89\u5168\u306a\u624b\u306a\u3057 \u2014 \u63a8\u6e2c\u3057\u3066\u3082\u30da\u30ca\u30eb\u30c6\u30a3\u306a\u3057",
+        "rush_salvage_suffix":    "\u30b5\u30eb\u30d9\u30fc\u30b8\u30c8\u30fc\u30af\u30f3 \u2014 \u6700\u4e0b\u90e8\u306e\u7206\u767a\u3057\u305f\u884c\u306e\U0001f525\u3092\u30af\u30ea\u30c3\u30af",
+        "rush_instr_left":        "\u5de6\u30af\u30ea\u30c3\u30af",
+        "rush_instr_reveal":      "\u3067\u958b\u304f",
+        "rush_instr_right":       "\u53f3\u30af\u30ea\u30c3\u30af",
+        "rush_instr_flag":        "\u3067\u5730\u96f7\u306b\u30d5\u30e9\u30b0\u3092\u7acb\u3066\u308b",
+        "rush_instr_clear":       "\u884c\u306e\u5168\u5730\u96f7\u306b\u30d5\u30e9\u30b0\u3092\u7acb\u3066\u3066\u884c\u3092<strong>\u30af\u30ea\u30a2</strong>\u3059\u308b",
+        "rush_instr_penalty":     "\u5730\u96f7\u3092\u8e4f\u3080\u3068<strong>+2\u884c</strong>\u8ffd\u52a0\u3055\u308c\u307e\u3059",
+        "rush_flash_no_penalty":  "\u30da\u30ca\u30eb\u30c6\u30a3\u306a\u3057\uff01",
+        "rush_flash_rows":        "+2\u884c\uff01",
+        "rush_flash_salvage":     "\U0001f525 \u30b5\u30eb\u30d9\u30fc\u30b8\u30c8\u30fc\u30af\u30f3\uff01",
+        "rush_btn_salvage_title": "\u30b5\u30eb\u30d9\u30fc\u30b8\u30c8\u30fc\u30af\u30f3\u3092\u4f7f\u7528 \u2014 \u3053\u306e\u7206\u767a\u3057\u305f\u884c\u3092\u524a\u9664",
+        "rush_btn_no_mines":      "\u5730\u96f7\u306a\u3057 \u2014 \u30af\u30ea\u30c3\u30af\u3057\u3066\u884c\u3092\u30af\u30ea\u30a2",
+        "rush_btn_all_flagged":   "\u5168\u5730\u96f7\u306b\u30d5\u30e9\u30b0\u6e08\u307f \u2014 \u30af\u30ea\u30c3\u30af\u3057\u3066\u884c\u3092\u30af\u30ea\u30a2",
+        "rush_game_over":         "\U0001f4a5 \u30b2\u30fc\u30e0\u30aa\u30fc\u30d0\u30fc",
+        "rush_mines_cleared":     "\u30af\u30ea\u30a2\u3057\u305f\u5730\u96f7\uff1a",
+        "rush_rows_cleared":      "\u30af\u30ea\u30a2\u3057\u305f\u884c\uff1a",
+        "rush_time":              "\u30bf\u30a4\u30e0\uff1a",
+        "rush_score":             "\u30b9\u30b3\u30a2\uff1a",
+        "rush_saving":            "\u30b9\u30b3\u30a2\u3092\u4fdd\u5b58\u4e2d\u2026",
+        "rush_name_placeholder":  "\u540d\u524d\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044",
+        "rush_save_score":        "\u30b9\u30b3\u30a2\u3092\u4fdd\u5b58",
+        "rush_play_again":        "\u3082\u3046\u4e00\u5ea6\u30d7\u30ec\u30a4",
+        "rush_saved_for":         "\u2705 \u4fdd\u5b58\u3055\u308c\u305f\u30b9\u30b3\u30a2\uff1a",
+        "rush_save_failed":       "\u274c \u30b9\u30b3\u30a2\u3092\u4fdd\u5b58\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002",
+        "rush_sign_in":           "\u3053\u306e\u30b9\u30c6\u30c3\u30d7\u3092\u30b9\u30ad\u30c3\u30d7\u3059\u308b\u306b\u306f\u30ed\u30b0\u30a4\u30f3\u3057\u3066\u304f\u3060\u3055\u3044",
+        "rush_lb_loading":        "\u8aad\u307f\u8fbc\u307f\u4e2d\u2026",
     },
 }
 
