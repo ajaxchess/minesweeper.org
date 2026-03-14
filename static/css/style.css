@@ -56,7 +56,7 @@ header {
   letter-spacing: 0.5px;
 }
 
-nav { display: flex; gap: 0.25rem; overflow-x: auto; flex: 1; min-width: 0; }
+nav { display: flex; gap: 0.25rem; overflow-x: auto; min-width: 0; }
 
 nav a {
   color: var(--text-dim);
@@ -1168,6 +1168,21 @@ footer {
 @media (max-width: 860px) {
   .ad-sidebar { display: none; }
   :root { --cell-size: 30px; }
+
+  /* Nav moves to its own row below logo + auth area */
+  .header-inner {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 0.4rem 0;
+    gap: 0.25rem;
+  }
+  .logo { order: 1; }
+  .auth-area { order: 2; }
+  nav {
+    order: 3;
+    width: 100%;
+    padding-bottom: 0.25rem;
+  }
 }
 
 @media (max-width: 500px) {
