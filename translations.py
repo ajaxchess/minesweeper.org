@@ -1,4 +1,4 @@
-"""UI string translations for EN, EO, DE, ES, TH, PGL, UK."""
+"""UI string translations for EN, EO, DE, ES, TH, PGL, UK, FR, KO."""
 
 TRANSLATIONS: dict[str, dict[str, str]] = {
     "en": {
@@ -901,6 +901,118 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c Impossible d\u2019enregistrer le score.",
         "rush_sign_in":           "Connectez-vous pour passer cette \u00e9tape",
         "rush_lb_loading":        "Chargement\u2026",
+    },
+
+    "ko": {
+        # Nav
+        "nav_beginner":     "초급",
+        "nav_intermediate": "중급",
+        "nav_expert":       "고급",
+        "nav_custom":       "사용자 지정",
+        "nav_leaderboard":  "순위표",
+        "nav_duel":         "결투",
+        "nav_pvp":          "PvP",
+        "nav_tentaizu":     "텐타이즈",
+        # Auth
+        "auth_sign_out":      "로그아웃",
+        "auth_sign_in":       "Google로 로그인",
+        "auth_view_profile":  "프로필 보기",
+        # Game board
+        "game_left_click":  "왼쪽 클릭",
+        "game_to_reveal":   "으로 열기",
+        "game_right_click": "오른쪽 클릭",
+        "game_to_flag":     "으로 깃발 꽂기",
+        "game_to_flag_local": "으로 깃발 꽂기 (로컬 전용)",
+        "game_to_reset":    "으로 초기화",
+        "game_new_game":    "새 게임",
+        # Custom form
+        "custom_rows":  "행",
+        "custom_cols":  "열",
+        "custom_mines": "지뢰",
+        "custom_start": "시작",
+        # Duel page
+        "duel_you":       "나",
+        "duel_opponent":  "상대방",
+        "duel_share":     "이 링크를 상대방과 공유하세요:",
+        "duel_copy":      "복사",
+        "duel_start_btn": "▶ 게임 시작",
+        "duel_scoring":   "점수 계산 방식:",
+        "duel_scoring_body": (
+            "점수는 <strong>공개된 칸 1개당 5점</strong>을 부여하고, "
+            "시간 보너스를 더해 계산됩니다. 시간 보너스는 "
+            "<code>(300 &minus; 경과초) &times; 공개비율</code> 공식으로 계산되며, "
+            "0 미만으로 내려가지 않습니다."
+        ),
+        # Leaderboard
+        "lb_title":           "🏆 순위표",
+        "lb_col_rank":        "#",
+        "lb_col_name":        "이름",
+        "lb_col_time":        "시간",
+        "lb_col_board":       "보드",
+        "lb_col_mines":       "지뢰",
+        "lb_col_date":        "날짜",
+        "lb_loading":         "불러오는 중\u2026",
+        "lb_no_scores":       "아직 기록이 없습니다 \u2014 첫 번째가 되세요!",
+        "lb_error":           "\u26a0\ufe0f 점수를 불러올 수 없습니다.",
+        "lb_top_prefix":      "상위",
+        "lb_top_suffix_one":  "회",
+        "lb_top_suffix_many": "회",
+        "lb_play_beginner":     "\u2190 초급 플레이",
+        "lb_play_intermediate": "중급 플레이",
+        "lb_play_expert":       "고급 플레이",
+        "lb_play_custom":       "사용자 지정 플레이",
+        # Profile
+        "profile_recent_games": "최근 게임",
+        "profile_loading":      "불러오는 중\u2026",
+        "profile_games":        "게임",
+        "profile_best":         "최고",
+        "profile_avg":          "평균",
+        "profile_worst":        "최저",
+        "profile_no_games":     "게임 없음",
+        "profile_play_now":     "지금 플레이 \u2192",
+        "profile_no_recent":    "아직 기록된 게임이 없습니다.",
+        # Help
+        "help_title": "지뢰찾기 플레이 방법",
+        # Footer
+        "footer": "Python &amp; FastAPI로 <a href=\"https://regis.consulting\">Regis Consulting</a>이 제작",
+        # Language switcher
+        "lang_other": "ko",
+        "lang_label": "KO \u2014 한국어",
+        # Rush mode
+        "rush_easy":              "쉬움",
+        "rush_normal":            "보통",
+        "rush_hard":              "어려움",
+        "rush_speed":             "스피드",
+        "rush_active_rows":       "활성 행",
+        "rush_max":               "최대",
+        "rush_cleared":           "제거됨",
+        "rush_no_safe":           "\u26a0\ufe0f 안전한 수 없음 \u2014 추측해도 패널티 없음",
+        "rush_salvage_suffix":    "구조 토큰 \u2014 맨 아래 폭발된 행의 \U0001f525을 클릭하세요",
+        "rush_instr_left":        "왼쪽 클릭",
+        "rush_instr_reveal":      "으로 열기",
+        "rush_instr_right":       "오른쪽 클릭",
+        "rush_instr_flag":        "으로 지뢰 표시",
+        "rush_instr_clear":       "행의 모든 지뢰에 깃발을 꽂아 행을 <strong>제거</strong>하세요",
+        "rush_instr_penalty":     "지뢰를 밟으면 <strong>+2행</strong>이 추가됩니다",
+        "rush_flash_no_penalty":  "패널티 없음!",
+        "rush_flash_rows":        "+2행!",
+        "rush_flash_salvage":     "\U0001f525 구조 토큰!",
+        "rush_btn_salvage_title": "구조 토큰 사용 \u2014 이 폭발된 행 제거",
+        "rush_btn_no_mines":      "지뢰 없음 \u2014 클릭하여 행 제거",
+        "rush_btn_all_flagged":   "모든 지뢰 표시됨 \u2014 클릭하여 행 제거",
+        "rush_game_over":         "\U0001f4a5 게임 오버",
+        "rush_mines_cleared":     "제거된 지뢰:",
+        "rush_rows_cleared":      "제거된 행:",
+        "rush_time":              "시간:",
+        "rush_score":             "점수:",
+        "rush_saving":            "점수 저장 중\u2026",
+        "rush_name_placeholder":  "이름을 입력하세요",
+        "rush_save_score":        "점수 저장",
+        "rush_play_again":        "다시 플레이",
+        "rush_saved_for":         "\u2705 저장된 점수:",
+        "rush_save_failed":       "\u274c 점수를 저장할 수 없습니다.",
+        "rush_sign_in":           "이 단계를 건너뛰려면 로그인하세요",
+        "rush_lb_loading":        "불러오는 중\u2026",
     },
 }
 
