@@ -2889,15 +2889,16 @@ html[data-skin="classic"] .ad-container {
 
 /* ── Classic leaderboard / content pages ─────────────────────────────────── */
 html[data-skin="classic"] main {
-  background-image: none;
-  background-color: #ffffff;
+  background-image: none !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
 }
 
 html[data-skin="classic"] .lb-wrapper,
 html[data-skin="classic"] .blog-wrapper {
-  background-image: none;
-  background-color: #ffffff;
-  color: #000;
+  background-image: none !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
 }
 
 html[data-skin="classic"] .blog-subtitle,
