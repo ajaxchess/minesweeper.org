@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Blog — minesweeper.org{% endblock %}
+{% block description %}The minesweeper.org blog — thoughts on building, vibe coding with AI, and the changing landscape of software.{% endblock %}
+{% block canonical %}https://minesweeper.org/blog{% endblock %}
+{% block og_url %}https://minesweeper.org/blog{% endblock %}
+{% block og_title %}Blog — minesweeper.org{% endblock %}
+{% block og_description %}The minesweeper.org blog — thoughts on building, vibe coding with AI, and the changing landscape of software.{% endblock %}
+
+{% block content %}
+<div class="blog-wrapper">
+
+  <header class="blog-header">
+    <h1 class="blog-title">Blog</h1>
+    <p class="blog-subtitle">Thoughts on building, AI, and the changing landscape of software.</p>
+  </header>
+
+  <div class="blog-post-list">
+    {% for post in posts %}
+    <article class="blog-card">
+      <a href="/blog/{{ post.slug }}" class="blog-card-link">
+        <div class="blog-card-meta">
+          <time datetime="{{ post.date }}">{{ post.date_display }}</time>
+        </div>
+        <h2 class="blog-card-title">{{ post.title }}</h2>
+        <p class="blog-card-excerpt">{{ post.excerpt }}</p>
+        <span class="blog-card-read-more">Read more →</span>
+      </a>
+    </article>
+    {% else %}
+    <p class="blog-empty">No posts yet — check back soon.</p>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

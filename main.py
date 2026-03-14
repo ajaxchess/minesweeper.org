@@ -390,6 +390,74 @@ async def about_page(request: Request):
     })
 
 
+# ── Blog ──────────────────────────────────────────────────────────────────────
+
+# Post registry — add a new entry here for each new post.
+# date:    ISO 8601 date string (YYYY-MM-DD)
+# file:    path relative to the repo root
+# excerpt: one-sentence summary shown on the index page
+BLOG_POSTS = [
+    {
+        "slug":    "saaspocalypse",
+        "file":    "blog/1_saaspocalypse-blog-post.md",
+        "title":   "SaaSpocalypse.Now!",
+        "date":    "2026-03-14",
+        "excerpt": "AI coding tools have collapsed the distance between "
+                   "'I want a thing' and 'I have the thing.' "
+                   "Meet the SaaSpocalypse.",
+    },
+]
+
+def _blog_post_meta(post: dict) -> dict:
+    """Attach display-friendly date; return enriched copy."""
+    from datetime import date as _date
+    import datetime
+    try:
+        d = datetime.date.fromisoformat(post["date"])
+        display = d.strftime("%B %-d, %Y")
+    except Exception:
+        display = post["date"]
+    return {**post, "date_display": display}
+
+_BLOG_INDEX = [_blog_post_meta(p) for p in BLOG_POSTS]
+_BLOG_BY_SLUG = {p["slug"]: p for p in _BLOG_INDEX}
+
+
+@app.get("/blog", response_class=HTMLResponse)
+async def blog_index(request: Request):
+    return templates.TemplateResponse("blog_index.html", {
+        "request": request, "mode": "blog",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "posts": _BLOG_INDEX,
+    })
+
+
+@app.get("/blog/{slug}", response_class=HTMLResponse)
+async def blog_post(request: Request, slug: str):
+    import markdown as md_lib
+    post = _BLOG_BY_SLUG.get(slug)
+    if not post:
+        from fastapi.responses import Response
+        return Response(status_code=404)
+    raw = open(post["file"], encoding="utf-8").read()
+    # Strip the H1 title line — it's rendered by the template
+    lines = raw.splitlines()
+    if lines and lines[0].startswith("# "):
+        lines = lines[1:]
+    html_content = md_lib.markdown(
+        "\n".join(lines),
+        extensions=["extra", "sane_lists"],
+    )
+    return templates.TemplateResponse("blog_post.html", {
+        "request": request, "mode": "blog",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "post": post,
+        "content": html_content,
+    })
+
+
 @app.get("/privacy", response_class=HTMLResponse)
 async def privacy_page(request: Request):
     return templates.TemplateResponse("privacy.html", {
