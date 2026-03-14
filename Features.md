@@ -23,6 +23,8 @@ F15 Other Website Analytics AWStats https://awstats.sourceforge.io/
 
 F16 Add a blog
 
+F17 Add linkedin link
+
 -- Addressed --
 
 F1 User Profile
