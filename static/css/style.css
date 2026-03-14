@@ -2878,13 +2878,20 @@ html[data-skin="classic"] #reset-btn:active {
 
 /* ── Classic footer & general page ──────────────────────────────────────── */
 html[data-skin="classic"] footer {
-  background: #ffffff;
+  background-image: none !important;
+  background-color: #ffffff !important;
   border-top: 1px solid #cccccc;
   color: #000;
 }
 
 html[data-skin="classic"] .ad-container {
-  background: #ffffff;
+  background-image: none !important;
+  background-color: #ffffff !important;
+}
+
+html[data-skin="classic"] body {
+  background-image: none !important;
+  background-color: #ffffff !important;
 }
 
 /* ── Classic leaderboard / content pages ─────────────────────────────────── */
