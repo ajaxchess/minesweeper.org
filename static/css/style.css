@@ -781,6 +781,32 @@ footer a:hover { text-decoration: underline; }
   letter-spacing: 0.5px;
 }
 
+/* ── Duel mode tabs ──────────────────────────────────────────────────────── */
+.duel-mode-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.duel-mode-tab {
+  padding: 0.35rem 1rem;
+  border: 2px solid var(--accent, #4a9eff);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--accent, #4a9eff);
+  transition: background 0.15s, color 0.15s;
+}
+.duel-mode-tab:hover {
+  background: var(--accent, #4a9eff);
+  color: #fff;
+}
+.duel-mode-tab.active {
+  background: var(--accent, #4a9eff);
+  color: #fff;
+  pointer-events: none;
+}
+
 /* ── Duel page ───────────────────────────────────────────────────────────── */
 .duel-wrapper {
   display: flex;

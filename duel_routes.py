@@ -11,7 +11,9 @@ from translations import get_lang, get_t
 from duel import (
     create_game, get_game, manager,
     pvp_enqueue, pvp_dequeue, pvp_queue_length,
-    ROWS, COLS, MINES, PVP_ROWS, PVP_COLS, PVP_MINES
+    pvp_quick_enqueue, pvp_quick_dequeue, pvp_quick_queue_length,
+    ROWS, COLS, MINES, PVP_ROWS, PVP_COLS, PVP_MINES,
+    QUICK_ROWS, QUICK_COLS, QUICK_MINES,
 )
 
 duel_router = APIRouter()
@@ -19,17 +21,23 @@ templates   = Jinja2Templates(directory="templates")
 
 # ── Page: create a new duel ───────────────────────────────────────────────────
 @duel_router.get("/duel", response_class=HTMLResponse)
-async def duel_lobby(request: Request):
-    game      = create_game()
+async def duel_lobby(request: Request, m: str = "standard"):
+    if m == "quick":
+        rows, cols, mines = QUICK_ROWS, QUICK_COLS, QUICK_MINES
+    else:
+        m = "standard"
+        rows, cols, mines = ROWS, COLS, MINES
+    game      = create_game(rows=rows, cols=cols, mines=mines, submode=m)
     player_id = uuid.uuid4().hex[:8]
     return templates.TemplateResponse("duel.html", {
         "request":    request,
         "game_id":    game.game_id,
         "player_id":  player_id,
-        "rows":       ROWS,
-        "cols":       COLS,
-        "mines":      MINES,
+        "rows":       rows,
+        "cols":       cols,
+        "mines":      mines,
         "mode":       "duel",
+        "submode":    m,
         "is_creator": True,
         "user":       get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
@@ -51,10 +59,11 @@ async def duel_join(request: Request, game_id: str):
         "request":    request,
         "game_id":    game_id,
         "player_id":  player_id,
-        "rows":       ROWS,
-        "cols":       COLS,
-        "mines":      MINES,
+        "rows":       game.rows,
+        "cols":       game.cols,
+        "mines":      game.mines,
         "mode":       "duel",
+        "submode":    game.submode,
         "is_creator": is_creator,
         "user":       get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
@@ -62,16 +71,22 @@ async def duel_join(request: Request, game_id: str):
 
 # ── Page: PvP matchmaking lobby ───────────────────────────────────────────────
 @duel_router.get("/pvp", response_class=HTMLResponse)
-async def pvp_lobby(request: Request):
+async def pvp_lobby(request: Request, m: str = "standard"):
+    if m == "quick":
+        rows, cols, mines = QUICK_ROWS, QUICK_COLS, QUICK_MINES
+    else:
+        m = "standard"
+        rows, cols, mines = PVP_ROWS, PVP_COLS, PVP_MINES
     player_id = uuid.uuid4().hex[:8]
     return templates.TemplateResponse("duel.html", {
         "request":    request,
         "game_id":    "",
         "player_id":  player_id,
-        "rows":       PVP_ROWS,
-        "cols":       PVP_COLS,
-        "mines":      PVP_MINES,
+        "rows":       rows,
+        "cols":       cols,
+        "mines":      mines,
         "mode":       "pvp",
+        "submode":    m,
         "is_creator": False,
         "user":       get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
@@ -189,6 +204,50 @@ async def _game_loop(ws: WebSocket, game, player_id: str):
                 "type": "opp_disconnected",
                 "msg":  "Your opponent disconnected.",
             })
+
+# ── WebSocket: Quick PvP matchmaking ─────────────────────────────────────────
+@duel_router.websocket("/ws/pvp/quick/{player_id}")
+async def pvp_quick_ws(ws: WebSocket, player_id: str):
+    await ws.accept()
+    await ws.send_json({
+        "type": "queued",
+        "queue_pos": pvp_quick_queue_length() + 1,
+        "msg": "Looking for an opponent…",
+    })
+
+    game = await pvp_quick_enqueue(player_id, ws)
+
+    if game:
+        await ws.send_json({
+            "type":    "matched",
+            "game_id": game.game_id,
+            "msg":     "Opponent found! Get ready…",
+        })
+        await asyncio.sleep(3)
+        game.start()
+        await manager.broadcast(game, {
+            "type": "start",
+            "msg":  "⚔️ Quick PvP match started! Good luck!",
+        })
+        await _game_loop(ws, game, player_id)
+    else:
+        await _pvp_quick_wait_loop(ws, player_id)
+
+
+async def _pvp_quick_wait_loop(ws: WebSocket, player_id: str):
+    try:
+        while True:
+            raw = await ws.receive_text()
+            msg = json.loads(raw)
+            if msg.get("type") == "reveal":
+                from duel import _games
+                game = next((g for g in _games.values()
+                             if g.get_player(player_id)), None)
+                if game:
+                    await _handle_reveal(ws, game, player_id, msg)
+    except WebSocketDisconnect:
+        pvp_quick_dequeue(player_id)
+
 
 @duel_router.websocket("/ws/{game_id}/{player_id}")
 async def duel_ws(ws: WebSocket, game_id: str, player_id: str):

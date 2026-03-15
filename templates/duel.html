@@ -29,6 +29,17 @@
 {% block content %}
 <div class="duel-wrapper">
 
+  <!-- ── Mode selector ── -->
+  <div class="duel-mode-tabs">
+    {% if mode == 'pvp' %}
+    <a href="/pvp?m=standard" class="duel-mode-tab {% if submode == 'standard' %}active{% endif %}">Standard</a>
+    <a href="/pvp?m=quick"    class="duel-mode-tab {% if submode == 'quick' %}active{% endif %}">⚡ Quick</a>
+    {% else %}
+    <a href="/duel?m=standard" class="duel-mode-tab {% if submode == 'standard' %}active{% endif %}">Standard</a>
+    <a href="/duel?m=quick"    class="duel-mode-tab {% if submode == 'quick' %}active{% endif %}">⚡ Quick</a>
+    {% endif %}
+  </div>
+
   <!-- ── Status bar ── -->
   <div class="duel-status-bar">
     <div id="duel-status" class="duel-status-msg">Connecting…</div>
@@ -44,7 +55,7 @@
     {% endif %}
 
     {% if mode == 'pvp' %}
-    <div class="pvp-badge">⚔️ PvP Matchmaking — 24×16, 75 mines</div>
+    <div class="pvp-badge">⚔️ PvP Matchmaking — {{ rows }}×{{ cols }}, {{ mines }} mines</div>
     {% endif %}
   </div>
 
@@ -78,7 +89,8 @@
          data-mode="{{ mode }}"
          data-game-id="{{ game_id }}"
          data-player-id="{{ player_id }}"
-         data-is-creator="{{ 'true' if is_creator else 'false' }}"></div>
+         data-is-creator="{{ 'true' if is_creator else 'false' }}"
+         data-submode="{{ submode }}"></div>
     <div id="duel-overlay" class="duel-overlay" style="display:none"></div>
   </div>
 
@@ -96,5 +108,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/duel.js?v=4"></script>
+<script src="/static/js/duel.js?v=5"></script>
 {% endblock %}

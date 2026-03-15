@@ -8,8 +8,9 @@ from typing import Optional
 from fastapi import WebSocket
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-ROWS, COLS, MINES             = 30, 16, 99   # Expert (private duel)
-PVP_ROWS, PVP_COLS, PVP_MINES = 24, 16, 75  # PvP matchmaking
+ROWS, COLS, MINES                   = 30, 16, 99   # Standard (private duel)
+PVP_ROWS, PVP_COLS, PVP_MINES       = 24, 16, 75   # Standard PvP matchmaking
+QUICK_ROWS, QUICK_COLS, QUICK_MINES = 20, 10, 35   # Quick mode (both duel and PvP)
 
 POINTS_PER_TILE = 5
 TIME_BONUS_BASE = 300
@@ -96,11 +97,12 @@ class PlayerState:
 
 # ── Duel game ─────────────────────────────────────────────────────────────────
 class DuelGame:
-    def __init__(self, game_id: str, rows: int = ROWS, cols: int = COLS, mines: int = MINES):
+    def __init__(self, game_id: str, rows: int = ROWS, cols: int = COLS, mines: int = MINES, submode: str = "standard"):
         self.game_id     = game_id
         self.rows        = rows
         self.cols        = cols
         self.mines       = mines
+        self.submode     = submode
         self.players:    list[PlayerState] = []
         self.start_time: Optional[float]   = None
         self.active:     bool = False
@@ -211,9 +213,9 @@ class DuelGame:
 # ── Global game store ─────────────────────────────────────────────────────────
 _games: dict[str, DuelGame] = {}
 
-def create_game(rows=ROWS, cols=COLS, mines=MINES) -> DuelGame:
+def create_game(rows=ROWS, cols=COLS, mines=MINES, submode="standard") -> DuelGame:
     gid  = uuid.uuid4().hex[:10]
-    game = DuelGame(gid, rows=rows, cols=cols, mines=mines)
+    game = DuelGame(gid, rows=rows, cols=cols, mines=mines, submode=submode)
     _games[gid] = game
     return game
 
@@ -263,6 +265,38 @@ def pvp_dequeue(player_id: str):
 
 def pvp_queue_length() -> int:
     return len(_pvp_queue)
+
+# ── Quick PvP matchmaking queue ───────────────────────────────────────────────
+_pvp_quick_queue: list[dict] = []
+
+async def pvp_quick_enqueue(player_id: str, ws: WebSocket) -> Optional[DuelGame]:
+    global _pvp_quick_queue
+    _pvp_quick_queue = [e for e in _pvp_quick_queue if e["player_id"] != player_id]
+
+    if _pvp_quick_queue:
+        opponent = _pvp_quick_queue.pop(0)
+        game = create_game(rows=QUICK_ROWS, cols=QUICK_COLS, mines=QUICK_MINES, submode="quick")
+        game.add_player(opponent["player_id"], opponent["ws"])
+        game.add_player(player_id, ws)
+        try:
+            await opponent["ws"].send_json({
+                "type":    "matched",
+                "game_id": game.game_id,
+                "msg":     "Opponent found! Get ready…",
+            })
+        except Exception:
+            pass
+        return game
+    else:
+        _pvp_quick_queue.append({"player_id": player_id, "ws": ws})
+        return None
+
+def pvp_quick_dequeue(player_id: str):
+    global _pvp_quick_queue
+    _pvp_quick_queue = [e for e in _pvp_quick_queue if e["player_id"] != player_id]
+
+def pvp_quick_queue_length() -> int:
+    return len(_pvp_quick_queue)
 
 # ── WebSocket connection manager ──────────────────────────────────────────────
 class ConnectionManager:

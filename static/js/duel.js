@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const PLAYER_ID = boardEl.dataset.playerId;
   const IS_PVP     = boardEl.dataset.mode === 'pvp';
   const IS_CREATOR = boardEl.dataset.isCreator === 'true';
+  const SUBMODE    = boardEl.dataset.submode || 'standard';
 
   console.log('GAME_ID:', GAME_ID, 'PLAYER_ID:', PLAYER_ID, 'IS_PVP:', IS_PVP);
 
@@ -160,8 +161,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── WebSocket ─────────────────────────────────────────────────────────────
   const proto  = location.protocol === 'https:' ? 'wss' : 'ws';
+  let pvpWsPath = SUBMODE === 'quick'
+    ? `/ws/pvp/quick/${PLAYER_ID}`
+    : `/ws/pvp/${PLAYER_ID}`;
   const wsUrl  = IS_PVP
-    ? `${proto}://${location.host}/ws/pvp/${PLAYER_ID}`
+    ? `${proto}://${location.host}${pvpWsPath}`
     : `${proto}://${location.host}/ws/${GAME_ID}/${PLAYER_ID}`;
   const ws     = new WebSocket(wsUrl);
 
@@ -257,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <h2>${headline}</h2>
             <p>${sub}</p>
             <p class="result-time">Time: ${msg.elapsed}s</p>
-            <a href="${IS_PVP ? '/pvp' : '/duel'}" class="duel-play-again">⚔️ New Duel</a>
+            <a href="${IS_PVP ? '/pvp' : '/duel'}?m=${SUBMODE}" class="duel-play-again">⚔️ New Duel</a>
           </div>
         `);
         break;
