@@ -27,6 +27,8 @@ F17 Add linkedin link
 
 F18 theme selection in url
 
+F19 Secret admin mode that displays site statistics
+
 -- Addressed --
 
 F1 User Profile
