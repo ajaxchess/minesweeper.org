@@ -16,14 +16,16 @@
 
   <article class="blog-article">
     <div class="blog-article-header">
-      {% if author %}
-      <p class="blog-article-byline">by
-        {% if authorurl %}<a href="{{ authorurl }}" class="blog-author-link">{{ author }}</a>
-        {% else %}{{ author }}{% endif %}
-      </p>
-      {% endif %}
       <h1 class="blog-article-title">{{ post.title }}</h1>
-      <time class="blog-article-date" datetime="{{ post.date }}">{{ post.date_display }}</time>
+      <div class="blog-article-meta">
+        <time class="blog-article-date" datetime="{{ post.date }}">{{ post.date_display }}</time>
+        {% if author %}
+        <span class="blog-article-byline">by
+          {% if authorurl %}<a href="{{ authorurl }}" class="blog-author-link">{{ author }}</a>
+          {% else %}{{ author }}{% endif %}
+        </span>
+        {% endif %}
+      </div>
     </div>
 
     <div class="blog-article-body">
