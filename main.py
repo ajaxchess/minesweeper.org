@@ -408,7 +408,8 @@ BLOG_POSTS = [
         "slug":    "lady-di",
         "file":    "blog/lady-di-blog-post.md",
         "title":   "She's Back: The Return of Lady Di's Mines",
-        "date":    "2026-03-15",
+        "date":          "2026-03-15",
+        "datePublished": "2026-03-15T15:00:00Z",
         "excerpt": "I built the original minesweeper.org in 1999 as a Physics PhD student. "
                    "Here's the story of Lady Di's Mines — and why she's back.",
     },

@@ -15,7 +15,7 @@
   "@type": "BlogPosting",
   "headline": {{ post.title | tojson }},
   "url": "https://minesweeper.org/blog/{{ post.slug }}",
-  "datePublished": {{ post.date | tojson }},
+  "datePublished": {{ (post.datePublished if post.datePublished else post.date) | tojson }},
   "description": {{ post.excerpt | tojson }}{% if og_image %},
   "image": {{ og_image | tojson }}{% endif %}{% if author %},
   "author": {
