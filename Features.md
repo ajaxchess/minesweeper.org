@@ -25,6 +25,8 @@ F16 Add a blog
 
 F17 Add linkedin link
 
+F18 theme selection in url
+
 -- Addressed --
 
 F1 User Profile
