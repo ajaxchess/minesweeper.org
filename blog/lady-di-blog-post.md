@@ -19,7 +19,7 @@ Here was a game called "minesweeper" that millions of people played every day. I
 
 ## The Return
 
-Today, Lady Di's Mines is back — rebuilt from scratch with Python, FastAPI, and modern web technologies. No more Java applets and browser crashes. It works on desktop and mobile, no plugins required, and every puzzle is logically solvable — no 50/50 guesses.
+Today, Lady Di's Mines is back — rebuilt from scratch with Python, FastAPI, and modern web technologies. It works on desktop and mobile, no plugins required, and there is a mode where every puzzle is logically solvable — no 50/50 guesses.
 
 The game has grown far beyond Easy, Medium, and Hard. There's now [Rush](https://minesweeper.org/rush) for speed chasers, real-time [Duel](https://minesweeper.org/duel) and [PvP](https://minesweeper.org/pvp) multiplayer, [Tentaizu](https://minesweeper.org/tentaizu) for pure logic puzzles, [Variants](https://minesweeper.org/variants) with alternative rulesets, [daily Quests](https://minesweeper.org/quests), and a [global leaderboard](https://minesweeper.org/leaderboard) that resets at midnight UTC. The site is available in ten languages. Every feature and every line of code is original work, built by me and the team at [Regis Consulting](https://regis.consulting) with contributions from Earl Gero and William Murray.
 
