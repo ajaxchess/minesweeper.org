@@ -87,4 +87,71 @@
   </aside>
 
 </div>
+
+<!-- ── Landing section ── -->
+<div class="game-landing" id="game-landing">
+
+  <section class="game-landing-welcome">
+    <h2 class="game-landing-title">Welcome to Lady Di's Mines</h2>
+    <p>
+      Minesweeper.org has been serving the classic Minesweeper game since 2000.
+      Play beginner, intermediate, expert, or custom boards — all free, no download required.
+      Challenge yourself against the daily leaderboard or set a personal best.
+    </p>
+    <nav class="game-landing-links">
+      <a href="/about">About this site</a>
+      <a href="/how-to-play">How to Play</a>
+      <a href="/strategy">Strategy &amp; Tips</a>
+    </nav>
+  </section>
+
+  <section class="game-landing-lb">
+    <h2 class="game-landing-lb-title">🏆 Today's Best Times —
+      {% if mode == 'beginner' %}Beginner
+      {% elif mode == 'intermediate' %}Intermediate
+      {% else %}Expert{% endif %}
+    </h2>
+    <div class="lb-table-wrap">
+      <table class="lb-table" id="page-lb-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{ t.lb_col_name }}</th>
+            <th>{{ t.lb_col_time }}</th>
+            <th>{{ t.lb_col_board }}</th>
+            <th>{{ t.lb_col_date }}</th>
+          </tr>
+        </thead>
+        <tbody id="page-lb-body">
+          <tr><td colspan="5" class="lb-loading">{{ t.lb_loading }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(async () => {
+  const mode = "{{ mode }}";
+  const res  = await fetch(`/api/scores/${mode}`);
+  const rows = await res.json();
+  const body = document.getElementById('page-lb-body');
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="5" class="lb-empty">No scores yet today.</td></tr>';
+    return;
+  }
+  body.innerHTML = rows.map((s, i) => `
+    <tr>
+      <td class="lb-rank">${i + 1}</td>
+      <td class="lb-name">${s.name}</td>
+      <td class="lb-time">${s.time_secs}s</td>
+      <td class="lb-board">${s.rows}×${s.cols}</td>
+      <td class="lb-date">${s.created_at}</td>
+    </tr>
+  `).join('');
+})();
+</script>
 {% endblock %}
