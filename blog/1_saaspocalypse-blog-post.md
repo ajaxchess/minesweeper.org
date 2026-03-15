@@ -3,7 +3,7 @@ title: "SaaSpocalypse.Now!"
 image: "https://minesweeper.org/static/img/saaspocalypse.png"
 author: "Richard Cross"
 authorurl: "https://minesweeper.org/u/ajaxchess"
-date: 2026-03-15
+datePublished: 2026-03-14T15:00:00Z
 ---
 
 *The first post on the minesweeper.org blog — built without a CMS, because we don't need one anymore.*
