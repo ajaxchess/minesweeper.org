@@ -78,6 +78,13 @@
             <button class="copy-btn" onclick="copyPublicUrl()">Copy</button>
             <span id="copy-msg" class="setting-msg"></span>
           </div>
+          <div id="vanity-row" style="display:none; margin-top:0.5rem;">
+            <span class="setting-desc">Vanity URL: minesweeper.org/u/</span>
+            <input id="vanity-input" type="text" maxlength="32" placeholder="ajaxchess"
+                   autocomplete="off" style="width:140px;" />
+            <button class="copy-btn" onclick="saveVanitySlug()">Save</button>
+            <span id="vanity-msg" class="setting-msg"></span>
+          </div>
         </div>
       </div>
       <div class="setting-row" id="favorite-game-row" style="display:none;">
@@ -327,6 +334,7 @@ loadStats();
 const PUBLIC_ID    = "{{ public_id }}";
 let   isPublic     = {{ 'true' if is_public else 'false' }};
 let   favoriteGame = "{{ favorite_game or '' }}";
+const VANITY_SLUG  = "{{ vanity_slug or '' }}";
 
 function updatePublicUI() {
   const btn       = document.getElementById('public-toggle');
@@ -335,8 +343,10 @@ function updatePublicUI() {
   const urlLink   = document.getElementById('public-url-link');
   btn.textContent = isPublic ? 'ON' : 'OFF';
   btn.classList.toggle('active', isPublic);
-  urlRow.style.display = isPublic ? 'block' : 'none';
-  favRow.style.display = isPublic ? 'flex'  : 'none';
+  urlRow.style.display    = isPublic ? 'block' : 'none';
+  favRow.style.display    = isPublic ? 'flex'  : 'none';
+  const vanityRow = document.getElementById('vanity-row');
+  if (vanityRow) vanityRow.style.display = isPublic ? 'block' : 'none';
   const url = `https://minesweeper.org/u/${PUBLIC_ID}`;
   urlLink.href        = url;
   urlLink.textContent = url;
@@ -367,10 +377,34 @@ function copyPublicUrl() {
   });
 }
 
+async function saveVanitySlug() {
+  const input = document.getElementById('vanity-input');
+  const msg   = document.getElementById('vanity-msg');
+  const slug  = input.value.trim().toLowerCase();
+  try {
+    const res = await fetch('/api/profile/vanity-slug', {
+      method:  'POST',
+      headers: {'Content-Type': 'application/json'},
+      body:    JSON.stringify({ vanity_slug: slug }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      msg.textContent = slug ? `Saved! minesweeper.org/u/${slug}` : 'Cleared.';
+      setTimeout(() => { msg.textContent = ''; }, 3000);
+    } else {
+      msg.textContent = data.error || 'Could not save.';
+    }
+  } catch {
+    msg.textContent = 'Network error.';
+  }
+}
+
 // Init favorite game select
 document.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('favorite-game-select');
   if (sel) sel.value = favoriteGame;
+  const vi = document.getElementById('vanity-input');
+  if (vi) vi.value = VANITY_SLUG;
   updatePublicUI();
 });
 

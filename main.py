@@ -519,6 +519,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "public_id":     profile.public_id if profile else "",
         "is_public":     profile.is_public if profile else False,
         "favorite_game": profile.favorite_game if profile else "",
+        "vanity_slug":   profile.vanity_slug if profile else "",
         "lang": get_lang(request), "t": get_t(request),
     })
 
@@ -1009,9 +1010,13 @@ def update_profile_settings(payload: ProfileSettingsUpdate, request: Request, db
     return {"ok": True, "public_id": profile.public_id}
 
 
-@app.get("/u/{public_id}", response_class=HTMLResponse)
-async def public_profile_page(request: Request, public_id: str, db: Session = Depends(get_db)):
-    profile = db.query(UserProfile).filter(UserProfile.public_id == public_id).first()
+@app.get("/u/{slug}", response_class=HTMLResponse)
+async def public_profile_page(request: Request, slug: str, db: Session = Depends(get_db)):
+    # Accept either vanity slug or UUID
+    profile = (
+        db.query(UserProfile).filter(UserProfile.vanity_slug == slug).first()
+        or db.query(UserProfile).filter(UserProfile.public_id == slug).first()
+    )
     if not profile or not profile.is_public:
         raise HTTPException(status_code=404, detail="Profile not found")
     return templates.TemplateResponse("profile_public.html", {
@@ -1019,9 +1024,44 @@ async def public_profile_page(request: Request, public_id: str, db: Session = De
         "mode":          "profile",
         "display_name":  profile.display_name,
         "favorite_game": profile.favorite_game or "",
-        "public_id":     public_id,
+        "public_id":     profile.public_id,
+        "vanity_slug":   profile.vanity_slug or "",
         "lang": get_lang(request), "t": get_t(request),
     })
+
+
+class VanitySlugUpdate(BaseModel):
+    vanity_slug: str = Field("", max_length=32)
+
+    @field_validator("vanity_slug")
+    @classmethod
+    def validate_slug(cls, v: str) -> str:
+        import re
+        v = v.strip().lower()
+        if v and not re.match(r'^[a-z0-9_-]+$', v):
+            raise ValueError("Slug may only contain letters, numbers, hyphens, and underscores")
+        return v
+
+
+@app.post("/api/profile/vanity-slug")
+def update_vanity_slug(payload: VanitySlugUpdate, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+    if not profile:
+        return JSONResponse({"error": "Profile not found"}, status_code=404)
+    slug = payload.vanity_slug or None
+    if slug:
+        taken = db.query(UserProfile).filter(
+            UserProfile.vanity_slug == slug,
+            UserProfile.email != user["email"]
+        ).first()
+        if taken:
+            return JSONResponse({"error": "That vanity URL is already taken"}, status_code=409)
+    profile.vanity_slug = slug
+    db.commit()
+    return {"ok": True, "vanity_slug": slug}
 
 
 class DisplayNameUpdate(BaseModel):
