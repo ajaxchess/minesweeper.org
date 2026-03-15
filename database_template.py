@@ -164,6 +164,30 @@ class TentaizuScore(Base):
             "created_at":  self.created_at.strftime("%Y-%m-%d"),
         }
 
+# ── Tentaizu Easy (5×5) Score model ───────────────────────────────────────────
+class TentaizuEasyScore(Base):
+    __tablename__ = "tentaizu_easy_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD
+    time_secs   = Column(Integer, nullable=False)
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_tentaizu_easy_scores_date_time", "puzzle_date", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "time_secs":   self.time_secs,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
 # ── Cylinder Score model (permanent — never reset) ────────────────────────────
 class CylinderScore(Base):
     __tablename__ = "cylinder_scores"

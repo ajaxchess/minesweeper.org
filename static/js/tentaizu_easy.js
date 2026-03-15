@@ -280,10 +280,10 @@ async function saveScore(autoName = null) {
     if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
 
     try {
-        const r = await fetch('/api/tentaizu-scores', {
+        const r = await fetch('/api/tentaizu-easy-scores', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, puzzle_date: G.puzzleId, time_secs: Math.max(1, G.elapsed) }),
+            body: JSON.stringify({ name, puzzle_date: G.puzzleDate, time_secs: Math.max(1, G.elapsed) }),
         });
         if (r.ok) {
             localStorage.setItem('tz_name', name);
@@ -332,7 +332,7 @@ async function loadLeaderboard() {
     el.innerHTML = '<div class="lb-loading">Loading…</div>';
 
     try {
-        const r    = await fetch(`/api/tentaizu-scores/${encodeURIComponent(G.puzzleId)}`);
+        const r    = await fetch(`/api/tentaizu-easy-scores/${encodeURIComponent(G.puzzleDate)}`);
         const data = await r.json();
 
         if (!data.length) {
@@ -393,8 +393,8 @@ function initGame(dateStr, isPOTD) {
     G = {
         cells:           generatePuzzle(dateStr),
         isPOTD,
-        // Namespace the leaderboard key so easy-5x5 scores are separate from daily 7x7
         puzzleId:        isPOTD ? SEED_PREFIX + dateStr : dateStr,
+        puzzleDate:      dateStr,   // plain YYYY-MM-DD for API calls
         startTime:       null,
         elapsed:         0,
         timer:           null,
