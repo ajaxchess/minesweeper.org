@@ -1,6 +1,7 @@
 ---
 author: "Richard Cross"
 authorurl: "https://minesweeper.org/u/46b3f10d-1d0e-41a4-acc1-9f2f36da8cf6"
+date: 2025-03-15
 ---
 
 # SaaSpocalypse.Now!
