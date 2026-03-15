@@ -1173,6 +1173,8 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse("admin.html", {
         "request": request,
         "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
         "today": today.isoformat(),
         "total_users": total_users,
         "new_users_today": new_users_today,
