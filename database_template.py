@@ -233,6 +233,7 @@ class UserProfile(Base):
     public_id     = Column(String(36), unique=True, nullable=True, index=True)
     is_public     = Column(Boolean, default=False, nullable=False)
     favorite_game = Column(String(32), nullable=True)
+    vanity_slug   = Column(String(32), unique=True, nullable=True, index=True)
 
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
