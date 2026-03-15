@@ -122,6 +122,14 @@
       Play beginner, intermediate, expert, or custom boards — all free, no download required.
       Challenge yourself against the daily leaderboard or set a personal best.
     </p>
+    {% if not user %}
+    <div class="game-landing-signin">
+      <p class="game-landing-signin-msg">Sign in to save your scores and appear on the leaderboard.</p>
+      <a href="/auth/login" class="game-landing-signin-btn">
+        <img src="/static/img/google_signin.svg" alt="Sign in with Google" width="191" height="46">
+      </a>
+    </div>
+    {% endif %}
     <nav class="game-landing-links">
       <a href="/about">About this site</a>
       <a href="/how-to-play">How to Play</a>
