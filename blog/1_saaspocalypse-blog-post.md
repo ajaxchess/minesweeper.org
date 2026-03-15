@@ -1,5 +1,6 @@
 ---
 title: "SaaSpocalypse.Now!"
+image: "https://minesweeper.org/static/img/saaspocalypse.png"
 author: "Richard Cross"
 authorurl: "https://minesweeper.org/u/ajaxchess"
 date: 2026-03-15

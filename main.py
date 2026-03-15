@@ -414,10 +414,11 @@ BLOG_POSTS = [
                    "Here's the story of Lady Di's Mines — and why she's back.",
     },
     {
-        "slug":    "saaspocalypse",
-        "file":    "blog/1_saaspocalypse-blog-post.md",
-        "title":   "SaaSpocalypse.Now!",
-        "date":    "2026-03-14",
+        "slug":          "saaspocalypse",
+        "file":          "blog/1_saaspocalypse-blog-post.md",
+        "title":         "SaaSpocalypse.Now!",
+        "date":          "2026-03-14",
+        "datePublished": "2026-03-14T15:00:00Z",
         "excerpt": "AI coding tools have collapsed the distance between "
                    "'I want a thing' and 'I have the thing.' "
                    "Meet the SaaSpocalypse.",
