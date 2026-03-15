@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% block title %}{{ display_name }}'s Profile — minesweeper.org{% endblock %}
+{% block description %}{{ display_name }}'s minesweeper stats on minesweeper.org{% endblock %}
+{% block canonical %}https://minesweeper.org/u/{{ public_id }}{% endblock %}
+{% block og_url %}https://minesweeper.org/u/{{ public_id }}{% endblock %}
+{% block og_title %}{{ display_name }}'s Minesweeper Profile{% endblock %}
+{% block og_description %}View {{ display_name }}'s minesweeper stats on minesweeper.org{% endblock %}
+
+{% block content %}
+<div class="profile-wrapper">
+
+  <!-- ── Hero ── -->
+  <div class="profile-hero">
+    <div class="profile-avatar-placeholder">💣</div>
+    <div class="profile-hero-info">
+      <h1 class="profile-name">{{ display_name }}</h1>
+      {% if favorite_game %}
+      <p class="profile-favorite">
+        Favorite:
+        {% if favorite_game == 'beginner' %}Beginner
+        {% elif favorite_game == 'intermediate' %}Intermediate
+        {% elif favorite_game == 'expert' %}Expert
+        {% elif favorite_game == 'custom' %}Custom
+        {% elif favorite_game == 'rush' %}⚡ Rush
+        {% elif favorite_game == 'tentaizu' %}🔢 Tentaizu
+        {% else %}{{ favorite_game }}{% endif %}
+      </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Summary cards (filled by JS) ── -->
+  <div class="profile-summary" id="profile-summary">
+    <div class="summary-card loading" id="card-beginner">
+      <div class="card-mode">{{ t.nav_beginner }}</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
+    </div>
+    <div class="summary-card loading" id="card-intermediate">
+      <div class="card-mode">{{ t.nav_intermediate }}</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
+    </div>
+    <div class="summary-card loading" id="card-expert">
+      <div class="card-mode">{{ t.nav_expert }}</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
+    </div>
+    <div class="summary-card loading" id="card-custom">
+      <div class="card-mode">{{ t.nav_custom }}</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
+    </div>
+    <div class="summary-card loading" id="card-rush">
+      <div class="card-mode">⚡ Rush</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
+    </div>
+    <div class="summary-card loading" id="card-tentaizu">
+      <div class="card-mode">🔢 Tentaizu</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
+    </div>
+  </div>
+
+  <!-- ── Recent games tabs ── -->
+  <div class="profile-recent">
+    <h2 class="section-title">{{ t.profile_recent_games }}</h2>
+
+    <div class="lb-tabs" role="tablist">
+      <button class="lb-tab active" data-mode="beginner">{{ t.nav_beginner }}</button>
+      <button class="lb-tab" data-mode="intermediate">{{ t.nav_intermediate }}</button>
+      <button class="lb-tab" data-mode="expert">{{ t.nav_expert }}</button>
+      <button class="lb-tab" data-mode="custom">{{ t.nav_custom }}</button>
+      <button class="lb-tab" data-mode="rush">⚡ Rush</button>
+      <button class="lb-tab" data-mode="tentaizu">🔢 Tentaizu</button>
+    </div>
+
+    <div class="lb-table-wrap" style="margin-top:0.75rem">
+      <table class="lb-table" id="recent-table">
+        <thead id="recent-thead">
+          <tr>
+            <th>#</th>
+            <th>{{ t.lb_col_time }}</th>
+            <th>{{ t.lb_col_board }}</th>
+            <th>{{ t.lb_col_mines }}</th>
+            <th>{{ t.lb_col_date }}</th>
+          </tr>
+        </thead>
+        <tbody id="recent-body">
+          <tr><td colspan="5" class="lb-loading">{{ t.profile_loading }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const PUBLIC_ID = "{{ public_id }}";
+const FAVORITE  = "{{ favorite_game }}";
+let allStats = null;
+
+async function loadStats() {
+  const res = await fetch(`/api/profile/public-stats/${PUBLIC_ID}`);
+  if (!res.ok) {
+    document.getElementById('profile-summary').innerHTML =
+      '<p style="padding:1rem">This profile is not public.</p>';
+    return;
+  }
+  allStats = await res.json();
+
+  const modes = ['beginner', 'intermediate', 'expert', 'custom'];
+  modes.forEach(mode => {
+    const card = document.getElementById(`card-${mode}`);
+    const data = allStats[mode];
+    card.classList.remove('loading');
+    const isFav = mode === FAVORITE;
+    if (isFav) card.classList.add('favorite-card');
+
+    if (!data) {
+      card.querySelector('.card-body').innerHTML =
+        `<span class="no-data">${window.T.profile_no_games}</span>`;
+      return;
+    }
+    card.querySelector('.card-body').innerHTML = `
+      <div class="card-stat">
+        <span class="cs-label">${window.T.profile_games}</span>
+        <span class="cs-value">${data.games_played}</span>
+      </div>
+      <div class="card-stat highlight">
+        <span class="cs-label">${window.T.profile_best}</span>
+        <span class="cs-value">${data.best_time}s</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">${window.T.profile_avg}</span>
+        <span class="cs-value">${data.avg_time}s</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">${window.T.profile_worst}</span>
+        <span class="cs-value">${data.worst_time}s</span>
+      </div>
+    `;
+  });
+
+  // Rush card
+  const rushCard = document.getElementById('card-rush');
+  rushCard.classList.remove('loading');
+  if ('rush' === FAVORITE) rushCard.classList.add('favorite-card');
+  const rd = allStats['rush'];
+  if (!rd) {
+    rushCard.querySelector('.card-body').innerHTML =
+      `<span class="no-data">${window.T.profile_no_games}</span>`;
+  } else {
+    rushCard.querySelector('.card-body').innerHTML = `
+      <div class="card-stat">
+        <span class="cs-label">${window.T.profile_games}</span>
+        <span class="cs-value">${rd.games_played}</span>
+      </div>
+      <div class="card-stat highlight">
+        <span class="cs-label">Best Score</span>
+        <span class="cs-value">${rd.best_score}</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">Avg Score</span>
+        <span class="cs-value">${rd.avg_score}</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">Total Mines</span>
+        <span class="cs-value">${rd.total_mines}</span>
+      </div>
+    `;
+  }
+
+  // Tentaizu card
+  const tzCard = document.getElementById('card-tentaizu');
+  tzCard.classList.remove('loading');
+  if ('tentaizu' === FAVORITE) tzCard.classList.add('favorite-card');
+  const td = allStats['tentaizu'];
+  if (!td) {
+    tzCard.querySelector('.card-body').innerHTML =
+      `<span class="no-data">${window.T.profile_no_games}</span>`;
+  } else {
+    tzCard.querySelector('.card-body').innerHTML = `
+      <div class="card-stat">
+        <span class="cs-label">Puzzles Solved</span>
+        <span class="cs-value">${td.games_played}</span>
+      </div>
+      <div class="card-stat highlight">
+        <span class="cs-label">${window.T.profile_best}</span>
+        <span class="cs-value">${td.best_time}s</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">${window.T.profile_avg}</span>
+        <span class="cs-value">${td.avg_time}s</span>
+      </div>
+    `;
+  }
+
+  renderRecent('beginner');
+}
+
+function renderRecent(mode) {
+  const body  = document.getElementById('recent-body');
+  const thead = document.getElementById('recent-thead');
+  const data  = allStats?.[mode];
+
+  if (!data) {
+    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>${window.T.lb_col_board}</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th></tr>`;
+    body.innerHTML  = `<tr><td colspan="5" class="lb-empty">${window.T.profile_no_recent}</td></tr>`;
+    return;
+  }
+
+  if (mode === 'rush') {
+    thead.innerHTML = `<tr><th>#</th><th>Score</th><th>Mines</th><th>Mode</th><th>${window.T.lb_col_date}</th></tr>`;
+    body.innerHTML  = data.recent.map((s, i) => `
+      <tr>
+        <td class="lb-rank">${i + 1}</td>
+        <td class="lb-time">${s.score}</td>
+        <td class="lb-mines">${s.cleared_mines ?? '—'}</td>
+        <td class="lb-board">${s.rush_mode}</td>
+        <td class="lb-date">${s.created_at}</td>
+      </tr>
+    `).join('');
+  } else if (mode === 'tentaizu') {
+    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>Puzzle Date</th><th>${window.T.lb_col_date}</th></tr>`;
+    body.innerHTML  = data.recent.map((s, i) => `
+      <tr>
+        <td class="lb-rank">${i + 1}</td>
+        <td class="lb-time">${s.time_secs}s</td>
+        <td class="lb-board">${s.puzzle_date}</td>
+        <td class="lb-date">${s.created_at}</td>
+      </tr>
+    `).join('');
+  } else {
+    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>${window.T.lb_col_board}</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th></tr>`;
+    body.innerHTML  = data.recent.map((s, i) => `
+      <tr>
+        <td class="lb-rank">${i + 1}</td>
+        <td class="lb-time">${s.time_secs}s</td>
+        <td class="lb-board">${s.rows}×${s.cols}</td>
+        <td class="lb-mines">${s.mines}</td>
+        <td class="lb-date">${s.created_at}</td>
+      </tr>
+    `).join('');
+  }
+}
+
+document.querySelectorAll('.lb-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (allStats) renderRecent(btn.dataset.mode);
+  });
+});
+
+loadStats();
+</script>
+{% endblock %}

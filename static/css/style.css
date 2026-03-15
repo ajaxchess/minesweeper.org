@@ -875,6 +875,30 @@ footer {
   flex-shrink: 0;
 }
 
+.profile-avatar-placeholder {
+  width: 72px; height: 72px; border-radius: 50%;
+  border: 3px solid var(--accent2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; background: var(--surface2); flex-shrink: 0;
+}
+.profile-favorite {
+  font-size: 0.85rem; color: var(--accent); margin-top: 0.2rem; font-weight: 600;
+}
+.public-url-link {
+  font-size: 0.85rem; color: var(--accent2); word-break: break-all;
+  margin: 0 0.5rem;
+}
+.copy-btn {
+  font-size: 0.75rem; padding: 0.2rem 0.6rem;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface2); color: var(--text); cursor: pointer;
+}
+.copy-btn:hover { background: var(--surface3, var(--surface)); }
+.favorite-game-select {
+  background: var(--surface2); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 0.3rem 0.6rem; font-size: 0.9rem;
+}
 .profile-name {
   font-size: 1.5rem;
   font-weight: 700;
@@ -906,6 +930,7 @@ footer {
 }
 
 .summary-card:hover { border-color: var(--accent2); }
+.summary-card.favorite-card { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
 
 .summary-card.loading .card-body {
   color: var(--text-dim);

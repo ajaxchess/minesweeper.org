@@ -3,7 +3,7 @@ database.py — SQLAlchemy setup for MySQL via PyMySQL
 """
 from sqlalchemy import (
     create_engine, Column, Integer, String,
-    DateTime, Enum, Index
+    DateTime, Enum, Index, Boolean
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from datetime import datetime, timezone
@@ -228,8 +228,11 @@ class ToroidScore(Base):
 class UserProfile(Base):
     __tablename__ = "user_profiles"
 
-    email        = Column(String(256), primary_key=True)
-    display_name = Column(String(32), nullable=False)
+    email         = Column(String(256), primary_key=True)
+    display_name  = Column(String(32), nullable=False)
+    public_id     = Column(String(36), unique=True, nullable=True, index=True)
+    is_public     = Column(Boolean, default=False, nullable=False)
+    favorite_game = Column(String(32), nullable=True)
 
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():

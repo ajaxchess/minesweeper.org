@@ -65,6 +65,36 @@
         </div>
         <button class="setting-toggle" id="chord-toggle" onclick="toggleChording()"></button>
       </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <span class="setting-name">Public Profile</span>
+          <span class="setting-desc">Allow others to view your stats via a shareable link. Only your display name is shown — never your email.</span>
+        </div>
+        <div class="public-profile-controls">
+          <button class="setting-toggle" id="public-toggle" onclick="togglePublic()"></button>
+          <div id="public-url-row" style="display:none; margin-top:0.5rem;">
+            <span class="setting-desc">Your public link:</span>
+            <a id="public-url-link" href="#" target="_blank" class="public-url-link"></a>
+            <button class="copy-btn" onclick="copyPublicUrl()">Copy</button>
+            <span id="copy-msg" class="setting-msg"></span>
+          </div>
+        </div>
+      </div>
+      <div class="setting-row" id="favorite-game-row" style="display:none;">
+        <div class="setting-info">
+          <span class="setting-name">Favorite Game</span>
+          <span class="setting-desc">Highlighted on your public profile.</span>
+        </div>
+        <select id="favorite-game-select" class="favorite-game-select" onchange="saveSettings()">
+          <option value="">— none —</option>
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="expert">Expert</option>
+          <option value="custom">Custom</option>
+          <option value="rush">⚡ Rush</option>
+          <option value="tentaizu">🔢 Tentaizu</option>
+        </select>
+      </div>
       <div class="setting-row skin-row">
         <div class="setting-info">
           <span class="setting-name">Skin</span>
@@ -292,6 +322,57 @@ document.querySelectorAll('.lb-tab').forEach(btn => {
 });
 
 loadStats();
+
+// ── Public Profile ────────────────────────────────────────────────────────────
+const PUBLIC_ID    = "{{ public_id }}";
+let   isPublic     = {{ 'true' if is_public else 'false' }};
+let   favoriteGame = "{{ favorite_game or '' }}";
+
+function updatePublicUI() {
+  const btn       = document.getElementById('public-toggle');
+  const urlRow    = document.getElementById('public-url-row');
+  const favRow    = document.getElementById('favorite-game-row');
+  const urlLink   = document.getElementById('public-url-link');
+  btn.textContent = isPublic ? 'ON' : 'OFF';
+  btn.classList.toggle('active', isPublic);
+  urlRow.style.display = isPublic ? 'block' : 'none';
+  favRow.style.display = isPublic ? 'flex'  : 'none';
+  const url = `https://minesweeper.org/u/${PUBLIC_ID}`;
+  urlLink.href        = url;
+  urlLink.textContent = url;
+}
+
+async function saveSettings() {
+  const sel = document.getElementById('favorite-game-select');
+  favoriteGame = sel ? sel.value : favoriteGame;
+  await fetch('/api/profile/settings', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body:    JSON.stringify({ is_public: isPublic, favorite_game: favoriteGame }),
+  });
+}
+
+async function togglePublic() {
+  isPublic = !isPublic;
+  updatePublicUI();
+  await saveSettings();
+}
+
+function copyPublicUrl() {
+  const url = `https://minesweeper.org/u/${PUBLIC_ID}`;
+  navigator.clipboard.writeText(url).then(() => {
+    const msg = document.getElementById('copy-msg');
+    msg.textContent = 'Copied!';
+    setTimeout(() => { msg.textContent = ''; }, 2000);
+  });
+}
+
+// Init favorite game select
+document.addEventListener('DOMContentLoaded', () => {
+  const sel = document.getElementById('favorite-game-select');
+  if (sel) sel.value = favoriteGame;
+  updatePublicUI();
+});
 
 // ── Display Name ──────────────────────────────────────────────────────────────
 async function saveDisplayName() {

@@ -1,4 +1,6 @@
 from datetime import date
+import uuid
+from typing import Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -179,8 +181,12 @@ async def auth_callback(request: Request, db: Session = Depends(get_db)):
         email = user.get("email", "")
         profile = db.query(UserProfile).filter(UserProfile.email == email).first()
         if not profile:
-            profile = UserProfile(email=email, display_name=user.get("name", "")[:32])
+            profile = UserProfile(email=email, display_name=user.get("name", "")[:32],
+                                  public_id=str(uuid.uuid4()), is_public=False)
             db.add(profile)
+            db.commit()
+        elif not profile.public_id:
+            profile.public_id = str(uuid.uuid4())
             db.commit()
         set_session_user(request, user, display_name=profile.display_name)
     next_url = request.session.pop("next", "/")
@@ -477,14 +483,18 @@ async def terms_page(request: Request):
 
 
 @app.get("/profile", response_class=HTMLResponse)
-async def profile_page(request: Request):
+async def profile_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
     if not user:
         return RedirectResponse(url="/auth/login")
+    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
     return templates.TemplateResponse("profile.html", {
-        "request": request,
-        "mode":    "profile",
-        "user":    user,
+        "request":       request,
+        "mode":          "profile",
+        "user":          user,
+        "public_id":     profile.public_id if profile else "",
+        "is_public":     profile.is_public if profile else False,
+        "favorite_game": profile.favorite_game if profile else "",
         "lang": get_lang(request), "t": get_t(request),
     })
 
@@ -879,17 +889,10 @@ def get_tentaizu_scores(puzzle_date: str, db: Session = Depends(get_db)):
     return [s.to_dict() for s in top]
 
 
-@app.get("/api/profile/stats")
-def profile_stats(request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request)
-    if not user:
-        return JSONResponse({"error": "Not logged in"}, status_code=401)
-
-    email  = user["email"]
-    modes  = ["beginner", "intermediate", "expert", "custom"]
-    stats  = {}
-
-    for mode in modes:
+def _build_stats(email: str, db: Session) -> dict:
+    """Shared stats aggregation used by both private and public profile endpoints."""
+    stats = {}
+    for mode in ["beginner", "intermediate", "expert", "custom"]:
         scores = (
             db.query(GameHistory)
             .filter(GameHistory.user_email == email, GameHistory.mode == mode)
@@ -899,7 +902,7 @@ def profile_stats(request: Request, db: Session = Depends(get_db)):
         if not scores:
             stats[mode] = None
             continue
-        times      = [s.time_secs for s in scores]
+        times = [s.time_secs for s in scores]
         stats[mode] = {
             "games_played": len(scores),
             "best_time":    min(times),
@@ -908,7 +911,6 @@ def profile_stats(request: Request, db: Session = Depends(get_db)):
             "recent":       [s.to_dict() for s in scores[:10]],
         }
 
-    # Rush stats
     rush_scores = (
         db.query(RushScore)
         .filter(RushScore.user_email == email)
@@ -919,16 +921,15 @@ def profile_stats(request: Request, db: Session = Depends(get_db)):
         scores_list = [s.score for s in rush_scores]
         mines_list  = [s.cleared_mines or 0 for s in rush_scores]
         stats["rush"] = {
-            "games_played":  len(rush_scores),
-            "best_score":    max(scores_list),
-            "avg_score":     round(sum(scores_list) / len(scores_list), 1),
-            "total_mines":   sum(mines_list),
-            "recent":        [s.to_dict() for s in rush_scores[:10]],
+            "games_played": len(rush_scores),
+            "best_score":   max(scores_list),
+            "avg_score":    round(sum(scores_list) / len(scores_list), 1),
+            "total_mines":  sum(mines_list),
+            "recent":       [s.to_dict() for s in rush_scores[:10]],
         }
     else:
         stats["rush"] = None
 
-    # Tentaizu stats
     tz_scores = (
         db.query(TentaizuScore)
         .filter(TentaizuScore.user_email == email)
@@ -947,6 +948,56 @@ def profile_stats(request: Request, db: Session = Depends(get_db)):
         stats["tentaizu"] = None
 
     return stats
+
+
+@app.get("/api/profile/stats")
+def profile_stats(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    return _build_stats(user["email"], db)
+
+
+@app.get("/api/profile/public-stats/{public_id}")
+def public_profile_stats(public_id: str, db: Session = Depends(get_db)):
+    profile = db.query(UserProfile).filter(UserProfile.public_id == public_id).first()
+    if not profile or not profile.is_public:
+        return JSONResponse({"error": "Profile not found"}, status_code=404)
+    return _build_stats(profile.email, db)
+
+
+class ProfileSettingsUpdate(BaseModel):
+    is_public:     bool
+    favorite_game: Optional[str] = None
+
+
+@app.post("/api/profile/settings")
+def update_profile_settings(payload: ProfileSettingsUpdate, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+    if not profile:
+        return JSONResponse({"error": "Profile not found"}, status_code=404)
+    profile.is_public     = payload.is_public
+    profile.favorite_game = payload.favorite_game or None
+    db.commit()
+    return {"ok": True, "public_id": profile.public_id}
+
+
+@app.get("/u/{public_id}", response_class=HTMLResponse)
+async def public_profile_page(request: Request, public_id: str, db: Session = Depends(get_db)):
+    profile = db.query(UserProfile).filter(UserProfile.public_id == public_id).first()
+    if not profile or not profile.is_public:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return templates.TemplateResponse("profile_public.html", {
+        "request":       request,
+        "mode":          "profile",
+        "display_name":  profile.display_name,
+        "favorite_game": profile.favorite_game or "",
+        "public_id":     public_id,
+        "lang": get_lang(request), "t": get_t(request),
+    })
 
 
 class DisplayNameUpdate(BaseModel):
