@@ -234,6 +234,7 @@ class UserProfile(Base):
     is_public     = Column(Boolean, default=False, nullable=False)
     favorite_game = Column(String(32), nullable=True)
     vanity_slug   = Column(String(32), unique=True, nullable=True, index=True)
+    created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
