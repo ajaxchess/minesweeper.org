@@ -586,6 +586,11 @@ footer a:hover { text-decoration: underline; }
   flex-direction: column;
   gap: 1.25rem;
 }
+.lb-wrapper a {
+  color: var(--accent2);
+  text-decoration: none;
+}
+.lb-wrapper a:hover { text-decoration: underline; }
 
 .lb-title {
   font-size: 2rem;
