@@ -880,7 +880,7 @@ async def tentaizu_permalink(request: Request, date_str: str):
 
 class TentaizuScoreSubmit(BaseModel):
     name:        str = Field(..., min_length=1, max_length=32)
-    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    puzzle_date: str = Field(..., pattern=r"^([a-z0-9]+:)?\d{4}-\d{2}-\d{2}$")
     time_secs:   int = Field(..., ge=0, le=99999)
 
     @field_validator("name")
@@ -911,7 +911,7 @@ def submit_tentaizu_score(payload: TentaizuScoreSubmit, request: Request, db: Se
 @app.get("/api/tentaizu-scores/{puzzle_date}")
 def get_tentaizu_scores(puzzle_date: str, db: Session = Depends(get_db)):
     import re
-    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
+    if not re.match(r"^([a-z0-9]+:)?\d{4}-\d{2}-\d{2}$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
     top = (
         db.query(TentaizuScore)
