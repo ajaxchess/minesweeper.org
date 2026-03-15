@@ -439,6 +439,21 @@ async def blog_index(request: Request):
     })
 
 
+def _parse_front_matter(raw: str) -> tuple[dict, str]:
+    """Extract YAML front matter from markdown. Returns (meta dict, body text)."""
+    meta = {}
+    if raw.startswith("---"):
+        end = raw.find("\n---", 3)
+        if end != -1:
+            fm_block = raw[3:end].strip()
+            for line in fm_block.splitlines():
+                if ":" in line:
+                    key, _, val = line.partition(":")
+                    meta[key.strip()] = val.strip().strip('"').strip("'")
+            raw = raw[end + 4:].lstrip("\n")
+    return meta, raw
+
+
 @app.get("/blog/{slug}", response_class=HTMLResponse)
 async def blog_post(request: Request, slug: str):
     import markdown as md_lib
@@ -447,8 +462,9 @@ async def blog_post(request: Request, slug: str):
         from fastapi.responses import Response
         return Response(status_code=404)
     raw = open(post["file"], encoding="utf-8").read()
+    front_matter, body = _parse_front_matter(raw)
     # Strip the H1 title line — it's rendered by the template
-    lines = raw.splitlines()
+    lines = body.splitlines()
     if lines and lines[0].startswith("# "):
         lines = lines[1:]
     html_content = md_lib.markdown(
@@ -456,11 +472,13 @@ async def blog_post(request: Request, slug: str):
         extensions=["extra", "sane_lists"],
     )
     return templates.TemplateResponse("blog_post.html", {
-        "request": request, "mode": "blog",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "post": post,
-        "content": html_content,
+        "request":   request, "mode": "blog",
+        "user":      get_current_user(request),
+        "lang":      get_lang(request), "t": get_t(request),
+        "post":      post,
+        "content":   html_content,
+        "author":    front_matter.get("author", ""),
+        "authorurl": front_matter.get("authorurl", ""),
     })
 
 

@@ -2043,10 +2043,25 @@ footer {
   line-height: 1.2;
   margin: 0 0 0.5rem;
 }
+.blog-article-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
 .blog-article-date {
   font-size: 0.85rem;
   color: var(--text-muted, #888);
 }
+.blog-article-byline {
+  font-size: 0.85rem;
+  color: var(--text-muted, #888);
+}
+.blog-author-link {
+  color: var(--accent2);
+  text-decoration: none;
+}
+.blog-author-link:hover { text-decoration: underline; }
 
 /* Article body — rendered markdown */
 .blog-article-body {
