@@ -3042,6 +3042,37 @@ html[data-skin="classic"] .quest-progress-bar { background: #c0c0c0; }
 html[data-skin="classic"] .quests-subtitle { color: #444444; }
 html[data-skin="classic"] a { color: #ff3300; }
 html[data-skin="classic"] a:visited { color: #0033ff; }
+
+/* ── Classic skin: Tentaizu landing / subnav ─────────────────────────────── */
+html[data-skin="classic"] .tz-subnav-card {
+  background: #ffffff;
+  border: 2px solid #1a4040;
+  color: #000000;
+}
+html[data-skin="classic"] .tz-subnav-card:hover {
+  background: #e8f0f0;
+  border-color: #1a4040;
+}
+html[data-skin="classic"] .tz-subnav-card strong {
+  color: #000000 !important;
+}
+html[data-skin="classic"] .tz-subnav-card span:last-child {
+  color: #444444 !important;
+}
+html[data-skin="classic"] .tz-section {
+  background: #f5f5f5;
+  border: 1px solid #cccccc;
+  color: #000000;
+}
+html[data-skin="classic"] .tz-section h2 { color: #0033cc; }
+html[data-skin="classic"] .tz-section p,
+html[data-skin="classic"] .tz-list      { color: #000000; }
+html[data-skin="classic"] .tz-landing-h1 { color: #000000; }
+html[data-skin="classic"] .tz-btn-random {
+  background: #c0c0c0;
+  color: #000000;
+  border: 1px solid #808080;
+}
 /* Nav links stay white — more specific selector */
 html[data-skin="classic"] nav a,
 html[data-skin="classic"] nav a:visited { color: #ffffff; font-weight: 700; text-shadow: 1px 1px 3px #000, 0 0 6px #000; }
