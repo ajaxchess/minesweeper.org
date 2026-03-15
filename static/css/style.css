@@ -207,7 +207,8 @@ html[data-skin="classic"] .game-landing-welcome {
 html[data-skin="classic"] .game-landing-title,
 html[data-skin="classic"] .game-landing-lb-title { color: #0033cc; }
 html[data-skin="classic"] .game-landing-welcome p { color: #000000; }
-html[data-skin="classic"] .game-landing-links a {
+html[data-skin="classic"] .game-landing-links a,
+html[data-skin="classic"] .game-landing-links a:visited {
   color: #0033cc;
   border-color: #0033cc;
   text-shadow: none;
