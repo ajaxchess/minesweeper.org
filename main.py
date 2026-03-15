@@ -441,16 +441,19 @@ async def blog_index(request: Request):
 
 def _parse_front_matter(raw: str) -> tuple[dict, str]:
     """Extract YAML front matter from markdown. Returns (meta dict, body text)."""
+    import re
     meta = {}
-    if raw.startswith("---"):
-        end = raw.find("\n---", 3)
-        if end != -1:
-            fm_block = raw[3:end].strip()
-            for line in fm_block.splitlines():
-                if ":" in line:
-                    key, _, val = line.partition(":")
-                    meta[key.strip()] = val.strip().strip('"').strip("'")
-            raw = raw[end + 4:].lstrip("\n")
+    # Strip UTF-8 BOM if present
+    raw = raw.lstrip("\ufeff")
+    # Normalise line endings
+    raw = raw.replace("\r\n", "\n").replace("\r", "\n")
+    m = re.match(r"^---\n(.*?\n)---\n", raw, re.DOTALL)
+    if m:
+        for line in m.group(1).splitlines():
+            if ":" in line:
+                key, _, val = line.partition(":")
+                meta[key.strip()] = val.strip().strip('"').strip("'")
+        raw = raw[m.end():].lstrip("\n")
     return meta, raw
 
 
