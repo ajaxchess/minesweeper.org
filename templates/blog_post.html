@@ -7,6 +7,29 @@
 {% block og_title %}{{ post.title }} — minesweeper.org Blog{% endblock %}
 {% block og_description %}{{ post.excerpt }}{% endblock %}
 
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": {{ post.title | tojson }},
+  "url": "https://minesweeper.org/blog/{{ post.slug }}",
+  "datePublished": {{ post.date | tojson }},
+  "description": {{ post.excerpt | tojson }},
+  {% if og_image %}"image": {{ og_image | tojson }},{% endif %}
+  {% if author %}"author": {
+    "@type": "Person",
+    "name": {{ author | tojson }}{% if authorurl %},
+    "url": {{ authorurl | tojson }}{% endif %}
+  },{% endif %}
+  {% if publisher %}"publisher": {
+    "@type": "Organization",
+    "name": {{ publisher | tojson }}
+  }{% endif %}
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="blog-wrapper">
 

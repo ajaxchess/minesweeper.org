@@ -491,6 +491,8 @@ async def blog_post(request: Request, slug: str):
         "content":   html_content,
         "author":    front_matter.get("author", ""),
         "authorurl": front_matter.get("authorurl", ""),
+        "publisher": front_matter.get("publisher", ""),
+        "og_image":  front_matter.get("image", ""),
     })
 
 
