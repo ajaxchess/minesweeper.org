@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Admin — minesweeper.org{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">Admin Dashboard</h1>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">{{ today }} · signed in as {{ user.email }}</p>
+
+  <!-- Users -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Users</h2>
+    <table class="lb-table">
+      <thead><tr><th></th><th>Today</th><th>All Time</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Registered users</td>
+          <td>{{ new_users_today }}</td>
+          <td>{{ total_users }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Classic Minesweeper — submitted scores -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Classic Minesweeper — Submitted Scores</h2>
+    <table class="lb-table">
+      <thead><tr><th>Mode</th><th>Today</th><th>All Time</th></tr></thead>
+      <tbody>
+        {% for mode in ['beginner','intermediate','expert','custom'] %}
+        <tr>
+          <td>{{ mode|capitalize }}</td>
+          <td>{{ ms_today.get(mode, 0) }}</td>
+          <td>{{ ms_all.get(mode, 0) }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="admin-total">
+          <td><strong>Total</strong></td>
+          <td><strong>{{ ms_today.values()|sum }}</strong></td>
+          <td><strong>{{ ms_all.values()|sum }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Classic Minesweeper — games played -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Classic Minesweeper — Games Played (logged-in users)</h2>
+    <table class="lb-table">
+      <thead><tr><th>Mode</th><th>Today</th><th>All Time</th></tr></thead>
+      <tbody>
+        {% for mode in ['beginner','intermediate','expert','custom'] %}
+        <tr>
+          <td>{{ mode|capitalize }}</td>
+          <td>{{ gh_today.get(mode, 0) }}</td>
+          <td>{{ gh_all.get(mode, 0) }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="admin-total">
+          <td><strong>Total</strong></td>
+          <td><strong>{{ gh_today.values()|sum }}</strong></td>
+          <td><strong>{{ gh_all.values()|sum }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Rush -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Rush Mode — Submitted Scores</h2>
+    <table class="lb-table">
+      <thead><tr><th>Mode</th><th>Today</th><th>All Time</th></tr></thead>
+      <tbody>
+        {% for mode in ['easy','normal','hard'] %}
+        <tr>
+          <td>{{ mode|capitalize }}</td>
+          <td>{{ rush_today.get(mode, 0) }}</td>
+          <td>{{ rush_all.get(mode, 0) }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="admin-total">
+          <td><strong>Total</strong></td>
+          <td><strong>{{ rush_today.values()|sum }}</strong></td>
+          <td><strong>{{ rush_all.values()|sum }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Tentaizu -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Tentaizu — Submitted Scores</h2>
+    <table class="lb-table">
+      <thead><tr><th></th><th>Today</th><th>All Time</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Puzzles solved</td>
+          <td>{{ tent_today }}</td>
+          <td>{{ tent_all }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Cylinder -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Cylinder Minesweeper — Submitted Scores</h2>
+    <table class="lb-table">
+      <thead><tr><th>Mode</th><th>Today</th><th>All Time</th></tr></thead>
+      <tbody>
+        {% for mode in ['beginner','intermediate','expert','custom'] %}
+        <tr>
+          <td>{{ mode|capitalize }}</td>
+          <td>{{ cyl_today.get(mode, 0) }}</td>
+          <td>{{ cyl_all.get(mode, 0) }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="admin-total">
+          <td><strong>Total</strong></td>
+          <td><strong>{{ cyl_today.values()|sum }}</strong></td>
+          <td><strong>{{ cyl_all.values()|sum }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Toroid -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Toroid Minesweeper — Submitted Scores</h2>
+    <table class="lb-table">
+      <thead><tr><th>Mode</th><th>Today</th><th>All Time</th></tr></thead>
+      <tbody>
+        {% for mode in ['beginner','intermediate','expert','custom'] %}
+        <tr>
+          <td>{{ mode|capitalize }}</td>
+          <td>{{ tor_today.get(mode, 0) }}</td>
+          <td>{{ tor_all.get(mode, 0) }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="admin-total">
+          <td><strong>Total</strong></td>
+          <td><strong>{{ tor_today.values()|sum }}</strong></td>
+          <td><strong>{{ tor_all.values()|sum }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="lb-back"><a href="/">← Home</a></div>
+
+</div>
+{% endblock %}

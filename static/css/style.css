@@ -752,6 +752,22 @@ footer a:hover { text-decoration: underline; }
 
 .lb-back a:hover { background: var(--surface2); }
 
+/* ── Admin dashboard ─────────────────────────────────────────────────────── */
+.admin-section {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+}
+.admin-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent2);
+  margin: 0 0 0.75rem;
+  letter-spacing: 0.5px;
+}
+.admin-total td { border-top: 1px solid var(--surface2); }
+
 .pvp-badge {
   font-size: 0.8rem;
   font-weight: 600;
