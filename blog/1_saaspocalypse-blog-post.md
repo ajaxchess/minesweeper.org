@@ -1,3 +1,11 @@
+---
+title: "SaaSpocaplypse.Now"
+author: "Richard Cross"
+authorurl: "https://minesweeper.org/u/46b3f10d-1d0e-41a4-acc1-9f2f36da8cf6"
+date: 2025-03-15
+description: "Discuss my thoughts on the SaaSpocalypse and wordpress in the age of Vibe coding"
+---
+
 # SaaSpocalypse.Now!
 
 *The first post on the minesweeper.org blog — built without a CMS, because we don't need one anymore.*

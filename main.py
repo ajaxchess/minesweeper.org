@@ -488,6 +488,9 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
     if not user:
         return RedirectResponse(url="/auth/login")
     profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+    if profile and not profile.public_id:
+        profile.public_id = str(uuid.uuid4())
+        db.commit()
     return templates.TemplateResponse("profile.html", {
         "request":       request,
         "mode":          "profile",
