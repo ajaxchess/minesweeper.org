@@ -1,5 +1,7 @@
 ---
 title: "She's Back: The Return of Lady Di's Mines"
+publisher: "Lady Di's Mines"
+image: "https://minesweeper.org/static/img/ladydi-walks-minefield.png"
 author: "Richard Cross"
 authorurl: "https://minesweeper.org/u/ajaxchess"
 date: 2026-03-15
