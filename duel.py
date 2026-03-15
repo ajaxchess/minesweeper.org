@@ -8,7 +8,7 @@ from typing import Optional
 from fastapi import WebSocket
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-ROWS, COLS, MINES             = 16, 30, 99   # Expert (private duel)
+ROWS, COLS, MINES             = 30, 16, 99   # Expert (private duel)
 PVP_ROWS, PVP_COLS, PVP_MINES = 24, 16, 75  # PvP matchmaking
 
 POINTS_PER_TILE = 5
