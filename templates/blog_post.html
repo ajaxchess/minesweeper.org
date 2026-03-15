@@ -6,6 +6,7 @@
 {% block og_url %}https://minesweeper.org/blog/{{ post.slug }}{% endblock %}
 {% block og_title %}{{ post.title }} — minesweeper.org Blog{% endblock %}
 {% block og_description %}{{ post.excerpt }}{% endblock %}
+{% if og_image %}{% block og_image %}{{ og_image }}{% endblock %}{% endif %}
 
 {% block jsonld %}
 <script type="application/ld+json">
@@ -46,6 +47,10 @@
         {% endif %}
       </div>
     </div>
+
+    {% if og_image %}
+    <img src="{{ og_image }}" alt="{{ post.title }}" class="blog-article-image">
+    {% endif %}
 
     <div class="blog-article-body">
       {{ content | safe }}
