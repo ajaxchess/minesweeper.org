@@ -1110,3 +1110,82 @@ def update_display_name(payload: DisplayNameUpdate, request: Request, db: Sessio
     # Update session so the new name is used immediately
     request.session["user"]["display_name"] = payload.display_name
     return {"ok": True, "display_name": payload.display_name}
+
+
+# ── Admin ─────────────────────────────────────────────────────────────────────
+ADMIN_EMAILS = {"ajaxchess@gmail.com", "ecgero@gmail.com", "gwarpp@gmail.com"}
+
+@app.get("/admin", response_class=HTMLResponse)
+def admin_dashboard(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    today = date.today()
+
+    def _counts(model, mode_col):
+        """Return (today_count, alltime_count) dicts keyed by mode value."""
+        from sqlalchemy import cast, Date
+        rows_all = (
+            db.query(mode_col, func.count().label("n"))
+            .group_by(mode_col)
+            .all()
+        )
+        rows_today = (
+            db.query(mode_col, func.count().label("n"))
+            .filter(func.date(model.created_at) == today)
+            .group_by(mode_col)
+            .all()
+        )
+        return (
+            {r[0]: r[1] for r in rows_today},
+            {r[0]: r[1] for r in rows_all},
+        )
+
+    # Classic minesweeper (uses Score table for submitted scores, GameHistory for all plays)
+    ms_today, ms_all = _counts(Score, Score.mode)
+    gh_today, gh_all = _counts(GameHistory, GameHistory.mode)
+
+    # Rush
+    rush_today, rush_all = _counts(RushScore, RushScore.rush_mode)
+
+    # Tentaizu (group by puzzle_date for today)
+    tent_all_count = db.query(func.count()).select_from(TentaizuScore).scalar()
+    tent_today_count = (
+        db.query(func.count()).select_from(TentaizuScore)
+        .filter(func.date(TentaizuScore.created_at) == today)
+        .scalar()
+    )
+
+    # Cylinder / Toroid
+    cyl_today, cyl_all = _counts(CylinderScore, CylinderScore.cyl_mode)
+    tor_today, tor_all = _counts(ToroidScore, ToroidScore.tor_mode)
+
+    # Users
+    total_users = db.query(func.count()).select_from(UserProfile).scalar()
+    new_users_today = (
+        db.query(func.count()).select_from(UserProfile)
+        .filter(func.date(UserProfile.created_at) == today)
+        .scalar()
+        if hasattr(UserProfile, "created_at") else "n/a"
+    )
+
+    return templates.TemplateResponse("admin.html", {
+        "request": request,
+        "user": user,
+        "today": today.isoformat(),
+        "total_users": total_users,
+        "new_users_today": new_users_today,
+        "ms_today": ms_today,
+        "ms_all": ms_all,
+        "gh_today": gh_today,
+        "gh_all": gh_all,
+        "rush_today": rush_today,
+        "rush_all": rush_all,
+        "tent_today": tent_today_count,
+        "tent_all": tent_all_count,
+        "cyl_today": cyl_today,
+        "cyl_all": cyl_all,
+        "tor_today": tor_today,
+        "tor_all": tor_all,
+    })
