@@ -33,7 +33,7 @@ The theme wraps the classic minesweeper grid in a deep blue textured background 
 
 ## The Cause Hasn't Gone Away
 
-The HALO Trust has destroyed over 3.2 million landmines across 30 countries. The minefield Diana walked through in Huambo is now a neighborhood with homes and schools. But the conflict in Ukraine has brought a devastating resurgence of mine-laying, and dozens of countries remain contaminated. Diana's wish that all landmines be banned in her lifetime did not come true.
+The HALO Trust has destroyed over 14 million explosives across more than 30 countries since its founding in 1988. The minefield Diana walked through in Huambo is now a neighborhood with homes and schools. But the conflict in Ukraine has brought a devastating resurgence of mine-laying, and dozens of countries remain contaminated. Diana's wish that all landmines be banned in her lifetime did not come true.
 
 If you'd like to help, consider supporting **[The HALO Trust](https://halotrust.org/)** — the world's largest humanitarian mine clearance organization and the charity Diana worked with directly in Angola. You can also find links to other landmine organizations on the [minesweeper.org about page](https://minesweeper.org/about).
 
