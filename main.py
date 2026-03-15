@@ -404,6 +404,14 @@ async def about_page(request: Request):
 # excerpt: one-sentence summary shown on the index page
 BLOG_POSTS = [
     {
+        "slug":    "lady-di",
+        "file":    "blog/lady-di-blog-post.md",
+        "title":   "She's Back: The Return of Lady Di's Mines",
+        "date":    "2026-03-15",
+        "excerpt": "I built the original minesweeper.org in 1999 as a Physics PhD student. "
+                   "Here's the story of Lady Di's Mines — and why she's back.",
+    },
+    {
         "slug":    "saaspocalypse",
         "file":    "blog/1_saaspocalypse-blog-post.md",
         "title":   "SaaSpocalypse.Now!",
