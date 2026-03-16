@@ -1684,11 +1684,11 @@ footer a:hover { text-decoration: underline; }
 
 @keyframes rush-cascade-flash {
   0%   { background: rgba(83, 216, 251, 0.45); }
-  100% { background: transparent; }
+  100% { background: var(--cell-rev); }
 }
 
 .cell.rush-cascade {
-  animation: rush-cascade-flash 0.8s ease-out forwards;
+  animation: rush-cascade-flash 0.8s ease-out;
 }
 
 /* ── Incoming fill marks ─────────────────────────────────────────────────── */
