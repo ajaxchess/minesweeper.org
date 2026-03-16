@@ -939,10 +939,12 @@ function showRushOverlay() {
   `;
   el.style.display = 'flex';
 
-  if (username) {
-    submitRushScore(username);
-  } else {
-    setTimeout(() => document.getElementById('rush-player-name')?.focus(), 50);
+  if (rush.mode !== 'custom') {
+    if (username) {
+      submitRushScore(username);
+    } else {
+      setTimeout(() => document.getElementById('rush-player-name')?.focus(), 50);
+    }
   }
 }
 
@@ -974,7 +976,10 @@ async function submitRushScore(autoName = null) {
       loadRushLeaderboard(rush.mode);
     } else {
       const err = await res.json().catch(() => ({}));
-      if (msgEl) msgEl.textContent = err.detail ? `❌ ${err.detail}` : window.T.rush_save_failed;
+      const detail = Array.isArray(err.detail)
+        ? err.detail.map(e => e.msg).join(', ')
+        : (typeof err.detail === 'string' ? err.detail : null);
+      if (msgEl) msgEl.textContent = detail ? `❌ ${detail}` : window.T.rush_save_failed;
     }
   } catch {
     if (msgEl) msgEl.textContent = '❌ Network error.';
