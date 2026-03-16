@@ -67,7 +67,15 @@ const RUSH_CFGS = {
   easy:   { cols: 9,  density: 0.10, intervalMs: 15000, maxActive: 12 },
   normal: { cols: 16, density: 0.15, intervalMs: 20000, maxActive: 16 },
   hard:   { cols: 30, density: 0.20, intervalMs: 25000, maxActive: 20 },
+  custom: { cols: 9,  density: 0.11, intervalMs: 15000, maxActive: 12 }, // updated by UI
 };
+
+function buildCustomCfg(cols, minesPerRow) {
+  const density    = minesPerRow / cols;
+  const intervalMs = Math.round(13000 + cols * 400);           // ~15s @ 5 cols → ~25s @ 30 cols
+  const maxActive  = Math.max(8, Math.min(20, Math.round(10 + cols / 3)));
+  return { cols, density, intervalMs, maxActive };
+}
 
 const INITIAL_ROWS  = 8;    // rows to start with (pre-built, no animation)
 const MIN_ROWS      = 4;    // if unfinished rows < this, add 4 immediately
@@ -897,7 +905,9 @@ function showRushOverlay() {
   const finalScore  = rush.elapsed + rush.clearedMines * 5;
 
   let scoreForm;
-  if (username) {
+  if (rush.mode === 'custom') {
+    scoreForm = `<div id="rush-score-msg" style="font-size:0.85rem;color:var(--text-dim)">Custom mode — scores are not tracked on the leaderboard.</div>`;
+  } else if (username) {
     scoreForm = `<div id="rush-score-msg" style="font-size:0.9rem">${window.T.rush_saving}</div>`;
   } else {
     scoreForm = `
@@ -1122,9 +1132,47 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.rush-mode-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      initRush(btn.dataset.mode);
+      const panel = document.getElementById('rush-custom-panel');
+      if (btn.dataset.mode === 'custom') {
+        if (panel) panel.style.display = 'block';
+        // Don't start the game yet — wait for "Start Game"
+      } else {
+        if (panel) panel.style.display = 'none';
+        initRush(btn.dataset.mode);
+      }
     });
   });
+
+  // Custom config: update density hint when inputs change
+  function updateCustomHint() {
+    const colsEl  = document.getElementById('custom-cols');
+    const minesEl = document.getElementById('custom-mines');
+    const hintEl  = document.getElementById('custom-density-hint');
+    const pctEl   = document.getElementById('custom-mine-pct');
+    const valEl   = document.getElementById('custom-cols-val');
+    if (!colsEl || !minesEl) return;
+    const cols  = parseInt(colsEl.value, 10);
+    const mines = Math.max(1, Math.min(parseInt(minesEl.value, 10) || 1, Math.floor(cols * 0.45)));
+    minesEl.max   = Math.floor(cols * 0.45);
+    minesEl.value = mines;
+    const pct = Math.round((mines / cols) * 100);
+    if (valEl)  valEl.textContent  = cols;
+    if (hintEl) hintEl.textContent = ` (${pct}% mine density)`;
+    if (pctEl)  pctEl.textContent  = `${pct}% of cells`;
+  }
+  document.getElementById('custom-cols')?.addEventListener('input', updateCustomHint);
+  document.getElementById('custom-mines')?.addEventListener('input', updateCustomHint);
+  updateCustomHint();
+
+  function applyCustomRush() {
+    const cols  = parseInt(document.getElementById('custom-cols').value, 10);
+    const mines = parseInt(document.getElementById('custom-mines').value, 10);
+    Object.assign(RUSH_CFGS.custom, buildCustomCfg(cols, mines));
+    const panel = document.getElementById('rush-custom-panel');
+    if (panel) panel.style.display = 'none';
+    initRush('custom');
+  }
+  window.applyCustomRush = applyCustomRush;
 
   // Reset button
   document.getElementById('rush-reset-btn')

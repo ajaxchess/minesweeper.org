@@ -106,6 +106,7 @@
           <button class="rush-mode-btn active" data-mode="easy">{{ t.rush_easy }}</button>
           <button class="rush-mode-btn" data-mode="normal">{{ t.rush_normal }}</button>
           <button class="rush-mode-btn" data-mode="hard">{{ t.rush_hard }}</button>
+          <button class="rush-mode-btn" data-mode="custom">Custom</button>
         </div>
       </div>
       <div class="stat-row">
@@ -140,6 +141,39 @@
       </div>
       <div id="rush-penalty" class="rush-penalty-msg" style="opacity:0" aria-live="polite"></div>
       <button id="rush-flag-mode-btn" class="flag-mode-btn" onclick="toggleRushFlagMode()" title="Toggle flag mode">🚩 Flag</button>
+    </div>
+
+    <!-- Custom mode config panel -->
+    <div id="rush-custom-panel" class="rush-custom-panel" style="display:none">
+      <h3 class="rush-custom-title">Custom Rush</h3>
+
+      <div class="rush-custom-fields">
+        <label class="rush-custom-label">
+          Board width (columns):
+          <div class="rush-custom-slider-row">
+            <input type="range" id="custom-cols" min="5" max="30" value="9" class="rush-custom-range">
+            <span id="custom-cols-val" class="rush-custom-val">9</span>
+          </div>
+        </label>
+
+        <label class="rush-custom-label">
+          Mines per row (on average):
+          <div class="rush-custom-slider-row">
+            <input type="number" id="custom-mines" min="1" max="13" value="1" class="rush-custom-number">
+            <span id="custom-density-hint" class="rush-custom-val"></span>
+          </div>
+        </label>
+      </div>
+
+      <div class="rush-custom-explainer">
+        <strong>How Custom Rush works:</strong>
+        Each new row added from the top contains the same average mine density as your
+        starting rows — <strong id="custom-mine-pct">11% of cells</strong> will be mines.
+        The game speed and board size scale with your choices.
+        Scores are not tracked on the leaderboard for custom games.
+      </div>
+
+      <button class="rush-custom-start-btn" onclick="applyCustomRush()">▶ Start Custom Game</button>
     </div>
 
     <!-- Board -->
@@ -297,5 +331,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/rush.js?v=4"></script>
+<script src="/static/js/rush.js?v=5"></script>
 {% endblock %}

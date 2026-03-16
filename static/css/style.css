@@ -1456,6 +1456,80 @@ footer a:hover { text-decoration: underline; }
 .rush-mode-btn:hover  { color: var(--text); border-color: var(--text-dim); }
 .rush-mode-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(233,69,96,0.12); }
 
+/* ── Rush custom config panel ────────────────────────────────────────────── */
+.rush-custom-panel {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.rush-custom-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent2);
+  margin: 0;
+}
+.rush-custom-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.rush-custom-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.rush-custom-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.rush-custom-range {
+  flex: 1;
+  accent-color: var(--accent2);
+}
+.rush-custom-number {
+  width: 4.5rem;
+  padding: 0.25rem 0.4rem;
+  background: var(--surface2);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+.rush-custom-val {
+  font-size: 0.85rem;
+  color: var(--accent2);
+  min-width: 5rem;
+}
+.rush-custom-explainer {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  padding: 0.6rem 0.75rem;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--accent2);
+}
+.rush-custom-start-btn {
+  align-self: flex-start;
+  padding: 0.45rem 1.25rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.rush-custom-start-btn:hover { opacity: 0.85; }
+
 .rush-timer-val {
   min-width: 4ch;
   text-align: right;
