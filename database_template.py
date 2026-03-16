@@ -2,7 +2,7 @@
 database.py — SQLAlchemy setup for MySQL via PyMySQL
 """
 from sqlalchemy import (
-    create_engine, Column, Integer, String,
+    create_engine, Column, Integer, String, Float,
     DateTime, Enum, Index, Boolean
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
@@ -121,7 +121,8 @@ class RushScore(Base):
     cleared_mines = Column(Integer, nullable=True)           # mines in cleared rows
     time_secs     = Column(Integer, nullable=False)          # game duration (seconds)
     cols          = Column(Integer, nullable=False)          # board width
-    rush_mode  = Column(String(16), nullable=False)  # easy/normal/hard
+    density       = Column(Float, nullable=True)             # mines/cell (custom mode)
+    rush_mode  = Column(String(16), nullable=False)  # easy/normal/hard/custom
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -136,6 +137,7 @@ class RushScore(Base):
             "cleared_mines":self.cleared_mines,
             "time_secs":    self.time_secs,
             "cols":         self.cols,
+            "density":      self.density,
             "rush_mode":    self.rush_mode,
             "created_at":   self.created_at.strftime("%Y-%m-%d"),
         }

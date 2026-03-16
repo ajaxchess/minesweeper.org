@@ -288,15 +288,16 @@ async def rush(request: Request):
 
 # ── Rush Leaderboard API ───────────────────────────────────────────────────────
 
-RUSH_MODES_VALID = {"easy", "normal", "hard"}
+RUSH_MODES_VALID = {"easy", "normal", "hard", "custom"}
 
 class RushScoreSubmit(BaseModel):
     name:          str = Field(..., min_length=1, max_length=32)
-    rush_mode:     str = Field(..., pattern="^(easy|normal|hard)$")
+    rush_mode:     str = Field(..., pattern="^(easy|normal|hard|custom)$")
     score:         int = Field(..., ge=0, le=9_999_999)   # elapsed + cleared_mines*5
     cleared_mines: int = Field(..., ge=0, le=99999)
     time_secs:     int = Field(..., ge=1, le=99999)
-    cols:          int = Field(..., ge=9, le=30)
+    cols:          int = Field(..., ge=5, le=30)
+    density:       Optional[float] = Field(None, ge=0.0, le=1.0)
 
     @field_validator("name")
     @classmethod
@@ -318,6 +319,7 @@ def submit_rush_score(payload: RushScoreSubmit, request: Request, db: Session = 
         cleared_mines = payload.cleared_mines,
         time_secs     = payload.time_secs,
         cols          = payload.cols,
+        density       = payload.density,
         rush_mode     = payload.rush_mode,
     )
     db.add(entry)

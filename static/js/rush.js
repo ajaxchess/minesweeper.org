@@ -905,9 +905,7 @@ function showRushOverlay() {
   const finalScore  = rush.elapsed + rush.clearedMines * 5;
 
   let scoreForm;
-  if (rush.mode === 'custom') {
-    scoreForm = `<div id="rush-score-msg" style="font-size:0.85rem;color:var(--text-dim)">Custom mode — scores are not tracked on the leaderboard.</div>`;
-  } else if (username) {
+  if (username) {
     scoreForm = `<div id="rush-score-msg" style="font-size:0.9rem">${window.T.rush_saving}</div>`;
   } else {
     scoreForm = `
@@ -939,12 +937,10 @@ function showRushOverlay() {
   `;
   el.style.display = 'flex';
 
-  if (rush.mode !== 'custom') {
-    if (username) {
-      submitRushScore(username);
-    } else {
-      setTimeout(() => document.getElementById('rush-player-name')?.focus(), 50);
-    }
+  if (username) {
+    submitRushScore(username);
+  } else {
+    setTimeout(() => document.getElementById('rush-player-name')?.focus(), 50);
   }
 }
 
@@ -966,6 +962,7 @@ async function submitRushScore(autoName = null) {
         cleared_mines: rush.clearedMines,
         time_secs:     rush.elapsed,
         cols:          rush.cols,
+        density:       rush.mode === 'custom' ? rush.density : undefined,
       }),
     });
     if (res.ok) {
@@ -991,6 +988,10 @@ async function loadRushLeaderboard(mode) {
   const wrap = document.getElementById('rush-lb-content');
   if (!wrap) return;
   wrap.innerHTML = `<div class="lb-loading">${window.T.rush_lb_loading}</div>`;
+  // Sync active tab
+  document.querySelectorAll('.rush-lb-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.mode === mode);
+  });
 
   try {
     const res  = await fetch(`/api/rush-scores/${mode}`);
@@ -1004,25 +1005,31 @@ async function loadRushLeaderboard(mode) {
     }
 
     const medals = ['🥇','🥈','🥉'];
+    const isCustom = mode === 'custom';
     const trs = rows.map((s, i) => {
       const cls  = i < 3 ? `top-${i+1}` : '';
       const rank = medals[i] || `#${i+1}`;
       const time = fmtTime(s.time_secs);
+      const paramsCell = isCustom
+        ? `<td class="lb-score" style="font-size:0.8rem;opacity:0.8">${s.cols}cols · ${s.density != null ? Math.round(s.density * s.cols) : '?'} mines/row</td>`
+        : '';
       return `<tr class="${cls}">
         <td class="lb-rank">${rank}</td>
         <td class="lb-name">${escHtml(s.name)}</td>
         <td class="lb-score">${s.score}</td>
         <td class="lb-score">${s.cleared_mines ?? '—'} mines</td>
+        ${paramsCell}
         <td class="lb-time">${time}</td>
         <td class="lb-date">${s.created_at}</td>
       </tr>`;
     }).join('');
 
+    const paramsHeader = isCustom ? '<th>Params</th>' : '';
     wrap.innerHTML = `
       <div class="lb-table-wrap">
         <table class="lb-table">
           <thead><tr>
-            <th>#</th><th>Name</th><th>Score</th><th>Mines</th><th>Time</th><th>Date</th>
+            <th>#</th><th>Name</th><th>Score</th><th>Mines</th>${paramsHeader}<th>Time</th><th>Date</th>
           </tr></thead>
           <tbody>${trs}</tbody>
         </table>
