@@ -292,16 +292,16 @@ def _enrich_with_profiles(scores: list, db) -> list:
         return [s.to_dict() for s in scores]
 
     profiles = (
-        db.query(UserProfile.user_email, UserProfile.vanity_slug, UserProfile.public_id)
-        .filter(UserProfile.user_email.in_(emails))
+        db.query(UserProfile.email, UserProfile.vanity_slug, UserProfile.public_id)
+        .filter(UserProfile.email.in_(emails))
         .all()
     )
     url_map: dict = {}
     for p in profiles:
         if p.vanity_slug:
-            url_map[p.user_email] = f"/u/{p.vanity_slug}"
+            url_map[p.email] = f"/u/{p.vanity_slug}"
         elif p.public_id:
-            url_map[p.user_email] = f"/u/{p.public_id}"
+            url_map[p.email] = f"/u/{p.public_id}"
 
     result = []
     for s in scores:
