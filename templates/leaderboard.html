@@ -26,8 +26,14 @@
     <button class="lb-ng-btn"        data-ng="true">⚡ No-Guess mode</button>
   </div>
 
+  <div class="lb-period-toggle" role="group" aria-label="Time period">
+    <button class="lb-period-btn active" data-period="daily">Daily</button>
+    <button class="lb-period-btn"        data-period="season" id="season-btn">Season 1</button>
+    <button class="lb-period-btn"        data-period="alltime">All Time</button>
+  </div>
+
   <div class="lb-meta" id="lb-meta"></div>
-  <p class="lb-daily-note">Scores reset daily at midnight UTC — can you top today's board?</p>
+  <p class="lb-daily-note" id="lb-period-note">Scores reset daily at midnight UTC — can you top today's board?</p>
 
   <div class="lb-table-wrap">
     <table class="lb-table" id="lb-table">
@@ -67,8 +73,30 @@
 <script>
 const MEDALS = ['🥇','🥈','🥉'];
 
-let currentMode   = 'beginner';
+// Season numbering: Season 1 = March 2026
+const SEASON_ORIGIN_YEAR  = 2026;
+const SEASON_ORIGIN_MONTH = 2; // 0-indexed (March)
+
+function currentSeasonNum() {
+  const now = new Date();
+  return (now.getFullYear() - SEASON_ORIGIN_YEAR) * 12
+       + (now.getMonth() - SEASON_ORIGIN_MONTH) + 1;
+}
+
+function seasonLabel(n) {
+  const d = new Date(SEASON_ORIGIN_YEAR, SEASON_ORIGIN_MONTH + n - 1, 1);
+  return `Season ${n} — ${d.toLocaleString('default', { month: 'long', year: 'numeric' })}`;
+}
+
+const PERIOD_NOTES = {
+  daily:   'Today\'s best scores — resets at midnight UTC.',
+  season:  () => `${seasonLabel(currentSeasonNum())} — best score per player.`,
+  alltime: 'All-time records — best score per player.',
+};
+
+let currentMode    = 'beginner';
 let currentNoGuess = false;
+let currentPeriod  = 'daily';
 
 function fmtTime(s) {
   // Prefer time_ms for display; fall back to integer time_secs
@@ -90,20 +118,29 @@ function fmtEff(bbbv, leftClicks, chordClicks) {
   return Math.round(bbbv / total * 100) + '%';
 }
 
-async function loadScores(mode, noGuess = currentNoGuess) {
+async function loadScores(mode, noGuess = currentNoGuess, period = currentPeriod) {
   currentMode    = mode;
   currentNoGuess = noGuess;
-  const body  = document.getElementById('lb-body');
-  const meta  = document.getElementById('lb-meta');
+  currentPeriod  = period;
+
+  const body     = document.getElementById('lb-body');
+  const meta     = document.getElementById('lb-meta');
+  const noteEl   = document.getElementById('lb-period-note');
   body.innerHTML = `<tr><td colspan="9" class="lb-loading">${window.T.lb_loading}</td></tr>`;
   meta.textContent = '';
 
+  const note = PERIOD_NOTES[period];
+  if (noteEl) noteEl.textContent = typeof note === 'function' ? note() : note;
+
   try {
-    const res  = await fetch(`/api/scores/${mode}?no_guess=${noGuess}`);
+    const res  = await fetch(`/api/scores/${mode}?no_guess=${noGuess}&period=${period}`);
     const data = await res.json();
 
     if (!data.length) {
-      body.innerHTML = `<tr><td colspan="9" class="lb-empty">No scores yet today — be the first!</td></tr>`;
+      const emptyMsg = period === 'daily'   ? 'No scores yet today — be the first!'
+                     : period === 'season'  ? `No scores yet this season — be the first!`
+                     :                        'No all-time scores yet — be the first!';
+      body.innerHTML = `<tr><td colspan="9" class="lb-empty">${emptyMsg}</td></tr>`;
       return;
     }
 
@@ -151,6 +188,14 @@ document.querySelectorAll('.lb-ng-btn').forEach(btn => {
   });
 });
 
+document.querySelectorAll('.lb-period-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lb-period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadScores(currentMode, currentNoGuess, btn.dataset.period);
+  });
+});
+
 // ── Stat column tooltips ──────────────────────────────────────────────────────
 const tip = document.getElementById('lb-tip');
 document.querySelectorAll('.lb-th-stat[data-tip]').forEach(th => {
@@ -168,11 +213,18 @@ document.querySelectorAll('.lb-th-stat[data-tip]').forEach(th => {
   th.addEventListener('mouseleave', () => tip.classList.remove('visible'));
 });
 
-const params       = new URLSearchParams(window.location.search);
-const initialMode  = params.get('mode')     || 'beginner';
-const initialNG    = params.get('no_guess') === 'true';
+// Set season button label dynamically
+const seasonNum = currentSeasonNum();
+const seasonBtn = document.getElementById('season-btn');
+if (seasonBtn) seasonBtn.textContent = `Season ${seasonNum}`;
 
-const initialTab   = document.querySelector(`.lb-tab[data-mode="${initialMode}"]`);
+const params         = new URLSearchParams(window.location.search);
+const initialMode    = params.get('mode')     || 'beginner';
+const initialNG      = params.get('no_guess') === 'true';
+const initialPeriod  = (['daily','season','alltime'].includes(params.get('period'))
+                        ? params.get('period') : 'daily');
+
+const initialTab = document.querySelector(`.lb-tab[data-mode="${initialMode}"]`);
 if (initialTab) {
   document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
   initialTab.classList.add('active');
@@ -183,6 +235,11 @@ if (initialNG) {
   document.querySelector('.lb-ng-btn[data-ng="true"]')?.classList.add('active');
 }
 
-loadScores(initialMode, initialNG);
+if (initialPeriod !== 'daily') {
+  document.querySelectorAll('.lb-period-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.lb-period-btn[data-period="${initialPeriod}"]`)?.classList.add('active');
+}
+
+loadScores(initialMode, initialNG, initialPeriod);
 </script>
 {% endblock %}

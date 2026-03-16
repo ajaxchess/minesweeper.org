@@ -670,8 +670,9 @@ footer a:hover { text-decoration: underline; }
 .lb-tab:hover  { background: var(--surface2); color: var(--text); }
 .lb-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-/* No-Guess toggle — sits between mode tabs and the table */
-.lb-ng-toggle {
+/* Shared segmented toggle style for No-Guess and Period toggles */
+.lb-ng-toggle,
+.lb-period-toggle {
   display: flex;
   gap: 0;
   justify-content: center;
@@ -684,7 +685,8 @@ footer a:hover { text-decoration: underline; }
   margin-right: auto;
 }
 
-.lb-ng-btn {
+.lb-ng-btn,
+.lb-period-btn {
   padding: 0.35rem 1.1rem;
   background: var(--surface);
   color: var(--text-dim);
@@ -695,9 +697,12 @@ footer a:hover { text-decoration: underline; }
   border-right: 2px solid var(--surface2);
   transition: background 0.15s, color 0.15s;
 }
-.lb-ng-btn:last-child { border-right: none; }
-.lb-ng-btn:hover  { background: var(--surface2); color: var(--text); }
+.lb-ng-btn:last-child,
+.lb-period-btn:last-child { border-right: none; }
+.lb-ng-btn:hover,
+.lb-period-btn:hover  { background: var(--surface2); color: var(--text); }
 .lb-ng-btn.active { background: var(--accent2); color: #000; }
+.lb-period-btn.active { background: var(--accent); color: #fff; }
 
 .lb-meta {
   text-align: center;

@@ -286,19 +286,38 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
 
 
 @app.get("/api/scores/{mode}")
-def get_scores(mode: GameMode, no_guess: bool = False, db: Session = Depends(get_db)):
-    today = date.today()
+def get_scores(mode: GameMode, no_guess: bool = False,
+               period: str = "daily", db: Session = Depends(get_db)):
+    if period not in ("daily", "season", "alltime"):
+        period = "daily"
+
     sort_key = case(
         (Score.time_ms.isnot(None), Score.time_ms),
         else_=Score.time_secs * 1000
     )
-    top = (
-        db.query(Score)
-        .filter(Score.mode == mode, Score.created_at >= today, Score.no_guess == no_guess)
-        .order_by(sort_key.asc(), Score.created_at.asc())
-        .limit(15)
-        .all()
-    )
+
+    q = db.query(Score).filter(Score.mode == mode, Score.no_guess == no_guess)
+
+    if period == "daily":
+        q = q.filter(Score.created_at >= date.today())
+        top = q.order_by(sort_key.asc(), Score.created_at.asc()).limit(15).all()
+        return [s.to_dict() for s in top]
+
+    if period == "season":
+        today = date.today()
+        q = q.filter(Score.created_at >= today.replace(day=1))
+
+    # season / alltime: fetch generously, then deduplicate to best per player
+    raw = q.order_by(sort_key.asc(), Score.created_at.asc()).limit(500).all()
+    seen: set = set()
+    top: list = []
+    for s in raw:
+        key = s.user_email or s.name
+        if key not in seen:
+            seen.add(key)
+            top.append(s)
+            if len(top) >= 15:
+                break
     return [s.to_dict() for s in top]
 
 
