@@ -73,6 +73,11 @@ function freshState(rows, cols, mines, noGuess = false, chording = true) {
     timerID:    null,
     noGuess,
     chording,
+    leftClicks:  0,
+    rightClicks: 0,
+    chordClicks: 0,
+    boardHash:   null,
+    bbbv:        null,
   };
 }
 
@@ -203,6 +208,54 @@ function placeMinesNoGuess(rows, cols, mines, safeR, safeC) {
   return placeMines(rows, cols, mines, safeR, safeC); // fallback
 }
 
+// ── Board Hash ────────────────────────────────────────────────────────────────
+// Encodes mine positions as a base64 bit-array. Fully reproducible: same mine
+// set → same hash. To reconstruct, decode base64 and read bit i for cell i.
+function calcBoardHash(rows, cols, mineSet) {
+  const bytes = new Uint8Array(Math.ceil(rows * cols / 8));
+  for (const idx of mineSet) bytes[idx >> 3] |= (1 << (idx & 7));
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
+// ── 3BV (Bechtel's Board Benchmark Value) ─────────────────────────────────────
+// Each opening region (contiguous blank cells + their numbered borders) = 1 click.
+// Each numbered cell not adjacent to any opening = 1 click.
+function calc3BV(board, rows, cols, mineSet) {
+  const n       = rows * cols;
+  const covered = new Uint8Array(n);
+  let   bbbv    = 0;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const idx = r * cols + c;
+      if (board[r][c] !== 0 || covered[idx] || mineSet.has(idx)) continue;
+      bbbv++;
+      // BFS through blank cells, marking blanks + numbered borders as covered
+      const queue = [[r, c]];
+      covered[idx] = 1;
+      while (queue.length) {
+        const [cr, cc] = queue.shift();
+        for (const [nr, nc] of neighbors(cr, cc, rows, cols)) {
+          const ni = nr * cols + nc;
+          if (covered[ni] || mineSet.has(ni)) continue;
+          covered[ni] = 1;
+          if (board[nr][nc] === 0) queue.push([nr, nc]);
+        }
+      }
+    }
+  }
+
+  // Isolated numbered cells not touched by any opening
+  for (let i = 0; i < n; i++) {
+    const r = Math.floor(i / cols), c = i % cols;
+    if (board[r][c] > 0 && !covered[i]) bbbv++;
+  }
+
+  return bbbv;
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function neighbors(r, c, rows, cols) {
   const out = [];
@@ -243,9 +296,11 @@ function reveal(r, c) {
   if (!state.started) {
     const placer = state.noGuess ? placeMinesNoGuess : placeMines;
     const {mineSet, board} = placer(state.rows, state.cols, state.mines, r, c);
-    state.mineSet = mineSet;
-    state.board   = board;
-    state.started = true;
+    state.mineSet    = mineSet;
+    state.board      = board;
+    state.started    = true;
+    state.boardHash  = calcBoardHash(state.rows, state.cols, mineSet);
+    state.bbbv       = calc3BV(board, state.rows, state.cols, mineSet);
     startTimer();
   }
 
@@ -397,11 +452,16 @@ async function submitScore(autoName = null) {
 
   const payload = {
     name,
-    mode:      board.dataset.mode,
-    time_secs: state.elapsed,
-    rows:      state.rows,
-    cols:      state.cols,
-    mines:     state.mines,
+    mode:         board.dataset.mode,
+    time_secs:    state.elapsed,
+    rows:         state.rows,
+    cols:         state.cols,
+    mines:        state.mines,
+    board_hash:   state.boardHash,
+    bbbv:         state.bbbv,
+    left_clicks:  state.leftClicks,
+    right_clicks: state.rightClicks,
+    chord_clicks: state.chordClicks,
   };
 
   try {
@@ -480,12 +540,12 @@ function buildBoard(rows, cols) {
       cell.dataset.r = r;
       cell.dataset.c = c;
 
-      cell.addEventListener('click',       () => reveal(r, c));
-      cell.addEventListener('contextmenu', e  => { e.preventDefault(); flag(r, c); });
-      cell.addEventListener('dblclick',    () => chord(r, c));
+      cell.addEventListener('click',       () => { state.leftClicks++;  reveal(r, c); });
+      cell.addEventListener('contextmenu', e  => { e.preventDefault(); state.rightClicks++; flag(r, c); });
+      cell.addEventListener('dblclick',    () => { state.chordClicks++; chord(r, c); });
       addTouchHandlers(cell,
-        () => { if (flagMode) flag(r, c); else reveal(r, c); },
-        () => flag(r, c)
+        () => { if (flagMode) { state.rightClicks++; flag(r, c); } else { state.leftClicks++; reveal(r, c); } },
+        () => { state.rightClicks++; flag(r, c); }
       );
 
       boardEl.appendChild(cell);

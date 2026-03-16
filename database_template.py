@@ -53,6 +53,11 @@ class Score(Base):
     rows       = Column(Integer, nullable=False)
     cols       = Column(Integer, nullable=False)
     mines      = Column(Integer, nullable=False)
+    board_hash   = Column(String(128), nullable=True)  # base64 bit-array of mine positions
+    bbbv         = Column(Integer, nullable=True)       # Bechtel's Board Benchmark Value
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Fast lookups by mode + time for leaderboard queries
@@ -62,14 +67,19 @@ class Score(Base):
 
     def to_dict(self):
         return {
-            "id":         self.id,
-            "name":       self.name,
-            "mode":       self.mode,
-            "time_secs":  self.time_secs,
-            "rows":       self.rows,
-            "cols":       self.cols,
-            "mines":      self.mines,
-            "created_at": self.created_at.strftime("%Y-%m-%d"),
+            "id":           self.id,
+            "name":         self.name,
+            "mode":         self.mode,
+            "time_secs":    self.time_secs,
+            "rows":         self.rows,
+            "cols":         self.cols,
+            "mines":        self.mines,
+            "board_hash":   self.board_hash,
+            "bbbv":         self.bbbv,
+            "left_clicks":  self.left_clicks,
+            "right_clicks": self.right_clicks,
+            "chord_clicks": self.chord_clicks,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
         }
 
 # ── Game history model (permanent — never reset) ─────────────────────────────
@@ -84,6 +94,11 @@ class GameHistory(Base):
     rows       = Column(Integer, nullable=False)
     cols       = Column(Integer, nullable=False)
     mines      = Column(Integer, nullable=False)
+    board_hash   = Column(String(128), nullable=True)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -92,14 +107,19 @@ class GameHistory(Base):
 
     def to_dict(self):
         return {
-            "id":         self.id,
-            "name":       self.name,
-            "mode":       self.mode,
-            "time_secs":  self.time_secs,
-            "rows":       self.rows,
-            "cols":       self.cols,
-            "mines":      self.mines,
-            "created_at": self.created_at.strftime("%Y-%m-%d"),
+            "id":           self.id,
+            "name":         self.name,
+            "mode":         self.mode,
+            "time_secs":    self.time_secs,
+            "rows":         self.rows,
+            "cols":         self.cols,
+            "mines":        self.mines,
+            "board_hash":   self.board_hash,
+            "bbbv":         self.bbbv,
+            "left_clicks":  self.left_clicks,
+            "right_clicks": self.right_clicks,
+            "chord_clicks": self.chord_clicks,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
         }
 
 # ── DB session dependency (used in FastAPI routes) ───────────────────────────
