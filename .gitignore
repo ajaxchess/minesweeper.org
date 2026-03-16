@@ -5,6 +5,9 @@ database.py
 #Runtime environment
 venv/
 
+#Debug artifacts
+screenshots/
+
 #Business documents
 business/
 
