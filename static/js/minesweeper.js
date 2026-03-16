@@ -485,7 +485,7 @@ function buildBoard(rows, cols) {
       cell.addEventListener('dblclick',    () => chord(r, c));
       addTouchHandlers(cell,
         () => { if (flagMode) flag(r, c); else reveal(r, c); },
-        () => { if (flagMode) reveal(r, c); else flag(r, c); }
+        () => flag(r, c)
       );
 
       boardEl.appendChild(cell);
