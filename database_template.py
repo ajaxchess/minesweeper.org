@@ -54,6 +54,7 @@ class Score(Base):
     rows       = Column(Integer, nullable=False)
     cols       = Column(Integer, nullable=False)
     mines      = Column(Integer, nullable=False)
+    no_guess     = Column(Boolean, default=False, nullable=False)
     board_hash   = Column(String(128), nullable=True)  # base64 bit-array of mine positions
     bbbv         = Column(Integer, nullable=True)       # Bechtel's Board Benchmark Value
     left_clicks  = Column(Integer, nullable=True)
@@ -76,6 +77,7 @@ class Score(Base):
             "rows":         self.rows,
             "cols":         self.cols,
             "mines":        self.mines,
+            "no_guess":     self.no_guess,
             "board_hash":   self.board_hash,
             "bbbv":         self.bbbv,
             "left_clicks":  self.left_clicks,
@@ -97,6 +99,7 @@ class GameHistory(Base):
     rows       = Column(Integer, nullable=False)
     cols       = Column(Integer, nullable=False)
     mines      = Column(Integer, nullable=False)
+    no_guess     = Column(Boolean, default=False, nullable=False)
     board_hash   = Column(String(128), nullable=True)
     bbbv         = Column(Integer, nullable=True)
     left_clicks  = Column(Integer, nullable=True)
@@ -118,6 +121,7 @@ class GameHistory(Base):
             "rows":         self.rows,
             "cols":         self.cols,
             "mines":        self.mines,
+            "no_guess":     self.no_guess,
             "board_hash":   self.board_hash,
             "bbbv":         self.bbbv,
             "left_clicks":  self.left_clicks,

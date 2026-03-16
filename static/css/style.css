@@ -670,6 +670,35 @@ footer a:hover { text-decoration: underline; }
 .lb-tab:hover  { background: var(--surface2); color: var(--text); }
 .lb-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
+/* No-Guess toggle — sits between mode tabs and the table */
+.lb-ng-toggle {
+  display: flex;
+  gap: 0;
+  justify-content: center;
+  margin-top: 0.75rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 2px solid var(--surface2);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.lb-ng-btn {
+  padding: 0.35rem 1.1rem;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  border-right: 2px solid var(--surface2);
+  transition: background 0.15s, color 0.15s;
+}
+.lb-ng-btn:last-child { border-right: none; }
+.lb-ng-btn:hover  { background: var(--surface2); color: var(--text); }
+.lb-ng-btn.active { background: var(--accent2); color: #000; }
+
 .lb-meta {
   text-align: center;
   font-size: 0.82rem;

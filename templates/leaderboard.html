@@ -21,6 +21,11 @@
     <button class="lb-tab"        data-mode="custom"       role="tab">{{ t.nav_custom }}</button>
   </div>
 
+  <div class="lb-ng-toggle" role="group" aria-label="Game mode">
+    <button class="lb-ng-btn active" data-ng="false">Standard mode</button>
+    <button class="lb-ng-btn"        data-ng="true">⚡ No-Guess mode</button>
+  </div>
+
   <div class="lb-meta" id="lb-meta"></div>
   <p class="lb-daily-note">Scores reset daily at midnight UTC — can you top today's board?</p>
 
@@ -62,7 +67,8 @@
 <script>
 const MEDALS = ['🥇','🥈','🥉'];
 
-let currentMode = 'beginner';
+let currentMode   = 'beginner';
+let currentNoGuess = false;
 
 function fmtTime(s) {
   // Prefer time_ms for display; fall back to integer time_secs
@@ -84,15 +90,16 @@ function fmtEff(bbbv, leftClicks, chordClicks) {
   return Math.round(bbbv / total * 100) + '%';
 }
 
-async function loadScores(mode) {
-  currentMode = mode;
+async function loadScores(mode, noGuess = currentNoGuess) {
+  currentMode    = mode;
+  currentNoGuess = noGuess;
   const body  = document.getElementById('lb-body');
   const meta  = document.getElementById('lb-meta');
   body.innerHTML = `<tr><td colspan="9" class="lb-loading">${window.T.lb_loading}</td></tr>`;
   meta.textContent = '';
 
   try {
-    const res  = await fetch(`/api/scores/${mode}`);
+    const res  = await fetch(`/api/scores/${mode}?no_guess=${noGuess}`);
     const data = await res.json();
 
     if (!data.length) {
@@ -136,6 +143,14 @@ document.querySelectorAll('.lb-tab').forEach(btn => {
   });
 });
 
+document.querySelectorAll('.lb-ng-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lb-ng-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadScores(currentMode, btn.dataset.ng === 'true');
+  });
+});
+
 // ── Stat column tooltips ──────────────────────────────────────────────────────
 const tip = document.getElementById('lb-tip');
 document.querySelectorAll('.lb-th-stat[data-tip]').forEach(th => {
@@ -153,12 +168,21 @@ document.querySelectorAll('.lb-th-stat[data-tip]').forEach(th => {
   th.addEventListener('mouseleave', () => tip.classList.remove('visible'));
 });
 
-const initialMode = new URLSearchParams(window.location.search).get('mode') || 'beginner';
-const initialTab  = document.querySelector(`.lb-tab[data-mode="${initialMode}"]`);
+const params       = new URLSearchParams(window.location.search);
+const initialMode  = params.get('mode')     || 'beginner';
+const initialNG    = params.get('no_guess') === 'true';
+
+const initialTab   = document.querySelector(`.lb-tab[data-mode="${initialMode}"]`);
 if (initialTab) {
   document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
   initialTab.classList.add('active');
 }
-loadScores(initialMode);
+
+if (initialNG) {
+  document.querySelectorAll('.lb-ng-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.lb-ng-btn[data-ng="true"]')?.classList.add('active');
+}
+
+loadScores(initialMode, initialNG);
 </script>
 {% endblock %}

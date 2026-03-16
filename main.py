@@ -211,6 +211,7 @@ class ScoreSubmit(BaseModel):
     rows:         int = Field(..., ge=5,  le=30)
     cols:         int = Field(..., ge=5,  le=50)
     mines:        int = Field(..., ge=1,  le=999)
+    no_guess:     bool           = False
     board_hash:   Optional[str]  = Field(None, max_length=128)
     bbbv:         Optional[int]  = Field(None, ge=1, le=9999)
     left_clicks:  Optional[int]  = Field(None, ge=0, le=99999)
@@ -251,6 +252,7 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
         rows         = payload.rows,
         cols         = payload.cols,
         mines        = payload.mines,
+        no_guess     = payload.no_guess,
         board_hash   = payload.board_hash,
         bbbv         = payload.bbbv,
         left_clicks  = payload.left_clicks,
@@ -270,6 +272,7 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
             rows         = payload.rows,
             cols         = payload.cols,
             mines        = payload.mines,
+            no_guess     = payload.no_guess,
             board_hash   = payload.board_hash,
             bbbv         = payload.bbbv,
             left_clicks  = payload.left_clicks,
@@ -283,7 +286,7 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
 
 
 @app.get("/api/scores/{mode}")
-def get_scores(mode: GameMode, db: Session = Depends(get_db)):
+def get_scores(mode: GameMode, no_guess: bool = False, db: Session = Depends(get_db)):
     today = date.today()
     sort_key = case(
         (Score.time_ms.isnot(None), Score.time_ms),
@@ -291,7 +294,7 @@ def get_scores(mode: GameMode, db: Session = Depends(get_db)):
     )
     top = (
         db.query(Score)
-        .filter(Score.mode == mode, Score.created_at >= today)
+        .filter(Score.mode == mode, Score.created_at >= today, Score.no_guess == no_guess)
         .order_by(sort_key.asc(), Score.created_at.asc())
         .limit(15)
         .all()

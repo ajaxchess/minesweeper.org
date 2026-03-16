@@ -413,9 +413,7 @@ function showOverlay(msg, won) {
 
   let scoreForm = '';
   if (won) {
-    if (state.noGuess) {
-      scoreForm = `<div id="score-msg" style="font-size:0.85rem;opacity:0.8">No-Guess mode — scores not saved to leaderboard</div>`;
-    } else if (username) {
+    if (username) {
       // Logged-in: auto-submit immediately, show a confirmation
       scoreForm = `<div id="score-msg" style="font-size:0.9rem">Saving score…</div>`;
     } else {
@@ -431,18 +429,19 @@ function showOverlay(msg, won) {
     }
   }
 
+  const ngParam = state.noGuess ? '&no_guess=true' : '';
   el.innerHTML = `
     <span>${msg}</span>
+    ${state.noGuess ? '<span style="font-size:0.75rem;opacity:0.7">⚡ No-Guess mode</span>' : ''}
     ${scoreForm}
     <button onclick="resetGame()">Play Again</button>
-    <a class="overlay-lb-link" href="/leaderboard?mode=${mode}">View Leaderboard →</a>
+    <a class="overlay-lb-link" href="/leaderboard?mode=${mode}${ngParam}">View Leaderboard →</a>
   `;
   el.style.display = 'flex';
 
-  if (won && !state.noGuess && username) {
-    // Auto-submit for logged-in users
+  if (won && username) {
     submitScore(username);
-  } else if (won && !state.noGuess) {
+  } else if (won) {
     setTimeout(() => document.getElementById('player-name')?.focus(), 50);
   }
 }
@@ -463,6 +462,7 @@ async function submitScore(autoName = null) {
     rows:         state.rows,
     cols:         state.cols,
     mines:        state.mines,
+    no_guess:     state.noGuess,
     board_hash:   state.boardHash,
     bbbv:         state.bbbv,
     left_clicks:  state.leftClicks,
