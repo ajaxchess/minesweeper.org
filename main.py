@@ -285,6 +285,32 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
     return {"ok": True, "id": score.id}
 
 
+def _enrich_with_profiles(scores: list, db) -> list:
+    """Add profile_url to score dicts for entries with a user_email."""
+    emails = [s.user_email for s in scores if s.user_email]
+    if not emails:
+        return [s.to_dict() for s in scores]
+
+    profiles = (
+        db.query(UserProfile.user_email, UserProfile.vanity_slug, UserProfile.public_id)
+        .filter(UserProfile.user_email.in_(emails))
+        .all()
+    )
+    url_map: dict = {}
+    for p in profiles:
+        if p.vanity_slug:
+            url_map[p.user_email] = f"/u/{p.vanity_slug}"
+        elif p.public_id:
+            url_map[p.user_email] = f"/u/{p.public_id}"
+
+    result = []
+    for s in scores:
+        d = s.to_dict()
+        d["profile_url"] = url_map.get(s.user_email) if s.user_email else None
+        result.append(d)
+    return result
+
+
 @app.get("/api/scores/{mode}")
 def get_scores(mode: GameMode, no_guess: bool = False,
                period: str = "daily", db: Session = Depends(get_db)):
@@ -301,7 +327,7 @@ def get_scores(mode: GameMode, no_guess: bool = False,
     if period == "daily":
         q = q.filter(Score.created_at >= date.today())
         top = q.order_by(sort_key.asc(), Score.created_at.asc()).limit(15).all()
-        return [s.to_dict() for s in top]
+        return _enrich_with_profiles(top, db)
 
     if period == "season":
         today = date.today()
@@ -318,7 +344,7 @@ def get_scores(mode: GameMode, no_guess: bool = False,
             top.append(s)
             if len(top) >= 15:
                 break
-    return [s.to_dict() for s in top]
+    return _enrich_with_profiles(top, db)
 
 
 @app.get("/rush", response_class=HTMLResponse)

@@ -761,6 +761,14 @@ footer a:hover { text-decoration: underline; }
 .lb-rank { font-size: 1.1rem; width: 2.5rem; }
 .lb-name { font-weight: 600; }
 .lb-time { font-family: var(--font-mono); font-size: 1rem; }
+
+.lb-profile-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+.lb-profile-link:hover { text-decoration-style: solid; }
 .lb-stat { font-family: var(--font-mono); font-size: 0.9rem; color: var(--text-dim); text-align: right; }
 .lb-table .top-1 .lb-stat,
 .lb-table .top-2 .lb-stat,

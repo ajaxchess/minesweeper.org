@@ -145,12 +145,15 @@ async function loadScores(mode, noGuess = currentNoGuess, period = currentPeriod
     }
 
     body.innerHTML = data.map((s, i) => {
-      const bbbvS = fmtBbbvS(s.bbbv, s);
-      const eff   = fmtEff(s.bbbv, s.left_clicks, s.chord_clicks);
+      const bbbvS    = fmtBbbvS(s.bbbv, s);
+      const eff      = fmtEff(s.bbbv, s.left_clicks, s.chord_clicks);
+      const nameCell = s.profile_url
+        ? `<a href="${escHtml(s.profile_url)}" class="lb-profile-link">${escHtml(s.name)}</a>`
+        : escHtml(s.name);
       return `
         <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
           <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
-          <td class="lb-name">${escHtml(s.name)}</td>
+          <td class="lb-name">${nameCell}</td>
           <td class="lb-time">${fmtTime(s)}</td>
           <td class="lb-board">${s.rows}×${s.cols}</td>
           <td class="lb-mines">${s.mines}</td>
