@@ -727,6 +727,40 @@ footer a:hover { text-decoration: underline; }
 .lb-rank { font-size: 1.1rem; width: 2.5rem; }
 .lb-name { font-weight: 600; }
 .lb-time { font-family: var(--font-mono); font-size: 1rem; }
+.lb-stat { font-family: var(--font-mono); font-size: 0.9rem; color: var(--text-dim); text-align: right; }
+.lb-table .top-1 .lb-stat,
+.lb-table .top-2 .lb-stat,
+.lb-table .top-3 .lb-stat { color: inherit; }
+
+/* Stat column headers — dashed underline signals they're hoverable */
+.lb-th-stat {
+  cursor: default;
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-underline-offset: 3px;
+}
+
+/* Floating tooltip */
+.lb-tip {
+  position: absolute;
+  z-index: 200;
+  max-width: 280px;
+  padding: 0.55rem 0.85rem;
+  background: #1a1a2e;
+  color: #f0f0f0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  text-align: center;
+}
+.lb-tip.visible { opacity: 1; }
 
 .lb-loading, .lb-empty {
   text-align: center;

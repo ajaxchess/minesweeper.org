@@ -33,14 +33,20 @@
           <th>{{ t.lb_col_time }}</th>
           <th>{{ t.lb_col_board }}</th>
           <th>{{ t.lb_col_mines }}</th>
+          <th class="lb-th-stat" data-tip="3BV is the minimum number of clicks required to complete a board without using flags. The higher it is, the more difficult is the game.">3BV</th>
+          <th class="lb-th-stat" data-tip="3BV per second. Represents speed of completing the game. The higher the better.">3BV/s</th>
+          <th class="lb-th-stat" data-tip="Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.">Eff</th>
           <th>{{ t.lb_col_date }}</th>
         </tr>
       </thead>
       <tbody id="lb-body">
-        <tr><td colspan="6" class="lb-loading">{{ t.lb_loading }}</td></tr>
+        <tr><td colspan="9" class="lb-loading">{{ t.lb_loading }}</td></tr>
       </tbody>
     </table>
   </div>
+
+  <!-- Floating tooltip for stat column headers -->
+  <div id="lb-tip" class="lb-tip" role="tooltip" aria-hidden="true"></div>
 
   <div class="lb-back">
     <a href="/">{{ t.lb_play_beginner }}</a>
@@ -58,11 +64,31 @@ const MEDALS = ['🥇','🥈','🥉'];
 
 let currentMode = 'beginner';
 
+function fmtTime(s) {
+  // Prefer time_ms for display; fall back to integer time_secs
+  if (s.time_ms != null) return (s.time_ms / 1000).toFixed(3) + 's';
+  return s.time_secs + 's';
+}
+
+function fmtBbbvS(bbbv, s) {
+  if (!bbbv) return '—';
+  const secs = s.time_ms != null ? s.time_ms / 1000 : s.time_secs;
+  if (!secs) return '—';
+  return (bbbv / secs).toFixed(3);
+}
+
+function fmtEff(bbbv, leftClicks, chordClicks) {
+  if (!bbbv) return '—';
+  const total = (leftClicks || 0) + (chordClicks || 0);
+  if (!total) return '—';
+  return Math.round(bbbv / total * 100) + '%';
+}
+
 async function loadScores(mode) {
   currentMode = mode;
   const body  = document.getElementById('lb-body');
   const meta  = document.getElementById('lb-meta');
-  body.innerHTML = `<tr><td colspan="6" class="lb-loading">${window.T.lb_loading}</td></tr>`;
+  body.innerHTML = `<tr><td colspan="9" class="lb-loading">${window.T.lb_loading}</td></tr>`;
   meta.textContent = '';
 
   try {
@@ -70,25 +96,31 @@ async function loadScores(mode) {
     const data = await res.json();
 
     if (!data.length) {
-      body.innerHTML = `<tr><td colspan="6" class="lb-empty">No scores yet today — be the first!</td></tr>`;
+      body.innerHTML = `<tr><td colspan="9" class="lb-empty">No scores yet today — be the first!</td></tr>`;
       return;
     }
 
-    body.innerHTML = data.map((s, i) => `
-      <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
-        <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
-        <td class="lb-name">${escHtml(s.name)}</td>
-        <td class="lb-time">${s.time_secs}s</td>
-        <td class="lb-board">${s.rows}×${s.cols}</td>
-        <td class="lb-mines">${s.mines}</td>
-        <td class="lb-date">${s.created_at}</td>
-      </tr>
-    `).join('');
+    body.innerHTML = data.map((s, i) => {
+      const bbbvS = fmtBbbvS(s.bbbv, s);
+      const eff   = fmtEff(s.bbbv, s.left_clicks, s.chord_clicks);
+      return `
+        <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
+          <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
+          <td class="lb-name">${escHtml(s.name)}</td>
+          <td class="lb-time">${fmtTime(s)}</td>
+          <td class="lb-board">${s.rows}×${s.cols}</td>
+          <td class="lb-mines">${s.mines}</td>
+          <td class="lb-stat">${s.bbbv ?? '—'}</td>
+          <td class="lb-stat">${bbbvS}</td>
+          <td class="lb-stat">${eff}</td>
+          <td class="lb-date">${s.created_at}</td>
+        </tr>`;
+    }).join('');
 
     const suffix = data.length !== 1 ? window.T.lb_top_suffix_many : window.T.lb_top_suffix_one;
     meta.textContent = `${window.T.lb_top_prefix} ${data.length} ${suffix}`;
   } catch {
-    body.innerHTML = `<tr><td colspan="6" class="lb-empty">${window.T.lb_error}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="9" class="lb-empty">${window.T.lb_error}</td></tr>`;
   }
 }
 
@@ -102,6 +134,23 @@ document.querySelectorAll('.lb-tab').forEach(btn => {
     btn.classList.add('active');
     loadScores(btn.dataset.mode);
   });
+});
+
+// ── Stat column tooltips ──────────────────────────────────────────────────────
+const tip = document.getElementById('lb-tip');
+document.querySelectorAll('.lb-th-stat[data-tip]').forEach(th => {
+  th.addEventListener('mouseenter', () => {
+    tip.textContent = th.dataset.tip;
+    tip.style.left = '0';
+    tip.style.top  = '0';
+    tip.classList.add('visible');
+    const r    = th.getBoundingClientRect();
+    const tw   = tip.offsetWidth;
+    const left = Math.max(8, Math.min(r.left + r.width / 2 - tw / 2, window.innerWidth - tw - 8));
+    tip.style.left = left + 'px';
+    tip.style.top  = (r.bottom + window.scrollY + 8) + 'px';
+  });
+  th.addEventListener('mouseleave', () => tip.classList.remove('visible'));
 });
 
 const initialMode = new URLSearchParams(window.location.search).get('mode') || 'beginner';

@@ -49,7 +49,8 @@ class Score(Base):
     name       = Column(String(32), nullable=False)
     user_email = Column(String(256), nullable=True, index=True)
     mode       = Column(Enum(GameMode), nullable=False)
-    time_secs  = Column(Integer, nullable=False)       # elapsed seconds
+    time_secs  = Column(Integer, nullable=False)       # elapsed whole seconds (legacy display)
+    time_ms    = Column(Integer, nullable=True)        # precise elapsed milliseconds
     rows       = Column(Integer, nullable=False)
     cols       = Column(Integer, nullable=False)
     mines      = Column(Integer, nullable=False)
@@ -71,6 +72,7 @@ class Score(Base):
             "name":         self.name,
             "mode":         self.mode,
             "time_secs":    self.time_secs,
+            "time_ms":      self.time_ms,
             "rows":         self.rows,
             "cols":         self.cols,
             "mines":        self.mines,
@@ -91,6 +93,7 @@ class GameHistory(Base):
     name       = Column(String(32), nullable=False)
     mode       = Column(Enum(GameMode), nullable=False)
     time_secs  = Column(Integer, nullable=False)
+    time_ms    = Column(Integer, nullable=True)
     rows       = Column(Integer, nullable=False)
     cols       = Column(Integer, nullable=False)
     mines      = Column(Integer, nullable=False)
@@ -111,6 +114,7 @@ class GameHistory(Base):
             "name":         self.name,
             "mode":         self.mode,
             "time_secs":    self.time_secs,
+            "time_ms":      self.time_ms,
             "rows":         self.rows,
             "cols":         self.cols,
             "mines":        self.mines,

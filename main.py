@@ -9,7 +9,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, case
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -207,6 +207,7 @@ class ScoreSubmit(BaseModel):
     name:         str = Field(..., min_length=1, max_length=32)
     mode:         GameMode
     time_secs:    int = Field(..., ge=1, le=999)
+    time_ms:      Optional[int]  = Field(None, ge=1, le=3_600_000)
     rows:         int = Field(..., ge=5,  le=30)
     cols:         int = Field(..., ge=5,  le=50)
     mines:        int = Field(..., ge=1,  le=999)
@@ -246,6 +247,7 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
         user_email   = user["email"] if user else None,
         mode         = payload.mode,
         time_secs    = payload.time_secs,
+        time_ms      = payload.time_ms,
         rows         = payload.rows,
         cols         = payload.cols,
         mines        = payload.mines,
@@ -264,6 +266,7 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
             name         = payload.name,
             mode         = payload.mode,
             time_secs    = payload.time_secs,
+            time_ms      = payload.time_ms,
             rows         = payload.rows,
             cols         = payload.cols,
             mines        = payload.mines,
@@ -282,10 +285,14 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
 @app.get("/api/scores/{mode}")
 def get_scores(mode: GameMode, db: Session = Depends(get_db)):
     today = date.today()
+    sort_key = case(
+        (Score.time_ms.isnot(None), Score.time_ms),
+        else_=Score.time_secs * 1000
+    )
     top = (
         db.query(Score)
         .filter(Score.mode == mode, Score.created_at >= today)
-        .order_by(Score.time_secs.asc(), Score.created_at.asc())
+        .order_by(sort_key.asc(), Score.created_at.asc())
         .limit(15)
         .all()
     )

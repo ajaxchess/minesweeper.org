@@ -71,6 +71,8 @@ function freshState(rows, cols, mines, noGuess = false, chording = true) {
     won:        false,
     elapsed:    0,
     timerID:    null,
+    startTime:  null,   // performance.now() at first click
+    timeMs:     null,   // precise elapsed ms at game end
     noGuess,
     chording,
     leftClicks:  0,
@@ -299,6 +301,7 @@ function reveal(r, c) {
     state.mineSet    = mineSet;
     state.board      = board;
     state.started    = true;
+    state.startTime  = performance.now();
     state.boardHash  = calcBoardHash(state.rows, state.cols, mineSet);
     state.bbbv       = calc3BV(board, state.rows, state.cols, mineSet);
     startTimer();
@@ -352,7 +355,8 @@ function flag(r, c) {
 
 // ── Win / Loss ────────────────────────────────────────────────────────────────
 function boom(r, c) {
-  state.over = true;
+  state.over   = true;
+  state.timeMs = state.startTime ? Math.round(performance.now() - state.startTime) : null;
   stopTimer();
   // Reveal all mines
   for (const idx of state.mineSet) {
@@ -368,8 +372,9 @@ function checkWin() {
   const unrevealed = state.rows * state.cols -
     state.revealed.flat().filter(Boolean).length;
   if (unrevealed === state.mines) {
-    state.over = true;
-    state.won  = true;
+    state.over   = true;
+    state.won    = true;
+    state.timeMs = state.startTime ? Math.round(performance.now() - state.startTime) : null;
     stopTimer();
     document.getElementById('reset-btn').textContent = '😎';
     // Auto-flag remaining mines
@@ -454,6 +459,7 @@ async function submitScore(autoName = null) {
     name,
     mode:         board.dataset.mode,
     time_secs:    state.elapsed,
+    time_ms:      state.timeMs,
     rows:         state.rows,
     cols:         state.cols,
     mines:        state.mines,
