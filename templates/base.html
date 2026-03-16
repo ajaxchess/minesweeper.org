@@ -11,13 +11,21 @@
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
   <link rel="stylesheet" href="/static/css/style.css?v=16" />
-  <!-- Apply skin before render to avoid flash -->
+  <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     (function(){
-      var t = new URLSearchParams(window.location.search).get('theme');
+      var p = new URLSearchParams(window.location.search);
+      var t = p.get('theme');
       if (t === 'diana' || t === 'classic') localStorage.setItem('skin', 'classic');
       else if (t === 'dark') localStorage.setItem('skin', 'dark');
       document.documentElement.dataset.skin = localStorage.getItem('skin') || 'dark';
+
+      var l = p.get('lang');
+      if (l) {
+        p.delete('lang');
+        var clean = window.location.pathname + (p.toString() ? '?' + p.toString() : '');
+        window.location.replace('/set-lang?lang=' + encodeURIComponent(l) + '&next=' + encodeURIComponent(clean));
+      }
     })();
   </script>
 

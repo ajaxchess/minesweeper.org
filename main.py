@@ -112,12 +112,15 @@ def shutdown():
 # ── Page Routes ───────────────────────────────────────────────────────────────
 
 @app.get("/set-lang")
-async def set_lang(request: Request, lang: str = "en"):
-    from fastapi.responses import Response
+async def set_lang(request: Request, lang: str = "en", next: Optional[str] = None):
     if lang not in ("en", "eo", "de", "es", "th", "pgl", "uk", "fr", "ko", "ja"):
         lang = "en"
-    next_url = request.headers.get("referer", "/")
-    response = RedirectResponse(url=next_url)
+    # Use explicit next param, then referer, then home
+    redirect_to = next or request.headers.get("referer", "/")
+    # Safety: only allow relative URLs to prevent open redirect
+    if redirect_to.startswith("http"):
+        redirect_to = "/"
+    response = RedirectResponse(url=redirect_to)
     response.set_cookie("lang", lang, max_age=365 * 24 * 3600, samesite="lax")
     return response
 
