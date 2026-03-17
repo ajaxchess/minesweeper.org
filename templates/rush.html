@@ -140,7 +140,7 @@
         🔥 <span id="rush-salvage-tokens">0</span> {{ t.rush_salvage_suffix }}
       </div>
       <div id="rush-penalty" class="rush-penalty-msg" style="opacity:0" aria-live="polite"></div>
-      <button id="rush-reveal-btn" class="rush-reveal-btn" onclick="revealNextRow()" title="Click Reveal or Space to reveal next row">👁 {{ t.rush_btn_reveal }}</button>
+      <button id="rush-reveal-btn" class="rush-reveal-btn" onclick="dropRow()" title="Click Drop Row or Space to force the next row to activate">⬇ {{ t.rush_btn_drop }}</button>
       <button id="rush-flag-mode-btn" class="flag-mode-btn" onclick="toggleRushFlagMode()" title="Click Flag or F to toggle Flag mode">🚩 {{ t.rush_btn_flag }}</button>
     </div>
 
@@ -337,5 +337,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/rush.js?v=8"></script>
+<script src="/static/js/rush.js?v=9"></script>
 {% endblock %}

@@ -30,33 +30,24 @@ function clearRushFlagMode() {
   if (btn) btn.classList.remove('active');
 }
 
-// ── Reveal Next Row ───────────────────────────────────────────────────────────
-function revealNextRow() {
+// ── Drop Row: force the lowest incoming row to activate immediately ───────────
+function dropRow() {
   if (rush.over) return;
-  // Find the bottom-most active row that still has unrevealed safe cells
+  // Find the bottom-most incoming row (lowest index = nearest bottom)
+  let targetRow = -1;
   for (let r = 0; r < rush.numRows; r++) {
-    if (rush.rowStatus[r] !== 'active') continue;
-    let anyToReveal = false;
-    for (let c = 0; c < rush.cols; c++) {
-      if (!rush.revealed[r][c] && rush.board[r][c] !== -1 && rush.flagged[r][c] !== 1) {
-        anyToReveal = true;
-        break;
-      }
-    }
-    if (!anyToReveal) continue;
-    if (!rush.started) startGame();
-    // Reveal all safe cells in this row only (no BFS cascade)
-    for (let c = 0; c < rush.cols; c++) {
-      if (!rush.revealed[r][c] && rush.board[r][c] !== -1 && rush.flagged[r][c] !== 1) {
-        rush.revealed[r][c] = true;
-        renderCell(r, c);
-      }
-    }
-    checkAllEmptyRowButtons();
-    updateSafetyNet();
-    checkBoardSolved();
-    return;
+    if (rush.rowStatus[r] === 'incoming') { targetRow = r; break; }
   }
+  if (targetRow === -1) return; // nothing to drop
+  if (!rush.started) startGame();
+  // Cancel fill animation and activate immediately
+  if (rush.fillIDs[targetRow]) {
+    clearInterval(rush.fillIDs[targetRow]);
+    delete rush.fillIDs[targetRow];
+  }
+  activateRow(targetRow);
+  // If no incoming rows remain, add a new one above
+  if (!rush.rowStatus.some(s => s === 'incoming')) addRow();
 }
 
 // ── Click-hint marker on bottom-left cell ─────────────────────────────────────
@@ -1259,7 +1250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     if (e.key === ' ' || e.code === 'Space') {
       e.preventDefault();
-      revealNextRow();
+      dropRow();
     } else if (e.key === 'f' || e.key === 'F') {
       toggleRushFlagMode();
     }
@@ -1274,6 +1265,6 @@ document.addEventListener('DOMContentLoaded', () => {
 window.initRush = initRush;
 window.submitRushScore = submitRushScore;
 window.toggleRushFlagMode = toggleRushFlagMode;
-window.revealNextRow = revealNextRow;
+window.dropRow = dropRow;
 
 })(); // end IIFE
