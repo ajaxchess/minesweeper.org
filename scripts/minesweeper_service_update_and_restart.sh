@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # --- Configuration ---
 REPO_DIR="/home/ubuntu/minesweeper"
 VENV_DIR="/home/ubuntu/minesweeper/venv"   # adjust if your venv lives elsewhere
