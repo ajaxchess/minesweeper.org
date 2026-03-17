@@ -1353,6 +1353,70 @@ footer a:hover { text-decoration: underline; }
   white-space: nowrap;
 }
 
+/* ── About text ─────────────────────────────────────────────────────────── */
+.setting-row-about { align-items: flex-start; }
+
+.about-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.about-edit textarea {
+  width: 100%;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.6rem;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  resize: vertical;
+  transition: border-color 0.15s;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.about-edit textarea:focus {
+  outline: none;
+  border-color: var(--accent2);
+}
+
+.about-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.about-footer button {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 0.3rem 0.75rem;
+  background: var(--surface2);
+  color: var(--text-dim);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.about-footer button:hover { color: var(--text); border-color: var(--text-dim); }
+
+.profile-about {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin: 0 auto 1.5rem;
+  max-width: 860px;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
 /* ── Skin picker ─────────────────────────────────────────────────────────── */
 .skin-row {
   flex-direction: column;

@@ -58,6 +58,21 @@
           <span id="display-name-msg" class="setting-msg"></span>
         </div>
       </div>
+      <div class="setting-row setting-row-about">
+        <div class="setting-info">
+          <span class="setting-name">About</span>
+          <span class="setting-desc">Shown on your public profile. Max 5000 characters.</span>
+        </div>
+        <div class="about-edit">
+          <textarea id="about-input" maxlength="5000" rows="5"
+                    placeholder="Tell other players about yourself…">{{ about_text or '' }}</textarea>
+          <div class="about-footer">
+            <span id="about-chars" class="setting-desc"></span>
+            <button id="about-save" onclick="saveAbout()">Save</button>
+            <span id="about-msg" class="setting-msg"></span>
+          </div>
+        </div>
+      </div>
       <div class="setting-row">
         <div class="setting-info">
           <span class="setting-name">Sounds</span>
@@ -428,6 +443,34 @@ document.addEventListener('DOMContentLoaded', () => {
   localStorage.setItem('skin', prefSkin);
   document.documentElement.dataset.skin = prefSkin;
 });
+
+// ── About ─────────────────────────────────────────────────────────────────────
+(function() {
+  const ta  = document.getElementById('about-input');
+  const ctr = document.getElementById('about-chars');
+  function updateCount() { ctr.textContent = ta.value.length + ' / 5000'; }
+  ta.addEventListener('input', updateCount);
+  updateCount();
+})();
+
+async function saveAbout() {
+  const ta  = document.getElementById('about-input');
+  const msg = document.getElementById('about-msg');
+  const btn = document.getElementById('about-save');
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/profile/about', {
+      method:  'POST',
+      headers: {'Content-Type': 'application/json'},
+      body:    JSON.stringify({ about_text: ta.value }),
+    });
+    msg.textContent = res.ok ? 'Saved!' : 'Could not save.';
+    setTimeout(() => { msg.textContent = ''; }, 2000);
+  } catch {
+    msg.textContent = 'Network error.';
+  }
+  btn.disabled = false;
+}
 
 // ── Display Name ──────────────────────────────────────────────────────────────
 async function saveDisplayName() {

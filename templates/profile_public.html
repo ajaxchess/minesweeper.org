@@ -29,6 +29,13 @@
     </div>
   </div>
 
+  {% if about_text %}
+  <!-- ── About ── -->
+  <div class="profile-about">
+    <p>{{ about_text }}</p>
+  </div>
+  {% endif %}
+
   <!-- ── Summary cards (filled by JS) ── -->
   <div class="profile-summary" id="profile-summary">
     <div class="summary-card loading" id="card-beginner">
