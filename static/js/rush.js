@@ -461,12 +461,14 @@ function activateRow(r) {
     grid.appendChild(cell);
   }
 
-  // Mine-free rows show a '?' hint mark until all cells are revealed, then ✓ buttons.
+  // Mine-free rows show a ✓ clear button immediately (nothing to flag).
   // Mine rows use invisible spacers (buttons appear when all mines are flagged).
-  const side = () => rush.rowMines[r].size === 0 ? makeRushHintMark() : makeSpacer();
+  const isMFree = rush.rowMines[r].size === 0;
+  const side = () => isMFree ? makeRushClearBtn(r, window.T.rush_btn_no_mines) : makeSpacer();
   div.appendChild(side());
   div.appendChild(grid);
   div.appendChild(side());
+  if (isMFree) { div.classList.add('clearable'); div.onclick = () => clearRow(r); }
 
   updateActiveCount();
   checkOverflow();
@@ -1094,9 +1096,11 @@ function buildInitialBoard() {
       grid.appendChild(cell);
     }
 
-    div.appendChild(makeSpacer());
+    const isMFree = rush.rowMines[r].size === 0;
+    div.appendChild(isMFree ? makeRushClearBtn(r, window.T.rush_btn_no_mines) : makeSpacer());
     div.appendChild(grid);
-    div.appendChild(makeSpacer());
+    div.appendChild(isMFree ? makeRushClearBtn(r, window.T.rush_btn_no_mines) : makeSpacer());
+    if (isMFree) { div.classList.add('clearable'); div.onclick = () => clearRow(r); }
 
     board.appendChild(div);
   }
