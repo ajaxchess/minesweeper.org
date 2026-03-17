@@ -614,6 +614,10 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "is_public":     profile.is_public if profile else False,
         "favorite_game": profile.favorite_game if profile else "",
         "vanity_slug":   profile.vanity_slug if profile else "",
+        "pref_sounds":   profile.pref_sounds   if profile else False,
+        "pref_chording": profile.pref_chording if profile else True,
+        "pref_skin":     profile.pref_skin     if profile else "dark",
+        "about_text":    profile.about_text    if profile else "",
         "lang": get_lang(request), "t": get_t(request),
     })
 
@@ -1131,6 +1135,9 @@ def public_profile_stats(public_id: str, db: Session = Depends(get_db)):
 class ProfileSettingsUpdate(BaseModel):
     is_public:     bool
     favorite_game: Optional[str] = None
+    pref_sounds:   bool = False
+    pref_chording: bool = True
+    pref_skin:     str  = 'dark'
 
 
 @app.post("/api/profile/settings")
@@ -1143,6 +1150,9 @@ def update_profile_settings(payload: ProfileSettingsUpdate, request: Request, db
         return JSONResponse({"error": "Profile not found"}, status_code=404)
     profile.is_public     = payload.is_public
     profile.favorite_game = payload.favorite_game or None
+    profile.pref_sounds   = payload.pref_sounds
+    profile.pref_chording = payload.pref_chording
+    profile.pref_skin     = payload.pref_skin if payload.pref_skin in ('dark', 'classic') else 'dark'
     db.commit()
     return {"ok": True, "public_id": profile.public_id}
 
@@ -1163,6 +1173,7 @@ async def public_profile_page(request: Request, slug: str, db: Session = Depends
         "favorite_game": profile.favorite_game or "",
         "public_id":     profile.public_id,
         "vanity_slug":   profile.vanity_slug or "",
+        "about_text":    profile.about_text or "",
         "lang": get_lang(request), "t": get_t(request),
     })
 
@@ -1238,6 +1249,23 @@ def update_display_name(payload: DisplayNameUpdate, request: Request, db: Sessio
     # Update session so the new name is used immediately
     request.session["user"]["display_name"] = payload.display_name
     return {"ok": True, "display_name": payload.display_name}
+
+
+class AboutTextUpdate(BaseModel):
+    about_text: str = Field("", max_length=5000)
+
+
+@app.post("/api/profile/about")
+def update_about(payload: AboutTextUpdate, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+    if not profile:
+        return JSONResponse({"error": "Profile not found"}, status_code=404)
+    profile.about_text = payload.about_text.strip() or None
+    db.commit()
+    return {"ok": True}
 
 
 # ── Admin ─────────────────────────────────────────────────────────────────────

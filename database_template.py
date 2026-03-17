@@ -290,6 +290,10 @@ class UserProfile(Base):
     is_public     = Column(Boolean, default=False, nullable=False)
     favorite_game = Column(String(32), nullable=True)
     vanity_slug   = Column(String(32), unique=True, nullable=True, index=True)
+    pref_sounds   = Column(Boolean, default=False, nullable=False)
+    pref_chording = Column(Boolean, default=True,  nullable=False)
+    pref_skin     = Column(String(16), default='dark', nullable=False)
+    about_text    = Column(String(5000), nullable=True)
     created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 # ── Create tables if they don't exist ────────────────────────────────────────

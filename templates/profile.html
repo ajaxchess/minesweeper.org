@@ -342,6 +342,9 @@ const PUBLIC_ID    = "{{ public_id }}";
 let   isPublic     = {{ 'true' if is_public else 'false' }};
 let   favoriteGame = "{{ favorite_game or '' }}";
 const VANITY_SLUG  = "{{ vanity_slug or '' }}";
+let   prefSounds   = {{ 'true' if pref_sounds   else 'false' }};
+let   prefChording = {{ 'true' if pref_chording else 'false' }};
+let   prefSkin     = "{{ pref_skin }}";
 
 function updatePublicUI() {
   const btn       = document.getElementById('public-toggle');
@@ -365,7 +368,13 @@ async function saveSettings() {
   await fetch('/api/profile/settings', {
     method:  'POST',
     headers: {'Content-Type': 'application/json'},
-    body:    JSON.stringify({ is_public: isPublic, favorite_game: favoriteGame }),
+    body:    JSON.stringify({
+      is_public:     isPublic,
+      favorite_game: favoriteGame,
+      pref_sounds:   prefSounds,
+      pref_chording: prefChording,
+      pref_skin:     prefSkin,
+    }),
   });
 }
 
@@ -413,6 +422,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const vi = document.getElementById('vanity-input');
   if (vi) vi.value = VANITY_SLUG;
   updatePublicUI();
+  // Sync DB prefs → localStorage so all other pages pick up the canonical values
+  localStorage.setItem('sounds', prefSounds);
+  localStorage.setItem('chording', prefChording);
+  localStorage.setItem('skin', prefSkin);
+  document.documentElement.dataset.skin = prefSkin;
 });
 
 // ── Display Name ──────────────────────────────────────────────────────────────
@@ -444,48 +458,49 @@ async function saveDisplayName() {
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 function updateSoundUI() {
-  const on  = localStorage.getItem('sounds') === 'true';
   const btn = document.getElementById('sound-toggle');
-  btn.textContent = on ? 'ON' : 'OFF';
-  btn.classList.toggle('active', on);
+  btn.textContent = prefSounds ? 'ON' : 'OFF';
+  btn.classList.toggle('active', prefSounds);
 }
 
 function toggleSound() {
-  const on = localStorage.getItem('sounds') === 'true';
-  localStorage.setItem('sounds', !on);
+  prefSounds = !prefSounds;
+  localStorage.setItem('sounds', prefSounds);
   updateSoundUI();
+  saveSettings();
 }
 
 updateSoundUI();
 
 function updateChordingUI() {
-  const on  = localStorage.getItem('chording') !== 'false';
   const btn = document.getElementById('chord-toggle');
-  btn.textContent = on ? 'ON' : 'OFF';
-  btn.classList.toggle('active', on);
+  btn.textContent = prefChording ? 'ON' : 'OFF';
+  btn.classList.toggle('active', prefChording);
 }
 
 function toggleChording() {
-  const on = localStorage.getItem('chording') !== 'false';
-  localStorage.setItem('chording', !on);
+  prefChording = !prefChording;
+  localStorage.setItem('chording', prefChording);
   updateChordingUI();
+  saveSettings();
 }
 
 updateChordingUI();
 
 // ── Skin ──────────────────────────────────────────────────────────────────────
 function setSkin(skin) {
+  prefSkin = skin;
   localStorage.setItem('skin', skin);
   document.documentElement.dataset.skin = skin;
   document.querySelectorAll('.skin-card').forEach(c =>
     c.classList.toggle('active', c.dataset.skin === skin)
   );
+  saveSettings();
 }
 
 function updateSkinUI() {
-  const skin = localStorage.getItem('skin') || 'dark';
   document.querySelectorAll('.skin-card').forEach(c =>
-    c.classList.toggle('active', c.dataset.skin === skin)
+    c.classList.toggle('active', c.dataset.skin === prefSkin)
   );
 }
 
