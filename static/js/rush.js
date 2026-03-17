@@ -902,6 +902,17 @@ function updateActiveCount() {
 function startGame() {
   rush.started = true;
   removeHintMarker();
+  // Unlock mine-free initial rows above row 0 that were blocked pre-game
+  for (let r = 1; r < rush.numRows; r++) {
+    if (rush.rowStatus[r] === 'active' && rush.rowMines[r].size === 0) {
+      const div = rowEl(r);
+      if (!div || div.classList.contains('clearable')) continue;
+      div.replaceChild(makeRushClearBtn(r, window.T.rush_btn_no_mines), div.firstChild);
+      div.replaceChild(makeRushClearBtn(r, window.T.rush_btn_no_mines), div.lastChild);
+      div.classList.add('clearable');
+      div.onclick = () => clearRow(r);
+    }
+  }
   startRushTimer();
   scheduleNextRow();
 }
@@ -1137,11 +1148,13 @@ function buildInitialBoard() {
       grid.appendChild(cell);
     }
 
-    const isMFree = rush.rowMines[r].size === 0;
-    div.appendChild(isMFree ? makeRushClearBtn(r, window.T.rush_btn_no_mines) : makeSpacer());
+    // Before game start only row 0 (mine-free bottom row) is clearable
+    const isMFree    = rush.rowMines[r].size === 0;
+    const canClearNow = isMFree && r === 0;
+    div.appendChild(canClearNow ? makeRushClearBtn(r, window.T.rush_btn_no_mines) : makeSpacer());
     div.appendChild(grid);
-    div.appendChild(isMFree ? makeRushClearBtn(r, window.T.rush_btn_no_mines) : makeSpacer());
-    if (isMFree) { div.classList.add('clearable'); div.onclick = () => clearRow(r); }
+    div.appendChild(canClearNow ? makeRushClearBtn(r, window.T.rush_btn_no_mines) : makeSpacer());
+    if (canClearNow) { div.classList.add('clearable'); div.onclick = () => clearRow(r); }
 
     board.appendChild(div);
   }
