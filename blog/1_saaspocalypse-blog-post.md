@@ -1,5 +1,6 @@
 ---
 title: "SaaSpocalypse.Now!"
+publisher: "Lady Di's Mines"
 image: "https://minesweeper.org/static/img/saaspocalypse.png"
 author: "Richard Cross"
 authorurl: "https://minesweeper.org/u/ajaxchess"
