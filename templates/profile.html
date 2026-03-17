@@ -60,6 +60,13 @@
       </div>
       <div class="setting-row">
         <div class="setting-info">
+          <span class="setting-name">Sounds</span>
+          <span class="setting-desc">Play sound effects during the game.</span>
+        </div>
+        <button class="setting-toggle" id="sound-toggle" onclick="toggleSound()"></button>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
           <span class="setting-name">Chording</span>
           <span class="setting-desc">Double-click a revealed number to auto-reveal its neighbors when the correct number of mines are flagged.</span>
         </div>
@@ -436,6 +443,21 @@ async function saveDisplayName() {
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────────
+function updateSoundUI() {
+  const on  = localStorage.getItem('sounds') === 'true';
+  const btn = document.getElementById('sound-toggle');
+  btn.textContent = on ? 'ON' : 'OFF';
+  btn.classList.toggle('active', on);
+}
+
+function toggleSound() {
+  const on = localStorage.getItem('sounds') === 'true';
+  localStorage.setItem('sounds', !on);
+  updateSoundUI();
+}
+
+updateSoundUI();
+
 function updateChordingUI() {
   const on  = localStorage.getItem('chording') !== 'false';
   const btn = document.getElementById('chord-toggle');
