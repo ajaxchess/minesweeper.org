@@ -326,6 +326,7 @@ function isRowClearable(r) {
 }
 
 function autoClearIfOverflow() {
+  if (!rush.started) return;
   const clearable = [];
   for (let r = 0; r < rush.numRows; r++)
     if (isRowClearable(r)) clearable.push(r);
@@ -829,6 +830,7 @@ function hasSafeMove() {
 
 // ── Overflow: too many active rows = game over ────────────────────────────────
 function checkOverflow() {
+  if (!rush.started) return;
   if (activeCount() <= rush.maxActive) return;
 
   // Last-ditch: spend all salvage tokens on exploded-mine rows (bottom-first)
@@ -853,7 +855,8 @@ function checkOverflow() {
 
 // ── Min rows: fewer than MIN_ROWS unfinished → add 4 immediately ─────────────
 function checkMinRows() {
-  if (!rush.over && unfinishedCount() < MIN_ROWS) {
+  if (!rush.started || rush.over) return;
+  if (unfinishedCount() < MIN_ROWS) {
     for (let i = 0; i < 4; i++) addRow();
   }
 }
