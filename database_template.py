@@ -4,6 +4,7 @@ CD Test
 CD Test2
 CD Test3
 CD Test4
+CD Test5
 """
 from sqlalchemy import (
     create_engine, Column, Integer, String, Float,
