@@ -142,22 +142,29 @@
 <script>
 (async () => {
   const mode = "{{ mode }}";
-  const res  = await fetch(`/api/scores/${mode}`);
-  const rows = await res.json();
   const body = document.getElementById('page-lb-body');
-  if (!rows.length) {
-    body.innerHTML = '<tr><td colspan="5" class="lb-empty">No scores yet today.</td></tr>';
-    return;
+  try {
+    const res  = await fetch(`/api/scores/${mode}?no_guess=false&period=daily`);
+    if (!res.ok) throw new Error(res.status);
+    const rows = await res.json();
+    if (!Array.isArray(rows) || !rows.length) {
+      body.innerHTML = '<tr><td colspan="5" class="lb-empty">No scores yet today.</td></tr>';
+      return;
+    }
+    body.innerHTML = rows.map((s, i) => {
+      const t = s.time_ms != null ? (s.time_ms / 1000).toFixed(3) + 's' : s.time_secs + 's';
+      return `
+        <tr>
+          <td class="lb-rank">${i + 1}</td>
+          <td class="lb-name">${s.name}</td>
+          <td class="lb-time">${t}</td>
+          <td class="lb-board">${s.rows}×${s.cols}</td>
+          <td class="lb-date">${s.created_at}</td>
+        </tr>`;
+    }).join('');
+  } catch {
+    body.innerHTML = '<tr><td colspan="5" class="lb-empty">Could not load scores.</td></tr>';
   }
-  body.innerHTML = rows.map((s, i) => `
-    <tr>
-      <td class="lb-rank">${i + 1}</td>
-      <td class="lb-name">${s.name}</td>
-      <td class="lb-time">${s.time_secs}s</td>
-      <td class="lb-board">${s.rows}×${s.cols}</td>
-      <td class="lb-date">${s.created_at}</td>
-    </tr>
-  `).join('');
 })();
 </script>
 {% endblock %}
