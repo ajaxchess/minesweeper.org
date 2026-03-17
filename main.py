@@ -369,6 +369,7 @@ class RushScoreSubmit(BaseModel):
     rush_mode:     str = Field(..., pattern="^(easy|normal|hard|custom)$")
     score:         int = Field(..., ge=0, le=9_999_999)   # elapsed + cleared_mines*5
     cleared_mines: int = Field(..., ge=0, le=99999)
+    rows_cleared:  int = Field(0, ge=0, le=99999)
     time_secs:     int = Field(..., ge=1, le=99999)
     cols:          int = Field(..., ge=5, le=30)
     density:       Optional[float] = Field(None, ge=0.0, le=1.0)
@@ -391,6 +392,7 @@ def submit_rush_score(payload: RushScoreSubmit, request: Request, db: Session = 
         user_email    = user["email"] if user else None,
         score         = payload.score,
         cleared_mines = payload.cleared_mines,
+        rows_cleared  = payload.rows_cleared,
         time_secs     = payload.time_secs,
         cols          = payload.cols,
         density       = payload.density,
