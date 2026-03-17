@@ -575,16 +575,22 @@ async def blog_post(request: Request, slug: str):
         "\n".join(lines),
         extensions=["extra", "sane_lists"],
     )
+    date_published = (
+        front_matter.get("datePublished")
+        or post.get("datePublished")
+        or post["date"]
+    )
     return templates.TemplateResponse("blog_post.html", {
-        "request":   request, "mode": "blog",
-        "user":      get_current_user(request),
-        "lang":      get_lang(request), "t": get_t(request),
-        "post":      post,
-        "content":   html_content,
-        "author":    front_matter.get("author", ""),
-        "authorurl": front_matter.get("authorurl", ""),
-        "publisher": front_matter.get("publisher", ""),
-        "og_image":  front_matter.get("image", ""),
+        "request":       request, "mode": "blog",
+        "user":          get_current_user(request),
+        "lang":          get_lang(request), "t": get_t(request),
+        "post":          post,
+        "content":       html_content,
+        "author":        front_matter.get("author", ""),
+        "authorurl":     front_matter.get("authorurl", ""),
+        "publisher":     front_matter.get("publisher", ""),
+        "og_image":      front_matter.get("image", ""),
+        "date_published": date_published,
     })
 
 

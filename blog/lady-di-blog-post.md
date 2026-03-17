@@ -4,7 +4,7 @@ publisher: "Lady Di's Mines"
 image: "https://minesweeper.org/static/img/ladydi-walks-minefield.png"
 author: "Richard Cross"
 authorurl: "https://minesweeper.org/u/ajaxchess"
-date: 2026-03-15
+datePublished: 2026-03-15T15:00:00Z
 ---
 
 I started building minesweeper.org in 1999 while working on my Physics PhD. The goal was to teach myself web development. The result was a Java 1.1.5 applet that crashed browsers, required Netscape 4.0 or Internet Explorer 3.0, and reset its high scores every day at 0 Swatch internet time. My sister Becca helped me write the instructions. The site went live in 2000, and against all odds, people actually came to play.

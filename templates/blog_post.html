@@ -15,9 +15,14 @@
   "@type": "BlogPosting",
   "headline": {{ post.title | tojson }},
   "url": "https://minesweeper.org/blog/{{ post.slug }}",
-  "datePublished": {{ (post.datePublished if post.datePublished else post.date) | tojson }},
+  "datePublished": {{ date_published | tojson }},
   "description": {{ post.excerpt | tojson }}{% if og_image %},
-  "image": {{ og_image | tojson }}{% endif %}{% if author %},
+  "image": {{ og_image | tojson }}{% endif %}{% if publisher %},
+  "publisher": {
+    "@type": "Organization",
+    "name": {{ publisher | tojson }},
+    "url": "https://minesweeper.org/"
+  }{% endif %}{% if author %},
   "author": {
     "@type": "Person",
     "name": {{ author | tojson }}{% if authorurl %},
