@@ -147,6 +147,7 @@ class RushScore(Base):
     user_email = Column(String(256), nullable=True, index=True)
     score         = Column(Integer, nullable=False)          # elapsed + cleared_mines*5
     cleared_mines = Column(Integer, nullable=True)           # mines in cleared rows
+    rows_cleared  = Column(Integer, nullable=True)           # number of rows cleared
     time_secs     = Column(Integer, nullable=False)          # game duration (seconds)
     cols          = Column(Integer, nullable=False)          # board width
     density       = Column(Float, nullable=True)             # mines/cell (custom mode)
@@ -163,6 +164,7 @@ class RushScore(Base):
             "name":         self.name,
             "score":        self.score,
             "cleared_mines":self.cleared_mines,
+            "rows_cleared": self.rows_cleared,
             "time_secs":    self.time_secs,
             "cols":         self.cols,
             "density":      self.density,
