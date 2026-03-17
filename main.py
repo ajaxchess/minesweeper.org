@@ -412,7 +412,7 @@ def get_rush_scores(rush_mode: str, alltime: bool = False, db: Session = Depends
     if not alltime:
         q = q.filter(RushScore.created_at >= date.today())
     top = q.order_by(RushScore.score.desc()).limit(15).all()
-    return [s.to_dict() for s in top]
+    return _enrich_with_profiles(top, db)
 
 
 @app.get("/rush/leaderboard", response_class=HTMLResponse)
@@ -737,7 +737,7 @@ def get_cylinder_scores(cyl_mode: str, db: Session = Depends(get_db)):
         .limit(15)
         .all()
     )
-    return [s.to_dict() for s in top]
+    return _enrich_with_profiles(top, db)
 
 
 # ── Toroid Routes ─────────────────────────────────────────────────────────────
@@ -843,7 +843,7 @@ def get_toroid_scores(tor_mode: str, db: Session = Depends(get_db)):
         .limit(15)
         .all()
     )
-    return [s.to_dict() for s in top]
+    return _enrich_with_profiles(top, db)
 
 
 @app.get("/tentaizu", response_class=HTMLResponse)
@@ -1005,7 +1005,7 @@ def get_tentaizu_scores(puzzle_date: str, db: Session = Depends(get_db)):
         .limit(20)
         .all()
     )
-    return [s.to_dict() for s in top]
+    return _enrich_with_profiles(top, db)
 
 
 # ── Tentaizu Easy (5×5) Leaderboard API ───────────────────────────────────────
@@ -1048,7 +1048,7 @@ def get_tentaizu_easy_scores(puzzle_date: str, db: Session = Depends(get_db)):
         .limit(20)
         .all()
     )
-    return [s.to_dict() for s in top]
+    return _enrich_with_profiles(top, db)
 
 
 def _build_stats(email: str, db: Session) -> dict:

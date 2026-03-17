@@ -121,12 +121,16 @@
       body.innerHTML = '<tr><td colspan="5" class="lb-empty">No scores yet today.</td></tr>';
       return;
     }
+    const esc = v => v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     body.innerHTML = rows.map((s, i) => {
       const t = s.time_ms != null ? (s.time_ms / 1000).toFixed(3) + 's' : s.time_secs + 's';
+      const nameCell = s.profile_url
+        ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
+        : esc(s.name);
       return `
         <tr>
           <td class="lb-rank">${i + 1}</td>
-          <td class="lb-name">${s.name}</td>
+          <td class="lb-name">${nameCell}</td>
           <td class="lb-time">${t}</td>
           <td class="lb-board">${s.rows}×${s.cols}</td>
           <td class="lb-date">${s.created_at}</td>
