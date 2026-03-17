@@ -322,7 +322,11 @@ def get_scores(mode: GameMode, no_guess: bool = False,
         else_=Score.time_secs * 1000
     )
 
-    q = db.query(Score).filter(Score.mode == mode, Score.no_guess == no_guess)
+    if no_guess:
+        ng_filter = Score.no_guess == True
+    else:
+        ng_filter = (Score.no_guess == False) | Score.no_guess.is_(None)
+    q = db.query(Score).filter(Score.mode == mode, ng_filter)
 
     if period == "daily":
         q = q.filter(Score.created_at >= date.today())
