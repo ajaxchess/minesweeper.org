@@ -218,6 +218,51 @@ html[data-skin="classic"] .game-landing-links a:hover {
   color: #ffffff;
 }
 
+/* ── Reveal Next Row button ──────────────────────────────────────────────── */
+.rush-reveal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  width: 100%;
+  max-width: 600px;
+  justify-content: center;
+}
+.rush-reveal-btn:hover {
+  background: rgba(83, 216, 251, 0.12);
+  border-color: var(--accent);
+}
+
+/* ── Click-hint marker on bottom-left cell ───────────────────────────────── */
+.rush-hint-click {
+  position: relative;
+}
+.rush-hint-click::after {
+  content: '✕';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff3333;
+  font-size: 1em;
+  font-weight: 900;
+  pointer-events: none;
+  animation: hint-pulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes hint-pulse {
+  from { opacity: 0.4; transform: scale(0.85); }
+  to   { opacity: 1;   transform: scale(1.1);  }
+}
+
 /* ── Flag mode button (touch devices only) ───────────────────────────────── */
 .flag-mode-btn {
   display: none; /* hidden on mouse/desktop */

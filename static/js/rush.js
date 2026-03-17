@@ -30,6 +30,46 @@ function clearRushFlagMode() {
   if (btn) btn.classList.remove('active');
 }
 
+// ── Reveal Next Row ───────────────────────────────────────────────────────────
+function revealNextRow() {
+  if (rush.over) return;
+  // Find the bottom-most active row that still has unrevealed safe cells
+  for (let r = 0; r < rush.numRows; r++) {
+    if (rush.rowStatus[r] !== 'active') continue;
+    let anyToReveal = false;
+    for (let c = 0; c < rush.cols; c++) {
+      if (!rush.revealed[r][c] && rush.board[r][c] !== -1 && rush.flagged[r][c] !== 1) {
+        anyToReveal = true;
+        break;
+      }
+    }
+    if (!anyToReveal) continue;
+    if (!rush.started) startGame();
+    // Reveal all safe cells in this row only (no BFS cascade)
+    for (let c = 0; c < rush.cols; c++) {
+      if (!rush.revealed[r][c] && rush.board[r][c] !== -1 && rush.flagged[r][c] !== 1) {
+        rush.revealed[r][c] = true;
+        renderCell(r, c);
+      }
+    }
+    checkAllEmptyRowButtons();
+    updateSafetyNet();
+    checkBoardSolved();
+    return;
+  }
+}
+
+// ── Click-hint marker on bottom-left cell ─────────────────────────────────────
+function addHintMarker() {
+  const el = cellEl(0, 0);
+  if (el) el.classList.add('rush-hint-click');
+}
+
+function removeHintMarker() {
+  const el = document.querySelector('.rush-hint-click');
+  if (el) el.classList.remove('rush-hint-click');
+}
+
 // ── Touch helpers ──────────────────────────────────────────────────────────────
 const LONG_PRESS_MS = 500;
 
@@ -870,6 +910,7 @@ function updateActiveCount() {
 // ── Start game (on first interaction) ────────────────────────────────────────
 function startGame() {
   rush.started = true;
+  removeHintMarker();
   startRushTimer();
   scheduleNextRow();
 }
@@ -1113,6 +1154,7 @@ function buildInitialBoard() {
 
     board.appendChild(div);
   }
+  addHintMarker();
 }
 
 // ── Init / Reset ─────────────────────────────────────────────────────────────
@@ -1212,6 +1254,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Keyboard shortcuts: Space = reveal next row, F = toggle flag mode
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === ' ' || e.code === 'Space') {
+      e.preventDefault();
+      revealNextRow();
+    } else if (e.key === 'f' || e.key === 'F') {
+      toggleRushFlagMode();
+    }
+  });
+
   // Start on easy
   initRush('easy');
   loadRushLeaderboard('easy');
@@ -1221,5 +1274,6 @@ document.addEventListener('DOMContentLoaded', () => {
 window.initRush = initRush;
 window.submitRushScore = submitRushScore;
 window.toggleRushFlagMode = toggleRushFlagMode;
+window.revealNextRow = revealNextRow;
 
 })(); // end IIFE
