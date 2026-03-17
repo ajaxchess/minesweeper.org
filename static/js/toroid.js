@@ -1,7 +1,7 @@
 /**
  * Toroid Minesweeper — Game Engine
  * The board wraps on all sides: left↔right and top↔bottom edges are connected.
- * Uses addTouchHandlers, cellEl, NUM_COLORS from minesweeper.js (loaded first).
+ * Uses addTouchHandlers, cellEl, getNumColors from minesweeper.js (loaded first).
  */
 (function () {
 
@@ -419,7 +419,7 @@
       el.textContent = '';
     } else {
       el.textContent = val;
-      el.style.color = NUM_COLORS[val];
+      el.style.color = getNumColors()[val];
     }
   }
 

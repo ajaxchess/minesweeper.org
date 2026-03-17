@@ -594,7 +594,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Don't run the solo game init on the duel, pvp, or cylinder pages
   if (board.dataset.mode === 'duel' || board.dataset.mode === 'pvp' ||
-      board.dataset.mode.startsWith('cylinder')) return;
+      board.dataset.mode.startsWith('cylinder') ||
+      board.dataset.mode.startsWith('toroid')) return;
 
   const rows    = parseInt(board.dataset.rows);
   const cols    = parseInt(board.dataset.cols);
