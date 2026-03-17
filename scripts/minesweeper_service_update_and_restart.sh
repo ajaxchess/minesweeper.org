@@ -38,6 +38,18 @@ else
     echo "Installing/updating Python dependencies..."
     "$VENV_DIR/bin/pip" install -r "$REPO_DIR/requirements.txt" --quiet || { echo "Warning: pip install failed"; }
 
+    # --- Copy database.py ---
+    FILE_PATH="/home/ubuntu/git/minesweeper.org/database_template.py"
+    MINUTES_AGO=5
+    if [ -n "$(find "$FILE_PATH" -maxdepth 0 -mmin -"$MINUTES_AGO" 2>/dev/null)" ]; then
+        echo "The file $FILE_PATH was changed in the past $MINUTES_AGO minutes."
+        echo "copy database_template.py database.py"
+        /usr/bin/cp database_template.py database.py
+        /usr/bin/sed -i 's/the_minesweeper_user/minesweeper_user/g' database.py
+        /usr/bin/sed -i 's/the_password/yourpassword/g' database.py
+    else
+        echo "The file $FILE_PATH was NOT changed in the past $MINUTES_AGO minutes, or does not exist."
+    fi
     # --- Restart the service ---
     echo "Restarting service: $SERVICE_NAME..."
     # Use 'sudo' if necessary, depending on your permissions
