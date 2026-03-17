@@ -962,6 +962,7 @@ async function submitRushScore(autoName = null) {
         rush_mode:     rush.mode,
         score:         rush.elapsed + rush.clearedMines * 5,
         cleared_mines: rush.clearedMines,
+        rows_cleared:  rush.rowsCleared,
         time_secs:     rush.elapsed,
         cols:          rush.cols,
         density:       rush.mode === 'custom' ? rush.density : undefined,
@@ -1020,6 +1021,7 @@ async function loadRushLeaderboard(mode) {
         <td class="lb-name">${escHtml(s.name)}</td>
         <td class="lb-score">${s.score}</td>
         <td class="lb-score">${s.cleared_mines ?? '—'} mines</td>
+        <td class="lb-score">${s.rows_cleared ?? '—'} rows</td>
         ${paramsCell}
         <td class="lb-time">${time}</td>
         <td class="lb-date">${s.created_at}</td>
@@ -1031,7 +1033,7 @@ async function loadRushLeaderboard(mode) {
       <div class="lb-table-wrap">
         <table class="lb-table">
           <thead><tr>
-            <th>#</th><th>Name</th><th>Score</th><th>Mines</th>${paramsHeader}<th>Time</th><th>Date</th>
+            <th>#</th><th>Name</th><th>Score</th><th>Mines</th><th>Rows</th>${paramsHeader}<th>Time</th><th>Date</th>
           </tr></thead>
           <tbody>${trs}</tbody>
         </table>
