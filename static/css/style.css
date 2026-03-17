@@ -770,17 +770,17 @@ footer a:hover { text-decoration: underline; }
   overflow: hidden;
 }
 
-.lb-table {
+.lb-table, .help-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
 }
 
-.lb-table thead tr {
+.lb-table thead tr, .help-table thead tr {
   background: var(--surface2);
 }
 
-.lb-table th {
+.lb-table th, .help-table th {
   padding: 0.65rem 1rem;
   text-align: left;
   font-size: 0.78rem;
@@ -789,7 +789,7 @@ footer a:hover { text-decoration: underline; }
   color: var(--text-dim);
 }
 
-.lb-table td {
+.lb-table td, .help-table td {
   padding: 0.6rem 1rem;
   border-top: 1px solid var(--surface2);
   color: var(--text);
@@ -874,6 +874,55 @@ footer a:hover { text-decoration: underline; }
 }
 
 .lb-back a:hover { background: var(--surface2); }
+
+/* ── How-to-play page sections ───────────────────────────────────────────── */
+.help-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.help-section h2 {
+  font-size: 1.2rem;
+  color: var(--accent2);
+  margin: 0;
+}
+.help-section h3 {
+  font-size: 1rem;
+  color: var(--text);
+  margin: 0.25rem 0 0;
+}
+.help-section p, .help-section ul, .help-section ol, .help-section table {
+  margin: 0;
+}
+.help-section ul, .help-section ol {
+  padding-left: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+kbd {
+  display: inline-block;
+  padding: 0.1em 0.45em;
+  font-size: 0.85em;
+  font-family: monospace;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+}
+
+/* ── How-to-play CTA link ────────────────────────────────────────────────── */
+.help-play-link {
+  display: inline-block;
+  padding: 0.45rem 1.1rem;
+  background: var(--accent);
+  color: #000 !important;
+  font-weight: 700;
+  border-radius: var(--radius);
+  text-decoration: none !important;
+  font-size: 0.95rem;
+}
+.help-play-link:hover { opacity: 0.85; text-decoration: none !important; }
 
 /* ── Admin dashboard ─────────────────────────────────────────────────────── */
 .admin-section {

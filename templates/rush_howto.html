@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}How to Play Minesweeper Rush — Rules, Controls & Strategy | minesweeper.org{% endblock %}
+{% block description %}Learn how to play Minesweeper Rush — controls, row mechanics, scoring, speed progression, salvage tokens, and tips for surviving as long as possible.{% endblock %}
+{% block keywords %}<meta name="keywords" content="how to play minesweeper rush, minesweeper rush rules, minesweeper rush guide, minesweeper rush tips, minesweeper rush strategy, minesweeper rush controls">{% endblock %}
+{% block canonical %}https://minesweeper.org/rush/how-to-play{% endblock %}
+{% block og_url %}https://minesweeper.org/rush/how-to-play{% endblock %}
+{% block og_title %}How to Play Minesweeper Rush — Rules, Controls & Strategy{% endblock %}
+{% block og_description %}Complete guide to Minesweeper Rush: controls, row mechanics, speed progression, salvage tokens, and survival tips.{% endblock %}
+{% block tw_title %}How to Play Minesweeper Rush — Rules, Controls & Strategy{% endblock %}
+{% block tw_description %}Complete guide to Minesweeper Rush: controls, row mechanics, speed progression, salvage tokens, and survival tips.{% endblock %}
+
+{% block jsonld %}
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to Play Minesweeper Rush",
+    "description": "Step-by-step guide to surviving Minesweeper Rush — the endless, fast-paced minesweeper mode.",
+    "url": "https://minesweeper.org/rush/how-to-play",
+    "step": [
+      { "@type": "HowToStep", "name": "Choose a difficulty", "text": "Select Easy, Normal, Hard, or Custom. Easy is the best starting point for new Rush players." },
+      { "@type": "HowToStep", "name": "Click the bottom-left cell", "text": "The bottom row is always mine-free. Click it to reveal safe cells and start the timer." },
+      { "@type": "HowToStep", "name": "Flag mines and clear rows", "text": "Right-click (or long-press) suspected mine cells to flag them. When every mine in a row is flagged, click the ✓ button to clear it." },
+      { "@type": "HowToStep", "name": "Survive incoming rows", "text": "New rows continuously drop from the top. Keep clearing rows before active rows exceed the limit." },
+      { "@type": "HowToStep", "name": "Use salvage tokens for emergencies", "text": "Earn a salvage token every 20 rows cleared. Use it to instantly remove a dangerous row when the board is about to overflow." }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Minesweeper", "item": "https://minesweeper.org/" },
+      { "@type": "ListItem", "position": 2, "name": "Rush", "item": "https://minesweeper.org/rush" },
+      { "@type": "ListItem", "position": 3, "name": "How to Play", "item": "https://minesweeper.org/rush/how-to-play" }
+    ]
+  }
+]
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">How to Play Minesweeper Rush</h1>
+
+  <div class="help-section">
+    <p>Minesweeper Rush is an endless survival mode where new rows of mines continuously drop from the top of the board. Your goal is to flag every mine in each row and clear it before the board overflows. The longer you survive, the faster the rows come. This guide covers everything you need to know to get started and improve.</p>
+    <p style="margin-top:0.75rem"><a href="/rush" class="help-play-link">▶ Play Minesweeper Rush</a></p>
+  </div>
+
+  <div class="help-section">
+    <h2>The Board</h2>
+    <p>The board is a grid of rows. Rows enter from the top, filling with <strong>✕ marks</strong> as they arrive — this is the incoming animation that signals a new row is loading. Once all cells fill, the row becomes <strong>active</strong> and you can interact with it.</p>
+    <p>Rows are numbered from the bottom. <strong>Row 0 is always at the bottom</strong> and is guaranteed mine-free at the start of every game, giving you a safe place to begin. Older rows sit at the bottom; newer rows pile up toward the top.</p>
+    <p>The game ends when the number of active rows exceeds the limit for your difficulty. The active row count and limit are shown in the info panel above the board.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Controls</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>Action</th><th>Desktop</th><th>Mobile</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Reveal a cell</td><td>Left-click</td><td>Tap</td></tr>
+        <tr><td>Flag a mine</td><td>Right-click</td><td>Long-press, or tap in Flag mode</td></tr>
+        <tr><td>Clear a completed row</td><td>Click the ✓ button on the row</td><td>Tap the ✓ button</td></tr>
+        <tr><td>Toggle Flag mode</td><td><kbd>F</kbd> key</td><td>Tap the 🚩 Flag button</td></tr>
+        <tr><td>Drop Row</td><td><kbd>Space</kbd> key or Drop Row button</td><td>Tap the Drop Row button</td></tr>
+        <tr><td>Use a salvage token</td><td>Click the 🔥 button on a row</td><td>Tap the 🔥 button</td></tr>
+        <tr><td>New game</td><td>Click 🙂</td><td>Tap 🙂</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:0.75rem"><strong>Flag mode</strong> (mobile) switches tap from reveal to flag, so you can plant flags without long-pressing. The 🚩 button glows red when active. Press <kbd>F</kbd> on desktop to toggle the same mode.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>How Rows Work</h2>
+    <p>Each row has one of three states:</p>
+    <ul>
+      <li><strong>Incoming</strong> — the row is animating in from the top (filling with ✕ marks). You cannot interact with it yet.</li>
+      <li><strong>Active</strong> — the row is fully loaded and playable. Hidden cells can be revealed or flagged. This is the row count that counts toward the overflow limit.</li>
+      <li><strong>Cleared</strong> — the row has been removed. It no longer occupies space or counts against the limit.</li>
+    </ul>
+    <p>A row is cleared when <strong>every mine in it is flagged</strong>. A ✓ button appears on the side of the row — click it to clear. Rows with no mines show a ✓ button as soon as they activate; just click to clear them immediately.</p>
+    <p>Revealing cells is optional for clearing a row — you only need to flag the mines. However, revealing cells gives you number clues that help you locate mines in adjacent rows.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Drop Row</h2>
+    <p>The <strong>Drop Row</strong> button (or <kbd>Space</kbd>) forces the lowest incoming row to activate immediately, skipping the rest of its fill animation. If no incoming rows remain after the drop, a new row is queued above.</p>
+    <p>This is useful when you've cleared most of the board and want to keep the pressure on, or when you need to bring in a new row to work with before the timer fires.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Mine Hits and the Safety Net</h2>
+    <p>If you click on a mine, the row it's in is marked as exploded and <strong>two penalty rows are added</strong> immediately — making the board harder to manage. The mine itself is revealed but the game continues.</p>
+    <p>When there is no guaranteed safe move anywhere on the board, the <strong>safety net</strong> activates. A message appears in the info panel and mine hits carry <strong>no penalty</strong> until a safe move is available again. This prevents the game from punishing unavoidable guesses.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Scoring</h2>
+    <p>Your final score is calculated as:</p>
+    <p style="text-align:center;font-size:1.1rem;padding:0.5rem 0"><strong>Score = Time survived (seconds) + Mines cleared × 5</strong></p>
+    <p>The leaderboard resets at midnight UTC each day. Sign in with Google to save your score. Each difficulty mode (Easy, Normal, Hard) has its own daily leaderboard.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Speed Progression</h2>
+    <p>Rush starts at a comfortable pace and accelerates as you clear more mines. The speed is determined by how long the game waits before sending the next incoming row.</p>
+    <p>The rule is simple: <strong>every 5 mines cleared, the interval drops by 400 ms</strong>. The speed level shown in the info panel (×1, ×2, ×3 …) increases by one each time.</p>
+
+    <table class="help-table">
+      <thead>
+        <tr><th>Speed level</th><th>Mines cleared</th><th>Easy interval</th><th>Normal interval</th><th>Hard interval</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>×1</td><td>0–4</td><td>15.0 s</td><td>20.0 s</td><td>25.0 s</td></tr>
+        <tr><td>×2</td><td>5–9</td><td>14.6 s</td><td>19.6 s</td><td>24.6 s</td></tr>
+        <tr><td>×5</td><td>20–24</td><td>13.4 s</td><td>18.4 s</td><td>23.4 s</td></tr>
+        <tr><td>×10</td><td>45–49</td><td>11.4 s</td><td>16.4 s</td><td>21.4 s</td></tr>
+        <tr><td>×20</td><td>95–99</td><td>7.4 s</td><td>12.4 s</td><td>17.4 s</td></tr>
+        <tr><td>×31 (max Easy)</td><td>150+</td><td>3.0 s ⚡</td><td>—</td><td>—</td></tr>
+        <tr><td>×43 (max Normal)</td><td>210+</td><td>—</td><td>3.0 s ⚡</td><td>—</td></tr>
+        <tr><td>×56 (max Hard)</td><td>275+</td><td>—</td><td>—</td><td>3.0 s ⚡</td></tr>
+      </tbody>
+    </table>
+    <p>The interval has a hard floor of <strong>3 seconds</strong> — rows can never arrive faster than that, regardless of how many mines you've cleared. Once you hit the floor, the challenge is purely about sustaining that pace indefinitely.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Salvage Tokens</h2>
+    <p>Every <strong>20 rows cleared</strong>, you earn one salvage token. A salvage token lets you instantly remove any active row — even one you haven't finished flagging. A 🔥 button appears on eligible rows when you have tokens available.</p>
+    <p>Salvage tokens are your emergency escape hatch. Don't use them early — save them for the moment a row is about to push the board over the overflow limit. If the board does overflow, any remaining tokens are spent automatically on the most dangerous rows as a last-ditch save.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Difficulty Modes</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>Mode</th><th>Columns</th><th>Mine density</th><th>Base interval</th><th>Max active rows</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Easy</strong></td><td>9</td><td>~10%</td><td>15 s</td><td>12</td></tr>
+        <tr><td><strong>Normal</strong></td><td>16</td><td>~15%</td><td>20 s</td><td>16</td></tr>
+        <tr><td><strong>Hard</strong></td><td>30</td><td>~20%</td><td>25 s</td><td>20</td></tr>
+        <tr><td><strong>Custom</strong></td><td>5–30</td><td>your choice</td><td>scales with width</td><td>scales with width</td></tr>
+      </tbody>
+    </table>
+    <p>Custom games are not tracked on the leaderboard.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Tips for Surviving Longer</h2>
+    <ul>
+      <li><strong>Start at the bottom.</strong> The bottom row is always mine-free and is your first free clear. Click it immediately to open up number clues that help you read the rows above.</li>
+      <li><strong>Prioritize the bottom rows.</strong> A cleared bottom row drops the active count and buys breathing room. Always work from the bottom up.</li>
+      <li><strong>Flag mines, not every cell.</strong> You don't need to reveal all cells to clear a row — only flag the mines. Revealing cells costs time; use it strategically to gather clues for harder rows.</li>
+      <li><strong>Use numbers aggressively.</strong> A revealed number tells you exactly how many mines are adjacent. Use it to deduce flags in the row above before that row even finishes activating.</li>
+      <li><strong>Keep a token in reserve.</strong> One salvage token in hand is worth far more than spending it early. Treat it as insurance against a single catastrophic row.</li>
+      <li><strong>Use Drop Row to set your rhythm.</strong> If you've cleared most active rows and are waiting for the next incoming row, hit <kbd>Space</kbd> to bring it in on your schedule rather than the game's timer.</li>
+      <li><strong>Learn Easy until it feels automatic.</strong> The patterns you internalize on Easy — mine clusters, number chains, row-clearing sequences — carry directly into Normal and Hard. Don't rush to harder modes until Easy feels effortless.</li>
+      <li><strong>Watch the speed indicator.</strong> When you see the ×level tick up, mentally prepare for the next pace increase. Anticipating it is easier than reacting to it.</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/rush">⚡ Play Rush</a>
+    <a href="/rush/leaderboard">🏆 Rush Leaderboard</a>
+    <a href="/how-to-play">How to Play Classic</a>
+  </div>
+
+</div>
+{% endblock %}

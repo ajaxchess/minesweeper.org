@@ -360,6 +360,15 @@ async def rush(request: Request):
     })
 
 
+@app.get("/rush/how-to-play", response_class=HTMLResponse)
+async def rush_howto(request: Request):
+    return templates.TemplateResponse("rush_howto.html", {
+        "request": request, "mode": "rush-howto",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 # ── Rush Leaderboard API ───────────────────────────────────────────────────────
 
 RUSH_MODES_VALID = {"easy", "normal", "hard", "custom"}
