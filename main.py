@@ -694,12 +694,19 @@ async def cylinder_custom(request: Request):
 CYLINDER_MODES_VALID = {"easy", "intermediate", "expert", "custom"}
 
 class CylinderScoreSubmit(BaseModel):
-    name:      str = Field(..., min_length=1, max_length=32)
-    cyl_mode:  str = Field(..., pattern="^(easy|intermediate|expert|custom)$")
-    time_secs: int = Field(..., ge=1, le=999)
-    rows:      int = Field(..., ge=5,  le=30)
-    cols:      int = Field(..., ge=5,  le=50)
-    mines:     int = Field(..., ge=1,  le=999)
+    name:         str          = Field(..., min_length=1, max_length=32)
+    cyl_mode:     str          = Field(..., pattern="^(easy|intermediate|expert|custom)$")
+    time_secs:    int          = Field(..., ge=1, le=999)
+    time_ms:      Optional[int]  = Field(None, ge=1, le=3_600_000)
+    rows:         int          = Field(..., ge=5,  le=30)
+    cols:         int          = Field(..., ge=5,  le=50)
+    mines:        int          = Field(..., ge=1,  le=999)
+    no_guess:     bool           = False
+    board_hash:   Optional[str]  = Field(None, max_length=128)
+    bbbv:         Optional[int]  = Field(None, ge=1, le=9999)
+    left_clicks:  Optional[int]  = Field(None, ge=0, le=99999)
+    right_clicks: Optional[int]  = Field(None, ge=0, le=99999)
+    chord_clicks: Optional[int]  = Field(None, ge=0, le=99999)
 
     @field_validator("name")
     @classmethod
@@ -725,13 +732,20 @@ class CylinderScoreSubmit(BaseModel):
 def submit_cylinder_score(payload: CylinderScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
     entry = CylinderScore(
-        name       = payload.name,
-        user_email = user["email"] if user else None,
-        cyl_mode   = payload.cyl_mode,
-        time_secs  = payload.time_secs,
-        rows       = payload.rows,
-        cols       = payload.cols,
-        mines      = payload.mines,
+        name         = payload.name,
+        user_email   = user["email"] if user else None,
+        cyl_mode     = payload.cyl_mode,
+        time_secs    = payload.time_secs,
+        time_ms      = payload.time_ms,
+        rows         = payload.rows,
+        cols         = payload.cols,
+        mines        = payload.mines,
+        no_guess     = payload.no_guess,
+        board_hash   = payload.board_hash,
+        bbbv         = payload.bbbv,
+        left_clicks  = payload.left_clicks,
+        right_clicks = payload.right_clicks,
+        chord_clicks = payload.chord_clicks,
     )
     db.add(entry)
     db.commit()
@@ -800,12 +814,19 @@ async def toroid_custom(request: Request):
 TOROID_MODES_VALID = {"easy", "intermediate", "expert", "custom"}
 
 class ToroidScoreSubmit(BaseModel):
-    name:      str = Field(..., min_length=1, max_length=32)
-    tor_mode:  str = Field(..., pattern="^(easy|intermediate|expert|custom)$")
-    time_secs: int = Field(..., ge=1, le=999)
-    rows:      int = Field(..., ge=5,  le=30)
-    cols:      int = Field(..., ge=5,  le=50)
-    mines:     int = Field(..., ge=1,  le=999)
+    name:         str          = Field(..., min_length=1, max_length=32)
+    tor_mode:     str          = Field(..., pattern="^(easy|intermediate|expert|custom)$")
+    time_secs:    int          = Field(..., ge=1, le=999)
+    time_ms:      Optional[int]  = Field(None, ge=1, le=3_600_000)
+    rows:         int          = Field(..., ge=5,  le=30)
+    cols:         int          = Field(..., ge=5,  le=50)
+    mines:        int          = Field(..., ge=1,  le=999)
+    no_guess:     bool           = False
+    board_hash:   Optional[str]  = Field(None, max_length=128)
+    bbbv:         Optional[int]  = Field(None, ge=1, le=9999)
+    left_clicks:  Optional[int]  = Field(None, ge=0, le=99999)
+    right_clicks: Optional[int]  = Field(None, ge=0, le=99999)
+    chord_clicks: Optional[int]  = Field(None, ge=0, le=99999)
 
     @field_validator("name")
     @classmethod
@@ -831,13 +852,20 @@ class ToroidScoreSubmit(BaseModel):
 def submit_toroid_score(payload: ToroidScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
     entry = ToroidScore(
-        name       = payload.name,
-        user_email = user["email"] if user else None,
-        tor_mode   = payload.tor_mode,
-        time_secs  = payload.time_secs,
-        rows       = payload.rows,
-        cols       = payload.cols,
-        mines      = payload.mines,
+        name         = payload.name,
+        user_email   = user["email"] if user else None,
+        tor_mode     = payload.tor_mode,
+        time_secs    = payload.time_secs,
+        time_ms      = payload.time_ms,
+        rows         = payload.rows,
+        cols         = payload.cols,
+        mines        = payload.mines,
+        no_guess     = payload.no_guess,
+        board_hash   = payload.board_hash,
+        bbbv         = payload.bbbv,
+        left_clicks  = payload.left_clicks,
+        right_clicks = payload.right_clicks,
+        chord_clicks = payload.chord_clicks,
     )
     db.add(entry)
     db.commit()

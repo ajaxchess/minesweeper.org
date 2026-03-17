@@ -23,6 +23,13 @@
       timerID:   null,
       noGuess,
       chording,
+      startTime:   null,
+      timeMs:      null,
+      boardHash:   null,
+      bbbv:        null,
+      leftClicks:  0,
+      rightClicks: 0,
+      chordClicks: 0,
     };
   }
 
@@ -37,6 +44,36 @@
         out.push([nr, nc]);
       }
     return out;
+  }
+
+  // ── 3BV (toroid-aware, uses local wrapping neighbors) ─────────────────────
+  function calc3BV(board, rows, cols, mineSet) {
+    const n       = rows * cols;
+    const covered = new Uint8Array(n);
+    let   bbbv    = 0;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const idx = r * cols + c;
+        if (board[r][c] !== 0 || covered[idx] || mineSet.has(idx)) continue;
+        bbbv++;
+        const queue = [[r, c]];
+        covered[idx] = 1;
+        while (queue.length) {
+          const [cr, cc] = queue.shift();
+          for (const [nr, nc] of neighbors(cr, cc, rows, cols)) {
+            const ni = nr * cols + nc;
+            if (covered[ni] || mineSet.has(ni)) continue;
+            covered[ni] = 1;
+            if (board[nr][nc] === 0) queue.push([nr, nc]);
+          }
+        }
+      }
+    }
+    for (let i = 0; i < n; i++) {
+      const r = Math.floor(i / cols), c = i % cols;
+      if (board[r][c] > 0 && !covered[i]) bbbv++;
+    }
+    return bbbv;
   }
 
   // ── Mine Placement (safe first click) ─────────────────────────────────────
@@ -185,9 +222,12 @@
     if (!state.started) {
       const placer = state.noGuess ? placeMinesNoGuess : placeMines;
       const {mineSet, board} = placer(state.rows, state.cols, state.mines, r, c);
-      state.mineSet = mineSet;
-      state.board   = board;
-      state.started = true;
+      state.mineSet    = mineSet;
+      state.board      = board;
+      state.started    = true;
+      state.startTime  = performance.now();
+      state.boardHash  = calcBoardHash(state.rows, state.cols, mineSet);
+      state.bbbv       = calc3BV(board, state.rows, state.cols, mineSet);
       startTimer();
     }
 
@@ -232,7 +272,8 @@
 
   // ── Win / Loss ─────────────────────────────────────────────────────────────
   function boom(r, c) {
-    state.over = true;
+    state.over   = true;
+    state.timeMs = state.startTime ? Math.round(performance.now() - state.startTime) : null;
     stopTimer();
     for (const idx of state.mineSet) {
       const mr = Math.floor(idx / state.cols), mc = idx % state.cols;
@@ -247,8 +288,9 @@
     const unrevealed = state.rows * state.cols -
       state.revealed.flat().filter(Boolean).length;
     if (unrevealed === state.mines) {
-      state.over = true;
-      state.won  = true;
+      state.over   = true;
+      state.won    = true;
+      state.timeMs = state.startTime ? Math.round(performance.now() - state.startTime) : null;
       stopTimer();
       document.getElementById('reset-btn').textContent = '😎';
       for (const idx of state.mineSet) {
@@ -272,11 +314,18 @@
     const torMode = torModeKey(board.dataset.mode);
     const payload = {
       name,
-      tor_mode:  torMode,
-      time_secs: state.elapsed,
-      rows:      state.rows,
-      cols:      state.cols,
-      mines:     state.mines,
+      tor_mode:     torMode,
+      time_secs:    state.elapsed,
+      time_ms:      state.timeMs,
+      rows:         state.rows,
+      cols:         state.cols,
+      mines:        state.mines,
+      no_guess:     state.noGuess,
+      board_hash:   state.boardHash,
+      bbbv:         state.bbbv,
+      left_clicks:  state.leftClicks,
+      right_clicks: state.rightClicks,
+      chord_clicks: state.chordClicks,
     };
 
     try {
@@ -436,10 +485,10 @@
         cell.dataset.r = r;
         cell.dataset.c = c;
 
-        cell.addEventListener('click',       () => reveal(r, c));
-        cell.addEventListener('contextmenu', e  => { e.preventDefault(); flag(r, c); });
-        cell.addEventListener('dblclick',    () => chord(r, c));
-        addTouchHandlers(cell, () => reveal(r, c), () => flag(r, c));
+        cell.addEventListener('click',       () => { state.leftClicks++;  reveal(r, c); });
+        cell.addEventListener('contextmenu', e  => { e.preventDefault(); state.rightClicks++; flag(r, c); });
+        cell.addEventListener('dblclick',    () => { state.chordClicks++; chord(r, c); });
+        addTouchHandlers(cell, () => { state.leftClicks++; reveal(r, c); }, () => { state.rightClicks++; flag(r, c); });
 
         boardEl.appendChild(cell);
       }

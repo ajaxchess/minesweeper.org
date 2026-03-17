@@ -227,12 +227,19 @@ class CylinderScore(Base):
     id         = Column(Integer, primary_key=True, index=True)
     name       = Column(String(32), nullable=False)
     user_email = Column(String(256), nullable=True, index=True)
-    cyl_mode   = Column(String(32), nullable=False)   # easy/intermediate/expert/custom
-    time_secs  = Column(Integer, nullable=False)
-    rows       = Column(Integer, nullable=False)
-    cols       = Column(Integer, nullable=False)
-    mines      = Column(Integer, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    cyl_mode     = Column(String(32), nullable=False)   # easy/intermediate/expert/custom
+    time_secs    = Column(Integer, nullable=False)
+    time_ms      = Column(Integer, nullable=True)
+    rows         = Column(Integer, nullable=False)
+    cols         = Column(Integer, nullable=False)
+    mines        = Column(Integer, nullable=False)
+    no_guess     = Column(Boolean, default=False, nullable=False)
+    board_hash   = Column(String(128), nullable=True)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
         Index("ix_cylinder_scores_mode_time", "cyl_mode", "time_secs"),
@@ -257,12 +264,19 @@ class ToroidScore(Base):
     id         = Column(Integer, primary_key=True, index=True)
     name       = Column(String(32), nullable=False)
     user_email = Column(String(256), nullable=True, index=True)
-    tor_mode   = Column(String(32), nullable=False)   # easy/intermediate/expert/custom
-    time_secs  = Column(Integer, nullable=False)
-    rows       = Column(Integer, nullable=False)
-    cols       = Column(Integer, nullable=False)
-    mines      = Column(Integer, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    tor_mode     = Column(String(32), nullable=False)   # easy/intermediate/expert/custom
+    time_secs    = Column(Integer, nullable=False)
+    time_ms      = Column(Integer, nullable=True)
+    rows         = Column(Integer, nullable=False)
+    cols         = Column(Integer, nullable=False)
+    mines        = Column(Integer, nullable=False)
+    no_guess     = Column(Boolean, default=False, nullable=False)
+    board_hash   = Column(String(128), nullable=True)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
         Index("ix_toroid_scores_mode_time", "tor_mode", "time_secs"),
