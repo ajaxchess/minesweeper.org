@@ -33,12 +33,13 @@
           <th>Name</th>
           <th>Score</th>
           <th>Mines</th>
+          <th>Rows</th>
           <th>Time</th>
           <th>Date</th>
         </tr>
       </thead>
       <tbody id="lb-body">
-        <tr><td colspan="6" class="lb-loading">Loading…</td></tr>
+        <tr><td colspan="7" class="lb-loading">Loading…</td></tr>
       </tbody>
     </table>
   </div>
@@ -66,14 +67,14 @@ function escHtml(s) {
 
 async function loadScores(mode) {
   const body = document.getElementById('lb-body');
-  body.innerHTML = `<tr><td colspan="6" class="lb-loading">Loading…</td></tr>`;
+  body.innerHTML = `<tr><td colspan="7" class="lb-loading">Loading…</td></tr>`;
 
   try {
     const res  = await fetch(`/api/rush-scores/${mode}?alltime=true`);
     const data = await res.json();
 
     if (!data.length) {
-      body.innerHTML = `<tr><td colspan="6" class="lb-empty">No scores yet — be the first!</td></tr>`;
+      body.innerHTML = `<tr><td colspan="7" class="lb-empty">No scores yet — be the first!</td></tr>`;
       return;
     }
 
@@ -83,12 +84,13 @@ async function loadScores(mode) {
         <td class="lb-name">${escHtml(s.name)}</td>
         <td class="lb-score">${s.score}</td>
         <td class="lb-score">${s.cleared_mines ?? '—'} mines</td>
+        <td class="lb-score">${s.rows_cleared ?? '—'} rows</td>
         <td class="lb-time">${fmtTime(s.time_secs)}</td>
         <td class="lb-date">${s.created_at}</td>
       </tr>
     `).join('');
   } catch {
-    body.innerHTML = `<tr><td colspan="6" class="lb-empty">⚠️ Could not load scores.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7" class="lb-empty">⚠️ Could not load scores.</td></tr>`;
   }
 }
 
