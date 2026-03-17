@@ -101,7 +101,8 @@
         <a href="/tentaizu" class="{% if mode == 'tentaizu' %}active{% endif %}">🔢 {{ t.nav_tentaizu }}</a>
         <a href="/variants" class="{% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode %}active{% endif %}">🔄 Variants</a>
         <a href="/quests"      class="{% if mode == 'quests' %}active{% endif %}">🎯 Quests</a>
-        <a href="/how-to-play" class="{% if mode == 'how-to-play' %}active{% endif %}">❓ How to Play</a>
+        <a href="{% if 'tentaizu' in mode %}/tentaizu/how-to-play{% else %}/how-to-play{% endif %}"
+           class="{% if mode == 'how-to-play' or mode == 'tentaizu-howto' %}active{% endif %}">❓ {{ t.nav_how_to_play }}</a>
       </nav>
       <div class="auth-area">
         {% if user %}
