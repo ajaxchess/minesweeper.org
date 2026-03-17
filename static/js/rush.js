@@ -686,6 +686,7 @@ function checkSalvageButton() {
 
 function clearRow(r) {
   if (rush.rowStatus[r] !== 'active') return;
+  if (!rush.started) startGame();
 
   // Count flagged mines in this row before clearing
   for (const c of rush.rowMines[r]) {
@@ -1061,9 +1062,12 @@ function buildInitialBoard() {
     rush.rowIsInitial.push(true);
     rush.cellCountedAt.push(new Array(rush.cols).fill(INITIAL_ROWS));
 
+    // Row 0 (bottom row) is always mine-free so the player has a safe start
     const mines = new Set();
-    for (let c = 0; c < rush.cols; c++)
-      if (Math.random() < rush.density) mines.add(c);
+    if (i > 0) {
+      for (let c = 0; c < rush.cols; c++)
+        if (Math.random() < rush.density) mines.add(c);
+    }
     rush.rowMines.push(mines);
     for (const c of mines) rush.board[r][c] = -1;
 
