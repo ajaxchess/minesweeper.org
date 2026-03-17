@@ -455,7 +455,7 @@ function activateRow(r) {
     cell.className   = 'cell hidden';
     cell.dataset.r   = r;
     cell.dataset.c   = c;
-    cell.addEventListener('click',       () => rushReveal(r, c));
+    cell.addEventListener('click',       () => { if (rushFlagMode) rushFlag(r, c); else rushReveal(r, c); });
     cell.addEventListener('contextmenu', e  => { e.preventDefault(); rushFlag(r, c); });
     addTouchHandlers(cell, () => { if (rushFlagMode) rushFlag(r, c); else rushReveal(r, c); }, () => rushFlag(r, c));
     grid.appendChild(cell);
@@ -1088,7 +1088,7 @@ function buildInitialBoard() {
       cell.className   = 'cell hidden';
       cell.dataset.r   = r;
       cell.dataset.c   = c;
-      cell.addEventListener('click',       () => rushReveal(r, c));
+      cell.addEventListener('click',       () => { if (rushFlagMode) rushFlag(r, c); else rushReveal(r, c); });
       cell.addEventListener('contextmenu', e  => { e.preventDefault(); rushFlag(r, c); });
       addTouchHandlers(cell, () => { if (rushFlagMode) rushFlag(r, c); else rushReveal(r, c); }, () => rushFlag(r, c));
       grid.appendChild(cell);

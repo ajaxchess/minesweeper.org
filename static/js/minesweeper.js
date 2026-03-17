@@ -546,7 +546,7 @@ function buildBoard(rows, cols) {
       cell.dataset.r = r;
       cell.dataset.c = c;
 
-      cell.addEventListener('click',       () => { state.leftClicks++;  reveal(r, c); });
+      cell.addEventListener('click',       () => { if (flagMode) { state.rightClicks++; flag(r, c); } else { state.leftClicks++; reveal(r, c); } });
       cell.addEventListener('contextmenu', e  => { e.preventDefault(); state.rightClicks++; flag(r, c); });
       cell.addEventListener('dblclick',    () => { state.chordClicks++; chord(r, c); });
       addTouchHandlers(cell,
