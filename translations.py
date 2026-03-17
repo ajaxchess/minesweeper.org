@@ -12,6 +12,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_pvp":          "PvP",
         "nav_tentaizu":     "Tentaizu",
         "nav_rush":         "Rush",
+        "nav_variants":     "Variants",
+        "nav_quests":       "Quests",
         "nav_how_to_play":  "How to Play",
         # Auth
         "auth_sign_out":      "Sign out",
@@ -126,6 +128,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_pvp":          "PvP",
         "nav_tentaizu":     "Tentaizu",
         "nav_rush":         "Impeto",
+        "nav_variants":     "Variantoj",
+        "nav_quests":       "Taskoj",
         "nav_how_to_play":  "Kiel Ludi",
         # Auth
         "auth_sign_out":     "Elsalutu",
@@ -240,6 +244,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_pvp":          "PvP",
         "nav_tentaizu":     "Tentaizu",
         "nav_rush":         "Ansturm",
+        "nav_variants":     "Varianten",
+        "nav_quests":       "Aufgaben",
         "nav_how_to_play":  "Wie man spielt",
         # Auth
         "auth_sign_out":     "Abmelden",
@@ -354,6 +360,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_pvp":          "PvP",
         "nav_tentaizu":     "Tentaizu",
         "nav_rush":         "R\u00e1faga",
+        "nav_variants":     "Variantes",
+        "nav_quests":       "Misiones",
         "nav_how_to_play":  "C\u00f3mo jugar",
         # Auth
         "auth_sign_out":     "Cerrar sesi\u00f3n",
@@ -468,6 +476,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_pvp":          "PvP",
         "nav_tentaizu":     "Tentaizu",
         "nav_rush":         "\u0e23\u0e31\u0e0a",
+        "nav_variants":     "\u0e23\u0e39\u0e1b\u0e41\u0e1a\u0e1a",
+        "nav_quests":       "\u0e20\u0e32\u0e23\u0e01\u0e34\u0e08",
         "nav_how_to_play":  "\u0e27\u0e34\u0e18\u0e35\u0e40\u0e25\u0e48\u0e19",
         # Auth
         "auth_sign_out":     "\u0e2d\u0e2d\u0e01\u0e08\u0e32\u0e01\u0e23\u0e30\u0e1a\u0e1a",
@@ -584,6 +594,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_pvp":          "PvP",
         "nav_tentaizu":     "Entaizutay",
         "nav_rush":         "Ushray",
+        "nav_variants":     "Ariantsvay",
+        "nav_quests":       "Estsquay",
         "nav_how_to_play":  "Owhay otay Ayplay",
         # Auth
         "auth_sign_out":     "Ignsay outway",
@@ -700,6 +712,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_pvp":          "PvP",
         "nav_tentaizu":     "Tentaizu",
         "nav_rush":         "\u0428\u0442\u0443\u0440\u043c",
+        "nav_variants":     "\u0412\u0430\u0440\u0456\u0430\u043d\u0442\u0438",
+        "nav_quests":       "\u0417\u0430\u0432\u0434\u0430\u043d\u043d\u044f",
         "nav_how_to_play":  "\u042f\u043a \u0433\u0440\u0430\u0442\u0438",
         # Auth
         "auth_sign_out":     "\u0412\u0438\u0439\u0442\u0438",
@@ -816,6 +830,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_pvp":          "PvP",
         "nav_tentaizu":     "Tentaizu",
         "nav_rush":         "Ru\u00e9e",
+        "nav_variants":     "Variantes",
+        "nav_quests":       "Qu\u00eates",
         "nav_how_to_play":  "Comment jouer",
         # Auth
         "auth_sign_out":      "Se d\u00e9connecter",
@@ -930,6 +946,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_pvp":          "PvP",
         "nav_tentaizu":     "텐타이즈",
         "nav_rush":         "러시",
+        "nav_variants":     "변형",
+        "nav_quests":       "퀘스트",
         "nav_how_to_play":  "플레이 방법",
         # Auth
         "auth_sign_out":      "로그아웃",
@@ -1044,6 +1062,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_pvp":          "PvP",
         "nav_tentaizu":     "\u5929\u4f53\u56f3",
         "nav_rush":         "\u30e9\u30c3\u30b7\u30e5",
+        "nav_variants":     "\u30d0\u30ea\u30a2\u30f3\u30c8",
+        "nav_quests":       "\u30af\u30a8\u30b9\u30c8",
         "nav_how_to_play":  "\u9045\u3073\u65b9",
         # Auth
         "auth_sign_out":      "\u30ed\u30b0\u30a2\u30a6\u30c8",

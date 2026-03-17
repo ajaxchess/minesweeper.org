@@ -99,8 +99,8 @@
         <a href="/duel" class="{% if mode == 'duel' %}active{% endif %}">⚔️ {{ t.nav_duel }}</a>
         <a href="/pvp" class="{% if mode == 'pvp' %}active{% endif %}">🎮 {{ t.nav_pvp }}</a>
         <a href="/tentaizu" class="{% if mode == 'tentaizu' %}active{% endif %}">🔢 {{ t.nav_tentaizu }}</a>
-        <a href="/variants" class="{% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode %}active{% endif %}">🔄 Variants</a>
-        <a href="/quests"      class="{% if mode == 'quests' %}active{% endif %}">🎯 Quests</a>
+        <a href="/variants" class="{% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode %}active{% endif %}">🔄 {{ t.nav_variants }}</a>
+        <a href="/quests"      class="{% if mode == 'quests' %}active{% endif %}">🎯 {{ t.nav_quests }}</a>
         <a href="{% if 'tentaizu' in mode %}/tentaizu/how-to-play{% else %}/how-to-play{% endif %}"
            class="{% if mode == 'how-to-play' or mode == 'tentaizu-howto' %}active{% endif %}">❓ {{ t.nav_how_to_play }}</a>
       </nav>
