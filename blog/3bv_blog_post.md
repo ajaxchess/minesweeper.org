@@ -2,7 +2,7 @@ title: "We've added 3bv values to Lady Di's Mines"
 publisher: "Lady Di's Mines"
 image: "https://minesweeper.org/static/img/3BV_Example.png" 
 author: "William Murray"
-authorurl: "https://minesweeper.org/u/gwarpp"
+authorurl: "https://minesweeper.org/u/wnm"
 datePublished: 2026-03-18T00:00:00Z
 # Lady Di's Mines Now Shows 3BV for Every Board
 
