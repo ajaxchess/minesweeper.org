@@ -760,16 +760,44 @@ def submit_cylinder_score(payload: CylinderScoreSubmit, request: Request, db: Se
 
 
 @app.get("/api/cylinder-scores/{cyl_mode}")
-def get_cylinder_scores(cyl_mode: str, db: Session = Depends(get_db)):
+def get_cylinder_scores(cyl_mode: str, no_guess: bool = False, period: str = "alltime",
+                        db: Session = Depends(get_db)):
     if cyl_mode not in CYLINDER_MODES_VALID:
         raise HTTPException(status_code=400, detail="Invalid mode")
-    top = (
-        db.query(CylinderScore)
-        .filter(CylinderScore.cyl_mode == cyl_mode)
-        .order_by(CylinderScore.time_secs.asc(), CylinderScore.time_ms.asc(), CylinderScore.created_at.asc())
-        .limit(15)
-        .all()
+    if period not in ("daily", "season", "alltime"):
+        period = "alltime"
+
+    sort_key = case(
+        (CylinderScore.time_ms.isnot(None), CylinderScore.time_ms),
+        else_=CylinderScore.time_secs * 1000
     )
+
+    if no_guess:
+        ng_filter = CylinderScore.no_guess == True
+    else:
+        ng_filter = (CylinderScore.no_guess == False) | CylinderScore.no_guess.is_(None)
+
+    q = db.query(CylinderScore).filter(CylinderScore.cyl_mode == cyl_mode, ng_filter)
+
+    if period == "daily":
+        q = q.filter(CylinderScore.created_at >= date.today())
+        top = q.order_by(sort_key.asc(), CylinderScore.created_at.asc()).limit(15).all()
+        return _enrich_with_profiles(top, db)
+
+    if period == "season":
+        today = date.today()
+        q = q.filter(CylinderScore.created_at >= today.replace(day=1))
+
+    raw = q.order_by(sort_key.asc(), CylinderScore.created_at.asc()).limit(500).all()
+    seen: set = set()
+    top: list = []
+    for s in raw:
+        key = s.user_email or s.name
+        if key not in seen:
+            seen.add(key)
+            top.append(s)
+            if len(top) >= 15:
+                break
     return _enrich_with_profiles(top, db)
 
 
@@ -880,16 +908,44 @@ def submit_toroid_score(payload: ToroidScoreSubmit, request: Request, db: Sessio
 
 
 @app.get("/api/toroid-scores/{tor_mode}")
-def get_toroid_scores(tor_mode: str, db: Session = Depends(get_db)):
+def get_toroid_scores(tor_mode: str, no_guess: bool = False, period: str = "alltime",
+                      db: Session = Depends(get_db)):
     if tor_mode not in TOROID_MODES_VALID:
         raise HTTPException(status_code=400, detail="Invalid mode")
-    top = (
-        db.query(ToroidScore)
-        .filter(ToroidScore.tor_mode == tor_mode)
-        .order_by(ToroidScore.time_secs.asc(), ToroidScore.time_ms.asc(), ToroidScore.created_at.asc())
-        .limit(15)
-        .all()
+    if period not in ("daily", "season", "alltime"):
+        period = "alltime"
+
+    sort_key = case(
+        (ToroidScore.time_ms.isnot(None), ToroidScore.time_ms),
+        else_=ToroidScore.time_secs * 1000
     )
+
+    if no_guess:
+        ng_filter = ToroidScore.no_guess == True
+    else:
+        ng_filter = (ToroidScore.no_guess == False) | ToroidScore.no_guess.is_(None)
+
+    q = db.query(ToroidScore).filter(ToroidScore.tor_mode == tor_mode, ng_filter)
+
+    if period == "daily":
+        q = q.filter(ToroidScore.created_at >= date.today())
+        top = q.order_by(sort_key.asc(), ToroidScore.created_at.asc()).limit(15).all()
+        return _enrich_with_profiles(top, db)
+
+    if period == "season":
+        today = date.today()
+        q = q.filter(ToroidScore.created_at >= today.replace(day=1))
+
+    raw = q.order_by(sort_key.asc(), ToroidScore.created_at.asc()).limit(500).all()
+    seen: set = set()
+    top: list = []
+    for s in raw:
+        key = s.user_email or s.name
+        if key not in seen:
+            seen.add(key)
+            top.append(s)
+            if len(top) >= 15:
+                break
     return _enrich_with_profiles(top, db)
 
 

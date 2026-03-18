@@ -14,7 +14,14 @@
 
   <h1 class="lb-title">{{ t.lb_title }}</h1>
 
-  <div class="lb-tabs" role="tablist">
+  <!-- Game selector -->
+  <div class="lb-game-toggle" role="group" aria-label="Game variant">
+    <button class="lb-game-btn active" data-game="classic">Classic</button>
+    <button class="lb-game-btn" data-game="cylinder">🛢 Cylinder</button>
+    <button class="lb-game-btn" data-game="toroid">🍩 Toroid</button>
+  </div>
+
+  <div class="lb-tabs" id="lb-mode-tabs" role="tablist">
     <button class="lb-tab active" data-mode="beginner"     role="tab">{{ t.nav_beginner }}</button>
     <button class="lb-tab"        data-mode="intermediate" role="tab">{{ t.nav_intermediate }}</button>
     <button class="lb-tab"        data-mode="expert"       role="tab">{{ t.nav_expert }}</button>
@@ -59,7 +66,7 @@
   <!-- Floating tooltip for stat column headers -->
   <div id="lb-tip" class="lb-tip" role="tooltip" aria-hidden="true"></div>
 
-  <div class="lb-back">
+  <div class="lb-back" id="lb-back">
     <a href="/">{{ t.lb_play_beginner }}</a>
     <a href="/intermediate">{{ t.lb_play_intermediate }}</a>
     <a href="/expert">{{ t.lb_play_expert }}</a>
@@ -94,12 +101,61 @@ const PERIOD_NOTES = {
   alltime: 'All-time records — best score per player.',
 };
 
+// Modes per game variant
+const GAME_MODES = {
+  classic:  [
+    { mode: 'beginner',     label: window.T.nav_beginner },
+    { mode: 'intermediate', label: window.T.nav_intermediate },
+    { mode: 'expert',       label: window.T.nav_expert },
+    { mode: 'custom',       label: window.T.nav_custom },
+  ],
+  cylinder: [
+    { mode: 'easy',         label: 'Easy' },
+    { mode: 'intermediate', label: window.T.nav_intermediate },
+    { mode: 'expert',       label: window.T.nav_expert },
+    { mode: 'custom',       label: window.T.nav_custom },
+  ],
+  toroid: [
+    { mode: 'easy',         label: 'Easy' },
+    { mode: 'intermediate', label: window.T.nav_intermediate },
+    { mode: 'expert',       label: window.T.nav_expert },
+    { mode: 'custom',       label: window.T.nav_custom },
+  ],
+};
+
+const GAME_DEFAULT_MODE = {
+  classic:  'beginner',
+  cylinder: 'easy',
+  toroid:   'easy',
+};
+
+const GAME_DEFAULT_PERIOD = {
+  classic:  'daily',
+  cylinder: 'alltime',
+  toroid:   'alltime',
+};
+
+const GAME_BACK_LINKS = {
+  classic: `<a href="/">${window.T.lb_play_beginner}</a>
+            <a href="/intermediate">${window.T.lb_play_intermediate}</a>
+            <a href="/expert">${window.T.lb_play_expert}</a>
+            <a href="/custom">${window.T.lb_play_custom}</a>`,
+  cylinder: `<a href="/cylinder">Play Cylinder</a>
+             <a href="/cylinder/intermediate">Cylinder Intermediate</a>
+             <a href="/cylinder/expert">Cylinder Expert</a>
+             <a href="/cylinder/custom">Cylinder Custom</a>`,
+  toroid:   `<a href="/toroid">Play Toroid</a>
+             <a href="/toroid/intermediate">Toroid Intermediate</a>
+             <a href="/toroid/expert">Toroid Expert</a>
+             <a href="/toroid/custom">Toroid Custom</a>`,
+};
+
+let currentGame    = 'classic';
 let currentMode    = 'beginner';
 let currentNoGuess = false;
 let currentPeriod  = 'daily';
 
 function fmtTime(s) {
-  // Prefer time_ms for display; fall back to integer time_secs
   if (s.time_ms != null) return (s.time_ms / 1000).toFixed(3) + 's';
   return s.time_secs + 's';
 }
@@ -118,10 +174,21 @@ function fmtEff(bbbv, leftClicks, chordClicks) {
   return Math.round(bbbv / total * 100) + '%';
 }
 
-async function loadScores(mode, noGuess = currentNoGuess, period = currentPeriod) {
-  currentMode    = mode;
-  currentNoGuess = noGuess;
-  currentPeriod  = period;
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function apiUrl(game, mode, noGuess, period) {
+  if (game === 'cylinder') return `/api/cylinder-scores/${mode}?no_guess=${noGuess}&period=${period}`;
+  if (game === 'toroid')   return `/api/toroid-scores/${mode}?no_guess=${noGuess}&period=${period}`;
+  return `/api/scores/${mode}?no_guess=${noGuess}&period=${period}`;
+}
+
+async function loadScores(mode, noGuess, period, game) {
+  currentGame    = game    ?? currentGame;
+  currentMode    = mode    ?? currentMode;
+  currentNoGuess = noGuess ?? currentNoGuess;
+  currentPeriod  = period  ?? currentPeriod;
 
   const body     = document.getElementById('lb-body');
   const meta     = document.getElementById('lb-meta');
@@ -129,17 +196,17 @@ async function loadScores(mode, noGuess = currentNoGuess, period = currentPeriod
   body.innerHTML = `<tr><td colspan="9" class="lb-loading">${window.T.lb_loading}</td></tr>`;
   meta.textContent = '';
 
-  const note = PERIOD_NOTES[period];
+  const note = PERIOD_NOTES[currentPeriod];
   if (noteEl) noteEl.textContent = typeof note === 'function' ? note() : note;
 
   try {
-    const res  = await fetch(`/api/scores/${mode}?no_guess=${noGuess}&period=${period}`);
+    const res  = await fetch(apiUrl(currentGame, currentMode, currentNoGuess, currentPeriod));
     const data = await res.json();
 
     if (!data.length) {
-      const emptyMsg = period === 'daily'   ? 'No scores yet today — be the first!'
-                     : period === 'season'  ? `No scores yet this season — be the first!`
-                     :                        'No all-time scores yet — be the first!';
+      const emptyMsg = currentPeriod === 'daily'   ? 'No scores yet today — be the first!'
+                     : currentPeriod === 'season'  ? 'No scores yet this season — be the first!'
+                     :                               'No all-time scores yet — be the first!';
       body.innerHTML = `<tr><td colspan="9" class="lb-empty">${emptyMsg}</td></tr>`;
       return;
     }
@@ -171,31 +238,82 @@ async function loadScores(mode, noGuess = currentNoGuess, period = currentPeriod
   }
 }
 
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function rebuildModeTabs(game) {
+  const container = document.getElementById('lb-mode-tabs');
+  const modes = GAME_MODES[game];
+  container.innerHTML = modes.map(({ mode, label }, i) =>
+    `<button class="lb-tab${i === 0 ? ' active' : ''}" data-mode="${mode}" role="tab">${label}</button>`
+  ).join('');
+  container.querySelectorAll('.lb-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loadScores(btn.dataset.mode, null, null, null);
+    });
+  });
 }
 
+function setActiveTab(selector, value) {
+  document.querySelectorAll(selector).forEach(b => {
+    b.classList.toggle('active', b.dataset[selector.includes('game') ? 'game'
+      : selector.includes('ng') ? 'ng' : 'period'] === String(value));
+  });
+}
+
+// ── Game selector ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.lb-game-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const game = btn.dataset.game;
+    document.querySelectorAll('.lb-game-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const newMode   = GAME_DEFAULT_MODE[game];
+    const newPeriod = GAME_DEFAULT_PERIOD[game];
+
+    // Update period toggle active state
+    document.querySelectorAll('.lb-period-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.period === newPeriod);
+    });
+    currentPeriod = newPeriod;
+
+    // Reset no-guess to false
+    document.querySelectorAll('.lb-ng-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.ng === 'false');
+    });
+    currentNoGuess = false;
+
+    // Update back links
+    document.getElementById('lb-back').innerHTML = GAME_BACK_LINKS[game];
+
+    rebuildModeTabs(game);
+    loadScores(newMode, false, newPeriod, game);
+  });
+});
+
+// ── Mode tabs (initial classic ones) ─────────────────────────────────────────
 document.querySelectorAll('.lb-tab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    loadScores(btn.dataset.mode);
+    loadScores(btn.dataset.mode, null, null, null);
   });
 });
 
+// ── No-guess toggle ───────────────────────────────────────────────────────────
 document.querySelectorAll('.lb-ng-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.lb-ng-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    loadScores(currentMode, btn.dataset.ng === 'true');
+    loadScores(null, btn.dataset.ng === 'true', null, null);
   });
 });
 
+// ── Period toggle ─────────────────────────────────────────────────────────────
 document.querySelectorAll('.lb-period-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.lb-period-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    loadScores(currentMode, currentNoGuess, btn.dataset.period);
+    loadScores(null, null, btn.dataset.period, null);
   });
 });
 
@@ -216,33 +334,47 @@ document.querySelectorAll('.lb-th-stat[data-tip]').forEach(th => {
   th.addEventListener('mouseleave', () => tip.classList.remove('visible'));
 });
 
-// Set season button label dynamically
+// ── Season button label ───────────────────────────────────────────────────────
 const seasonNum = currentSeasonNum();
 const seasonBtn = document.getElementById('season-btn');
 if (seasonBtn) seasonBtn.textContent = `Season ${seasonNum}`;
 
-const params         = new URLSearchParams(window.location.search);
-const initialMode    = params.get('mode')     || 'beginner';
-const initialNG      = params.get('no_guess') === 'true';
-const initialPeriod  = (['daily','season','alltime'].includes(params.get('period'))
-                        ? params.get('period') : 'daily');
+// ── Initial load (honour URL params) ─────────────────────────────────────────
+const params        = new URLSearchParams(window.location.search);
+const initialGame   = ['classic','cylinder','toroid'].includes(params.get('game'))
+                      ? params.get('game') : 'classic';
+const initialMode   = params.get('mode')     || GAME_DEFAULT_MODE[initialGame];
+const initialNG     = params.get('no_guess') === 'true';
+const initialPeriod = (['daily','season','alltime'].includes(params.get('period'))
+                       ? params.get('period') : GAME_DEFAULT_PERIOD[initialGame]);
 
-const initialTab = document.querySelector(`.lb-tab[data-mode="${initialMode}"]`);
-if (initialTab) {
-  document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
-  initialTab.classList.add('active');
+// Apply game selector
+if (initialGame !== 'classic') {
+  document.querySelectorAll('.lb-game-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.game === initialGame);
+  });
+  rebuildModeTabs(initialGame);
+  document.getElementById('lb-back').innerHTML = GAME_BACK_LINKS[initialGame];
 }
 
+// Apply period
+document.querySelectorAll('.lb-period-btn').forEach(b => {
+  b.classList.toggle('active', b.dataset.period === initialPeriod);
+});
+
+// Apply no-guess
 if (initialNG) {
-  document.querySelectorAll('.lb-ng-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.lb-ng-btn[data-ng="true"]')?.classList.add('active');
+  document.querySelectorAll('.lb-ng-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.ng === 'true');
+  });
 }
 
-if (initialPeriod !== 'daily') {
-  document.querySelectorAll('.lb-period-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.lb-period-btn[data-period="${initialPeriod}"]`)?.classList.add('active');
-}
+// Apply mode tab active state
+const modeTabs = document.getElementById('lb-mode-tabs');
+modeTabs.querySelectorAll('.lb-tab').forEach(b => {
+  b.classList.toggle('active', b.dataset.mode === initialMode);
+});
 
-loadScores(initialMode, initialNG, initialPeriod);
+loadScores(initialMode, initialNG, initialPeriod, initialGame);
 </script>
 {% endblock %}

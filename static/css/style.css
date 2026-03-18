@@ -750,6 +750,28 @@ footer a:hover { text-decoration: underline; }
 .lb-ng-btn.active { background: var(--accent2); color: #000; }
 .lb-period-btn.active { background: var(--accent); color: #fff; }
 
+/* Game variant selector (Classic / Cylinder / Toroid) */
+.lb-game-toggle {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+.lb-game-btn {
+  padding: 0.4rem 1.2rem;
+  border-radius: var(--radius);
+  border: 2px solid var(--surface2);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.lb-game-btn:hover  { background: var(--surface2); color: var(--text); }
+.lb-game-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
 .lb-meta {
   text-align: center;
   font-size: 0.82rem;
