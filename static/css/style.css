@@ -3896,6 +3896,11 @@ html[data-skin="classic"] .nav-pvp-menu a.active { background: #c0c0c0; color: #
   color: var(--accent2);
 }
 
+.replay-click-detail {
+  font-size: 0.8em;
+  opacity: 0.65;
+}
+
 /* Board hash column + replay link */
 .lb-hash {
   font-size: 0.78rem;

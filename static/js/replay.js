@@ -274,13 +274,16 @@
 
     let statsHtml = '';
     if (won && state.bbbv) {
-      const eff   = fmtEff(state.bbbv, state.leftClicks, state.chordClicks);
-      const bbbvs = fmtBbbvS(state.bbbv, state.timeMs, state.elapsed);
+      const eff        = fmtEff(state.bbbv, state.leftClicks, state.chordClicks);
+      const bbbvs      = fmtBbbvS(state.bbbv, state.timeMs, state.elapsed);
+      const totalClicks = (state.leftClicks || 0) + (state.rightClicks || 0) + (state.chordClicks || 0);
+      const clickDetail = `L:${state.leftClicks || 0} F:${state.rightClicks || 0} C:${state.chordClicks || 0}`;
       statsHtml = `
         <div class="replay-win-stats">
           <span>3BV: <strong>${state.bbbv}</strong></span>
           <span>3BV/s: <strong>${bbbvs}</strong></span>
           <span>Efficiency: <strong>${eff}</strong></span>
+          <span>Clicks: <strong>${totalClicks}</strong> <span class="replay-click-detail">(${clickDetail})</span></span>
         </div>`;
     }
 
