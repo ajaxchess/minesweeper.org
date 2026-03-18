@@ -170,6 +170,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const ws     = new WebSocket(wsUrl);
 
   ws.addEventListener('open', () => {
+    // Send player identity so server can attribute PvP results
+    const playerName  = boardEl.dataset.username  || '';
+    const playerEmail = boardEl.dataset.useremail || '';
+    if (playerName) {
+      ws.send(JSON.stringify({type: 'player_name', name: playerName, email: playerEmail}));
+    }
     if (IS_CREATOR) {
       const link = `${location.origin}/duel/${GAME_ID}`;
       const inp  = document.getElementById('share-link');

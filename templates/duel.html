@@ -34,6 +34,8 @@
     {% if mode == 'pvp' %}
     <a href="/pvp?m=standard" class="duel-mode-tab {% if submode == 'standard' %}active{% endif %}">Standard</a>
     <a href="/pvp?m=quick"    class="duel-mode-tab {% if submode == 'quick' %}active{% endif %}">⚡ Quick</a>
+    <a href="/pvp/leaderboard" class="duel-mode-tab">🏆 Leaderboard</a>
+    <a href="/pvp/rankings"    class="duel-mode-tab">👑 Rankings</a>
     {% else %}
     <a href="/duel?m=standard" class="duel-mode-tab {% if submode == 'standard' %}active{% endif %}">Standard</a>
     <a href="/duel?m=quick"    class="duel-mode-tab {% if submode == 'quick' %}active{% endif %}">⚡ Quick</a>
@@ -90,7 +92,9 @@
          data-game-id="{{ game_id }}"
          data-player-id="{{ player_id }}"
          data-is-creator="{{ 'true' if is_creator else 'false' }}"
-         data-submode="{{ submode }}"></div>
+         data-submode="{{ submode }}"
+         data-username="{{ user.display_name if user else '' }}"
+         data-useremail="{{ user.email if user else '' }}"></div>
     <div id="duel-overlay" class="duel-overlay" style="display:none"></div>
   </div>
 

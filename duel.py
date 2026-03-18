@@ -76,6 +76,8 @@ class PlayerState:
     exploded:       bool = False
     tiles_revealed: int  = 0
     score:          int  = 0
+    name:           str  = ""
+    email:          str  = ""
 
     def __post_init__(self):
         if not self.revealed:
@@ -97,12 +99,13 @@ class PlayerState:
 
 # ── Duel game ─────────────────────────────────────────────────────────────────
 class DuelGame:
-    def __init__(self, game_id: str, rows: int = ROWS, cols: int = COLS, mines: int = MINES, submode: str = "standard"):
+    def __init__(self, game_id: str, rows: int = ROWS, cols: int = COLS, mines: int = MINES, submode: str = "standard", is_pvp: bool = False):
         self.game_id     = game_id
         self.rows        = rows
         self.cols        = cols
         self.mines       = mines
         self.submode     = submode
+        self.is_pvp      = is_pvp
         self.players:    list[PlayerState] = []
         self.start_time: Optional[float]   = None
         self.active:     bool = False
@@ -213,9 +216,9 @@ class DuelGame:
 # ── Global game store ─────────────────────────────────────────────────────────
 _games: dict[str, DuelGame] = {}
 
-def create_game(rows=ROWS, cols=COLS, mines=MINES, submode="standard") -> DuelGame:
+def create_game(rows=ROWS, cols=COLS, mines=MINES, submode="standard", is_pvp=False) -> DuelGame:
     gid  = uuid.uuid4().hex[:10]
-    game = DuelGame(gid, rows=rows, cols=cols, mines=mines, submode=submode)
+    game = DuelGame(gid, rows=rows, cols=cols, mines=mines, submode=submode, is_pvp=is_pvp)
     _games[gid] = game
     return game
 
@@ -242,7 +245,7 @@ async def pvp_enqueue(player_id: str, ws: WebSocket) -> Optional[DuelGame]:
 
     if _pvp_queue:
         opponent = _pvp_queue.pop(0)
-        game = create_game(rows=PVP_ROWS, cols=PVP_COLS, mines=PVP_MINES)
+        game = create_game(rows=PVP_ROWS, cols=PVP_COLS, mines=PVP_MINES, is_pvp=True)
         game.add_player(opponent["player_id"], opponent["ws"])
         game.add_player(player_id, ws)
         try:
@@ -275,7 +278,7 @@ async def pvp_quick_enqueue(player_id: str, ws: WebSocket) -> Optional[DuelGame]
 
     if _pvp_quick_queue:
         opponent = _pvp_quick_queue.pop(0)
-        game = create_game(rows=QUICK_ROWS, cols=QUICK_COLS, mines=QUICK_MINES, submode="quick")
+        game = create_game(rows=QUICK_ROWS, cols=QUICK_COLS, mines=QUICK_MINES, submode="quick", is_pvp=True)
         game.add_player(opponent["player_id"], opponent["ws"])
         game.add_player(player_id, ws)
         try:

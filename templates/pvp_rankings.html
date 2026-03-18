@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}PvP Rankings — Most Wins | minesweeper.org{% endblock %}
+{% block description %}PvP Minesweeper win rankings. See who dominates in head-to-head matches.{% endblock %}
+{% block canonical %}https://minesweeper.org/pvp/rankings{% endblock %}
+{% block og_url %}https://minesweeper.org/pvp/rankings{% endblock %}
+{% block og_title %}PvP Rankings — Most Wins{% endblock %}
+{% block og_description %}PvP Minesweeper win rankings. See who dominates in head-to-head matches.{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">👑 PvP Win Rankings</h1>
+  <p class="lb-daily-note">Players ranked by number of PvP wins.</p>
+
+  <div class="lb-tabs" role="tablist">
+    <button class="lb-tab active" data-mode="all"      role="tab">All Modes</button>
+    <button class="lb-tab"        data-mode="standard" role="tab">Standard</button>
+    <button class="lb-tab"        data-mode="quick"    role="tab">⚡ Quick</button>
+  </div>
+
+  <div class="lb-period-toggle" role="group" aria-label="Time period">
+    <button class="lb-period-btn active" data-period="daily">Daily</button>
+    <button class="lb-period-btn"        data-period="season" id="pvprk-season-btn">Season 1</button>
+    <button class="lb-period-btn"        data-period="alltime">All Time</button>
+  </div>
+
+  <div id="pvprk-date-wrap" class="lb-sub-picker">
+    <label for="pvprk-date-input">Date:</label>
+    <input type="date" id="pvprk-date-input" class="lb-date-input">
+  </div>
+
+  <div id="pvprk-season-wrap" class="lb-sub-picker" style="display:none">
+    <label for="pvprk-season-select">Season:</label>
+    <select id="pvprk-season-select" class="lb-season-select"></select>
+  </div>
+
+  <div class="lb-table-wrap">
+    <table class="lb-table" id="pvprk-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Player</th>
+          <th>Wins</th>
+        </tr>
+      </thead>
+      <tbody id="pvprk-body">
+        <tr><td colspan="3" class="lb-loading">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pvp-sub-links">
+    <a href="/pvp" class="pvp-sub-link">🎮 Play PvP</a>
+    <a href="/pvp/leaderboard" class="pvp-sub-link">🏆 Best Times</a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const MEDALS = ['🥇','🥈','🥉'];
+const SEASON_ORIGIN_YEAR  = 2026;
+const SEASON_ORIGIN_MONTH = 3;
+
+function computeCurrentSeason() {
+  const now = new Date();
+  return (now.getFullYear() - SEASON_ORIGIN_YEAR) * 12 + (now.getMonth() + 1 - SEASON_ORIGIN_MONTH) + 1;
+}
+
+function buildSeasonSelect() {
+  const sel = document.getElementById('pvprk-season-select');
+  const cur = computeCurrentSeason();
+  sel.innerHTML = '';
+  for (let s = cur; s >= 1; s--) {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = `Season ${s}`;
+    sel.appendChild(opt);
+  }
+  sel.value = cur;
+}
+
+let currentMode   = 'all';
+let currentPeriod = 'daily';
+let currentDate   = new Date().toISOString().slice(0, 10);
+let currentSeason = computeCurrentSeason();
+
+function setPeriodUI(period) {
+  document.getElementById('pvprk-date-wrap').style.display   = period === 'daily'  ? 'flex' : 'none';
+  document.getElementById('pvprk-season-wrap').style.display = period === 'season' ? 'flex' : 'none';
+}
+
+function apiUrl() {
+  const base   = '/api/pvp/rankings';
+  const params = new URLSearchParams({period: currentPeriod});
+  if (currentMode !== 'all') params.set('submode', currentMode);
+  if (currentPeriod === 'daily')  params.set('date', currentDate);
+  if (currentPeriod === 'season') params.set('season_num', currentSeason);
+  return `${base}?${params}`;
+}
+
+function esc(v) {
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function loadPvpRankings() {
+  const body = document.getElementById('pvprk-body');
+  body.innerHTML = `<tr><td colspan="3" class="lb-loading">${window.T.lb_loading}</td></tr>`;
+  try {
+    const res  = await fetch(apiUrl());
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    if (!data.length) {
+      body.innerHTML = `<tr><td colspan="3" class="lb-empty">No PvP results yet — play to get on the board!</td></tr>`;
+      return;
+    }
+    body.innerHTML = data.map((r, i) => `
+      <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
+        <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
+        <td class="lb-name">${esc(r.name || 'Anonymous')}</td>
+        <td class="lb-stat"><strong>${r.wins}</strong></td>
+      </tr>`).join('');
+  } catch {
+    body.innerHTML = `<tr><td colspan="3" class="lb-empty">${window.T.lb_error}</td></tr>`;
+  }
+}
+
+// Mode tabs
+document.querySelectorAll('.lb-tab[data-mode]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentMode = btn.dataset.mode;
+    loadPvpRankings();
+  });
+});
+
+// Period buttons
+document.querySelectorAll('.lb-period-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lb-period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentPeriod = btn.dataset.period;
+    setPeriodUI(currentPeriod);
+    loadPvpRankings();
+  });
+});
+
+// Date picker
+document.getElementById('pvprk-date-input').addEventListener('change', e => {
+  currentDate = e.target.value;
+  loadPvpRankings();
+});
+
+// Season select
+document.getElementById('pvprk-season-select').addEventListener('change', e => {
+  currentSeason = parseInt(e.target.value);
+  loadPvpRankings();
+});
+
+// Update season button label
+document.getElementById('pvprk-season-btn').textContent = `Season ${computeCurrentSeason()}`;
+
+// Init
+document.getElementById('pvprk-date-input').value = currentDate;
+buildSeasonSelect();
+setPeriodUI(currentPeriod);
+loadPvpRankings();
+</script>
+{% endblock %}

@@ -304,6 +304,40 @@ class ToroidScore(Base):
             "created_at":   self.created_at.strftime("%Y-%m-%d"),
         }
 
+# ── PvP Result model (one row per completed PvP match) ───────────────────────
+class PvpResult(Base):
+    __tablename__ = "pvp_results"
+
+    id            = Column(Integer, primary_key=True, index=True)
+    winner_name   = Column(String(32), nullable=True)
+    winner_email  = Column(String(256), nullable=True, index=True)
+    loser_name    = Column(String(32), nullable=True)
+    loser_email   = Column(String(256), nullable=True, index=True)
+    elapsed_ms    = Column(Integer, nullable=False)   # winner's elapsed time in ms
+    submode       = Column(String(16), nullable=False)  # standard / quick
+    rows          = Column(Integer, nullable=False)
+    cols          = Column(Integer, nullable=False)
+    mines         = Column(Integer, nullable=False)
+    created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_pvp_results_winner_email_date", "winner_email", "created_at"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":           self.id,
+            "winner_name":  self.winner_name,
+            "winner_email": self.winner_email,
+            "loser_name":   self.loser_name,
+            "elapsed_ms":   self.elapsed_ms,
+            "submode":      self.submode,
+            "rows":         self.rows,
+            "cols":         self.cols,
+            "mines":        self.mines,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+        }
+
 # ── User profile model (display name, one row per user) ──────────────────────
 class UserProfile(Base):
     __tablename__ = "user_profiles"

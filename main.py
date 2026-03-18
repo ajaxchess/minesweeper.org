@@ -13,7 +13,7 @@ from sqlalchemy import func, case
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, CylinderScore, ToroidScore, UserProfile, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, CylinderScore, ToroidScore, UserProfile, PvpResult, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -1014,6 +1014,101 @@ def get_toroid_scores(tor_mode: str, no_guess: bool = False, period: str = "allt
             if len(top) >= 15:
                 break
     return _enrich_with_profiles(top, db)
+
+
+# ── PvP Leaderboard & Rankings API ───────────────────────────────────────────
+
+@app.get("/api/pvp/leaderboard")
+def get_pvp_leaderboard(period: str = "alltime",
+                        score_date: Optional[str] = Query(None, alias="date"),
+                        season_num: Optional[int] = Query(None),
+                        submode: Optional[str] = Query(None),
+                        db: Session = Depends(get_db)):
+    """Return best PvP games ranked by winner's time (fastest first)."""
+    if period not in ("daily", "season", "alltime"):
+        period = "alltime"
+
+    q = db.query(PvpResult)
+    if submode in ("standard", "quick"):
+        q = q.filter(PvpResult.submode == submode)
+
+    if period == "daily":
+        try:
+            target = date.fromisoformat(score_date) if score_date else date.today()
+        except ValueError:
+            target = date.today()
+        q = q.filter(PvpResult.created_at >= target,
+                     PvpResult.created_at < target + timedelta(days=1))
+        rows = q.order_by(PvpResult.elapsed_ms.asc()).limit(15).all()
+        return [r.to_dict() for r in rows]
+
+    if period == "season":
+        if season_num and season_num >= 1:
+            s_start, s_end = get_season_range(season_num)
+            q = q.filter(PvpResult.created_at >= s_start,
+                         PvpResult.created_at < s_end)
+        else:
+            today = date.today()
+            q = q.filter(PvpResult.created_at >= today.replace(day=1))
+
+    # Best game per winner (dedup by winner_email or winner_name)
+    raw = q.order_by(PvpResult.elapsed_ms.asc()).limit(500).all()
+    seen: set = set()
+    top: list = []
+    for r in raw:
+        key = r.winner_email or r.winner_name or str(r.id)
+        if key not in seen:
+            seen.add(key)
+            top.append(r.to_dict())
+            if len(top) >= 15:
+                break
+    return top
+
+
+@app.get("/api/pvp/rankings")
+def get_pvp_rankings(period: str = "alltime",
+                     score_date: Optional[str] = Query(None, alias="date"),
+                     season_num: Optional[int] = Query(None),
+                     submode: Optional[str] = Query(None),
+                     db: Session = Depends(get_db)):
+    """Return players ranked by number of PvP wins."""
+    if period not in ("daily", "season", "alltime"):
+        period = "alltime"
+
+    q = db.query(PvpResult)
+    if submode in ("standard", "quick"):
+        q = q.filter(PvpResult.submode == submode)
+
+    if period == "daily":
+        try:
+            target = date.fromisoformat(score_date) if score_date else date.today()
+        except ValueError:
+            target = date.today()
+        q = q.filter(PvpResult.created_at >= target,
+                     PvpResult.created_at < target + timedelta(days=1))
+
+    elif period == "season":
+        if season_num and season_num >= 1:
+            s_start, s_end = get_season_range(season_num)
+            q = q.filter(PvpResult.created_at >= s_start,
+                         PvpResult.created_at < s_end)
+        else:
+            today = date.today()
+            q = q.filter(PvpResult.created_at >= today.replace(day=1))
+
+    rows = q.all()
+
+    # Count wins per player
+    wins: dict = {}
+    for r in rows:
+        key   = r.winner_email or r.winner_name or "Anonymous"
+        label = r.winner_name  or "Anonymous"
+        if key not in wins:
+            wins[key] = {"name": label, "email": r.winner_email, "wins": 0}
+        wins[key]["wins"] += 1
+
+    ranked = sorted(wins.values(), key=lambda x: x["wins"], reverse=True)
+    return ranked[:15]
 
 
 @app.get("/tentaizu", response_class=HTMLResponse)

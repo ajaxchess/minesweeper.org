@@ -3714,3 +3714,128 @@ html[data-skin="classic"] nav a:visited { color: #ffffff; font-weight: 700; text
   background: var(--surface2);
   color: var(--text) !important;
 }
+
+/* ── PvP nav dropdown (dark theme) ──────────────────────────────────────── */
+.nav-pvp-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.nav-pvp-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+}
+.nav-pvp-toggle:hover { background: var(--surface2); color: var(--text); }
+.nav-pvp-toggle.active { background: var(--accent); color: #fff; }
+
+.nav-pvp-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  min-width: 170px;
+  z-index: 200;
+  flex-direction: column;
+  padding: 0.25rem 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.nav-pvp-group.open .nav-pvp-menu { display: flex; }
+
+.nav-pvp-menu a {
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  display: block;
+  transition: background 0.15s, color 0.15s;
+}
+.nav-pvp-menu a:hover  { background: var(--surface2); color: var(--text); }
+.nav-pvp-menu a.active { background: var(--accent); color: #fff; }
+
+/* ── PvP nav dropdown — classic/diana sidebar ────────────────────────────── */
+html[data-skin="classic"] .nav-pvp-group {
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+}
+
+html[data-skin="classic"] .nav-pvp-toggle {
+  color: #ffffff;
+  font-weight: 700;
+  text-shadow: 1px 1px 3px #000, 0 0 6px #000;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0;
+  font-size: 0.82rem;
+  display: block;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: none;
+  transition: background 0.1s, color 0.1s;
+}
+html[data-skin="classic"] .nav-pvp-toggle:hover { background: rgba(255,255,255,0.12); color: #fff; }
+html[data-skin="classic"] .nav-pvp-toggle.active { background: #c0c0c0; color: #000; text-shadow: none; }
+
+html[data-skin="classic"] .nav-pvp-menu {
+  display: none;
+  position: static;
+  background: rgba(0,0,0,0.18);
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  flex-direction: column;
+  box-shadow: none;
+  min-width: unset;
+}
+html[data-skin="classic"] .nav-pvp-group.open .nav-pvp-menu { display: flex; }
+
+html[data-skin="classic"] .nav-pvp-menu a {
+  color: #ffffff;
+  font-weight: 700;
+  text-shadow: 1px 1px 3px #000, 0 0 6px #000;
+  padding: 0.35rem 0.6rem 0.35rem 1.4rem;
+  border-radius: 0;
+  font-size: 0.82rem;
+  display: block;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  transition: background 0.1s, color 0.1s;
+}
+html[data-skin="classic"] .nav-pvp-menu a:hover  { background: rgba(255,255,255,0.12); color: #fff; }
+html[data-skin="classic"] .nav-pvp-menu a.active { background: #c0c0c0; color: #000; text-shadow: none; }
+
+/* ── PvP sub-page links ──────────────────────────────────────────────────── */
+.pvp-sub-links {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.pvp-sub-link {
+  display: inline-block;
+  padding: 0.5rem 1.2rem;
+  border: 2px solid var(--surface2);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: border-color 0.15s, color 0.15s;
+}
+.pvp-sub-link:hover { border-color: var(--accent2); color: var(--text); }

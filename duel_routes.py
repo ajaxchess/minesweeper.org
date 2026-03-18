@@ -15,6 +15,7 @@ from duel import (
     ROWS, COLS, MINES, PVP_ROWS, PVP_COLS, PVP_MINES,
     QUICK_ROWS, QUICK_COLS, QUICK_MINES,
 )
+from database import PvpResult, SessionLocal
 
 duel_router = APIRouter()
 templates   = Jinja2Templates(directory="templates")
@@ -92,6 +93,26 @@ async def pvp_lobby(request: Request, m: str = "standard"):
         "lang": get_lang(request), "t": get_t(request),
     })
 
+# ── Page: PvP Leaderboard ─────────────────────────────────────────────────────
+@duel_router.get("/pvp/leaderboard", response_class=HTMLResponse)
+async def pvp_leaderboard_page(request: Request):
+    return templates.TemplateResponse("pvp_leaderboard.html", {
+        "request": request,
+        "mode":    "pvp-leaderboard",
+        "user":    get_current_user(request),
+        "lang":    get_lang(request), "t": get_t(request),
+    })
+
+# ── Page: PvP Rankings ────────────────────────────────────────────────────────
+@duel_router.get("/pvp/rankings", response_class=HTMLResponse)
+async def pvp_rankings_page(request: Request):
+    return templates.TemplateResponse("pvp_rankings.html", {
+        "request": request,
+        "mode":    "pvp-rankings",
+        "user":    get_current_user(request),
+        "lang":    get_lang(request), "t": get_t(request),
+    })
+
 # ── WebSocket: PvP matchmaking ────────────────────────────────────────────────
 @duel_router.websocket("/ws/pvp/{player_id}")
 async def pvp_ws(ws: WebSocket, player_id: str):
@@ -126,7 +147,18 @@ async def _pvp_wait_loop(ws: WebSocket, player_id: str):
         while True:
             raw = await ws.receive_text()
             msg = json.loads(raw)
-            if msg.get("type") == "reveal":
+            mtype = msg.get("type")
+            if mtype == "player_name":
+                # Store the name on the PlayerState once paired into a game
+                from duel import _games
+                game = next((g for g in _games.values()
+                             if g.get_player(player_id)), None)
+                if game:
+                    p = game.get_player(player_id)
+                    if p:
+                        p.name  = msg.get("name", "")[:32]
+                        p.email = msg.get("email", "")[:256]
+            elif mtype == "reveal":
                 from duel import _games
                 game = next((g for g in _games.values()
                              if g.get_player(player_id)), None)
@@ -134,6 +166,34 @@ async def _pvp_wait_loop(ws: WebSocket, player_id: str):
                     await _handle_reveal(ws, game, player_id, msg)
     except WebSocketDisconnect:
         pvp_dequeue(player_id)
+
+
+def _save_pvp_result(game, winner_id: str):
+    """Persist a completed PvP match to the database."""
+    try:
+        winner = game.get_player(winner_id) if winner_id else None
+        loser  = game.opponent(winner_id)   if winner_id else None
+        if not winner:
+            return
+        db = SessionLocal()
+        try:
+            row = PvpResult(
+                winner_name  = winner.name  or "Anonymous",
+                winner_email = winner.email or None,
+                loser_name   = loser.name   if loser else None,
+                loser_email  = loser.email  if loser else None,
+                elapsed_ms   = int(game.elapsed() * 1000),
+                submode      = game.submode,
+                rows         = game.rows,
+                cols         = game.cols,
+                mines        = game.mines,
+            )
+            db.add(row)
+            db.commit()
+        finally:
+            db.close()
+    except Exception:
+        pass  # never crash the game loop due to DB errors
 
 
 async def _handle_reveal(ws, game, player_id, msg):
@@ -175,13 +235,16 @@ async def _handle_reveal(ws, game, player_id, msg):
         })
 
     if result.get("finished"):
+        winner_id = result.get("winner")
         scores = game.scores_payload()
         await manager.broadcast(game, {
             "type":      "game_over",
-            "winner_id": result.get("winner"),
+            "winner_id": winner_id,
             "scores":    scores,
             "elapsed":   round(game.elapsed()),
         })
+        if game.is_pvp and winner_id:
+            _save_pvp_result(game, winner_id)
 
 
 async def _game_loop(ws: WebSocket, game, player_id: str):
@@ -192,7 +255,13 @@ async def _game_loop(ws: WebSocket, game, player_id: str):
                 msg = json.loads(raw)
             except Exception:
                 continue
-            if msg.get("type") == "reveal":
+            mtype = msg.get("type")
+            if mtype == "player_name":
+                p = game.get_player(player_id)
+                if p:
+                    p.name  = msg.get("name", "")[:32]
+                    p.email = msg.get("email", "")[:256]
+            elif mtype == "reveal":
                 await _handle_reveal(ws, game, player_id, msg)
     except WebSocketDisconnect:
         p = game.get_player(player_id)
@@ -239,7 +308,17 @@ async def _pvp_quick_wait_loop(ws: WebSocket, player_id: str):
         while True:
             raw = await ws.receive_text()
             msg = json.loads(raw)
-            if msg.get("type") == "reveal":
+            mtype = msg.get("type")
+            if mtype == "player_name":
+                from duel import _games
+                game = next((g for g in _games.values()
+                             if g.get_player(player_id)), None)
+                if game:
+                    p = game.get_player(player_id)
+                    if p:
+                        p.name  = msg.get("name", "")[:32]
+                        p.email = msg.get("email", "")[:256]
+            elif mtype == "reveal":
                 from duel import _games
                 game = next((g for g in _games.values()
                              if g.get_player(player_id)), None)
@@ -296,6 +375,12 @@ async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
                     continue
                 game.start()
                 await manager.broadcast(game, {"type": "start", "msg": "Game started! Good luck!"})
+
+            elif mtype == "player_name":
+                p = game.get_player(player_id)
+                if p:
+                    p.name  = msg.get("name", "")[:32]
+                    p.email = msg.get("email", "")[:256]
 
             elif mtype == "reveal":
                 await _handle_reveal(ws, game, player_id, msg)
