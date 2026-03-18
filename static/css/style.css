@@ -605,6 +605,18 @@ footer a:hover { text-decoration: underline; }
   cursor: pointer;
 }
 
+.overlay-guest-warning {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.9);
+  text-align: center;
+  margin-top: 0.25rem;
+}
+.overlay-guest-warning a {
+  color: #fff;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 /* ── Auth area ────────────────────────────────────────────────────────────── */
 .auth-area {
   display: flex;

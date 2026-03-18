@@ -305,6 +305,7 @@
       if (username) {
         scoreForm = `<div id="replay-score-msg" style="font-size:0.9rem">Saving score…</div>`;
       } else {
+        const loginHref = '/auth/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
         scoreForm = `
           <div class="overlay-score-form">
             <input id="replay-player-name" type="text" maxlength="32"
@@ -312,7 +313,7 @@
             <button onclick="replaySubmitScore()">Save Score</button>
           </div>
           <div id="replay-score-msg" style="font-size:0.85rem;min-height:1.2em"></div>
-          <a class="overlay-lb-link" href="/auth/login">Sign in to skip this step</a>
+          <div class="overlay-guest-warning">🎉 Congratulations! <a href="${loginHref}" onclick="guestLoginAndSave(event, '${loginHref}', 'replaySubmitScore', 'replay-player-name')">Login with Google</a> or your score will vanish at 0:00 UTC.</div>
         `;
       }
     }

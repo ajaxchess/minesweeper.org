@@ -469,6 +469,7 @@
       if (username) {
         scoreForm = `<div id="tor-score-msg" style="font-size:0.9rem">Saving score…</div>`;
       } else {
+        const loginHref = '/auth/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
         scoreForm = `
           <div id="tor-score-form" class="overlay-score-form">
             <input id="tor-player-name" type="text" maxlength="32"
@@ -476,7 +477,7 @@
             <button onclick="torSubmitScore()">Save Score</button>
           </div>
           <div id="tor-score-msg" style="font-size:0.85rem;min-height:1.2em"></div>
-          <a class="overlay-lb-link" href="/auth/login">Sign in with Google to skip this step</a>
+          <div class="overlay-guest-warning">🎉 Congratulations! <a href="${loginHref}" onclick="guestLoginAndSave(event, '${loginHref}', 'torSubmitScore', 'tor-player-name')">Login with Google</a> or your score will vanish at 0:00 UTC.</div>
         `;
       }
     }

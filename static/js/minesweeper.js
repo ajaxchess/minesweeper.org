@@ -397,6 +397,15 @@ function checkWin() {
   }
 }
 
+// ── Guest login-and-save helper (used by all game overlays) ──────────────────
+async function guestLoginAndSave(e, href, submitFnName, inputId) {
+  e.preventDefault();
+  const name = document.getElementById(inputId)?.value.trim() || 'Guest';
+  const fn = window[submitFnName] || window.submitScore;
+  if (typeof fn === 'function') await fn(name);
+  window.location.href = href;
+}
+
 // ── Overlay ──────────────────────────────────────────────────────────────────
 function showOverlay(msg, won) {
   let el = document.getElementById('game-overlay');
@@ -417,6 +426,7 @@ function showOverlay(msg, won) {
       // Logged-in: auto-submit immediately, show a confirmation
       scoreForm = `<div id="score-msg" style="font-size:0.9rem">Saving score…</div>`;
     } else {
+      const loginHref = '/auth/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
       scoreForm = `
         <div class="overlay-score-form">
           <input id="player-name" type="text" maxlength="32"
@@ -424,7 +434,7 @@ function showOverlay(msg, won) {
           <button onclick="submitScore()">Save Score</button>
         </div>
         <div id="score-msg" style="font-size:0.85rem;min-height:1.2em"></div>
-        <a class="overlay-lb-link" href="/auth/login">Sign in with Google to skip this step</a>
+        <div class="overlay-guest-warning">🎉 Congratulations! <a href="${loginHref}" onclick="guestLoginAndSave(event, '${loginHref}', 'submitScore', 'player-name')">Login with Google</a> or your score will vanish at 0:00 UTC.</div>
       `;
     }
   }

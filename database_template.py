@@ -61,6 +61,7 @@ class Score(Base):
     left_clicks  = Column(Integer, nullable=True)
     right_clicks = Column(Integer, nullable=True)
     chord_clicks = Column(Integer, nullable=True)
+    guest_token  = Column(String(36), nullable=True, index=True)  # links guest score to login session
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Fast lookups by mode + time for leaderboard queries
@@ -152,8 +153,9 @@ class RushScore(Base):
     time_secs     = Column(Integer, nullable=False)          # game duration (seconds)
     cols          = Column(Integer, nullable=False)          # board width
     density       = Column(Float, nullable=True)             # mines/cell (custom mode)
-    rush_mode  = Column(String(16), nullable=False)  # easy/normal/hard/custom
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    rush_mode    = Column(String(16), nullable=False)  # easy/normal/hard/custom
+    guest_token  = Column(String(36), nullable=True, index=True)
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
         Index("ix_rush_scores_mode_score", "rush_mode", "score"),
@@ -182,6 +184,7 @@ class TentaizuScore(Base):
     user_email  = Column(String(256), nullable=True, index=True)
     puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD
     time_secs   = Column(Integer, nullable=False)
+    guest_token = Column(String(36), nullable=True, index=True)
     created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -240,6 +243,7 @@ class CylinderScore(Base):
     left_clicks  = Column(Integer, nullable=True)
     right_clicks = Column(Integer, nullable=True)
     chord_clicks = Column(Integer, nullable=True)
+    guest_token  = Column(String(36), nullable=True, index=True)
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -284,6 +288,7 @@ class ToroidScore(Base):
     left_clicks  = Column(Integer, nullable=True)
     right_clicks = Column(Integer, nullable=True)
     chord_clicks = Column(Integer, nullable=True)
+    guest_token  = Column(String(36), nullable=True, index=True)
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -327,6 +332,7 @@ class ReplayScore(Base):
     left_clicks  = Column(Integer, nullable=True)
     right_clicks = Column(Integer, nullable=True)
     chord_clicks = Column(Integer, nullable=True)
+    guest_token  = Column(String(36), nullable=True, index=True)
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -350,6 +356,26 @@ class ReplayScore(Base):
             "chord_clicks": self.chord_clicks,
             "created_at":   self.created_at.strftime("%Y-%m-%d"),
         }
+
+
+# ── Guest Score Archive (scores from unregistered players archived at midnight) ─
+class GuestScoreArchive(Base):
+    __tablename__ = "guest_score_archive"
+
+    id                  = Column(Integer, primary_key=True, index=True)
+    source_table        = Column(String(32), nullable=False, index=True)  # e.g. 'scores', 'rush_scores'
+    original_id         = Column(Integer, nullable=False)
+    guest_token         = Column(String(36), nullable=True, index=True)
+    name                = Column(String(32), nullable=True)
+    game_mode           = Column(String(32), nullable=True)   # mode/rush_mode/cyl_mode etc.
+    time_ms             = Column(Integer, nullable=True)
+    rows                = Column(Integer, nullable=True)
+    cols                = Column(Integer, nullable=True)
+    mines               = Column(Integer, nullable=True)
+    bbbv                = Column(Integer, nullable=True)
+    board_hash          = Column(String(128), nullable=True)
+    original_created_at = Column(DateTime, nullable=True)
+    archived_at         = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 # ── PvP Result model (one row per completed PvP match) ───────────────────────

@@ -13,7 +13,7 @@ from sqlalchemy import func, case, text
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, CylinderScore, ToroidScore, ReplayScore, UserProfile, PvpResult, ServerStats, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, CylinderScore, ToroidScore, ReplayScore, UserProfile, PvpResult, ServerStats, GuestScoreArchive, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -198,8 +198,52 @@ def collect_server_stats():
         db.close()
 
 
+def archive_guest_scores():
+    """Archive (move) all guest scores to guest_score_archive at midnight UTC."""
+    db = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        tables = [
+            (Score,         "scores",          "mode"),
+            (RushScore,     "rush_scores",      "rush_mode"),
+            (CylinderScore, "cylinder_scores",  "cyl_mode"),
+            (ToroidScore,   "toroid_scores",    "tor_mode"),
+            (TentaizuScore, "tentaizu_scores",  "puzzle_date"),
+            (ReplayScore,   "replay_scores",    "variant"),
+        ]
+        total = 0
+        for model, table_name, mode_attr in tables:
+            guests = db.query(model).filter(model.user_email.is_(None)).all()
+            for row in guests:
+                db.add(GuestScoreArchive(
+                    source_table        = table_name,
+                    original_id         = row.id,
+                    guest_token         = getattr(row, "guest_token", None),
+                    name                = row.name,
+                    game_mode           = str(getattr(row, mode_attr, "")),
+                    time_ms             = getattr(row, "time_ms", None) or (getattr(row, "time_secs", 0) * 1000 if hasattr(row, "time_secs") else None),
+                    rows                = getattr(row, "rows", None),
+                    cols                = getattr(row, "cols", None),
+                    mines               = getattr(row, "mines", None),
+                    bbbv                = getattr(row, "bbbv", None),
+                    board_hash          = getattr(row, "board_hash", None),
+                    original_created_at = row.created_at,
+                    archived_at         = now,
+                ))
+                db.delete(row)
+                total += 1
+        db.commit()
+        logger.info(f"archive_guest_scores: archived {total} guest score(s).")
+    except Exception as e:
+        db.rollback()
+        logger.error(f"archive_guest_scores failed: {e}")
+    finally:
+        db.close()
+
+
 scheduler = BackgroundScheduler(timezone="UTC")
 scheduler.add_job(reset_scores,          CronTrigger(hour=0, minute=0))   # midnight UTC
+scheduler.add_job(archive_guest_scores,  CronTrigger(hour=0, minute=0))   # midnight UTC
 scheduler.add_job(cleanup_old_games,     CronTrigger(hour="*"))             # hourly
 scheduler.add_job(collect_server_stats,  CronTrigger(minute=0))             # top of every hour
 
@@ -299,6 +343,17 @@ async def auth_callback(request: Request, db: Session = Depends(get_db)):
             profile.public_id = str(uuid.uuid4())
             db.commit()
         set_session_user(request, user, display_name=profile.display_name)
+
+        # Claim any guest scores submitted before this login
+        guest_token = request.session.pop("guest_token", None)
+        if guest_token:
+            for model in [Score, RushScore, CylinderScore, ToroidScore, TentaizuScore, ReplayScore]:
+                db.query(model).filter(
+                    model.guest_token == guest_token,
+                    model.user_email.is_(None),
+                ).update({"user_email": email}, synchronize_session=False)
+            db.commit()
+
     next_url = request.session.pop("next", "/")
     return RedirectResponse(url=next_url)
 
@@ -349,6 +404,13 @@ class ScoreSubmit(BaseModel):
 @app.post("/api/scores", status_code=201)
 def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+
     score = Score(
         name         = payload.name,
         user_email   = user["email"] if user else None,
@@ -364,6 +426,7 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
         left_clicks  = payload.left_clicks,
         right_clicks = payload.right_clicks,
         chord_clicks = payload.chord_clicks,
+        guest_token  = guest_token,
     )
     db.add(score)
 
@@ -513,6 +576,12 @@ class RushScoreSubmit(BaseModel):
 @app.post("/api/rush-scores", status_code=201)
 def submit_rush_score(payload: RushScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
     entry = RushScore(
         name          = payload.name,
         user_email    = user["email"] if user else None,
@@ -523,6 +592,7 @@ def submit_rush_score(payload: RushScoreSubmit, request: Request, db: Session = 
         cols          = payload.cols,
         density       = payload.density,
         rush_mode     = payload.rush_mode,
+        guest_token   = guest_token,
     )
     db.add(entry)
     db.commit()
@@ -833,6 +903,12 @@ class ReplayScoreSubmit(BaseModel):
 @app.post("/api/replay-scores", status_code=201)
 def submit_replay_score(payload: ReplayScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
     entry = ReplayScore(
         board_hash   = payload.board_hash,
         variant      = payload.variant,
@@ -847,6 +923,7 @@ def submit_replay_score(payload: ReplayScoreSubmit, request: Request, db: Sessio
         left_clicks  = payload.left_clicks,
         right_clicks = payload.right_clicks,
         chord_clicks = payload.chord_clicks,
+        guest_token  = guest_token,
     )
     db.add(entry)
     db.commit()
@@ -968,6 +1045,12 @@ class CylinderScoreSubmit(BaseModel):
 @app.post("/api/cylinder-scores", status_code=201)
 def submit_cylinder_score(payload: CylinderScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
     entry = CylinderScore(
         name         = payload.name,
         user_email   = user["email"] if user else None,
@@ -983,6 +1066,7 @@ def submit_cylinder_score(payload: CylinderScoreSubmit, request: Request, db: Se
         left_clicks  = payload.left_clicks,
         right_clicks = payload.right_clicks,
         chord_clicks = payload.chord_clicks,
+        guest_token  = guest_token,
     )
     db.add(entry)
     db.commit()
@@ -1126,6 +1210,12 @@ class ToroidScoreSubmit(BaseModel):
 @app.post("/api/toroid-scores", status_code=201)
 def submit_toroid_score(payload: ToroidScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
     entry = ToroidScore(
         name         = payload.name,
         user_email   = user["email"] if user else None,
@@ -1141,6 +1231,7 @@ def submit_toroid_score(payload: ToroidScoreSubmit, request: Request, db: Sessio
         left_clicks  = payload.left_clicks,
         right_clicks = payload.right_clicks,
         chord_clicks = payload.chord_clicks,
+        guest_token  = guest_token,
     )
     db.add(entry)
     db.commit()
@@ -1430,11 +1521,18 @@ class TentaizuScoreSubmit(BaseModel):
 @app.post("/api/tentaizu-scores", status_code=201)
 def submit_tentaizu_score(payload: TentaizuScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
     entry = TentaizuScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
         puzzle_date = payload.puzzle_date,
         time_secs   = payload.time_secs,
+        guest_token = guest_token,
     )
     db.add(entry)
     db.commit()
