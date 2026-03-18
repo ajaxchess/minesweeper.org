@@ -3,6 +3,21 @@
  * Pure vanilla JS, zero dependencies.
  */
 
+// ── Guest login reminder banner ───────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  const board = document.getElementById('board');
+  if (!board || board.dataset.username) return; // not a game page or user is logged in
+  if (sessionStorage.getItem('guest-banner-dismissed')) return;
+
+  const loginHref = '/auth/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+  const banner = document.createElement('div');
+  banner.id = 'guest-login-banner';
+  banner.innerHTML =
+    '⚠️ You\'re not signed in — <a href="' + loginHref + '">Login with Google</a> or your scores will vanish at midnight UTC.' +
+    '<button onclick="document.getElementById(\'guest-login-banner\').remove();sessionStorage.setItem(\'guest-banner-dismissed\',\'1\')" aria-label="Dismiss">×</button>';
+  document.body.appendChild(banner);
+});
+
 // ── Touch helpers ─────────────────────────────────────────────────────────────
 // On iOS Safari there is no contextmenu event for touch; we simulate it with a
 // long-press (touchstart held ≥ 500 ms). Calling preventDefault() on touchstart
