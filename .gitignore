@@ -11,6 +11,9 @@ screenshots/
 #Business documents
 business/
 
+#Bots for playing pvp modes
+bots/
+
 .DS_Store
 
 # Byte-compiled / optimized / DLL files
