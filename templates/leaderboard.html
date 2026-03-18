@@ -65,10 +65,11 @@
           <th class="lb-th-stat" data-tip="3BV per second. Represents speed of completing the game. The higher the better.">3BV/s</th>
           <th class="lb-th-stat" data-tip="Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.">Eff</th>
           <th>{{ t.lb_col_date }}</th>
+          <th>Board</th>
         </tr>
       </thead>
       <tbody id="lb-body">
-        <tr><td colspan="9" class="lb-loading">{{ t.lb_loading }}</td></tr>
+        <tr><td colspan="10" class="lb-loading">{{ t.lb_loading }}</td></tr>
       </tbody>
     </table>
   </div>
@@ -230,7 +231,7 @@ async function loadScores(mode, noGuess, period, game) {
       const emptyMsg = currentPeriod === 'daily'   ? 'No scores yet today — be the first!'
                      : currentPeriod === 'season'  ? 'No scores yet this season — be the first!'
                      :                               'No all-time scores yet — be the first!';
-      body.innerHTML = `<tr><td colspan="9" class="lb-empty">${emptyMsg}</td></tr>`;
+      body.innerHTML = `<tr><td colspan="10" class="lb-empty">${emptyMsg}</td></tr>`;
       return;
     }
 
@@ -240,7 +241,7 @@ async function loadScores(mode, noGuess, period, game) {
       const nameCell = s.profile_url
         ? `<a href="${escHtml(s.profile_url)}" class="lb-profile-link">${escHtml(s.name)}</a>`
         : escHtml(s.name);
-      let replayLink = '';
+      let hashCell = '<td class="lb-hash">—</td>';
       if (s.board_hash) {
         const game = currentGame === 'classic' ? 'standard' : currentGame;
         const rp = new URLSearchParams({
@@ -248,26 +249,28 @@ async function loadScores(mode, noGuess, period, game) {
           hash: s.board_hash, date: s.created_at,
           mode: currentMode, game,
         });
-        replayLink = ` <a href="/variants/replay/?${rp}" class="lb-replay-link" title="Replay this board">🔁</a>`;
+        const short = s.board_hash.slice(0, 8) + '…';
+        hashCell = `<td class="lb-hash"><a href="/variants/replay/?${rp}" class="lb-replay-link" title="${escHtml(s.board_hash)}">${short}</a></td>`;
       }
       return `
         <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
           <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
           <td class="lb-name">${nameCell}</td>
-          <td class="lb-time">${fmtTime(s)}${replayLink}</td>
+          <td class="lb-time">${fmtTime(s)}</td>
           <td class="lb-board">${s.rows}×${s.cols}</td>
           <td class="lb-mines">${s.mines}</td>
           <td class="lb-stat">${s.bbbv ?? '—'}</td>
           <td class="lb-stat">${bbbvS}</td>
           <td class="lb-stat">${eff}</td>
           <td class="lb-date">${s.created_at}</td>
+          ${hashCell}
         </tr>`;
     }).join('');
 
     const suffix = data.length !== 1 ? window.T.lb_top_suffix_many : window.T.lb_top_suffix_one;
     meta.textContent = `${window.T.lb_top_prefix} ${data.length} ${suffix}`;
   } catch {
-    body.innerHTML = `<tr><td colspan="9" class="lb-empty">${window.T.lb_error}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="10" class="lb-empty">${window.T.lb_error}</td></tr>`;
   }
 }
 

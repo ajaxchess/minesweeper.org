@@ -3896,12 +3896,19 @@ html[data-skin="classic"] .nav-pvp-menu a.active { background: #c0c0c0; color: #
   color: var(--accent2);
 }
 
-/* Replay link in leaderboard rows */
+/* Board hash column + replay link */
+.lb-hash {
+  font-size: 0.78rem;
+  white-space: nowrap;
+  color: var(--text-dim);
+}
+
 .lb-replay-link {
-  font-size: 0.8rem;
+  font-family: monospace;
+  font-size: 0.78rem;
   text-decoration: none;
-  opacity: 0.55;
-  margin-left: 0.3rem;
+  color: var(--accent2);
+  opacity: 0.7;
   transition: opacity 0.15s;
 }
-.lb-replay-link:hover { opacity: 1; }
+.lb-replay-link:hover { opacity: 1; text-decoration: underline; }
