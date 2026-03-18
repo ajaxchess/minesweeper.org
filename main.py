@@ -533,6 +533,15 @@ async def about_page(request: Request):
 # excerpt: one-sentence summary shown on the index page
 BLOG_POSTS = [
     {
+        "slug":          "3bv",
+        "file":          "blog/3bv_blog_post.md",
+        "title":         "We've added 3BV values to Lady Di's Mines",
+        "date":          "2026-03-18",
+        "datePublished": "2026-03-18T00:00:00Z",
+        "excerpt": "Lady Di's Mines now displays 3BV — Bechtel's Board Benchmark Value — "
+                   "the minimum clicks needed to clear a board. Here's what it means and why it matters.",
+    },
+    {
         "slug":    "lady-di",
         "file":    "blog/lady-di-blog-post.md",
         "title":   "She's Back: The Return of Lady Di's Mines",
