@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, timezone
 import uuid
 from typing import Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, Query
@@ -13,7 +13,7 @@ from sqlalchemy import func, case, text
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, CylinderScore, ToroidScore, UserProfile, PvpResult, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, CylinderScore, ToroidScore, UserProfile, PvpResult, ServerStats, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -21,6 +21,7 @@ from starlette.config import Config
 from translations import get_lang, get_t
 import logging
 import psutil
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,19 @@ def current_season_num() -> int:
     today = date.today()
     return (today.year - SEASON_ORIGIN_YEAR) * 12 + (today.month - SEASON_ORIGIN_MONTH) + 1
 
+# ── Request counter (for hourly stats) ───────────────────────────────────────
+_req_lock  = threading.Lock()
+_req_count = 0
+
 app = FastAPI(title="Minesweeper")
+
+@app.middleware("http")
+async def count_requests(request: Request, call_next):
+    global _req_count
+    with _req_lock:
+        _req_count += 1
+    return await call_next(request)
+
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="127.0.0.1")
 app.include_router(duel_router)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True)
@@ -131,9 +144,64 @@ def reset_scores():
     finally:
         db.close()
 
+_prev_net_sent: int | None = None
+_prev_net_recv: int | None = None
+
+
+def collect_server_stats():
+    """Snapshot server/app/network metrics and store in the server_stats table."""
+    global _req_count, _prev_net_sent, _prev_net_recv
+
+    db = SessionLocal()
+    try:
+        cpu    = psutil.cpu_percent(interval=1)
+        mem    = psutil.virtual_memory()
+        disk   = psutil.disk_usage("/")
+        net    = psutil.net_io_counters()
+
+        db_size_bytes = db.execute(
+            text("SELECT SUM(data_length + index_length) "
+                 "FROM information_schema.tables WHERE table_schema = DATABASE()")
+        ).scalar() or 0
+
+        delta_sent = (net.bytes_sent - _prev_net_sent) if _prev_net_sent is not None else None
+        delta_recv = (net.bytes_recv - _prev_net_recv) if _prev_net_recv is not None else None
+        _prev_net_sent = net.bytes_sent
+        _prev_net_recv = net.bytes_recv
+
+        with _req_lock:
+            reqs       = _req_count
+            _req_count = 0
+
+        db.add(ServerStats(
+            recorded_at    = datetime.now(timezone.utc),
+            cpu_percent    = cpu,
+            mem_used_mb    = mem.used    / (1024 ** 2),
+            mem_total_mb   = mem.total   / (1024 ** 2),
+            mem_percent    = mem.percent,
+            disk_used_gb   = disk.used   / (1024 ** 3),
+            disk_total_gb  = disk.total  / (1024 ** 3),
+            disk_percent   = disk.percent,
+            db_size_mb     = db_size_bytes / (1024 ** 2),
+            net_bytes_sent = net.bytes_sent,
+            net_bytes_recv = net.bytes_recv,
+            net_delta_sent = delta_sent,
+            net_delta_recv = delta_recv,
+            http_requests  = reqs,
+        ))
+        db.commit()
+        logger.info("Server stats snapshot saved.")
+    except Exception as e:
+        db.rollback()
+        logger.error(f"collect_server_stats failed: {e}")
+    finally:
+        db.close()
+
+
 scheduler = BackgroundScheduler(timezone="UTC")
-scheduler.add_job(reset_scores,      CronTrigger(hour=0, minute=0))   # midnight UTC
-scheduler.add_job(cleanup_old_games, CronTrigger(hour="*"))             # hourly
+scheduler.add_job(reset_scores,          CronTrigger(hour=0, minute=0))   # midnight UTC
+scheduler.add_job(cleanup_old_games,     CronTrigger(hour="*"))             # hourly
+scheduler.add_job(collect_server_stats,  CronTrigger(minute=0))             # top of every hour
 
 # Create DB tables and start scheduler on startup
 @app.on_event("startup")
@@ -1632,11 +1700,13 @@ def _fmt_bytes(n: int) -> str:
 
 @app.get("/admin/operations", response_class=HTMLResponse)
 def admin_operations(request: Request, db: Session = Depends(get_db)):
+    import json as _json
+
     user = get_current_user(request)
     if not user or user.get("email") not in ADMIN_EMAILS:
         raise HTTPException(status_code=403, detail="Forbidden")
 
-    # ── Server stats ──────────────────────────────────────────────────────────
+    # ── Live snapshot ─────────────────────────────────────────────────────────
     disk = psutil.disk_usage("/")
     cpu_percent = psutil.cpu_percent(interval=0.5)
     mem = psutil.virtual_memory()
@@ -1668,12 +1738,30 @@ def admin_operations(request: Request, db: Session = Depends(get_db)):
     except (psutil.AccessDenied, PermissionError):
         active_connections = None
 
+    # ── Historical data for charts (last 48 hourly snapshots) ─────────────────
+    history = (
+        db.query(ServerStats)
+        .order_by(ServerStats.recorded_at.desc())
+        .limit(48)
+        .all()
+    )
+    history = list(reversed(history))
+
+    chart_labels     = [r.recorded_at.strftime("%-m/%-d %-I%p") for r in history]
+    chart_cpu        = [round(r.cpu_percent, 1)  for r in history]
+    chart_mem        = [round(r.mem_percent, 1)  for r in history]
+    chart_disk       = [round(r.disk_percent, 1) for r in history]
+    chart_db_mb      = [round(r.db_size_mb, 2)   for r in history]
+    chart_net_sent   = [round((r.net_delta_sent or 0) / (1024 ** 2), 2) for r in history]
+    chart_net_recv   = [round((r.net_delta_recv or 0) / (1024 ** 2), 2) for r in history]
+    chart_requests   = [r.http_requests for r in history]
+
     return templates.TemplateResponse("admin_operations.html", {
         "request": request,
         "user": user,
         "lang": get_lang(request),
         "t": get_t(request),
-        # server
+        # live snapshot
         "disk_total":    _fmt_bytes(disk.total),
         "disk_used":     _fmt_bytes(disk.used),
         "disk_free":     _fmt_bytes(disk.free),
@@ -1687,10 +1775,19 @@ def admin_operations(request: Request, db: Session = Depends(get_db)):
         "table_counts":   table_counts,
         "total_records":  total_records,
         "db_size":        _fmt_bytes(db_size_bytes),
-        # network
-        "net_bytes_sent":    _fmt_bytes(net.bytes_sent),
-        "net_bytes_recv":    _fmt_bytes(net.bytes_recv),
-        "net_packets_sent":  f"{net.packets_sent:,}",
-        "net_packets_recv":  f"{net.packets_recv:,}",
+        # network live
+        "net_bytes_sent":     _fmt_bytes(net.bytes_sent),
+        "net_bytes_recv":     _fmt_bytes(net.bytes_recv),
+        "net_packets_sent":   f"{net.packets_sent:,}",
+        "net_packets_recv":   f"{net.packets_recv:,}",
         "active_connections": active_connections,
+        # chart data (JSON strings)
+        "chart_labels":   _json.dumps(chart_labels),
+        "chart_cpu":      _json.dumps(chart_cpu),
+        "chart_mem":      _json.dumps(chart_mem),
+        "chart_disk":     _json.dumps(chart_disk),
+        "chart_db_mb":    _json.dumps(chart_db_mb),
+        "chart_net_sent": _json.dumps(chart_net_sent),
+        "chart_net_recv": _json.dumps(chart_net_recv),
+        "chart_requests": _json.dumps(chart_requests),
     })

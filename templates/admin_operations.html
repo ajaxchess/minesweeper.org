@@ -1,6 +1,110 @@
 {% extends "base.html" %}
 {% block title %}Operations — minesweeper.org{% endblock %}
 
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+const LABELS   = {{ chart_labels   | safe }};
+const CPU      = {{ chart_cpu      | safe }};
+const MEM      = {{ chart_mem      | safe }};
+const DISK     = {{ chart_disk     | safe }};
+const DB_MB    = {{ chart_db_mb    | safe }};
+const NET_SENT = {{ chart_net_sent | safe }};
+const NET_RECV = {{ chart_net_recv | safe }};
+const REQUESTS = {{ chart_requests | safe }};
+
+function accent(opacity) {
+  const s = getComputedStyle(document.documentElement);
+  return (s.getPropertyValue('--accent2') || '#4a9eff').trim();
+}
+
+function makeChart(id, datasets, yLabel, pct) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'line',
+    data: { labels: LABELS, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { color: '#aaa', boxWidth: 12 } } },
+      scales: {
+        x: { ticks: { color: '#888', maxTicksLimit: 12 }, grid: { color: '#333' } },
+        y: {
+          ticks: { color: '#888', callback: v => pct ? v + '%' : v },
+          grid: { color: '#333' },
+          title: { display: !!yLabel, text: yLabel, color: '#888' },
+          min: pct ? 0 : undefined,
+          max: pct ? 100 : undefined,
+        }
+      }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const a  = 'rgba(74,158,255,0.8)';
+  const a2 = 'rgba(74,158,255,0.15)';
+  const g  = 'rgba(80,200,120,0.8)';
+  const g2 = 'rgba(80,200,120,0.15)';
+  const o  = 'rgba(255,160,60,0.8)';
+
+  makeChart('chartCpu', [{
+    label: 'CPU %', data: CPU,
+    borderColor: a, backgroundColor: a2, borderWidth: 1.5, fill: true, tension: 0.3, pointRadius: 2,
+  }], '', true);
+
+  makeChart('chartMem', [{
+    label: 'Memory %', data: MEM,
+    borderColor: g, backgroundColor: g2, borderWidth: 1.5, fill: true, tension: 0.3, pointRadius: 2,
+  }], '', true);
+
+  makeChart('chartDisk', [{
+    label: 'Disk %', data: DISK,
+    borderColor: o, backgroundColor: 'rgba(255,160,60,0.15)', borderWidth: 1.5, fill: true, tension: 0.3, pointRadius: 2,
+  }], '', true);
+
+  makeChart('chartDb', [{
+    label: 'DB Size (MB)', data: DB_MB,
+    borderColor: a, backgroundColor: a2, borderWidth: 1.5, fill: true, tension: 0.3, pointRadius: 2,
+  }], 'MB', false);
+
+  makeChart('chartNet', [
+    { label: 'Sent (MB)',   data: NET_SENT, borderColor: a, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.3, pointRadius: 2 },
+    { label: 'Recv (MB)',   data: NET_RECV, borderColor: g, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.3, pointRadius: 2 },
+  ], 'MB / hr', false);
+
+  makeChart('chartReqs', [{
+    label: 'Requests / hr', data: REQUESTS,
+    borderColor: o, backgroundColor: 'rgba(255,160,60,0.15)', borderWidth: 1.5, fill: true, tension: 0.3, pointRadius: 2,
+  }], 'Requests', false);
+});
+</script>
+<style>
+.ops-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+.ops-chart-card {
+  background: var(--bg2, #1a1a2e);
+  border: 1px solid var(--border, #333);
+  border-radius: 8px;
+  padding: 1rem 1.25rem 1rem;
+}
+.ops-chart-card h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim, #888);
+}
+.ops-chart-wrap { position: relative; height: 180px; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="lb-wrapper">
 
@@ -8,9 +112,53 @@
   <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">signed in as {{ user.email }}</p>
   <p style="text-align:center;margin-bottom:1.5rem;"><a href="/admin">← Admin Dashboard</a></p>
 
-  <!-- Server Statistics -->
+  <!-- Historical Charts -->
+  {% if chart_labels != '[]' %}
   <section class="admin-section">
-    <h2 class="admin-section-title">Server Statistics</h2>
+    <h2 class="admin-section-title">Historical Trends (last 48 hours)</h2>
+    <div class="ops-charts">
+
+      <div class="ops-chart-card">
+        <h3>CPU Usage</h3>
+        <div class="ops-chart-wrap"><canvas id="chartCpu"></canvas></div>
+      </div>
+
+      <div class="ops-chart-card">
+        <h3>Memory Usage</h3>
+        <div class="ops-chart-wrap"><canvas id="chartMem"></canvas></div>
+      </div>
+
+      <div class="ops-chart-card">
+        <h3>Disk Usage</h3>
+        <div class="ops-chart-wrap"><canvas id="chartDisk"></canvas></div>
+      </div>
+
+      <div class="ops-chart-card">
+        <h3>Database Size</h3>
+        <div class="ops-chart-wrap"><canvas id="chartDb"></canvas></div>
+      </div>
+
+      <div class="ops-chart-card">
+        <h3>Network Bandwidth (per hour)</h3>
+        <div class="ops-chart-wrap"><canvas id="chartNet"></canvas></div>
+      </div>
+
+      <div class="ops-chart-card">
+        <h3>HTTP Requests (per hour)</h3>
+        <div class="ops-chart-wrap"><canvas id="chartReqs"></canvas></div>
+      </div>
+
+    </div>
+  </section>
+  {% else %}
+  <p style="text-align:center;color:var(--text-dim);margin-bottom:1.5rem;">
+    No historical data yet — charts will appear after the first hourly snapshot.
+  </p>
+  {% endif %}
+
+  <!-- Live Snapshot -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Live Snapshot</h2>
     <table class="lb-table">
       <thead><tr><th>Metric</th><th>Value</th><th>Detail</th></tr></thead>
       <tbody>

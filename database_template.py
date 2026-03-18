@@ -3,7 +3,7 @@ database.py — SQLAlchemy setup for MySQL via PyMySQL
 CD test
 """
 from sqlalchemy import (
-    create_engine, Column, Integer, String, Float,
+    create_engine, Column, Integer, BigInteger, String, Float,
     DateTime, Enum, Index, Boolean
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
@@ -354,6 +354,27 @@ class UserProfile(Base):
     pref_skin     = Column(String(16), default='dark', nullable=False)
     about_text    = Column(String(5000), nullable=True)
     created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+# ── Server Stats model (hourly snapshots) ─────────────────────────────────────
+class ServerStats(Base):
+    __tablename__ = "server_stats"
+
+    id             = Column(Integer, primary_key=True, index=True)
+    recorded_at    = Column(DateTime, nullable=False, index=True)
+    cpu_percent    = Column(Float,      nullable=False)
+    mem_used_mb    = Column(Float,      nullable=False)
+    mem_total_mb   = Column(Float,      nullable=False)
+    mem_percent    = Column(Float,      nullable=False)
+    disk_used_gb   = Column(Float,      nullable=False)
+    disk_total_gb  = Column(Float,      nullable=False)
+    disk_percent   = Column(Float,      nullable=False)
+    db_size_mb     = Column(Float,      nullable=False)
+    net_bytes_sent = Column(BigInteger, nullable=False)   # cumulative since boot
+    net_bytes_recv = Column(BigInteger, nullable=False)   # cumulative since boot
+    net_delta_sent = Column(BigInteger, nullable=True)    # bytes sent in this hour
+    net_delta_recv = Column(BigInteger, nullable=True)    # bytes received in this hour
+    http_requests  = Column(Integer,    nullable=False, default=0)  # requests this hour
+
 
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
