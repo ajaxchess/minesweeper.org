@@ -373,16 +373,33 @@
         return;
       }
       const medals = ['🥇', '🥈', '🥉'];
-      const rows = data.map((s, i) => `
+      const rows = data.map((s, i) => {
+        const nameCell = s.profile_url
+          ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
+          : esc(s.name);
+        return `
         <tr class="${i < 3 ? 'top-' + (i + 1) : ''}">
-          <td class="lb-rank">${medals[i] || i + 1}</td>
-          <td class="lb-name">${s.profile_url ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>` : esc(s.name)}</td>
-          <td class="lb-time">${fmtTime(s.time_secs)}</td>
-        </tr>`).join('');
+          <td class="lb-rank">${medals[i] || '#' + (i + 1)}</td>
+          <td class="lb-name">${nameCell}</td>
+          <td class="lb-time">${fmtTime(s)}</td>
+          <td class="lb-board">${s.rows}×${s.cols}</td>
+          <td class="lb-mines">${s.mines}</td>
+          <td class="lb-stat">${s.bbbv ?? '—'}</td>
+          <td class="lb-stat">${fmtBbbvS(s)}</td>
+          <td class="lb-stat">${fmtEff(s)}</td>
+          <td class="lb-date">${s.created_at}</td>
+        </tr>`;
+      }).join('');
       el.innerHTML = `
         <div class="lb-table-wrap">
           <table class="lb-table">
-            <thead><tr><th>#</th><th>Name</th><th>Time</th></tr></thead>
+            <thead><tr>
+              <th>#</th><th>Name</th><th>Time</th><th>Board</th><th>Mines</th>
+              <th class="lb-th-stat" data-tip="Minimum clicks to solve the board">3BV</th>
+              <th class="lb-th-stat" data-tip="3BV per second">3BV/s</th>
+              <th class="lb-th-stat" data-tip="Efficiency: 3BV ÷ left+chord clicks">Eff</th>
+              <th>Date</th>
+            </tr></thead>
             <tbody>${rows}</tbody>
           </table>
         </div>`;
@@ -392,8 +409,22 @@
   }
 
   function fmtTime(s) {
-    if (s < 60) return `${s}s`;
-    return `${Math.floor(s / 60)}m ${s % 60}s`;
+    if (s.time_ms != null) return (s.time_ms / 1000).toFixed(3) + 's';
+    return s.time_secs + 's';
+  }
+
+  function fmtBbbvS(s) {
+    if (!s.bbbv) return '—';
+    const secs = s.time_ms != null ? s.time_ms / 1000 : s.time_secs;
+    if (!secs) return '—';
+    return (s.bbbv / secs).toFixed(3);
+  }
+
+  function fmtEff(s) {
+    if (!s.bbbv) return '—';
+    const total = (s.left_clicks || 0) + (s.chord_clicks || 0);
+    if (!total) return '—';
+    return Math.round(s.bbbv / total * 100) + '%';
   }
 
   function esc(s) {

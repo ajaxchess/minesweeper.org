@@ -247,14 +247,19 @@ class CylinderScore(Base):
 
     def to_dict(self):
         return {
-            "id":        self.id,
-            "name":      self.name,
-            "cyl_mode":  self.cyl_mode,
-            "time_secs": self.time_secs,
-            "rows":      self.rows,
-            "cols":      self.cols,
-            "mines":     self.mines,
-            "created_at": self.created_at.strftime("%Y-%m-%d"),
+            "id":           self.id,
+            "name":         self.name,
+            "cyl_mode":     self.cyl_mode,
+            "time_secs":    self.time_secs,
+            "time_ms":      self.time_ms,
+            "rows":         self.rows,
+            "cols":         self.cols,
+            "mines":        self.mines,
+            "bbbv":         self.bbbv,
+            "left_clicks":  self.left_clicks,
+            "right_clicks": self.right_clicks,
+            "chord_clicks": self.chord_clicks,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
         }
 
 # ── Toroid Score model (permanent — never reset) ──────────────────────────────
@@ -284,14 +289,19 @@ class ToroidScore(Base):
 
     def to_dict(self):
         return {
-            "id":        self.id,
-            "name":      self.name,
-            "tor_mode":  self.tor_mode,
-            "time_secs": self.time_secs,
-            "rows":      self.rows,
-            "cols":      self.cols,
-            "mines":     self.mines,
-            "created_at": self.created_at.strftime("%Y-%m-%d"),
+            "id":           self.id,
+            "name":         self.name,
+            "tor_mode":     self.tor_mode,
+            "time_secs":    self.time_secs,
+            "time_ms":      self.time_ms,
+            "rows":         self.rows,
+            "cols":         self.cols,
+            "mines":        self.mines,
+            "bbbv":         self.bbbv,
+            "left_clicks":  self.left_clicks,
+            "right_clicks": self.right_clicks,
+            "chord_clicks": self.chord_clicks,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
         }
 
 # ── User profile model (display name, one row per user) ──────────────────────
