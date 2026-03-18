@@ -3882,6 +3882,17 @@ html[data-skin="classic"] .nav-pvp-menu a.active { background: #c0c0c0; color: #
   line-height: 1.5;
 }
 
+.replay-clicks-row {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin: 0.25rem 0;
+}
+
+.replay-clicks-row span { white-space: nowrap; }
+
 .replay-win-stats {
   display: flex;
   gap: 1rem;

@@ -186,6 +186,7 @@
       }
     }
     checkWin();
+    updateClickDisplay();
   }
 
   // ── Chord ──────────────────────────────────────────────────────────────────
@@ -195,6 +196,17 @@
     const nb    = neighborFn(r, c, state.rows, state.cols);
     const flags = nb.filter(([nr, nc]) => state.flagged[nr][nc] === 1).length;
     if (flags === state.board[r][c]) nb.forEach(([nr, nc]) => reveal(nr, nc));
+    updateClickDisplay();
+  }
+
+  // ── Live click counter ─────────────────────────────────────────────────────
+  function updateClickDisplay() {
+    const l = document.getElementById('clicks-left');
+    const f = document.getElementById('clicks-flag');
+    const c = document.getElementById('clicks-chord');
+    if (l) l.textContent = state.leftClicks  || 0;
+    if (f) f.textContent = state.rightClicks || 0;
+    if (c) c.textContent = state.chordClicks || 0;
   }
 
   // ── Flag ───────────────────────────────────────────────────────────────────
@@ -207,6 +219,7 @@
     if (cur === 1 && next === 2) state.minesLeft++;
     document.getElementById('mines-left').textContent = String(state.minesLeft).padStart(3, '0');
     renderCell(r, c);
+    updateClickDisplay();
   }
 
   // ── Win / Loss ─────────────────────────────────────────────────────────────
@@ -438,6 +451,7 @@
     document.getElementById('timer').textContent      = '000';
     document.getElementById('mines-left').textContent = String(MINES).padStart(3, '0');
     document.getElementById('reset-btn').textContent  = '🙂';
+    updateClickDisplay();
     buildBoard(ROWS, COLS);
 
     // Update 3BV display
