@@ -92,7 +92,7 @@
 <div class="game-landing" id="game-landing">
 
   <section class="game-landing-lb">
-    <h2 class="game-landing-lb-title">🏆 Today's Best Times —
+    <h2 class="game-landing-lb-title" id="page-lb-title">🏆 Today's Best Times —
       {% if mode == 'beginner' %}Beginner
       {% elif mode == 'intermediate' %}Intermediate
       {% else %}Expert{% endif %}
@@ -105,14 +105,19 @@
             <th>{{ t.lb_col_name }}</th>
             <th>{{ t.lb_col_time }}</th>
             <th>{{ t.lb_col_board }}</th>
+            <th>{{ t.lb_col_mines }}</th>
+            <th class="lb-th-stat" data-tip="3BV is the minimum number of clicks required to complete a board without using flags.">3BV</th>
+            <th class="lb-th-stat" data-tip="3BV per second — speed of completing the game. Higher is better.">3BV/s</th>
+            <th class="lb-th-stat" data-tip="Efficiency: 3BV divided by clicks performed. Fewer clicks = higher efficiency.">Eff</th>
             <th>{{ t.lb_col_date }}</th>
           </tr>
         </thead>
         <tbody id="page-lb-body">
-          <tr><td colspan="5" class="lb-loading">{{ t.lb_loading }}</td></tr>
+          <tr><td colspan="9" class="lb-loading">{{ t.lb_loading }}</td></tr>
         </tbody>
       </table>
     </div>
+    <div id="page-lb-tip" class="lb-tip" role="tooltip" aria-hidden="true"></div>
   </section>
 
   <section class="game-landing-welcome">
@@ -140,35 +145,94 @@
 
 {% block scripts %}
 <script>
-(async () => {
-  const mode = "{{ mode }}";
-  const body = document.getElementById('page-lb-body');
+const MEDALS  = ['🥇','🥈','🥉'];
+const LB_MODE = "{{ mode }}";
+const LB_MODE_LABEL = {
+  beginner:     '{{ t.nav_beginner }}',
+  intermediate: '{{ t.nav_intermediate }}',
+  expert:       '{{ t.nav_expert }}',
+}[LB_MODE] || LB_MODE;
+
+function fmtTime(s) {
+  return s.time_ms != null ? (s.time_ms / 1000).toFixed(3) + 's' : s.time_secs + 's';
+}
+function fmtBbbvS(s) {
+  if (!s.bbbv) return '—';
+  const secs = s.time_ms != null ? s.time_ms / 1000 : s.time_secs;
+  return secs ? (s.bbbv / secs).toFixed(3) : '—';
+}
+function fmtEff(s) {
+  if (!s.bbbv) return '—';
+  const total = (s.left_clicks || 0) + (s.chord_clicks || 0);
+  return total ? Math.round(s.bbbv / total * 100) + '%' : '—';
+}
+function esc(v) {
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function loadPageLb() {
+  const noGuess = typeof state !== 'undefined' && !!state.noGuess;
+  const body    = document.getElementById('page-lb-body');
+  const title   = document.getElementById('page-lb-title');
+
+  if (title) {
+    title.textContent = `🏆 Today's Best — ${noGuess ? '⚡ No-Guess ' : ''}${LB_MODE_LABEL}`;
+  }
+  body.innerHTML = `<tr><td colspan="9" class="lb-loading">${window.T.lb_loading}</td></tr>`;
+
   try {
-    const res  = await fetch(`/api/scores/${mode}?no_guess=false&period=daily`);
+    const res  = await fetch(`/api/scores/${LB_MODE}?no_guess=${noGuess}&period=daily`);
     if (!res.ok) throw new Error(res.status);
-    const rows = await res.json();
-    if (!Array.isArray(rows) || !rows.length) {
-      body.innerHTML = '<tr><td colspan="5" class="lb-empty">No scores yet today.</td></tr>';
+    const data = await res.json();
+    if (!Array.isArray(data) || !data.length) {
+      body.innerHTML = `<tr><td colspan="9" class="lb-empty">No scores yet today — be the first!</td></tr>`;
       return;
     }
-    const esc = v => v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    body.innerHTML = rows.map((s, i) => {
-      const t = s.time_ms != null ? (s.time_ms / 1000).toFixed(3) + 's' : s.time_secs + 's';
+    body.innerHTML = data.map((s, i) => {
       const nameCell = s.profile_url
         ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
         : esc(s.name);
       return `
-        <tr>
-          <td class="lb-rank">${i + 1}</td>
+        <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
+          <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
           <td class="lb-name">${nameCell}</td>
-          <td class="lb-time">${t}</td>
+          <td class="lb-time">${fmtTime(s)}</td>
           <td class="lb-board">${s.rows}×${s.cols}</td>
+          <td class="lb-mines">${s.mines}</td>
+          <td class="lb-stat">${s.bbbv ?? '—'}</td>
+          <td class="lb-stat">${fmtBbbvS(s)}</td>
+          <td class="lb-stat">${fmtEff(s)}</td>
           <td class="lb-date">${s.created_at}</td>
         </tr>`;
     }).join('');
   } catch {
-    body.innerHTML = '<tr><td colspan="5" class="lb-empty">Could not load scores.</td></tr>';
+    body.innerHTML = `<tr><td colspan="9" class="lb-empty">${window.T.lb_error}</td></tr>`;
   }
-})();
+}
+
+// Refresh leaderboard whenever no-guess is toggled
+const _origToggleNoGuess = window.toggleNoGuess;
+window.toggleNoGuess = function() {
+  _origToggleNoGuess();
+  loadPageLb();
+};
+
+// Stat column tooltips
+const pageTip = document.getElementById('page-lb-tip');
+document.querySelectorAll('#page-lb-table .lb-th-stat[data-tip]').forEach(th => {
+  th.addEventListener('mouseenter', () => {
+    pageTip.textContent = th.dataset.tip;
+    pageTip.style.left = '0'; pageTip.style.top = '0';
+    pageTip.classList.add('visible');
+    const r  = th.getBoundingClientRect();
+    const tw = pageTip.offsetWidth;
+    const left = Math.max(8, Math.min(r.left + r.width / 2 - tw / 2, window.innerWidth - tw - 8));
+    pageTip.style.left = left + 'px';
+    pageTip.style.top  = (r.bottom + window.scrollY + 8) + 'px';
+  });
+  th.addEventListener('mouseleave', () => pageTip.classList.remove('visible'));
+});
+
+loadPageLb();
 </script>
 {% endblock %}
