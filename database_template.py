@@ -452,3 +452,29 @@ class ServerStats(Base):
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
     Base.metadata.create_all(bind=engine)
+    _apply_migrations()
+
+
+def _apply_migrations():
+    """Idempotent ALTER TABLE migrations for columns added after initial deploy."""
+    migrations = [
+        ("scores",           "guest_token", "VARCHAR(36) NULL"),
+        ("rush_scores",      "guest_token", "VARCHAR(36) NULL"),
+        ("cylinder_scores",  "guest_token", "VARCHAR(36) NULL"),
+        ("toroid_scores",    "guest_token", "VARCHAR(36) NULL"),
+        ("tentaizu_scores",  "guest_token", "VARCHAR(36) NULL"),
+        ("replay_scores",    "guest_token", "VARCHAR(36) NULL"),
+    ]
+    with engine.connect() as conn:
+        for table, column, col_def in migrations:
+            exists = conn.execute(
+                text(
+                    "SELECT COUNT(*) FROM information_schema.columns "
+                    "WHERE table_schema = DATABASE() "
+                    "AND table_name = :tbl AND column_name = :col"
+                ),
+                {"tbl": table, "col": column},
+            ).scalar()
+            if not exists:
+                conn.execute(text(f"ALTER TABLE `{table}` ADD COLUMN `{column}` {col_def}"))
+                conn.commit()
