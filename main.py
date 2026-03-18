@@ -766,7 +766,7 @@ def get_cylinder_scores(cyl_mode: str, db: Session = Depends(get_db)):
     top = (
         db.query(CylinderScore)
         .filter(CylinderScore.cyl_mode == cyl_mode)
-        .order_by(CylinderScore.time_secs.asc(), CylinderScore.time_ms.asc().nullslast(), CylinderScore.created_at.asc())
+        .order_by(CylinderScore.time_secs.asc(), CylinderScore.time_ms.asc(), CylinderScore.created_at.asc())
         .limit(15)
         .all()
     )
@@ -886,7 +886,7 @@ def get_toroid_scores(tor_mode: str, db: Session = Depends(get_db)):
     top = (
         db.query(ToroidScore)
         .filter(ToroidScore.tor_mode == tor_mode)
-        .order_by(ToroidScore.time_secs.asc(), ToroidScore.time_ms.asc().nullslast(), ToroidScore.created_at.asc())
+        .order_by(ToroidScore.time_secs.asc(), ToroidScore.time_ms.asc(), ToroidScore.created_at.asc())
         .limit(15)
         .all()
     )
