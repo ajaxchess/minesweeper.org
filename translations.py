@@ -1,4 +1,4 @@
-"""UI string translations for EN, EO, DE, ES, TH, PGL, UK, FR, KO, JA, ZH, ZH-HANT."""
+"""UI string translations for EN, EO, DE, ES, TH, PGL, UK, FR, KO, JA, ZH, ZH-HANT, PL."""
 
 TRANSLATIONS: dict[str, dict[str, str]] = {
     "en": {
@@ -1419,6 +1419,123 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "❌ 無法儲存分數。",
         "rush_sign_in":           "登入以跳過此步驟",
         "rush_lb_loading":        "載入中…",
+    },
+    "pl": {
+        # Nav
+        "nav_beginner":     "Początkujący",
+        "nav_intermediate": "Średni",
+        "nav_expert":       "Ekspert",
+        "nav_custom":       "Własny",
+        "nav_leaderboard":  "Ranking",
+        "nav_duel":         "Pojedynek",
+        "nav_pvp":          "PvP",
+        "nav_tentaizu":     "Tentaizu",
+        "nav_rush":         "Rush",
+        "nav_variants":     "Warianty",
+        "nav_quests":       "Zadania",
+        "nav_how_to_play":  "Jak grać",
+        # Auth
+        "auth_sign_out":      "Wyloguj",
+        "auth_sign_in":       "Zaloguj przez Google",
+        "auth_view_profile":  "Zobacz profil",
+        # Game board
+        "game_left_click":    "Lewy przycisk",
+        "game_to_reveal":     "odkrywa pole",
+        "game_right_click":   "Prawy przycisk",
+        "game_to_flag":       "oznacza minę",
+        "game_to_flag_local": "oznacza minę (tylko lokalnie)",
+        "game_to_reset":      "resetuje grę",
+        "game_new_game":      "Nowa gra",
+        # Custom form
+        "custom_rows":  "Wiersze",
+        "custom_cols":  "Kolumny",
+        "custom_mines": "Miny",
+        "custom_start": "Start",
+        # Duel page
+        "duel_you":       "Ty",
+        "duel_opponent":  "Przeciwnik",
+        "duel_share":     "Udostępnij ten link przeciwnikowi:",
+        "duel_copy":      "Kopiuj",
+        "duel_start_btn": "▶ Rozpocznij grę",
+        "duel_scoring":   "Zasady punktacji:",
+        "duel_scoring_body": (
+            "Wynik obliczany jest przyznając <strong>5 punktów za każde odkryte pole</strong>, "
+            "plus bonus czasowy. Bonus czasowy obliczany jest wzorem "
+            "<code>(300 &minus; sekundy) &times; procentOdkrytych</code> "
+            "i nigdy nie spada poniżej 0."
+        ),
+        # Leaderboard
+        "lb_title":           "🏆 Ranking",
+        "lb_col_rank":        "#",
+        "lb_col_name":        "Nazwa",
+        "lb_col_time":        "Czas",
+        "lb_col_board":       "Plansza",
+        "lb_col_mines":       "Miny",
+        "lb_col_date":        "Data",
+        "lb_loading":         "Ładowanie…",
+        "lb_no_scores":       "Brak wyników — bądź pierwszy!",
+        "lb_error":           "⚠️ Nie można załadować wyników.",
+        "lb_top_prefix":      "Top",
+        "lb_top_suffix_one":  "raz",
+        "lb_top_suffix_many": "razy",
+        "lb_play_beginner":     "← Graj (Początkujący)",
+        "lb_play_intermediate": "Graj (Średni)",
+        "lb_play_expert":       "Graj (Ekspert)",
+        "lb_play_custom":       "Graj (Własny)",
+        # Profile
+        "profile_recent_games": "Ostatnie gry",
+        "profile_loading":      "Ładowanie…",
+        "profile_games":        "Gry",
+        "profile_best":         "Najlepszy",
+        "profile_avg":          "Średnia",
+        "profile_worst":        "Najgorszy",
+        "profile_no_games":     "Brak gier",
+        "profile_play_now":     "Zagraj teraz →",
+        "profile_no_recent":    "Brak zapisanych gier.",
+        # Help
+        "help_title": "Jak grać w Sapera",
+        # Footer
+        "footer": "Stworzone przez <a href=\"https://regis.consulting\">Regis Consulting</a> w Pythonie &amp; FastAPI",
+        # Language switcher
+        "lang_other": "pl",
+        "lang_label": "PL — Polski",
+        # Rush mode
+        "rush_easy":              "Łatwy",
+        "rush_normal":            "Normalny",
+        "rush_hard":              "Trudny",
+        "rush_speed":             "Prędkość",
+        "rush_active_rows":       "Aktywne wiersze",
+        "rush_max":               "Maks.",
+        "rush_cleared":           "Wyczyszczone",
+        "rush_no_safe":           "⚠️ Brak bezpiecznego ruchu — zgadywanie bez kary",
+        "rush_salvage_suffix":    "żeton(y) ratunkowy(e) — kliknij 🔥 na dolnym wybuchu",
+        "rush_instr_left":        "Lewy przycisk",
+        "rush_instr_reveal":      "odkrywa pole",
+        "rush_instr_right":       "Prawy przycisk",
+        "rush_instr_flag":        "oznacza miny",
+        "rush_instr_clear":       "Oznacz wszystkie miny w wierszu, aby go <strong>wyczyścić</strong>",
+        "rush_instr_penalty":     "Trafienie miny dodaje <strong>+2 wiersze</strong>",
+        "rush_flash_no_penalty":  "Bez kary!",
+        "rush_flash_rows":        "+2 wiersze!",
+        "rush_flash_salvage":     "🔥 Żeton ratunkowy!",
+        "rush_btn_salvage_title": "Użyj żetonu ratunkowego — usuń ten wybuchły wiersz",
+        "rush_btn_flag":          "Oznacz",
+        "rush_btn_drop":          "Usuń wiersz",
+        "rush_btn_no_mines":      "Brak min — kliknij, aby wyczyścić wiersz",
+        "rush_btn_all_flagged":   "Wszystkie miny oznaczone — kliknij, aby wyczyścić wiersz",
+        "rush_game_over":         "💥 Koniec gry",
+        "rush_mines_cleared":     "Wyczyszczone miny:",
+        "rush_rows_cleared":      "Wyczyszczone wiersze:",
+        "rush_time":              "Czas:",
+        "rush_score":             "Wynik:",
+        "rush_saving":            "Zapisywanie wyniku…",
+        "rush_name_placeholder":  "Wpisz swoje imię",
+        "rush_save_score":        "Zapisz wynik",
+        "rush_play_again":        "Zagraj ponownie",
+        "rush_saved_for":         "✅ Wynik zapisany dla",
+        "rush_save_failed":       "❌ Nie można zapisać wyniku.",
+        "rush_sign_in":           "Zaloguj się, aby pominąć ten krok",
+        "rush_lb_loading":        "Ładowanie…",
     },
 }
 
