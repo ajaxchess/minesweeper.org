@@ -94,7 +94,7 @@
     <!-- Leaderboard -->
     <div class="tz-lb-section" style="width:100%;max-width:600px">
       {% set mode_label = {'cylinder-beginner': 'Easy', 'cylinder-intermediate': 'Medium', 'cylinder-expert': 'Hard', 'cylinder-custom': 'Custom'}[mode] %}
-      <div class="tz-lb-title">🏆 Best Times — {{ mode_label }}</div>
+      <div class="tz-lb-title" id="cyl-lb-title">🏆 Today's Best — {{ mode_label }}</div>
       <div id="cyl-lb-content">
         <div class="lb-loading">Loading…</div>
       </div>

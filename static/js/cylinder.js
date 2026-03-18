@@ -339,7 +339,7 @@
         if (nameEl) nameEl.disabled = true;
         const saveBtn = document.querySelector('#cyl-score-form button');
         if (saveBtn) saveBtn.disabled = true;
-        loadLeaderboard(cylMode);
+        loadLeaderboard(cylMode, state.noGuess);
       } else {
         const err = await res.json();
         if (msgEl) msgEl.textContent = `❌ ${err.detail || 'Could not save score.'}`;
@@ -361,12 +361,19 @@
   }
 
   // ── Leaderboard ────────────────────────────────────────────────────────────
-  async function loadLeaderboard(cylMode) {
-    const el = document.getElementById('cyl-lb-content');
+  const CYL_MODE_LABELS = { easy: 'Easy', intermediate: 'Medium', expert: 'Hard', custom: 'Custom' };
+
+  async function loadLeaderboard(cylMode, noGuess = false) {
+    const el      = document.getElementById('cyl-lb-content');
+    const titleEl = document.getElementById('cyl-lb-title');
     if (!el) return;
+    if (titleEl) {
+      const label = CYL_MODE_LABELS[cylMode] || cylMode;
+      titleEl.textContent = `🏆 Today's Best — ${noGuess ? '⚡ No-Guess ' : ''}${label}`;
+    }
     el.innerHTML = '<div class="lb-loading">Loading…</div>';
     try {
-      const res  = await fetch(`/api/cylinder-scores/${cylMode}`);
+      const res  = await fetch(`/api/cylinder-scores/${cylMode}?no_guess=${noGuess}&period=daily`);
       const data = await res.json();
       if (!data.length) {
         el.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
@@ -546,6 +553,8 @@
     const newVal = !state.noGuess;
     localStorage.setItem('cylNoGuess', newVal);
     initGame(state.rows, state.cols, state.mines, newVal, state.chording);
+    const board = document.getElementById('board');
+    loadLeaderboard(cylModeKey(board.dataset.mode), newVal);
   }
 
   function updateNoGuessUI(active) {
@@ -578,7 +587,7 @@
     document.getElementById('reset-btn').addEventListener('click', resetGame);
 
     // Load leaderboard on page open
-    loadLeaderboard(cylModeKey(board.dataset.mode));
+    loadLeaderboard(cylModeKey(board.dataset.mode), noGuess);
   });
 
 })();
