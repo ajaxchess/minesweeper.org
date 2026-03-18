@@ -675,7 +675,7 @@ footer a:hover { text-decoration: underline; }
 
 /* ── Auth area ────────────────────────────────────────────────────────────── */
 .lb-wrapper {
-  max-width: 780px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 1.5rem 1rem;
   display: flex;
@@ -813,7 +813,7 @@ footer a:hover { text-decoration: underline; }
   background: var(--surface);
   border-radius: var(--radius);
   border: 2px solid var(--surface2);
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .lb-table, .help-table {
