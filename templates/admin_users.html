@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Admin — Registered Users{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper" style="max-width:1100px">
+
+  <h1 class="lb-title">Registered Users</h1>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">{{ users|length }} users · ranked by total games</p>
+  <p style="text-align:center;margin-bottom:1.5rem;"><a href="/admin">← Admin Dashboard</a></p>
+
+  <div class="lb-table-wrap">
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Joined</th>
+          <th title="Classic games played (GameHistory)">Classic</th>
+          <th title="Classic scores submitted">Scores</th>
+          <th title="Rush scores">Rush</th>
+          <th title="Cylinder scores">Cyl</th>
+          <th title="Toroid scores">Tor</th>
+          <th title="Tentaizu scores">Tent</th>
+          <th title="Replay scores">Replay</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr class="{{ 'top-1' if loop.index == 1 else 'top-2' if loop.index == 2 else 'top-3' if loop.index == 3 else '' }}">
+          <td class="lb-rank">{{ loop.index }}</td>
+          <td class="lb-name">
+            {% if u.vanity_slug %}
+              <a href="/u/{{ u.vanity_slug }}">{{ u.display_name }}</a>
+            {% elif u.public_id %}
+              <a href="/profile/{{ u.public_id }}">{{ u.display_name }}</a>
+            {% else %}
+              {{ u.display_name }}
+            {% endif %}
+          </td>
+          <td style="font-size:0.8rem;opacity:0.75">{{ u.email }}</td>
+          <td class="lb-date">{{ u.created_at.strftime('%Y-%m-%d') if u.created_at else '—' }}</td>
+          <td class="lb-stat">{{ u.classic_games }}</td>
+          <td class="lb-stat">{{ u.classic_scores }}</td>
+          <td class="lb-stat">{{ u.rush_scores }}</td>
+          <td class="lb-stat">{{ u.cyl_scores }}</td>
+          <td class="lb-stat">{{ u.tor_scores }}</td>
+          <td class="lb-stat">{{ u.tent_scores }}</td>
+          <td class="lb-stat">{{ u.replay_scores }}</td>
+          <td class="lb-stat"><strong>{{ u.total_games }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

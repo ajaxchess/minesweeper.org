@@ -1794,6 +1794,46 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     })
 
 
+@app.get("/admin/users", response_class=HTMLResponse)
+def admin_users(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    from sqlalchemy import text
+    rows = db.execute(text("""
+        SELECT
+            u.email, u.display_name, u.public_id, u.vanity_slug, u.created_at,
+            COALESCE(gh.cnt,   0) AS classic_games,
+            COALESCE(s.cnt,    0) AS classic_scores,
+            COALESCE(r.cnt,    0) AS rush_scores,
+            COALESCE(c.cnt,    0) AS cyl_scores,
+            COALESCE(t.cnt,    0) AS tor_scores,
+            COALESCE(tent.cnt, 0) AS tent_scores,
+            COALESCE(rp.cnt,   0) AS replay_scores,
+            COALESCE(gh.cnt,   0) + COALESCE(s.cnt,    0) + COALESCE(r.cnt,  0) +
+            COALESCE(c.cnt,    0) + COALESCE(t.cnt,    0) + COALESCE(tent.cnt,0) +
+            COALESCE(rp.cnt,   0) AS total_games
+        FROM user_profiles u
+        LEFT JOIN (SELECT user_email, COUNT(*) cnt FROM game_history     GROUP BY user_email) gh   ON gh.user_email   = u.email
+        LEFT JOIN (SELECT user_email, COUNT(*) cnt FROM scores            GROUP BY user_email) s    ON s.user_email    = u.email
+        LEFT JOIN (SELECT user_email, COUNT(*) cnt FROM rush_scores       GROUP BY user_email) r    ON r.user_email    = u.email
+        LEFT JOIN (SELECT user_email, COUNT(*) cnt FROM cylinder_scores   GROUP BY user_email) c    ON c.user_email    = u.email
+        LEFT JOIN (SELECT user_email, COUNT(*) cnt FROM toroid_scores     GROUP BY user_email) t    ON t.user_email    = u.email
+        LEFT JOIN (SELECT user_email, COUNT(*) cnt FROM tentaizu_scores   GROUP BY user_email) tent ON tent.user_email = u.email
+        LEFT JOIN (SELECT user_email, COUNT(*) cnt FROM replay_scores     GROUP BY user_email) rp   ON rp.user_email   = u.email
+        ORDER BY total_games DESC
+    """)).fetchall()
+
+    return templates.TemplateResponse("admin_users.html", {
+        "request": request,
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        "users": rows,
+    })
+
+
 def _fmt_bytes(n: int) -> str:
     """Return a human-readable byte size string."""
     for unit in ("B", "KB", "MB", "GB", "TB"):
