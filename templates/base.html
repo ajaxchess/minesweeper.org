@@ -220,12 +220,20 @@
   <script>
   function togglePvpMenu(e) {
     e.stopPropagation();
-    const group = e.currentTarget.closest('.nav-pvp-group');
+    const group  = e.currentTarget.closest('.nav-pvp-group');
+    const isOpen = group.classList.contains('open');
     group.classList.toggle('open');
+    // In dark theme: position the fixed menu under the button
+    if (!isOpen && document.documentElement.dataset.skin !== 'classic') {
+      const btn  = group.querySelector('.nav-pvp-toggle');
+      const menu = group.querySelector('.nav-pvp-menu');
+      const rect = btn.getBoundingClientRect();
+      menu.style.top  = rect.bottom + 4 + 'px';
+      menu.style.left = rect.left + 'px';
+    }
   }
   document.addEventListener('click', function() {
     document.querySelectorAll('.nav-pvp-group.open').forEach(function(g) {
-      // keep open in classic skin (sidebar) so user can navigate
       if (document.documentElement.dataset.skin !== 'classic') {
         g.classList.remove('open');
       }

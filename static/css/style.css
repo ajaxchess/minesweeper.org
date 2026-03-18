@@ -3717,7 +3717,6 @@ html[data-skin="classic"] nav a:visited { color: #ffffff; font-weight: 700; text
 
 /* ── PvP nav dropdown (dark theme) ──────────────────────────────────────── */
 .nav-pvp-group {
-  position: relative;
   display: flex;
   align-items: center;
 }
@@ -3740,14 +3739,14 @@ html[data-skin="classic"] nav a:visited { color: #ffffff; font-weight: 700; text
 
 .nav-pvp-menu {
   display: none;
-  position: absolute;
-  top: calc(100% + 4px);
+  position: fixed;
+  top: 0;
   left: 0;
   background: var(--surface);
   border: 1px solid var(--surface2);
   border-radius: var(--radius);
   min-width: 170px;
-  z-index: 200;
+  z-index: 1000;
   flex-direction: column;
   padding: 0.25rem 0;
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);
