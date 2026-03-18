@@ -9,7 +9,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import func, case
+from sqlalchemy import func, case, text
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -20,6 +20,7 @@ from auth import oauth, get_current_user, set_session_user, clear_session, SECRE
 from starlette.config import Config
 from translations import get_lang, get_t
 import logging
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,16 @@ async def not_found_handler(request: Request, exc):
          "user": get_current_user(request),
          "lang": get_lang(request), "t": get_t(request)},
         status_code=404,
+    )
+
+@app.exception_handler(403)
+async def forbidden_handler(request: Request, exc):
+    return templates.TemplateResponse(
+        "403.html",
+        {"request": request, "mode": "403",
+         "user": get_current_user(request),
+         "lang": get_lang(request), "t": get_t(request)},
+        status_code=403,
     )
 
 # ── SEO: robots.txt and sitemap ───────────────────────────────────────────────
@@ -1607,4 +1618,79 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         "cyl_all": cyl_all,
         "tor_today": tor_today,
         "tor_all": tor_all,
+    })
+
+
+def _fmt_bytes(n: int) -> str:
+    """Return a human-readable byte size string."""
+    for unit in ("B", "KB", "MB", "GB", "TB"):
+        if n < 1024:
+            return f"{n:.1f} {unit}"
+        n /= 1024
+    return f"{n:.1f} PB"
+
+
+@app.get("/admin/operations", response_class=HTMLResponse)
+def admin_operations(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # ── Server stats ──────────────────────────────────────────────────────────
+    disk = psutil.disk_usage("/")
+    cpu_percent = psutil.cpu_percent(interval=0.5)
+    mem = psutil.virtual_memory()
+
+    # ── Application stats ─────────────────────────────────────────────────────
+    table_counts = {
+        "Score (leaderboard)":    db.query(func.count()).select_from(Score).scalar(),
+        "GameHistory":            db.query(func.count()).select_from(GameHistory).scalar(),
+        "RushScore":              db.query(func.count()).select_from(RushScore).scalar(),
+        "TentaizuScore":          db.query(func.count()).select_from(TentaizuScore).scalar(),
+        "TentaizuEasyScore":      db.query(func.count()).select_from(TentaizuEasyScore).scalar(),
+        "CylinderScore":          db.query(func.count()).select_from(CylinderScore).scalar(),
+        "ToroidScore":            db.query(func.count()).select_from(ToroidScore).scalar(),
+        "PvpResult":              db.query(func.count()).select_from(PvpResult).scalar(),
+        "UserProfile":            db.query(func.count()).select_from(UserProfile).scalar(),
+    }
+    total_records = sum(table_counts.values())
+
+    db_size_bytes = db.execute(
+        text("SELECT SUM(data_length + index_length) "
+             "FROM information_schema.tables WHERE table_schema = DATABASE()")
+    ).scalar() or 0
+
+    # ── Network stats ─────────────────────────────────────────────────────────
+    net = psutil.net_io_counters()
+    try:
+        conns = psutil.net_connections(kind="tcp")
+        active_connections = sum(1 for c in conns if c.status == "ESTABLISHED")
+    except (psutil.AccessDenied, PermissionError):
+        active_connections = None
+
+    return templates.TemplateResponse("admin_operations.html", {
+        "request": request,
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        # server
+        "disk_total":    _fmt_bytes(disk.total),
+        "disk_used":     _fmt_bytes(disk.used),
+        "disk_free":     _fmt_bytes(disk.free),
+        "disk_percent":  disk.percent,
+        "cpu_percent":   cpu_percent,
+        "mem_total":     _fmt_bytes(mem.total),
+        "mem_used":      _fmt_bytes(mem.used),
+        "mem_free":      _fmt_bytes(mem.available),
+        "mem_percent":   mem.percent,
+        # app
+        "table_counts":   table_counts,
+        "total_records":  total_records,
+        "db_size":        _fmt_bytes(db_size_bytes),
+        # network
+        "net_bytes_sent":    _fmt_bytes(net.bytes_sent),
+        "net_bytes_recv":    _fmt_bytes(net.bytes_recv),
+        "net_packets_sent":  f"{net.packets_sent:,}",
+        "net_packets_recv":  f"{net.packets_recv:,}",
+        "active_connections": active_connections,
     })
