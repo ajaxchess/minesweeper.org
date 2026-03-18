@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found | minesweeper.org{% endblock %}
+{% block description %}The page you're looking for doesn't exist. Head back to minesweeper.org and play some minesweeper.{% endblock %}
+{% block canonical %}https://minesweeper.org/{% endblock %}
+
+{% block content %}
+<div class="notfound-wrap">
+  <div class="notfound-board" aria-hidden="true">
+    <div class="nf-cell nf-revealed">4</div>
+    <div class="nf-cell nf-mine">💣</div>
+    <div class="nf-cell nf-revealed">4</div>
+  </div>
+  <h1 class="notfound-title">Page not found</h1>
+  <p class="notfound-sub">Looks like you've clicked on a mine. This page doesn't exist.</p>
+  <div class="notfound-links">
+    <a href="/" class="notfound-btn">Play Minesweeper</a>
+    <a href="/leaderboard" class="notfound-btn notfound-btn--secondary">Leaderboard</a>
+  </div>
+</div>
+{% endblock %}

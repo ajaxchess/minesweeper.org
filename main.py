@@ -48,6 +48,16 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals["ga_tag"] = Config(".env")("GA_TAG", default="")
 
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exc):
+    return templates.TemplateResponse(
+        "404.html",
+        {"request": request, "mode": "404",
+         "user": get_current_user(request),
+         "lang": get_lang(request), "t": get_t(request)},
+        status_code=404,
+    )
+
 # ── SEO: robots.txt and sitemap ───────────────────────────────────────────────
 @app.get("/robots.txt", include_in_schema=False)
 async def robots():
