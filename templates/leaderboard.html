@@ -101,25 +101,25 @@ const PERIOD_NOTES = {
   alltime: 'All-time records — best score per player.',
 };
 
-// Modes per game variant
+// Modes per game variant (labels inlined from server-side translations)
 const GAME_MODES = {
   classic:  [
-    { mode: 'beginner',     label: window.T.nav_beginner },
-    { mode: 'intermediate', label: window.T.nav_intermediate },
-    { mode: 'expert',       label: window.T.nav_expert },
-    { mode: 'custom',       label: window.T.nav_custom },
+    { mode: 'beginner',     label: {{ t.nav_beginner | tojson }} },
+    { mode: 'intermediate', label: {{ t.nav_intermediate | tojson }} },
+    { mode: 'expert',       label: {{ t.nav_expert | tojson }} },
+    { mode: 'custom',       label: {{ t.nav_custom | tojson }} },
   ],
   cylinder: [
     { mode: 'easy',         label: 'Easy' },
-    { mode: 'intermediate', label: window.T.nav_intermediate },
-    { mode: 'expert',       label: window.T.nav_expert },
-    { mode: 'custom',       label: window.T.nav_custom },
+    { mode: 'intermediate', label: {{ t.nav_intermediate | tojson }} },
+    { mode: 'expert',       label: {{ t.nav_expert | tojson }} },
+    { mode: 'custom',       label: {{ t.nav_custom | tojson }} },
   ],
   toroid: [
     { mode: 'easy',         label: 'Easy' },
-    { mode: 'intermediate', label: window.T.nav_intermediate },
-    { mode: 'expert',       label: window.T.nav_expert },
-    { mode: 'custom',       label: window.T.nav_custom },
+    { mode: 'intermediate', label: {{ t.nav_intermediate | tojson }} },
+    { mode: 'expert',       label: {{ t.nav_expert | tojson }} },
+    { mode: 'custom',       label: {{ t.nav_custom | tojson }} },
   ],
 };
 
@@ -136,10 +136,10 @@ const GAME_DEFAULT_PERIOD = {
 };
 
 const GAME_BACK_LINKS = {
-  classic: `<a href="/">${window.T.lb_play_beginner}</a>
-            <a href="/intermediate">${window.T.lb_play_intermediate}</a>
-            <a href="/expert">${window.T.lb_play_expert}</a>
-            <a href="/custom">${window.T.lb_play_custom}</a>`,
+  classic: `<a href="/">{{ t.lb_play_beginner }}</a>
+            <a href="/intermediate">{{ t.lb_play_intermediate }}</a>
+            <a href="/expert">{{ t.lb_play_expert }}</a>
+            <a href="/custom">{{ t.lb_play_custom }}</a>`,
   cylinder: `<a href="/cylinder">Play Cylinder</a>
              <a href="/cylinder/intermediate">Cylinder Intermediate</a>
              <a href="/cylinder/expert">Cylinder Expert</a>
