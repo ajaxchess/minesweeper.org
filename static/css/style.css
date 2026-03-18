@@ -3869,6 +3869,112 @@ html[data-skin="classic"] .nav-pvp-menu a.active { background: #c0c0c0; color: #
   font-size: 0.8rem;
 }
 
+/* ── Replay setup form ───────────────────────────────────────────────────── */
+.replay-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: center;
+  background: var(--surface);
+  border: 2px solid var(--surface2);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto 0.5rem;
+}
+
+.replay-preset-btns {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.replay-preset-btn {
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius);
+  border: 2px solid var(--surface2);
+  background: none;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.replay-preset-btn:hover  { border-color: var(--accent2); color: var(--text); }
+.replay-preset-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+.replay-setup-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.replay-setup-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.replay-setup-label input[type="number"] {
+  width: 4rem;
+  padding: 0.25rem 0.4rem;
+  border-radius: var(--radius);
+  border: 2px solid var(--surface2);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.replay-hash-row {
+  display: flex;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.replay-hash-input {
+  flex: 1;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius);
+  border: 2px solid var(--surface2);
+  background: var(--surface2);
+  color: var(--text);
+  font-family: monospace;
+  font-size: 0.8rem;
+  min-width: 0;
+}
+
+.replay-regen-btn {
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius);
+  border: 2px solid var(--surface2);
+  background: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  transition: border-color 0.15s;
+}
+.replay-regen-btn:hover { border-color: var(--accent2); }
+
+.replay-play-btn {
+  padding: 0.45rem 1.4rem;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.replay-play-btn:hover { opacity: 0.85; }
+
 .replay-lb-note {
   margin: 1rem auto 0.5rem;
   max-width: 600px;

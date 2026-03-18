@@ -562,6 +562,43 @@
     }
   }
 
+  // ── Setup form helpers ─────────────────────────────────────────────────────
+  function generateHash(rows, cols, mines) {
+    const safeR = Math.floor(rows / 2), safeC = Math.floor(cols / 2);
+    const { mineSet } = placeMines(rows, cols, mines, safeR, safeC);
+    return calcBoardHash(rows, cols, mineSet);
+  }
+
+  function navigateToBoard() {
+    const rows  = parseInt(document.getElementById('setup-rows').value)  || ROWS;
+    const cols  = parseInt(document.getElementById('setup-cols').value)  || COLS;
+    const mines = parseInt(document.getElementById('setup-mines').value) || MINES;
+    const hash  = document.getElementById('setup-hash').value.trim();
+    if (!hash) return;
+    const p = new URLSearchParams({ rows, cols, mines, hash });
+    window.location.href = '/variants/replay/?' + p.toString();
+  }
+
+  function populateSetupForm(rows, cols, mines, hash) {
+    const r = document.getElementById('setup-rows');
+    const c = document.getElementById('setup-cols');
+    const m = document.getElementById('setup-mines');
+    const h = document.getElementById('setup-hash');
+    if (r) r.value = rows;
+    if (c) c.value = cols;
+    if (m) m.value = mines;
+    if (h) h.value = hash;
+
+    // Highlight matching preset button
+    document.querySelectorAll('.replay-preset-btn').forEach(btn => {
+      btn.classList.toggle('active',
+        parseInt(btn.dataset.rows)  === rows &&
+        parseInt(btn.dataset.cols)  === cols &&
+        parseInt(btn.dataset.mines) === mines
+      );
+    });
+  }
+
   // ── Expose to window ───────────────────────────────────────────────────────
   window.replayResetGame   = () => initGame(currentVariant);
   window.replaySubmitScore = submitScore;
@@ -571,25 +608,60 @@
     const board = document.getElementById('board');
     if (!board || board.dataset.mode !== 'replay') return;
 
+    // Determine hash to use — generate one if not supplied
+    let activeHash = HASH;
+    if (!activeHash) {
+      activeHash = generateHash(ROWS, COLS, MINES);
+      // Update the URL so the page is immediately shareable
+      const newParams = new URLSearchParams(params);
+      newParams.set('hash', activeHash);
+      history.replaceState(null, '', '/variants/replay/?' + newParams.toString());
+    }
+
+    // Populate the setup form with current values
+    populateSetupForm(ROWS, COLS, MINES, activeHash);
+
+    // Preset buttons
+    document.querySelectorAll('.replay-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const r = parseInt(btn.dataset.rows);
+        const c = parseInt(btn.dataset.cols);
+        const m = parseInt(btn.dataset.mines);
+        populateSetupForm(r, c, m, generateHash(r, c, m));
+      });
+    });
+
+    // Re-generate hash when dimensions change
+    ['setup-rows', 'setup-cols', 'setup-mines'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', () => {
+        const r = parseInt(document.getElementById('setup-rows').value)  || 9;
+        const c = parseInt(document.getElementById('setup-cols').value)  || 9;
+        const m = parseInt(document.getElementById('setup-mines').value) || 10;
+        document.getElementById('setup-hash').value = generateHash(r, c, m);
+        document.querySelectorAll('.replay-preset-btn').forEach(b => b.classList.remove('active'));
+      });
+    });
+
+    // 🎲 randomise button
+    document.getElementById('regen-hash-btn')?.addEventListener('click', () => {
+      const r = parseInt(document.getElementById('setup-rows').value)  || ROWS;
+      const c = parseInt(document.getElementById('setup-cols').value)  || COLS;
+      const m = parseInt(document.getElementById('setup-mines').value) || MINES;
+      document.getElementById('setup-hash').value = generateHash(r, c, m);
+    });
+
+    // Play button & Enter key in hash field
+    document.getElementById('play-board-btn')?.addEventListener('click', navigateToBoard);
+    document.getElementById('setup-hash')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') navigateToBoard();
+    });
+
     // Variant tabs
     document.querySelectorAll('.replay-variant-tab').forEach(btn => {
       btn.addEventListener('click', () => initGame(btn.dataset.variant));
     });
 
     document.getElementById('reset-btn')?.addEventListener('click', () => initGame(currentVariant));
-
-    if (!HASH) {
-      // No hash supplied — generate a random board and update the URL so it's shareable
-      const safeR = Math.floor(ROWS / 2), safeC = Math.floor(COLS / 2);
-      const { mineSet } = placeMines(ROWS, COLS, MINES, safeR, safeC);
-      const generated  = calcBoardHash(ROWS, COLS, mineSet);
-      const newParams  = new URLSearchParams(params);
-      newParams.set('hash', generated);
-      history.replaceState(null, '', '/variants/replay/?' + newParams.toString());
-      // Reload so HASH constant picks up the new value
-      location.reload();
-      return;
-    }
 
     initGame(INIT_VARIANT);
   });

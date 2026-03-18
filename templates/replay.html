@@ -65,6 +65,25 @@
       </div>
     </div>
 
+    <!-- Board setup form -->
+    <div class="replay-setup">
+      <div class="replay-preset-btns">
+        <button class="replay-preset-btn" data-rows="9"  data-cols="9"  data-mines="10">Beginner</button>
+        <button class="replay-preset-btn" data-rows="16" data-cols="16" data-mines="40">Intermediate</button>
+        <button class="replay-preset-btn" data-rows="16" data-cols="30" data-mines="99">Expert</button>
+      </div>
+      <div class="replay-setup-row">
+        <label class="replay-setup-label">Rows <input  type="number" id="setup-rows"  min="5" max="30"  value="9"></label>
+        <label class="replay-setup-label">Cols <input  type="number" id="setup-cols"  min="5" max="50"  value="9"></label>
+        <label class="replay-setup-label">Mines <input type="number" id="setup-mines" min="1" max="999" value="10"></label>
+      </div>
+      <div class="replay-hash-row">
+        <input type="text" id="setup-hash" class="replay-hash-input" placeholder="Board hash (Base64)" spellcheck="false" autocomplete="off">
+        <button id="regen-hash-btn" class="replay-regen-btn" title="Generate a new random board">🎲</button>
+      </div>
+      <button id="play-board-btn" class="replay-play-btn">▶ Play Board</button>
+    </div>
+
     <!-- Topology wrap label -->
     <div id="replay-wrap-label" class="cylinder-wrap-label" style="min-height:1.2em"></div>
 
