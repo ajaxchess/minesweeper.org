@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Operations — minesweeper.org{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">Operations</h1>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">signed in as {{ user.email }}</p>
+  <p style="text-align:center;margin-bottom:1.5rem;"><a href="/admin">← Admin Dashboard</a></p>
+
+  <!-- Server Statistics -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Server Statistics</h2>
+    <table class="lb-table">
+      <thead><tr><th>Metric</th><th>Value</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>CPU Usage</td>
+          <td>{{ cpu_percent }}%</td>
+          <td>
+            <div style="background:var(--border);border-radius:4px;height:8px;width:120px;display:inline-block;vertical-align:middle;">
+              <div style="background:var(--accent2);border-radius:4px;height:8px;width:{{ cpu_percent }}%;max-width:100%;"></div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>Memory Used</td>
+          <td>{{ mem_used }} / {{ mem_total }}</td>
+          <td>
+            <div style="background:var(--border);border-radius:4px;height:8px;width:120px;display:inline-block;vertical-align:middle;">
+              <div style="background:var(--accent2);border-radius:4px;height:8px;width:{{ mem_percent }}%;max-width:100%;"></div>
+            </div>
+            {{ mem_percent }}% · {{ mem_free }} free
+          </td>
+        </tr>
+        <tr>
+          <td>Disk Used</td>
+          <td>{{ disk_used }} / {{ disk_total }}</td>
+          <td>
+            <div style="background:var(--border);border-radius:4px;height:8px;width:120px;display:inline-block;vertical-align:middle;">
+              <div style="background:{% if disk_percent > 85 %}var(--danger,#e55){% else %}var(--accent2){% endif %};border-radius:4px;height:8px;width:{{ disk_percent }}%;max-width:100%;"></div>
+            </div>
+            {{ disk_percent }}% · {{ disk_free }} free
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Application Statistics -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Application Statistics</h2>
+    <table class="lb-table">
+      <thead><tr><th>Table</th><th>Records</th></tr></thead>
+      <tbody>
+        {% for table, count in table_counts.items() %}
+        <tr>
+          <td>{{ table }}</td>
+          <td>{{ "{:,}".format(count) }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="admin-total">
+          <td><strong>Total Records</strong></td>
+          <td><strong>{{ "{:,}".format(total_records) }}</strong></td>
+        </tr>
+        <tr>
+          <td>Database Size</td>
+          <td>{{ db_size }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Network Statistics -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Network Statistics</h2>
+    <table class="lb-table">
+      <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Bytes Received (since boot)</td>
+          <td>{{ net_bytes_recv }}</td>
+        </tr>
+        <tr>
+          <td>Bytes Sent (since boot)</td>
+          <td>{{ net_bytes_sent }}</td>
+        </tr>
+        <tr>
+          <td>Packets Received (since boot)</td>
+          <td>{{ net_packets_recv }}</td>
+        </tr>
+        <tr>
+          <td>Packets Sent (since boot)</td>
+          <td>{{ net_packets_sent }}</td>
+        </tr>
+        <tr>
+          <td>Active TCP Connections</td>
+          <td>{% if active_connections is not none %}{{ active_connections }}{% else %}n/a{% endif %}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="lb-back"><a href="/admin">← Admin Dashboard</a></div>
+
+</div>
+{% endblock %}
