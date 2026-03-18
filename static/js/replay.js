@@ -10,7 +10,7 @@
   const ROWS     = parseInt(params.get('rows'))  || 9;
   const COLS     = parseInt(params.get('cols'))  || 9;
   const MINES    = parseInt(params.get('mines')) || 10;
-  const HASH     = params.get('hash')  || '';
+  let   HASH     = params.get('hash')  || '';
   const ORIG_DATE = params.get('date') || '';
   const ORIG_MODE = params.get('mode') || '';
   const INIT_VARIANT = params.get('game') || 'standard';
@@ -616,17 +616,16 @@
     if (!board || board.dataset.mode !== 'replay') return;
 
     // Determine hash to use — generate one if not supplied
-    let activeHash = HASH;
-    if (!activeHash) {
-      activeHash = generateHash(ROWS, COLS, MINES);
+    if (!HASH) {
+      HASH = generateHash(ROWS, COLS, MINES);
       // Update the URL so the page is immediately shareable
       const newParams = new URLSearchParams(params);
-      newParams.set('hash', activeHash);
+      newParams.set('hash', HASH);
       history.replaceState(null, '', '/variants/replay/?' + newParams.toString());
     }
 
     // Populate the setup form with current values
-    populateSetupForm(ROWS, COLS, MINES, activeHash);
+    populateSetupForm(ROWS, COLS, MINES, HASH);
 
     // Preset buttons
     document.querySelectorAll('.replay-preset-btn').forEach(btn => {
