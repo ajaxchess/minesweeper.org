@@ -515,7 +515,16 @@
     const titleEl = document.getElementById('replay-lb-title');
     if (titleEl) {
       const label = variant === 'cylinder' ? '🔄 Cylinder' : variant === 'toroid' ? '🍩 Toroid' : '🏁 Standard';
-      titleEl.textContent = `🏆 Board High Scores — ${label}`;
+      if (HASH) {
+        const rp = new URLSearchParams({
+          rows: ROWS, cols: COLS, mines: MINES,
+          hash: HASH, game: variant,
+        });
+        const short = HASH.slice(0, 8) + '…';
+        titleEl.innerHTML = `🏆 Board High Scores — ${label} — <a href="/variants/replay/?${rp}" class="lb-replay-link" title="${esc(HASH)}">${esc(short)}</a>`;
+      } else {
+        titleEl.textContent = `🏆 Board High Scores — ${label}`;
+      }
     }
 
     el.innerHTML = '<div class="lb-loading">Loading…</div>';

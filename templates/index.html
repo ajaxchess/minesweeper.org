@@ -110,10 +110,11 @@
             <th class="lb-th-stat" data-tip="3BV per second — speed of completing the game. Higher is better.">3BV/s</th>
             <th class="lb-th-stat" data-tip="Efficiency: 3BV divided by clicks performed. Fewer clicks = higher efficiency.">Eff</th>
             <th>{{ t.lb_col_date }}</th>
+            <th>Board</th>
           </tr>
         </thead>
         <tbody id="page-lb-body">
-          <tr><td colspan="9" class="lb-loading">{{ t.lb_loading }}</td></tr>
+          <tr><td colspan="10" class="lb-loading">{{ t.lb_loading }}</td></tr>
         </tbody>
       </table>
     </div>
@@ -178,20 +179,30 @@ async function loadPageLb() {
   if (title) {
     title.textContent = `🏆 Today's Best — ${noGuess ? '⚡ No-Guess ' : ''}${LB_MODE_LABEL}`;
   }
-  body.innerHTML = `<tr><td colspan="9" class="lb-loading">${window.T.lb_loading}</td></tr>`;
+  body.innerHTML = `<tr><td colspan="10" class="lb-loading">${window.T.lb_loading}</td></tr>`;
 
   try {
     const res  = await fetch(`/api/scores/${LB_MODE}?no_guess=${noGuess}&period=daily`);
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
     if (!Array.isArray(data) || !data.length) {
-      body.innerHTML = `<tr><td colspan="9" class="lb-empty">No scores yet today — be the first!</td></tr>`;
+      body.innerHTML = `<tr><td colspan="10" class="lb-empty">No scores yet today — be the first!</td></tr>`;
       return;
     }
     body.innerHTML = data.map((s, i) => {
       const nameCell = s.profile_url
         ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
         : esc(s.name);
+      let hashCell = '<td class="lb-hash">—</td>';
+      if (s.board_hash) {
+        const rp = new URLSearchParams({
+          rows: s.rows, cols: s.cols, mines: s.mines,
+          hash: s.board_hash, date: s.created_at,
+          mode: LB_MODE, game: 'standard',
+        });
+        const short = s.board_hash.slice(0, 8) + '…';
+        hashCell = `<td class="lb-hash"><a href="/variants/replay/?${rp}" class="lb-replay-link" title="${esc(s.board_hash)}">${short}</a></td>`;
+      }
       return `
         <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
           <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
@@ -203,10 +214,11 @@ async function loadPageLb() {
           <td class="lb-stat">${fmtBbbvS(s)}</td>
           <td class="lb-stat">${fmtEff(s)}</td>
           <td class="lb-date">${s.created_at}</td>
+          ${hashCell}
         </tr>`;
     }).join('');
   } catch {
-    body.innerHTML = `<tr><td colspan="9" class="lb-empty">${window.T.lb_error}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="10" class="lb-empty">${window.T.lb_error}</td></tr>`;
   }
 }
 

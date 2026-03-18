@@ -384,6 +384,16 @@
         const nameCell = s.profile_url
           ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
           : esc(s.name);
+        let hashCell = '<td class="lb-hash">—</td>';
+        if (s.board_hash) {
+          const rp = new URLSearchParams({
+            rows: s.rows, cols: s.cols, mines: s.mines,
+            hash: s.board_hash, date: s.created_at,
+            mode: torMode, game: 'toroid',
+          });
+          const short = s.board_hash.slice(0, 8) + '…';
+          hashCell = `<td class="lb-hash"><a href="/variants/replay/?${rp}" class="lb-replay-link" title="${esc(s.board_hash)}">${short}</a></td>`;
+        }
         return `
         <tr class="${i < 3 ? 'top-' + (i + 1) : ''}">
           <td class="lb-rank">${medals[i] || '#' + (i + 1)}</td>
@@ -395,6 +405,7 @@
           <td class="lb-stat">${fmtBbbvS(s)}</td>
           <td class="lb-stat">${fmtEff(s)}</td>
           <td class="lb-date">${s.created_at}</td>
+          ${hashCell}
         </tr>`;
       }).join('');
       el.innerHTML = `
@@ -406,6 +417,7 @@
               <th class="lb-th-stat" data-tip="3BV per second">3BV/s</th>
               <th class="lb-th-stat" data-tip="Efficiency: 3BV ÷ left+chord clicks">Eff</th>
               <th>Date</th>
+              <th>Board</th>
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>

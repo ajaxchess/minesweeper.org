@@ -3867,6 +3867,8 @@ html[data-skin="classic"] .nav-pvp-menu a.active { background: #c0c0c0; color: #
   cursor: help;
   opacity: 0.6;
   font-size: 0.8rem;
+  text-decoration: none;
+  color: inherit;
 }
 
 /* ── Replay setup form ───────────────────────────────────────────────────── */
