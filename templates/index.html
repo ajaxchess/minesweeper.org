@@ -217,6 +217,13 @@ window.toggleNoGuess = function() {
   loadPageLb();
 };
 
+// Refresh leaderboard after a score is submitted
+const _origSubmitScore = window.submitScore;
+window.submitScore = async function(autoName) {
+  await _origSubmitScore(autoName);
+  loadPageLb();
+};
+
 // Stat column tooltips
 const pageTip = document.getElementById('page-lb-tip');
 document.querySelectorAll('#page-lb-table .lb-th-stat[data-tip]').forEach(th => {
