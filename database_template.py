@@ -4,7 +4,7 @@ CD test
 """
 from sqlalchemy import (
     create_engine, Column, Integer, BigInteger, String, Float,
-    DateTime, Enum, Index, Boolean
+    DateTime, Enum, Index, Boolean, text
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from datetime import datetime, timezone
