@@ -562,8 +562,15 @@
     document.getElementById('reset-btn')?.addEventListener('click', () => initGame(currentVariant));
 
     if (!HASH) {
-      document.getElementById('board').innerHTML =
-        '<div style="padding:2rem;color:#f44">No board hash provided. Invalid replay URL.</div>';
+      // No hash supplied — generate a random board and update the URL so it's shareable
+      const safeR = Math.floor(ROWS / 2), safeC = Math.floor(COLS / 2);
+      const { mineSet } = placeMines(ROWS, COLS, MINES, safeR, safeC);
+      const generated  = calcBoardHash(ROWS, COLS, mineSet);
+      const newParams  = new URLSearchParams(params);
+      newParams.set('hash', generated);
+      history.replaceState(null, '', '/variants/replay/?' + newParams.toString());
+      // Reload so HASH constant picks up the new value
+      location.reload();
       return;
     }
 
