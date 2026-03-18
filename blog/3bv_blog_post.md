@@ -1,5 +1,5 @@
 ---
-title: "We've added 3bv values to Lady Di's Mines"
+title: "We've added 3BV values to Lady Di's Mines"
 publisher: "Lady Di's Mines"
 image: "https://minesweeper.org/static/img/3BV_Example.png" 
 author: "William Murray"
