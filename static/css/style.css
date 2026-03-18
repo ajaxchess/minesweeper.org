@@ -750,6 +750,29 @@ footer a:hover { text-decoration: underline; }
 .lb-ng-btn.active { background: var(--accent2); color: #000; }
 .lb-period-btn.active { background: var(--accent); color: #fff; }
 
+/* Date picker / season dropdown shown below period toggle */
+.lb-sub-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.lb-date-input,
+.lb-season-select {
+  background: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--surface2);
+  border-radius: var(--radius);
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.lb-date-input:focus,
+.lb-season-select:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+
 /* Game variant selector (Classic / Cylinder / Toroid) */
 .lb-game-toggle {
   display: flex;

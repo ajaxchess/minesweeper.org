@@ -39,6 +39,16 @@
     <button class="lb-period-btn"        data-period="alltime">All Time</button>
   </div>
 
+  <div id="lb-date-wrap" class="lb-sub-picker">
+    <label for="lb-date-input">Date:</label>
+    <input type="date" id="lb-date-input" class="lb-date-input">
+  </div>
+
+  <div id="lb-season-wrap" class="lb-sub-picker" style="display:none">
+    <label for="lb-season-select">Season:</label>
+    <select id="lb-season-select" class="lb-season-select"></select>
+  </div>
+
   <div class="lb-meta" id="lb-meta"></div>
   <p class="lb-daily-note" id="lb-period-note">Scores reset daily at midnight UTC — can you top today's board?</p>
 
@@ -82,9 +92,9 @@ const MEDALS = ['🥇','🥈','🥉'];
 
 // Season numbering: Season 1 = March 2026
 const SEASON_ORIGIN_YEAR  = 2026;
-const SEASON_ORIGIN_MONTH = 2; // 0-indexed (March)
+const SEASON_ORIGIN_MONTH = 2; // 0-indexed (March = 2 in JS)
 
-function currentSeasonNum() {
+function computeCurrentSeason() {
   const now = new Date();
   return (now.getFullYear() - SEASON_ORIGIN_YEAR) * 12
        + (now.getMonth() - SEASON_ORIGIN_MONTH) + 1;
@@ -95,11 +105,7 @@ function seasonLabel(n) {
   return `Season ${n} — ${d.toLocaleString('default', { month: 'long', year: 'numeric' })}`;
 }
 
-const PERIOD_NOTES = {
-  daily:   'Today\'s best scores — resets at midnight UTC.',
-  season:  () => `${seasonLabel(currentSeasonNum())} — best score per player.`,
-  alltime: 'All-time records — best score per player.',
-};
+const TODAY_STR = new Date().toISOString().slice(0, 10); // UTC date YYYY-MM-DD
 
 // Modes per game variant (labels inlined from server-side translations)
 const GAME_MODES = {
@@ -154,6 +160,8 @@ let currentGame    = 'classic';
 let currentMode    = 'beginner';
 let currentNoGuess = false;
 let currentPeriod  = 'daily';
+let currentDate    = TODAY_STR;
+let currentSeason  = computeCurrentSeason();
 
 function fmtTime(s) {
   if (s.time_ms != null) return (s.time_ms / 1000).toFixed(3) + 's';
@@ -179,9 +187,15 @@ function escHtml(s) {
 }
 
 function apiUrl(game, mode, noGuess, period) {
-  if (game === 'cylinder') return `/api/cylinder-scores/${mode}?no_guess=${noGuess}&period=${period}`;
-  if (game === 'toroid')   return `/api/toroid-scores/${mode}?no_guess=${noGuess}&period=${period}`;
-  return `/api/scores/${mode}?no_guess=${noGuess}&period=${period}`;
+  let base;
+  if (game === 'cylinder') base = `/api/cylinder-scores/${mode}`;
+  else if (game === 'toroid') base = `/api/toroid-scores/${mode}`;
+  else base = `/api/scores/${mode}`;
+
+  const p = new URLSearchParams({ no_guess: noGuess, period });
+  if (period === 'daily')  p.set('date',       currentDate);
+  if (period === 'season') p.set('season_num',  currentSeason);
+  return base + '?' + p.toString();
 }
 
 async function loadScores(mode, noGuess, period, game) {
@@ -196,8 +210,17 @@ async function loadScores(mode, noGuess, period, game) {
   body.innerHTML = `<tr><td colspan="9" class="lb-loading">${window.T.lb_loading}</td></tr>`;
   meta.textContent = '';
 
-  const note = PERIOD_NOTES[currentPeriod];
-  if (noteEl) noteEl.textContent = typeof note === 'function' ? note() : note;
+  let noteText;
+  if (currentPeriod === 'daily') {
+    noteText = currentDate === TODAY_STR
+      ? 'Today\'s scores — resets at midnight UTC.'
+      : `Scores from ${currentDate}.`;
+  } else if (currentPeriod === 'season') {
+    noteText = `${seasonLabel(currentSeason)} — best score per player.`;
+  } else {
+    noteText = 'All-time records — best score per player.';
+  }
+  if (noteEl) noteEl.textContent = noteText;
 
   try {
     const res  = await fetch(apiUrl(currentGame, currentMode, currentNoGuess, currentPeriod));
@@ -275,6 +298,11 @@ document.querySelectorAll('.lb-game-btn').forEach(btn => {
       b.classList.toggle('active', b.dataset.period === newPeriod);
     });
     currentPeriod = newPeriod;
+    currentDate   = TODAY_STR;
+    currentSeason = computeCurrentSeason();
+    document.getElementById('lb-date-input').value = TODAY_STR;
+    buildSeasonSelect();
+    setPeriodUI(newPeriod);
 
     // Reset no-guess to false
     document.querySelectorAll('.lb-ng-btn').forEach(b => {
@@ -313,8 +341,45 @@ document.querySelectorAll('.lb-period-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.lb-period-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    setPeriodUI(btn.dataset.period);
     loadScores(null, null, btn.dataset.period, null);
   });
+});
+
+// ── Date picker & season selector ────────────────────────────────────────────
+function setPeriodUI(period) {
+  document.getElementById('lb-date-wrap').style.display   = period === 'daily'  ? '' : 'none';
+  document.getElementById('lb-season-wrap').style.display = period === 'season' ? '' : 'none';
+}
+
+// Populate season dropdown (Season 1 … current)
+function buildSeasonSelect() {
+  const sel   = document.getElementById('lb-season-select');
+  const total = computeCurrentSeason();
+  sel.innerHTML = '';
+  for (let n = total; n >= 1; n--) {
+    const opt = document.createElement('option');
+    opt.value = n;
+    opt.textContent = seasonLabel(n);
+    if (n === currentSeason) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+buildSeasonSelect();
+
+document.getElementById('lb-date-input').value = TODAY_STR;
+document.getElementById('lb-date-input').max   = TODAY_STR;
+document.getElementById('lb-date-input').min   = '2026-03-01';
+
+document.getElementById('lb-date-input').addEventListener('change', e => {
+  currentDate = e.target.value || TODAY_STR;
+  loadScores(null, null, null, null);
+});
+
+document.getElementById('lb-season-select').addEventListener('change', e => {
+  currentSeason = parseInt(e.target.value, 10);
+  loadScores(null, null, null, null);
 });
 
 // ── Stat column tooltips ──────────────────────────────────────────────────────
@@ -335,9 +400,8 @@ document.querySelectorAll('.lb-th-stat[data-tip]').forEach(th => {
 });
 
 // ── Season button label ───────────────────────────────────────────────────────
-const seasonNum = currentSeasonNum();
 const seasonBtn = document.getElementById('season-btn');
-if (seasonBtn) seasonBtn.textContent = `Season ${seasonNum}`;
+if (seasonBtn) seasonBtn.textContent = `Season ${computeCurrentSeason()}`;
 
 // ── Initial load (honour URL params) ─────────────────────────────────────────
 const params        = new URLSearchParams(window.location.search);
@@ -348,6 +412,12 @@ const initialNG     = params.get('no_guess') === 'true';
 const initialPeriod = (['daily','season','alltime'].includes(params.get('period'))
                        ? params.get('period') : GAME_DEFAULT_PERIOD[initialGame]);
 
+// Apply date / season from URL
+if (params.get('date'))       { currentDate   = params.get('date');
+                                document.getElementById('lb-date-input').value = currentDate; }
+if (params.get('season_num')) { currentSeason = parseInt(params.get('season_num'), 10);
+                                buildSeasonSelect(); }
+
 // Apply game selector
 if (initialGame !== 'classic') {
   document.querySelectorAll('.lb-game-btn').forEach(b => {
@@ -357,10 +427,11 @@ if (initialGame !== 'classic') {
   document.getElementById('lb-back').innerHTML = GAME_BACK_LINKS[initialGame];
 }
 
-// Apply period
+// Apply period toggle + show/hide pickers
 document.querySelectorAll('.lb-period-btn').forEach(b => {
   b.classList.toggle('active', b.dataset.period === initialPeriod);
 });
+setPeriodUI(initialPeriod);
 
 // Apply no-guess
 if (initialNG) {

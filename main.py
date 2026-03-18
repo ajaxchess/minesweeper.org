@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 import uuid
 from typing import Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, Query
@@ -22,6 +22,23 @@ from translations import get_lang, get_t
 import logging
 
 logger = logging.getLogger(__name__)
+
+# ── Season constants (Season 1 = March 2026, increments monthly) ──────────────
+SEASON_ORIGIN_YEAR  = 2026
+SEASON_ORIGIN_MONTH = 3  # March
+
+def get_season_range(season_num: int):
+    """Return (start_date, end_date) for the given 1-based season number."""
+    total = SEASON_ORIGIN_MONTH - 1 + (season_num - 1)
+    year  = SEASON_ORIGIN_YEAR + total // 12
+    month = total % 12 + 1
+    start = date(year, month, 1)
+    end   = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
+    return start, end
+
+def current_season_num() -> int:
+    today = date.today()
+    return (today.year - SEASON_ORIGIN_YEAR) * 12 + (today.month - SEASON_ORIGIN_MONTH) + 1
 
 app = FastAPI(title="Minesweeper")
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="127.0.0.1")
@@ -313,7 +330,10 @@ def _enrich_with_profiles(scores: list, db) -> list:
 
 @app.get("/api/scores/{mode}")
 def get_scores(mode: GameMode, no_guess: bool = False,
-               period: str = "daily", db: Session = Depends(get_db)):
+               period: str = "daily",
+               score_date: Optional[str] = Query(None, alias="date"),
+               season_num: Optional[int] = Query(None),
+               db: Session = Depends(get_db)):
     if period not in ("daily", "season", "alltime"):
         period = "daily"
 
@@ -329,13 +349,21 @@ def get_scores(mode: GameMode, no_guess: bool = False,
     q = db.query(Score).filter(Score.mode == mode, ng_filter)
 
     if period == "daily":
-        q = q.filter(Score.created_at >= date.today())
+        try:
+            target = date.fromisoformat(score_date) if score_date else date.today()
+        except ValueError:
+            target = date.today()
+        q = q.filter(Score.created_at >= target, Score.created_at < target + timedelta(days=1))
         top = q.order_by(sort_key.asc(), Score.created_at.asc()).limit(15).all()
         return _enrich_with_profiles(top, db)
 
     if period == "season":
-        today = date.today()
-        q = q.filter(Score.created_at >= today.replace(day=1))
+        if season_num and season_num >= 1:
+            s_start, s_end = get_season_range(season_num)
+            q = q.filter(Score.created_at >= s_start, Score.created_at < s_end)
+        else:
+            today = date.today()
+            q = q.filter(Score.created_at >= today.replace(day=1))
 
     # season / alltime: fetch generously, then deduplicate to best per player
     raw = q.order_by(sort_key.asc(), Score.created_at.asc()).limit(500).all()
@@ -761,6 +789,8 @@ def submit_cylinder_score(payload: CylinderScoreSubmit, request: Request, db: Se
 
 @app.get("/api/cylinder-scores/{cyl_mode}")
 def get_cylinder_scores(cyl_mode: str, no_guess: bool = False, period: str = "alltime",
+                        score_date: Optional[str] = Query(None, alias="date"),
+                        season_num: Optional[int] = Query(None),
                         db: Session = Depends(get_db)):
     if cyl_mode not in CYLINDER_MODES_VALID:
         raise HTTPException(status_code=400, detail="Invalid mode")
@@ -780,13 +810,21 @@ def get_cylinder_scores(cyl_mode: str, no_guess: bool = False, period: str = "al
     q = db.query(CylinderScore).filter(CylinderScore.cyl_mode == cyl_mode, ng_filter)
 
     if period == "daily":
-        q = q.filter(CylinderScore.created_at >= date.today())
+        try:
+            target = date.fromisoformat(score_date) if score_date else date.today()
+        except ValueError:
+            target = date.today()
+        q = q.filter(CylinderScore.created_at >= target, CylinderScore.created_at < target + timedelta(days=1))
         top = q.order_by(sort_key.asc(), CylinderScore.created_at.asc()).limit(15).all()
         return _enrich_with_profiles(top, db)
 
     if period == "season":
-        today = date.today()
-        q = q.filter(CylinderScore.created_at >= today.replace(day=1))
+        if season_num and season_num >= 1:
+            s_start, s_end = get_season_range(season_num)
+            q = q.filter(CylinderScore.created_at >= s_start, CylinderScore.created_at < s_end)
+        else:
+            today = date.today()
+            q = q.filter(CylinderScore.created_at >= today.replace(day=1))
 
     raw = q.order_by(sort_key.asc(), CylinderScore.created_at.asc()).limit(500).all()
     seen: set = set()
@@ -909,6 +947,8 @@ def submit_toroid_score(payload: ToroidScoreSubmit, request: Request, db: Sessio
 
 @app.get("/api/toroid-scores/{tor_mode}")
 def get_toroid_scores(tor_mode: str, no_guess: bool = False, period: str = "alltime",
+                      score_date: Optional[str] = Query(None, alias="date"),
+                      season_num: Optional[int] = Query(None),
                       db: Session = Depends(get_db)):
     if tor_mode not in TOROID_MODES_VALID:
         raise HTTPException(status_code=400, detail="Invalid mode")
@@ -928,13 +968,21 @@ def get_toroid_scores(tor_mode: str, no_guess: bool = False, period: str = "allt
     q = db.query(ToroidScore).filter(ToroidScore.tor_mode == tor_mode, ng_filter)
 
     if period == "daily":
-        q = q.filter(ToroidScore.created_at >= date.today())
+        try:
+            target = date.fromisoformat(score_date) if score_date else date.today()
+        except ValueError:
+            target = date.today()
+        q = q.filter(ToroidScore.created_at >= target, ToroidScore.created_at < target + timedelta(days=1))
         top = q.order_by(sort_key.asc(), ToroidScore.created_at.asc()).limit(15).all()
         return _enrich_with_profiles(top, db)
 
     if period == "season":
-        today = date.today()
-        q = q.filter(ToroidScore.created_at >= today.replace(day=1))
+        if season_num and season_num >= 1:
+            s_start, s_end = get_season_range(season_num)
+            q = q.filter(ToroidScore.created_at >= s_start, ToroidScore.created_at < s_end)
+        else:
+            today = date.today()
+            q = q.filter(ToroidScore.created_at >= today.replace(day=1))
 
     raw = q.order_by(sort_key.asc(), ToroidScore.created_at.asc()).limit(500).all()
     seen: set = set()
