@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Board Replay — Play Any Variant | minesweeper.org{% endblock %}
+{% block description %}Replay a specific Minesweeper board in Standard, Cylinder, or Toroid mode. Compare your time against others on the same board.{% endblock %}
+{% block canonical %}https://minesweeper.org/variants/replay/{% endblock %}
+{% block og_url %}https://minesweeper.org/variants/replay/{% endblock %}
+{% block og_title %}Board Replay — minesweeper.org{% endblock %}
+{% block og_description %}Play a specific Minesweeper board in Standard, Cylinder, or Toroid mode and compete for the fastest time.{% endblock %}
+
+{% block content %}
+<div class="game-wrapper">
+
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="game-section">
+
+    <div class="game-info">
+      <div class="mode-row">
+        <div class="mode-badge">🔁 Board Replay</div>
+      </div>
+
+      <!-- Board origin info (populated by JS from URL params) -->
+      <div id="replay-origin-info" class="replay-origin-info" style="display:none">
+        <span id="replay-origin-text" style="font-size:0.85rem;opacity:0.75"></span>
+      </div>
+
+      <!-- Variant selector tabs -->
+      <div class="variant-tabs">
+        <button class="replay-variant-tab variant-tab active" data-variant="standard">Standard</button>
+        <button class="replay-variant-tab variant-tab" data-variant="cylinder">🔄 Cylinder</button>
+        <button class="replay-variant-tab variant-tab" data-variant="toroid">🍩 Toroid</button>
+      </div>
+
+      <!-- 3BV display -->
+      <div class="replay-bbbv-row">
+        3BV: <span id="replay-bbbv-value" class="replay-bbbv-value">—</span>
+        <span class="replay-bbbv-tip" title="The minimum number of clicks needed to clear this board in the selected topology.">ⓘ</span>
+      </div>
+
+      <!-- Timer / mines row -->
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-icon">💣</span>
+          <span class="stat-value" id="mines-left">???</span>
+        </div>
+        <button id="reset-btn" title="New game">🙂</button>
+        <div class="stat">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="timer">000</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Topology wrap label -->
+    <div id="replay-wrap-label" class="cylinder-wrap-label" style="min-height:1.2em"></div>
+
+    <!-- Flag mode toggle (mobile) -->
+    <button id="flag-mode-btn" class="flag-mode-btn" onclick="toggleFlagMode()" title="Toggle flag mode">🚩 Flag Mode</button>
+
+    <!-- Board -->
+    <div id="board"
+         data-mode="replay"
+         data-username="{{ user.display_name if user else '' }}">
+    </div>
+
+    <p class="instructions">
+      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
+      <strong>Right-click</strong> to flag &nbsp;|&nbsp;
+      <strong>🙂</strong> to reset
+    </p>
+
+    <!-- Not-on-leaderboard note -->
+    <div class="replay-lb-note">
+      ℹ️ Scores here are <strong>board-specific</strong> and are not included in the global leaderboard.
+      Share this URL with friends to compete on the same board!
+    </div>
+
+    <!-- Board-specific leaderboard -->
+    <div class="tz-lb-section" style="width:100%;max-width:600px">
+      <div class="tz-lb-title" id="replay-lb-title">🏆 Board High Scores — Standard</div>
+      <div id="replay-lb-content">
+        <div class="lb-loading">Loading…</div>
+      </div>
+    </div>
+
+  </section>
+
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/replay.js"></script>
+<script>
+// Show origin info from URL params
+(function () {
+  const p    = new URLSearchParams(window.location.search);
+  const date = p.get('date');
+  const mode = p.get('mode');
+  const rows = p.get('rows');
+  const cols = p.get('cols');
+  const mines = p.get('mines');
+  const infoEl = document.getElementById('replay-origin-info');
+  const textEl = document.getElementById('replay-origin-text');
+  if (infoEl && textEl && (date || mode)) {
+    const modeLabel = {beginner:'Beginner', intermediate:'Intermediate', expert:'Expert', custom:'Custom'}[mode] || mode || '';
+    const board = (rows && cols && mines) ? `${rows}×${cols}, ${mines} mines` : '';
+    const parts = [date, modeLabel, board].filter(Boolean);
+    if (parts.length) {
+      textEl.textContent = 'Original game: ' + parts.join(' · ');
+      infoEl.style.display = '';
+    }
+  }
+})();
+</script>
+{% endblock %}

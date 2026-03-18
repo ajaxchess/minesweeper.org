@@ -13,7 +13,7 @@ from sqlalchemy import func, case, text
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, CylinderScore, ToroidScore, UserProfile, PvpResult, ServerStats, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, CylinderScore, ToroidScore, ReplayScore, UserProfile, PvpResult, ServerStats, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -779,6 +779,111 @@ async def variants_page(request: Request):
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
+
+
+# ── Replay page ───────────────────────────────────────────────────────────────
+
+@app.get("/variants/replay/", response_class=HTMLResponse)
+async def replay_page(request: Request):
+    return templates.TemplateResponse("replay.html", {
+        "request": request, "mode": "replay",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+# ── Replay Score API ──────────────────────────────────────────────────────────
+
+REPLAY_VARIANTS_VALID = {"standard", "cylinder", "toroid"}
+
+class ReplayScoreSubmit(BaseModel):
+    board_hash:   str  = Field(..., min_length=1, max_length=128)
+    variant:      str  = Field(..., pattern="^(standard|cylinder|toroid)$")
+    name:         str  = Field(..., min_length=1, max_length=32)
+    time_secs:    int  = Field(..., ge=1, le=999)
+    time_ms:      Optional[int]  = Field(None, ge=1, le=3_600_000)
+    rows:         int  = Field(..., ge=5,  le=30)
+    cols:         int  = Field(..., ge=5,  le=50)
+    mines:        int  = Field(..., ge=1,  le=999)
+    bbbv:         Optional[int]  = Field(None, ge=1, le=9999)
+    left_clicks:  Optional[int]  = Field(None, ge=0, le=99999)
+    right_clicks: Optional[int]  = Field(None, ge=0, le=99999)
+    chord_clicks: Optional[int]  = Field(None, ge=0, le=99999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+    @field_validator("mines")
+    @classmethod
+    def mines_not_exceeding_board(cls, v, info):
+        rows = info.data.get("rows")
+        cols = info.data.get("cols")
+        if rows and cols:
+            if v > int(rows * cols * 0.85):
+                raise ValueError("Too many mines for this board size")
+        return v
+
+
+@app.post("/api/replay-scores", status_code=201)
+def submit_replay_score(payload: ReplayScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user  = get_current_user(request)
+    entry = ReplayScore(
+        board_hash   = payload.board_hash,
+        variant      = payload.variant,
+        name         = payload.name,
+        user_email   = user["email"] if user else None,
+        time_secs    = payload.time_secs,
+        time_ms      = payload.time_ms,
+        rows         = payload.rows,
+        cols         = payload.cols,
+        mines        = payload.mines,
+        bbbv         = payload.bbbv,
+        left_clicks  = payload.left_clicks,
+        right_clicks = payload.right_clicks,
+        chord_clicks = payload.chord_clicks,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/replay-scores")
+def get_replay_scores(board_hash: str, variant: str = "standard", db: Session = Depends(get_db)):
+    if variant not in REPLAY_VARIANTS_VALID:
+        raise HTTPException(status_code=400, detail="Invalid variant")
+
+    sort_key = case(
+        (ReplayScore.time_ms.isnot(None), ReplayScore.time_ms),
+        else_=ReplayScore.time_secs * 1000
+    )
+
+    raw = (
+        db.query(ReplayScore)
+        .filter(ReplayScore.board_hash == board_hash, ReplayScore.variant == variant)
+        .order_by(sort_key.asc(), ReplayScore.created_at.asc())
+        .limit(500)
+        .all()
+    )
+
+    # Best score per player (deduplicate by email or name)
+    seen: set = set()
+    top: list = []
+    for s in raw:
+        key = s.user_email or s.name
+        if key not in seen:
+            seen.add(key)
+            top.append(s)
+            if len(top) >= 15:
+                break
+
+    return _enrich_with_profiles(top, db)
 
 
 @app.get("/cylinder", response_class=HTMLResponse)

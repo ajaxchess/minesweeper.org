@@ -592,8 +592,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const board = document.getElementById('board');
   if (!board) return;
 
-  // Don't run the solo game init on the duel, pvp, or cylinder pages
+  // Don't run the solo game init on the duel, pvp, cylinder, toroid, or replay pages
   if (board.dataset.mode === 'duel' || board.dataset.mode === 'pvp' ||
+      board.dataset.mode === 'replay' ||
       board.dataset.mode.startsWith('cylinder') ||
       board.dataset.mode.startsWith('toroid')) return;
 

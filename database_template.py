@@ -305,6 +305,49 @@ class ToroidScore(Base):
             "created_at":   self.created_at.strftime("%Y-%m-%d"),
         }
 
+# ── Replay Score model (board-specific scores, all topologies) ───────────────
+class ReplayScore(Base):
+    __tablename__ = "replay_scores"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    board_hash   = Column(String(128), nullable=False, index=True)
+    variant      = Column(String(16), nullable=False)   # standard / cylinder / toroid
+    name         = Column(String(32), nullable=False)
+    user_email   = Column(String(256), nullable=True, index=True)
+    time_secs    = Column(Integer, nullable=False)
+    time_ms      = Column(Integer, nullable=True)
+    rows         = Column(Integer, nullable=False)
+    cols         = Column(Integer, nullable=False)
+    mines        = Column(Integer, nullable=False)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_replay_scores_hash_variant_time", "board_hash", "variant", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":           self.id,
+            "board_hash":   self.board_hash,
+            "variant":      self.variant,
+            "name":         self.name,
+            "time_secs":    self.time_secs,
+            "time_ms":      self.time_ms,
+            "rows":         self.rows,
+            "cols":         self.cols,
+            "mines":        self.mines,
+            "bbbv":         self.bbbv,
+            "left_clicks":  self.left_clicks,
+            "right_clicks": self.right_clicks,
+            "chord_clicks": self.chord_clicks,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
 # ── PvP Result model (one row per completed PvP match) ───────────────────────
 class PvpResult(Base):
     __tablename__ = "pvp_results"

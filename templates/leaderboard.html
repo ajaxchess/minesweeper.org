@@ -240,11 +240,21 @@ async function loadScores(mode, noGuess, period, game) {
       const nameCell = s.profile_url
         ? `<a href="${escHtml(s.profile_url)}" class="lb-profile-link">${escHtml(s.name)}</a>`
         : escHtml(s.name);
+      let replayLink = '';
+      if (s.board_hash) {
+        const game = currentGame === 'classic' ? 'standard' : currentGame;
+        const rp = new URLSearchParams({
+          rows: s.rows, cols: s.cols, mines: s.mines,
+          hash: s.board_hash, date: s.created_at,
+          mode: currentMode, game,
+        });
+        replayLink = ` <a href="/variants/replay/?${rp}" class="lb-replay-link" title="Replay this board">🔁</a>`;
+      }
       return `
         <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
           <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
           <td class="lb-name">${nameCell}</td>
-          <td class="lb-time">${fmtTime(s)}</td>
+          <td class="lb-time">${fmtTime(s)}${replayLink}</td>
           <td class="lb-board">${s.rows}×${s.cols}</td>
           <td class="lb-mines">${s.mines}</td>
           <td class="lb-stat">${s.bbbv ?? '—'}</td>
