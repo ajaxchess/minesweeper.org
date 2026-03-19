@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Kanban — minesweeper.org{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper" style="max-width:none;padding:1.5rem 1rem 3rem;">
+
+  <h1 class="lb-title">Kanban Board</h1>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem;">
+    {{ user.email }} &nbsp;|&nbsp;
+    <a href="/admin">← Dashboard</a> &nbsp;|&nbsp;
+    <a href="/admin/users">👥 Users</a> &nbsp;|&nbsp;
+    <a href="/admin/operations">⚙ Operations</a>
+  </p>
+
+  <div class="kanban-board">
+    {% for col in columns %}
+    <div class="kanban-col">
+      <div class="kanban-col-header">
+        <span class="kanban-col-title">{{ col.name }}</span>
+        <span class="kanban-col-count">{{ col.cards|length }}</span>
+      </div>
+      <div class="kanban-cards">
+        {% for card in col.cards %}
+        <div class="kanban-card {% if col.name == 'Done' %}kanban-card-done{% elif col.name == 'In Progress' %}kanban-card-active{% elif col.name == 'Review' %}kanban-card-review{% endif %}">
+          {% if card.id %}
+          <span class="kanban-id kanban-id-{{ card.id[0]|lower }}">{{ card.id }}</span>
+          {% endif %}
+          <p class="kanban-desc">{{ card.description }}</p>
+          {% if card.assignee %}
+          <div class="kanban-assignee">👤 {{ card.assignee }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+        {% if col.cards|length == 0 %}
+        <div class="kanban-empty">No items</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

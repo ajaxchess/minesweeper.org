@@ -1941,6 +1941,53 @@ def _fmt_bytes(n: int) -> str:
     return f"{n:.1f} PB"
 
 
+@app.get("/admin/kanban", response_class=HTMLResponse)
+def admin_kanban(request: Request):
+    import re, os
+
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        return RedirectResponse("/", status_code=302)
+
+    kanban_path = os.path.join(os.path.dirname(__file__), "KANBAN.md")
+    try:
+        text = open(kanban_path).read()
+    except FileNotFoundError:
+        text = ""
+
+    # Parse columns: split on ## headings
+    columns = []
+    for block in re.split(r'^## ', text, flags=re.MULTILINE):
+        block = block.strip()
+        if not block:
+            continue
+        lines = block.splitlines()
+        col_name = lines[0].strip()
+        cards = []
+        for line in lines[1:]:
+            line = line.strip()
+            if not line.startswith('- '):
+                continue
+            line = line[2:].strip()
+            # Extract assignee (@name at end)
+            assignee_match = re.search(r'@(\S+)$', line)
+            assignee = assignee_match.group(1) if assignee_match else None
+            if assignee:
+                line = line[:assignee_match.start()].strip()
+            # Extract ID prefix (F#, B#, D#)
+            id_match = re.match(r'^([FBD]\d+)\s+', line)
+            card_id = id_match.group(1) if id_match else None
+            description = line[id_match.end():].strip() if id_match else line
+            cards.append({"id": card_id, "description": description, "assignee": assignee})
+        columns.append({"name": col_name, "cards": cards})
+
+    return templates.TemplateResponse("admin_kanban.html", {
+        "request": request,
+        "user": user,
+        "columns": columns,
+    })
+
+
 @app.get("/admin/operations", response_class=HTMLResponse)
 def admin_operations(request: Request, db: Session = Depends(get_db)):
     import json as _json
