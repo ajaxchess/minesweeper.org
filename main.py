@@ -1984,6 +1984,9 @@ def admin_kanban(request: Request):
     return templates.TemplateResponse("admin_kanban.html", {
         "request": request,
         "user": user,
+        "t": get_t(request),
+        "lang": get_lang(request),
+        "mode": "admin",
         "columns": columns,
     })
 
