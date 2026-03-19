@@ -639,6 +639,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const rows    = parseInt(board.dataset.rows);
   const cols    = parseInt(board.dataset.cols);
   const mines   = parseInt(board.dataset.mines);
+  // ?ng=1 or ?ng=0 in the URL overrides the stored preference
+  const ngParam  = new URLSearchParams(window.location.search).get('ng');
+  if (ngParam === '1') localStorage.setItem('noGuess', 'true');
+  else if (ngParam === '0') localStorage.setItem('noGuess', 'false');
   const noGuess  = localStorage.getItem('noGuess')   === 'true';
   const chording = localStorage.getItem('chording') !== 'false';
 

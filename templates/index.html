@@ -182,8 +182,9 @@ async function loadPageLb() {
   const title   = document.getElementById('page-lb-title');
 
   if (title) {
-    const label = `${noGuess ? '⚡ No-Guess ' : ''}${LB_MODE_LABEL}`;
-    title.innerHTML = `🏆 Today's Best — <a href="${LB_MODE_URL}" class="lb-title-link">${label}</a>`;
+    const label = `${noGuess ? '⚡ No-Guess' : '🎲 Guess'} ${LB_MODE_LABEL}`;
+    const url   = `${LB_MODE_URL}?ng=${noGuess ? '1' : '0'}`;
+    title.innerHTML = `🏆 Today's Best — <a href="${url}" class="lb-title-link">${label}</a>`;
   }
   body.innerHTML = `<tr><td colspan="10" class="lb-loading">${window.T.lb_loading}</td></tr>`;
 
