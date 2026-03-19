@@ -153,6 +153,11 @@ const LB_MODE_LABEL = {
   intermediate: '{{ t.nav_intermediate }}',
   expert:       '{{ t.nav_expert }}',
 }[LB_MODE] || LB_MODE;
+const LB_MODE_URL = {
+  beginner:     '/',
+  intermediate: '/intermediate',
+  expert:       '/expert',
+}[LB_MODE] || '/';
 
 function fmtTime(s) {
   return s.time_ms != null ? (s.time_ms / 1000).toFixed(3) + 's' : s.time_secs + 's';
@@ -177,7 +182,8 @@ async function loadPageLb() {
   const title   = document.getElementById('page-lb-title');
 
   if (title) {
-    title.textContent = `🏆 Today's Best — ${noGuess ? '⚡ No-Guess ' : ''}${LB_MODE_LABEL}`;
+    const label = `${noGuess ? '⚡ No-Guess ' : ''}${LB_MODE_LABEL}`;
+    title.innerHTML = `🏆 Today's Best — <a href="${LB_MODE_URL}" class="lb-title-link">${label}</a>`;
   }
   body.innerHTML = `<tr><td colspan="10" class="lb-loading">${window.T.lb_loading}</td></tr>`;
 
