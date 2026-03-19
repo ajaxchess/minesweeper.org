@@ -18,6 +18,7 @@
       var t = p.get('theme');
       if (t === 'diana' || t === 'classic') localStorage.setItem('skin', 'classic');
       else if (t === 'dark') localStorage.setItem('skin', 'dark');
+      else if (t === 'tentaizu') localStorage.setItem('skin', 'tentaizu');
       document.documentElement.dataset.skin = localStorage.getItem('skin') || 'dark';
 
       var l = p.get('lang');
