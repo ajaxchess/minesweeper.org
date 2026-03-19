@@ -709,6 +709,16 @@ BLOG_POSTS = [
                    "'I want a thing' and 'I have the thing.' "
                    "Meet the SaaSpocalypse.",
     },
+    {
+        "slug":          "no-jira-required",
+        "file":          "blog/2_saaspocalypse-kanban.md",
+        "title":         "No Jira Required: The $0 Kanban Board That Lives in Your Repo",
+        "date":          "2026-03-19",
+        "datePublished": "2026-03-19T12:00:00Z",
+        "excerpt": "Instead of subscribing to Jira, Claude Code built a kanban board "
+                   "that reads directly from a markdown file in the repo. "
+                   "The SaaSpocalypse comes for project management.",
+    },
 ]
 
 def _blog_post_meta(post: dict) -> dict:
