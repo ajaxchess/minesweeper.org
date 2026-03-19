@@ -135,7 +135,7 @@ TOROID_MODES = {
 def reset_scores():
     db = SessionLocal()
     try:
-        deleted = db.query(Score).delete()
+        deleted = db.query(Score).delete(synchronize_session=False)
         db.commit()
         logger.info(f"Daily score reset complete — {deleted} rows removed.")
     except Exception as e:
@@ -242,8 +242,8 @@ def archive_guest_scores():
 
 
 scheduler = BackgroundScheduler(timezone="UTC")
-scheduler.add_job(reset_scores,          CronTrigger(hour=0, minute=0))   # midnight UTC
-scheduler.add_job(archive_guest_scores,  CronTrigger(hour=0, minute=0))   # midnight UTC
+scheduler.add_job(archive_guest_scores,  CronTrigger(hour=23, minute=59)) # 23:59 UTC — archive guests before reset
+scheduler.add_job(reset_scores,          CronTrigger(hour=0,  minute=0))  # midnight UTC — clear all scores
 scheduler.add_job(cleanup_old_games,     CronTrigger(hour="*"))             # hourly
 scheduler.add_job(collect_server_stats,  CronTrigger(minute=0))             # top of every hour
 
