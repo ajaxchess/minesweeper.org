@@ -20,6 +20,10 @@ function strSeed(s) {
     return h;
 }
 
+function getMineEmoji() {
+    return document.documentElement.dataset.skin === 'tentaizu' ? '⭐' : '💣';
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 const ROWS  = 7;
 const COLS  = 7;
@@ -159,7 +163,7 @@ function applyCell(el, cell) {
         el.classList.add('hidden');
     } else if (cell.state === 'flagged') {
         el.classList.add('hidden', 'tz-flagged');
-        el.textContent = '💣';
+        el.textContent = getMineEmoji();
         if (G.highlightErrors && !cell.isMine) el.classList.add('tz-error');
     } else if (cell.state === 'empty') {
         el.classList.add('hidden', 'tz-empty');
