@@ -682,6 +682,16 @@ async def about_page(request: Request):
 # excerpt: one-sentence summary shown on the index page
 BLOG_POSTS = [
     {
+        "slug":          "no-jira-required",
+        "file":          "blog/2_saaspocalypse-kanban.md",
+        "title":         "No Jira Required: The $0 Kanban Board That Lives in Your Repo",
+        "date":          "2026-03-19",
+        "datePublished": "2026-03-19T12:00:00Z",
+        "excerpt": "Instead of subscribing to Jira, Claude Code built a kanban board "
+                   "that reads directly from a markdown file in the repo. "
+                   "The SaaSpocalypse comes for project management.",
+    },
+    {
         "slug":          "3bv",
         "file":          "blog/3bv_blog_post.md",
         "title":         "We've added 3BV values to Lady Di's Mines",
@@ -708,16 +718,6 @@ BLOG_POSTS = [
         "excerpt": "AI coding tools have collapsed the distance between "
                    "'I want a thing' and 'I have the thing.' "
                    "Meet the SaaSpocalypse.",
-    },
-    {
-        "slug":          "no-jira-required",
-        "file":          "blog/2_saaspocalypse-kanban.md",
-        "title":         "No Jira Required: The $0 Kanban Board That Lives in Your Repo",
-        "date":          "2026-03-19",
-        "datePublished": "2026-03-19T12:00:00Z",
-        "excerpt": "Instead of subscribing to Jira, Claude Code built a kanban board "
-                   "that reads directly from a markdown file in the repo. "
-                   "The SaaSpocalypse comes for project management.",
     },
 ]
 
