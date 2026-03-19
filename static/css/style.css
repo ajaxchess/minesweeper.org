@@ -3015,6 +3015,12 @@ kbd {
   color: var(--accent);
 }
 
+/* Classic skin: override link color so button text stays white/visible */
+html[data-skin="classic"] .variant-play-btn,
+html[data-skin="classic"] .variant-play-btn:visited { color: #fff; }
+html[data-skin="classic"] .variant-play-btn-outline,
+html[data-skin="classic"] .variant-play-btn-outline:visited { color: #0033cc; }
+
 /* ── Tentaizu Landing Content ────────────────────────────────────────────── */
 
 .tz-landing {
