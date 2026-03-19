@@ -76,12 +76,14 @@
 
     <div class="cylinder-wrap-label">↩ left &amp; right edges connect ↪</div>
 
-    <div id="board"
-         data-rows="{{ rows }}"
-         data-cols="{{ cols }}"
-         data-mines="{{ mines }}"
-         data-mode="{{ mode }}"
-         data-username="{{ user.display_name if user else '' }}">
+    <div class="variant-board-wrap variant-board-wrap--cylinder">
+      <div id="board"
+           data-rows="{{ rows }}"
+           data-cols="{{ cols }}"
+           data-mines="{{ mines }}"
+           data-mode="{{ mode }}"
+           data-username="{{ user.display_name if user else '' }}">
+      </div>
     </div>
 
     <p class="instructions">

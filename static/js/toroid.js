@@ -541,6 +541,10 @@
         cell.className = 'cell hidden';
         cell.dataset.r = r;
         cell.dataset.c = c;
+        if (c === 0)        cell.classList.add('wrap-edge-left');
+        if (c === cols - 1) cell.classList.add('wrap-edge-right');
+        if (r === 0)        cell.classList.add('wrap-edge-top');
+        if (r === rows - 1) cell.classList.add('wrap-edge-bottom');
 
         cell.addEventListener('click',       () => { state.leftClicks++;  reveal(r, c); });
         cell.addEventListener('contextmenu', e  => { e.preventDefault(); state.rightClicks++; flag(r, c); });
@@ -594,6 +598,17 @@
     if (!board || !board.dataset.mode.startsWith('toroid')) return;
 
     board.classList.add('toroid-board');
+
+    // Inject top/bottom gradient overlays into the wrapper (CSS ::before/after cover left/right)
+    const wrap = board.closest('.variant-board-wrap--toroid');
+    if (wrap) {
+      const top = document.createElement('div');
+      top.className = 'wrap-overlay-top';
+      const bot = document.createElement('div');
+      bot.className = 'wrap-overlay-bottom';
+      wrap.appendChild(top);
+      wrap.appendChild(bot);
+    }
 
     const rows    = parseInt(board.dataset.rows);
     const cols    = parseInt(board.dataset.cols);

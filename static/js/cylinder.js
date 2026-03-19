@@ -541,6 +541,8 @@
         cell.className = 'cell hidden';
         cell.dataset.r = r;
         cell.dataset.c = c;
+        if (c === 0)        cell.classList.add('wrap-edge-left');
+        if (c === cols - 1) cell.classList.add('wrap-edge-right');
 
         cell.addEventListener('click',       () => { state.leftClicks++;  reveal(r, c); });
         cell.addEventListener('contextmenu', e  => { e.preventDefault(); state.rightClicks++; flag(r, c); });
