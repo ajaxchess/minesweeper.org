@@ -329,7 +329,13 @@
     if (won && username) {
       submitScore(username);
     } else if (won) {
-      setTimeout(() => document.getElementById('replay-player-name')?.focus(), 50);
+      setTimeout(() => {
+        const inp = document.getElementById('replay-player-name');
+        if (inp) {
+          inp.focus();
+          inp.addEventListener('keydown', e => { if (e.key === 'Enter') replaySubmitScore(); });
+        }
+      }, 50);
     }
   }
 

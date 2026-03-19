@@ -467,7 +467,13 @@ function showOverlay(msg, won) {
   if (won && username) {
     submitScore(username);
   } else if (won) {
-    setTimeout(() => document.getElementById('player-name')?.focus(), 50);
+    setTimeout(() => {
+      const inp = document.getElementById('player-name');
+      if (inp) {
+        inp.focus();
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') submitScore(); });
+      }
+    }, 50);
   }
 }
 

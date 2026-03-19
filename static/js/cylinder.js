@@ -492,7 +492,13 @@
     if (won && username) {
       submitScore(username);
     } else if (won) {
-      setTimeout(() => document.getElementById('cyl-player-name')?.focus(), 50);
+      setTimeout(() => {
+        const inp = document.getElementById('cyl-player-name');
+        if (inp) {
+          inp.focus();
+          inp.addEventListener('keydown', e => { if (e.key === 'Enter') cylSubmitScore(); });
+        }
+      }, 50);
     }
   }
 
