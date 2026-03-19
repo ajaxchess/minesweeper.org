@@ -3015,9 +3015,7 @@ kbd {
   color: var(--accent);
 }
 
-/* Classic skin: override link color so button text stays white/visible */
-html[data-skin="classic"] .variant-play-btn,
-html[data-skin="classic"] .variant-play-btn:visited { color: #fff; }
+/* Classic skin: outline variant keeps the dark blue link colour */
 html[data-skin="classic"] .variant-play-btn-outline,
 html[data-skin="classic"] .variant-play-btn-outline:visited { color: #0033cc; }
 
@@ -3726,6 +3724,16 @@ html[data-skin="classic"] .quest-progress-bar { background: #c0c0c0; }
 html[data-skin="classic"] .quests-subtitle { color: #444444; }
 html[data-skin="classic"] a { color: #ff3300; }
 html[data-skin="classic"] a:visited { color: #0033ff; }
+
+/* Button-styled links must keep white text regardless of visited state */
+html[data-skin="classic"] .quest-play-btn,
+html[data-skin="classic"] .quest-play-btn:visited,
+html[data-skin="classic"] .variant-play-btn,
+html[data-skin="classic"] .variant-play-btn:visited,
+html[data-skin="classic"] .tz-play-cta,
+html[data-skin="classic"] .tz-play-cta:visited,
+html[data-skin="classic"] .game-landing-signin-btn,
+html[data-skin="classic"] .game-landing-signin-btn:visited { color: #fff; }
 
 /* ── Classic skin: Tentaizu landing / subnav ─────────────────────────────── */
 html[data-skin="classic"] .tz-subnav-card {
