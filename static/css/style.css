@@ -2942,6 +2942,16 @@ kbd {
   padding: 0 1rem 3rem;
 }
 
+/* Page-level h1 above the game wrapper — visible to crawlers, subdued visually */
+.tz-page-h1 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-align: center;
+  margin: 0.25rem 0 0.5rem;
+  letter-spacing: 0.01em;
+}
+
 .tz-landing-h1 {
   font-size: clamp(1.5rem, 4vw, 2.2rem);
   font-weight: 700;
