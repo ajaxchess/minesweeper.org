@@ -159,7 +159,7 @@ function applyCell(el, cell) {
         el.classList.add('hidden');
     } else if (cell.state === 'flagged') {
         el.classList.add('hidden', 'tz-flagged');
-        el.textContent = '💣';
+        el.textContent = '⭐';
         if (G.highlightErrors && !cell.isMine) el.classList.add('tz-error');
     } else if (cell.state === 'empty') {
         el.classList.add('hidden', 'tz-empty');
