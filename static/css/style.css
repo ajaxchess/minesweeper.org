@@ -2948,6 +2948,8 @@ kbd {
   font-weight: 600;
   color: var(--text-dim);
   text-align: center;
+  width: 100%;
+  display: block;
   margin: 0.25rem 0 0.5rem;
   letter-spacing: 0.01em;
 }
@@ -2956,6 +2958,7 @@ kbd {
   font-size: clamp(1.5rem, 4vw, 2.2rem);
   font-weight: 700;
   color: var(--text);
+  text-align: center;
   margin: 0 0 1.5rem;
   line-height: 1.2;
 }
