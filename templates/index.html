@@ -41,7 +41,9 @@
   </aside>
 
   <section class="game-section">
-    {% if mode == 'beginner' %}<h1 class="visually-hidden">Play Minesweeper Online — Free</h1>{% endif %}
+    {% if mode == 'beginner' %}<h1 class="visually-hidden">Play Minesweeper Online — Free</h1>
+    {% elif mode == 'intermediate' %}<h1 class="visually-hidden">Minesweeper Intermediate — 16×16, 40 Mines</h1>
+    {% elif mode == 'expert' %}<h1 class="visually-hidden">Minesweeper Expert — 30×16, 99 Mines</h1>{% endif %}
     <div class="game-info">
       <div class="mode-row">
         <div class="mode-badge">{{ t['nav_' + mode] }}</div>
