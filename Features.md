@@ -3,6 +3,7 @@ List of active features
 F8 Improved Mobile Browser Support
 
 F9 SEO improvements
+   For general SEO improvements.  If the improvement is for a specific platform, use Bing SEO improvements or Google SEO improvements
 
 F10 Multiple skin support (Default for minesweeper.org will be called Dark)
 
@@ -30,6 +31,10 @@ F18 Theme selection in url
 F19 Secret admin mode that displays site statistics
 
 F20 Tentaizu theme
+
+F21 Bing SEO improvements
+
+F22 Google SEO improvements
 
 D2 Add feature request code to the beginning of the commit message
    If the commit has to do with the Tentaizu theme, the commit message should be
