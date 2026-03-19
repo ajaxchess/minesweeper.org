@@ -19,15 +19,22 @@ F13 Quests
 
 F14 Website Analytics Google Analytics
 
-F15 Other Website Analytics AWStats https://awstats.sourceforge.io/
+F15 Website Analytics on local admin page at /admin and subpages
 
 F16 Add a blog
 
 F17 Add linkedin link
 
-F18 theme selection in url
+F18 Theme selection in url
 
 F19 Secret admin mode that displays site statistics
+
+F20 Tentaizu theme
+
+D2 Add feature request code to the beginning of the commit message
+   If the commit has to do with the Tentaizu theme, the commit message should be
+   of the form:
+   F20 <Description of update>
 
 -- Addressed --
 
