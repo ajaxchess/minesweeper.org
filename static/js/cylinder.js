@@ -520,7 +520,7 @@
     el.classList.add('revealed');
     if (val === -1) {
       el.classList.add(isDetonated ? 'mine-detonated' : 'mine');
-      el.textContent = '💣';
+      el.textContent = getMineEmoji();
     } else if (val === 0) {
       el.textContent = '';
     } else {

@@ -522,13 +522,20 @@ async function submitScore(autoName = null) {
 }
 
 // ── Render a single cell ─────────────────────────────────────────────────────
-const NUM_COLORS_DARK    = ['','#1976D2','#388E3C','#D32F2F','#7B1FA2',
-                             '#F57F17','#00838F','#212121','#757575'];
-const NUM_COLORS_CLASSIC = ['','#0000ff','#008000','#ff0000','#000080',
-                             '#800000','#008080','#000000','#808080'];
+const NUM_COLORS_DARK     = ['','#1976D2','#388E3C','#D32F2F','#7B1FA2',
+                              '#F57F17','#00838F','#212121','#757575'];
+const NUM_COLORS_CLASSIC  = ['','#0000ff','#008000','#ff0000','#000080',
+                              '#800000','#008080','#000000','#808080'];
+const NUM_COLORS_TENTAIZU = ['','#7ec8e3','#98e6a8','#ffb3b3','#d4a8ff',
+                              '#ffd580','#7ff0e0','#c8c8c8','#909090'];
 function getNumColors() {
-  return document.documentElement.dataset.skin === 'classic'
-    ? NUM_COLORS_CLASSIC : NUM_COLORS_DARK;
+  const skin = document.documentElement.dataset.skin;
+  if (skin === 'classic')   return NUM_COLORS_CLASSIC;
+  if (skin === 'tentaizu')  return NUM_COLORS_TENTAIZU;
+  return NUM_COLORS_DARK;
+}
+function getMineEmoji() {
+  return document.documentElement.dataset.skin === 'tentaizu' ? '⭐' : '💣';
 }
 
 function renderCell(r, c, isDetonated = false) {
@@ -555,7 +562,7 @@ function renderCell(r, c, isDetonated = false) {
   el.classList.add('revealed');
   if (val === -1) {
     el.classList.add(isDetonated ? 'mine-detonated' : 'mine');
-    el.textContent = '💣';
+    el.textContent = getMineEmoji();
   } else if (val === 0) {
     el.textContent = '';
   } else {

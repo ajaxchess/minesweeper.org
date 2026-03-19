@@ -4086,3 +4086,65 @@ html[data-skin="classic"] .nav-pvp-menu a.active { background: #c0c0c0; color: #
   transition: opacity 0.15s;
 }
 .lb-replay-link:hover { opacity: 1; text-decoration: underline; }
+
+/* ── Tentaizu skin ───────────────────────────────────────────────────────── */
+html[data-skin="tentaizu"] {
+  --bg:          #0a0e1a;
+  --surface:     #111827;
+  --header-bg:   #0d1424;
+  --cell-hidden: #1e2d4a;
+  --cell-border: #2a3f6f;
+  --cell-rev:    #0f1929;
+  --text:        #e0e8ff;
+  --text-dim:    #6b7fa8;
+  --accent:      #7ec8e3;
+  --accent2:     #ffe066;
+  --border:      #1e2d4a;
+}
+
+/* Starry background via SVG data URL */
+html[data-skin="tentaizu"] body {
+  background-color: #0a0e1a;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect width='400' height='400' fill='%230a0e1a'/%3E%3Ccircle cx='23' cy='17' r='0.8' fill='white' opacity='0.9'/%3E%3Ccircle cx='67' cy='43' r='0.5' fill='white' opacity='0.6'/%3E%3Ccircle cx='112' cy='8' r='1' fill='white' opacity='0.8'/%3E%3Ccircle cx='158' cy='29' r='0.6' fill='white' opacity='0.7'/%3E%3Ccircle cx='201' cy='14' r='0.9' fill='white' opacity='0.5'/%3E%3Ccircle cx='245' cy='37' r='0.5' fill='white' opacity='0.9'/%3E%3Ccircle cx='289' cy='11' r='0.7' fill='white' opacity='0.6'/%3E%3Ccircle cx='334' cy='25' r='1.1' fill='white' opacity='0.8'/%3E%3Ccircle cx='378' cy='6' r='0.5' fill='white' opacity='0.7'/%3E%3Ccircle cx='45' cy='62' r='0.6' fill='white' opacity='0.5'/%3E%3Ccircle cx='89' cy='78' r='0.9' fill='white' opacity='0.8'/%3E%3Ccircle cx='133' cy='55' r='0.5' fill='white' opacity='0.6'/%3E%3Ccircle cx='177' cy='71' r='0.7' fill='white' opacity='0.9'/%3E%3Ccircle cx='221' cy='59' r='1' fill='white' opacity='0.5'/%3E%3Ccircle cx='265' cy='83' r='0.6' fill='white' opacity='0.7'/%3E%3Ccircle cx='309' cy='67' r='0.8' fill='white' opacity='0.6'/%3E%3Ccircle cx='353' cy='50' r='0.5' fill='white' opacity='0.9'/%3E%3Ccircle cx='12' cy='95' r='0.7' fill='white' opacity='0.8'/%3E%3Ccircle cx='56' cy='109' r='1' fill='white' opacity='0.5'/%3E%3Ccircle cx='100' cy='122' r='0.5' fill='white' opacity='0.7'/%3E%3Ccircle cx='144' cy='103' r='0.8' fill='white' opacity='0.9'/%3E%3Ccircle cx='188' cy='117' r='0.6' fill='white' opacity='0.6'/%3E%3Ccircle cx='232' cy='98' r='0.9' fill='white' opacity='0.8'/%3E%3Ccircle cx='276' cy='130' r='0.5' fill='white' opacity='0.5'/%3E%3Ccircle cx='320' cy='112' r='0.7' fill='white' opacity='0.9'/%3E%3Ccircle cx='364' cy='95' r='1' fill='white' opacity='0.6'/%3E%3Ccircle cx='34' cy='148' r='0.6' fill='white' opacity='0.7'/%3E%3Ccircle cx='78' cy='161' r='0.8' fill='white' opacity='0.8'/%3E%3Ccircle cx='122' cy='143' r='0.5' fill='white' opacity='0.5'/%3E%3Ccircle cx='166' cy='175' r='0.9' fill='white' opacity='0.9'/%3E%3Ccircle cx='210' cy='152' r='0.7' fill='white' opacity='0.6'/%3E%3Ccircle cx='254' cy='168' r='0.5' fill='white' opacity='0.7'/%3E%3Ccircle cx='298' cy='147' r='1' fill='white' opacity='0.8'/%3E%3Ccircle cx='342' cy='163' r='0.6' fill='white' opacity='0.5'/%3E%3Ccircle cx='386' cy='140' r='0.8' fill='white' opacity='0.9'/%3E%3Ccircle cx='19' cy='192' r='0.5' fill='white' opacity='0.6'/%3E%3Ccircle cx='63' cy='208' r='0.7' fill='white' opacity='0.8'/%3E%3Ccircle cx='107' cy='195' r='0.9' fill='white' opacity='0.5'/%3E%3Ccircle cx='151' cy='219' r='0.6' fill='white' opacity='0.7'/%3E%3Ccircle cx='195' cy='203' r='0.8' fill='white' opacity='0.9'/%3E%3Ccircle cx='239' cy='215' r='0.5' fill='white' opacity='0.6'/%3E%3Ccircle cx='283' cy='198' r='1' fill='white' opacity='0.8'/%3E%3Ccircle cx='327' cy='211' r='0.7' fill='white' opacity='0.5'/%3E%3Ccircle cx='371' cy='193' r='0.6' fill='white' opacity='0.9'/%3E%3Ccircle cx='47' cy='237' r='0.8' fill='white' opacity='0.7'/%3E%3Ccircle cx='91' cy='251' r='0.5' fill='white' opacity='0.6'/%3E%3Ccircle cx='135' cy='263' r='0.9' fill='white' opacity='0.8'/%3E%3Ccircle cx='179' cy='244' r='0.6' fill='white' opacity='0.5'/%3E%3Ccircle cx='223' cy='258' r='0.7' fill='white' opacity='0.9'/%3E%3Ccircle cx='267' cy='241' r='0.5' fill='white' opacity='0.7'/%3E%3Ccircle cx='311' cy='255' r='0.8' fill='white' opacity='0.6'/%3E%3Ccircle cx='355' cy='239' r='1' fill='white' opacity='0.8'/%3E%3Ccircle cx='399' cy='252' r='0.6' fill='white' opacity='0.5'/%3E%3Ccircle cx='8' cy='278' r='0.7' fill='white' opacity='0.9'/%3E%3Ccircle cx='52' cy='292' r='0.5' fill='white' opacity='0.6'/%3E%3Ccircle cx='96' cy='305' r='0.9' fill='white' opacity='0.8'/%3E%3Ccircle cx='140' cy='285' r='0.6' fill='white' opacity='0.5'/%3E%3Ccircle cx='184' cy='298' r='0.8' fill='white' opacity='0.9'/%3E%3Ccircle cx='228' cy='311' r='0.5' fill='white' opacity='0.7'/%3E%3Ccircle cx='272' cy='289' r='0.7' fill='white' opacity='0.6'/%3E%3Ccircle cx='316' cy='302' r='1' fill='white' opacity='0.8'/%3E%3Ccircle cx='360' cy='319' r='0.6' fill='white' opacity='0.5'/%3E%3Ccircle cx='30' cy='334' r='0.8' fill='white' opacity='0.7'/%3E%3Ccircle cx='74' cy='347' r='0.5' fill='white' opacity='0.9'/%3E%3Ccircle cx='118' cy='360' r='0.9' fill='white' opacity='0.6'/%3E%3Ccircle cx='162' cy='341' r='0.6' fill='white' opacity='0.8'/%3E%3Ccircle cx='206' cy='355' r='0.7' fill='white' opacity='0.5'/%3E%3Ccircle cx='250' cy='368' r='0.5' fill='white' opacity='0.9'/%3E%3Ccircle cx='294' cy='349' r='0.8' fill='white' opacity='0.7'/%3E%3Ccircle cx='338' cy='362' r='1' fill='white' opacity='0.6'/%3E%3Ccircle cx='382' cy='376' r='0.6' fill='white' opacity='0.8'/%3E%3Ccircle cx='15' cy='388' r='0.7' fill='white' opacity='0.5'/%3E%3Ccircle cx='59' cy='395' r='0.5' fill='white' opacity='0.9'/%3E%3Ccircle cx='103' cy='381' r='0.8' fill='white' opacity='0.7'/%3E%3Ccircle cx='147' cy='393' r='0.6' fill='white' opacity='0.6'/%3E%3Ccircle cx='191' cy='387' r='0.9' fill='white' opacity='0.8'/%3E%3Ccircle cx='235' cy='399' r='0.5' fill='white' opacity='0.5'/%3E%3Ccircle cx='279' cy='384' r='0.7' fill='white' opacity='0.9'/%3E%3Ccircle cx='323' cy='397' r='0.8' fill='white' opacity='0.6'/%3E%3Ccircle cx='367' cy='390' r='0.6' fill='white' opacity='0.7'/%3E%3C/svg%3E");
+  background-size: 400px 400px;
+}
+
+html[data-skin="tentaizu"] #board,
+html[data-skin="tentaizu"] #rush-board,
+html[data-skin="tentaizu"] #tz-board,
+html[data-skin="tentaizu"] #cyl-board,
+html[data-skin="tentaizu"] #tor-board {
+  background: #0d1525;
+  border-color: var(--cell-border);
+}
+
+html[data-skin="tentaizu"] .cell.hidden {
+  background: var(--cell-hidden);
+  border-color: var(--cell-border);
+}
+
+html[data-skin="tentaizu"] .cell.revealed { background: var(--cell-rev); }
+
+html[data-skin="tentaizu"] .cell.mine-detonated { background: #2a0a2a; }
+
+/* Replace bomb icon with star in tentaizu */
+html[data-skin="tentaizu"] #mine-count .stat-icon {
+  font-size: 0;
+}
+html[data-skin="tentaizu"] #mine-count .stat-icon::after {
+  content: '⭐';
+  font-size: 1rem;
+}
+
+/* Tentaizu skin preview */
+.skin-preview-tentaizu {
+  background: #0d1525;
+  padding: 4px;
+  border: 1px solid #2a3f6f;
+}
+
+.skin-preview-tentaizu .sp-hidden  { background: #1e2d4a; border: 1px solid #2a3f6f; }
+.skin-preview-tentaizu .sp-revealed { background: #0f1929; border: 1px solid #1a2840; }
+.skin-preview-tentaizu .sp-mine    { background: #1e2d4a; border: 1px solid #2a3f6f; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+.skin-preview-tentaizu .sp-n1 { color: #7ec8e3; }
+.skin-preview-tentaizu .sp-n2 { color: #98e6a8; }
