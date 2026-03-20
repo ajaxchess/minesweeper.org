@@ -1535,7 +1535,7 @@ async def mosaic_page(request: Request, seed: str = ""):
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
-        "seed": seed,
+        "seed": seed.replace(".", "-"),
     })
 
 @app.get("/mosaic/easy", response_class=HTMLResponse)
@@ -1550,7 +1550,7 @@ async def mosaic_standard_page(request: Request, seed: str = ""):
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
-        "seed": seed,
+        "seed": seed.replace(".", "-"),
     })
 
 @app.get("/mosaic/replay", response_class=HTMLResponse)
