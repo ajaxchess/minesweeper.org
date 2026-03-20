@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Play vs Bot — Minesweeper PvP | minesweeper.org{% endblock %}
+{% block description %}Challenge a Minesweeper bot in real-time PvP. Choose your difficulty and race to clear the board.{% endblock %}
+
+{% block content %}
+<h1 class="tz-page-h1">PvP Minesweeper — Play vs Bot</h1>
+
+<div class="duel-wrapper">
+
+  <!-- Mode tabs (mirrors the pvp page) -->
+  <div class="duel-mode-tabs">
+    <a href="/pvp?m=standard" class="duel-mode-tab">Standard</a>
+    <a href="/pvp?m=quick"    class="duel-mode-tab">⚡ Quick</a>
+    <a href="/pvp/bot"        class="duel-mode-tab active">🤖 vs Bot</a>
+    <a href="/pvp/leaderboard" class="duel-mode-tab">🏆 Leaderboard</a>
+    <a href="/pvp/rankings"    class="duel-mode-tab">👑 Rankings</a>
+  </div>
+
+  <div class="bot-lobby">
+    <p class="bot-lobby-intro">
+      Play against a computer opponent on the same board as a real PvP match.
+      The bot uses a constraint-based solver — it won't guess randomly unless forced to.
+    </p>
+
+    <div class="bot-lobby-section">
+      <div class="bot-lobby-section-label">Board size</div>
+      <div class="bot-lobby-btn-row">
+        <a href="/pvp/bot/play?m=standard&d=medium" id="size-standard" class="bot-lobby-size-btn active" data-m="standard">Standard (24×16, 75 mines)</a>
+        <a href="/pvp/bot/play?m=quick&d=medium"    id="size-quick"    class="bot-lobby-size-btn"        data-m="quick">⚡ Quick (20×10, 35 mines)</a>
+      </div>
+    </div>
+
+    <div class="bot-lobby-section">
+      <div class="bot-lobby-section-label">Difficulty</div>
+      <div class="bot-lobby-btn-row">
+        <button class="bot-difficulty-btn" data-d="easy"   onclick="setDifficulty('easy')">
+          <span class="bot-diff-name">🟢 Easy</span>
+          <span class="bot-diff-desc">Clicks every 2 s, sometimes random</span>
+        </button>
+        <button class="bot-difficulty-btn active" data-d="medium" onclick="setDifficulty('medium')">
+          <span class="bot-diff-name">🟡 Medium</span>
+          <span class="bot-diff-desc">Clicks every 0.7 s, full constraint solver</span>
+        </button>
+        <button class="bot-difficulty-btn" data-d="hard"   onclick="setDifficulty('hard')">
+          <span class="bot-diff-name">🔴 Hard</span>
+          <span class="bot-diff-desc">Clicks every 0.2 s, full constraint solver</span>
+        </button>
+      </div>
+    </div>
+
+    <a id="play-btn" href="/pvp/bot/play?m=standard&d=medium" class="bot-play-btn">⚔️ Play vs Bot</a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  let selectedMode = 'standard';
+  let selectedDiff = 'medium';
+
+  function updateLink() {
+    const url = `/pvp/bot/play?m=${selectedMode}&d=${selectedDiff}`;
+    document.getElementById('play-btn').href = url;
+    document.querySelectorAll('.bot-lobby-size-btn').forEach(b => {
+      b.href = `/pvp/bot/play?m=${b.dataset.m}&d=${selectedDiff}`;
+    });
+  }
+
+  window.setDifficulty = function(d) {
+    selectedDiff = d;
+    document.querySelectorAll('.bot-difficulty-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.d === d);
+    });
+    updateLink();
+  };
+
+  document.querySelectorAll('.bot-lobby-size-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      selectedMode = this.dataset.m;
+      document.querySelectorAll('.bot-lobby-size-btn').forEach(b => {
+        b.classList.toggle('active', b === this);
+      });
+      updateLink();
+    });
+  });
+})();
+</script>
+{% endblock %}

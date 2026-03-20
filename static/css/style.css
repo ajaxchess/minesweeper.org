@@ -1321,6 +1321,77 @@ html[data-skin="classic"] .result-hash a  { color: #88ccff; }
   white-space: nowrap;
 }
 
+/* ── Bot lobby ───────────────────────────────────────────────────────────── */
+.bot-lobby {
+  max-width: 600px;
+  margin: 1rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.bot-lobby-intro {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  text-align: center;
+}
+.bot-lobby-section { display: flex; flex-direction: column; gap: 0.5rem; }
+.bot-lobby-section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+.bot-lobby-btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.bot-lobby-size-btn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--surface2);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+.bot-lobby-size-btn.active,
+.bot-lobby-size-btn:hover { border-color: var(--accent2); background: var(--surface2); }
+.bot-difficulty-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.65rem 0.8rem;
+  border: 2px solid var(--surface2);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.bot-difficulty-btn.active,
+.bot-difficulty-btn:hover { border-color: var(--accent2); background: var(--surface2); }
+.bot-diff-name { font-weight: 700; font-size: 0.95rem; }
+.bot-diff-desc { font-size: 0.75rem; color: var(--text-dim); }
+.bot-play-btn {
+  display: block;
+  text-align: center;
+  padding: 0.75rem 2rem;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.bot-play-btn:hover { opacity: 0.85; }
+html[data-skin="classic"] .bot-play-btn,
+html[data-skin="classic"] .bot-play-btn:visited { color: #fff; }
+
 /* ── Profile page ────────────────────────────────────────────────────────── */
 .profile-wrapper {
   max-width: 860px;

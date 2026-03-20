@@ -8,16 +8,19 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const boardEl = document.getElementById('board');
-  if (!boardEl || (boardEl.dataset.mode !== 'duel' && boardEl.dataset.mode !== 'pvp')) return;
+  if (!boardEl || !['duel', 'pvp', 'pvp-bot'].includes(boardEl.dataset.mode)) return;
 
   // ── Config ────────────────────────────────────────────────────────────────
-  const ROWS       = parseInt(boardEl.dataset.rows);
-  const COLS       = parseInt(boardEl.dataset.cols);
-  const GAME_ID    = boardEl.dataset.gameId;
-  const PLAYER_ID  = boardEl.dataset.playerId;
-  const IS_PVP     = boardEl.dataset.mode === 'pvp';
-  const IS_CREATOR = boardEl.dataset.isCreator === 'true';
-  const SUBMODE    = boardEl.dataset.submode || 'standard';
+  const ROWS        = parseInt(boardEl.dataset.rows);
+  const COLS        = parseInt(boardEl.dataset.cols);
+  const GAME_ID     = boardEl.dataset.gameId;
+  const PLAYER_ID   = boardEl.dataset.playerId;
+  const MODE        = boardEl.dataset.mode;
+  const IS_PVP      = MODE === 'pvp';
+  const IS_BOT      = MODE === 'pvp-bot';
+  const IS_CREATOR  = boardEl.dataset.isCreator === 'true';
+  const SUBMODE     = boardEl.dataset.submode || 'standard';
+  const BOT_DIFF    = boardEl.dataset.botDifficulty || 'medium';
   const OPP_DELAY_MS = (parseInt(boardEl.dataset.oppDelay || '0')) * 1000;
 
   // ── Local state ───────────────────────────────────────────────────────────
@@ -235,12 +238,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── WebSocket ─────────────────────────────────────────────────────────────
   const proto  = location.protocol === 'https:' ? 'wss' : 'ws';
-  let pvpWsPath = SUBMODE === 'quick'
-    ? `/ws/pvp/quick/${PLAYER_ID}`
-    : `/ws/pvp/${PLAYER_ID}`;
-  const wsUrl  = IS_PVP
-    ? `${proto}://${location.host}${pvpWsPath}`
-    : `${proto}://${location.host}/ws/${GAME_ID}/${PLAYER_ID}`;
+  let wsPath;
+  if (IS_BOT) {
+    wsPath = `/ws/pvp/bot/${PLAYER_ID}?m=${SUBMODE}&d=${BOT_DIFF}`;
+  } else if (IS_PVP) {
+    wsPath = SUBMODE === 'quick'
+      ? `/ws/pvp/quick/${PLAYER_ID}`
+      : `/ws/pvp/${PLAYER_ID}`;
+  } else {
+    wsPath = `/ws/${GAME_ID}/${PLAYER_ID}`;
+  }
+  const wsUrl = `${proto}://${location.host}${wsPath}`;
   const ws     = new WebSocket(wsUrl);
 
   ws.addEventListener('open', () => {

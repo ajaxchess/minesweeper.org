@@ -104,6 +104,43 @@ async def pvp_lobby(request: Request, m: str = "standard"):
         "lang": get_lang(request), "t": get_t(request),
     })
 
+# ── Page: PvP vs Bot lobby (difficulty picker) ────────────────────────────────
+@duel_router.get("/pvp/bot", response_class=HTMLResponse)
+async def pvp_bot_lobby(request: Request):
+    return templates.TemplateResponse("pvp_bot_lobby.html", {
+        "request": request,
+        "user":    get_current_user(request),
+        "lang":    get_lang(request), "t": get_t(request),
+    })
+
+
+# ── Page: PvP vs Bot game ──────────────────────────────────────────────────────
+@duel_router.get("/pvp/bot/play", response_class=HTMLResponse)
+async def pvp_bot_play(request: Request, d: str = "medium", m: str = "standard"):
+    d = d if d in ("easy", "medium", "hard") else "medium"
+    if m == "quick":
+        rows, cols, mines = QUICK_ROWS, QUICK_COLS, QUICK_MINES
+    else:
+        m = "standard"
+        rows, cols, mines = PVP_ROWS, PVP_COLS, PVP_MINES
+    player_id = uuid.uuid4().hex[:8]
+    return templates.TemplateResponse("duel.html", {
+        "request":        request,
+        "game_id":        "",
+        "player_id":      player_id,
+        "rows":           rows,
+        "cols":           cols,
+        "mines":          mines,
+        "mode":           "pvp-bot",
+        "submode":        m,
+        "bot_difficulty": d,
+        "is_creator":     False,
+        "opp_delay":      site_settings.PVP_OPPONENT_BOARD_DELAY_SECS,
+        "user":           get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 # ── Page: PvP Leaderboard ─────────────────────────────────────────────────────
 @duel_router.get("/pvp/leaderboard", response_class=HTMLResponse)
 async def pvp_leaderboard_page(request: Request):
@@ -294,6 +331,118 @@ async def _handle_reveal(ws, game, player_id, msg):
         })
         if game.is_pvp and winner_id:
             _save_pvp_result(game, winner_id)
+
+
+async def _run_bot(game, bot_id: str, difficulty: str) -> None:
+    """Drive the bot player through a game.  Runs as a background asyncio task."""
+    from bots.minesweeper_bot import MinesweeperBot
+
+    # Wait for game to start (or abort)
+    while not game.active and not game.finished:
+        await asyncio.sleep(0.05)
+    if game.finished:
+        return
+
+    bot_state = game.get_player(bot_id)
+    ai = MinesweeperBot(game.rows, game.cols, game.mines, difficulty)
+
+    # Seed the AI with the shared pre-revealed cells
+    for r, c in game.shared_prerev:
+        ai.apply_reveal(r, c, game.shared_board[r][c])
+
+    delay = ai.move_delay()
+
+    while not game.finished:
+        await asyncio.sleep(delay)
+        if game.finished:
+            break
+
+        move = ai.next_move()
+        if move is None:
+            break
+
+        r, c = move
+        result = game.reveal(bot_id, r, c)
+        if not result:
+            continue
+
+        # Update the AI's board knowledge from newly revealed cells
+        for nr, nc in result.get("newly_revealed", []):
+            ai.apply_reveal(nr, nc, bot_state.board[nr][nc])
+
+        # Forward opp_update to the human player
+        human = game.opponent(bot_id)
+        if human and human.ws:
+            await manager.send(human.ws, {
+                "type":               "opp_update",
+                "opp_score":          bot_state.score,
+                "opp_tiles":          bot_state.tiles_revealed,
+                "opp_exploded":       result.get("exploded", False),
+                "opp_cleared":        (not result.get("exploded") and
+                                       result.get("opp_still_alive", False)),
+                "opp_newly_revealed": [
+                    [nr, nc, bot_state.board[nr][nc]]
+                    for nr, nc in result.get("newly_revealed", [])
+                ],
+            })
+
+        if result.get("finished"):
+            winner_id = result.get("winner")
+            scores    = game.scores_payload()
+            await manager.broadcast(game, {
+                "type":       "game_over",
+                "winner_id":  winner_id,
+                "scores":     scores,
+                "elapsed":    round(game.elapsed()),
+                "board_hash": game.board_hash,
+                "rows":       game.rows,
+                "cols":       game.cols,
+                "mines":      game.mines,
+            })
+            if winner_id:
+                _save_pvp_result(game, winner_id)
+            break
+
+
+# ── WebSocket: vs Bot ─────────────────────────────────────────────────────────
+@duel_router.websocket("/ws/pvp/bot/{player_id}")
+async def pvp_bot_ws(ws: WebSocket, player_id: str,
+                     d: str = "medium", m: str = "standard"):
+    d = d if d in ("easy", "medium", "hard") else "medium"
+    if m == "quick":
+        rows, cols, mines, submode = QUICK_ROWS, QUICK_COLS, QUICK_MINES, "quick"
+    else:
+        rows, cols, mines, submode = PVP_ROWS, PVP_COLS, PVP_MINES, "standard"
+
+    await ws.accept()
+
+    # Create a game and add the human immediately
+    game = create_game(rows=rows, cols=cols, mines=mines, submode=submode, is_pvp=True)
+    game.add_player(player_id, ws)
+
+    # Add a bot player (ws=None — it plays via _run_bot coroutine)
+    bot_id = "bot_" + uuid.uuid4().hex[:6]
+    game.add_player(bot_id, None)
+    bot_p = game.get_player(bot_id)
+    bot_p.name = f"Bot ({d.capitalize()})"
+
+    await ws.send_json({
+        "type":    "matched",
+        "game_id": game.game_id,
+        "msg":     f"Bot opponent ready! ({d.capitalize()} difficulty) Get ready…",
+    })
+
+    await asyncio.sleep(3)
+    game.start()
+    await manager.broadcast(game, {
+        "type": "start",
+        "msg":  f"⚔️ vs Bot ({d.capitalize()}) — Good luck!",
+        **game.start_payload(),
+    })
+
+    asyncio.create_task(_run_bot(game, bot_id, d))
+
+    await _game_loop(ws, game, player_id)
 
 
 async def _game_loop(ws: WebSocket, game, player_id: str):
