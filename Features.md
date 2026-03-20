@@ -69,4 +69,5 @@ F6 Rush
 F7 Allow chording as an optional feature: https://minesweeper.fandom.com/wiki/Chording
 
 D1 Document the environment
-  Development is done on a Mac and pushed to an Ubuntu server on AWS
+  Development is done on a Mac, Linux desktop, or Windows desktop and 
+  pushed to an Ubuntu server on AWS
