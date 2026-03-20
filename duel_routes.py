@@ -17,8 +17,16 @@ from duel import (
 )
 from database import PvpResult, SessionLocal
 
+import settings as site_settings
+
 duel_router = APIRouter()
 templates   = Jinja2Templates(directory="templates")
+templates.env.globals["DEFAULT_SKIN"]         = site_settings.DEFAULT_SKIN
+templates.env.globals["active_skin"]          = site_settings.active_skin
+templates.env.globals["solstice_banner"]      = site_settings.solstice_banner
+templates.env.globals["equinox_banner"]       = site_settings.equinox_banner
+templates.env.globals["diana_birthday_banner"] = site_settings.diana_birthday_banner
+templates.env.globals["ga_tag"]               = ""  # not needed in duel routes
 
 # ── Page: create a new duel ───────────────────────────────────────────────────
 @duel_router.get("/duel", response_class=HTMLResponse)
