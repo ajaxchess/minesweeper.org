@@ -98,6 +98,17 @@ nav a.active { background: var(--accent); color: #fff; }
   border-bottom: 1px solid #2a3f6f;
 }
 
+.diana-birthday-banner {
+  width: 100%;
+  background: linear-gradient(90deg, #1a0a2e 0%, #4a1a6a 30%, #7b2d8b 50%, #4a1a6a 70%, #1a0a2e 100%);
+  color: #f0d8ff;
+  text-align: center;
+  padding: 0.55rem 1rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #7b2d8b;
+}
+
 /* ── Layout ──────────────────────────────────────────────────────────────── */
 main { flex: 1; padding: 1rem 0.5rem; }
 

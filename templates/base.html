@@ -10,7 +10,7 @@
   <link rel="canonical" href="{% block canonical %}https://minesweeper.org/{% endblock %}">
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=21" />
+  <link rel="stylesheet" href="/static/css/style.css?v=22" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     (function(){
@@ -158,6 +158,9 @@
   {% endif %}
   {% if equinox_banner() %}
   <div class="solstice-banner">🌍 {{ equinox_banner() }} 🌍</div>
+  {% endif %}
+  {% if diana_birthday_banner() %}
+  <div class="diana-birthday-banner">👑 {{ diana_birthday_banner() }} 👑</div>
   {% endif %}
 
   <!-- Top Banner Ad -->

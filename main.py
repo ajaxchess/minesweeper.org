@@ -64,8 +64,9 @@ templates = Jinja2Templates(directory="templates")
 templates.env.globals["ga_tag"]         = Config(".env")("GA_TAG", default="")
 templates.env.globals["DEFAULT_SKIN"]   = site_settings.DEFAULT_SKIN
 templates.env.globals["active_skin"]     = site_settings.active_skin
-templates.env.globals["solstice_banner"] = site_settings.solstice_banner
-templates.env.globals["equinox_banner"]  = site_settings.equinox_banner
+templates.env.globals["solstice_banner"]       = site_settings.solstice_banner
+templates.env.globals["equinox_banner"]        = site_settings.equinox_banner
+templates.env.globals["diana_birthday_banner"] = site_settings.diana_birthday_banner
 
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
