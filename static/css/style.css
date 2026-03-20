@@ -4676,9 +4676,17 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
   margin-left: 0.25rem;
 }
 
-/* Opponent board grid — hidden until game starts */
+/* Opponent board grid — hidden until game starts; cells half the normal size */
 #opp-board {
   display: none;
+  --cell-size: 18px;   /* override globally so all child .cell pick it up */
+  grid-template-columns: repeat(var(--cols), var(--cell-size));
+  gap: 1px;
+  background: var(--surface);
+  padding: 4px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.5rem;
 }
 
 .opp-board-waiting {
@@ -4687,11 +4695,12 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
   font-style: italic;
   padding: 1rem 0;
   text-align: center;
+  min-width: 120px;
 }
 
-/* Opponent cells are slightly dimmer but same size/style */
+/* Opponent cells are smaller and read-only */
 .cell.opp-cell {
-  opacity: 0.85;
+  opacity: 0.9;
   cursor: default;
 }
 
