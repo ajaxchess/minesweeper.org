@@ -1277,6 +1277,15 @@ kbd {
 .duel-result h2 { font-size: 2rem; color: var(--accent2); }
 .duel-result p  { color: var(--text); font-size: 1rem; }
 .result-time    { color: var(--text-dim); font-size: 0.9rem; }
+.result-hash    { font-size: 0.8rem; color: var(--text-dim); }
+.result-hash a  { color: var(--accent2); }
+
+/* Classic/Diana skin: overlay is always dark so force light text */
+html[data-skin="classic"] .duel-result h2 { color: #6699ff; }
+html[data-skin="classic"] .duel-result p  { color: #e0e0e0; }
+html[data-skin="classic"] .result-time    { color: #a0a8b8; }
+html[data-skin="classic"] .result-hash    { color: #a0a8b8; }
+html[data-skin="classic"] .result-hash a  { color: #88ccff; }
 
 .duel-play-again {
   margin-top: 0.5rem;
