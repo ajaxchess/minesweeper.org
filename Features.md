@@ -60,12 +60,12 @@ F26 Mosaic game mode
 F27 Tentaizu game improvements
 
 F28 Blog comments
+  Logged-in users can comment on blog posts
 
 F29 PvP bot opponent
    Constraint-based Minesweeper AI in bots/minesweeper_bot.py (easy/medium/hard).
    Bot lobby at /pvp/bot; game at /pvp/bot/play?m=standard&d=medium.
    "🤖 vs Bot" tab added to the PvP mode switcher.
-  Logged-in users can comment on blog posts
 
 F30 PvP rankings sortable columns
    Wins and Elo columns in win rankings table are clickable to toggle ascending/descending sort.
