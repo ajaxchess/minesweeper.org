@@ -66,5 +66,91 @@
     <a href="/blog" class="blog-post-nav-link">← All posts</a>
   </div>
 
+  <!-- Comments section -->
+  <section class="blog-comments">
+    <h2 class="blog-comments-title">Comments</h2>
+
+    {% if comments %}
+    <div class="blog-comments-list">
+      {% for c in comments %}
+      <div class="blog-comment">
+        <div class="blog-comment-meta">
+          <strong class="blog-comment-author">{{ c.display_name }}</strong>
+          <time class="blog-comment-date">{{ c.created_at.strftime("%B %-d, %Y") }}</time>
+        </div>
+        <div class="blog-comment-body">{{ c.body }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="blog-comments-empty">No comments yet. Be the first!</p>
+    {% endif %}
+
+    {% if user %}
+    <div class="blog-comment-form-wrap">
+      <h3 class="blog-comment-form-title">Leave a comment</h3>
+      <form id="blog-comment-form" class="blog-comment-form">
+        <textarea id="blog-comment-body" class="blog-comment-textarea" rows="4"
+                  placeholder="Write your comment here…" maxlength="2000" required></textarea>
+        <div class="blog-comment-form-footer">
+          <span class="blog-comment-as">Commenting as <strong>{{ user.display_name or user.name }}</strong></span>
+          <button type="submit" class="blog-comment-submit">Post Comment</button>
+        </div>
+        <div id="blog-comment-msg" class="blog-comment-msg" style="display:none"></div>
+      </form>
+    </div>
+    {% else %}
+    <div class="blog-comments-login-prompt">
+      <p>Want to join the conversation? <a href="/auth/login" class="blog-login-link">Sign in with Google</a> to leave a comment.</p>
+    </div>
+    {% endif %}
+  </section>
+
 </div>
+{% endblock %}
+
+{% block scripts %}
+{% if user %}
+<script>
+document.getElementById('blog-comment-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const body = document.getElementById('blog-comment-body').value.trim();
+  const msg  = document.getElementById('blog-comment-msg');
+  const btn  = this.querySelector('button[type="submit"]');
+  if (!body) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Posting…';
+  msg.style.display = 'none';
+
+  try {
+    const r = await fetch('/api/blog/{{ post.slug }}/comments', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ body }),
+    });
+    const data = await r.json();
+    if (r.ok) {
+      document.getElementById('blog-comment-body').value = '';
+      btn.textContent = 'Post Comment';
+      btn.disabled = false;
+      msg.textContent = '✅ ' + data.message;
+      msg.className = 'blog-comment-msg blog-comment-msg-ok';
+    } else {
+      btn.textContent = 'Post Comment';
+      btn.disabled = false;
+      msg.textContent = '❌ ' + (data.detail || 'Could not submit comment.');
+      msg.className = 'blog-comment-msg blog-comment-msg-err';
+    }
+    msg.style.display = 'block';
+  } catch {
+    btn.textContent = 'Post Comment';
+    btn.disabled = false;
+    msg.textContent = '❌ Network error. Please try again.';
+    msg.className = 'blog-comment-msg blog-comment-msg-err';
+    msg.style.display = 'block';
+  }
+});
+</script>
+{% endif %}
 {% endblock %}

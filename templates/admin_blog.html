@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Admin — Blog Comments — minesweeper.org{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">Blog Comment Moderation</h1>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">signed in as {{ user.email }}</p>
+  <p style="text-align:center;margin-bottom:1.5rem;">
+    <a href="/admin">⬅ Dashboard</a> &nbsp;|&nbsp;
+    <a href="/admin/operations">⚙ Operations</a> &nbsp;|&nbsp;
+    <a href="/admin/users">👥 Users</a> &nbsp;|&nbsp;
+    <a href="/admin/kanban">📋 Kanban</a>
+  </p>
+
+  <!-- Pending comments -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Pending Review ({{ pending | length }})</h2>
+    {% if pending %}
+    <table class="lb-table admin-comments-table">
+      <thead>
+        <tr><th>Post</th><th>Author</th><th>Comment</th><th>Date</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for c in pending %}
+        <tr>
+          <td><a href="/blog/{{ c.post_slug }}">/blog/{{ c.post_slug }}</a></td>
+          <td>{{ c.display_name }}<br><small style="color:var(--text-dim)">{{ c.user_email }}</small></td>
+          <td class="admin-comment-body-cell">{{ c.body }}</td>
+          <td style="white-space:nowrap">{{ c.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td style="white-space:nowrap">
+            <form method="post" action="/admin/blog/comments/{{ c.id }}/approve" style="display:inline">
+              <button class="admin-btn admin-btn-approve" type="submit">✅ Approve</button>
+            </form>
+            <form method="post" action="/admin/blog/comments/{{ c.id }}/delete" style="display:inline"
+                  onsubmit="return confirm('Delete this comment?')">
+              <button class="admin-btn admin-btn-delete" type="submit">🗑 Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--text-dim);padding:1rem 0">No comments awaiting review.</p>
+    {% endif %}
+  </section>
+
+  <!-- Recently approved -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Recently Approved (last 50)</h2>
+    {% if approved %}
+    <table class="lb-table admin-comments-table">
+      <thead>
+        <tr><th>Post</th><th>Author</th><th>Comment</th><th>Date</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for c in approved %}
+        <tr>
+          <td><a href="/blog/{{ c.post_slug }}">/blog/{{ c.post_slug }}</a></td>
+          <td>{{ c.display_name }}<br><small style="color:var(--text-dim)">{{ c.user_email }}</small></td>
+          <td class="admin-comment-body-cell">{{ c.body }}</td>
+          <td style="white-space:nowrap">{{ c.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td style="white-space:nowrap">
+            <form method="post" action="/admin/blog/comments/{{ c.id }}/delete" style="display:inline"
+                  onsubmit="return confirm('Delete this comment?')">
+              <button class="admin-btn admin-btn-delete" type="submit">🗑 Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--text-dim);padding:1rem 0">No approved comments yet.</p>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}

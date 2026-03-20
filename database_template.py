@@ -499,6 +499,23 @@ class ServerStats(Base):
     http_requests  = Column(Integer,    nullable=False, default=0)  # requests this hour
 
 
+# ── Blog Comment model ────────────────────────────────────────────────────────
+class BlogComment(Base):
+    __tablename__ = "blog_comments"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    post_slug    = Column(String(128), nullable=False, index=True)
+    user_email   = Column(String(256), nullable=False, index=True)
+    display_name = Column(String(64), nullable=False)
+    body         = Column(String(2000), nullable=False)
+    approved     = Column(Boolean, default=False, nullable=False, index=True)
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_blog_comments_slug_approved", "post_slug", "approved"),
+    )
+
+
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
     Base.metadata.create_all(bind=engine)

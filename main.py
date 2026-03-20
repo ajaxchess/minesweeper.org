@@ -13,7 +13,7 @@ from sqlalchemy import func, case, text
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, CylinderScore, ToroidScore, ReplayScore, UserProfile, PvpResult, ServerStats, GuestScoreArchive, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, CylinderScore, ToroidScore, ReplayScore, UserProfile, PvpResult, ServerStats, GuestScoreArchive, BlogComment, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -780,7 +780,7 @@ def _parse_front_matter(raw: str) -> tuple[dict, str]:
 
 
 @app.get("/blog/{slug}", response_class=HTMLResponse)
-async def blog_post(request: Request, slug: str):
+async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
     import markdown as md_lib
     post = _BLOG_BY_SLUG.get(slug)
     if not post:
@@ -801,6 +801,12 @@ async def blog_post(request: Request, slug: str):
         or post.get("datePublished")
         or post["date"]
     )
+    comments = (
+        db.query(BlogComment)
+        .filter_by(post_slug=slug, approved=True)
+        .order_by(BlogComment.created_at)
+        .all()
+    )
     return templates.TemplateResponse("blog_post.html", {
         "request":       request, "mode": "blog",
         "user":          get_current_user(request),
@@ -812,7 +818,33 @@ async def blog_post(request: Request, slug: str):
         "publisher":     front_matter.get("publisher", ""),
         "og_image":      front_matter.get("image", ""),
         "date_published": date_published,
+        "comments":      comments,
     })
+
+
+@app.post("/api/blog/{slug}/comments")
+async def submit_blog_comment(slug: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Login required")
+    if slug not in _BLOG_BY_SLUG:
+        raise HTTPException(status_code=404, detail="Post not found")
+    data = await request.json()
+    body = (data.get("body") or "").strip()
+    if not body:
+        raise HTTPException(status_code=400, detail="Comment body required")
+    if len(body) > 2000:
+        raise HTTPException(status_code=400, detail="Comment too long (max 2000 chars)")
+    comment = BlogComment(
+        post_slug=slug,
+        user_email=user["email"],
+        display_name=user.get("display_name") or user.get("name") or user["email"],
+        body=body,
+        approved=False,
+    )
+    db.add(comment)
+    db.commit()
+    return {"ok": True, "message": "Your comment has been submitted and is awaiting review."}
 
 
 @app.get("/privacy", response_class=HTMLResponse)
@@ -2257,3 +2289,47 @@ def admin_operations(request: Request, db: Session = Depends(get_db)):
         "chart_net_recv": _json.dumps(chart_net_recv),
         "chart_requests": _json.dumps(chart_requests),
     })
+
+
+@app.get("/admin/blog", response_class=HTMLResponse)
+def admin_blog(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    pending  = db.query(BlogComment).filter_by(approved=False).order_by(BlogComment.created_at).all()
+    approved = db.query(BlogComment).filter_by(approved=True).order_by(BlogComment.created_at.desc()).limit(50).all()
+    return templates.TemplateResponse("admin_blog.html", {
+        "request": request,
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        "pending":  pending,
+        "approved": approved,
+    })
+
+
+@app.post("/admin/blog/comments/{comment_id}/approve")
+def admin_approve_comment(comment_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    comment = db.query(BlogComment).filter_by(id=comment_id).first()
+    if not comment:
+        raise HTTPException(status_code=404, detail="Not found")
+    comment.approved = True
+    db.commit()
+    return RedirectResponse("/admin/blog", status_code=303)
+
+
+@app.post("/admin/blog/comments/{comment_id}/delete")
+def admin_delete_comment(comment_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    comment = db.query(BlogComment).filter_by(id=comment_id).first()
+    if not comment:
+        raise HTTPException(status_code=404, detail="Not found")
+    db.delete(comment)
+    db.commit()
+    return RedirectResponse("/admin/blog", status_code=303)

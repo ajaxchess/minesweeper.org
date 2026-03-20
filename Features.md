@@ -46,6 +46,11 @@ F26 Mosaic game mode
 
 F27 Tentaizu game improvements
 
+F28 Blog comments
+  Logged-in users can comment on blog posts
+  Comments require admin approval before appearing
+  Admin moderation page at /admin/blog
+
 D2 Add feature request code to the beginning of the commit message
    If the commit has to do with the Tentaizu theme, the commit message should be
    of the form:
