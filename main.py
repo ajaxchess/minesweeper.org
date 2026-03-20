@@ -1552,7 +1552,7 @@ async def mosaic_standard_page(request: Request):
     })
 
 @app.get("/mosaic/replay", response_class=HTMLResponse)
-async def mosaic_replay_page(request: Request, seed: str = "", rows: int = 10, cols: int = 10):
+async def mosaic_replay_page(request: Request, seed: str = "", rows: int = 9, cols: int = 9):
     cell_size = 64 if rows <= 5 else 42
     return templates.TemplateResponse("mosaic_replay.html", {
         "request": request, "mode": "mosaic",

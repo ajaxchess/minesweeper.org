@@ -44,8 +44,8 @@ let G = {
 // ── Puzzle generation ─────────────────────────────────────────────────────────
 function generatePuzzle(seedStr, rows, cols) {
     const rng = mulberry32(strSeed(`mosaic:${rows}x${cols}:${seedStr}`));
-    // 5×5 easy targets ~8 black cells (32%); larger grids use 40%
-    const density = (rows <= 5 && cols <= 5) ? 0.32 : 0.40;
+    // 5×5 easy targets ~8 black cells (32%); standard 9×9 uses 35%
+    const density = (rows <= 5 && cols <= 5) ? 0.32 : 0.35;
     const solution = Array.from({ length: rows * cols }, () => rng() < density ? 1 : 0);
 
     const hints = [];

@@ -73,7 +73,7 @@
 
     <!-- Board -->
     <div id="ms-board-wrap">
-      <div id="ms-board" data-today="{{ today }}" data-rows="10" data-cols="10" data-cell-size="42"
+      <div id="ms-board" data-today="{{ today }}" data-rows="9" data-cols="9" data-cell-size="46"
            data-score-api="/api/mosaic-scores"
            data-username="{{ user.display_name if user else '' }}"></div>
 
@@ -116,7 +116,7 @@
     <details class="tz-howto">
       <summary>How to play Mosaic</summary>
       <div class="tz-howto-body">
-        <p>Mosaic is a 10×10 logic puzzle. Each number tells you exactly how many of the cells in its 3×3 neighborhood (including itself) must be filled black.</p>
+        <p>Mosaic is a 9×9 logic puzzle. Each number tells you exactly how many of the cells in its 3×3 neighborhood (including itself) must be filled black.</p>
         <ul>
           <li><strong>Click</strong> any cell to fill it black; click again to clear it.</li>
           <li>A <span class="ms-legend-ok">green</span> number means that clue is exactly satisfied.</li>
@@ -192,5 +192,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/mosaic.js?v=4"></script>
+<script src="/static/js/mosaic.js?v=5"></script>
 {% endblock %}
