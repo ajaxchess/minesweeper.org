@@ -49,10 +49,11 @@
             <th>#</th>
             <th>Player</th>
             <th>Wins</th>
+            <th>Elo</th>
           </tr>
         </thead>
         <tbody id="pvprk-body">
-          <tr><td colspan="3" class="lb-loading">Loading…</td></tr>
+          <tr><td colspan="4" class="lb-loading">Loading…</td></tr>
         </tbody>
       </table>
     </div>
@@ -137,13 +138,13 @@ function esc(v) {
 
 async function loadPvpRankings() {
   const body = document.getElementById('pvprk-body');
-  body.innerHTML = `<tr><td colspan="3" class="lb-loading">${window.T.lb_loading}</td></tr>`;
+  body.innerHTML = `<tr><td colspan="4" class="lb-loading">${window.T.lb_loading}</td></tr>`;
   try {
     const res  = await fetch(apiUrl());
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
     if (!data.length) {
-      body.innerHTML = `<tr><td colspan="3" class="lb-empty">No PvP results yet — play to get on the board!</td></tr>`;
+      body.innerHTML = `<tr><td colspan="4" class="lb-empty">No PvP results yet — play to get on the board!</td></tr>`;
       return;
     }
     body.innerHTML = data.map((r, i) => `
@@ -151,9 +152,10 @@ async function loadPvpRankings() {
         <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
         <td class="lb-name">${esc(r.name || 'Anonymous')}</td>
         <td class="lb-stat"><strong>${r.wins}</strong></td>
+        <td class="lb-stat">${r.elo != null ? r.elo : '—'}</td>
       </tr>`).join('');
   } catch {
-    body.innerHTML = `<tr><td colspan="3" class="lb-empty">${window.T.lb_error}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="4" class="lb-empty">${window.T.lb_error}</td></tr>`;
   }
 }
 

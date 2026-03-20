@@ -1491,7 +1491,17 @@ def get_pvp_rankings(period: str = "alltime",
         wins[key]["wins"] += 1
 
     ranked = sorted(wins.values(), key=lambda x: x["wins"], reverse=True)
-    return ranked[:15]
+    top = ranked[:15]
+
+    # Attach Elo rating for each ranked player
+    emails = [p["email"] for p in top if p.get("email")]
+    if emails:
+        profiles = db.query(UserProfile).filter(UserProfile.email.in_(emails)).all()
+        elo_map  = {p.email: p.pvp_elo for p in profiles}
+        for p in top:
+            p["elo"] = elo_map.get(p.get("email"), None)
+
+    return top
 
 
 @app.get("/api/pvp/elo-rankings")
