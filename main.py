@@ -61,8 +61,10 @@ app.include_router(duel_router)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["ga_tag"]       = Config(".env")("GA_TAG", default="")
-templates.env.globals["DEFAULT_SKIN"] = site_settings.DEFAULT_SKIN
+templates.env.globals["ga_tag"]         = Config(".env")("GA_TAG", default="")
+templates.env.globals["DEFAULT_SKIN"]   = site_settings.DEFAULT_SKIN
+templates.env.globals["active_skin"]    = site_settings.active_skin
+templates.env.globals["solstice_banner"] = site_settings.solstice_banner
 
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
@@ -839,7 +841,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "vanity_slug":   profile.vanity_slug if profile else "",
         "pref_sounds":   profile.pref_sounds   if profile else False,
         "pref_chording": profile.pref_chording if profile else True,
-        "pref_skin":     profile.pref_skin     if profile else site_settings.DEFAULT_SKIN,
+        "pref_skin":     profile.pref_skin     if profile else site_settings.active_skin(),
         "about_text":    profile.about_text    if profile else "",
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -1692,7 +1694,7 @@ class ProfileSettingsUpdate(BaseModel):
     favorite_game: Optional[str] = None
     pref_sounds:   bool = False
     pref_chording: bool = True
-    pref_skin:     str  = site_settings.DEFAULT_SKIN
+    pref_skin:     str  = site_settings.active_skin()
 
 
 @app.post("/api/profile/settings")

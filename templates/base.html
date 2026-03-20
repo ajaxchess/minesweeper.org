@@ -19,7 +19,7 @@
       if (t === 'diana' || t === 'classic') localStorage.setItem('skin', 'classic');
       else if (t === 'dark') localStorage.setItem('skin', 'dark');
       else if (t === 'tentaizu') localStorage.setItem('skin', 'tentaizu');
-      var _def = '{{ DEFAULT_SKIN }}';
+      var _def = '{{ active_skin() }}';
       document.documentElement.dataset.skin = localStorage.getItem('skin') || (_def === 'diana' ? 'classic' : _def);
 
       var l = p.get('lang');
@@ -152,6 +152,10 @@
       </div>
     </div>
   </header>
+
+  {% if solstice_banner() %}
+  <div class="solstice-banner">⭐ {{ solstice_banner() }} ⭐</div>
+  {% endif %}
 
   <!-- Top Banner Ad -->
   <div class="ad-container ad-top">

@@ -86,6 +86,18 @@ nav a.active { background: var(--accent); color: #fff; }
   padding-top: 1rem;
 }
 
+/* ── Solstice banner ─────────────────────────────────────────────────────── */
+.solstice-banner {
+  width: 100%;
+  background: linear-gradient(90deg, #0a0e1a 0%, #1a2a4a 40%, #0a0e1a 100%);
+  color: #c8d8f0;
+  text-align: center;
+  padding: 0.55rem 1rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid #2a3f6f;
+}
+
 /* ── Layout ──────────────────────────────────────────────────────────────── */
 main { flex: 1; padding: 1rem 0.5rem; }
 
