@@ -40,6 +40,8 @@ F23 PVP/Duel improvements
 
 F24 Add Kanban board to admin section of the site and create a link
 
+F25 Add timed banner support for special days
+
 D2 Add feature request code to the beginning of the commit message
    If the commit has to do with the Tentaizu theme, the commit message should be
    of the form:
