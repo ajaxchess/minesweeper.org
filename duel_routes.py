@@ -48,6 +48,7 @@ async def duel_lobby(request: Request, m: str = "standard"):
         "mode":       "duel",
         "submode":    m,
         "is_creator": True,
+        "opp_delay":  site_settings.PVP_OPPONENT_BOARD_DELAY_SECS,
         "user":       get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -74,6 +75,7 @@ async def duel_join(request: Request, game_id: str):
         "mode":       "duel",
         "submode":    game.submode,
         "is_creator": is_creator,
+        "opp_delay":  site_settings.PVP_OPPONENT_BOARD_DELAY_SECS,
         "user":       get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -97,6 +99,7 @@ async def pvp_lobby(request: Request, m: str = "standard"):
         "mode":       "pvp",
         "submode":    m,
         "is_creator": False,
+        "opp_delay":  site_settings.PVP_OPPONENT_BOARD_DELAY_SECS,
         "user":       get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -240,6 +243,11 @@ async def _handle_reveal(ws, game, player_id, msg):
             "opp_exploded": result.get("exploded", False),
             "opp_cleared":  (not result.get("exploded") and
                              result.get("opp_still_alive", False)),
+            # Cell values for rendering the opponent's board (client applies with delay)
+            "opp_newly_revealed": [
+                [row, col, p.board[row][col]]
+                for row, col in result["newly_revealed"]
+            ],
         })
 
     if result.get("finished"):

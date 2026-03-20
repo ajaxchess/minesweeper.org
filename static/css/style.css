@@ -4637,3 +4637,64 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
 .admin-btn-approve:hover { background: rgba(46,125,50,0.45); }
 .admin-btn-delete  { background: rgba(198,40,40,0.2);  color: #e57373; }
 .admin-btn-delete:hover  { background: rgba(198,40,40,0.4); }
+
+/* ── PvP dual-board layout ──────────────────────────────────────────────────── */
+.duel-boards-row {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.duel-board-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.duel-board-col-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.duel-board-col-mine .duel-board-col-label { color: var(--accent2); }
+.duel-board-col-opp  .duel-board-col-label { color: #e57373; }
+
+.opp-board-delay-badge {
+  display: inline-block;
+  background: rgba(229, 115, 115, 0.18);
+  color: #e57373;
+  border-radius: 6px;
+  padding: 0 0.4em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-left: 0.25rem;
+}
+
+/* Opponent board grid — hidden until game starts */
+#opp-board {
+  display: none;
+}
+
+.opp-board-waiting {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-style: italic;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+/* Opponent cells are slightly dimmer but same size/style */
+.cell.opp-cell {
+  opacity: 0.85;
+  cursor: default;
+}
+
+.cell.opp-cell:hover {
+  filter: none;
+}

@@ -12,6 +12,11 @@ from datetime import date, datetime, timedelta
 DEFAULT_SKIN: str = 'dark'
 ALLOWED_SKINS: tuple[str, ...] = ('dark', 'tentaizu', 'diana')
 
+# ── PvP opponent board delay ───────────────────────────────────────────────────
+# Seconds to delay showing the opponent's board moves to the player.
+# 0 = real-time (no delay). Adjust to change competitive feel.
+PVP_OPPONENT_BOARD_DELAY_SECS: int = 3
+
 # ── Diana birthday theming ────────────────────────────────────────────────────
 DIANA_BIRTHDAY_SKIN:   str = 'diana'
 DIANA_BIRTHDAY_BANNER: str = "Happy birthday, Diana, Princess of Wales!"

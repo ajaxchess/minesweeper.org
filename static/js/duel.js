@@ -11,15 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!boardEl || (boardEl.dataset.mode !== 'duel' && boardEl.dataset.mode !== 'pvp')) return;
 
   // ── Config ────────────────────────────────────────────────────────────────
-  const ROWS      = parseInt(boardEl.dataset.rows);
-  const COLS      = parseInt(boardEl.dataset.cols);
-  const GAME_ID   = boardEl.dataset.gameId;
-  const PLAYER_ID = boardEl.dataset.playerId;
+  const ROWS       = parseInt(boardEl.dataset.rows);
+  const COLS       = parseInt(boardEl.dataset.cols);
+  const GAME_ID    = boardEl.dataset.gameId;
+  const PLAYER_ID  = boardEl.dataset.playerId;
   const IS_PVP     = boardEl.dataset.mode === 'pvp';
   const IS_CREATOR = boardEl.dataset.isCreator === 'true';
   const SUBMODE    = boardEl.dataset.submode || 'standard';
-
-  console.log('GAME_ID:', GAME_ID, 'PLAYER_ID:', PLAYER_ID, 'IS_PVP:', IS_PVP);
+  const OPP_DELAY_MS = (parseInt(boardEl.dataset.oppDelay || '0')) * 1000;
 
   // ── Local state ───────────────────────────────────────────────────────────
   let revealed   = Array.from({length: ROWS}, () => Array(COLS).fill(false));
@@ -30,7 +29,16 @@ document.addEventListener('DOMContentLoaded', () => {
   let timerID    = null;
   let elapsed    = 0;
 
-  // ── Build board DOM ───────────────────────────────────────────────────────
+  // ── Opponent board state ──────────────────────────────────────────────────
+  const oppBoardEl  = document.getElementById('opp-board');
+  const oppWaitEl   = document.getElementById('opp-board-waiting');
+  let oppRevealed   = Array.from({length: ROWS}, () => Array(COLS).fill(false));
+  let oppBoardVals  = Array.from({length: ROWS}, () => Array(COLS).fill(null));
+  let oppExploded   = false;
+  // Queue: [{applyAt: ms timestamp, cells: [[r,c,val],...], exploded: bool, cleared: bool}]
+  const pendingOppUpdates = [];
+
+  // ── Build player board DOM ────────────────────────────────────────────────
   function buildBoard() {
     boardEl.innerHTML = '';
     boardEl.style.setProperty('--cols', COLS);
@@ -48,8 +56,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // ── Build opponent board DOM (read-only) ──────────────────────────────────
+  function buildOppBoard() {
+    if (!oppBoardEl) return;
+    oppBoardEl.innerHTML = '';
+    oppBoardEl.style.setProperty('--cols', COLS);
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell hidden opp-cell';
+        cell.dataset.r = r;
+        cell.dataset.c = c;
+        oppBoardEl.appendChild(cell);
+      }
+    }
+  }
+
   function cellEl(r, c) {
     return boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+  }
+
+  function oppCellEl(r, c) {
+    return oppBoardEl ? oppBoardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`) : null;
   }
 
   function renderCell(r, c) {
@@ -80,6 +108,52 @@ document.addEventListener('DOMContentLoaded', () => {
       el.textContent = val;
       el.style.color = getNumColors()[val];
     }
+  }
+
+  function renderOppCell(r, c) {
+    const el  = oppCellEl(r, c);
+    if (!el) return;
+    const val = oppBoardVals[r][c];
+    el.className = 'cell opp-cell';
+
+    if (!oppRevealed[r][c]) {
+      el.classList.add('hidden');
+      el.textContent = '';
+      return;
+    }
+    el.classList.add('revealed');
+    if (val === -1) {
+      el.classList.add(oppExploded ? 'mine-detonated' : 'mine');
+      el.textContent = '💣';
+    } else if (val === 0) {
+      el.textContent = '';
+    } else {
+      el.textContent = val;
+      el.style.color = getNumColors()[val];
+    }
+  }
+
+  // ── Opponent board delayed flush ──────────────────────────────────────────
+  function flushOppUpdates() {
+    const now = Date.now();
+    while (pendingOppUpdates.length && pendingOppUpdates[0].applyAt <= now) {
+      const batch = pendingOppUpdates.shift();
+      batch.cells.forEach(([r, c, val]) => {
+        oppRevealed[r][c]  = true;
+        oppBoardVals[r][c] = val;
+        renderOppCell(r, c);
+      });
+      if (batch.exploded) {
+        oppExploded = true;
+      }
+    }
+  }
+
+  setInterval(flushOppUpdates, 100);
+
+  function showOppBoard() {
+    if (oppWaitEl) oppWaitEl.style.display = 'none';
+    if (oppBoardEl) oppBoardEl.style.display = 'grid';
   }
 
   // ── Timer ─────────────────────────────────────────────────────────────────
@@ -170,7 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const ws     = new WebSocket(wsUrl);
 
   ws.addEventListener('open', () => {
-    // Send player identity so server can attribute PvP results
     const playerName  = boardEl.dataset.username  || '';
     const playerEmail = boardEl.dataset.useremail || '';
     if (playerName) {
@@ -212,6 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
       case 'start':
         setStatus('⚔️ Game on!');
         gameActive = true;
+        showOppBoard();
         startTimer();
         break;
 
@@ -233,7 +307,17 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       }
 
-      case 'opp_update':
+      case 'opp_update': {
+        // Schedule opponent board reveal after delay
+        const cells = msg.opp_newly_revealed || [];
+        if (cells.length > 0 || msg.opp_exploded) {
+          pendingOppUpdates.push({
+            applyAt:  Date.now() + OPP_DELAY_MS,
+            cells:    cells,
+            exploded: msg.opp_exploded || false,
+          });
+        }
+        // Score/tile count updates are immediate (no delay)
         updateScores(null, null, msg.opp_score, msg.opp_tiles);
         if (msg.opp_exploded) {
           setStatus('💥 Opponent hit a mine! Keep playing…');
@@ -241,10 +325,21 @@ document.addEventListener('DOMContentLoaded', () => {
           setStatus('🎉 Opponent cleared their board! Keep playing…');
         }
         break;
+      }
 
       case 'game_over': {
         stopTimer();
         gameActive = false;
+        // Flush all remaining opponent updates immediately on game over
+        pendingOppUpdates.forEach(batch => {
+          batch.cells.forEach(([r, c, val]) => {
+            oppRevealed[r][c]  = true;
+            oppBoardVals[r][c] = val;
+            renderOppCell(r, c);
+          });
+        });
+        pendingOppUpdates.length = 0;
+
         const myScore  = msg.scores[PLAYER_ID] ?? 0;
         const oppId    = Object.keys(msg.scores).find(id => id !== PLAYER_ID);
         const oppScore = oppId ? msg.scores[oppId] : 0;
@@ -291,4 +386,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Init ──────────────────────────────────────────────────────────────────
   buildBoard();
+  buildOppBoard();
 });

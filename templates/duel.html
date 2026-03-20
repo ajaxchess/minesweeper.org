@@ -84,20 +84,40 @@
     <span class="stat-value" id="duel-timer">000</span>
   </div>
 
-  <!-- ── Board ── -->
-  <div class="duel-board-wrap">
-    <div id="board"
-         data-rows="{{ rows }}"
-         data-cols="{{ cols }}"
-         data-mines="{{ mines }}"
-         data-mode="{{ mode }}"
-         data-game-id="{{ game_id }}"
-         data-player-id="{{ player_id }}"
-         data-is-creator="{{ 'true' if is_creator else 'false' }}"
-         data-submode="{{ submode }}"
-         data-username="{{ user.display_name if user else '' }}"
-         data-useremail="{{ user.email if user else '' }}"></div>
-    <div id="duel-overlay" class="duel-overlay" style="display:none"></div>
+  <!-- ── Boards ── -->
+  <div class="duel-boards-row">
+
+    <!-- Player's own board -->
+    <div class="duel-board-col duel-board-col-mine">
+      <div class="duel-board-col-label">⚔️ {{ t.duel_you }}</div>
+      <div class="duel-board-wrap">
+        <div id="board"
+             data-rows="{{ rows }}"
+             data-cols="{{ cols }}"
+             data-mines="{{ mines }}"
+             data-mode="{{ mode }}"
+             data-game-id="{{ game_id }}"
+             data-player-id="{{ player_id }}"
+             data-is-creator="{{ 'true' if is_creator else 'false' }}"
+             data-submode="{{ submode }}"
+             data-opp-delay="{{ opp_delay }}"
+             data-username="{{ user.display_name if user else '' }}"
+             data-useremail="{{ user.email if user else '' }}"></div>
+        <div id="duel-overlay" class="duel-overlay" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Opponent's board (read-only, delayed) -->
+    <div class="duel-board-col duel-board-col-opp">
+      <div class="duel-board-col-label" id="opp-board-label">
+        👁 {{ t.duel_opponent }}{% if opp_delay > 0 %} <span class="opp-board-delay-badge">{{ opp_delay }}s delay</span>{% endif %}
+      </div>
+      <div class="duel-board-wrap">
+        <div id="opp-board" data-rows="{{ rows }}" data-cols="{{ cols }}"></div>
+        <div id="opp-board-waiting" class="opp-board-waiting">Waiting for opponent…</div>
+      </div>
+    </div>
+
   </div>
 
   <p class="instructions">
@@ -114,5 +134,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/duel.js?v=5"></script>
+<script src="/static/js/duel.js?v=6"></script>
 {% endblock %}
