@@ -15,7 +15,7 @@ from duel import (
     ROWS, COLS, MINES, PVP_ROWS, PVP_COLS, PVP_MINES,
     QUICK_ROWS, QUICK_COLS, QUICK_MINES,
 )
-from database import PvpResult, SessionLocal
+from database import PvpResult, UserProfile, SessionLocal
 
 import settings as site_settings
 
@@ -180,8 +180,17 @@ async def _pvp_wait_loop(ws: WebSocket, player_id: str):
         pvp_dequeue(player_id)
 
 
+def _calculate_elo(winner_rating: int, loser_rating: int, k: int = 32) -> tuple:
+    """Return (new_winner_rating, new_loser_rating) using the Elo formula."""
+    expected_winner = 1 / (1 + 10 ** ((loser_rating - winner_rating) / 400))
+    new_winner = round(winner_rating + k * (1 - expected_winner))
+    new_loser  = round(loser_rating  + k * (0 - (1 - expected_winner)))
+    new_loser  = max(100, new_loser)   # floor at 100
+    return new_winner, new_loser
+
+
 def _save_pvp_result(game, winner_id: str):
-    """Persist a completed PvP match to the database."""
+    """Persist a completed PvP match to the database and update Elo ratings."""
     try:
         winner = game.get_player(winner_id) if winner_id else None
         loser  = game.opponent(winner_id)   if winner_id else None
@@ -202,6 +211,24 @@ def _save_pvp_result(game, winner_id: str):
                 board_hash   = game.board_hash,
             )
             db.add(row)
+
+            # Update Elo ratings for logged-in players
+            winner_profile = (
+                db.query(UserProfile).filter(UserProfile.email == winner.email).first()
+                if winner.email else None
+            )
+            loser_profile = (
+                db.query(UserProfile).filter(UserProfile.email == loser.email).first()
+                if loser and loser.email else None
+            )
+            winner_elo = winner_profile.pvp_elo if winner_profile else 1200
+            loser_elo  = loser_profile.pvp_elo  if loser_profile  else 1200
+            new_winner_elo, new_loser_elo = _calculate_elo(winner_elo, loser_elo)
+            if winner_profile:
+                winner_profile.pvp_elo = new_winner_elo
+            if loser_profile:
+                loser_profile.pvp_elo = new_loser_elo
+
             db.commit()
         finally:
             db.close()

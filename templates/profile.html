@@ -40,6 +40,10 @@
       <div class="card-mode">🔢 Tentaizu</div>
       <div class="card-body">{{ t.profile_loading }}</div>
     </div>
+    <div class="summary-card loading" id="card-pvp">
+      <div class="card-mode">⚔️ PvP Rating</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
+    </div>
   </div>
 
   <!-- ── Settings ── -->
@@ -303,6 +307,37 @@ async function loadStats() {
       <div class="card-stat">
         <span class="cs-label">${window.T.profile_avg}</span>
         <span class="cs-value">${td.avg_time}s</span>
+      </div>
+    `;
+  }
+
+  // PvP card
+  const pvpCard = document.getElementById('card-pvp');
+  pvpCard.classList.remove('loading');
+  const pd = allStats['pvp'];
+  if (!pd || (pd.wins === 0 && pd.losses === 0)) {
+    pvpCard.querySelector('.card-body').innerHTML =
+      `<span class="no-data">${window.T.profile_no_games}</span>
+       <a href="/pvp" class="card-play-link">${window.T.profile_play_now}</a>`;
+  } else {
+    const total    = pd.wins + pd.losses;
+    const winRate  = total > 0 ? Math.round((pd.wins / total) * 100) : 0;
+    pvpCard.querySelector('.card-body').innerHTML = `
+      <div class="card-stat highlight">
+        <span class="cs-label">Elo Rating</span>
+        <span class="cs-value">${pd.elo}</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">Wins</span>
+        <span class="cs-value">${pd.wins}</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">Losses</span>
+        <span class="cs-value">${pd.losses}</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">Win Rate</span>
+        <span class="cs-value">${winRate}%</span>
       </div>
     `;
   }

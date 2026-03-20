@@ -1494,6 +1494,24 @@ def get_pvp_rankings(period: str = "alltime",
     return ranked[:15]
 
 
+@app.get("/api/pvp/elo-rankings")
+def get_pvp_elo_rankings(db: Session = Depends(get_db)):
+    """Return players ranked by Elo rating (only players who have played at least one match)."""
+    winner_emails = db.query(PvpResult.winner_email).filter(PvpResult.winner_email != None)
+    loser_emails  = db.query(PvpResult.loser_email ).filter(PvpResult.loser_email  != None)
+    played_emails = {row[0] for row in winner_emails.union(loser_emails).all()}
+    if not played_emails:
+        return []
+    profiles = (
+        db.query(UserProfile)
+        .filter(UserProfile.email.in_(played_emails))
+        .order_by(UserProfile.pvp_elo.desc())
+        .limit(50)
+        .all()
+    )
+    return [{"name": p.display_name, "elo": p.pvp_elo} for p in profiles]
+
+
 @app.get("/tentaizu", response_class=HTMLResponse)
 async def tentaizu_page(request: Request, date_param: str = Query(None, alias="date")):
     import re
@@ -1910,6 +1928,17 @@ def _build_stats(email: str, db: Session) -> dict:
         }
     else:
         stats["tentaizu"] = None
+
+    # PvP stats — wins, losses, and Elo rating
+    pvp_wins   = db.query(PvpResult).filter(PvpResult.winner_email == email).count()
+    pvp_losses = db.query(PvpResult).filter(PvpResult.loser_email  == email).count()
+    profile    = db.query(UserProfile).filter(UserProfile.email == email).first()
+    pvp_elo    = profile.pvp_elo if profile else 1200
+    stats["pvp"] = {
+        "wins":   pvp_wins,
+        "losses": pvp_losses,
+        "elo":    pvp_elo,
+    }
 
     return stats
 

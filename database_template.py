@@ -478,6 +478,7 @@ class UserProfile(Base):
     pref_chording = Column(Boolean, default=True,  nullable=False)
     pref_skin     = Column(String(16), default='dark', nullable=False)
     about_text    = Column(String(5000), nullable=True)
+    pvp_elo       = Column(Integer, default=1200, nullable=False)
     created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 # ── Server Stats model (hourly snapshots) ─────────────────────────────────────
@@ -534,6 +535,7 @@ def _apply_migrations():
         ("tentaizu_scores",  "guest_token", "VARCHAR(36) NULL"),
         ("replay_scores",    "guest_token", "VARCHAR(36) NULL"),
         ("pvp_results",      "board_hash",  "VARCHAR(128) NULL"),
+        ("user_profiles",    "pvp_elo",     "INT NOT NULL DEFAULT 1200"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:

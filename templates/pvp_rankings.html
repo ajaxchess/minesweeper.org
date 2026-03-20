@@ -1,52 +1,82 @@
 {% extends "base.html" %}
-{% block title %}PvP Rankings — Most Wins | minesweeper.org{% endblock %}
-{% block description %}PvP Minesweeper win rankings. See who dominates in head-to-head matches.{% endblock %}
+{% block title %}PvP Rankings | minesweeper.org{% endblock %}
+{% block description %}PvP Minesweeper rankings. Win counts and Elo ratings for head-to-head matches.{% endblock %}
 {% block canonical %}https://minesweeper.org/pvp/rankings{% endblock %}
 {% block og_url %}https://minesweeper.org/pvp/rankings{% endblock %}
-{% block og_title %}PvP Rankings — Most Wins{% endblock %}
-{% block og_description %}PvP Minesweeper win rankings. See who dominates in head-to-head matches.{% endblock %}
+{% block og_title %}PvP Rankings{% endblock %}
+{% block og_description %}PvP Minesweeper rankings by win count and Elo rating.{% endblock %}
 
 {% block content %}
 <div class="lb-wrapper">
 
-  <h1 class="lb-title">👑 PvP Win Rankings</h1>
-  <p class="lb-daily-note">Players ranked by number of PvP wins.</p>
-
-  <div class="lb-tabs" role="tablist">
-    <button class="lb-tab active" data-mode="all"      role="tab">All Modes</button>
-    <button class="lb-tab"        data-mode="standard" role="tab">Standard</button>
-    <button class="lb-tab"        data-mode="quick"    role="tab">⚡ Quick</button>
+  <!-- ── View toggle: Win Count vs Elo ── -->
+  <div class="lb-tabs" role="tablist" id="pvprk-view-tabs">
+    <button class="lb-tab active" data-view="wins" role="tab">👑 Win Count</button>
+    <button class="lb-tab"        data-view="elo"  role="tab">📊 Elo Ratings</button>
   </div>
 
-  <div class="lb-period-toggle" role="group" aria-label="Time period">
-    <button class="lb-period-btn active" data-period="daily">Daily</button>
-    <button class="lb-period-btn"        data-period="season" id="pvprk-season-btn">Season 1</button>
-    <button class="lb-period-btn"        data-period="alltime">All Time</button>
+  <!-- ── Win Count view ── -->
+  <div id="pvprk-wins-view">
+    <h1 class="lb-title">👑 PvP Win Rankings</h1>
+    <p class="lb-daily-note">Players ranked by number of PvP wins.</p>
+
+    <div class="lb-tabs" role="tablist">
+      <button class="lb-tab active" data-mode="all"      role="tab">All Modes</button>
+      <button class="lb-tab"        data-mode="standard" role="tab">Standard</button>
+      <button class="lb-tab"        data-mode="quick"    role="tab">⚡ Quick</button>
+    </div>
+
+    <div class="lb-period-toggle" role="group" aria-label="Time period">
+      <button class="lb-period-btn active" data-period="daily">Daily</button>
+      <button class="lb-period-btn"        data-period="season" id="pvprk-season-btn">Season 1</button>
+      <button class="lb-period-btn"        data-period="alltime">All Time</button>
+    </div>
+
+    <div id="pvprk-date-wrap" class="lb-sub-picker">
+      <label for="pvprk-date-input">Date:</label>
+      <input type="date" id="pvprk-date-input" class="lb-date-input">
+    </div>
+
+    <div id="pvprk-season-wrap" class="lb-sub-picker" style="display:none">
+      <label for="pvprk-season-select">Season:</label>
+      <select id="pvprk-season-select" class="lb-season-select"></select>
+    </div>
+
+    <div class="lb-table-wrap">
+      <table class="lb-table" id="pvprk-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Player</th>
+            <th>Wins</th>
+          </tr>
+        </thead>
+        <tbody id="pvprk-body">
+          <tr><td colspan="3" class="lb-loading">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <div id="pvprk-date-wrap" class="lb-sub-picker">
-    <label for="pvprk-date-input">Date:</label>
-    <input type="date" id="pvprk-date-input" class="lb-date-input">
-  </div>
+  <!-- ── Elo view ── -->
+  <div id="pvprk-elo-view" style="display:none">
+    <h1 class="lb-title">📊 PvP Elo Rankings</h1>
+    <p class="lb-daily-note">Players ranked by Elo rating. Starting rating: 1200. Only logged-in players with at least one match are shown.</p>
 
-  <div id="pvprk-season-wrap" class="lb-sub-picker" style="display:none">
-    <label for="pvprk-season-select">Season:</label>
-    <select id="pvprk-season-select" class="lb-season-select"></select>
-  </div>
-
-  <div class="lb-table-wrap">
-    <table class="lb-table" id="pvprk-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Player</th>
-          <th>Wins</th>
-        </tr>
-      </thead>
-      <tbody id="pvprk-body">
-        <tr><td colspan="3" class="lb-loading">Loading…</td></tr>
-      </tbody>
-    </table>
+    <div class="lb-table-wrap">
+      <table class="lb-table" id="pvpelo-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Player</th>
+            <th>Elo</th>
+          </tr>
+        </thead>
+        <tbody id="pvpelo-body">
+          <tr><td colspan="3" class="lb-loading">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div class="pvp-sub-links">
@@ -85,6 +115,7 @@ let currentMode   = 'all';
 let currentPeriod = 'daily';
 let currentDate   = new Date().toISOString().slice(0, 10);
 let currentSeason = computeCurrentSeason();
+let currentView   = 'wins';
 
 function setPeriodUI(period) {
   document.getElementById('pvprk-date-wrap').style.display   = period === 'daily'  ? 'flex' : 'none';
@@ -126,10 +157,47 @@ async function loadPvpRankings() {
   }
 }
 
-// Mode tabs
-document.querySelectorAll('.lb-tab[data-mode]').forEach(btn => {
+async function loadEloRankings() {
+  const body = document.getElementById('pvpelo-body');
+  body.innerHTML = `<tr><td colspan="3" class="lb-loading">${window.T.lb_loading}</td></tr>`;
+  try {
+    const res  = await fetch('/api/pvp/elo-rankings');
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    if (!data.length) {
+      body.innerHTML = `<tr><td colspan="3" class="lb-empty">No ranked players yet — play PvP to earn an Elo rating!</td></tr>`;
+      return;
+    }
+    body.innerHTML = data.map((r, i) => `
+      <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
+        <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
+        <td class="lb-name">${esc(r.name || 'Anonymous')}</td>
+        <td class="lb-stat"><strong>${r.elo}</strong></td>
+      </tr>`).join('');
+  } catch {
+    body.innerHTML = `<tr><td colspan="3" class="lb-empty">${window.T.lb_error}</td></tr>`;
+  }
+}
+
+function switchView(view) {
+  currentView = view;
+  document.getElementById('pvprk-wins-view').style.display = view === 'wins' ? '' : 'none';
+  document.getElementById('pvprk-elo-view').style.display  = view === 'elo'  ? '' : 'none';
+  document.querySelectorAll('#pvprk-view-tabs .lb-tab').forEach(b =>
+    b.classList.toggle('active', b.dataset.view === view)
+  );
+  if (view === 'elo') loadEloRankings();
+}
+
+// View toggle
+document.querySelectorAll('#pvprk-view-tabs .lb-tab').forEach(btn => {
+  btn.addEventListener('click', () => switchView(btn.dataset.view));
+});
+
+// Mode tabs (inside wins view)
+document.querySelectorAll('#pvprk-wins-view .lb-tab[data-mode]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#pvprk-wins-view .lb-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentMode = btn.dataset.mode;
     loadPvpRankings();
