@@ -110,7 +110,7 @@ nav a.active { background: var(--accent); color: #fff; }
 }
 
 /* ── Layout ──────────────────────────────────────────────────────────────── */
-main { flex: 1; padding: 1rem 0.5rem; }
+main { flex: 1; padding: 0.5rem 0.5rem; }
 
 .game-wrapper {
   display: flex;
@@ -756,7 +756,7 @@ footer a:hover { text-decoration: underline; }
 .lb-wrapper {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 1.5rem 1rem;
+  padding: 0.75rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
