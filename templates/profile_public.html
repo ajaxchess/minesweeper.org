@@ -62,6 +62,14 @@
       <div class="card-mode">🔢 Tentaizu</div>
       <div class="card-body">{{ t.profile_loading }}</div>
     </div>
+    <div class="summary-card loading" id="card-mosaic">
+      <div class="card-mode">🟦 Mosaic</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
+    </div>
+    <div class="summary-card loading" id="card-pvp">
+      <div class="card-mode">⚔️ PvP Rating</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
+    </div>
   </div>
 
   <!-- ── Recent games tabs ── -->
@@ -196,6 +204,67 @@ async function loadStats() {
       <div class="card-stat">
         <span class="cs-label">${window.T.profile_avg}</span>
         <span class="cs-value">${td.avg_time}s</span>
+      </div>
+    `;
+  }
+
+  // Mosaic card
+  const mosaicCard = document.getElementById('card-mosaic');
+  mosaicCard.classList.remove('loading');
+  const md = allStats['mosaic'];
+  if (!md) {
+    mosaicCard.querySelector('.card-body').innerHTML =
+      `<span class="no-data">${window.T.profile_no_games}</span>`;
+  } else {
+    const fmtMosaic = (n) => n != null ? `${n}s` : '—';
+    mosaicCard.querySelector('.card-body').innerHTML = `
+      <div class="card-stat">
+        <span class="cs-label">Standard (9×9)</span>
+        <span class="cs-value">${md.standard_played} solved</span>
+      </div>
+      ${md.standard_best != null ? `
+      <div class="card-stat highlight">
+        <span class="cs-label">Best (Standard)</span>
+        <span class="cs-value">${fmtMosaic(md.standard_best)}</span>
+      </div>` : ''}
+      <div class="card-stat">
+        <span class="cs-label">Easy (5×5)</span>
+        <span class="cs-value">${md.easy_played} solved</span>
+      </div>
+      ${md.easy_best != null ? `
+      <div class="card-stat highlight">
+        <span class="cs-label">Best (Easy)</span>
+        <span class="cs-value">${fmtMosaic(md.easy_best)}</span>
+      </div>` : ''}
+    `;
+  }
+
+  // PvP card
+  const pvpCard = document.getElementById('card-pvp');
+  pvpCard.classList.remove('loading');
+  const pd = allStats['pvp'];
+  if (!pd || (pd.wins === 0 && pd.losses === 0)) {
+    pvpCard.querySelector('.card-body').innerHTML =
+      `<span class="no-data">${window.T.profile_no_games}</span>`;
+  } else {
+    const total   = pd.wins + pd.losses;
+    const winRate = total > 0 ? Math.round((pd.wins / total) * 100) : 0;
+    pvpCard.querySelector('.card-body').innerHTML = `
+      <div class="card-stat highlight">
+        <span class="cs-label">Elo Rating</span>
+        <span class="cs-value">${pd.elo}</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">Wins</span>
+        <span class="cs-value">${pd.wins}</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">Losses</span>
+        <span class="cs-value">${pd.losses}</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">Win Rate</span>
+        <span class="cs-value">${winRate}%</span>
       </div>
     `;
   }

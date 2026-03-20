@@ -1951,6 +1951,19 @@ def _build_stats(email: str, db: Session) -> dict:
     else:
         stats["tentaizu"] = None
 
+    # Mosaic stats — standard (9×9) and easy (5×5)
+    ms_std  = db.query(MosaicScore).filter(MosaicScore.user_email == email).all()
+    ms_easy = db.query(MosaicEasyScore).filter(MosaicEasyScore.user_email == email).all()
+    if ms_std or ms_easy:
+        stats["mosaic"] = {
+            "standard_played": len(ms_std),
+            "standard_best":   min(s.time_secs for s in ms_std) if ms_std else None,
+            "easy_played":     len(ms_easy),
+            "easy_best":       min(s.time_secs for s in ms_easy) if ms_easy else None,
+        }
+    else:
+        stats["mosaic"] = None
+
     # PvP stats — wins, losses, and Elo rating
     pvp_wins   = db.query(PvpResult).filter(PvpResult.winner_email == email).count()
     pvp_losses = db.query(PvpResult).filter(PvpResult.loser_email  == email).count()

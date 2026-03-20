@@ -40,6 +40,10 @@
       <div class="card-mode">🔢 Tentaizu</div>
       <div class="card-body">{{ t.profile_loading }}</div>
     </div>
+    <div class="summary-card loading" id="card-mosaic">
+      <div class="card-mode">🟦 Mosaic</div>
+      <div class="card-body">{{ t.profile_loading }}</div>
+    </div>
     <div class="summary-card loading" id="card-pvp">
       <div class="card-mode">⚔️ PvP Rating</div>
       <div class="card-body">{{ t.profile_loading }}</div>
@@ -308,6 +312,38 @@ async function loadStats() {
         <span class="cs-label">${window.T.profile_avg}</span>
         <span class="cs-value">${td.avg_time}s</span>
       </div>
+    `;
+  }
+
+  // Mosaic card
+  const mosaicCard = document.getElementById('card-mosaic');
+  mosaicCard.classList.remove('loading');
+  const md = allStats['mosaic'];
+  if (!md) {
+    mosaicCard.querySelector('.card-body').innerHTML =
+      `<span class="no-data">${window.T.profile_no_games}</span>
+       <a href="/mosaic" class="card-play-link">${window.T.profile_play_now}</a>`;
+  } else {
+    const fmtMosaic = (n) => n != null ? `${n}s` : '—';
+    mosaicCard.querySelector('.card-body').innerHTML = `
+      <div class="card-stat">
+        <span class="cs-label">Standard (9×9)</span>
+        <span class="cs-value">${md.standard_played} solved</span>
+      </div>
+      ${md.standard_best != null ? `
+      <div class="card-stat highlight">
+        <span class="cs-label">Best (Standard)</span>
+        <span class="cs-value">${fmtMosaic(md.standard_best)}</span>
+      </div>` : ''}
+      <div class="card-stat">
+        <span class="cs-label">Easy (5×5)</span>
+        <span class="cs-value">${md.easy_played} solved</span>
+      </div>
+      ${md.easy_best != null ? `
+      <div class="card-stat highlight">
+        <span class="cs-label">Best (Easy)</span>
+        <span class="cs-value">${fmtMosaic(md.easy_best)}</span>
+      </div>` : ''}
     `;
   }
 
