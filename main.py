@@ -856,6 +856,15 @@ async def privacy_page(request: Request):
     })
 
 
+@app.get("/piracy", response_class=HTMLResponse)
+async def piracy_page(request: Request):
+    return templates.TemplateResponse("piracy.html", {
+        "request": request, "mode": "piracy",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 @app.get("/terms", response_class=HTMLResponse)
 async def terms_page(request: Request):
     return templates.TemplateResponse("terms.html", {
