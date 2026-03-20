@@ -5,16 +5,16 @@
 - F9 SEO improvements
 - F13 Quests
 - F14 Website Analytics — Google Analytics
-- F23 PVP/Duel improvements @earl
 
 ## In Progress
-- F20 Tentaizu theme @bill
-- F24 Add Kanban board to admin section of the site and create a link @richard
+- F23 PVP/Duel improvements @earl
 
 ## Review
 - F15 Website Analytics — local admin page at /admin
 - F16 Add a blog
 - F19 Secret admin mode with site statistics
+- F20 Tentaizu theme @bill
+- F24 Add Kanban board to admin section of the site and create a link @richard
 
 ## Done
 - F1 User Profile — Login with Google, save user info in database
