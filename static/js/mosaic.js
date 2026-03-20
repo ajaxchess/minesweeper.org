@@ -74,7 +74,7 @@ function neighborCount(r, c) {
         for (let dc = -1; dc <= 1; dc++) {
             const nr = r + dr, nc = c + dc;
             if (nr >= 0 && nr < G.rows && nc >= 0 && nc < G.cols)
-                count += G.player[nr * G.cols + nc];
+                if (G.player[nr * G.cols + nc] === 1) count++;
         }
     }
     return count;
@@ -90,7 +90,7 @@ function checkWin() {
 function updateMineCount() {
     const el = document.getElementById('ms-mine-count');
     if (!el) return;
-    const filled = G.player.reduce((a, b) => a + b, 0);
+    const filled = G.player.reduce((a, b) => a + (b === 1 ? 1 : 0), 0);
     el.textContent = `${filled}/${G.totalMines}`;
 }
 
@@ -122,6 +122,7 @@ function renderCell(r, c) {
     if (!el) return;
 
     el.classList.toggle('ms-black', G.player[idx] === 1);
+    el.classList.toggle('ms-white', G.player[idx] === 0);
 
     const span    = el.querySelector('.ms-hint');
     const hint    = G.hints[idx];
@@ -145,7 +146,8 @@ function renderBoard() {
             cell.dataset.idx = idx;
             cell.style.width  = `${cellSize}px`;
             cell.style.height = `${cellSize}px`;
-            if (G.player[idx] === 1) cell.classList.add('ms-black');
+            if (G.player[idx] === 1)      cell.classList.add('ms-black');
+            else if (G.player[idx] === 0) cell.classList.add('ms-white');
 
             const span = document.createElement('span');
             span.className   = 'ms-hint';
@@ -155,8 +157,8 @@ function renderBoard() {
             else if (current > G.hints[idx]) span.classList.add('ms-hint-over');
             cell.appendChild(span);
 
-            cell.addEventListener('click', () => handleClick(r, c));
-            cell.addEventListener('contextmenu', e => { e.preventDefault(); handleClick(r, c); });
+            cell.addEventListener('click', () => handleClick(r, c, 0));
+            cell.addEventListener('contextmenu', e => { e.preventDefault(); handleClick(r, c, 1); });
             board.appendChild(cell);
         }
     }
@@ -171,12 +173,18 @@ function refreshAffected(r, c) {
 }
 
 // ── Click ─────────────────────────────────────────────────────────────────────
-function handleClick(r, c) {
+// States: 0=white/safe  1=black/mine  2=unknown (initial)
+// Left  click (dir=0) cycles: white→black→unknown→white  (0→1→2→0)
+// Right click (dir=1) cycles: black→white→unknown→black  (1→0→2→1)
+const LEFT_NEXT  = [1, 2, 0];   // next state indexed by current state, left click
+const RIGHT_NEXT = [2, 0, 1];   // next state indexed by current state, right click
+
+function handleClick(r, c, dir) {
     if (G.won) return;
     if (!G.startTime) startTimer();
 
     const idx = r * G.cols + c;
-    G.player[idx] = G.player[idx] === 1 ? 0 : 1;
+    G.player[idx] = dir === 0 ? LEFT_NEXT[G.player[idx]] : RIGHT_NEXT[G.player[idx]];
     refreshAffected(r, c);
     updateMineCount();
 
@@ -320,7 +328,7 @@ function initGame(seedStr, isPOTD) {
     G.solution   = solution;
     G.hints      = hints;
     G.totalMines = totalMines;
-    G.player     = new Array(G.rows * G.cols).fill(0);
+    G.player     = new Array(G.rows * G.cols).fill(2);  // 2=unknown initial state
 
     document.getElementById('ms-overlay').style.display = 'none';
     document.getElementById('ms-timer').textContent = '0:00';

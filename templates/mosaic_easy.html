@@ -58,20 +58,20 @@
       <div id="ms-board" data-today="{{ today }}" {% if seed %}data-seed="{{ seed }}"{% endif %} data-rows="5" data-cols="5" data-cell-size="64"
            data-score-api="/api/mosaic-easy-scores"
            data-username="{{ user.display_name if user else '' }}"></div>
+    </div>
 
-      <!-- Win overlay -->
-      <div id="ms-overlay">
-        <div class="tz-overlay-title">🎉 Solved!</div>
-        <div class="tz-overlay-time">Time: <strong id="ms-win-time">0:00</strong></div>
-        <div id="ms-score-msg" style="font-size:0.9rem"></div>
-        <div id="ms-score-form" class="overlay-score-form" style="display:none">
-          <input id="ms-name-input" type="text" maxlength="32" placeholder="Your name" autocomplete="nickname">
-          <button id="ms-save-btn">Save Score</button>
-        </div>
-        <div class="tz-overlay-btns">
-          <button id="ms-overlay-potd" class="tz-btn-potd">📅 Replay Daily</button>
-          <button id="ms-overlay-random" class="tz-btn-random">🎲 New Random</button>
-        </div>
+    <!-- Win section (shown below board after solving) -->
+    <div id="ms-overlay" style="display:none">
+      <div class="tz-overlay-title">🎉 Solved!</div>
+      <div class="tz-overlay-time">Time: <strong id="ms-win-time">0:00</strong></div>
+      <div id="ms-score-msg" style="font-size:0.9rem"></div>
+      <div id="ms-score-form" class="overlay-score-form" style="display:none">
+        <input id="ms-name-input" type="text" maxlength="32" placeholder="Your name" autocomplete="nickname">
+        <button id="ms-save-btn">Save Score</button>
+      </div>
+      <div class="tz-overlay-btns">
+        <button id="ms-overlay-potd" class="tz-btn-potd">📅 Replay Daily</button>
+        <button id="ms-overlay-random" class="tz-btn-random">🎲 New Random</button>
       </div>
     </div>
 
@@ -87,8 +87,8 @@
     </div>
 
     <p class="instructions">
-      <strong>Click</strong> a cell to fill it black &nbsp;|&nbsp;
-      <strong>Click again</strong> to clear it &nbsp;|&nbsp;
+      <strong>Left click</strong>: white → black → unknown &nbsp;|&nbsp;
+      <strong>Right click</strong>: black → white → unknown &nbsp;|&nbsp;
       Each number = black cells in its 3×3 neighborhood &nbsp;|&nbsp;
       <span class="ms-legend-ok">green</span> = satisfied &nbsp;
       <span class="ms-legend-over">red</span> = too many
@@ -100,7 +100,7 @@
       <div class="tz-howto-body">
         <p>Mosaic Easy is a 5×5 beginner puzzle. Each number tells you exactly how many of the cells in its 3×3 neighborhood (including itself) must be filled black.</p>
         <ul>
-          <li><strong>Click</strong> any cell to fill it black; click again to clear it.</li>
+          <li><strong>Left click</strong> cycles a cell: white → black → unknown. <strong>Right click</strong> cycles: black → white → unknown.</li>
           <li>A <span class="ms-legend-ok">green</span> number means that clue is exactly satisfied.</li>
           <li>A <span class="ms-legend-over">red</span> number means you have placed too many black cells nearby.</li>
           <li>Satisfy all clues simultaneously to win.</li>
@@ -125,5 +125,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/mosaic.js?v=4"></script>
+<script src="/static/js/mosaic.js?v=6"></script>
 {% endblock %}
