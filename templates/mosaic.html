@@ -73,17 +73,35 @@
 
     <!-- Board -->
     <div id="ms-board-wrap">
-      <div id="ms-board" data-today="{{ today }}" data-rows="10" data-cols="10" data-cell-size="42"></div>
+      <div id="ms-board" data-today="{{ today }}" data-rows="10" data-cols="10" data-cell-size="42"
+           data-score-api="/api/mosaic-scores"
+           data-username="{{ user.display_name if user else '' }}"></div>
 
       <!-- Win overlay -->
       <div id="ms-overlay">
         <div class="tz-overlay-title">🎉 Solved!</div>
         <div class="tz-overlay-time">Time: <strong id="ms-win-time">0:00</strong></div>
+        <div id="ms-score-msg" style="font-size:0.9rem"></div>
+        <div id="ms-score-form" class="overlay-score-form" style="display:none">
+          <input id="ms-name-input" type="text" maxlength="32" placeholder="Your name" autocomplete="nickname">
+          <button id="ms-save-btn">Save Score</button>
+        </div>
         <div class="tz-overlay-btns">
           <button id="ms-overlay-potd" class="tz-btn-potd">📅 Replay Daily</button>
           <button id="ms-overlay-random" class="tz-btn-random">🎲 New Random</button>
         </div>
       </div>
+    </div>
+
+    <!-- Permalink / hash -->
+    <div id="ms-permalink-row" class="tz-permalink-row" style="display:none">
+      🔗 Puzzle hash: <a id="ms-permalink-link" href="#"></a>
+    </div>
+
+    <!-- Leaderboard -->
+    <div id="ms-lb-section" class="tz-lb-section">
+      <div id="ms-lb-title" class="tz-lb-title">🏆 Today's Best Times</div>
+      <div id="ms-lb-content"><div class="lb-loading">Loading…</div></div>
     </div>
 
     <p class="instructions">
@@ -174,5 +192,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/mosaic.js?v=2"></script>
+<script src="/static/js/mosaic.js?v=3"></script>
 {% endblock %}

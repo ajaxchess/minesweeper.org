@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Mosaic Replay | minesweeper.org{% endblock %}
+{% block description %}Replay a Mosaic puzzle by its hash. Share and compete on any puzzle.{% endblock %}
+{% block canonical %}https://minesweeper.org/mosaic/replay{% endblock %}
+{% block og_url %}https://minesweeper.org/mosaic/replay{% endblock %}
+{% block og_title %}Mosaic Replay{% endblock %}
+{% block og_description %}Replay any Mosaic puzzle by its hash seed.{% endblock %}
+
+{% block content %}
+<h1 class="tz-page-h1">Mosaic Replay</h1>
+<div class="tz-wrapper">
+
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="game-section">
+
+    <div class="tz-mode-nav">
+      <a href="/mosaic" class="tz-mode-nav-link">🟫 Standard 10×10</a>
+      <a href="/mosaic/easy" class="tz-mode-nav-link">⭐ Easy 5×5</a>
+    </div>
+
+    <div class="game-info">
+      <div class="mode-row">
+        <span id="ms-mode-label" class="mode-badge">🔁 Replay</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat" title="Black cells placed / total in solution">
+          <span class="stat-icon">⬛</span>
+          <span class="stat-value" id="ms-mine-count">0/0</span>
+        </div>
+        <div class="stat" title="Time elapsed">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="ms-timer">0:00</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="ms-board-wrap">
+      <div id="ms-board"
+           data-today="{{ today }}"
+           data-seed="{{ seed }}"
+           data-rows="10" data-cols="10" data-cell-size="42"
+           data-score-api="/api/mosaic-scores"
+           data-username="{{ user.display_name if user else '' }}"></div>
+
+      <div id="ms-overlay">
+        <div class="tz-overlay-title">🎉 Solved!</div>
+        <div class="tz-overlay-time">Time: <strong id="ms-win-time">0:00</strong></div>
+        <div class="tz-overlay-btns">
+          <button id="ms-overlay-potd" class="tz-btn-potd">📅 Today's Daily</button>
+          <button id="ms-overlay-random" class="tz-btn-random">🎲 New Random</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="ms-permalink-row" class="tz-permalink-row" style="display:none">
+      🔗 Puzzle hash: <a id="ms-permalink-link" href="#"></a>
+    </div>
+
+    <p class="instructions">
+      <strong>Click</strong> a cell to fill it black &nbsp;|&nbsp;
+      <strong>Click again</strong> to clear it &nbsp;|&nbsp;
+      Each number = black cells in its 3×3 neighborhood &nbsp;|&nbsp;
+      <span class="ms-legend-ok">green</span> = satisfied &nbsp;
+      <span class="ms-legend-over">red</span> = too many
+    </p>
+
+  </section>
+
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/mosaic.js?v=3"></script>
+{% endblock %}

@@ -13,7 +13,7 @@ from sqlalchemy import func, case, text
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, CylinderScore, ToroidScore, ReplayScore, UserProfile, PvpResult, ServerStats, GuestScoreArchive, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, CylinderScore, ToroidScore, ReplayScore, UserProfile, PvpResult, ServerStats, GuestScoreArchive, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -1545,6 +1545,124 @@ async def mosaic_easy_page(request: Request):
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
     })
+
+@app.get("/mosaic/replay", response_class=HTMLResponse)
+async def mosaic_replay_page(request: Request, seed: str = ""):
+    return templates.TemplateResponse("mosaic_replay.html", {
+        "request": request, "mode": "mosaic",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": date.today().isoformat(),
+        "seed": seed,
+    })
+
+
+# ── Mosaic Leaderboard API ─────────────────────────────────────────────────────
+
+class MosaicScoreSubmit(BaseModel):
+    name:        str = Field(..., min_length=1, max_length=32)
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    time_secs:   int = Field(..., ge=0, le=99999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+
+@app.post("/api/mosaic-scores", status_code=201)
+def submit_mosaic_score(payload: MosaicScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = MosaicScore(
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        puzzle_date = payload.puzzle_date,
+        time_secs   = payload.time_secs,
+        guest_token = guest_token,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/mosaic-scores/{puzzle_date}")
+def get_mosaic_scores(puzzle_date: str, db: Session = Depends(get_db)):
+    import re
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
+        raise HTTPException(status_code=400, detail="Invalid date format")
+    top = (
+        db.query(MosaicScore)
+        .filter(MosaicScore.puzzle_date == puzzle_date)
+        .order_by(MosaicScore.time_secs.asc(), MosaicScore.created_at.asc())
+        .limit(20)
+        .all()
+    )
+    return _enrich_with_profiles(top, db)
+
+
+# ── Mosaic Easy Leaderboard API ────────────────────────────────────────────────
+
+class MosaicEasyScoreSubmit(BaseModel):
+    name:        str = Field(..., min_length=1, max_length=32)
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    time_secs:   int = Field(..., ge=0, le=99999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+
+@app.post("/api/mosaic-easy-scores", status_code=201)
+def submit_mosaic_easy_score(payload: MosaicEasyScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = MosaicEasyScore(
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        puzzle_date = payload.puzzle_date,
+        time_secs   = payload.time_secs,
+        guest_token = guest_token,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/mosaic-easy-scores/{puzzle_date}")
+def get_mosaic_easy_scores(puzzle_date: str, db: Session = Depends(get_db)):
+    import re
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
+        raise HTTPException(status_code=400, detail="Invalid date format")
+    top = (
+        db.query(MosaicEasyScore)
+        .filter(MosaicEasyScore.puzzle_date == puzzle_date)
+        .order_by(MosaicEasyScore.time_secs.asc(), MosaicEasyScore.created_at.asc())
+        .limit(20)
+        .all()
+    )
+    return _enrich_with_profiles(top, db)
 
 
 # ── Tentaizu Leaderboard API ───────────────────────────────────────────────────

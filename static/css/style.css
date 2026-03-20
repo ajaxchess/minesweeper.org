@@ -4458,3 +4458,6 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
 
 .ms-legend-ok   { color: #4caf50; font-weight: 700; }
 .ms-legend-over { color: #f44336; font-weight: 700; }
+
+.ms-replay-link { color: var(--accent2); text-decoration: none; font-size: 1rem; }
+.ms-replay-link:hover { opacity: 0.8; }
