@@ -79,6 +79,10 @@ nav a.active { background: var(--accent); color: #fff; }
   margin: 0.75rem auto;
   text-align: center;
 }
+.ad-container.ad-top {
+  max-height: 100px;
+  overflow: hidden;
+}
 
 .ad-sidebar {
   width: 160px;
