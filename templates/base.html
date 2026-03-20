@@ -265,5 +265,15 @@
   });
   </script>
   {% block scripts %}{% endblock %}
+  <script>
+  // Collapse ad containers when AdSense reports unfilled (JS fallback for browsers without :has())
+  document.querySelectorAll('.ad-container ins.adsbygoogle').forEach(function(ins) {
+    new MutationObserver(function() {
+      if (ins.dataset.adStatus === 'unfilled') {
+        ins.closest('.ad-container').style.display = 'none';
+      }
+    }).observe(ins, { attributes: true, attributeFilter: ['data-ad-status'] });
+  });
+  </script>
 </body>
 </html>

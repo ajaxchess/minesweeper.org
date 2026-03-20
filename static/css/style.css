@@ -85,6 +85,10 @@ nav a.active { background: var(--accent); color: #fff; }
   margin-top: 0;
   margin-bottom: 0;
 }
+/* Collapse any ad container whose slot came back unfilled */
+.ad-container:has(ins[data-ad-status="unfilled"]) {
+  display: none;
+}
 
 .ad-sidebar {
   width: 160px;
