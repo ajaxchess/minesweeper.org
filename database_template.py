@@ -464,6 +464,25 @@ class PvpResult(Base):
             "created_at":   self.created_at.strftime("%Y-%m-%d"),
         }
 
+# ── Anonymous PvP archive (unregistered-user results, archived nightly) ──────
+class AnonymousPvpResult(Base):
+    __tablename__ = "anonymous_pvp_results"
+
+    id            = Column(Integer, primary_key=True, index=True)
+    winner_name   = Column(String(32), nullable=True)
+    winner_email  = Column(String(256), nullable=True)
+    loser_name    = Column(String(32), nullable=True)
+    loser_email   = Column(String(256), nullable=True)
+    elapsed_ms    = Column(Integer, nullable=False)
+    submode       = Column(String(16), nullable=False)
+    rows          = Column(Integer, nullable=False)
+    cols          = Column(Integer, nullable=False)
+    mines         = Column(Integer, nullable=False)
+    board_hash    = Column(String(128), nullable=True)
+    created_at    = Column(DateTime, nullable=False)
+    archived_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 # ── User profile model (display name, one row per user) ──────────────────────
 class UserProfile(Base):
     __tablename__ = "user_profiles"

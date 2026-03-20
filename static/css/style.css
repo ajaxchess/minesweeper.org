@@ -914,6 +914,9 @@ footer a:hover { text-decoration: underline; }
   color: var(--text-dim);
 }
 
+.lb-sortable:hover { color: var(--accent); }
+.lb-sort-desc, .lb-sort-asc { color: var(--accent); }
+
 .lb-table td, .help-table td {
   padding: 0.6rem 1rem;
   border-top: 1px solid var(--surface2);

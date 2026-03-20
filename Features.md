@@ -66,6 +66,12 @@ F29 PvP bot opponent
    Bot lobby at /pvp/bot; game at /pvp/bot/play?m=standard&d=medium.
    "🤖 vs Bot" tab added to the PvP mode switcher.
   Logged-in users can comment on blog posts
+
+F30 PvP rankings sortable columns
+   Wins and Elo columns in win rankings table are clickable to toggle ascending/descending sort.
+
+F31 Archive anonymous PvP results nightly
+   Daily cron job moves PvP results with no registered winner to anonymous_pvp_results backup table.
   Comments require admin approval before appearing
   Admin moderation page at /admin/blog
 

@@ -48,8 +48,8 @@
           <tr>
             <th>#</th>
             <th>Player</th>
-            <th>Wins</th>
-            <th>Elo</th>
+            <th id="pvprk-th-wins" class="lb-sortable lb-sort-desc" style="cursor:pointer" title="Sort by wins">Wins</th>
+            <th id="pvprk-th-elo"  class="lb-sortable" style="cursor:pointer" title="Sort by Elo">Elo</th>
           </tr>
         </thead>
         <tbody id="pvprk-body">
@@ -117,6 +117,9 @@ let currentPeriod = 'daily';
 let currentDate   = new Date().toISOString().slice(0, 10);
 let currentSeason = computeCurrentSeason();
 let currentView   = 'wins';
+let winsData      = null;
+let sortCol       = 'wins';
+let sortDir       = -1;  // -1 = descending, 1 = ascending
 
 function setPeriodUI(period) {
   document.getElementById('pvprk-date-wrap').style.display   = period === 'daily'  ? 'flex' : 'none';
@@ -136,26 +139,51 @@ function esc(v) {
   return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+function setSortIndicators() {
+  const thWins = document.getElementById('pvprk-th-wins');
+  const thElo  = document.getElementById('pvprk-th-elo');
+  const winsMark = sortCol === 'wins' ? (sortDir === -1 ? ' ▼' : ' ▲') : '';
+  const eloMark  = sortCol === 'elo'  ? (sortDir === -1 ? ' ▼' : ' ▲') : '';
+  thWins.textContent = 'Wins' + winsMark;
+  thElo.textContent  = 'Elo'  + eloMark;
+  thWins.classList.toggle('lb-sort-desc', sortCol === 'wins' && sortDir === -1);
+  thWins.classList.toggle('lb-sort-asc',  sortCol === 'wins' && sortDir ===  1);
+  thElo.classList.toggle('lb-sort-desc',  sortCol === 'elo'  && sortDir === -1);
+  thElo.classList.toggle('lb-sort-asc',   sortCol === 'elo'  && sortDir ===  1);
+}
+
+function renderWinsTable() {
+  const body = document.getElementById('pvprk-body');
+  if (!winsData || !winsData.length) return;
+  const sorted = [...winsData].sort((a, b) => {
+    const av = sortCol === 'wins' ? (a.wins ?? 0) : (a.elo ?? 0);
+    const bv = sortCol === 'wins' ? (b.wins ?? 0) : (b.elo ?? 0);
+    return sortDir * (bv - av);
+  });
+  body.innerHTML = sorted.map((r, i) => `
+    <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
+      <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
+      <td class="lb-name">${r.profile_url
+        ? `<a href="${esc(r.profile_url)}">${esc(r.name || 'Anonymous')}</a>`
+        : esc(r.name || 'Anonymous')}</td>
+      <td class="lb-stat"><strong>${r.wins}</strong></td>
+      <td class="lb-stat">${r.elo != null ? r.elo : '—'}</td>
+    </tr>`).join('');
+}
+
 async function loadPvpRankings() {
   const body = document.getElementById('pvprk-body');
   body.innerHTML = `<tr><td colspan="4" class="lb-loading">${window.T.lb_loading}</td></tr>`;
   try {
     const res  = await fetch(apiUrl());
     if (!res.ok) throw new Error(res.status);
-    const data = await res.json();
-    if (!data.length) {
+    winsData = await res.json();
+    if (!winsData.length) {
       body.innerHTML = `<tr><td colspan="4" class="lb-empty">No PvP results yet — play to get on the board!</td></tr>`;
       return;
     }
-    body.innerHTML = data.map((r, i) => `
-      <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
-        <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
-        <td class="lb-name">${r.profile_url
-          ? `<a href="${esc(r.profile_url)}">${esc(r.name || 'Anonymous')}</a>`
-          : esc(r.name || 'Anonymous')}</td>
-        <td class="lb-stat"><strong>${r.wins}</strong></td>
-        <td class="lb-stat">${r.elo != null ? r.elo : '—'}</td>
-      </tr>`).join('');
+    setSortIndicators();
+    renderWinsTable();
   } catch {
     body.innerHTML = `<tr><td colspan="4" class="lb-empty">${window.T.lb_error}</td></tr>`;
   }
@@ -231,6 +259,16 @@ document.getElementById('pvprk-date-input').addEventListener('change', e => {
 document.getElementById('pvprk-season-select').addEventListener('change', e => {
   currentSeason = parseInt(e.target.value);
   loadPvpRankings();
+});
+
+// Sort column clicks
+document.getElementById('pvprk-th-wins').addEventListener('click', () => {
+  if (sortCol === 'wins') { sortDir *= -1; } else { sortCol = 'wins'; sortDir = -1; }
+  if (winsData) { setSortIndicators(); renderWinsTable(); }
+});
+document.getElementById('pvprk-th-elo').addEventListener('click', () => {
+  if (sortCol === 'elo') { sortDir *= -1; } else { sortCol = 'elo'; sortDir = -1; }
+  if (winsData) { setSortIndicators(); renderWinsTable(); }
 });
 
 // Update season button label
