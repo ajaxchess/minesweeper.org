@@ -687,6 +687,15 @@ async def about_page(request: Request):
 # excerpt: one-sentence summary shown on the index page
 BLOG_POSTS = [
     {
+        "slug":          "tentaizu-theme",
+        "file":          "blog/tentaizu-theme.md",
+        "title":         "The new Tentaizu Theme",
+        "date":          "2026-03-20",
+        "datePublished": "2026-03-20T00:00:00Z",
+        "excerpt": "Lady Di's Mines now switches to the Tentaizu theme on solstices and equinoxes. "
+                   "Here's what the theme is and a little about the Tentaizu puzzle.",
+    },
+    {
         "slug":          "no-jira-required",
         "file":          "blog/2_saaspocalypse-kanban.md",
         "title":         "No Jira Required: GitAgile Kanban in Your Repo",

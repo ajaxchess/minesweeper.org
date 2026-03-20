@@ -12,5 +12,12 @@ datePublished: 2026-03-20T00:00:00Z
 We now have a special theme, for equinox, solstice, and other special
 astronomical events.
 
+Tentaizu (天体図) is a pure-logic deduction puzzle from Japan whose name
+translates to *star chart* or *celestial atlas*. Played on a compact 7×7
+grid with exactly 10 hidden mines, it gives you all the number clues up
+front — no uncovering cells, no guessing. Every legitimate Tentaizu puzzle
+is solvable through pure reasoning alone, making it closer in spirit to
+Sudoku than to classic Minesweeper. You can play the daily Tentaizu puzzle
+at [minesweeper.org/tentaizu](https://minesweeper.org/tentaizu).
 
 *— The Lady Di's Mines Team*
