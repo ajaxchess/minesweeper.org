@@ -47,7 +47,7 @@
       <div id="ms-board"
            data-today="{{ today }}"
            data-seed="{{ seed }}"
-           data-rows="10" data-cols="10" data-cell-size="42"
+           data-rows="{{ rows }}" data-cols="{{ cols }}" data-cell-size="{{ cell_size }}"
            data-score-api="/api/mosaic-scores"
            data-username="{{ user.display_name if user else '' }}"></div>
 

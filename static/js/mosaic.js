@@ -253,7 +253,7 @@ function updatePermalink() {
     const link = document.getElementById('ms-permalink-link');
     if (!row || !link) return;
 
-    const url = `/mosaic/replay?seed=${encodeURIComponent(G.seedStr)}`;
+    const url = `/mosaic/replay?seed=${encodeURIComponent(G.seedStr)}&rows=${G.rows}&cols=${G.cols}`;
     link.href        = url;
     link.textContent = G.seedStr;
     row.style.display = 'block';
@@ -286,7 +286,7 @@ async function loadLeaderboard() {
                     ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
                     : esc(s.name)}</td>
                 <td class="lb-time">${fmtTime(s.time_secs)}</td>
-                <td class="lb-replay"><a href="/mosaic/replay?seed=${esc(s.puzzle_date)}" class="ms-replay-link" title="Replay this puzzle">🔗</a></td>
+                <td class="lb-replay"><a href="/mosaic/replay?seed=${esc(s.puzzle_date)}&rows=${G.rows}&cols=${G.cols}" class="ms-replay-link" title="Replay this puzzle">🔗</a></td>
             </tr>`).join('');
 
         el.innerHTML = `

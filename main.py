@@ -1547,13 +1547,14 @@ async def mosaic_easy_page(request: Request):
     })
 
 @app.get("/mosaic/replay", response_class=HTMLResponse)
-async def mosaic_replay_page(request: Request, seed: str = ""):
+async def mosaic_replay_page(request: Request, seed: str = "", rows: int = 10, cols: int = 10):
+    cell_size = 64 if rows <= 5 else 42
     return templates.TemplateResponse("mosaic_replay.html", {
         "request": request, "mode": "mosaic",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
-        "seed": seed,
+        "seed": seed, "rows": rows, "cols": cols, "cell_size": cell_size,
     })
 
 
