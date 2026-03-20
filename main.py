@@ -993,12 +993,12 @@ def get_replay_scores(board_hash: str, variant: str = "standard", db: Session = 
     if variant not in REPLAY_VARIANTS_VALID:
         raise HTTPException(status_code=400, detail="Invalid variant")
 
+    # ── Pull from replay_scores ────────────────────────────────────────────────
     sort_key = case(
         (ReplayScore.time_ms.isnot(None), ReplayScore.time_ms),
         else_=ReplayScore.time_secs * 1000
     )
-
-    raw = (
+    replay_rows = (
         db.query(ReplayScore)
         .filter(ReplayScore.board_hash == board_hash, ReplayScore.variant == variant)
         .order_by(sort_key.asc(), ReplayScore.created_at.asc())
@@ -1006,18 +1006,69 @@ def get_replay_scores(board_hash: str, variant: str = "standard", db: Session = 
         .all()
     )
 
-    # Best score per player (deduplicate by email or name)
+    # ── Also pull from the global scores table (standard variant only) ─────────
+    global_rows: list = []
+    if variant == "standard":
+        global_sort = case(
+            (Score.time_ms.isnot(None), Score.time_ms),
+            else_=Score.time_secs * 1000
+        )
+        global_rows = (
+            db.query(Score)
+            .filter(Score.board_hash == board_hash, Score.no_guess == False)
+            .order_by(global_sort.asc(), Score.created_at.asc())
+            .limit(500)
+            .all()
+        )
+    elif variant == "no-guess":
+        global_sort = case(
+            (Score.time_ms.isnot(None), Score.time_ms),
+            else_=Score.time_secs * 1000
+        )
+        global_rows = (
+            db.query(Score)
+            .filter(Score.board_hash == board_hash, Score.no_guess == True)
+            .order_by(global_sort.asc(), Score.created_at.asc())
+            .limit(500)
+            .all()
+        )
+
+    # ── Merge: convert all to dicts, sort, deduplicate ─────────────────────────
+    def sort_ms(d: dict) -> int:
+        return d["time_ms"] if d.get("time_ms") else d["time_secs"] * 1000
+
+    all_dicts = [s.to_dict() for s in replay_rows] + [s.to_dict() for s in global_rows]
+    all_dicts.sort(key=sort_ms)
+
     seen: set = set()
     top: list = []
-    for s in raw:
-        key = s.user_email or s.name
+    for d in all_dicts:
+        key = d.get("user_email") or d.get("name")
         if key not in seen:
             seen.add(key)
-            top.append(s)
+            top.append(d)
             if len(top) >= 15:
                 break
 
-    return _enrich_with_profiles(top, db)
+    # ── Enrich with profile URLs ───────────────────────────────────────────────
+    emails = [d["user_email"] for d in top if d.get("user_email")]
+    url_map: dict = {}
+    if emails:
+        profiles = (
+            db.query(UserProfile.email, UserProfile.vanity_slug, UserProfile.public_id)
+            .filter(UserProfile.email.in_(emails))
+            .all()
+        )
+        for p in profiles:
+            if p.vanity_slug:
+                url_map[p.email] = f"/u/{p.vanity_slug}"
+            elif p.public_id:
+                url_map[p.email] = f"/u/{p.public_id}"
+
+    for d in top:
+        d["profile_url"] = url_map.get(d.get("user_email")) if d.get("user_email") else None
+
+    return top
 
 
 @app.get("/cylinder", response_class=HTMLResponse)

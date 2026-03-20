@@ -73,6 +73,7 @@ class Score(Base):
         return {
             "id":           self.id,
             "name":         self.name,
+            "user_email":   self.user_email,
             "mode":         self.mode,
             "time_secs":    self.time_secs,
             "time_ms":      self.time_ms,
