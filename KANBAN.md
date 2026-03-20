@@ -8,6 +8,9 @@
 
 ## In Progress
 - F23 PVP/Duel improvements @earl
+- F26 Mosaic game mode @richard
+- F27 Tentaizu game improvements @bill
+- F29 PvP bot opponent @earl
 
 ## Review
 - F15 Website Analytics — local admin page at /admin
@@ -15,6 +18,7 @@
 - F19 Secret admin mode with site statistics
 - F20 Tentaizu theme @bill
 - F24 Add Kanban board to admin section of the site and create a link @richard
+- F28 Blog comments @richard
 
 ## Done
 - F1 User Profile — Login with Google, save user info in database
