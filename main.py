@@ -1493,13 +1493,18 @@ def get_pvp_rankings(period: str = "alltime",
     ranked = sorted(wins.values(), key=lambda x: x["wins"], reverse=True)
     top = ranked[:15]
 
-    # Attach Elo rating for each ranked player
+    # Attach Elo rating and public profile URL for each ranked player
     emails = [p["email"] for p in top if p.get("email")]
     if emails:
         profiles = db.query(UserProfile).filter(UserProfile.email.in_(emails)).all()
-        elo_map  = {p.email: p.pvp_elo for p in profiles}
+        profile_map = {p.email: p for p in profiles}
         for p in top:
-            p["elo"] = elo_map.get(p.get("email"), None)
+            prof = profile_map.get(p.get("email"))
+            p["elo"] = prof.pvp_elo if prof else None
+            if prof and prof.is_public:
+                p["profile_url"] = f"/u/{prof.vanity_slug or prof.public_id}"
+            else:
+                p["profile_url"] = None
 
     return top
 
@@ -1519,7 +1524,14 @@ def get_pvp_elo_rankings(db: Session = Depends(get_db)):
         .limit(50)
         .all()
     )
-    return [{"name": p.display_name, "elo": p.pvp_elo} for p in profiles]
+    return [
+        {
+            "name":        p.display_name,
+            "elo":         p.pvp_elo,
+            "profile_url": f"/u/{p.vanity_slug or p.public_id}" if p.is_public else None,
+        }
+        for p in profiles
+    ]
 
 
 @app.get("/tentaizu", response_class=HTMLResponse)
