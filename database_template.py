@@ -523,6 +523,31 @@ class BlogComment(Base):
 def init_db():
     Base.metadata.create_all(bind=engine)
     _apply_migrations()
+    _seed_bot_profiles()
+
+
+# ── Bot PvP profiles ──────────────────────────────────────────────────────────
+_BOT_PROFILES = [
+    {"email": "bot-easy@bot.minesweeper.org",   "display_name": "🤖 Bot (Easy)",   "pvp_elo": 1000},
+    {"email": "bot-medium@bot.minesweeper.org", "display_name": "🤖 Bot (Medium)", "pvp_elo": 1200},
+    {"email": "bot-hard@bot.minesweeper.org",   "display_name": "🤖 Bot (Hard)",   "pvp_elo": 1400},
+]
+
+def _seed_bot_profiles():
+    """Create UserProfile rows for the three bots if they don't already exist."""
+    db = SessionLocal()
+    try:
+        for bp in _BOT_PROFILES:
+            if not db.query(UserProfile).filter(UserProfile.email == bp["email"]).first():
+                db.add(UserProfile(
+                    email        = bp["email"],
+                    display_name = bp["display_name"],
+                    pvp_elo      = bp["pvp_elo"],
+                    is_public    = False,
+                ))
+        db.commit()
+    finally:
+        db.close()
 
 
 def _apply_migrations():

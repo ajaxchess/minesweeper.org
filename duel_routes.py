@@ -20,6 +20,18 @@ from database import PvpResult, UserProfile, SessionLocal
 import settings as site_settings
 
 duel_router = APIRouter()
+
+# Fixed identities for the three bot difficulty levels
+BOT_EMAILS = {
+    "easy":   "bot-easy@bot.minesweeper.org",
+    "medium": "bot-medium@bot.minesweeper.org",
+    "hard":   "bot-hard@bot.minesweeper.org",
+}
+BOT_NAMES = {
+    "easy":   "🤖 Bot (Easy)",
+    "medium": "🤖 Bot (Medium)",
+    "hard":   "🤖 Bot (Hard)",
+}
 templates   = Jinja2Templates(directory="templates")
 templates.env.globals["DEFAULT_SKIN"]         = site_settings.DEFAULT_SKIN
 templates.env.globals["active_skin"]          = site_settings.active_skin
@@ -424,7 +436,8 @@ async def pvp_bot_ws(ws: WebSocket, player_id: str,
     bot_id = "bot_" + uuid.uuid4().hex[:6]
     game.add_player(bot_id, None)
     bot_p = game.get_player(bot_id)
-    bot_p.name = f"Bot ({d.capitalize()})"
+    bot_p.name  = BOT_NAMES[d]
+    bot_p.email = BOT_EMAILS[d]
 
     await ws.send_json({
         "type":    "matched",
