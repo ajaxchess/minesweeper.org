@@ -3765,7 +3765,9 @@ html[data-skin="classic"] .variant-play-btn:visited,
 html[data-skin="classic"] .tz-play-cta,
 html[data-skin="classic"] .tz-play-cta:visited,
 html[data-skin="classic"] .game-landing-signin-btn,
-html[data-skin="classic"] .game-landing-signin-btn:visited { color: #fff; }
+html[data-skin="classic"] .game-landing-signin-btn:visited,
+html[data-skin="classic"] .duel-play-again,
+html[data-skin="classic"] .duel-play-again:visited { color: #fff; }
 
 /* ── Classic skin: Tentaizu landing / subnav ─────────────────────────────── */
 html[data-skin="classic"] .tz-subnav-card {
