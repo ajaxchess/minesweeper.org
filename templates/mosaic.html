@@ -44,6 +44,12 @@
 
   <section class="game-section">
 
+    <!-- Mode nav -->
+    <div class="tz-mode-nav">
+      <span class="tz-mode-nav-current">🟫 Standard 10×10</span>
+      <a href="/mosaic/easy" class="tz-mode-nav-link">⭐ Easy 5×5</a>
+    </div>
+
     <!-- Info panel -->
     <div class="game-info">
       <div class="mode-row">
@@ -54,6 +60,10 @@
         </div>
       </div>
       <div class="stat-row">
+        <div class="stat" title="Black cells placed / total in solution">
+          <span class="stat-icon">⬛</span>
+          <span class="stat-value" id="ms-mine-count">0/0</span>
+        </div>
         <div class="stat" title="Time elapsed">
           <span class="stat-icon">⏱</span>
           <span class="stat-value" id="ms-timer">0:00</span>
@@ -63,7 +73,7 @@
 
     <!-- Board -->
     <div id="ms-board-wrap">
-      <div id="ms-board" data-today="{{ today }}"></div>
+      <div id="ms-board" data-today="{{ today }}" data-rows="10" data-cols="10" data-cell-size="42"></div>
 
       <!-- Win overlay -->
       <div id="ms-overlay">
@@ -164,5 +174,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/mosaic.js?v=1"></script>
+<script src="/static/js/mosaic.js?v=2"></script>
 {% endblock %}

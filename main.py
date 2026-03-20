@@ -1537,6 +1537,15 @@ async def mosaic_page(request: Request):
         "today": date.today().isoformat(),
     })
 
+@app.get("/mosaic/easy", response_class=HTMLResponse)
+async def mosaic_easy_page(request: Request):
+    return templates.TemplateResponse("mosaic_easy.html", {
+        "request": request, "mode": "mosaic",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": date.today().isoformat(),
+    })
+
 
 # ── Tentaizu Leaderboard API ───────────────────────────────────────────────────
 

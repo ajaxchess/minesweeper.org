@@ -19,40 +19,39 @@ function strSeed(s) {
     return h;
 }
 
-// ── Constants ─────────────────────────────────────────────────────────────────
-const ROWS = 10;
-const COLS = 10;
-
 // ── Game state ────────────────────────────────────────────────────────────────
 let G = {
-    hints:     [],   // ROWS×COLS flat array of hint numbers (count of black in 3×3 neighborhood)
-    solution:  [],   // ROWS×COLS flat array of 0/1 (correct answer)
-    player:    [],   // ROWS×COLS flat array of 0/1 (player's marks)
-    isPOTD:    true,
-    seedStr:   '',
-    startTime: null,
-    elapsed:   0,
-    timer:     null,
-    won:       false,
+    rows:       10,
+    cols:       10,
+    hints:      [],   // flat array: count of black cells in each cell's 3×3 neighborhood
+    solution:   [],   // flat array: 0/1 (correct answer)
+    player:     [],   // flat array: 0/1 (player's marks)
+    totalMines: 0,    // number of black cells in solution
+    isPOTD:     true,
+    seedStr:    '',
+    startTime:  null,
+    elapsed:    0,
+    timer:      null,
+    won:        false,
 };
 
 // ── Puzzle generation ─────────────────────────────────────────────────────────
-function generatePuzzle(seedStr) {
-    const rng = mulberry32(strSeed('mosaic:' + seedStr));
+function generatePuzzle(seedStr, rows, cols) {
+    const rng = mulberry32(strSeed(`mosaic:${rows}x${cols}:${seedStr}`));
 
     // Random black/white solution (~40% black)
-    const solution = Array.from({ length: ROWS * COLS }, () => rng() < 0.40 ? 1 : 0);
+    const solution = Array.from({ length: rows * cols }, () => rng() < 0.40 ? 1 : 0);
 
     // Compute neighborhood count for every cell
     const hints = [];
-    for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
             let count = 0;
             for (let dr = -1; dr <= 1; dr++) {
                 for (let dc = -1; dc <= 1; dc++) {
                     const nr = r + dr, nc = c + dc;
-                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
-                        count += solution[nr * COLS + nc];
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                        count += solution[nr * cols + nc];
                     }
                 }
             }
@@ -60,7 +59,8 @@ function generatePuzzle(seedStr) {
         }
     }
 
-    return { solution, hints };
+    const totalMines = solution.reduce((a, b) => a + b, 0);
+    return { solution, hints, totalMines };
 }
 
 // ── Neighborhood count based on player marks ──────────────────────────────────
@@ -69,8 +69,8 @@ function neighborCount(r, c) {
     for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
             const nr = r + dr, nc = c + dc;
-            if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
-                count += G.player[nr * COLS + nc];
+            if (nr >= 0 && nr < G.rows && nc >= 0 && nc < G.cols) {
+                count += G.player[nr * G.cols + nc];
             }
         }
     }
@@ -79,12 +79,20 @@ function neighborCount(r, c) {
 
 // ── Win check ─────────────────────────────────────────────────────────────────
 function checkWin() {
-    for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-            if (neighborCount(r, c) !== G.hints[r * COLS + c]) return false;
+    for (let r = 0; r < G.rows; r++) {
+        for (let c = 0; c < G.cols; c++) {
+            if (neighborCount(r, c) !== G.hints[r * G.cols + c]) return false;
         }
     }
     return true;
+}
+
+// ── Mine counter ──────────────────────────────────────────────────────────────
+function updateMineCount() {
+    const el = document.getElementById('ms-mine-count');
+    if (!el) return;
+    const filled = G.player.reduce((a, b) => a + b, 0);
+    el.textContent = `${filled}/${G.totalMines}`;
 }
 
 // ── Timer ─────────────────────────────────────────────────────────────────────
@@ -110,32 +118,34 @@ function fmtTime(s) {
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function renderCell(r, c) {
-    const idx = r * COLS + c;
+    const idx = r * G.cols + c;
     const el = document.querySelector(`.ms-cell[data-idx="${idx}"]`);
     if (!el) return;
 
-    const isBlack = G.player[idx] === 1;
-    el.classList.toggle('ms-black', isBlack);
+    el.classList.toggle('ms-black', G.player[idx] === 1);
 
+    const span = el.querySelector('.ms-hint');
     const hint = G.hints[idx];
     const current = neighborCount(r, c);
-    const span = el.querySelector('.ms-hint');
-    span.classList.remove('ms-hint-ok', 'ms-hint-over', 'ms-hint-under');
-    if (current === hint)      span.classList.add('ms-hint-ok');
-    else if (current > hint)   span.classList.add('ms-hint-over');
+    span.classList.remove('ms-hint-ok', 'ms-hint-over');
+    if (current === hint)    span.classList.add('ms-hint-ok');
+    else if (current > hint) span.classList.add('ms-hint-over');
 }
 
 function renderBoard() {
     const board = document.getElementById('ms-board');
+    const cellSize = parseInt(board.dataset.cellSize) || 42;
     board.innerHTML = '';
-    board.style.gridTemplateColumns = `repeat(${COLS}, 42px)`;
+    board.style.gridTemplateColumns = `repeat(${G.cols}, ${cellSize}px)`;
 
-    for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-            const idx = r * COLS + c;
+    for (let r = 0; r < G.rows; r++) {
+        for (let c = 0; c < G.cols; c++) {
+            const idx = r * G.cols + c;
             const cell = document.createElement('div');
             cell.className = 'ms-cell';
             cell.dataset.idx = idx;
+            cell.style.width  = `${cellSize}px`;
+            cell.style.height = `${cellSize}px`;
             if (G.player[idx] === 1) cell.classList.add('ms-black');
 
             const span = document.createElement('span');
@@ -158,7 +168,7 @@ function refreshAffected(r, c) {
     for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
             const nr = r + dr, nc = c + dc;
-            if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+            if (nr >= 0 && nr < G.rows && nc >= 0 && nc < G.cols) {
                 renderCell(nr, nc);
             }
         }
@@ -170,9 +180,10 @@ function handleClick(r, c) {
     if (G.won) return;
     if (!G.startTime) startTimer();
 
-    const idx = r * COLS + c;
+    const idx = r * G.cols + c;
     G.player[idx] = G.player[idx] === 1 ? 0 : 1;
     refreshAffected(r, c);
+    updateMineCount();
 
     if (checkWin()) {
         stopTimer();
@@ -185,24 +196,30 @@ function handleClick(r, c) {
 // ── Init ──────────────────────────────────────────────────────────────────────
 function initGame(seedStr, isPOTD) {
     if (G.timer) { clearInterval(G.timer); G.timer = null; }
+
+    const board = document.getElementById('ms-board');
+    G.rows = parseInt(board.dataset.rows) || 10;
+    G.cols = parseInt(board.dataset.cols) || 10;
+
     G.won       = false;
     G.isPOTD    = isPOTD;
     G.seedStr   = seedStr;
     G.elapsed   = 0;
     G.startTime = null;
 
-    const { solution, hints } = generatePuzzle(seedStr);
-    G.solution = solution;
-    G.hints    = hints;
-    G.player   = new Array(ROWS * COLS).fill(0);
+    const { solution, hints, totalMines } = generatePuzzle(seedStr, G.rows, G.cols);
+    G.solution    = solution;
+    G.hints       = hints;
+    G.totalMines  = totalMines;
+    G.player      = new Array(G.rows * G.cols).fill(0);
 
     document.getElementById('ms-overlay').style.display = 'none';
     document.getElementById('ms-timer').textContent = '0:00';
 
-    // Mode label
     const label = document.getElementById('ms-mode-label');
     if (label) label.textContent = isPOTD ? '📅 Puzzle of the Day' : '🎲 Random Puzzle';
 
+    updateMineCount();
     renderBoard();
 }
 
