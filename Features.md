@@ -37,6 +37,19 @@ F21 Bing SEO improvements
 F22 Google SEO improvements
 
 F23 PVP/Duel improvements
+    View opponent's board beside your board for PVP
+      Do we want a delay before we see you opponent's latest move?
+        * i.e. Suppose you have been playing for 20 seconds, opponent board
+          shows their state as of 15 seconds.  
+          What is the right amount of delay?  0 could be the right answer
+    Implement a first click clear for both you and opponent
+    Implement changes in behavoir when you click a mine
+    Implement rating system similar to Chess Elo
+      Display rating on profile
+      Match making based on rating
+    Replay feature and game board hash?
+    Implement same features for Duel
+    Implement bots
 
 F24 Add Kanban board to admin section of the site and create a link
 
