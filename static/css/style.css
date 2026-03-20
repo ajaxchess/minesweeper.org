@@ -4736,9 +4736,14 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
   display: flex;
   gap: 1.5rem;
   justify-content: center;
-  --cell-size: 18px;   /* both boards use the same cell size */
+  --cell-size: 24px;   /* both boards use the same cell size */
   align-items: flex-start;
   flex-wrap: wrap;
+}
+
+/* Scale down on screens too narrow to fit two 24px boards side-by-side */
+@media (max-width: 1280px) {
+  .duel-boards-row { --cell-size: 18px; }
 }
 
 .duel-board-col {
@@ -4786,9 +4791,12 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
   gap: 1px;
 }
 
-/* Both boards' cells use the same font size at 18px */
+/* Both boards' cells scale with the board cell size */
 .duel-boards-row .cell {
-  font-size: 0.5rem;
+  font-size: 0.65rem;
+}
+@media (max-width: 1280px) {
+  .duel-boards-row .cell { font-size: 0.5rem; }
 }
 
 .opp-board-waiting {
