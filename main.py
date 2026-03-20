@@ -1530,7 +1530,7 @@ async def tentaizu_permalink(request: Request, date_str: str):
 
 @app.get("/mosaic", response_class=HTMLResponse)
 async def mosaic_page(request: Request):
-    return templates.TemplateResponse("mosaic.html", {
+    return templates.TemplateResponse("mosaic_easy.html", {
         "request": request, "mode": "mosaic",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
@@ -1538,8 +1538,13 @@ async def mosaic_page(request: Request):
     })
 
 @app.get("/mosaic/easy", response_class=HTMLResponse)
-async def mosaic_easy_page(request: Request):
-    return templates.TemplateResponse("mosaic_easy.html", {
+async def mosaic_easy_redirect(request: Request):
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/mosaic", status_code=301)
+
+@app.get("/mosaic/standard", response_class=HTMLResponse)
+async def mosaic_standard_page(request: Request):
+    return templates.TemplateResponse("mosaic.html", {
         "request": request, "mode": "mosaic",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
