@@ -147,6 +147,7 @@ async def pvp_ws(ws: WebSocket, player_id: str):
         await manager.broadcast(game, {
             "type": "start",
             "msg":  "⚔️ PvP match started! Good luck!",
+            **game.start_payload(),
         })
         await _game_loop(ws, game, player_id)
     else:
@@ -198,6 +199,7 @@ def _save_pvp_result(game, winner_id: str):
                 rows         = game.rows,
                 cols         = game.cols,
                 mines        = game.mines,
+                board_hash   = game.board_hash,
             )
             db.add(row)
             db.commit()
@@ -254,10 +256,11 @@ async def _handle_reveal(ws, game, player_id, msg):
         winner_id = result.get("winner")
         scores = game.scores_payload()
         await manager.broadcast(game, {
-            "type":      "game_over",
-            "winner_id": winner_id,
-            "scores":    scores,
-            "elapsed":   round(game.elapsed()),
+            "type":       "game_over",
+            "winner_id":  winner_id,
+            "scores":     scores,
+            "elapsed":    round(game.elapsed()),
+            "board_hash": game.board_hash,
         })
         if game.is_pvp and winner_id:
             _save_pvp_result(game, winner_id)
@@ -313,6 +316,7 @@ async def pvp_quick_ws(ws: WebSocket, player_id: str):
         await manager.broadcast(game, {
             "type": "start",
             "msg":  "⚔️ Quick PvP match started! Good luck!",
+            **game.start_payload(),
         })
         await _game_loop(ws, game, player_id)
     else:
@@ -390,7 +394,11 @@ async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
                 if player_id != creator.player_id or game.active:
                     continue
                 game.start()
-                await manager.broadcast(game, {"type": "start", "msg": "Game started! Good luck!"})
+                await manager.broadcast(game, {
+                    "type": "start",
+                    "msg":  "Game started! Good luck!",
+                    **game.start_payload(),
+                })
 
             elif mtype == "player_name":
                 p = game.get_player(player_id)

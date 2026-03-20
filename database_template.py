@@ -443,6 +443,7 @@ class PvpResult(Base):
     rows          = Column(Integer, nullable=False)
     cols          = Column(Integer, nullable=False)
     mines         = Column(Integer, nullable=False)
+    board_hash    = Column(String(128), nullable=True)
     created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -532,6 +533,7 @@ def _apply_migrations():
         ("toroid_scores",    "guest_token", "VARCHAR(36) NULL"),
         ("tentaizu_scores",  "guest_token", "VARCHAR(36) NULL"),
         ("replay_scores",    "guest_token", "VARCHAR(36) NULL"),
+        ("pvp_results",      "board_hash",  "VARCHAR(128) NULL"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:

@@ -282,12 +282,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         break;
 
-      case 'start':
+      case 'start': {
         setStatus('⚔️ Game on!');
         gameActive = true;
         showOppBoard();
         startTimer();
+        // Render shared pre-revealed opening on both boards
+        if (msg.prerev && msg.board_values) {
+          msg.prerev.forEach(([r, c]) => {
+            const val = msg.board_values[`${r},${c}`];
+            revealed[r][c]    = true;
+            boardVals[r][c]   = val;
+            renderCell(r, c);
+            // Mirror same opening on opponent board (no delay — it's the starting state)
+            oppRevealed[r][c]  = true;
+            oppBoardVals[r][c] = val;
+            renderOppCell(r, c);
+          });
+        }
+        if (msg.prerev_score != null) {
+          updateScores(msg.prerev_score, msg.prerev ? msg.prerev.length : 0,
+                       msg.prerev_score, msg.prerev ? msg.prerev.length : 0);
+        }
         break;
+      }
 
       case 'update': {
         const newCells   = msg.newly_revealed;
@@ -357,11 +375,15 @@ document.addEventListener('DOMContentLoaded', () => {
           sub      = `Final score: ${myScore} vs ${oppScore}`;
         }
 
+        const hashLine = msg.board_hash
+          ? `<p class="result-hash">Board: <a href="/replay?hash=${encodeURIComponent(msg.board_hash)}" target="_blank">${msg.board_hash.slice(0, 12)}…</a></p>`
+          : '';
         showDuelOverlay(`
           <div class="duel-result">
             <h2>${headline}</h2>
             <p>${sub}</p>
             <p class="result-time">Time: ${msg.elapsed}s</p>
+            ${hashLine}
             <a href="${IS_PVP ? '/pvp' : '/duel'}?m=${SUBMODE}" class="duel-play-again">⚔️ New Duel</a>
           </div>
         `);

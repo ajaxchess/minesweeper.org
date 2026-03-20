@@ -2,7 +2,7 @@
 duel.py — In-memory duel game engine + WebSocket connection manager.
 Each DuelGame is ephemeral; nothing is persisted to the database.
 """
-import random, time, asyncio, uuid
+import random, time, asyncio, uuid, base64
 from dataclasses import dataclass, field
 from typing import Optional
 from fastapi import WebSocket
@@ -43,6 +43,14 @@ def _place_mines(rows, cols, mines, safe_r, safe_c):
             if board[nr][nc] != -1:
                 board[nr][nc] += 1
     return mine_set, board
+
+def _board_hash(mine_set, rows, cols) -> str:
+    """Base64-encode mine positions as a bit array (same format as the rest of the site)."""
+    bits = bytearray((rows * cols + 7) // 8)
+    for (mr, mc) in mine_set:
+        idx = mr * cols + mc
+        bits[idx >> 3] |= 1 << (idx & 7)
+    return base64.b64encode(bytes(bits)).decode()
 
 def _bfs_reveal(board, revealed, rows, cols, r, c):
     """Returns list of newly revealed (r, c) cells."""
@@ -112,6 +120,21 @@ class DuelGame:
         self.finished:   bool = False
         self.created_at: float = time.time()
 
+        # ── Shared board — same for both players ──────────────────────────────
+        # Generate with a safe start at the board center so both players
+        # begin with the same pre-revealed opening area.
+        safe_r, safe_c = rows // 2, cols // 2
+        self.shared_mine_set, self.shared_board = _place_mines(
+            rows, cols, mines, safe_r, safe_c
+        )
+        self.board_hash = _board_hash(self.shared_mine_set, rows, cols)
+
+        # BFS from center to find pre-revealed cells (the shared opening)
+        _init_rev = [[False] * cols for _ in range(rows)]
+        self.shared_prerev = _bfs_reveal(
+            self.shared_board, _init_rev, rows, cols, safe_r, safe_c
+        )
+
     # ── Accessors ─────────────────────────────────────────────────────────────
     def get_player(self, pid: str) -> Optional[PlayerState]:
         return next((p for p in self.players if p.player_id == pid), None)
@@ -142,6 +165,27 @@ class DuelGame:
     def start(self):
         self.active     = True
         self.start_time = time.time()
+        # Apply shared board and pre-revealed opening to every player
+        for p in self.players:
+            p.mine_set = set(self.shared_mine_set)
+            p.board    = [row[:] for row in self.shared_board]
+            for pr, pc in self.shared_prerev:
+                p.revealed[pr][pc] = True
+            p.tiles_revealed = len(self.shared_prerev)
+            p.score          = p.tiles_revealed * POINTS_PER_TILE
+            p.started        = True
+
+    def start_payload(self) -> dict:
+        """Data to include in the 'start' broadcast so clients can render the opening."""
+        return {
+            "prerev": self.shared_prerev,
+            "board_values": {
+                f"{r},{c}": self.shared_board[r][c]
+                for r, c in self.shared_prerev
+            },
+            "board_hash":   self.board_hash,
+            "prerev_score": len(self.shared_prerev) * POINTS_PER_TILE,
+        }
 
     def elapsed(self) -> float:
         if not self.start_time:
@@ -155,11 +199,6 @@ class DuelGame:
 
         if not (0 <= r < self.rows and 0 <= c < self.cols):
             return {}
-
-        # First click — place mines now (safe first click guaranteed)
-        if not p.started:
-            p.mine_set, p.board = _place_mines(self.rows, self.cols, self.mines, r, c)
-            p.started = True
 
         if p.revealed[r][c]:
             return {}
