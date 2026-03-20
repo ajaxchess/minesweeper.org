@@ -1526,6 +1526,18 @@ async def tentaizu_permalink(request: Request, date_str: str):
     })
 
 
+# ── Mosaic ────────────────────────────────────────────────────────────────────
+
+@app.get("/mosaic", response_class=HTMLResponse)
+async def mosaic_page(request: Request):
+    return templates.TemplateResponse("mosaic.html", {
+        "request": request, "mode": "mosaic",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": date.today().isoformat(),
+    })
+
+
 # ── Tentaizu Leaderboard API ───────────────────────────────────────────────────
 
 class TentaizuScoreSubmit(BaseModel):

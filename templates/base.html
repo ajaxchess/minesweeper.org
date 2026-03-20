@@ -10,7 +10,7 @@
   <link rel="canonical" href="{% block canonical %}https://minesweeper.org/{% endblock %}">
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=22" />
+  <link rel="stylesheet" href="/static/css/style.css?v=23" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     (function(){
@@ -108,6 +108,7 @@
           </div>
         </div>
         <a href="/tentaizu" class="{% if mode == 'tentaizu' %}active{% endif %}">🔢 {{ t.nav_tentaizu }}</a>
+        <a href="/mosaic"   class="{% if mode == 'mosaic' %}active{% endif %}">🧩 Mosaic</a>
         <div class="nav-pvp-group">
           <button class="nav-pvp-toggle{% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or mode == 'replay' %} active{% endif %}" onclick="togglePvpMenu(event)">🔄 {{ t.nav_variants }} ▾</button>
           <div class="nav-pvp-menu">

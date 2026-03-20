@@ -4393,3 +4393,68 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
   padding: 0.75rem 0;
   font-style: italic;
 }
+
+/* ── Mosaic ──────────────────────────────────────────────────────────────── */
+#ms-board-wrap {
+  position: relative;
+  display: inline-block;
+  margin: 0.5rem auto;
+}
+
+#ms-board {
+  display: grid;
+  gap: 2px;
+  background: var(--surface2);
+  border: 2px solid var(--surface2);
+  border-radius: var(--radius);
+  overflow: hidden;
+  user-select: none;
+}
+
+.ms-cell {
+  width: 42px;
+  height: 42px;
+  background: #b0b8c8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.08s;
+  position: relative;
+}
+
+.ms-cell:hover { background: #c8d0de; }
+
+.ms-cell.ms-black { background: #1e1e2e; }
+.ms-cell.ms-black:hover { background: #2a2a40; }
+
+.ms-hint {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2a3a5c;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.ms-cell.ms-black .ms-hint { color: #8892a4; }
+
+.ms-hint-ok   { color: #2e7d32 !important; }
+.ms-hint-over { color: #c62828 !important; }
+.ms-cell.ms-black .ms-hint-ok   { color: #66bb6a !important; }
+.ms-cell.ms-black .ms-hint-over { color: #ef5350 !important; }
+
+#ms-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(46, 125, 50, 0.92);
+  border-radius: var(--radius);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  z-index: 10;
+}
+
+.ms-legend-ok   { color: #4caf50; font-weight: 700; }
+.ms-legend-over { color: #f44336; font-weight: 700; }

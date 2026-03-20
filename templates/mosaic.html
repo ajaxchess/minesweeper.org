@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Mosaic — Free Daily Logic Puzzle | minesweeper.org{% endblock %}
+{% block description %}Play Mosaic free online — fill cells black so every number matches the count of black cells in its 3×3 neighborhood. New puzzle every day.{% endblock %}
+{% block keywords %}<meta name="keywords" content="mosaic puzzle, fill-a-pix, mosaic logic puzzle, daily mosaic, mosaic online, minesweeper mosaic, number fill puzzle">{% endblock %}
+{% block canonical %}https://minesweeper.org/mosaic{% endblock %}
+{% block og_url %}https://minesweeper.org/mosaic{% endblock %}
+{% block og_title %}Mosaic — Free Daily Logic Puzzle{% endblock %}
+{% block og_description %}Fill cells black so every number matches the count of black cells in its 3×3 neighborhood. New puzzle every day — no guessing required.{% endblock %}
+{% block tw_title %}Mosaic — Free Daily Logic Puzzle{% endblock %}
+{% block tw_description %}Fill cells black so every number matches the count of black cells in its 3×3 neighborhood. New daily puzzle.{% endblock %}
+
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Mosaic",
+  "alternateName": "Fill-a-Pix",
+  "url": "https://minesweeper.org/mosaic",
+  "description": "A daily logic puzzle. Fill cells black so that every numbered cell's 3×3 neighborhood contains exactly that many black cells.",
+  "genre": ["Puzzle", "Logic", "Brain Teaser", "Browser Game"],
+  "gamePlatform": "Web Browser",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<h1 class="tz-page-h1">Mosaic — Free Daily Logic Puzzle</h1>
+<div class="tz-wrapper">
+
+  <!-- Left sidebar ad -->
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="game-section">
+
+    <!-- Info panel -->
+    <div class="game-info">
+      <div class="mode-row">
+        <span id="ms-mode-label" class="mode-badge">📅 Puzzle of the Day</span>
+        <div class="tz-mode-btns">
+          <button id="ms-potd-btn" class="tz-mode-btn">📅 Daily</button>
+          <button id="ms-random-btn" class="tz-mode-btn">🎲 Random</button>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat" title="Time elapsed">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="ms-timer">0:00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Board -->
+    <div id="ms-board-wrap">
+      <div id="ms-board" data-today="{{ today }}"></div>
+
+      <!-- Win overlay -->
+      <div id="ms-overlay">
+        <div class="tz-overlay-title">🎉 Solved!</div>
+        <div class="tz-overlay-time">Time: <strong id="ms-win-time">0:00</strong></div>
+        <div class="tz-overlay-btns">
+          <button id="ms-overlay-potd" class="tz-btn-potd">📅 Replay Daily</button>
+          <button id="ms-overlay-random" class="tz-btn-random">🎲 New Random</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="instructions">
+      <strong>Click</strong> a cell to fill it black &nbsp;|&nbsp;
+      <strong>Click again</strong> to clear it &nbsp;|&nbsp;
+      Each number = black cells in its 3×3 neighborhood &nbsp;|&nbsp;
+      <span class="ms-legend-ok">green</span> = satisfied &nbsp;
+      <span class="ms-legend-over">red</span> = too many
+    </p>
+
+    <!-- How to play -->
+    <details class="tz-howto">
+      <summary>How to play Mosaic</summary>
+      <div class="tz-howto-body">
+        <p>Mosaic is a 10×10 logic puzzle. Each number tells you exactly how many of the cells in its 3×3 neighborhood (including itself) must be filled black.</p>
+        <ul>
+          <li><strong>Click</strong> any cell to fill it black; click again to clear it.</li>
+          <li>A <span class="ms-legend-ok">green</span> number means that clue is exactly satisfied.</li>
+          <li>A <span class="ms-legend-over">red</span> number means you have placed too many black cells nearby.</li>
+          <li>Satisfy all clues simultaneously to win.</li>
+          <li>Every puzzle has exactly one solution reachable by pure logic — no guessing needed.</li>
+        </ul>
+      </div>
+    </details>
+
+  </section>
+
+  <!-- Right sidebar ad -->
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+
+<!-- SEO Landing Content -->
+<div class="tz-landing">
+
+  <h2 class="tz-landing-h1">About Mosaic</h2>
+
+  <div class="tz-landing-grid">
+
+    <section class="tz-section">
+      <h2>What is Mosaic?</h2>
+      <p>
+        Mosaic (also known as Fill-a-Pix) is a logic puzzle played on a grid. Each cell
+        is either <strong>black</strong> or <strong>white</strong>. Numbered cells provide
+        clues: the number tells you exactly how many cells in the 3×3 neighborhood centered
+        on that cell — including the cell itself — must be filled black. Your goal is to
+        determine which cells are black and which are white so that every numbered clue is
+        satisfied simultaneously.
+      </p>
+      <p>
+        Unlike Minesweeper, you never click to "reveal" — the entire constraint system is
+        visible from the start. Every puzzle on minesweeper.org is computer-verified to have
+        exactly one solution reachable by pure logical deduction.
+      </p>
+    </section>
+
+    <section class="tz-section">
+      <h2>How Mosaic Relates to Minesweeper</h2>
+      <p>
+        Mosaic shares Minesweeper's core mechanic — a numbered cell counts mines (black cells)
+        in its neighborhood — but inverts the experience. In Minesweeper you reveal safe cells
+        to expose numbers; in Mosaic all numbers are given and you decide which cells are black.
+        The 3×3 neighborhood rule and constraint-satisfaction logic are identical. If you can
+        read a Minesweeper board, you already understand Mosaic.
+      </p>
+    </section>
+
+    <section class="tz-section">
+      <h2>Strategy Tips</h2>
+      <ol class="tz-list">
+        <li><strong>Start with corners and edges.</strong> Corner cells have only 4 neighbors; edge cells have 6. Their clues are the most constrained and easiest to resolve first.</li>
+        <li><strong>Use 0 and 9 clues immediately.</strong> A <em>0</em> means all neighbors are white — clear them. A <em>9</em> means all 9 neighbors are black — fill them all.</li>
+        <li><strong>Compare overlapping clues.</strong> Two adjacent cells share several neighbors. Subtracting their counts reveals exactly which shared cells must be black or white.</li>
+        <li><strong>Track satisfied clues.</strong> Once a clue turns green, its neighbors are fully determined — use that information to constrain adjacent clues.</li>
+      </ol>
+    </section>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/mosaic.js?v=1"></script>
+{% endblock %}
