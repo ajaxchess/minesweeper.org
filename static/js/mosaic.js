@@ -197,6 +197,13 @@ function handleClick(r, c, dir) {
 
 // ── Win ───────────────────────────────────────────────────────────────────────
 function onWin() {
+    // Reveal the full solution: flip all non-mine cells to white
+    for (let i = 0; i < G.player.length; i++) {
+        if (G.solution[i] !== 1) G.player[i] = 0;
+    }
+    for (let r = 0; r < G.rows; r++)
+        for (let c = 0; c < G.cols; c++) renderCell(r, c);
+
     document.getElementById('ms-win-time').textContent = fmtTime(G.elapsed);
     document.getElementById('ms-overlay').style.display = 'flex';
 
