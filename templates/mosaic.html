@@ -73,7 +73,7 @@
 
     <!-- Board -->
     <div id="ms-board-wrap">
-      <div id="ms-board" data-today="{{ today }}" data-rows="9" data-cols="9" data-cell-size="46"
+      <div id="ms-board" data-today="{{ today }}" {% if seed %}data-seed="{{ seed }}"{% endif %} data-rows="9" data-cols="9" data-cell-size="46"
            data-score-api="/api/mosaic-scores"
            data-username="{{ user.display_name if user else '' }}"></div>
 

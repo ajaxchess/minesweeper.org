@@ -55,7 +55,7 @@
 
     <!-- Board -->
     <div id="ms-board-wrap">
-      <div id="ms-board" data-today="{{ today }}" data-rows="5" data-cols="5" data-cell-size="64"
+      <div id="ms-board" data-today="{{ today }}" {% if seed %}data-seed="{{ seed }}"{% endif %} data-rows="5" data-cols="5" data-cell-size="64"
            data-score-api="/api/mosaic-easy-scores"
            data-username="{{ user.display_name if user else '' }}"></div>
 
