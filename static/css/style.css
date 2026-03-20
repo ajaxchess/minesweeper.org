@@ -4736,6 +4736,7 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
   display: flex;
   gap: 1.5rem;
   justify-content: center;
+  --cell-size: 18px;   /* both boards use the same cell size */
   align-items: flex-start;
   flex-wrap: wrap;
 }
@@ -4769,16 +4770,24 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
   margin-left: 0.25rem;
 }
 
-/* Opponent board grid — hidden until game starts; cells half the normal size */
+/* Opponent board grid — hidden until game starts */
 #opp-board {
   display: none;
-  --cell-size: 18px;   /* override globally so all child .cell pick it up */
   grid-template-columns: repeat(var(--cols), var(--cell-size));
   gap: 1px;
   background: var(--surface);
   padding: 4px;
   border: 2px solid var(--border);
   border-radius: var(--radius);
+}
+
+/* Player board inside PvP — match gap and font-size to opponent board */
+.duel-boards-row #board {
+  gap: 1px;
+}
+
+/* Both boards' cells use the same font size at 18px */
+.duel-boards-row .cell {
   font-size: 0.5rem;
 }
 
