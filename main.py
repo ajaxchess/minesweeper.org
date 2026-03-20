@@ -19,6 +19,7 @@ from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
 from starlette.config import Config
 from translations import get_lang, get_t
+import settings as site_settings
 import logging
 import psutil
 import threading
@@ -60,7 +61,8 @@ app.include_router(duel_router)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["ga_tag"] = Config(".env")("GA_TAG", default="")
+templates.env.globals["ga_tag"]       = Config(".env")("GA_TAG", default="")
+templates.env.globals["DEFAULT_SKIN"] = site_settings.DEFAULT_SKIN
 
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
@@ -837,7 +839,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "vanity_slug":   profile.vanity_slug if profile else "",
         "pref_sounds":   profile.pref_sounds   if profile else False,
         "pref_chording": profile.pref_chording if profile else True,
-        "pref_skin":     profile.pref_skin     if profile else "dark",
+        "pref_skin":     profile.pref_skin     if profile else site_settings.DEFAULT_SKIN,
         "about_text":    profile.about_text    if profile else "",
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -1690,7 +1692,7 @@ class ProfileSettingsUpdate(BaseModel):
     favorite_game: Optional[str] = None
     pref_sounds:   bool = False
     pref_chording: bool = True
-    pref_skin:     str  = 'dark'
+    pref_skin:     str  = site_settings.DEFAULT_SKIN
 
 
 @app.post("/api/profile/settings")
@@ -1705,7 +1707,8 @@ def update_profile_settings(payload: ProfileSettingsUpdate, request: Request, db
     profile.favorite_game = payload.favorite_game or None
     profile.pref_sounds   = payload.pref_sounds
     profile.pref_chording = payload.pref_chording
-    profile.pref_skin     = payload.pref_skin if payload.pref_skin in ('dark', 'classic') else 'dark'
+    _skin = payload.pref_skin if payload.pref_skin in site_settings.ALLOWED_SKINS else site_settings.DEFAULT_SKIN
+    profile.pref_skin     = 'classic' if _skin == 'diana' else _skin
     db.commit()
     return {"ok": True, "public_id": profile.public_id}
 

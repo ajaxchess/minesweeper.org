@@ -19,7 +19,8 @@
       if (t === 'diana' || t === 'classic') localStorage.setItem('skin', 'classic');
       else if (t === 'dark') localStorage.setItem('skin', 'dark');
       else if (t === 'tentaizu') localStorage.setItem('skin', 'tentaizu');
-      document.documentElement.dataset.skin = localStorage.getItem('skin') || 'dark';
+      var _def = '{{ DEFAULT_SKIN }}';
+      document.documentElement.dataset.skin = localStorage.getItem('skin') || (_def === 'diana' ? 'classic' : _def);
 
       var l = p.get('lang');
       if (l) {
