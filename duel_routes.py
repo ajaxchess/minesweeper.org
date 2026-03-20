@@ -288,6 +288,9 @@ async def _handle_reveal(ws, game, player_id, msg):
             "scores":     scores,
             "elapsed":    round(game.elapsed()),
             "board_hash": game.board_hash,
+            "rows":       game.rows,
+            "cols":       game.cols,
+            "mines":      game.mines,
         })
         if game.is_pvp and winner_id:
             _save_pvp_result(game, winner_id)

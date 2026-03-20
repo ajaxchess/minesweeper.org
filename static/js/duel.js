@@ -376,7 +376,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const hashLine = msg.board_hash
-          ? `<p class="result-hash">Board: <a href="/replay?hash=${encodeURIComponent(msg.board_hash)}" target="_blank">${msg.board_hash.slice(0, 12)}…</a></p>`
+          ? (function() {
+              const p = new URLSearchParams({
+                hash: msg.board_hash,
+                rows: msg.rows, cols: msg.cols, mines: msg.mines,
+              });
+              return `<p class="result-hash">Board: <a href="/variants/replay/?${p}" target="_blank">${msg.board_hash.slice(0, 12)}…</a></p>`;
+            })()
           : '';
         showDuelOverlay(`
           <div class="duel-result">
