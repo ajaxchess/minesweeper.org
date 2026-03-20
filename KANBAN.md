@@ -19,6 +19,8 @@
 - F20 Tentaizu theme @bill
 - F24 Add Kanban board to admin section of the site and create a link @richard
 - F28 Blog comments @richard
+- F30 PvP rankings sortable columns @richard
+- F31 Archive anonymous PvP results nightly @richard
 
 ## Done
 - F1 User Profile — Login with Google, save user info in database
