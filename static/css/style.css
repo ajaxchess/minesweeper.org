@@ -82,6 +82,8 @@ nav a.active { background: var(--accent); color: #fff; }
 .ad-container.ad-top {
   max-height: 100px;
   overflow: hidden;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .ad-sidebar {
@@ -114,7 +116,7 @@ nav a.active { background: var(--accent); color: #fff; }
 }
 
 /* ── Layout ──────────────────────────────────────────────────────────────── */
-main { flex: 1; padding: 0.5rem 0.5rem; }
+main { flex: 1; padding: 0.25rem 0.5rem; }
 
 .game-wrapper {
   display: flex;
