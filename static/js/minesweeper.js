@@ -512,6 +512,7 @@ async function submitScore(autoName = null) {
       if (nameEl) nameEl.disabled = true;
       const saveBtn = document.querySelector('.overlay-score-form button');
       if (saveBtn) saveBtn.disabled = true;
+      if (typeof window.onScoreSaved === 'function') window.onScoreSaved();
     } else {
       const err = await res.json();
       if (msgEl) msgEl.textContent = `❌ ${err.detail || 'Could not save score.'}`;

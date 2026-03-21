@@ -74,7 +74,7 @@
 <div class="game-landing">
 
   <section class="game-landing-lb">
-    <h2 class="game-landing-lb-title">🏆 Today's Best Times — Custom</h2>
+    <h2 class="game-landing-lb-title">🏆 {{ t.index_todays_best }} — {{ t.nav_custom }}</h2>
     <div class="lb-table-wrap">
       <table class="lb-table" id="page-lb-table">
         <thead>
@@ -95,16 +95,12 @@
   </section>
 
   <section class="game-landing-welcome">
-    <h2 class="game-landing-title">Welcome to Lady Di's Mines</h2>
-    <p>
-      Minesweeper.org has been serving the classic Minesweeper game since 2000.
-      Set your own board size and mine count, or try beginner, intermediate, or expert modes.
-      All free, no download required.
-    </p>
+    <h2 class="game-landing-title">{{ t.index_welcome_title }}</h2>
+    <p>{{ t.index_welcome_body }}</p>
     <nav class="game-landing-links">
-      <a href="/about">About this site</a>
-      <a href="/how-to-play">How to Play</a>
-      <a href="/strategy">Strategy &amp; Tips</a>
+      <a href="/about">{{ t.index_about }}</a>
+      <a href="/how-to-play">{{ t.nav_how_to_play }}</a>
+      <a href="/strategy">{{ t.index_strategy }}</a>
     </nav>
   </section>
 
@@ -113,14 +109,15 @@
 
 {% block scripts %}
 <script>
-(async () => {
+async function loadCustomLb() {
   const body = document.getElementById('page-lb-body');
+  body.innerHTML = `<tr><td colspan="6" class="lb-loading">${window.T.lb_loading}</td></tr>`;
   try {
     const res  = await fetch('/api/scores/custom?no_guess=false&period=daily');
     if (!res.ok) throw new Error(res.status);
     const rows = await res.json();
     if (!Array.isArray(rows) || !rows.length) {
-      body.innerHTML = '<tr><td colspan="6" class="lb-empty">No scores yet today.</td></tr>';
+      body.innerHTML = `<tr><td colspan="6" class="lb-empty">${window.T.lb_no_scores}</td></tr>`;
       return;
     }
     const esc = v => String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -150,9 +147,12 @@
         </tr>`;
     }).join('');
   } catch {
-    body.innerHTML = '<tr><td colspan="6" class="lb-empty">Could not load scores.</td></tr>';
+    body.innerHTML = `<tr><td colspan="6" class="lb-empty">${window.T.lb_error}</td></tr>`;
   }
-})();
+}
+
+window.onScoreSaved = loadCustomLb;
+loadCustomLb();
 
   document.getElementById('custom-form').addEventListener('submit', e => {
     e.preventDefault();
