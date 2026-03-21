@@ -96,8 +96,9 @@ F3 Implement No Guessing mode
 F4 Implement run off git repo and restart on successful commit
 
 F5 Multilanguage support
+  Languages: EN, EO, DE, ES, TH, PGL, UK, FR, KO, JA, ZH, ZH-HANT, PL, TL (Tagalog)
 
-F6 Rush
+F6 Support Minesweeper Rush mode
 
 F7 Allow chording as an optional feature: https://minesweeper.fandom.com/wiki/Chording
 

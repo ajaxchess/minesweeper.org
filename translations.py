@@ -1,4 +1,4 @@
-"""UI string translations for EN, EO, DE, ES, TH, PGL, UK, FR, KO, JA, ZH, ZH-HANT, PL."""
+"""UI string translations for EN, EO, DE, ES, TH, PGL, UK, FR, KO, JA, ZH, ZH-HANT, PL, TL."""
 
 TRANSLATIONS: dict[str, dict[str, str]] = {
     "en": {
@@ -1744,6 +1744,140 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": 'Zaloguj się, aby zapisać swoje wyniki i pojawić się na tablicy liderów.',
         "index_about": 'O tej stronie',
         "index_strategy": 'Strategia i porady',
+    },
+
+    "tl": {
+        # Nav
+        "nav_beginner":     "Baguhan",
+        "nav_intermediate": "Katamtaman",
+        "nav_expert":       "Eksperto",
+        "nav_custom":       "Pasadya",
+        "nav_leaderboard":  "Talaan",
+        "nav_duel":         "Duwelo",
+        "nav_pvp":          "PvP",
+        "nav_tentaizu":     "Tentaizu",
+        "nav_rush":         "Rush",
+        "nav_variants":     "Mga Variant",
+        "nav_quests":       "Mga Misyon",
+        "nav_how_to_play":  "Paano Maglaro",
+        # Auth
+        "auth_sign_out":      "Mag-sign out",
+        "auth_sign_in":       "Mag-sign in gamit ang Google",
+        "auth_view_profile":  "Tingnan ang profile",
+        # Game board
+        "game_left_click":    "Kaliwang-click",
+        "game_to_reveal":     "para ihayag",
+        "game_right_click":   "Kanang-click",
+        "game_to_flag":       "para markahan",
+        "game_to_flag_local": "para markahan (lokal lamang)",
+        "game_to_reset":      "para i-reset",
+        "game_new_game":      "Bagong Laro",
+        # Custom form
+        "custom_rows":  "Hanay",
+        "custom_cols":  "Kolum",
+        "custom_mines": "Mina",
+        "custom_start": "Simulan",
+        # Duel page
+        "duel_you":       "Ikaw",
+        "duel_opponent":  "Kalaban",
+        "duel_share":     "Ibahagi ang link na ito sa iyong kalaban:",
+        "duel_copy":      "Kopyahin",
+        "duel_start_btn": "▶ Simulan ang Laro",
+        "duel_scoring":   "Paano ang pagmamarka:",
+        "duel_scoring_body": (
+            "Ang iyong puntos ay kinakalkula sa pamamagitan ng pagbibigay ng <strong>5 puntos bawat tile na nahayag</strong>, "
+            "kasama ang bonus sa oras. Ang bonus sa oras ay kinakalkula gamit ang formula na "
+            "<code>(300 &minus; segundoMulaSaSimula) &times; porsyentoNaHayag</code>, "
+            "ngunit hindi ito bababa sa 0."
+        ),
+        # Leaderboard
+        "lb_title":           "🏆 Talaan ng Pinakamahusay",
+        "lb_col_rank":        "#",
+        "lb_col_name":        "Pangalan",
+        "lb_col_time":        "Oras",
+        "lb_col_board":       "Board",
+        "lb_col_mines":       "Mina",
+        "lb_col_date":        "Petsa",
+        "lb_loading":         "Naglo-load\u2026",
+        "lb_no_scores":       "Walang puntos pa \u2014 maging una!",
+        "lb_error":           "\u26a0\ufe0f Hindi ma-load ang mga puntos.",
+        "lb_top_prefix":      "Top",
+        "lb_top_suffix_one":  "beses",
+        "lb_top_suffix_many": "beses",
+        "lb_play_beginner":     "\u2190 Maglaro (Baguhan)",
+        "lb_play_intermediate": "Maglaro (Katamtaman)",
+        "lb_play_expert":       "Maglaro (Eksperto)",
+        "lb_play_custom":       "Maglaro (Pasadya)",
+        # Profile
+        "profile_recent_games": "Mga Nakaraang Laro",
+        "profile_loading":      "Naglo-load\u2026",
+        "profile_games":        "Mga Laro",
+        "profile_best":         "Pinakamahusay",
+        "profile_avg":          "Karaniwan",
+        "profile_worst":        "Pinakamahina",
+        "profile_no_games":     "Walang laro pa",
+        "profile_play_now":     "Maglaro na \u2192",
+        "profile_no_recent":    "Walang naitalaang laro pa.",
+        # Help
+        "help_title": "Paano Maglaro ng Minesweeper",
+        # Footer
+        "footer": "Ginawa ng <a href=\"https://regis.consulting\">Regis Consulting</a> gamit ang Python &amp; FastAPI",
+        # Language switcher
+        "lang_other": "tl",
+        "lang_label": "TL \u2014 Tagalog",
+        # Rush mode
+        "rush_easy":              "Madali",
+        "rush_normal":            "Normal",
+        "rush_hard":              "Mahirap",
+        "rush_speed":             "Bilis",
+        "rush_active_rows":       "Mga aktibong hanay",
+        "rush_max":               "Pinakamataas",
+        "rush_cleared":           "Nalinis",
+        "rush_no_safe":           "\u26a0\ufe0f Walang ligtas na galaw \u2014 walang parusa sa paghula",
+        "rush_salvage_suffix":    "salvage token(s) \u2014 i-click ang \U0001f525 sa pinakamababang exploded na hanay",
+        "rush_instr_left":        "Kaliwang-click",
+        "rush_instr_reveal":      "para ihayag",
+        "rush_instr_right":       "Kanang-click",
+        "rush_instr_flag":        "para markahan ang mga mina",
+        "rush_instr_clear":       "Markahan ang lahat ng mina sa isang hanay para <strong>linisin</strong> ito",
+        "rush_instr_penalty":     "Ang tamaan ng mina ay nagdaragdag ng <strong>+2 hanay</strong>",
+        "rush_flash_no_penalty":  "Walang parusa!",
+        "rush_flash_rows":        "+2 hanay!",
+        "rush_flash_salvage":     "\U0001f525 Salvage token!",
+        "rush_btn_salvage_title": "Gumamit ng salvage token \u2014 alisin ang exploded na hanay",
+        "rush_btn_flag":          "Markahan",
+        "rush_btn_drop":          "Alisin ang Hanay",
+        "rush_btn_no_mines":      "Walang mina \u2014 i-click para linisin ang hanay",
+        "rush_btn_all_flagged":   "Lahat ng mina ay minarkahan \u2014 i-click para linisin ang hanay",
+        "rush_game_over":         "\U0001f4a5 Tapos na ang Laro",
+        "rush_mines_cleared":     "Mga Mina na Nalinis:",
+        "rush_rows_cleared":      "Mga Hanay na Nalinis:",
+        "rush_time":              "Oras:",
+        "rush_score":             "Puntos:",
+        "rush_saving":            "Sine-save ang puntos\u2026",
+        "rush_name_placeholder":  "Ilagay ang iyong pangalan",
+        "rush_save_score":        "I-save ang Puntos",
+        "rush_play_again":        "Maglaro Ulit",
+        "rush_saved_for":         "\u2705 Puntos na-save para kay",
+        "rush_save_failed":       "\u274c Hindi ma-save ang puntos.",
+        "rush_sign_in":           "Mag-sign in para laktawan ang hakbang na ito",
+        "rush_lb_loading":        "Naglo-load\u2026",
+        # Game overlay (win/loss)
+        "game_over":          '\U0001f4a5 Tapos na ang Laro',
+        "game_you_won":       '\U0001f389 Nanalo ka! \u2014 {time}',
+        "game_view_lb":       'Tingnan ang Talaan \u2192',
+        "game_no_guess_mode": '\u26a1 Mode na Walang Hula',
+        "game_congrats":      '\U0001f389 Binabati kita!',
+        "game_score_vanish":  'o mawawala ang iyong puntos sa 0:00 UTC.',
+        # Index / home page
+        "index_todays_best": "Pinakamahusay Ngayon",
+        "index_guess":        '\U0001f3b2 Hula',
+        "index_no_guess":     '\u26a1 Walang Hula',
+        "index_welcome_title": "Maligayang Pagdating sa Lady Di's Mines",
+        "index_welcome_body": 'Ang Minesweeper.org ay naglilingkod ng klasikong Minesweeper mula pa noong 2000. Maglaro sa antas na baguhan, katamtaman, eksperto, o pasadyang board \u2014 lahat libre, walang kinakailangang i-download. Hamunin ang iyong sarili laban sa araw-araw na talaan o itakda ang iyong personal na rekord.',
+        "index_signin_msg":   'Mag-sign in para i-save ang iyong mga puntos at lumabas sa talaan.',
+        "index_about":        'Tungkol sa site na ito',
+        "index_strategy":     'Estratehiya at Mga Tip',
     },
 }
 
