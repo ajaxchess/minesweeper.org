@@ -106,6 +106,10 @@ F33 Continuous Integration
   - Environment variable ENVIRONMENT identifies the running environment (dev, staging, prod)
   - GitHub repo and local development use ENVIRONMENT=dev
   - Future environments (staging, prod) will be added as the pipeline is built out
+  - URL mapping:
+      dev     → localhost
+      staging → dev.minesweeper.org
+      prod    → minesweeper.org
 
 F32 Add chat support to the website
   - Global lobby chat visible to all logged-in users
