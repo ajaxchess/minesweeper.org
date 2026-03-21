@@ -102,6 +102,13 @@ F6 Support Minesweeper Rush mode
 
 F7 Allow chording as an optional feature: https://minesweeper.fandom.com/wiki/Chording
 
+F32 Add chat support to the website
+  - Global lobby chat visible to all logged-in users
+  - In-game chat during PvP duels (between the two players)
+  - WebSocket-based (reuse existing WS infrastructure)
+  - Messages stored in DB for moderation; auto-expire after 24h
+  - Admin moderation: delete messages from /admin
+
 D1 Document the environment
   Development is done on a Mac, Linux desktop, or Windows desktop and 
   pushed to an Ubuntu server on AWS
