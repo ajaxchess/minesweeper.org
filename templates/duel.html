@@ -124,6 +124,18 @@
 
   </div>
 
+  {% if mode != 'pvp-bot' %}
+  <!-- ── Chat ── -->
+  <div class="duel-chat">
+    <div class="duel-chat-header">💬 Chat</div>
+    <div id="duel-chat-log" class="duel-chat-log"></div>
+    <div class="duel-chat-input-row">
+      <input id="duel-chat-input" type="text" placeholder="Message your opponent…" maxlength="200" autocomplete="off">
+      <button class="duel-chat-send-btn" onclick="sendChat()">Send</button>
+    </div>
+  </div>
+  {% endif %}
+
   <p class="instructions">
     <strong>{{ t.game_left_click }}</strong> {{ t.game_to_reveal }} &nbsp;|&nbsp;
     <strong>{{ t.game_right_click }}</strong> {{ t.game_to_flag_local }}
@@ -138,5 +150,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/duel.js?v=9"></script>
+<script src="/static/js/duel.js?v=10"></script>
 {% endblock %}

@@ -236,6 +236,40 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.share-box button').textContent = 'Copied!';
   };
 
+  // ── Chat ──────────────────────────────────────────────────────────────────
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function appendChat(from, text, isMe) {
+    const log = document.getElementById('duel-chat-log');
+    if (!log) return;
+    const div = document.createElement('div');
+    div.className = 'duel-chat-msg' + (isMe ? ' duel-chat-msg-me' : '');
+    div.innerHTML = `<span class="duel-chat-from">${escHtml(from)}:</span> <span class="duel-chat-text">${escHtml(text)}</span>`;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function appendChatSystem(text) {
+    const log = document.getElementById('duel-chat-log');
+    if (!log) return;
+    const div = document.createElement('div');
+    div.className = 'duel-chat-system';
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  window.sendChat = function() {
+    const inp = document.getElementById('duel-chat-input');
+    if (!inp) return;
+    const text = inp.value.trim();
+    if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({type: 'chat', text}));
+    inp.value = '';
+  };
+
   // ── WebSocket ─────────────────────────────────────────────────────────────
   const proto  = location.protocol === 'https:' ? 'wss' : 'ws';
   let wsPath;
@@ -293,6 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
       case 'start': {
         setStatus('⚔️ Game on!');
         gameActive = true;
+        appendChatSystem('⚔️ Game started — say hi!');
         showOppBoard();
         startTimer();
         // Render shared pre-revealed opening on both boards
@@ -408,10 +443,15 @@ document.addEventListener('DOMContentLoaded', () => {
         setStatus('⚠️ ' + msg.msg);
         stopTimer();
         gameActive = false;
+        appendChatSystem('⚠️ Opponent disconnected.');
         break;
 
       case 'error':
         setStatus('❌ ' + msg.msg);
+        break;
+
+      case 'chat':
+        appendChat(msg.from, msg.text, msg.pid === PLAYER_ID);
         break;
     }
   });
@@ -423,4 +463,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Init ──────────────────────────────────────────────────────────────────
   buildBoard();
   buildOppBoard();
+
+  const chatInput = document.getElementById('duel-chat-input');
+  if (chatInput) {
+    chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') window.sendChat(); });
+  }
 });

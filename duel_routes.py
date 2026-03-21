@@ -474,6 +474,17 @@ async def _game_loop(ws: WebSocket, game, player_id: str):
                     p.email = msg.get("email", "")[:256]
             elif mtype == "reveal":
                 await _handle_reveal(ws, game, player_id, msg)
+            elif mtype == "chat":
+                text = msg.get("text", "").strip()[:200]
+                if text:
+                    p = game.get_player(player_id)
+                    from_name = (p.name or "Anonymous") if p else "Anonymous"
+                    await manager.broadcast(game, {
+                        "type": "chat",
+                        "from": from_name,
+                        "pid":  player_id,
+                        "text": text,
+                    })
     except WebSocketDisconnect:
         p = game.get_player(player_id)
         if p:
