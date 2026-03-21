@@ -102,6 +102,11 @@ F6 Support Minesweeper Rush mode
 
 F7 Allow chording as an optional feature: https://minesweeper.fandom.com/wiki/Chording
 
+F33 Continuous Integration
+  - Environment variable ENVIRONMENT identifies the running environment (dev, staging, prod)
+  - GitHub repo and local development use ENVIRONMENT=dev
+  - Future environments (staging, prod) will be added as the pipeline is built out
+
 F32 Add chat support to the website
   - Global lobby chat visible to all logged-in users
   - In-game chat during PvP duels (between the two players)
