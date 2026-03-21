@@ -21,6 +21,7 @@ WebSocket support via mod_proxy_wstunnel.
 - `/home/ubuntu/minesweeper/` — app root
 - `/home/ubuntu/git/minesweeper.org/` — git repo
 - `scripts/minesweeper_service_update_and_restart.sh` — deploy script
+- `https://github/ajaxchess/minesweeper.org/` — github repo
 
 ## Key Conventions
 - [any naming conventions, code style preferences]
