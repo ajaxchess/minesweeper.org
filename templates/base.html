@@ -21,15 +21,24 @@
       else if (t === 'tentaizu') localStorage.setItem('skin', 'tentaizu');
       var _def = '{{ active_skin() }}';
       document.documentElement.dataset.skin = localStorage.getItem('skin') || (_def === 'diana' ? 'classic' : _def);
-
-      var l = p.get('lang');
-      if (l) {
-        p.delete('lang');
-        var clean = window.location.pathname + (p.toString() ? '?' + p.toString() : '');
-        window.location.replace('/set-lang?lang=' + encodeURIComponent(l) + '&next=' + encodeURIComponent(clean));
-      }
     })();
   </script>
+
+  <!-- hreflang: tell Google about language variants -->
+  {% set _path = request.url.path %}
+  <link rel="alternate" hreflang="x-default" href="https://minesweeper.org{{ _path }}">
+  <link rel="alternate" hreflang="en"      href="https://minesweeper.org{{ _path }}">
+  <link rel="alternate" hreflang="eo"      href="https://minesweeper.org{{ _path }}?lang=eo">
+  <link rel="alternate" hreflang="de"      href="https://minesweeper.org{{ _path }}?lang=de">
+  <link rel="alternate" hreflang="es"      href="https://minesweeper.org{{ _path }}?lang=es">
+  <link rel="alternate" hreflang="fr"      href="https://minesweeper.org{{ _path }}?lang=fr">
+  <link rel="alternate" hreflang="ko"      href="https://minesweeper.org{{ _path }}?lang=ko">
+  <link rel="alternate" hreflang="ja"      href="https://minesweeper.org{{ _path }}?lang=ja">
+  <link rel="alternate" hreflang="th"      href="https://minesweeper.org{{ _path }}?lang=th">
+  <link rel="alternate" hreflang="uk"      href="https://minesweeper.org{{ _path }}?lang=uk">
+  <link rel="alternate" hreflang="zh-Hans" href="https://minesweeper.org{{ _path }}?lang=zh">
+  <link rel="alternate" hreflang="zh-Hant" href="https://minesweeper.org{{ _path }}?lang=zh-hant">
+  <link rel="alternate" hreflang="pl"      href="https://minesweeper.org{{ _path }}?lang=pl">
 
   <!-- Open Graph -->
   <meta property="og:type"         content="website">

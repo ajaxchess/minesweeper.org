@@ -1658,7 +1658,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
 
 
 def get_lang(request) -> str:
-    lang = request.cookies.get("lang", "en")
+    # Query param takes precedence (enables direct language URLs for hreflang/SEO)
+    lang = request.query_params.get("lang") or request.cookies.get("lang", "en")
     return lang if lang in TRANSLATIONS else "en"
 
 
