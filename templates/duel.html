@@ -55,6 +55,11 @@
       <input id="share-link" type="text" readonly />
       <button onclick="copyLink()">{{ t.duel_copy }}</button>
     </div>
+    <div id="watch-box" class="share-box" style="display:none;margin-top:0.25rem;">
+      <span>👁 Watch:</span>
+      <input id="watch-link-inp" type="text" readonly />
+      <button onclick="copyWatchLink()">{{ t.duel_copy }}</button>
+    </div>
     <button id="start-btn" class="duel-start-btn" style="display:none"
             onclick="sendStart()">{{ t.duel_start_btn }}</button>
     {% endif %}
@@ -150,5 +155,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/duel.js?v=10"></script>
+<script src="/static/js/duel.js?v=11"></script>
 {% endblock %}

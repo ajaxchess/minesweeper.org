@@ -1088,6 +1088,16 @@ kbd {
   padding: 0.3rem 0.85rem;
   letter-spacing: 0.5px;
 }
+.spec-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  padding: 0.3rem 0.85rem;
+  letter-spacing: 0.5px;
+}
 
 /* ── Duel mode tabs ──────────────────────────────────────────────────────── */
 .duel-mode-tabs {

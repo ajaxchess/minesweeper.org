@@ -233,7 +233,13 @@ document.addEventListener('DOMContentLoaded', () => {
   window.copyLink = function() {
     const inp = document.getElementById('share-link');
     navigator.clipboard.writeText(inp.value).catch(() => { inp.select(); });
-    document.querySelector('.share-box button').textContent = 'Copied!';
+    document.querySelector('#share-box button').textContent = 'Copied!';
+  };
+
+  window.copyWatchLink = function() {
+    const inp = document.getElementById('watch-link-inp');
+    navigator.clipboard.writeText(inp.value).catch(() => { inp.select(); });
+    document.querySelector('#watch-box button').textContent = 'Copied!';
   };
 
   // ── Chat ──────────────────────────────────────────────────────────────────
@@ -296,6 +302,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const inp  = document.getElementById('share-link');
       if (inp) inp.value = link;
       document.getElementById('share-box').style.display = 'flex';
+
+      const watchInp = document.getElementById('watch-link-inp');
+      if (watchInp) watchInp.value = `${location.origin}/duel/${GAME_ID}/watch`;
+      const watchBox = document.getElementById('watch-box');
+      if (watchBox) watchBox.style.display = 'flex';
     }
   });
 

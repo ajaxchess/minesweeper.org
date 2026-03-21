@@ -328,6 +328,23 @@ async def _handle_reveal(ws, game, player_id, msg):
             ],
         })
 
+    # Notify spectators of the cell reveal
+    if game.spectators:
+        spec_msg = {
+            "type":           "spec_update",
+            "player_id":      player_id,
+            "newly_revealed": result["newly_revealed"],
+            "board_values":   {
+                f"{r},{c}": p.board[r][c]
+                for r, c in result["newly_revealed"]
+            },
+            "score":    result["score"],
+            "tiles":    p.tiles_revealed,
+            "exploded": result.get("exploded", False),
+        }
+        for sw in list(game.spectators):
+            await manager.send(sw, spec_msg)
+
     if result.get("finished"):
         winner_id = result.get("winner")
         scores = game.scores_payload()
@@ -381,6 +398,23 @@ async def _run_bot(game, bot_id: str, difficulty: str) -> None:
         # Update the AI's board knowledge from newly revealed cells
         for nr, nc in result.get("newly_revealed", []):
             ai.apply_reveal(nr, nc, bot_state.board[nr][nc])
+
+        # Notify spectators of bot move
+        if game.spectators:
+            spec_msg = {
+                "type":           "spec_update",
+                "player_id":      bot_id,
+                "newly_revealed": result.get("newly_revealed", []),
+                "board_values":   {
+                    f"{nr},{nc}": bot_state.board[nr][nc]
+                    for nr, nc in result.get("newly_revealed", [])
+                },
+                "score":    bot_state.score,
+                "tiles":    bot_state.tiles_revealed,
+                "exploded": result.get("exploded", False),
+            }
+            for sw in list(game.spectators):
+                await manager.send(sw, spec_msg)
 
         # Forward opp_update to the human player
         human = game.opponent(bot_id)
@@ -549,6 +583,63 @@ async def _pvp_quick_wait_loop(ws: WebSocket, player_id: str):
                     await _handle_reveal(ws, game, player_id, msg)
     except WebSocketDisconnect:
         pvp_quick_dequeue(player_id)
+
+
+# ── Page: spectate an existing duel ──────────────────────────────────────────
+@duel_router.get("/duel/{game_id}/watch", response_class=HTMLResponse)
+async def duel_watch(request: Request, game_id: str):
+    game = get_game(game_id)
+    if not game:
+        return HTMLResponse("<h2>Game not found or expired.</h2>", status_code=404)
+    spec_id = uuid.uuid4().hex[:8]
+    user    = get_current_user(request)
+    return templates.TemplateResponse("spectate.html", {
+        "request":  request,
+        "game_id":  game_id,
+        "spec_id":  spec_id,
+        "rows":     game.rows,
+        "cols":     game.cols,
+        "mines":    game.mines,
+        "user":     user,
+        "lang":     get_lang(request),
+        "t":        get_t(request),
+    })
+
+
+# ── WebSocket: spectator ───────────────────────────────────────────────────────
+@duel_router.websocket("/ws/{game_id}/spectate/{spec_id}")
+async def spectate_ws(ws: WebSocket, game_id: str, spec_id: str):
+    game = get_game(game_id)
+    if not game:
+        await ws.close(code=4004)
+        return
+
+    await ws.accept()
+    game.add_spectator(ws)
+    await manager.send(ws, game.spectate_init_payload())
+
+    spec_name = "Spectator"
+    try:
+        while True:
+            raw = await ws.receive_text()
+            try:
+                msg = json.loads(raw)
+            except Exception:
+                continue
+            mtype = msg.get("type")
+            if mtype == "spectator_name":
+                spec_name = (msg.get("name", "") or "Spectator")[:32]
+            elif mtype == "chat":
+                text = msg.get("text", "").strip()[:200]
+                if text:
+                    await manager.broadcast(game, {
+                        "type": "chat",
+                        "from": f"👁 {spec_name}",
+                        "pid":  spec_id,
+                        "text": text,
+                    })
+    except WebSocketDisconnect:
+        game.remove_spectator(ws)
 
 
 @duel_router.websocket("/ws/{game_id}/{player_id}")

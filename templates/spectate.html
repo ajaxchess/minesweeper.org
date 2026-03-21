@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Watching Duel — minesweeper.org{% endblock %}
+
+{% block content %}
+<div class="duel-wrapper">
+
+  <h1 class="tz-page-h1">👁 Spectating a Duel</h1>
+
+  <!-- ── Status bar ── -->
+  <div class="duel-status-bar">
+    <div id="spec-status" class="duel-status-msg">Connecting…</div>
+    <span class="spec-badge">👁 Spectator mode</span>
+  </div>
+
+  <!-- ── Score strip ── -->
+  <div class="duel-scoreboard">
+    <div class="duel-player-score" id="p1-score-box">
+      <span class="score-label" id="p1-name">Player 1</span>
+      <span class="score-value" id="p1-score">0</span>
+      <span class="score-sub" id="p1-tiles">0 tiles</span>
+    </div>
+    <div class="duel-vs">VS</div>
+    <div class="duel-player-score opp" id="p2-score-box">
+      <span class="score-label" id="p2-name">Player 2</span>
+      <span class="score-value" id="p2-score">0</span>
+      <span class="score-sub" id="p2-tiles">0 tiles</span>
+    </div>
+  </div>
+
+  <!-- ── Timer ── -->
+  <div class="duel-timer-row">
+    <span class="stat-icon">⏱</span>
+    <span class="stat-value" id="spec-timer">000</span>
+  </div>
+
+  <!-- ── Boards ── -->
+  <div class="duel-boards-row">
+
+    <div class="duel-board-col">
+      <div class="duel-board-col-label" id="p1-board-label">⚔️ Player 1</div>
+      <div class="duel-board-wrap">
+        <div id="board-p1"
+             data-game-id="{{ game_id }}"
+             data-spec-id="{{ spec_id }}"
+             data-rows="{{ rows }}"
+             data-cols="{{ cols }}"
+             data-mines="{{ mines }}"
+             data-username="{{ user.display_name if user else '' }}"></div>
+        <div id="spec-overlay-p1" class="duel-overlay" style="display:none"></div>
+      </div>
+    </div>
+
+    <div class="duel-board-col">
+      <div class="duel-board-col-label" id="p2-board-label">⚔️ Player 2</div>
+      <div class="duel-board-wrap">
+        <div id="board-p2" data-rows="{{ rows }}" data-cols="{{ cols }}"></div>
+        <div id="spec-overlay-p2" class="duel-overlay" style="display:none"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Chat ── -->
+  <div class="duel-chat">
+    <div class="duel-chat-header">💬 Chat</div>
+    <div id="duel-chat-log" class="duel-chat-log"></div>
+    <div class="duel-chat-input-row">
+      <input id="duel-chat-input" type="text" placeholder="Send a message as spectator…" maxlength="200" autocomplete="off">
+      <button class="duel-chat-send-btn" onclick="sendChat()">Send</button>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/spectate.js?v=1"></script>
+{% endblock %}

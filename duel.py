@@ -115,6 +115,7 @@ class DuelGame:
         self.submode     = submode
         self.is_pvp      = is_pvp
         self.players:    list[PlayerState] = []
+        self.spectators: list              = []   # list[WebSocket]
         self.start_time: Optional[float]   = None
         self.active:     bool = False
         self.finished:   bool = False
@@ -149,6 +150,41 @@ class DuelGame:
         return len(self.players) == 2 and all(p.ws for p in self.players)
 
     # ── Actions ───────────────────────────────────────────────────────────────
+    def add_spectator(self, ws) -> None:
+        self.spectators.append(ws)
+
+    def remove_spectator(self, ws) -> None:
+        if ws in self.spectators:
+            self.spectators.remove(ws)
+
+    def spectate_init_payload(self) -> dict:
+        """Full current board state for a newly connected spectator."""
+        players_data = []
+        for p in self.players:
+            cells = [
+                [r, c, p.board[r][c]]
+                for r in range(self.rows)
+                for c in range(self.cols)
+                if p.revealed[r][c]
+            ]
+            players_data.append({
+                "player_id": p.player_id,
+                "name":      p.name or "Anonymous",
+                "score":     p.score,
+                "tiles":     p.tiles_revealed,
+                "exploded":  p.exploded,
+                "cells":     cells,
+            })
+        return {
+            "type":    "spec_init",
+            "status":  "active" if self.active else ("finished" if self.finished else "waiting"),
+            "players": players_data,
+            "elapsed": self.elapsed(),
+            "rows":    self.rows,
+            "cols":    self.cols,
+            "mines":   self.mines,
+        }
+
     def add_player(self, pid: str, ws: WebSocket) -> bool:
         existing = self.get_player(pid)
         if existing:
@@ -352,5 +388,7 @@ class ConnectionManager:
         for p in game.players:
             if p.ws:
                 await self.send(p.ws, data)
+        for ws in list(game.spectators):
+            await self.send(ws, data)
 
 manager = ConnectionManager()
