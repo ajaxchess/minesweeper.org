@@ -1,5 +1,7 @@
 from datetime import date, timedelta, datetime, timezone
 import uuid
+import subprocess
+import os
 from typing import Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, Query, Response
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
@@ -104,10 +106,26 @@ async def robots():
         "Disallow: /logout\n"
         "Disallow: /register\n"
         "Disallow: /account/\n"
-        "Disallow: /static/\n\n"
+        "Disallow: /static/\n"
+        "Disallow: /health\n\n"
         "Sitemap: https://minesweeper.org/sitemap.xml\n"
     )
     return PlainTextResponse(content)
+
+_ENVIRONMENT = Config(".env")("ENVIRONMENT", default="unknown")
+
+@app.get("/health", include_in_schema=False)
+async def health():
+    try:
+        commit = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=os.path.dirname(os.path.abspath(__file__)),
+            text=True,
+            timeout=3,
+        ).strip()
+    except Exception:
+        commit = "unknown"
+    return JSONResponse({"status": "ok", "commit": commit, "environment": _ENVIRONMENT})
 
 @app.get("/sitemap.xml", include_in_schema=False)
 async def sitemap(request: Request):
