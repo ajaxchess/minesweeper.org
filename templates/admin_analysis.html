@@ -6,11 +6,11 @@
 
   <h1 class="lb-title">📊 Analysis</h1>
   <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;margin-bottom:1.5rem;">
-    {{ user.email }} &nbsp;|&nbsp;
-    <a href="/admin">← Dashboard</a> &nbsp;|&nbsp;
-    <a href="/admin/kanban">📋 Kanban</a> &nbsp;|&nbsp;
-    <a href="/admin/users">👥 Users</a> &nbsp;|&nbsp;
-    <a href="/admin/operations">⚙ Operations</a>
+    {{ t.admin_signed_in_as }} {{ user.email }} &nbsp;|&nbsp;
+    <a href="/admin">← {{ t.admin_dashboard }}</a> &nbsp;|&nbsp;
+    <a href="/admin/kanban">📋 {{ t.admin_kanban_board }}</a> &nbsp;|&nbsp;
+    <a href="/admin/users">👥 {{ t.admin_users }}</a> &nbsp;|&nbsp;
+    <a href="/admin/operations">⚙ {{ t.admin_operations }}</a>
   </p>
 
   <div class="analysis-layout">

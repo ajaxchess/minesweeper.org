@@ -133,6 +133,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": 'Sign in to save your scores and appear on the leaderboard.',
         "index_about": 'About this site',
         "index_strategy": 'Strategy & Tips',
+        # Admin
+        "admin_dashboard":          "Dashboard",
+        "admin_users":              "Users",
+        "admin_operations":         "Operations",
+        "admin_kanban_board":       "Kanban Board",
+        "admin_analysis":           "Analysis",
+        "admin_blog_comments":      "Blog Comments",
+        "admin_signed_in_as":       "signed in as",
+        "admin_kanban_backlog":     "Backlog",
+        "admin_kanban_in_progress": "In Progress",
+        "admin_kanban_review":      "Review",
+        "admin_kanban_done":        "Done",
+        "admin_kanban_no_items":    "No items",
     },
 
     "eo": {
@@ -267,6 +280,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": 'Ensalutu por konservi viajn poentojn kaj aperi en la rangotabelo.',
         "index_about": 'Pri ĉi tiu retejo',
         "index_strategy": 'Strategio & Konsiloj',
+        # Admin
+        "admin_dashboard":          "Panelo",
+        "admin_users":              "Uzantoj",
+        "admin_operations":         "Operacioj",
+        "admin_kanban_board":       "Kanban-tabulo",
+        "admin_analysis":           "Analizo",
+        "admin_blog_comments":      "Blogo-komentoj",
+        "admin_signed_in_as":       "ensalutita kiel",
+        "admin_kanban_backlog":     "Restolisto",
+        "admin_kanban_in_progress": "Enprogrese",
+        "admin_kanban_review":      "Revizio",
+        "admin_kanban_done":        "Farita",
+        "admin_kanban_no_items":    "Neniuj eroj",
     },
 
     "de": {
@@ -401,6 +427,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": 'Melde dich an, um deine Punkte zu speichern und in der Bestenliste zu erscheinen.',
         "index_about": 'Über diese Seite',
         "index_strategy": 'Strategie & Tipps',
+        # Admin
+        "admin_dashboard":          "Dashboard",
+        "admin_users":              "Benutzer",
+        "admin_operations":         "Betrieb",
+        "admin_kanban_board":       "Kanban-Board",
+        "admin_analysis":           "Analyse",
+        "admin_blog_comments":      "Blog-Kommentare",
+        "admin_signed_in_as":       "angemeldet als",
+        "admin_kanban_backlog":     "R\u00fcckstand",
+        "admin_kanban_in_progress": "In Bearbeitung",
+        "admin_kanban_review":      "\u00dcberpr\u00fcfung",
+        "admin_kanban_done":        "Erledigt",
+        "admin_kanban_no_items":    "Keine Eintr\u00e4ge",
     },
 
     "es": {
@@ -535,6 +574,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": 'Inicia sesión para guardar tus puntuaciones y aparecer en el marcador.',
         "index_about": 'Acerca del sitio',
         "index_strategy": 'Estrategia & consejos',
+        # Admin
+        "admin_dashboard":          "Panel",
+        "admin_users":              "Usuarios",
+        "admin_operations":         "Operaciones",
+        "admin_kanban_board":       "Tablero Kanban",
+        "admin_analysis":           "An\u00e1lisis",
+        "admin_blog_comments":      "Comentarios del blog",
+        "admin_signed_in_as":       "conectado como",
+        "admin_kanban_backlog":     "Pendiente",
+        "admin_kanban_in_progress": "En progreso",
+        "admin_kanban_review":      "Revisi\u00f3n",
+        "admin_kanban_done":        "Hecho",
+        "admin_kanban_no_items":    "Sin elementos",
     },
 
     "th": {
@@ -671,6 +723,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": 'ลงชื่อเข้าใช้เพื่อบันทึกคะแนนและปรากฏบนกระดานคะแนน',
         "index_about": 'เกี่ยวกับเว็บไซต์',
         "index_strategy": 'กลยุทธ์และเคล็ดลับ',
+        # Admin
+        "admin_dashboard":          "แดชบอร์ด",
+        "admin_users":              "ผู้ใช้",
+        "admin_operations":         "การดำเนินการ",
+        "admin_kanban_board":       "บอร์ดคัมบัง",
+        "admin_analysis":           "การวิเคราะห์",
+        "admin_blog_comments":      "ความคิดเห็นบล็อก",
+        "admin_signed_in_as":       "เข้าสู่ระบบในฐานะ",
+        "admin_kanban_backlog":     "งานค้างอยู่",
+        "admin_kanban_in_progress": "กำลังดำเนินการ",
+        "admin_kanban_review":      "กำลังตรวจสอบ",
+        "admin_kanban_done":        "เสร็จแล้ว",
+        "admin_kanban_no_items":    "ไม่มีรายการ",
     },
 
     "pgl": {
@@ -807,6 +872,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": 'Ign-say in-ay oto-tay ave-say our-yay ores-scay and-ay appear-ay on-ay e-thay eaderboard-lay.',
         "index_about": 'About-ay is-thay ite-say',
         "index_strategy": 'Ategy-stray & Ips-tay',
+        # Admin
+        "admin_dashboard":          "Ashboardday",
+        "admin_users":              "Usersway",
+        "admin_operations":         "Operationsway",
+        "admin_kanban_board":       "Anbankay Oardbay",
+        "admin_analysis":           "Analysisway",
+        "admin_blog_comments":      "Ogblay Ommentscay",
+        "admin_signed_in_as":       "ignedsay inway asway",
+        "admin_kanban_backlog":     "Acklogbay",
+        "admin_kanban_in_progress": "Inway Ogresspray",
+        "admin_kanban_review":      "Eviewray",
+        "admin_kanban_done":        "Oneday",
+        "admin_kanban_no_items":    "Onay itemsway",
     },
 
     "uk": {
@@ -943,6 +1021,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": 'Увійдіть, щоб зберегти результати та з’явитись у таблиці лідерів.',
         "index_about": 'Про цей сайт',
         "index_strategy": 'Стратегія та поради',
+        # Admin
+        "admin_dashboard":          "Панель",
+        "admin_users":              "Користувачі",
+        "admin_operations":         "Операції",
+        "admin_kanban_board":       "Дошка Канбан",
+        "admin_analysis":           "Аналіз",
+        "admin_blog_comments":      "Коментарі блогу",
+        "admin_signed_in_as":       "увійшли як",
+        "admin_kanban_backlog":     "Черга",
+        "admin_kanban_in_progress": "В роботі",
+        "admin_kanban_review":      "Перевірка",
+        "admin_kanban_done":        "Готово",
+        "admin_kanban_no_items":    "Немає елементів",
     },
 
     "fr": {
@@ -1077,6 +1168,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": 'Connectez-vous pour sauvegarder vos scores et apparaître sur le classement.',
         "index_about": 'À propos du site',
         "index_strategy": 'Stratégie & conseils',
+        # Admin
+        "admin_dashboard":          "Tableau de bord",
+        "admin_users":              "Utilisateurs",
+        "admin_operations":         "Opérations",
+        "admin_kanban_board":       "Tableau Kanban",
+        "admin_analysis":           "Analyse",
+        "admin_blog_comments":      "Commentaires du blog",
+        "admin_signed_in_as":       "connecté en tant que",
+        "admin_kanban_backlog":     "À faire",
+        "admin_kanban_in_progress": "En cours",
+        "admin_kanban_review":      "En révision",
+        "admin_kanban_done":        "Terminé",
+        "admin_kanban_no_items":    "Aucun élément",
     },
 
     "ko": {
@@ -1211,6 +1315,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": '점수를 저장하고 순위표에 나타나려면 로그인하세요.',
         "index_about": '사이트 소개',
         "index_strategy": '전략 및 팁',
+        # Admin
+        "admin_dashboard":          "대시보드",
+        "admin_users":              "사용자",
+        "admin_operations":         "운영",
+        "admin_kanban_board":       "칸반 보드",
+        "admin_analysis":           "분석",
+        "admin_blog_comments":      "블로그 댓글",
+        "admin_signed_in_as":       "로그인 계정",
+        "admin_kanban_backlog":     "백로그",
+        "admin_kanban_in_progress": "진행 중",
+        "admin_kanban_review":      "검토",
+        "admin_kanban_done":        "완료",
+        "admin_kanban_no_items":    "항목 없음",
     },
 
     "ja": {
@@ -1345,6 +1462,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": 'スコアを保存しランキングに表示するにはサインインしてください。',
         "index_about": 'このサイトについて',
         "index_strategy": '戦略とヒント',
+        # Admin
+        "admin_dashboard":          "ダッシュボード",
+        "admin_users":              "ユーザー",
+        "admin_operations":         "オペレーション",
+        "admin_kanban_board":       "カンバンボード",
+        "admin_analysis":           "分析",
+        "admin_blog_comments":      "ブログコメント",
+        "admin_signed_in_as":       "ログイン中",
+        "admin_kanban_backlog":     "バックログ",
+        "admin_kanban_in_progress": "進行中",
+        "admin_kanban_review":      "レビュー",
+        "admin_kanban_done":        "完了",
+        "admin_kanban_no_items":    "項目なし",
     },
     "zh": {
         # Nav
@@ -1478,6 +1608,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": '登录以保存您的分数并出现在排行榜上。',
         "index_about": '关于本站',
         "index_strategy": '策略与技巧',
+        # Admin
+        "admin_dashboard":          "控制台",
+        "admin_users":              "用户",
+        "admin_operations":         "操作",
+        "admin_kanban_board":       "看板",
+        "admin_analysis":           "分析",
+        "admin_blog_comments":      "博客评论",
+        "admin_signed_in_as":       "当前登录",
+        "admin_kanban_backlog":     "待办",
+        "admin_kanban_in_progress": "进行中",
+        "admin_kanban_review":      "审核",
+        "admin_kanban_done":        "已完成",
+        "admin_kanban_no_items":    "无项目",
     },
     "zh-hant": {
         # Nav
@@ -1611,6 +1754,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": '登入以儲存您的分數並出現在排行榜上。',
         "index_about": '關於本站',
         "index_strategy": '策略與技巧',
+        # Admin
+        "admin_dashboard":          "控制台",
+        "admin_users":              "用戶",
+        "admin_operations":         "操作",
+        "admin_kanban_board":       "看板",
+        "admin_analysis":           "分析",
+        "admin_blog_comments":      "部落格留言",
+        "admin_signed_in_as":       "目前登入",
+        "admin_kanban_backlog":     "待辦",
+        "admin_kanban_in_progress": "進行中",
+        "admin_kanban_review":      "審核",
+        "admin_kanban_done":        "已完成",
+        "admin_kanban_no_items":    "無項目",
     },
     "pl": {
         # Nav
@@ -1744,6 +1900,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg": 'Zaloguj się, aby zapisać swoje wyniki i pojawić się na tablicy liderów.',
         "index_about": 'O tej stronie',
         "index_strategy": 'Strategia i porady',
+        # Admin
+        "admin_dashboard":          "Panel",
+        "admin_users":              "Użytkownicy",
+        "admin_operations":         "Operacje",
+        "admin_kanban_board":       "Tablica Kanban",
+        "admin_analysis":           "Analiza",
+        "admin_blog_comments":      "Komentarze bloga",
+        "admin_signed_in_as":       "zalogowany jako",
+        "admin_kanban_backlog":     "Zaległości",
+        "admin_kanban_in_progress": "W toku",
+        "admin_kanban_review":      "Przegląd",
+        "admin_kanban_done":        "Gotowe",
+        "admin_kanban_no_items":    "Brak elementów",
     },
 
     "tl": {
@@ -1878,6 +2047,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_signin_msg":   'Mag-sign in para i-save ang iyong mga puntos at lumabas sa talaan.',
         "index_about":        'Tungkol sa site na ito',
         "index_strategy":     'Estratehiya at Mga Tip',
+        # Admin
+        "admin_dashboard":          "Dashboard",
+        "admin_users":              "Mga Gumagamit",
+        "admin_operations":         "Mga Operasyon",
+        "admin_kanban_board":       "Kanban Board",
+        "admin_analysis":           "Pagsusuri",
+        "admin_blog_comments":      "Mga Komento sa Blog",
+        "admin_signed_in_as":       "naka-sign in bilang",
+        "admin_kanban_backlog":     "Backlog",
+        "admin_kanban_in_progress": "Isinasagawa",
+        "admin_kanban_review":      "Pagsusuri",
+        "admin_kanban_done":        "Tapos Na",
+        "admin_kanban_no_items":    "Walang mga aytem",
     },
 }
 

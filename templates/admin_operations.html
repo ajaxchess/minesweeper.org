@@ -109,8 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="lb-wrapper">
 
   <h1 class="lb-title">Operations</h1>
-  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">signed in as {{ user.email }}</p>
-  <p style="text-align:center;margin-bottom:1.5rem;"><a href="/admin">← Admin Dashboard</a></p>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">{{ t.admin_signed_in_as }} {{ user.email }}</p>
+  <p style="text-align:center;margin-bottom:1.5rem;"><a href="/admin">← {{ t.admin_dashboard }}</a></p>
 
   <!-- Historical Charts -->
   {% if chart_labels != '[]' %}
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </table>
   </section>
 
-  <div class="lb-back"><a href="/admin">← Admin Dashboard</a></div>
+  <div class="lb-back"><a href="/admin">← {{ t.admin_dashboard }}</a></div>
 
 </div>
 {% endblock %}

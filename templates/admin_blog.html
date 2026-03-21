@@ -5,13 +5,13 @@
 <div class="lb-wrapper">
 
   <h1 class="lb-title">Blog Comment Moderation</h1>
-  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">signed in as {{ user.email }}</p>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">{{ t.admin_signed_in_as }} {{ user.email }}</p>
   <p style="text-align:center;margin-bottom:1.5rem;">
-    <a href="/admin">⬅ Dashboard</a> &nbsp;|&nbsp;
-    <a href="/admin/operations">⚙ Operations</a> &nbsp;|&nbsp;
-    <a href="/admin/users">👥 Users</a> &nbsp;|&nbsp;
-    <a href="/admin/kanban">📋 Kanban</a> &nbsp;|&nbsp;
-    <a href="/admin/analysis">📊 Analysis</a>
+    <a href="/admin">⬅ {{ t.admin_dashboard }}</a> &nbsp;|&nbsp;
+    <a href="/admin/operations">⚙ {{ t.admin_operations }}</a> &nbsp;|&nbsp;
+    <a href="/admin/users">👥 {{ t.admin_users }}</a> &nbsp;|&nbsp;
+    <a href="/admin/kanban">📋 {{ t.admin_kanban_board }}</a> &nbsp;|&nbsp;
+    <a href="/admin/analysis">📊 {{ t.admin_analysis }}</a>
   </p>
 
   <!-- Pending comments -->
