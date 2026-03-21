@@ -124,22 +124,18 @@
   </section>
 
   <section class="game-landing-welcome">
-    <h2 class="game-landing-title">Welcome to Lady Di's Mines</h2>
-    <p>
-      Minesweeper.org has been serving the classic Minesweeper game since 2000.
-      Play beginner, intermediate, expert, or custom boards — all free, no download required.
-      Challenge yourself against the daily leaderboard or set a personal best.
-    </p>
+    <h2 class="game-landing-title">{{ t.index_welcome_title }}</h2>
+    <p>{{ t.index_welcome_body }}</p>
     {% if not user %}
     <div class="game-landing-signin">
-      <p class="game-landing-signin-msg">Sign in to save your scores and appear on the leaderboard.</p>
-      <a href="/auth/login" class="game-landing-signin-btn">Sign in with Google</a>
+      <p class="game-landing-signin-msg">{{ t.index_signin_msg }}</p>
+      <a href="/auth/login" class="game-landing-signin-btn">{{ t.auth_sign_in }}</a>
     </div>
     {% endif %}
     <nav class="game-landing-links">
-      <a href="/about">About this site</a>
-      <a href="/how-to-play">How to Play</a>
-      <a href="/strategy">Strategy &amp; Tips</a>
+      <a href="/about">{{ t.index_about }}</a>
+      <a href="/how-to-play">{{ t.nav_how_to_play }}</a>
+      <a href="/strategy">{{ t.index_strategy }}</a>
     </nav>
   </section>
 
@@ -184,9 +180,9 @@ async function loadPageLb() {
   const title   = document.getElementById('page-lb-title');
 
   if (title) {
-    const label = `${noGuess ? '⚡ No-Guess' : '🎲 Guess'} ${LB_MODE_LABEL}`;
+    const label = `${noGuess ? window.T.index_no_guess : window.T.index_guess} ${LB_MODE_LABEL}`;
     const url   = `${LB_MODE_URL}?ng=${noGuess ? '1' : '0'}`;
-    title.innerHTML = `🏆 Today's Best — <a href="${url}" class="lb-title-link">${label}</a>`;
+    title.innerHTML = `🏆 ${window.T.index_todays_best} — <a href="${url}" class="lb-title-link">${label}</a>`;
   }
   body.innerHTML = `<tr><td colspan="10" class="lb-loading">${window.T.lb_loading}</td></tr>`;
 
@@ -195,7 +191,7 @@ async function loadPageLb() {
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
     if (!Array.isArray(data) || !data.length) {
-      body.innerHTML = `<tr><td colspan="10" class="lb-empty">No scores yet today — be the first!</td></tr>`;
+      body.innerHTML = `<tr><td colspan="10" class="lb-empty">${window.T.lb_no_scores}</td></tr>`;
       return;
     }
     body.innerHTML = data.map((s, i) => {

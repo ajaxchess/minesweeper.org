@@ -117,6 +117,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c Could not save score.",
         "rush_sign_in":           "Sign in to skip this step",
         "rush_lb_loading":        "Loading\u2026",
+        # Index / home page
+        "index_todays_best": "Today's Best",
+        "index_guess": '🎲 Guess',
+        "index_no_guess": '⚡ No-Guess',
+        "index_welcome_title": "Welcome to Lady Di's Mines",
+        "index_welcome_body": 'Minesweeper.org has been serving the classic Minesweeper game since 2000. Play beginner, intermediate, expert, or custom boards — all free, no download required. Challenge yourself against the daily leaderboard or set a personal best.',
+        "index_signin_msg": 'Sign in to save your scores and appear on the leaderboard.',
+        "index_about": 'About this site',
+        "index_strategy": 'Strategy & Tips',
     },
 
     "eo": {
@@ -235,6 +244,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c Ne eblis konservi poentaron.",
         "rush_sign_in":           "Ensalutu por preteriri \u0109i tiun pa\u015don",
         "rush_lb_loading":        "\u015car\u011das\u2026",
+        # Index / home page
+        "index_todays_best": 'Hodiaŭaj Plej Bonaj',
+        "index_guess": '🎲 Diveno',
+        "index_no_guess": '⚡ Sen-Diveno',
+        "index_welcome_title": 'Bonvenon al la Minejoj de Damo Di',
+        "index_welcome_body": 'Minesweeper.org servas la klasikan Minesweeper-ludon ekde 2000. Ludu komencanto-, meza- aŭ sperta-nivelojn, aŭ proprajn tabulojn — ĉio senpage, sen elŝuto. Defiu vin mem kontraŭ la ĉiutaga rangotabelo aŭ batu personan rekordon.',
+        "index_signin_msg": 'Ensalutu por konservi viajn poentojn kaj aperi en la rangotabelo.',
+        "index_about": 'Pri ĉi tiu retejo',
+        "index_strategy": 'Strategio & Konsiloj',
     },
 
     "de": {
@@ -353,6 +371,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c Punkte konnten nicht gespeichert werden.",
         "rush_sign_in":           "Anmelden, um diesen Schritt zu \u00fcberspringen",
         "rush_lb_loading":        "L\u00e4dt\u2026",
+        # Index / home page
+        "index_todays_best": 'Tagesbeste',
+        "index_guess": '🎲 Rate-Modus',
+        "index_no_guess": '⚡ Ohne-Raten',
+        "index_welcome_title": 'Willkommen bei Lady Di’s Minen',
+        "index_welcome_body": 'Minesweeper.org bietet das klassische Minesweeper-Spiel seit 2000. Spiele Anfänger-, Mittel- oder Experten-Boards oder erstelle eigene — alles kostenlos, kein Download nötig. Miss dich täglich mit der Bestenliste oder verbessere deinen persönlichen Rekord.',
+        "index_signin_msg": 'Melde dich an, um deine Punkte zu speichern und in der Bestenliste zu erscheinen.',
+        "index_about": 'Über diese Seite',
+        "index_strategy": 'Strategie & Tipps',
     },
 
     "es": {
@@ -471,6 +498,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c No se pudo guardar la puntuaci\u00f3n.",
         "rush_sign_in":           "Inicia sesi\u00f3n para omitir este paso",
         "rush_lb_loading":        "Cargando\u2026",
+        # Index / home page
+        "index_todays_best": 'Los Mejores de Hoy',
+        "index_guess": '🎲 Adivinar',
+        "index_no_guess": '⚡ Sin Adivinar',
+        "index_welcome_title": 'Bienvenido a las Minas de Lady Di',
+        "index_welcome_body": 'Minesweeper.org ofrece el clásico Buscaminas desde el año 2000. Juega en niveles principiante, intermedio, experto o crea tu propio tablero — todo gratis, sin descarga. Desafíate en el marcador diario o establece un récord personal.',
+        "index_signin_msg": 'Inicia sesión para guardar tus puntuaciones y aparecer en el marcador.',
+        "index_about": 'Acerca del sitio',
+        "index_strategy": 'Estrategia & consejos',
     },
 
     "th": {
@@ -591,6 +627,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c \u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e04\u0e30\u0e41\u0e19\u0e19\u0e44\u0e14\u0e49",
         "rush_sign_in":           "\u0e40\u0e02\u0e49\u0e32\u0e2a\u0e39\u0e48\u0e23\u0e30\u0e1a\u0e1a\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e02\u0e49\u0e32\u0e21\u0e02\u0e31\u0e49\u0e19\u0e15\u0e2d\u0e19\u0e19\u0e35\u0e49",
         "rush_lb_loading":        "\u0e01\u0e33\u0e25\u0e31\u0e07\u0e42\u0e2b\u0e25\u0e14\u2026",
+        # Index / home page
+        "index_todays_best": 'ดีที่สุดวันนี้',
+        "index_guess": '🎲 เดา',
+        "index_no_guess": '⚡ ไม่เดา',
+        "index_welcome_title": 'ยินดีต้อนรับสู่ทุ่นระเบิดของเลดี้ได',
+        "index_welcome_body": 'Minesweeper.org ให้บริการเกม Minesweeper คลาสสิกตั้งแต่ปี 2000 เล่นระดับมือใหม่ กลาง ผู้เชี่ยวชาญ หรือกำหนดเอง — ฟรีทั้งหมด ไม่ต้องดาวน์โหลด ท้าทายตัวเองด้วยกระดานคะแนนประจำวันหรือทำลายสถิติส่วนตัว',
+        "index_signin_msg": 'ลงชื่อเข้าใช้เพื่อบันทึกคะแนนและปรากฏบนกระดานคะแนน',
+        "index_about": 'เกี่ยวกับเว็บไซต์',
+        "index_strategy": 'กลยุทธ์และเคล็ดลับ',
     },
 
     "pgl": {
@@ -711,6 +756,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c Ouldcay otnay avesay oresscay.",
         "rush_sign_in":           "Ignsay inway otay ipskay isthay epstay",
         "rush_lb_loading":        "Oadinglay\u2026",
+        # Index / home page
+        "index_todays_best": 'Oday’s-tay Est-bay',
+        "index_guess": '🎲 Ess-guay',
+        "index_no_guess": '⚡ Ono-nay Ess-guay',
+        "index_welcome_title": 'Elcome-way oto-tay Ady-lay I’s-day Ines-may',
+        "index_welcome_body": 'Inesweeper-may.org as-hay een-bay erving-say e-thay assic-clay ame-gay ince-say 2000-ay. Ay-play eginner-bay, intermediate-ay, expert-ay, or-ay ustom-cay oards-bay — all-ay ee-fray, o-nay ownload-day equired-ray. Allenge-chay ourself-yay against-ay e-thay aily-day eaderboard-lay or-ay et-say a-ay ersonal-pay est-bay.',
+        "index_signin_msg": 'Ign-say in-ay oto-tay ave-say our-yay ores-scay and-ay appear-ay on-ay e-thay eaderboard-lay.',
+        "index_about": 'About-ay is-thay ite-say',
+        "index_strategy": 'Ategy-stray & Ips-tay',
     },
 
     "uk": {
@@ -831,6 +885,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c \u041d\u0435 \u0432\u0434\u0430\u043b\u043e\u0441\u044f \u0437\u0431\u0435\u0440\u0435\u0433\u0442\u0438 \u043e\u0447\u043a\u0438.",
         "rush_sign_in":           "\u0423\u0432\u0456\u0439\u0434\u0456\u0442\u044c, \u0449\u043e\u0431 \u043f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u0442\u0438 \u0446\u0435\u0439 \u043a\u0440\u043e\u043a",
         "rush_lb_loading":        "\u0417\u0430\u0432\u0430\u043d\u0442\u0430\u0436\u0435\u043d\u043d\u044f\u2026",
+        # Index / home page
+        "index_todays_best": 'Найкращі сьогодні',
+        "index_guess": '🎲 З вгадуванням',
+        "index_no_guess": '⚡ Без вгадування',
+        "index_welcome_title": 'Ласкаво просимо до Мін Леді Ді',
+        "index_welcome_body": 'Minesweeper.org обслуговує класичну гру Сапер з 2000 року. Грайте на рівнях початківця, середньому, експертному або на власних полях — все безкоштовно, без завантажень. Змагайтеся у щоденному рейтингу або встановіть особистий рекорд.',
+        "index_signin_msg": 'Увійдіть, щоб зберегти результати та з’явитись у таблиці лідерів.',
+        "index_about": 'Про цей сайт',
+        "index_strategy": 'Стратегія та поради',
     },
 
     "fr": {
@@ -949,6 +1012,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c Impossible d\u2019enregistrer le score.",
         "rush_sign_in":           "Connectez-vous pour passer cette \u00e9tape",
         "rush_lb_loading":        "Chargement\u2026",
+        # Index / home page
+        "index_todays_best": 'Meilleurs du jour',
+        "index_guess": '🎲 Deviner',
+        "index_no_guess": '⚡ Sans devinette',
+        "index_welcome_title": 'Bienvenue dans les mines de Lady Di',
+        "index_welcome_body": 'Minesweeper.org propose le Démineur classique depuis 2000. Jouez en mode débutant, intermédiaire, expert ou créez vos propres grilles — tout gratuit, sans téléchargement. Défiez-vous sur le classement quotidien ou battez votre record personnel.',
+        "index_signin_msg": 'Connectez-vous pour sauvegarder vos scores et apparaître sur le classement.',
+        "index_about": 'À propos du site',
+        "index_strategy": 'Stratégie & conseils',
     },
 
     "ko": {
@@ -1067,6 +1139,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c 점수를 저장할 수 없습니다.",
         "rush_sign_in":           "이 단계를 건너뛰려면 로그인하세요",
         "rush_lb_loading":        "불러오는 중\u2026",
+        # Index / home page
+        "index_todays_best": '오늘의 베스트',
+        "index_guess": '🎲 추측',
+        "index_no_guess": '⚡ 무추측',
+        "index_welcome_title": '레이디 다이의 지룢받에 오신 것을 환영합니다',
+        "index_welcome_body": 'Minesweeper.org는 2000년부터 클래식 지룢찾기 게임을 제공하고 있습니다. 초급, 중급, 고급 또는 사용자 지정 보드를 즐기세요 — 모두 무료, 다운로드 불필요. 일일 순위표에서 도전하거나 개인 최고 기록을 세우세요.',
+        "index_signin_msg": '점수를 저장하고 순위표에 나타나려면 로그인하세요.',
+        "index_about": '사이트 소개',
+        "index_strategy": '전략 및 팁',
     },
 
     "ja": {
@@ -1185,6 +1266,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c \u30b9\u30b3\u30a2\u3092\u4fdd\u5b58\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002",
         "rush_sign_in":           "\u3053\u306e\u30b9\u30c6\u30c3\u30d7\u3092\u30b9\u30ad\u30c3\u30d7\u3059\u308b\u306b\u306f\u30ed\u30b0\u30a4\u30f3\u3057\u3066\u304f\u3060\u3055\u3044",
         "rush_lb_loading":        "\u8aad\u307f\u8fbc\u307f\u4e2d\u2026",
+        # Index / home page
+        "index_todays_best": '本日のベスト',
+        "index_guess": '🎲 推測あり',
+        "index_no_guess": '⚡ 推測なし',
+        "index_welcome_title": 'レディ・ダイの地雷原へようこそ',
+        "index_welcome_body": 'Minesweeper.orgは2000年からクラシックマインスイーパーゲームを提供しています。初級・中級・上級またはカスタムボードでプレイ — すべて無料、ダウンロード不要。毎日のランキングに挑戦するか、自己ベストを目指しましょう。',
+        "index_signin_msg": 'スコアを保存しランキングに表示するにはサインインしてください。',
+        "index_about": 'このサイトについて',
+        "index_strategy": '戦略とヒント',
     },
     "zh": {
         # Nav
@@ -1302,6 +1392,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "❌ 无法保存分数。",
         "rush_sign_in":           "登录以跳过此步骤",
         "rush_lb_loading":        "加载中…",
+        # Index / home page
+        "index_todays_best": '今日最佳',
+        "index_guess": '🎲 猜测',
+        "index_no_guess": '⚡ 无猜测',
+        "index_welcome_title": '欢迎来到戴安娜的雷区',
+        "index_welcome_body": 'Minesweeper.org 自2000年起提供经典扫雷游戏。畅玩初级、中级、高级或自定义棋盘 — 全部免费，无需下载。挑战每日排行榜或创造个人最佳成绩。',
+        "index_signin_msg": '登录以保存您的分数并出现在排行榜上。',
+        "index_about": '关于本站',
+        "index_strategy": '策略与技巧',
     },
     "zh-hant": {
         # Nav
@@ -1419,6 +1518,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "❌ 無法儲存分數。",
         "rush_sign_in":           "登入以跳過此步驟",
         "rush_lb_loading":        "載入中…",
+        # Index / home page
+        "index_todays_best": '今日最佳',
+        "index_guess": '🎲 猜測',
+        "index_no_guess": '⚡ 無猜測',
+        "index_welcome_title": '歡迎來到戴安娜的雷區',
+        "index_welcome_body": 'Minesweeper.org 自2000年起提供經典踩地雷遙戲。畓玩初級、中級、高級或自訂棋盤 — 全部免費，無需下載。挑戰每日排行榜或創造個人最佳成績。',
+        "index_signin_msg": '登入以儲存您的分數並出現在排行榜上。',
+        "index_about": '關於本站',
+        "index_strategy": '策略與技巧',
     },
     "pl": {
         # Nav
@@ -1536,6 +1644,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "❌ Nie można zapisać wyniku.",
         "rush_sign_in":           "Zaloguj się, aby pominąć ten krok",
         "rush_lb_loading":        "Ładowanie…",
+        # Index / home page
+        "index_todays_best": 'Najlepsi dziś',
+        "index_guess": '🎲 Zgadywanie',
+        "index_no_guess": '⚡ Bez zgadywania',
+        "index_welcome_title": 'Witaj w Kopalniach Lady Di',
+        "index_welcome_body": 'Minesweeper.org oferuje klasycznego Sapera od 2000 roku. Graj na poziomach początkującym, średnim, eksperckim lub własnych planszach — wszystko za darmo, bez pobierania. Rywalizuj w codziennym rankingu lub pobij swój osobisty rekord.',
+        "index_signin_msg": 'Zaloguj się, aby zapisać swoje wyniki i pojawić się na tablicy liderów.',
+        "index_about": 'O tej stronie',
+        "index_strategy": 'Strategia i porady',
     },
 }
 
