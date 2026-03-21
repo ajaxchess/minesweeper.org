@@ -612,6 +612,18 @@ async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
             elif mtype == "reveal":
                 await _handle_reveal(ws, game, player_id, msg)
 
+            elif mtype == "chat":
+                text = msg.get("text", "").strip()[:200]
+                if text:
+                    p = game.get_player(player_id)
+                    from_name = (p.name or "Anonymous") if p else "Anonymous"
+                    await manager.broadcast(game, {
+                        "type": "chat",
+                        "from": from_name,
+                        "pid":  player_id,
+                        "text": text,
+                    })
+
     except WebSocketDisconnect:
         p = game.get_player(player_id)
         if p:

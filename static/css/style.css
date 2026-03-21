@@ -4890,7 +4890,7 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
 /* ── Duel Chat ─────────────────────────────────────────────────────────────── */
 .duel-chat {
   margin: 1rem auto 0;
-  max-width: 640px;
+  max-width: 960px;
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
