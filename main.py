@@ -1,12 +1,13 @@
 from datetime import date, timedelta, datetime, timezone
 import uuid
 from typing import Optional
-from fastapi import FastAPI, Request, Depends, HTTPException, Query
+from fastapi import FastAPI, Request, Depends, HTTPException, Query, Response
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case, text
@@ -56,6 +57,7 @@ async def count_requests(request: Request, call_next):
         _req_count += 1
     return await call_next(request)
 
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="127.0.0.1")
 app.include_router(duel_router)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True)
@@ -491,9 +493,13 @@ def get_scores(mode: GameMode, no_guess: bool = False,
                period: str = "daily",
                score_date: Optional[str] = Query(None, alias="date"),
                season_num: Optional[int] = Query(None),
-               db: Session = Depends(get_db)):
+               db: Session = Depends(get_db),
+               response: Response = None):
     if period not in ("daily", "season", "alltime"):
         period = "daily"
+
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=60"
 
     sort_key = case(
         (Score.time_ms.isnot(None), Score.time_ms),
@@ -1462,10 +1468,13 @@ def get_pvp_rankings(period: str = "alltime",
                      score_date: Optional[str] = Query(None, alias="date"),
                      season_num: Optional[int] = Query(None),
                      submode: Optional[str] = Query(None),
-                     db: Session = Depends(get_db)):
+                     db: Session = Depends(get_db),
+                     response: Response = None):
     """Return players ranked by number of PvP wins."""
     if period not in ("daily", "season", "alltime"):
         period = "alltime"
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=60"
 
     q = db.query(PvpResult)
     if submode in ("standard", "quick"):
@@ -1519,8 +1528,10 @@ def get_pvp_rankings(period: str = "alltime",
 
 
 @app.get("/api/pvp/elo-rankings")
-def get_pvp_elo_rankings(db: Session = Depends(get_db)):
+def get_pvp_elo_rankings(db: Session = Depends(get_db), response: Response = None):
     """Return players ranked by Elo rating (only players who have played at least one match)."""
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=300"
     winner_emails = db.query(PvpResult.winner_email).filter(PvpResult.winner_email != None)
     loser_emails  = db.query(PvpResult.loser_email ).filter(PvpResult.loser_email  != None)
     played_emails = {row[0] for row in winner_emails.union(loser_emails).all()}
@@ -1905,13 +1916,20 @@ def get_tentaizu_easy_scores(puzzle_date: str, db: Session = Depends(get_db)):
 def _build_stats(email: str, db: Session) -> dict:
     """Shared stats aggregation used by both private and public profile endpoints."""
     stats = {}
+
+    # Single query for all game history modes, grouped in Python
+    all_history = (
+        db.query(GameHistory)
+        .filter(GameHistory.user_email == email)
+        .order_by(GameHistory.created_at.desc())
+        .all()
+    )
+    history_by_mode: dict[str, list] = {}
+    for h in all_history:
+        history_by_mode.setdefault(h.mode, []).append(h)
+
     for mode in ["beginner", "intermediate", "expert", "custom"]:
-        scores = (
-            db.query(GameHistory)
-            .filter(GameHistory.user_email == email, GameHistory.mode == mode)
-            .order_by(GameHistory.created_at.desc())
-            .all()
-        )
+        scores = history_by_mode.get(mode, [])
         if not scores:
             stats[mode] = None
             continue
@@ -1973,9 +1991,9 @@ def _build_stats(email: str, db: Session) -> dict:
     else:
         stats["mosaic"] = None
 
-    # PvP stats — wins, losses, and Elo rating
-    pvp_wins   = db.query(PvpResult).filter(PvpResult.winner_email == email).count()
-    pvp_losses = db.query(PvpResult).filter(PvpResult.loser_email  == email).count()
+    # PvP stats — wins, losses, and Elo rating (single query via UNION COUNT)
+    pvp_wins   = db.query(func.count(PvpResult.id)).filter(PvpResult.winner_email == email).scalar() or 0
+    pvp_losses = db.query(func.count(PvpResult.id)).filter(PvpResult.loser_email  == email).scalar() or 0
     profile    = db.query(UserProfile).filter(UserProfile.email == email).first()
     pvp_elo    = profile.pvp_elo if profile else 1200
     stats["pvp"] = {
