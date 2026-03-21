@@ -117,6 +117,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c Could not save score.",
         "rush_sign_in":           "Sign in to skip this step",
         "rush_lb_loading":        "Loading\u2026",
+        # Game overlay (win/loss)
+        "game_over": '💥 Game Over',
+        "game_you_won": '🎉 You Won! — {time}',
+        "game_view_lb": 'View Leaderboard →',
+        "game_no_guess_mode": '⚡ No-Guess mode',
+        "game_congrats": '🎉 Congratulations!',
+        "game_score_vanish": 'or your score will vanish at 0:00 UTC.',
         # Index / home page
         "index_todays_best": "Today's Best",
         "index_guess": '🎲 Guess',
@@ -244,6 +251,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c Ne eblis konservi poentaron.",
         "rush_sign_in":           "Ensalutu por preteriri \u0109i tiun pa\u015don",
         "rush_lb_loading":        "\u015car\u011das\u2026",
+        # Game overlay (win/loss)
+        "game_over": '💥 Ludo Finiĝis',
+        "game_you_won": '🎉 Vi Venkis! — {time}',
+        "game_view_lb": 'Vidi Rekordtabelon →',
+        "game_no_guess_mode": '⚡ Reĝimo Sen-Diveno',
+        "game_congrats": '🎉 Gratulon!',
+        "game_score_vanish": 'aŭ via poento malaperos je 0:00 UTC.',
         # Index / home page
         "index_todays_best": 'Hodiaŭaj Plej Bonaj',
         "index_guess": '🎲 Diveno',
@@ -371,6 +385,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c Punkte konnten nicht gespeichert werden.",
         "rush_sign_in":           "Anmelden, um diesen Schritt zu \u00fcberspringen",
         "rush_lb_loading":        "L\u00e4dt\u2026",
+        # Game overlay (win/loss)
+        "game_over": '💥 Spiel vorbei',
+        "game_you_won": '🎉 Gewonnen! — {time}',
+        "game_view_lb": 'Bestenliste →',
+        "game_no_guess_mode": '⚡ Ohne-Raten-Modus',
+        "game_congrats": '🎉 Glückwunsch!',
+        "game_score_vanish": 'sonst verschwindet dein Punktestand um 0:00 UTC.',
         # Index / home page
         "index_todays_best": 'Tagesbeste',
         "index_guess": '🎲 Rate-Modus',
@@ -498,6 +519,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c No se pudo guardar la puntuaci\u00f3n.",
         "rush_sign_in":           "Inicia sesi\u00f3n para omitir este paso",
         "rush_lb_loading":        "Cargando\u2026",
+        # Game overlay (win/loss)
+        "game_over": '💥 Fin del juego',
+        "game_you_won": '🎉 ¡Ganaste! — {time}',
+        "game_view_lb": 'Ver clasificación →',
+        "game_no_guess_mode": '⚡ Modo sin adivinar',
+        "game_congrats": '🎉 ¡Felicitaciones!',
+        "game_score_vanish": 'o tu puntuación desaparecerá a las 0:00 UTC.',
         # Index / home page
         "index_todays_best": 'Los Mejores de Hoy',
         "index_guess": '🎲 Adivinar',
@@ -627,6 +655,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c \u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e04\u0e30\u0e41\u0e19\u0e19\u0e44\u0e14\u0e49",
         "rush_sign_in":           "\u0e40\u0e02\u0e49\u0e32\u0e2a\u0e39\u0e48\u0e23\u0e30\u0e1a\u0e1a\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e02\u0e49\u0e32\u0e21\u0e02\u0e31\u0e49\u0e19\u0e15\u0e2d\u0e19\u0e19\u0e35\u0e49",
         "rush_lb_loading":        "\u0e01\u0e33\u0e25\u0e31\u0e07\u0e42\u0e2b\u0e25\u0e14\u2026",
+        # Game overlay (win/loss)
+        "game_over": '💥 เกมจบแล้ว',
+        "game_you_won": '🎉 คุณชนะ! — {time}',
+        "game_view_lb": 'ดูกระดานคะแนน →',
+        "game_no_guess_mode": '⚡ โหมดไม่เดา',
+        "game_congrats": '🎉 ยินดีด้วย!',
+        "game_score_vanish": 'มิฉะนั้นคะแนนจะหายไปที่ 0:00 UTC',
         # Index / home page
         "index_todays_best": 'ดีที่สุดวันนี้',
         "index_guess": '🎲 เดา',
@@ -756,6 +791,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c Ouldcay otnay avesay oresscay.",
         "rush_sign_in":           "Ignsay inway otay ipskay isthay epstay",
         "rush_lb_loading":        "Oadinglay\u2026",
+        # Game overlay (win/loss)
+        "game_over": '💥 Ame-gay Over-ay',
+        "game_you_won": '🎉 Ou-yay On-way! — {time}',
+        "game_view_lb": 'Iew-vay Eaderboard-lay →',
+        "game_no_guess_mode": '⚡ Ono-nay Ess-guay Ode-may',
+        "game_congrats": '🎉 Ongratulations-cay!',
+        "game_score_vanish": 'or-ay our-yay ore-scay ill-way anish-vay at-ay 0:00 UTC.',
         # Index / home page
         "index_todays_best": 'Oday’s-tay Est-bay',
         "index_guess": '🎲 Ess-guay',
@@ -885,6 +927,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c \u041d\u0435 \u0432\u0434\u0430\u043b\u043e\u0441\u044f \u0437\u0431\u0435\u0440\u0435\u0433\u0442\u0438 \u043e\u0447\u043a\u0438.",
         "rush_sign_in":           "\u0423\u0432\u0456\u0439\u0434\u0456\u0442\u044c, \u0449\u043e\u0431 \u043f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u0442\u0438 \u0446\u0435\u0439 \u043a\u0440\u043e\u043a",
         "rush_lb_loading":        "\u0417\u0430\u0432\u0430\u043d\u0442\u0430\u0436\u0435\u043d\u043d\u044f\u2026",
+        # Game overlay (win/loss)
+        "game_over": '💥 Гра закінчена',
+        "game_you_won": '🎉 Ви виграли! — {time}',
+        "game_view_lb": 'Переглянути рейтинг →',
+        "game_no_guess_mode": '⚡ Режим без вгадування',
+        "game_congrats": '🎉 Вітаємо!',
+        "game_score_vanish": 'інакше ваш рахунок зникне о 0:00 UTC.',
         # Index / home page
         "index_todays_best": 'Найкращі сьогодні',
         "index_guess": '🎲 З вгадуванням',
@@ -1012,6 +1061,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c Impossible d\u2019enregistrer le score.",
         "rush_sign_in":           "Connectez-vous pour passer cette \u00e9tape",
         "rush_lb_loading":        "Chargement\u2026",
+        # Game overlay (win/loss)
+        "game_over": '💥 Partie terminée',
+        "game_you_won": '🎉 Vous avez gagné\xa0! — {time}',
+        "game_view_lb": 'Voir le classement →',
+        "game_no_guess_mode": '⚡ Mode sans devinette',
+        "game_congrats": '🎉 Félicitations\xa0!',
+        "game_score_vanish": 'sinon votre score disparaître à 0:00 UTC.',
         # Index / home page
         "index_todays_best": 'Meilleurs du jour',
         "index_guess": '🎲 Deviner',
@@ -1139,6 +1195,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c 점수를 저장할 수 없습니다.",
         "rush_sign_in":           "이 단계를 건너뛰려면 로그인하세요",
         "rush_lb_loading":        "불러오는 중\u2026",
+        # Game overlay (win/loss)
+        "game_over": '💥 게임 오버',
+        "game_you_won": '🎉 승리! — {time}',
+        "game_view_lb": '순위표 보기 →',
+        "game_no_guess_mode": '⚡ 무추측 모드',
+        "game_congrats": '🎉 축하합니다!',
+        "game_score_vanish": '안그러면 점수가 0:00 UTC에 사라집니다.',
         # Index / home page
         "index_todays_best": '오늘의 베스트',
         "index_guess": '🎲 추측',
@@ -1266,6 +1329,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "\u274c \u30b9\u30b3\u30a2\u3092\u4fdd\u5b58\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002",
         "rush_sign_in":           "\u3053\u306e\u30b9\u30c6\u30c3\u30d7\u3092\u30b9\u30ad\u30c3\u30d7\u3059\u308b\u306b\u306f\u30ed\u30b0\u30a4\u30f3\u3057\u3066\u304f\u3060\u3055\u3044",
         "rush_lb_loading":        "\u8aad\u307f\u8fbc\u307f\u4e2d\u2026",
+        # Game overlay (win/loss)
+        "game_over": '💥 ゲームオーバー',
+        "game_you_won": '🎉 クリア！ — {time}',
+        "game_view_lb": 'ランキングを見る →',
+        "game_no_guess_mode": '⚡ 推測なしモード',
+        "game_congrats": '🎉 おめでとう！',
+        "game_score_vanish": 'そうしないと0:00 UTCにスコアが消えます。',
         # Index / home page
         "index_todays_best": '本日のベスト',
         "index_guess": '🎲 推測あり',
@@ -1392,6 +1462,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "❌ 无法保存分数。",
         "rush_sign_in":           "登录以跳过此步骤",
         "rush_lb_loading":        "加载中…",
+        # Game overlay (win/loss)
+        "game_over": '💥 游戏结束',
+        "game_you_won": '🎉 胜利！— {time}',
+        "game_view_lb": '查看排行榜 →',
+        "game_no_guess_mode": '⚡ 无猜测模式',
+        "game_congrats": '🎉 恭喜！',
+        "game_score_vanish": '否则分数将0:00 UTC消失。',
         # Index / home page
         "index_todays_best": '今日最佳',
         "index_guess": '🎲 猜测',
@@ -1518,6 +1595,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "❌ 無法儲存分數。",
         "rush_sign_in":           "登入以跳過此步驟",
         "rush_lb_loading":        "載入中…",
+        # Game overlay (win/loss)
+        "game_over": '💥 遊戲結束',
+        "game_you_won": '🎉 勝利！— {time}',
+        "game_view_lb": '查看排行榜 →',
+        "game_no_guess_mode": '⚡ 無猜測模式',
+        "game_congrats": '🎉 恭喜！',
+        "game_score_vanish": '否則分數將0:00 UTC消失。',
         # Index / home page
         "index_todays_best": '今日最佳',
         "index_guess": '🎲 猜測',
@@ -1644,6 +1728,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "rush_save_failed":       "❌ Nie można zapisać wyniku.",
         "rush_sign_in":           "Zaloguj się, aby pominąć ten krok",
         "rush_lb_loading":        "Ładowanie…",
+        # Game overlay (win/loss)
+        "game_over": '💥 Koniec gry',
+        "game_you_won": '🎉 Wygrałeś! — {time}',
+        "game_view_lb": 'Zobacz ranking →',
+        "game_no_guess_mode": '⚡ Tryb bez zgadywania',
+        "game_congrats": '🎉 Gratulacje!',
+        "game_score_vanish": 'w przeciwnym razie Twój wynik zniknie o 0:00 UTC.',
         # Index / home page
         "index_todays_best": 'Najlepsi dziś',
         "index_guess": '🎲 Zgadywanie',

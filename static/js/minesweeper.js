@@ -380,7 +380,7 @@ function boom(r, c) {
     renderCell(mr, mc, mr === r && mc === c);
   }
   document.getElementById('reset-btn').textContent = '😵';
-  showOverlay('💥 Game Over', false);
+  showOverlay(window.T.game_over, false);
 }
 
 function checkWin() {
@@ -401,7 +401,7 @@ function checkWin() {
       }
     }
     document.getElementById('mines-left').textContent = '000';
-    showOverlay(`🎉 You Won! — ${state.elapsed}s`, true);
+    showOverlay(window.T.game_you_won.replace('{time}', state.elapsed + 's'), true);
 
     // Quest hooks
     if (typeof window.questsHook === 'function') {
@@ -439,17 +439,17 @@ function showOverlay(msg, won) {
   if (won) {
     if (username) {
       // Logged-in: auto-submit immediately, show a confirmation
-      scoreForm = `<div id="score-msg" style="font-size:0.9rem">Saving score…</div>`;
+      scoreForm = `<div id="score-msg" style="font-size:0.9rem">${window.T.rush_saving}</div>`;
     } else {
       const loginHref = '/auth/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
       scoreForm = `
         <div class="overlay-score-form">
           <input id="player-name" type="text" maxlength="32"
-                 placeholder="Enter your name" autocomplete="off" />
-          <button onclick="submitScore()">Save Score</button>
+                 placeholder="${window.T.rush_name_placeholder}" autocomplete="off" />
+          <button onclick="submitScore()">${window.T.rush_save_score}</button>
         </div>
         <div id="score-msg" style="font-size:0.85rem;min-height:1.2em"></div>
-        <div class="overlay-guest-warning">🎉 Congratulations! <a href="${loginHref}" onclick="guestLoginAndSave(event, '${loginHref}', 'submitScore', 'player-name')">Login with Google</a> or your score will vanish at 0:00 UTC.</div>
+        <div class="overlay-guest-warning">${window.T.game_congrats} <a href="${loginHref}" onclick="guestLoginAndSave(event, '${loginHref}', 'submitScore', 'player-name')">${window.T.auth_sign_in}</a> ${window.T.game_score_vanish}</div>
       `;
     }
   }
@@ -457,10 +457,10 @@ function showOverlay(msg, won) {
   const ngParam = state.noGuess ? '&no_guess=true' : '';
   el.innerHTML = `
     <span>${msg}</span>
-    ${state.noGuess ? '<span style="font-size:0.75rem;opacity:0.7">⚡ No-Guess mode</span>' : ''}
+    ${state.noGuess ? `<span style="font-size:0.75rem;opacity:0.7">${window.T.game_no_guess_mode}</span>` : ''}
     ${scoreForm}
-    <button onclick="resetGame()">Play Again</button>
-    <a class="overlay-lb-link" href="/leaderboard?mode=${mode}${ngParam}">View Leaderboard →</a>
+    <button onclick="resetGame()">${window.T.rush_play_again}</button>
+    <a class="overlay-lb-link" href="/leaderboard?mode=${mode}${ngParam}">${window.T.game_view_lb}</a>
   `;
   el.style.display = 'flex';
 
@@ -508,14 +508,14 @@ async function submitScore(autoName = null) {
       body:    JSON.stringify(payload),
     });
     if (res.ok) {
-      if (msgEl) msgEl.textContent = `✅ Score saved for ${name}!`;
+      if (msgEl) msgEl.textContent = `${window.T.rush_saved_for} ${name}!`;
       if (nameEl) nameEl.disabled = true;
       const saveBtn = document.querySelector('.overlay-score-form button');
       if (saveBtn) saveBtn.disabled = true;
       if (typeof window.onScoreSaved === 'function') window.onScoreSaved();
     } else {
       const err = await res.json();
-      if (msgEl) msgEl.textContent = `❌ ${err.detail || 'Could not save score.'}`;
+      if (msgEl) msgEl.textContent = `❌ ${err.detail || window.T.rush_save_failed}`;
     }
   } catch {
     if (msgEl) msgEl.textContent = '❌ Network error. Score not saved.';
