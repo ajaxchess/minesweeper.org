@@ -15,7 +15,7 @@ DB_USER     = "the_minesweeper_user"
 DB_PASSWORD = "the_password"
 DB_HOST     = "localhost"
 DB_PORT     = 3306
-DB_NAME     = "minesweeper"
+DB_NAME     = "the_db_name"
 
 DATABASE_URL = (
     f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}"

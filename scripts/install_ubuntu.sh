@@ -81,6 +81,7 @@ info "Setting up .env..."
 if [[ ! -f "${REPO_DIR}/.env" ]]; then
     cp "${REPO_DIR}/.env_example" "${REPO_DIR}/.env"
     # Pre-fill DB credentials we already know
+    sed -i "s/^DB_NAME=.*/DB_NAME=minesweeper/" "${REPO_DIR}/.env"
     sed -i "s/^DB_USER=.*/DB_USER=minesweeper_user/" "${REPO_DIR}/.env"
     sed -i "s/^DB_PASS=.*/DB_PASS=${DB_PASS}/" "${REPO_DIR}/.env"
     # Generate a random SECRET_KEY
@@ -100,6 +101,7 @@ source "${REPO_DIR}/.env"
 cp "${REPO_DIR}/database_template.py" "${REPO_DIR}/database.py"
 sed -i "s/the_minesweeper_user/${DB_USER}/g" "${REPO_DIR}/database.py"
 sed -i "s/the_password/${DB_PASS}/g"         "${REPO_DIR}/database.py"
+sed -i "s/the_db_name/${DB_NAME}/g"          "${REPO_DIR}/database.py"
 chown "$APP_USER:$APP_USER" "${REPO_DIR}/database.py"
 ok "database.py generated."
 

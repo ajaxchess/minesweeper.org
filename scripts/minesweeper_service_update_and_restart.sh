@@ -53,6 +53,7 @@ else
         /usr/bin/cp database_template.py database.py
         /usr/bin/sed -i "s/the_minesweeper_user/$DB_USER/g" database.py
         /usr/bin/sed -i "s/the_password/$DB_PASS/g" database.py
+        /usr/bin/sed -i "s/the_db_name/$DB_NAME/g" database.py
     else
         echo "The file $FILE_PATH was NOT changed in the past $MINUTES_AGO minutes, or does not exist."
     fi
