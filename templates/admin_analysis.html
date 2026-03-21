@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Analysis — minesweeper.org{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper" style="max-width:none;padding:1.5rem 1rem 3rem;">
+
+  <h1 class="lb-title">📊 Analysis</h1>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;margin-bottom:1.5rem;">
+    {{ user.email }} &nbsp;|&nbsp;
+    <a href="/admin">← Dashboard</a> &nbsp;|&nbsp;
+    <a href="/admin/kanban">📋 Kanban</a> &nbsp;|&nbsp;
+    <a href="/admin/users">👥 Users</a> &nbsp;|&nbsp;
+    <a href="/admin/operations">⚙ Operations</a>
+  </p>
+
+  <div class="analysis-layout">
+
+    <div class="analysis-sidebar">
+      {% if docs %}
+        {% for slug in docs %}
+        <a href="/admin/analysis?doc={{ slug }}"
+           class="analysis-doc-link {% if slug == current_doc %}active{% endif %}">
+          {{ slug.replace('-', ' ').replace('_', ' ') }}
+        </a>
+        {% endfor %}
+      {% else %}
+        <p class="analysis-empty">No documents yet.<br>Add .md files to the <code>analysis/</code> directory.</p>
+      {% endif %}
+    </div>
+
+    <div class="analysis-content">
+      {% if content_html %}
+        <div class="blog-article-body">{{ content_html | safe }}</div>
+      {% elif current_doc %}
+        <p class="analysis-empty">Document not found.</p>
+      {% else %}
+        <p class="analysis-empty">Select a document from the sidebar.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
