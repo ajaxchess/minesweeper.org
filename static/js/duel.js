@@ -457,6 +457,13 @@ document.addEventListener('DOMContentLoaded', () => {
         appendChatSystem('⚠️ Opponent disconnected.');
         break;
 
+      case 'watch_redirect':
+        setStatus('👁 Game is full — joining as spectator…');
+        setTimeout(() => {
+          location.href = `/duel/${msg.game_id}/watch`;
+        }, 1200);
+        break;
+
       case 'error':
         setStatus('❌ ' + msg.msg);
         break;

@@ -4807,6 +4807,17 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
   gap: 1px;
 }
 
+/* Spectator boards */
+#board-p1, #board-p2 {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--cell-size));
+  gap: 1px;
+  background: var(--surface);
+  padding: 4px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+}
+
 /* Both boards' cells scale with the board cell size */
 .duel-boards-row .cell {
   font-size: 0.65rem;

@@ -652,8 +652,8 @@ async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
     await ws.accept()
 
     if not game.add_player(player_id, ws):
-        await ws.send_json({"type": "error", "msg": "Game is full."})
-        await ws.close(code=4003)
+        await ws.send_json({"type": "watch_redirect", "game_id": game_id})
+        await ws.close(code=4000)
         return
 
     role = "creator" if game.players[0].player_id == player_id else "challenger"
