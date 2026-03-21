@@ -116,6 +116,7 @@ class DuelGame:
         self.is_pvp      = is_pvp
         self.players:    list[PlayerState] = []
         self.spectators: list              = []   # list[WebSocket]
+        self.rematch_game_id: Optional[str] = None
         self.start_time: Optional[float]   = None
         self.active:     bool = False
         self.finished:   bool = False

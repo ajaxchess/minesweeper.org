@@ -1316,13 +1316,25 @@ html[data-skin="classic"] .result-hash a  { color: #88ccff; }
   padding: 0.55rem 1.5rem;
   background: var(--accent);
   color: #fff;
+  border: none;
+  cursor: pointer;
   border-radius: var(--radius);
   font-weight: 700;
+  font-size: 1rem;
   text-decoration: none;
   transition: opacity 0.15s;
 }
 
 .duel-play-again:hover { opacity: 0.85; }
+
+.duel-play-again--secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+.duel-result { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
 
 .duel-scoring-info {
   max-width: 560px;

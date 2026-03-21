@@ -727,6 +727,21 @@ async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
                         "text": text,
                     })
 
+            elif mtype == "rematch":
+                if game.finished:
+                    if game.rematch_game_id is None:
+                        new_game = create_game(
+                            rows=game.rows, cols=game.cols, mines=game.mines,
+                            submode=game.submode, is_pvp=False,
+                        )
+                        game.rematch_game_id = new_game.game_id
+                    for p in game.players:
+                        if p.ws:
+                            await manager.send(p.ws, {
+                                "type":    "rematch_ready",
+                                "game_id": game.rematch_game_id,
+                            })
+
     except WebSocketDisconnect:
         p = game.get_player(player_id)
         if p:

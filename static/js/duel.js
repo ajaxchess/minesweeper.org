@@ -236,6 +236,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('#share-box button').textContent = 'Copied!';
   };
 
+  window.requestRematch = function() {
+    const btn = document.querySelector('.duel-rematch-btn');
+    if (btn) btn.textContent = '⏳ Waiting for opponent…';
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({type: 'rematch'}));
+    }
+  };
+
   window.copyWatchLink = function() {
     const inp = document.getElementById('watch-link-inp');
     navigator.clipboard.writeText(inp.value).catch(() => { inp.select(); });
@@ -438,13 +446,17 @@ document.addEventListener('DOMContentLoaded', () => {
               return `<p class="result-hash">Board: <a href="/variants/replay/?${p}" target="_blank">${msg.board_hash.slice(0, 12)}…</a></p>`;
             })()
           : '';
+        const rematchBtn = (!IS_PVP && !IS_BOT)
+          ? `<button class="duel-play-again duel-rematch-btn" onclick="window.requestRematch()">🔄 Rematch</button>`
+          : '';
         showDuelOverlay(`
           <div class="duel-result">
             <h2>${headline}</h2>
             <p>${sub}</p>
             <p class="result-time">Time: ${msg.elapsed}s</p>
             ${hashLine}
-            <a href="${IS_PVP ? '/pvp' : '/duel'}?m=${SUBMODE}" class="duel-play-again">⚔️ New Duel</a>
+            ${rematchBtn}
+            <a href="${IS_PVP ? '/pvp' : '/duel'}?m=${SUBMODE}" class="duel-play-again duel-play-again--secondary">⚔️ New Duel</a>
           </div>
         `);
         break;
@@ -455,6 +467,10 @@ document.addEventListener('DOMContentLoaded', () => {
         stopTimer();
         gameActive = false;
         appendChatSystem('⚠️ Opponent disconnected.');
+        break;
+
+      case 'rematch_ready':
+        location.href = `/duel/${msg.game_id}`;
         break;
 
       case 'watch_redirect':
