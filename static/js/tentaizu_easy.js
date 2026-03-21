@@ -1,1 +1,452 @@
-"use strict";function mulberry32(e){return function(){e=(e|=0)+1831565813|0;let t=Math.imul(e^e>>>15,1|e);return t=t+Math.imul(t^t>>>7,61|t)^t,((t^t>>>14)>>>0)/4294967296}}function strSeed(e){let t=2166136261;for(let n=0;n<e.length;n++)t^=e.charCodeAt(n),t=Math.imul(t,16777619)>>>0;return t}const ROWS=5,COLS=5,MINES=6,SEED_PREFIX="easy5x5:",NUM_COLOR=["","#6ab0f5","#57d474","#e53935","#3949ab","#c62828","#00838f","#212121","#757575"];let G={cells:[],isPOTD:!0,puzzleId:"",startTime:null,elapsed:0,timer:null,won:!1,highlightErrors:!1};function generatePuzzle(e){const t=mulberry32(strSeed("easy5x5:"+e)),n=Array.from({length:25},(e,t)=>t);for(let e=n.length-1;e>0;e--){const l=Math.floor(t()*(e+1));[n[e],n[l]]=[n[l],n[e]]}const l=new Set(n.slice(0,6)),o=[];for(let e=0;e<5;e++)for(let t=0;t<5;t++){const n=5*e+t,a=l.has(n);let s=0;if(!a)for(let n=-1;n<=1;n++)for(let o=-1;o<=1;o++){if(0===n&&0===o)continue;const a=e+n,r=t+o;a>=0&&a<5&&r>=0&&r<5&&l.has(5*a+r)&&s++}const r=!a&&s>0?"clue":"unknown";o.push({isMine:a,count:s,state:r})}return o}function startTimer(){G.timer||(G.startTime=Date.now()-1e3*G.elapsed,G.timer=setInterval(()=>{G.elapsed=Math.floor((Date.now()-G.startTime)/1e3),document.getElementById("tz-timer").textContent=fmtTime(G.elapsed)},500))}function stopTimer(){clearInterval(G.timer),G.timer=null,G.elapsed=Math.floor((Date.now()-G.startTime)/1e3)}function fmtTime(e){return`${Math.floor(e/60)}:${String(e%60).padStart(2,"0")}`}function isClueInContradiction(e){const t=Math.floor(e/5),n=e%5,l=G.cells[e].count;let o=0,a=0;for(let e=-1;e<=1;e++)for(let l=-1;l<=1;l++){if(0===e&&0===l)continue;const s=t+e,r=n+l;if(s<0||s>=5||r<0||r>=5)continue;const i=G.cells[5*s+r].state;"flagged"===i?o++:"unknown"===i&&a++}return o>l||o+a<l}function renderBoard(){const e=document.getElementById("tz-board");e.innerHTML="",G.cells.forEach((t,n)=>{const l=document.createElement("div");l.className="cell",l.dataset.idx=n,applyCell(l,t),"clue"!==t.state&&(l.addEventListener("click",()=>handleClick(n)),l.addEventListener("contextmenu",e=>{e.preventDefault(),handleRightClick(n)})),e.appendChild(l)})}function applyCell(e,t){if(e.className="cell",e.textContent="",e.style.color="","clue"===t.state){e.classList.add("revealed"),t.count>0&&(e.textContent=t.count,e.style.color=NUM_COLOR[t.count]||"");const n=parseInt(e.dataset.idx);G.highlightErrors&&!isNaN(n)&&isClueInContradiction(n)&&e.classList.add("tz-clue-error")}else"unknown"===t.state?e.classList.add("hidden"):"flagged"===t.state?(e.classList.add("hidden","tz-flagged"),e.textContent="⭐",G.highlightErrors&&!t.isMine&&e.classList.add("tz-error")):"empty"===t.state&&(e.classList.add("hidden","tz-empty"),e.textContent="✓",G.highlightErrors&&t.isMine&&e.classList.add("tz-error"))}function refreshCell(e){const t=document.querySelector(`#tz-board [data-idx="${e}"]`);t&&applyCell(t,G.cells[e])}function refreshNeighborClues(e){if(!G.highlightErrors)return;const t=Math.floor(e/5),n=e%5;for(let e=-1;e<=1;e++)for(let l=-1;l<=1;l++){if(0===e&&0===l)continue;const o=t+e,a=n+l;if(o<0||o>=5||a<0||a>=5)continue;const s=5*o+a;"clue"===G.cells[s].state&&refreshCell(s)}}function handleClick(e){if(G.won)return;const t=G.cells[e];"clue"!==t.state&&(G.startTime||startTimer(),"unknown"===t.state?t.state="empty":"empty"===t.state?t.state="flagged":t.state="unknown",refreshCell(e),refreshNeighborClues(e),updateFlagCount(),checkWin())}function handleRightClick(e){if(G.won)return;const t=G.cells[e];"clue"!==t.state&&(G.startTime||startTimer(),"unknown"===t.state?t.state="flagged":"flagged"===t.state?t.state="empty":t.state="unknown",refreshCell(e),refreshNeighborClues(e),updateFlagCount(),checkWin())}function updateFlagCount(){const e=G.cells.filter(e=>"flagged"===e.state).length;document.getElementById("tz-flag-count").textContent=e}function checkWin(){G.cells.every(e=>e.isMine&&"flagged"===e.state||!e.isMine&&"flagged"!==e.state)&&(G.won=!0,stopTimer(),showWinOverlay())}function showWinOverlay(){const e=document.getElementById("tz-overlay");e.className="win",e.style.display="flex",document.getElementById("tz-win-time").textContent=fmtTime(G.elapsed);const t=document.getElementById("tz-score-form"),n=document.getElementById("tz-board").dataset.username||"";if(G.isPOTD)if(n){t.style.display="none";const l=document.createElement("div");l.id="tz-score-msg",l.style.fontSize="0.9rem",l.textContent="Saving score…",e.insertBefore(l,e.querySelector(".tz-overlay-btns")),saveScore(n)}else{t.style.display="flex",document.getElementById("tz-name-input").value=localStorage.getItem("tz_name")||"";const e=document.getElementById("tz-save-btn");e.disabled=!1,e.textContent="Save Score"}else t.style.display="none"}async function saveScore(e=null){const t=document.getElementById("tz-name-input"),n=document.getElementById("tz-save-btn"),l=e||t?.value.trim();if(l){n&&(n.disabled=!0,n.textContent="Saving…");try{if((await fetch("/api/tentaizu-easy-scores",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:l,puzzle_date:G.puzzleDate,time_secs:Math.max(1,G.elapsed)})})).ok){localStorage.setItem("tz_name",l),n&&(n.textContent="✓ Saved!");const e=document.getElementById("tz-score-msg");e&&(e.textContent=`✅ Score saved for ${l}!`),loadLeaderboard()}else{n&&(n.textContent="Error — retry",n.disabled=!1);const e=document.getElementById("tz-score-msg");e&&(e.textContent="❌ Could not save score.")}}catch{n&&(n.textContent="Error — retry",n.disabled=!1);const e=document.getElementById("tz-score-msg");e&&(e.textContent="❌ Network error.")}}else t?.focus()}function updatePermalinkAndTitle(e,t){const n=document.getElementById("tz-board").dataset.realToday,l=document.getElementById("tz-lb-title"),o=document.getElementById("tz-permalink-row"),a=document.getElementById("tz-permalink-link");t?(l&&(l.textContent=e===n?"🏆 Today's Best Times":`🏆 Best Times — ${e}`),o&&a&&(a.href=`/tentaizu/easy-5x5-6/${e}`,a.textContent=`minesweeper.org/tentaizu/easy-5x5-6/${e}`,o.style.display="block")):o&&(o.style.display="none")}async function loadLeaderboard(){if(!G.isPOTD)return;const e=document.getElementById("tz-lb-content");e.innerHTML='<div class="lb-loading">Loading…</div>';try{const t=await fetch(`/api/tentaizu-easy-scores/${encodeURIComponent(G.puzzleDate)}`),n=await t.json();if(!n.length)return void(e.innerHTML='<div class="lb-empty">No scores yet — be the first!</div>');const l=["🥇","🥈","🥉"],o=n.map((e,t)=>`\n            <tr class="${t<3?"top-"+(t+1):""}">\n                <td class="lb-rank">${l[t]||t+1}</td>\n                <td class="lb-name">${e.profile_url?`<a href="${esc(e.profile_url)}" class="lb-profile-link">${esc(e.name)}</a>`:esc(e.name)}</td>\n                <td class="lb-time">${fmtTime(e.time_secs)}</td>\n            </tr>`).join("");e.innerHTML=`\n            <div class="lb-table-wrap">\n              <table class="lb-table">\n                <thead><tr><th>#</th><th>Name</th><th>Time</th></tr></thead>\n                <tbody>${o}</tbody>\n              </table>\n            </div>`}catch{e.innerHTML='<div class="lb-empty">⚠️ Could not load scores.</div>'}const t=document.getElementById("tz-prev-days");if(t){const e=[];for(let t=1;t<=7;t++){const n=new Date(Date.now()-864e5*t),l=n.toISOString().slice(0,10),o=n.toLocaleDateString(void 0,{month:"short",day:"numeric"});e.push(`<a href="/tentaizu/easy-5x5-6/${l}" class="tz-prev-day-link">${o}</a>`)}t.innerHTML=`<span class="tz-prev-days-label">Previous puzzles:</span> ${e.join("")}`}}function esc(e){return String(e).replace(/[&<>"]/g,e=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[e]))}function toggleHighlightErrors(){G.highlightErrors=!G.highlightErrors,localStorage.setItem("tzHighlightErrors",G.highlightErrors);const e=document.getElementById("highlight-errors-toggle");e&&e.classList.toggle("active",G.highlightErrors),G.cells.forEach((e,t)=>refreshCell(t))}function initGame(e,t){clearInterval(G.timer),G={cells:generatePuzzle(e),isPOTD:t,puzzleId:t?"easy5x5:"+e:e,puzzleDate:e,startTime:null,elapsed:0,timer:null,won:!1,highlightErrors:"true"===localStorage.getItem("tzHighlightErrors")};const n=document.getElementById("tz-overlay");n.style.display="none",n.className="",document.getElementById("tz-timer").textContent="0:00",document.getElementById("tz-mode-label").textContent=t?"📅 Easy 5×5 Daily":"🎲 Random Puzzle";document.getElementById("tz-lb-section").style.display=t?"block":"none",updatePermalinkAndTitle(e,t),updateFlagCount(),renderBoard();const l=document.getElementById("highlight-errors-toggle");l&&l.classList.toggle("active",G.highlightErrors),t&&loadLeaderboard()}document.addEventListener("DOMContentLoaded",()=>{const e=document.getElementById("tz-board");e.style.gridTemplateColumns="repeat(5, var(--cell-size))";initGame(e.dataset.today,!0),document.getElementById("tz-potd-btn").addEventListener("click",()=>initGame(e.dataset.realToday,!0)),document.getElementById("tz-random-btn").addEventListener("click",()=>initGame(Date.now().toString(36)+Math.random().toString(36).slice(2,6),!1)),document.getElementById("tz-overlay-potd").addEventListener("click",()=>initGame(e.dataset.realToday,!0)),document.getElementById("tz-overlay-random").addEventListener("click",()=>initGame(Date.now().toString(36)+Math.random().toString(36).slice(2,6),!1)),document.getElementById("tz-save-btn").addEventListener("click",saveScore),document.getElementById("tz-name-input").addEventListener("keydown",e=>{"Enter"===e.key&&saveScore()})});
+'use strict';
+
+// ── Seeded RNG: mulberry32 ────────────────────────────────────────────────────
+function mulberry32(seed) {
+    return function () {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+}
+
+// FNV-1a hash to turn any string into a 32-bit seed
+function strSeed(s) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h;
+}
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+const ROWS  = 5;
+const COLS  = 5;
+const MINES = 6;
+
+// Namespace prefix keeps easy-5x5 puzzles distinct from daily 7x7 puzzles
+const SEED_PREFIX = 'easy5x5:';
+
+// Classic minesweeper number colours
+const NUM_COLOR = [
+    '', '#6ab0f5', '#57d474', '#e53935',
+    '#3949ab', '#c62828', '#00838f', '#212121', '#757575',
+];
+
+// ── Game state ────────────────────────────────────────────────────────────────
+let G = {
+    cells:           [],
+    isPOTD:          true,
+    puzzleId:        '',
+    startTime:       null,
+    elapsed:         0,
+    timer:           null,
+    won:             false,
+    highlightErrors: false,
+};
+
+// ── Puzzle generation ─────────────────────────────────────────────────────────
+function generatePuzzle(seedStr) {
+    const rng = mulberry32(strSeed(SEED_PREFIX + seedStr));
+
+    const idx = Array.from({ length: ROWS * COLS }, (_, i) => i);
+    for (let i = idx.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [idx[i], idx[j]] = [idx[j], idx[i]];
+    }
+    const mines = new Set(idx.slice(0, MINES));
+
+    const cells = [];
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            const i = r * COLS + c;
+            const isMine = mines.has(i);
+            let count = 0;
+            if (!isMine) {
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        if (dr === 0 && dc === 0) continue;
+                        const nr = r + dr, nc = c + dc;
+                        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && mines.has(nr * COLS + nc)) {
+                            count++;
+                        }
+                    }
+                }
+            }
+            const state = (!isMine && count > 0) ? 'clue' : 'unknown';
+            cells.push({ isMine, count, state });
+        }
+    }
+    return cells;
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────────
+function startTimer() {
+    if (G.timer) return;
+    G.startTime = Date.now() - G.elapsed * 1000;
+    G.timer = setInterval(() => {
+        G.elapsed = Math.floor((Date.now() - G.startTime) / 1000);
+        document.getElementById('tz-timer').textContent = fmtTime(G.elapsed);
+    }, 500);
+}
+
+function stopTimer() {
+    clearInterval(G.timer);
+    G.timer = null;
+    G.elapsed = Math.floor((Date.now() - G.startTime) / 1000);
+}
+
+function fmtTime(s) {
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+// ── Clue contradiction check ──────────────────────────────────────────────────
+function isClueInContradiction(idx) {
+    const r = Math.floor(idx / COLS), c = idx % COLS;
+    const clueVal = G.cells[idx].count;
+    let flagged = 0, unknown = 0;
+    for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const nr = r + dr, nc = c + dc;
+            if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
+            const s = G.cells[nr * COLS + nc].state;
+            if (s === 'flagged') flagged++;
+            else if (s === 'unknown') unknown++;
+        }
+    }
+    return flagged > clueVal || (flagged + unknown) < clueVal;
+}
+
+// ── Rendering ─────────────────────────────────────────────────────────────────
+function renderBoard() {
+    const board = document.getElementById('tz-board');
+    board.innerHTML = '';
+
+    G.cells.forEach((cell, idx) => {
+        const el = document.createElement('div');
+        el.className = 'cell';
+        el.dataset.idx = idx;
+        applyCell(el, cell);
+
+        if (cell.state !== 'clue') {
+            el.addEventListener('click', () => handleClick(idx));
+            el.addEventListener('contextmenu', e => { e.preventDefault(); handleRightClick(idx); });
+        }
+        board.appendChild(el);
+    });
+}
+
+function applyCell(el, cell) {
+    el.className = 'cell';
+    el.textContent = '';
+    el.style.color = '';
+
+    if (cell.state === 'clue') {
+        el.classList.add('revealed');
+        if (cell.count > 0) {
+            el.textContent = cell.count;
+            el.style.color = NUM_COLOR[cell.count] || '';
+        }
+        const idx = parseInt(el.dataset.idx);
+        if (G.highlightErrors && !isNaN(idx) && isClueInContradiction(idx))
+            el.classList.add('tz-clue-error');
+    } else if (cell.state === 'unknown') {
+        el.classList.add('hidden');
+    } else if (cell.state === 'flagged') {
+        el.classList.add('hidden', 'tz-flagged');
+        el.textContent = '⭐';
+        if (G.highlightErrors && !cell.isMine) el.classList.add('tz-error');
+    } else if (cell.state === 'empty') {
+        el.classList.add('hidden', 'tz-empty');
+        el.textContent = '✓';
+        if (G.highlightErrors && cell.isMine) el.classList.add('tz-error');
+    }
+}
+
+function refreshCell(idx) {
+    const el = document.querySelector(`#tz-board [data-idx="${idx}"]`);
+    if (el) applyCell(el, G.cells[idx]);
+}
+
+function refreshNeighborClues(idx) {
+    if (!G.highlightErrors) return;
+    const r = Math.floor(idx / COLS), c = idx % COLS;
+    for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const nr = r + dr, nc = c + dc;
+            if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
+            const nIdx = nr * COLS + nc;
+            if (G.cells[nIdx].state === 'clue') refreshCell(nIdx);
+        }
+    }
+}
+
+// ── Interaction ───────────────────────────────────────────────────────────────
+function handleClick(idx) {
+    if (G.won) return;
+    const cell = G.cells[idx];
+    if (cell.state === 'clue') return;
+
+    if (!G.startTime) startTimer();
+
+    if      (cell.state === 'unknown') cell.state = 'empty';
+    else if (cell.state === 'empty')   cell.state = 'flagged';
+    else                               cell.state = 'unknown';
+
+    refreshCell(idx);
+    refreshNeighborClues(idx);
+    updateFlagCount();
+    checkWin();
+}
+
+function handleRightClick(idx) {
+    if (G.won) return;
+    const cell = G.cells[idx];
+    if (cell.state === 'clue') return;
+
+    if (!G.startTime) startTimer();
+
+    if      (cell.state === 'unknown') cell.state = 'flagged';
+    else if (cell.state === 'flagged') cell.state = 'empty';
+    else                               cell.state = 'unknown';
+
+    refreshCell(idx);
+    refreshNeighborClues(idx);
+    updateFlagCount();
+    checkWin();
+}
+
+// ── Flag counter ──────────────────────────────────────────────────────────────
+function updateFlagCount() {
+    const n = G.cells.filter(c => c.state === 'flagged').length;
+    document.getElementById('tz-flag-count').textContent = n;
+}
+
+// ── Win detection ─────────────────────────────────────────────────────────────
+function checkWin() {
+    const won = G.cells.every(c =>
+        (c.isMine  && c.state === 'flagged') ||
+        (!c.isMine && c.state !== 'flagged')
+    );
+    if (!won) return;
+
+    G.won = true;
+    stopTimer();
+    showWinOverlay();
+}
+
+// ── Win overlay ───────────────────────────────────────────────────────────────
+function showWinOverlay() {
+    const ov = document.getElementById('tz-overlay');
+    ov.className = 'win';
+    ov.style.display = 'flex';
+
+    document.getElementById('tz-win-time').textContent = fmtTime(G.elapsed);
+
+    const form     = document.getElementById('tz-score-form');
+    const username = document.getElementById('tz-board').dataset.username || '';
+
+    if (G.isPOTD) {
+        if (username) {
+            form.style.display = 'none';
+            const msgEl = document.createElement('div');
+            msgEl.id = 'tz-score-msg';
+            msgEl.style.fontSize = '0.9rem';
+            msgEl.textContent = 'Saving score…';
+            ov.insertBefore(msgEl, ov.querySelector('.tz-overlay-btns'));
+            saveScore(username);
+        } else {
+            form.style.display = 'flex';
+            document.getElementById('tz-name-input').value = localStorage.getItem('tz_name') || '';
+            const btn = document.getElementById('tz-save-btn');
+            btn.disabled = false;
+            btn.textContent = 'Save Score';
+        }
+    } else {
+        form.style.display = 'none';
+    }
+}
+
+// ── Score submission ──────────────────────────────────────────────────────────
+async function saveScore(autoName = null) {
+    const inp  = document.getElementById('tz-name-input');
+    const btn  = document.getElementById('tz-save-btn');
+    const name = autoName || inp?.value.trim();
+    if (!name) { inp?.focus(); return; }
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+    try {
+        const r = await fetch('/api/tentaizu-easy-scores', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, puzzle_date: G.puzzleDate, time_secs: Math.max(1, G.elapsed) }),
+        });
+        if (r.ok) {
+            localStorage.setItem('tz_name', name);
+            if (btn) btn.textContent = '✓ Saved!';
+            const msgEl = document.getElementById('tz-score-msg');
+            if (msgEl) msgEl.textContent = `✅ Score saved for ${name}!`;
+            loadLeaderboard();
+        } else {
+            if (btn) { btn.textContent = 'Error — retry'; btn.disabled = false; }
+            const msgEl = document.getElementById('tz-score-msg');
+            if (msgEl) msgEl.textContent = '❌ Could not save score.';
+        }
+    } catch {
+        if (btn) { btn.textContent = 'Error — retry'; btn.disabled = false; }
+        const msgEl = document.getElementById('tz-score-msg');
+        if (msgEl) msgEl.textContent = '❌ Network error.';
+    }
+}
+
+// ── Permalink + leaderboard title ─────────────────────────────────────────────
+function updatePermalinkAndTitle(dateStr, isPOTD) {
+    const board     = document.getElementById('tz-board');
+    const realToday = board.dataset.realToday;
+    const lbTitle   = document.getElementById('tz-lb-title');
+    const permRow   = document.getElementById('tz-permalink-row');
+    const permLink  = document.getElementById('tz-permalink-link');
+
+    if (isPOTD) {
+        if (lbTitle) lbTitle.textContent = dateStr === realToday
+            ? '🏆 Today\'s Best Times'
+            : `🏆 Best Times — ${dateStr}`;
+        if (permRow && permLink) {
+            permLink.href        = `/tentaizu/easy-5x5-6/${dateStr}`;
+            permLink.textContent = `minesweeper.org/tentaizu/easy-5x5-6/${dateStr}`;
+            permRow.style.display = 'block';
+        }
+    } else {
+        if (permRow) permRow.style.display = 'none';
+    }
+}
+
+// ── Leaderboard ───────────────────────────────────────────────────────────────
+async function loadLeaderboard() {
+    if (!G.isPOTD) return;
+    const el = document.getElementById('tz-lb-content');
+    el.innerHTML = '<div class="lb-loading">Loading…</div>';
+
+    try {
+        const r    = await fetch(`/api/tentaizu-easy-scores/${encodeURIComponent(G.puzzleDate)}`);
+        const data = await r.json();
+
+        if (!data.length) {
+            el.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
+            return;
+        }
+
+        const medals = ['🥇', '🥈', '🥉'];
+        const rows = data.map((s, i) => `
+            <tr class="${i < 3 ? 'top-' + (i + 1) : ''}">
+                <td class="lb-rank">${medals[i] || i + 1}</td>
+                <td class="lb-name">${s.profile_url ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>` : esc(s.name)}</td>
+                <td class="lb-time">${fmtTime(s.time_secs)}</td>
+            </tr>`).join('');
+
+        el.innerHTML = `
+            <div class="lb-table-wrap">
+              <table class="lb-table">
+                <thead><tr><th>#</th><th>Name</th><th>Time</th></tr></thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>`;
+    } catch {
+        el.innerHTML = '<div class="lb-empty">⚠️ Could not load scores.</div>';
+    }
+
+    // Previous days links
+    const prevEl = document.getElementById('tz-prev-days');
+    if (prevEl) {
+        const links = [];
+        for (let i = 1; i <= 7; i++) {
+            const d = new Date(Date.now() - i * 86400000);
+            const iso = d.toISOString().slice(0, 10);
+            const label = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            links.push(`<a href="/tentaizu/easy-5x5-6/${iso}" class="tz-prev-day-link">${label}</a>`);
+        }
+        prevEl.innerHTML = `<span class="tz-prev-days-label">Previous puzzles:</span> ${links.join('')}`;
+    }
+}
+
+function esc(s) {
+    return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+// ── Highlight Errors Toggle ────────────────────────────────────────────────────
+function toggleHighlightErrors() {
+    G.highlightErrors = !G.highlightErrors;
+    localStorage.setItem('tzHighlightErrors', G.highlightErrors);
+    const btn = document.getElementById('highlight-errors-toggle');
+    if (btn) btn.classList.toggle('active', G.highlightErrors);
+    G.cells.forEach((_, idx) => refreshCell(idx));
+}
+
+// ── Game init ─────────────────────────────────────────────────────────────────
+function initGame(dateStr, isPOTD) {
+    clearInterval(G.timer);
+
+    G = {
+        cells:           generatePuzzle(dateStr),
+        isPOTD,
+        puzzleId:        isPOTD ? SEED_PREFIX + dateStr : dateStr,
+        puzzleDate:      dateStr,   // plain YYYY-MM-DD for API calls
+        startTime:       null,
+        elapsed:         0,
+        timer:           null,
+        won:             false,
+        highlightErrors: localStorage.getItem('tzHighlightErrors') === 'true',
+    };
+
+    const ov = document.getElementById('tz-overlay');
+    ov.style.display = 'none';
+    ov.className     = '';
+
+    document.getElementById('tz-timer').textContent     = '0:00';
+    document.getElementById('tz-mode-label').textContent =
+        isPOTD ? '📅 Easy 5×5 Daily' : '🎲 Random Puzzle';
+
+    const lb = document.getElementById('tz-lb-section');
+    lb.style.display = isPOTD ? 'block' : 'none';
+
+    updatePermalinkAndTitle(dateStr, isPOTD);
+    updateFlagCount();
+    renderBoard();
+
+    const btn = document.getElementById('highlight-errors-toggle');
+    if (btn) btn.classList.toggle('active', G.highlightErrors);
+
+    if (isPOTD) loadLeaderboard();
+}
+
+// ── Entry point ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    const board = document.getElementById('tz-board');
+    // Override grid to 5 columns
+    board.style.gridTemplateColumns = `repeat(${COLS}, var(--cell-size))`;
+
+    const today = board.dataset.today;
+
+    initGame(today, true);
+
+    document.getElementById('tz-potd-btn').addEventListener('click', () =>
+        initGame(board.dataset.realToday, true));
+
+    document.getElementById('tz-random-btn').addEventListener('click', () =>
+        initGame(Date.now().toString(36) + Math.random().toString(36).slice(2, 6), false));
+
+    document.getElementById('tz-overlay-potd').addEventListener('click', () =>
+        initGame(board.dataset.realToday, true));
+
+    document.getElementById('tz-overlay-random').addEventListener('click', () =>
+        initGame(Date.now().toString(36) + Math.random().toString(36).slice(2, 6), false));
+
+    document.getElementById('tz-save-btn').addEventListener('click', saveScore);
+    document.getElementById('tz-name-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') saveScore();
+    });
+});

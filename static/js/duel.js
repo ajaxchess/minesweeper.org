@@ -1,1 +1,426 @@
-document.addEventListener("DOMContentLoaded",()=>{const e=document.getElementById("board");if(!e||!["duel","pvp","pvp-bot"].includes(e.dataset.mode))return;const t=parseInt(e.dataset.rows),n=parseInt(e.dataset.cols),a=e.dataset.gameId,s=e.dataset.playerId,o=e.dataset.mode,l="pvp"===o,r="pvp-bot"===o,d="true"===e.dataset.isCreator,c=e.dataset.submode||"standard",i=e.dataset.botDifficulty||"medium",p=1e3*parseInt(e.dataset.oppDelay||"0");let u=Array.from({length:t},()=>Array(n).fill(!1)),m=Array.from({length:t},()=>Array(n).fill(0)),y=Array.from({length:t},()=>Array(n).fill(null)),f=!1,h=!1,g=null,v=0;const b=document.getElementById("opp-board"),$=document.getElementById("opp-board-waiting");let E=Array.from({length:t},()=>Array(n).fill(!1)),x=Array.from({length:t},()=>Array(n).fill(null)),_=!1;const w=[];function C(t,n){const a=function(t,n){return e.querySelector(`[data-r="${t}"][data-c="${n}"]`)}(t,n),s=y[t][n];a.className="cell",u[t][n]?(a.classList.add("revealed"),-1===s?(a.classList.add(h?"mine-detonated":"mine"),a.textContent="💣"):0===s?a.textContent="":(a.textContent=s,a.style.color=getNumColors()[s])):1===m[t][n]?(a.classList.add("flagged"),a.textContent="🚩"):2===m[t][n]?(a.classList.add("question"),a.textContent="❓"):(a.classList.add("hidden"),a.textContent="")}function I(e,t){const n=function(e,t){return b?b.querySelector(`[data-r="${e}"][data-c="${t}"]`):null}(e,t);if(!n)return;const a=x[e][t];if(n.className="cell opp-cell",!E[e][t])return n.classList.add("hidden"),void(n.textContent="");n.classList.add("revealed"),-1===a?(n.classList.add(_?"mine-detonated":"mine"),n.textContent="💣"):0===a?n.textContent="":(n.textContent=a,n.style.color=getNumColors()[a])}function L(){clearInterval(g),g=null}function k(e,t,n,a){null!=e&&(document.getElementById("my-score").textContent=e),null!=n&&(document.getElementById("opp-score").textContent=n),null!=t&&(document.getElementById("my-tiles").textContent=`${t} tiles`),null!=a&&(document.getElementById("opp-tiles").textContent=`${a} tiles`)}function B(e,t){!f||u[e][t]||1===m[e][t]||h||J.send(JSON.stringify({type:"reveal",r:e,c:t}))}function S(e,a){if(!f||h)return;if("false"===localStorage.getItem("chording"))return;if(!u[e][a]||y[e][a]<=0)return;const s=[];for(let o=-1;o<=1;o++)for(let l=-1;l<=1;l++){if(0===o&&0===l)continue;const r=e+o,d=a+l;r>=0&&r<t&&d>=0&&d<n&&s.push([r,d])}s.filter(([e,t])=>1===m[e][t]).length===y[e][a]&&s.forEach(([e,t])=>{m[e][t]||u[e][t]||J.send(JSON.stringify({type:"reveal",r:e,c:t}))})}function A(e,t){f&&!u[e][t]&&(m[e][t]=(m[e][t]+1)%3,C(e,t))}function N(e){document.getElementById("duel-status").textContent=e}setInterval(function(){const e=Date.now();for(;w.length&&w[0].applyAt<=e;){const e=w.shift();e.cells.forEach(([e,t,n])=>{E[e][t]=!0,x[e][t]=n,I(e,t)}),e.exploded&&(_=!0)}},100),window.sendStart=function(){J.send(JSON.stringify({type:"start"})),document.getElementById("start-btn").style.display="none"},window.copyLink=function(){const e=document.getElementById("share-link");navigator.clipboard.writeText(e.value).catch(()=>{e.select()}),document.querySelector(".share-box button").textContent="Copied!"};const O="https:"===location.protocol?"wss":"ws";let q;q=r?`/ws/pvp/bot/${s}?m=${c}&d=${i}`:l?"quick"===c?`/ws/pvp/quick/${s}`:`/ws/pvp/${s}`:`/ws/${a}/${s}`;const D=`${O}://${location.host}${q}`,J=new WebSocket(D);J.addEventListener("open",()=>{const t=e.dataset.username||"",n=e.dataset.useremail||"";if(t&&J.send(JSON.stringify({type:"player_name",name:t,email:n})),d){const e=`${location.origin}/duel/${a}`,t=document.getElementById("share-link");t&&(t.value=e),document.getElementById("share-box").style.display="flex"}}),J.addEventListener("message",e=>{const t=JSON.parse(e.data);switch(t.type){case"queued":N(`🔍 ${t.msg} (${t.queue_pos} in queue)`);break;case"matched":N("🎯 "+t.msg);break;case"connected":N(t.msg);break;case"ready":if(N(t.msg),d){const e=document.getElementById("start-btn");e&&(e.style.display="inline-block")}break;case"start":N("⚔️ Game on!"),f=!0,$&&($.style.display="none"),b&&(b.style.display="grid"),g||(g=setInterval(()=>{v=Math.min(v+1,999),document.getElementById("duel-timer").textContent=String(v).padStart(3,"0")},1e3)),t.prerev&&t.board_values&&t.prerev.forEach(([e,n])=>{const a=t.board_values[`${e},${n}`];u[e][n]=!0,y[e][n]=a,C(e,n),E[e][n]=!0,x[e][n]=a,I(e,n)}),null!=t.prerev_score&&k(t.prerev_score,t.prerev?t.prerev.length:0,t.prerev_score,t.prerev?t.prerev.length:0);break;case"update":{const e=t.newly_revealed,n=t.board_values;e.forEach(([e,t])=>{u[e][t]=!0,y[e][t]=n[`${e},${t}`],C(e,t)}),t.exploded&&(h=!0,f=!1,L(),N("💥 You hit a mine! Waiting for opponent to finish…")),k(t.score,t.tiles,t.opp_score,null);break}case"opp_update":{const e=t.opp_newly_revealed||[];(e.length>0||t.opp_exploded)&&w.push({applyAt:Date.now()+p,cells:e,exploded:t.opp_exploded||!1}),k(null,null,t.opp_score,t.opp_tiles),t.opp_exploded?N("💥 Opponent hit a mine! Keep playing…"):t.opp_cleared&&N("🎉 Opponent cleared their board! Keep playing…");break}case"game_over":{L(),f=!1,w.forEach(e=>{e.cells.forEach(([e,t,n])=>{E[e][t]=!0,x[e][t]=n,I(e,t)})}),w.length=0;const e=t.scores[s]??0,n=Object.keys(t.scores).find(e=>e!==s),a=n?t.scores[n]:0;let o,r;k(e,null,a,null),t.winner_id?t.winner_id===s?(o="🏆 You Win!",r=`Final score: ${e} vs ${a}`):(o="😵 You Lose!",r=`Final score: ${e} vs ${a}`):(o="💥 Double KO!",r="Both players hit a mine.");const d=t.board_hash?`<p class="result-hash">Board: <a href="/variants/replay/?${new URLSearchParams({hash:t.board_hash,rows:t.rows,cols:t.cols,mines:t.mines})}" target="_blank">${t.board_hash.slice(0,12)}…</a></p>`:"";!function(e){const t=document.getElementById("duel-overlay");t.innerHTML=e,t.style.display="flex"}(`\n          <div class="duel-result">\n            <h2>${o}</h2>\n            <p>${r}</p>\n            <p class="result-time">Time: ${t.elapsed}s</p>\n            ${d}\n            <a href="${l?"/pvp":"/duel"}?m=${c}" class="duel-play-again">⚔️ New Duel</a>\n          </div>\n        `);break}case"opp_disconnected":N("⚠️ "+t.msg),L(),f=!1;break;case"error":N("❌ "+t.msg)}}),J.addEventListener("close",()=>{f&&N("⚠️ Connection lost.")}),function(){e.innerHTML="",e.style.setProperty("--cols",n);for(let a=0;a<t;a++)for(let t=0;t<n;t++){const n=document.createElement("div");n.className="cell hidden",n.dataset.r=a,n.dataset.c=t,n.addEventListener("click",()=>B(a,t)),n.addEventListener("dblclick",()=>S(a,t)),n.addEventListener("contextmenu",e=>{e.preventDefault(),A(a,t)}),e.appendChild(n)}}(),function(){if(b){b.innerHTML="",b.style.setProperty("--cols",n);for(let e=0;e<t;e++)for(let t=0;t<n;t++){const n=document.createElement("div");n.className="cell hidden opp-cell",n.dataset.r=e,n.dataset.c=t,b.appendChild(n)}}}()});
+/**
+ * duel.js — Head-to-head Minesweeper client.
+ * Loaded only on the duel page. minesweeper.js is also loaded but its
+ * bootstrap guard skips init when data-mode="duel".
+ */
+
+// getNumColors() is defined in minesweeper.js — reuse it directly.
+
+document.addEventListener('DOMContentLoaded', () => {
+  const boardEl = document.getElementById('board');
+  if (!boardEl || !['duel', 'pvp', 'pvp-bot'].includes(boardEl.dataset.mode)) return;
+
+  // ── Config ────────────────────────────────────────────────────────────────
+  const ROWS        = parseInt(boardEl.dataset.rows);
+  const COLS        = parseInt(boardEl.dataset.cols);
+  const GAME_ID     = boardEl.dataset.gameId;
+  const PLAYER_ID   = boardEl.dataset.playerId;
+  const MODE        = boardEl.dataset.mode;
+  const IS_PVP      = MODE === 'pvp';
+  const IS_BOT      = MODE === 'pvp-bot';
+  const IS_CREATOR  = boardEl.dataset.isCreator === 'true';
+  const SUBMODE     = boardEl.dataset.submode || 'standard';
+  const BOT_DIFF    = boardEl.dataset.botDifficulty || 'medium';
+  const OPP_DELAY_MS = (parseInt(boardEl.dataset.oppDelay || '0')) * 1000;
+
+  // ── Local state ───────────────────────────────────────────────────────────
+  let revealed   = Array.from({length: ROWS}, () => Array(COLS).fill(false));
+  let flagged    = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+  let boardVals  = Array.from({length: ROWS}, () => Array(COLS).fill(null));
+  let gameActive = false;
+  let exploded   = false;
+  let timerID    = null;
+  let elapsed    = 0;
+
+  // ── Opponent board state ──────────────────────────────────────────────────
+  const oppBoardEl  = document.getElementById('opp-board');
+  const oppWaitEl   = document.getElementById('opp-board-waiting');
+  let oppRevealed   = Array.from({length: ROWS}, () => Array(COLS).fill(false));
+  let oppBoardVals  = Array.from({length: ROWS}, () => Array(COLS).fill(null));
+  let oppExploded   = false;
+  // Queue: [{applyAt: ms timestamp, cells: [[r,c,val],...], exploded: bool, cleared: bool}]
+  const pendingOppUpdates = [];
+
+  // ── Build player board DOM ────────────────────────────────────────────────
+  function buildBoard() {
+    boardEl.innerHTML = '';
+    boardEl.style.setProperty('--cols', COLS);
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell hidden';
+        cell.dataset.r = r;
+        cell.dataset.c = c;
+        cell.addEventListener('click',       () => onReveal(r, c));
+        cell.addEventListener('dblclick',    () => onChord(r, c));
+        cell.addEventListener('contextmenu', e  => { e.preventDefault(); onFlag(r, c); });
+        boardEl.appendChild(cell);
+      }
+    }
+  }
+
+  // ── Build opponent board DOM (read-only) ──────────────────────────────────
+  function buildOppBoard() {
+    if (!oppBoardEl) return;
+    oppBoardEl.innerHTML = '';
+    oppBoardEl.style.setProperty('--cols', COLS);
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell hidden opp-cell';
+        cell.dataset.r = r;
+        cell.dataset.c = c;
+        oppBoardEl.appendChild(cell);
+      }
+    }
+  }
+
+  function cellEl(r, c) {
+    return boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+  }
+
+  function oppCellEl(r, c) {
+    return oppBoardEl ? oppBoardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`) : null;
+  }
+
+  function renderCell(r, c) {
+    const el  = cellEl(r, c);
+    const val = boardVals[r][c];
+    el.className = 'cell';
+
+    if (!revealed[r][c]) {
+      if (flagged[r][c] === 1) {
+        el.classList.add('flagged');
+        el.textContent = '🚩';
+      } else if (flagged[r][c] === 2) {
+        el.classList.add('question');
+        el.textContent = '❓';
+      } else {
+        el.classList.add('hidden');
+        el.textContent = '';
+      }
+      return;
+    }
+    el.classList.add('revealed');
+    if (val === -1) {
+      el.classList.add(exploded ? 'mine-detonated' : 'mine');
+      el.textContent = '💣';
+    } else if (val === 0) {
+      el.textContent = '';
+    } else {
+      el.textContent = val;
+      el.style.color = getNumColors()[val];
+    }
+  }
+
+  function renderOppCell(r, c) {
+    const el  = oppCellEl(r, c);
+    if (!el) return;
+    const val = oppBoardVals[r][c];
+    el.className = 'cell opp-cell';
+
+    if (!oppRevealed[r][c]) {
+      el.classList.add('hidden');
+      el.textContent = '';
+      return;
+    }
+    el.classList.add('revealed');
+    if (val === -1) {
+      el.classList.add(oppExploded ? 'mine-detonated' : 'mine');
+      el.textContent = '💣';
+    } else if (val === 0) {
+      el.textContent = '';
+    } else {
+      el.textContent = val;
+      el.style.color = getNumColors()[val];
+    }
+  }
+
+  // ── Opponent board delayed flush ──────────────────────────────────────────
+  function flushOppUpdates() {
+    const now = Date.now();
+    while (pendingOppUpdates.length && pendingOppUpdates[0].applyAt <= now) {
+      const batch = pendingOppUpdates.shift();
+      batch.cells.forEach(([r, c, val]) => {
+        oppRevealed[r][c]  = true;
+        oppBoardVals[r][c] = val;
+        renderOppCell(r, c);
+      });
+      if (batch.exploded) {
+        oppExploded = true;
+      }
+    }
+  }
+
+  setInterval(flushOppUpdates, 100);
+
+  function showOppBoard() {
+    if (oppWaitEl) oppWaitEl.style.display = 'none';
+    if (oppBoardEl) oppBoardEl.style.display = 'grid';
+  }
+
+  // ── Timer ─────────────────────────────────────────────────────────────────
+  function startTimer() {
+    if (timerID) return;
+    timerID = setInterval(() => {
+      elapsed = Math.min(elapsed + 1, 999);
+      document.getElementById('duel-timer').textContent =
+        String(elapsed).padStart(3, '0');
+    }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(timerID);
+    timerID = null;
+  }
+
+  // ── Score display ─────────────────────────────────────────────────────────
+  function updateScores(myScore, myTiles, oppScore, oppTiles) {
+    if (myScore  != null) document.getElementById('my-score').textContent  = myScore;
+    if (oppScore != null) document.getElementById('opp-score').textContent = oppScore;
+    if (myTiles  != null) document.getElementById('my-tiles').textContent  = `${myTiles} tiles`;
+    if (oppTiles != null) document.getElementById('opp-tiles').textContent = `${oppTiles} tiles`;
+  }
+
+  // ── Actions ───────────────────────────────────────────────────────────────
+  function onReveal(r, c) {
+    if (!gameActive || revealed[r][c] || flagged[r][c] === 1 || exploded) return;
+    ws.send(JSON.stringify({type: 'reveal', r, c}));
+  }
+
+  function onChord(r, c) {
+    if (!gameActive || exploded) return;
+    if (localStorage.getItem('chording') === 'false') return;
+    if (!revealed[r][c] || boardVals[r][c] <= 0) return;
+    const nbs = [];
+    for (let dr = -1; dr <= 1; dr++)
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) nbs.push([nr, nc]);
+      }
+    const flagCount = nbs.filter(([nr, nc]) => flagged[nr][nc] === 1).length;
+    if (flagCount !== boardVals[r][c]) return;
+    nbs.forEach(([nr, nc]) => {
+      if (!flagged[nr][nc] && !revealed[nr][nc])
+        ws.send(JSON.stringify({type: 'reveal', r: nr, c: nc}));
+    });
+  }
+
+  function onFlag(r, c) {
+    if (!gameActive || revealed[r][c]) return;
+    flagged[r][c] = (flagged[r][c] + 1) % 3;
+    renderCell(r, c);
+  }
+
+  function setStatus(msg) {
+    document.getElementById('duel-status').textContent = msg;
+  }
+
+  // ── Overlay ───────────────────────────────────────────────────────────────
+  function showDuelOverlay(html) {
+    const ov = document.getElementById('duel-overlay');
+    ov.innerHTML     = html;
+    ov.style.display = 'flex';
+  }
+
+  // ── Start button (creator only) ───────────────────────────────────────────
+  window.sendStart = function() {
+    ws.send(JSON.stringify({type: 'start'}));
+    document.getElementById('start-btn').style.display = 'none';
+  };
+
+  window.copyLink = function() {
+    const inp = document.getElementById('share-link');
+    navigator.clipboard.writeText(inp.value).catch(() => { inp.select(); });
+    document.querySelector('.share-box button').textContent = 'Copied!';
+  };
+
+  // ── WebSocket ─────────────────────────────────────────────────────────────
+  const proto  = location.protocol === 'https:' ? 'wss' : 'ws';
+  let wsPath;
+  if (IS_BOT) {
+    wsPath = `/ws/pvp/bot/${PLAYER_ID}?m=${SUBMODE}&d=${BOT_DIFF}`;
+  } else if (IS_PVP) {
+    wsPath = SUBMODE === 'quick'
+      ? `/ws/pvp/quick/${PLAYER_ID}`
+      : `/ws/pvp/${PLAYER_ID}`;
+  } else {
+    wsPath = `/ws/${GAME_ID}/${PLAYER_ID}`;
+  }
+  const wsUrl = `${proto}://${location.host}${wsPath}`;
+  const ws     = new WebSocket(wsUrl);
+
+  ws.addEventListener('open', () => {
+    const playerName  = boardEl.dataset.username  || '';
+    const playerEmail = boardEl.dataset.useremail || '';
+    if (playerName) {
+      ws.send(JSON.stringify({type: 'player_name', name: playerName, email: playerEmail}));
+    }
+    if (IS_CREATOR) {
+      const link = `${location.origin}/duel/${GAME_ID}`;
+      const inp  = document.getElementById('share-link');
+      if (inp) inp.value = link;
+      document.getElementById('share-box').style.display = 'flex';
+    }
+  });
+
+  ws.addEventListener('message', e => {
+    const msg = JSON.parse(e.data);
+
+    switch (msg.type) {
+
+      case 'queued':
+        setStatus(`🔍 ${msg.msg} (${msg.queue_pos} in queue)`);
+        break;
+
+      case 'matched':
+        setStatus('🎯 ' + msg.msg);
+        break;
+
+      case 'connected':
+        setStatus(msg.msg);
+        break;
+
+      case 'ready':
+        setStatus(msg.msg);
+        if (IS_CREATOR) {
+          const btn = document.getElementById('start-btn');
+          if (btn) btn.style.display = 'inline-block';
+        }
+        break;
+
+      case 'start': {
+        setStatus('⚔️ Game on!');
+        gameActive = true;
+        showOppBoard();
+        startTimer();
+        // Render shared pre-revealed opening on both boards
+        if (msg.prerev && msg.board_values) {
+          msg.prerev.forEach(([r, c]) => {
+            const val = msg.board_values[`${r},${c}`];
+            revealed[r][c]    = true;
+            boardVals[r][c]   = val;
+            renderCell(r, c);
+            // Mirror same opening on opponent board (no delay — it's the starting state)
+            oppRevealed[r][c]  = true;
+            oppBoardVals[r][c] = val;
+            renderOppCell(r, c);
+          });
+        }
+        if (msg.prerev_score != null) {
+          updateScores(msg.prerev_score, msg.prerev ? msg.prerev.length : 0,
+                       msg.prerev_score, msg.prerev ? msg.prerev.length : 0);
+        }
+        break;
+      }
+
+      case 'update': {
+        const newCells   = msg.newly_revealed;
+        const boardValsM = msg.board_values;
+        newCells.forEach(([r, c]) => {
+          revealed[r][c]  = true;
+          boardVals[r][c] = boardValsM[`${r},${c}`];
+          renderCell(r, c);
+        });
+        if (msg.exploded) {
+          exploded = true;
+          gameActive = false;
+          stopTimer();
+          setStatus('💥 You hit a mine! Waiting for opponent to finish…');
+        }
+        updateScores(msg.score, msg.tiles, msg.opp_score, null);
+        break;
+      }
+
+      case 'opp_update': {
+        // Schedule opponent board reveal after delay
+        const cells = msg.opp_newly_revealed || [];
+        if (cells.length > 0 || msg.opp_exploded) {
+          pendingOppUpdates.push({
+            applyAt:  Date.now() + OPP_DELAY_MS,
+            cells:    cells,
+            exploded: msg.opp_exploded || false,
+          });
+        }
+        // Score/tile count updates are immediate (no delay)
+        updateScores(null, null, msg.opp_score, msg.opp_tiles);
+        if (msg.opp_exploded) {
+          setStatus('💥 Opponent hit a mine! Keep playing…');
+        } else if (msg.opp_cleared) {
+          setStatus('🎉 Opponent cleared their board! Keep playing…');
+        }
+        break;
+      }
+
+      case 'game_over': {
+        stopTimer();
+        gameActive = false;
+        // Flush all remaining opponent updates immediately on game over
+        pendingOppUpdates.forEach(batch => {
+          batch.cells.forEach(([r, c, val]) => {
+            oppRevealed[r][c]  = true;
+            oppBoardVals[r][c] = val;
+            renderOppCell(r, c);
+          });
+        });
+        pendingOppUpdates.length = 0;
+
+        const myScore  = msg.scores[PLAYER_ID] ?? 0;
+        const oppId    = Object.keys(msg.scores).find(id => id !== PLAYER_ID);
+        const oppScore = oppId ? msg.scores[oppId] : 0;
+        updateScores(myScore, null, oppScore, null);
+
+        let headline, sub;
+        if (!msg.winner_id) {
+          headline = '💥 Double KO!';
+          sub      = 'Both players hit a mine.';
+        } else if (msg.winner_id === PLAYER_ID) {
+          headline = '🏆 You Win!';
+          sub      = `Final score: ${myScore} vs ${oppScore}`;
+        } else {
+          headline = '😵 You Lose!';
+          sub      = `Final score: ${myScore} vs ${oppScore}`;
+        }
+
+        const hashLine = msg.board_hash
+          ? (function() {
+              const p = new URLSearchParams({
+                hash: msg.board_hash,
+                rows: msg.rows, cols: msg.cols, mines: msg.mines,
+              });
+              return `<p class="result-hash">Board: <a href="/variants/replay/?${p}" target="_blank">${msg.board_hash.slice(0, 12)}…</a></p>`;
+            })()
+          : '';
+        showDuelOverlay(`
+          <div class="duel-result">
+            <h2>${headline}</h2>
+            <p>${sub}</p>
+            <p class="result-time">Time: ${msg.elapsed}s</p>
+            ${hashLine}
+            <a href="${IS_PVP ? '/pvp' : '/duel'}?m=${SUBMODE}" class="duel-play-again">⚔️ New Duel</a>
+          </div>
+        `);
+        break;
+      }
+
+      case 'opp_disconnected':
+        setStatus('⚠️ ' + msg.msg);
+        stopTimer();
+        gameActive = false;
+        break;
+
+      case 'error':
+        setStatus('❌ ' + msg.msg);
+        break;
+    }
+  });
+
+  ws.addEventListener('close', () => {
+    if (gameActive) setStatus('⚠️ Connection lost.');
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  buildBoard();
+  buildOppBoard();
+});

@@ -1,1 +1,386 @@
-"use strict";function mulberry32(e){return function(){e=(e|=0)+1831565813|0;let t=Math.imul(e^e>>>15,1|e);return t=t+Math.imul(t^t>>>7,61|t)^t,((t^t>>>14)>>>0)/4294967296}}function strSeed(e){let t=2166136261;for(let n=0;n<e.length;n++)t^=e.charCodeAt(n),t=Math.imul(t,16777619)>>>0;return t}function esc(e){return String(e).replace(/[&<>"]/g,e=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[e]))}let G={rows:10,cols:10,hints:[],solution:[],player:[],totalMines:0,isPOTD:!0,seedStr:"",scoreApi:"/api/mosaic-scores",startTime:null,elapsed:0,timer:null,won:!1};function generatePuzzle(e,t,n){const s=mulberry32(strSeed(`mosaic:${t}x${n}:${e}`)),o=t<=5&&n<=5?.32:.35,l=Array.from({length:t*n},()=>s()<o?1:0),r=[];for(let e=0;e<t;e++)for(let s=0;s<n;s++){let o=0;for(let r=-1;r<=1;r++)for(let a=-1;a<=1;a++){const i=e+r,d=s+a;i>=0&&i<t&&d>=0&&d<n&&(o+=l[i*n+d])}r.push(o)}const a=l.reduce((e,t)=>e+t,0);return{solution:l,hints:r,totalMines:a}}function neighborCount(e,t){let n=0;for(let s=-1;s<=1;s++)for(let o=-1;o<=1;o++){const l=e+s,r=t+o;l>=0&&l<G.rows&&r>=0&&r<G.cols&&1===G.player[l*G.cols+r]&&n++}return n}function checkWin(){for(let e=0;e<G.rows;e++)for(let t=0;t<G.cols;t++)if(neighborCount(e,t)!==G.hints[e*G.cols+t])return!1;return!0}function updateMineCount(){const e=document.getElementById("ms-mine-count");if(!e)return;const t=G.player.reduce((e,t)=>e+(1===t?1:0),0);e.textContent=`${t}/${G.totalMines}`}function startTimer(){G.timer||(G.startTime=Date.now()-1e3*G.elapsed,G.timer=setInterval(()=>{G.elapsed=Math.floor((Date.now()-G.startTime)/1e3);const e=document.getElementById("ms-timer");e&&(e.textContent=fmtTime(G.elapsed))},500))}function stopTimer(){clearInterval(G.timer),G.timer=null,G.elapsed=Math.floor((Date.now()-G.startTime)/1e3)}function fmtTime(e){return`${Math.floor(e/60)}:${String(e%60).padStart(2,"0")}`}function renderCell(e,t){const n=e*G.cols+t,s=document.querySelector(`.ms-cell[data-idx="${n}"]`);if(!s)return;s.classList.toggle("ms-black",1===G.player[n]),s.classList.toggle("ms-white",0===G.player[n]);const o=s.querySelector(".ms-hint"),l=G.hints[n],r=neighborCount(e,t);o.classList.remove("ms-hint-ok","ms-hint-over"),r===l?o.classList.add("ms-hint-ok"):r>l&&o.classList.add("ms-hint-over")}function renderBoard(){const e=document.getElementById("ms-board"),t=parseInt(e.dataset.cellSize)||42;e.innerHTML="",e.style.gridTemplateColumns=`repeat(${G.cols}, ${t}px)`;for(let n=0;n<G.rows;n++)for(let s=0;s<G.cols;s++){const o=n*G.cols+s,l=document.createElement("div");l.className="ms-cell",l.dataset.idx=o,l.style.width=`${t}px`,l.style.height=`${t}px`,1===G.player[o]?l.classList.add("ms-black"):0===G.player[o]&&l.classList.add("ms-white");const r=document.createElement("span");r.className="ms-hint",r.textContent=G.hints[o];const a=neighborCount(n,s);a===G.hints[o]?r.classList.add("ms-hint-ok"):a>G.hints[o]&&r.classList.add("ms-hint-over"),l.appendChild(r),l.addEventListener("click",()=>handleClick(n,s,0)),l.addEventListener("contextmenu",e=>{e.preventDefault(),handleClick(n,s,1)}),e.appendChild(l)}}function refreshAffected(e,t){for(let n=-1;n<=1;n++)for(let s=-1;s<=1;s++){const o=e+n,l=t+s;o>=0&&o<G.rows&&l>=0&&l<G.cols&&renderCell(o,l)}}const LEFT_NEXT=[1,2,0],RIGHT_NEXT=[2,0,1];function handleClick(e,t,n){if(G.won)return;G.startTime||startTimer();const s=e*G.cols+t;G.player[s]=0===n?LEFT_NEXT[G.player[s]]:RIGHT_NEXT[G.player[s]],refreshAffected(e,t),updateMineCount(),checkWin()&&(stopTimer(),G.won=!0,onWin())}function onWin(){for(let e=0;e<G.player.length;e++)1!==G.solution[e]&&(G.player[e]=0);for(let e=0;e<G.rows;e++)for(let t=0;t<G.cols;t++)renderCell(e,t);document.getElementById("ms-win-time").textContent=fmtTime(G.elapsed),document.getElementById("ms-overlay").style.display="flex";const e=document.getElementById("ms-board").dataset.username||"",t=document.getElementById("ms-score-form");if(G.isPOTD){if(e){t&&(t.style.display="none");const n=document.getElementById("ms-score-msg");n&&(n.textContent="Saving score…"),saveScore(e)}else if(t){t.style.display="flex";const e=document.getElementById("ms-name-input");e&&(e.value=localStorage.getItem("ms_name")||"")}}else t&&(t.style.display="none");updatePermalink()}async function saveScore(e=null){const t=document.getElementById("ms-name-input"),n=document.getElementById("ms-save-btn"),s=document.getElementById("ms-score-msg"),o=e||t?.value.trim();if(o){n&&(n.disabled=!0,n.textContent="Saving…");try{(await fetch(G.scoreApi,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:o,puzzle_date:G.seedStr,time_secs:Math.max(1,G.elapsed)})})).ok?(localStorage.setItem("ms_name",o),n&&(n.textContent="✓ Saved!"),s&&(s.textContent=`✅ Score saved for ${esc(o)}!`),loadLeaderboard()):(n&&(n.textContent="Error — retry",n.disabled=!1),s&&(s.textContent="❌ Could not save score."))}catch{n&&(n.textContent="Error — retry",n.disabled=!1),s&&(s.textContent="❌ Network error.")}}else t?.focus()}function updatePermalink(){const e=document.getElementById("ms-permalink-row"),t=document.getElementById("ms-permalink-link");if(!e||!t)return;const n=`/mosaic/replay?seed=${encodeURIComponent(G.seedStr)}&rows=${G.rows}&cols=${G.cols}`;t.href=n,t.textContent=G.seedStr,e.style.display="block"}async function loadLeaderboard(){if(!G.isPOTD)return;const e=document.getElementById("ms-lb-content");if(!e)return;e.innerHTML='<div class="lb-loading">Loading…</div>';const t=document.getElementById("ms-lb-title");t&&(t.textContent=`🏆 Best Times — ${G.seedStr}`);try{const t=await fetch(`${G.scoreApi}/${G.seedStr}`),n=await t.json();if(!n.length)return void(e.innerHTML='<div class="lb-empty">No scores yet — be the first!</div>');const s=["🥇","🥈","🥉"],o=n.map((e,t)=>`\n            <tr class="${t<3?"top-"+(t+1):""}">\n                <td class="lb-rank">${s[t]||t+1}</td>\n                <td class="lb-name">${e.profile_url?`<a href="${esc(e.profile_url)}" class="lb-profile-link">${esc(e.name)}</a>`:esc(e.name)}</td>\n                <td class="lb-time">${fmtTime(e.time_secs)}</td>\n                <td class="lb-replay"><a href="/mosaic/replay?seed=${esc(e.puzzle_date)}&rows=${G.rows}&cols=${G.cols}" class="ms-replay-link" title="Replay this puzzle">🔗</a></td>\n            </tr>`).join("");e.innerHTML=`\n            <div class="lb-table-wrap">\n              <table class="lb-table">\n                <thead><tr><th>#</th><th>Name</th><th>Time</th><th></th></tr></thead>\n                <tbody>${o}</tbody>\n              </table>\n            </div>`}catch{e.innerHTML='<div class="lb-empty">⚠️ Could not load scores.</div>'}}function initGame(e,t){G.timer&&(clearInterval(G.timer),G.timer=null);const n=document.getElementById("ms-board");G.rows=parseInt(n.dataset.rows)||10,G.cols=parseInt(n.dataset.cols)||10,G.scoreApi=n.dataset.scoreApi||"/api/mosaic-scores",G.won=!1,G.isPOTD=t,G.seedStr=e,G.elapsed=0,G.startTime=null;const{solution:s,hints:o,totalMines:l}=generatePuzzle(e,G.rows,G.cols);G.solution=s,G.hints=o,G.totalMines=l,G.player=new Array(G.rows*G.cols).fill(2),document.getElementById("ms-overlay").style.display="none",document.getElementById("ms-timer").textContent="0:00";const r=document.getElementById("ms-mode-label");r&&(r.textContent=t?"📅 Puzzle of the Day":"🎲 Random Puzzle");const a=document.getElementById("ms-permalink-row");a&&(a.style.display="none");const i=document.getElementById("ms-score-form");i&&(i.style.display="none");const d=document.getElementById("ms-score-msg");d&&(d.textContent=""),updateMineCount(),renderBoard(),t&&loadLeaderboard()}document.addEventListener("DOMContentLoaded",()=>{const e=document.getElementById("ms-board"),t=e.dataset.today;initGame(e.dataset.seed||t,!e.dataset.seed),document.getElementById("ms-potd-btn")?.addEventListener("click",()=>initGame(t,!0)),document.getElementById("ms-random-btn")?.addEventListener("click",()=>initGame(Math.random().toString(36).slice(2,10),!1)),document.getElementById("ms-overlay-potd")?.addEventListener("click",()=>{document.getElementById("ms-overlay").style.display="none",initGame(t,!0)}),document.getElementById("ms-overlay-random")?.addEventListener("click",()=>{document.getElementById("ms-overlay").style.display="none",initGame(Math.random().toString(36).slice(2,10),!1)}),document.getElementById("ms-save-btn")?.addEventListener("click",()=>saveScore())});
+'use strict';
+
+// ── Seeded RNG ────────────────────────────────────────────────────────────────
+function mulberry32(seed) {
+    return function () {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+}
+
+function strSeed(s) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h;
+}
+
+function esc(s) {
+    return String(s).replace(/[&<>"]/g, c =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+// ── Game state ────────────────────────────────────────────────────────────────
+let G = {
+    rows:       10,
+    cols:       10,
+    hints:      [],
+    solution:   [],
+    player:     [],
+    totalMines: 0,
+    isPOTD:     true,
+    seedStr:    '',
+    scoreApi:   '/api/mosaic-scores',   // overridden for easy mode
+    startTime:  null,
+    elapsed:    0,
+    timer:      null,
+    won:        false,
+};
+
+// ── Puzzle generation ─────────────────────────────────────────────────────────
+function generatePuzzle(seedStr, rows, cols) {
+    const rng = mulberry32(strSeed(`mosaic:${rows}x${cols}:${seedStr}`));
+    // 5×5 easy targets ~8 black cells (32%); standard 9×9 uses 35%
+    const density = (rows <= 5 && cols <= 5) ? 0.32 : 0.35;
+    const solution = Array.from({ length: rows * cols }, () => rng() < density ? 1 : 0);
+
+    const hints = [];
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            let count = 0;
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    const nr = r + dr, nc = c + dc;
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols)
+                        count += solution[nr * cols + nc];
+                }
+            }
+            hints.push(count);
+        }
+    }
+
+    const totalMines = solution.reduce((a, b) => a + b, 0);
+    return { solution, hints, totalMines };
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function neighborCount(r, c) {
+    let count = 0;
+    for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+            const nr = r + dr, nc = c + dc;
+            if (nr >= 0 && nr < G.rows && nc >= 0 && nc < G.cols)
+                if (G.player[nr * G.cols + nc] === 1) count++;
+        }
+    }
+    return count;
+}
+
+function checkWin() {
+    for (let r = 0; r < G.rows; r++)
+        for (let c = 0; c < G.cols; c++)
+            if (neighborCount(r, c) !== G.hints[r * G.cols + c]) return false;
+    return true;
+}
+
+function updateMineCount() {
+    const el = document.getElementById('ms-mine-count');
+    if (!el) return;
+    const filled = G.player.reduce((a, b) => a + (b === 1 ? 1 : 0), 0);
+    el.textContent = `${filled}/${G.totalMines}`;
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────────
+function startTimer() {
+    if (G.timer) return;
+    G.startTime = Date.now() - G.elapsed * 1000;
+    G.timer = setInterval(() => {
+        G.elapsed = Math.floor((Date.now() - G.startTime) / 1000);
+        const el = document.getElementById('ms-timer');
+        if (el) el.textContent = fmtTime(G.elapsed);
+    }, 500);
+}
+
+function stopTimer() {
+    clearInterval(G.timer);
+    G.timer = null;
+    G.elapsed = Math.floor((Date.now() - G.startTime) / 1000);
+}
+
+function fmtTime(s) {
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderCell(r, c) {
+    const idx = r * G.cols + c;
+    const el  = document.querySelector(`.ms-cell[data-idx="${idx}"]`);
+    if (!el) return;
+
+    el.classList.toggle('ms-black', G.player[idx] === 1);
+    el.classList.toggle('ms-white', G.player[idx] === 0);
+
+    const span    = el.querySelector('.ms-hint');
+    const hint    = G.hints[idx];
+    const current = neighborCount(r, c);
+    span.classList.remove('ms-hint-ok', 'ms-hint-over');
+    if (current === hint)    span.classList.add('ms-hint-ok');
+    else if (current > hint) span.classList.add('ms-hint-over');
+}
+
+function renderBoard() {
+    const board    = document.getElementById('ms-board');
+    const cellSize = parseInt(board.dataset.cellSize) || 42;
+    board.innerHTML = '';
+    board.style.gridTemplateColumns = `repeat(${G.cols}, ${cellSize}px)`;
+
+    for (let r = 0; r < G.rows; r++) {
+        for (let c = 0; c < G.cols; c++) {
+            const idx  = r * G.cols + c;
+            const cell = document.createElement('div');
+            cell.className  = 'ms-cell';
+            cell.dataset.idx = idx;
+            cell.style.width  = `${cellSize}px`;
+            cell.style.height = `${cellSize}px`;
+            if (G.player[idx] === 1)      cell.classList.add('ms-black');
+            else if (G.player[idx] === 0) cell.classList.add('ms-white');
+
+            const span = document.createElement('span');
+            span.className   = 'ms-hint';
+            span.textContent = G.hints[idx];
+            const current = neighborCount(r, c);
+            if (current === G.hints[idx])    span.classList.add('ms-hint-ok');
+            else if (current > G.hints[idx]) span.classList.add('ms-hint-over');
+            cell.appendChild(span);
+
+            cell.addEventListener('click', () => handleClick(r, c, 0));
+            cell.addEventListener('contextmenu', e => { e.preventDefault(); handleClick(r, c, 1); });
+            board.appendChild(cell);
+        }
+    }
+}
+
+function refreshAffected(r, c) {
+    for (let dr = -1; dr <= 1; dr++)
+        for (let dc = -1; dc <= 1; dc++) {
+            const nr = r + dr, nc = c + dc;
+            if (nr >= 0 && nr < G.rows && nc >= 0 && nc < G.cols) renderCell(nr, nc);
+        }
+}
+
+// ── Click ─────────────────────────────────────────────────────────────────────
+// States: 0=white/safe  1=black/mine  2=unknown (initial)
+// Left  click (dir=0) cycles: white→black→unknown→white  (0→1→2→0)
+// Right click (dir=1) cycles: black→white→unknown→black  (1→0→2→1)
+const LEFT_NEXT  = [1, 2, 0];   // next state indexed by current state, left click
+const RIGHT_NEXT = [2, 0, 1];   // next state indexed by current state, right click
+
+function handleClick(r, c, dir) {
+    if (G.won) return;
+    if (!G.startTime) startTimer();
+
+    const idx = r * G.cols + c;
+    G.player[idx] = dir === 0 ? LEFT_NEXT[G.player[idx]] : RIGHT_NEXT[G.player[idx]];
+    refreshAffected(r, c);
+    updateMineCount();
+
+    if (checkWin()) {
+        stopTimer();
+        G.won = true;
+        onWin();
+    }
+}
+
+// ── Win ───────────────────────────────────────────────────────────────────────
+function onWin() {
+    // Reveal the full solution: flip all non-mine cells to white
+    for (let i = 0; i < G.player.length; i++) {
+        if (G.solution[i] !== 1) G.player[i] = 0;
+    }
+    for (let r = 0; r < G.rows; r++)
+        for (let c = 0; c < G.cols; c++) renderCell(r, c);
+
+    document.getElementById('ms-win-time').textContent = fmtTime(G.elapsed);
+    document.getElementById('ms-overlay').style.display = 'flex';
+
+    const board    = document.getElementById('ms-board');
+    const username = board.dataset.username || '';
+    const form     = document.getElementById('ms-score-form');
+
+    if (G.isPOTD) {
+        if (username) {
+            if (form) form.style.display = 'none';
+            const msg = document.getElementById('ms-score-msg');
+            if (msg) msg.textContent = 'Saving score…';
+            saveScore(username);
+        } else {
+            if (form) {
+                form.style.display = 'flex';
+                const inp = document.getElementById('ms-name-input');
+                if (inp) inp.value = localStorage.getItem('ms_name') || '';
+            }
+        }
+    } else {
+        if (form) form.style.display = 'none';
+    }
+
+    updatePermalink();
+}
+
+// ── Score submission ───────────────────────────────────────────────────────────
+async function saveScore(autoName = null) {
+    const inp  = document.getElementById('ms-name-input');
+    const btn  = document.getElementById('ms-save-btn');
+    const msg  = document.getElementById('ms-score-msg');
+    const name = autoName || inp?.value.trim();
+    if (!name) { inp?.focus(); return; }
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+    try {
+        const r = await fetch(G.scoreApi, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ name, puzzle_date: G.seedStr, time_secs: Math.max(1, G.elapsed) }),
+        });
+        if (r.ok) {
+            localStorage.setItem('ms_name', name);
+            if (btn) btn.textContent = '✓ Saved!';
+            if (msg) msg.textContent = `✅ Score saved for ${esc(name)}!`;
+            loadLeaderboard();
+        } else {
+            if (btn) { btn.textContent = 'Error — retry'; btn.disabled = false; }
+            if (msg) msg.textContent = '❌ Could not save score.';
+        }
+    } catch {
+        if (btn) { btn.textContent = 'Error — retry'; btn.disabled = false; }
+        if (msg) msg.textContent = '❌ Network error.';
+    }
+}
+
+// ── Permalink / hash ──────────────────────────────────────────────────────────
+function updatePermalink() {
+    const row  = document.getElementById('ms-permalink-row');
+    const link = document.getElementById('ms-permalink-link');
+    if (!row || !link) return;
+
+    const url = `/mosaic/replay?seed=${encodeURIComponent(G.seedStr)}&rows=${G.rows}&cols=${G.cols}`;
+    link.href        = url;
+    link.textContent = G.seedStr;
+    row.style.display = 'block';
+}
+
+// ── Leaderboard ───────────────────────────────────────────────────────────────
+async function loadLeaderboard() {
+    if (!G.isPOTD) return;
+    const el = document.getElementById('ms-lb-content');
+    if (!el) return;
+    el.innerHTML = '<div class="lb-loading">Loading…</div>';
+
+    const title = document.getElementById('ms-lb-title');
+    if (title) title.textContent = `🏆 Best Times — ${G.seedStr}`;
+
+    try {
+        const r    = await fetch(`${G.scoreApi}/${G.seedStr}`);
+        const data = await r.json();
+
+        if (!data.length) {
+            el.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
+            return;
+        }
+
+        const medals = ['🥇', '🥈', '🥉'];
+        const rows = data.map((s, i) => `
+            <tr class="${i < 3 ? 'top-' + (i + 1) : ''}">
+                <td class="lb-rank">${medals[i] || i + 1}</td>
+                <td class="lb-name">${s.profile_url
+                    ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
+                    : esc(s.name)}</td>
+                <td class="lb-time">${fmtTime(s.time_secs)}</td>
+                <td class="lb-replay"><a href="/mosaic/replay?seed=${esc(s.puzzle_date)}&rows=${G.rows}&cols=${G.cols}" class="ms-replay-link" title="Replay this puzzle">🔗</a></td>
+            </tr>`).join('');
+
+        el.innerHTML = `
+            <div class="lb-table-wrap">
+              <table class="lb-table">
+                <thead><tr><th>#</th><th>Name</th><th>Time</th><th></th></tr></thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>`;
+    } catch {
+        el.innerHTML = '<div class="lb-empty">⚠️ Could not load scores.</div>';
+    }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function initGame(seedStr, isPOTD) {
+    if (G.timer) { clearInterval(G.timer); G.timer = null; }
+
+    const board = document.getElementById('ms-board');
+    G.rows     = parseInt(board.dataset.rows)     || 10;
+    G.cols     = parseInt(board.dataset.cols)     || 10;
+    G.scoreApi = board.dataset.scoreApi           || '/api/mosaic-scores';
+
+    G.won       = false;
+    G.isPOTD    = isPOTD;
+    G.seedStr   = seedStr;
+    G.elapsed   = 0;
+    G.startTime = null;
+
+    const { solution, hints, totalMines } = generatePuzzle(seedStr, G.rows, G.cols);
+    G.solution   = solution;
+    G.hints      = hints;
+    G.totalMines = totalMines;
+    G.player     = new Array(G.rows * G.cols).fill(2);  // 2=unknown initial state
+
+    document.getElementById('ms-overlay').style.display = 'none';
+    document.getElementById('ms-timer').textContent = '0:00';
+
+    const label = document.getElementById('ms-mode-label');
+    if (label) label.textContent = isPOTD ? '📅 Puzzle of the Day' : '🎲 Random Puzzle';
+
+    // Hide permalink until solved
+    const row = document.getElementById('ms-permalink-row');
+    if (row) row.style.display = 'none';
+
+    // Reset score form
+    const form = document.getElementById('ms-score-form');
+    if (form) form.style.display = 'none';
+    const msg = document.getElementById('ms-score-msg');
+    if (msg) msg.textContent = '';
+
+    updateMineCount();
+    renderBoard();
+
+    if (isPOTD) loadLeaderboard();
+}
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    const board   = document.getElementById('ms-board');
+    const today   = board.dataset.today;
+    // Allow pre-seeding from data-seed (replay page)
+    const initSeed = board.dataset.seed || today;
+    const initPOTD = !board.dataset.seed;
+
+    initGame(initSeed, initPOTD);
+
+    document.getElementById('ms-potd-btn')?.addEventListener('click', () => initGame(today, true));
+    document.getElementById('ms-random-btn')?.addEventListener('click', () =>
+        initGame(Math.random().toString(36).slice(2, 10), false));
+    document.getElementById('ms-overlay-potd')?.addEventListener('click', () => {
+        document.getElementById('ms-overlay').style.display = 'none';
+        initGame(today, true);
+    });
+    document.getElementById('ms-overlay-random')?.addEventListener('click', () => {
+        document.getElementById('ms-overlay').style.display = 'none';
+        initGame(Math.random().toString(36).slice(2, 10), false);
+    });
+
+    // Manual score save button
+    document.getElementById('ms-save-btn')?.addEventListener('click', () => saveScore());
+});

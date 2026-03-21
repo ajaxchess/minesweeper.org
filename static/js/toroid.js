@@ -1,1 +1,627 @@
-!function(){let t={};function e(t,e,n,o){const s=[];for(let r=-1;r<=1;r++)for(let a=-1;a<=1;a++){if(0===r&&0===a)continue;const l=(t+r+n)%n,c=(e+a+o)%o;s.push([l,c])}return s}function n(t,n,o,s,r){const a=new Set;for(let e=-1;e<=1;e++)for(let o=-1;o<=1;o++){const l=(s+e+t)%t,c=(r+o+n)%n;a.add(l*n+c)}const l=[];for(let e=0;e<t*n;e++)a.has(e)||l.push(e);for(let t=0;t<o;t++){const e=t+Math.floor(Math.random()*(l.length-t));[l[t],l[e]]=[l[e],l[t]]}const c=new Set(l.slice(0,o)),i=Array.from({length:t},()=>Array(n).fill(0));for(const o of c){const s=Math.floor(o/n),r=o%n;i[s][r]=-1,e(s,r,t,n).forEach(([t,e])=>{-1!==i[t][e]&&i[t][e]++})}return{mineSet:c,board:i}}function o(t,n,o,s,r,a){const l=t*n,c=new Uint8Array(l),i=new Uint8Array(l);function d(r){const a=[r];for(;a.length;){const r=a.pop();if(!c[r]&&!o.has(r)&&(c[r]=1,0===s[Math.floor(r/n)][r%n]))for(const[s,l]of e(Math.floor(r/n),r%n,t,n)){const t=s*n+l;c[t]||o.has(t)||a.push(t)}}}d(r*n+a);let m=!0;for(;m;){m=!1;const o=[];for(let r=0;r<t;r++)for(let a=0;a<n;a++){if(!c[r*n+a]||s[r][a]<=0)continue;const l=[];let f=0;for(const[o,s]of e(r,a,t,n)){const t=o*n+s;i[t]?f++:c[t]||l.push(t)}const u=s[r][a]-f;u<0||u>l.length||(0===u&&l.length>0?(l.forEach(t=>d(t)),m=!0):u>0&&u===l.length?(l.forEach(t=>{i[t]=1}),m=!0):l.length>0&&o.push({cells:l,count:u}))}for(let t=0;t<o.length;t++)for(let e=0;e<o.length;e++){if(t===e)continue;const n=o[t],s=o[e];if(n.cells.length>=s.cells.length)continue;const r=new Set(n.cells);if(!n.cells.every(t=>s.cells.indexOf(t)>=0))continue;const a=s.cells.filter(t=>!r.has(t)),l=s.count-n.count;l<0||l>a.length||(0===l&&a.length>0?(a.forEach(t=>d(t)),m=!0):l>0&&l===a.length&&(a.forEach(t=>{i[t]=1}),m=!0))}}for(let t=0;t<l;t++)if(!o.has(t)&&!c[t])return!1;return!0}function s(t,e,s,r,a){for(let l=0;l<500;l++){const l=n(t,e,s,r,a);if(o(t,e,l.mineSet,l.board,r,a))return l}return n(t,e,s,r,a)}function r(){clearInterval(t.timerID),t.timerID=null}function a(o,a){if(t.over||t.revealed[o][a]||1===t.flagged[o][a])return;if(!t.started){const r=t.noGuess?s:n,{mineSet:l,board:c}=r(t.rows,t.cols,t.mines,o,a);t.mineSet=l,t.board=c,t.started=!0,t.startTime=performance.now(),t.boardHash=calcBoardHash(t.rows,t.cols,l),t.bbbv=function(t,n,o,s){const r=n*o,a=new Uint8Array(r);let l=0;for(let r=0;r<n;r++)for(let c=0;c<o;c++){const i=r*o+c;if(0!==t[r][c]||a[i]||s.has(i))continue;l++;const d=[[r,c]];for(a[i]=1;d.length;){const[r,l]=d.shift();for(const[c,i]of e(r,l,n,o)){const e=c*o+i;a[e]||s.has(e)||(a[e]=1,0===t[c][i]&&d.push([c,i]))}}}for(let e=0;e<r;e++){const n=e%o;t[Math.floor(e/o)][n]>0&&!a[e]&&l++}return l}(c,t.rows,t.cols,l),t.timerID||(t.timerID=setInterval(()=>{t.elapsed=Math.min(t.elapsed+1,999),document.getElementById("timer").textContent=String(t.elapsed).padStart(3,"0")},1e3))}if(-1===t.board[o][a])return void function(e,n){t.over=!0,t.timeMs=t.startTime?Math.round(performance.now()-t.startTime):null,r();for(const o of t.mineSet){const s=Math.floor(o/t.cols),r=o%t.cols;t.revealed[s][r]=!0,g(s,r,s===e&&r===n)}document.getElementById("reset-btn").textContent="😵",h("💥 Game Over",!1)}(o,a);const l=[[o,a]];for(;l.length;){const[n,o]=l.shift();t.revealed[n][o]||(t.revealed[n][o]=!0,g(n,o),0===t.board[n][o]&&e(n,o,t.rows,t.cols).forEach(([e,n])=>{t.revealed[e][n]||t.flagged[e][n]||l.push([e,n])}))}!function(){if(t.rows*t.cols-t.revealed.flat().filter(Boolean).length===t.mines){t.over=!0,t.won=!0,t.timeMs=t.startTime?Math.round(performance.now()-t.startTime):null,r(),document.getElementById("reset-btn").textContent="😎";for(const e of t.mineSet){const n=Math.floor(e/t.cols),o=e%t.cols;t.flagged[n][o]||(t.flagged[n][o]=!0,g(n,o))}document.getElementById("mines-left").textContent="000",h(`🎉 You Won! — ${t.elapsed}s`,!0)}}()}function l(n,o){if(!t.chording||!t.revealed[n][o]||t.board[n][o]<=0)return;const s=e(n,o,t.rows,t.cols);s.filter(([e,n])=>1===t.flagged[e][n]).length===t.board[n][o]&&s.forEach(([t,e])=>a(t,e))}function c(e,n){if(t.over||t.revealed[e][n])return;const o=t.flagged[e][n],s=(o+1)%3;t.flagged[e][n]=s,0===o&&1===s&&t.minesLeft--,1===o&&2===s&&t.minesLeft++,document.getElementById("mines-left").textContent=String(t.minesLeft).padStart(3,"0"),g(e,n)}async function i(e=null){const n=document.getElementById("board"),o=document.getElementById("tor-score-msg"),s=document.getElementById("tor-player-name"),r=e||s?.value.trim();if(!r)return void(o&&(o.textContent="⚠️ Please enter your name."));const a=d(n.dataset.mode),l={name:r,tor_mode:a,time_secs:t.elapsed,time_ms:t.timeMs,rows:t.rows,cols:t.cols,mines:t.mines,no_guess:t.noGuess,board_hash:t.boardHash,bbbv:t.bbbv,left_clicks:t.leftClicks,right_clicks:t.rightClicks,chord_clicks:t.chordClicks};try{const e=await fetch("/api/toroid-scores",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(l)});if(e.ok){o&&(o.textContent=`✅ Score saved for ${r}!`),s&&(s.disabled=!0);const e=document.querySelector("#tor-score-form button");e&&(e.disabled=!0),f(a,t.noGuess)}else{const t=await e.json();o&&(o.textContent=`❌ ${t.detail||"Could not save score."}`)}}catch{o&&(o.textContent="❌ Network error. Score not saved.")}}function d(t){return{"toroid-beginner":"easy","toroid-intermediate":"intermediate","toroid-expert":"expert","toroid-custom":"custom"}[t]||"easy"}const m={easy:"Easy",intermediate:"Medium",expert:"Hard",custom:"Custom"};async function f(t,e=!1){const n=document.getElementById("tor-lb-content"),o=document.getElementById("tor-lb-title");if(n){if(o){const n=m[t]||t;o.textContent=`🏆 Today's Best — ${e?"⚡ No-Guess ":""}${n}`}n.innerHTML='<div class="lb-loading">Loading…</div>';try{const o=await fetch(`/api/toroid-scores/${t}?no_guess=${e}&period=daily`),s=await o.json();if(!s.length)return void(n.innerHTML='<div class="lb-empty">No scores yet — be the first!</div>');const r=["🥇","🥈","🥉"],a=s.map((e,n)=>{const o=e.profile_url?`<a href="${u(e.profile_url)}" class="lb-profile-link">${u(e.name)}</a>`:u(e.name);let s='<td class="lb-hash">—</td>';if(e.board_hash){const n=new URLSearchParams({rows:e.rows,cols:e.cols,mines:e.mines,hash:e.board_hash,date:e.created_at,mode:t,game:"toroid"}),o=e.board_hash.slice(0,8)+"…";s=`<td class="lb-hash"><a href="/variants/replay/?${n}" class="lb-replay-link" title="${u(e.board_hash)}">${o}</a></td>`}return`\n        <tr class="${n<3?"top-"+(n+1):""}">\n          <td class="lb-rank">${r[n]||"#"+(n+1)}</td>\n          <td class="lb-name">${o}</td>\n          <td class="lb-time">${function(t){return null!=t.time_ms?(t.time_ms/1e3).toFixed(3)+"s":t.time_secs+"s"}(e)}</td>\n          <td class="lb-board">${e.rows}×${e.cols}</td>\n          <td class="lb-mines">${e.mines}</td>\n          <td class="lb-stat">${e.bbbv??"—"}</td>\n          <td class="lb-stat">${function(t){if(!t.bbbv)return"—";const e=null!=t.time_ms?t.time_ms/1e3:t.time_secs;return e?(t.bbbv/e).toFixed(3):"—"}(e)}</td>\n          <td class="lb-stat">${function(t){if(!t.bbbv)return"—";const e=(t.left_clicks||0)+(t.chord_clicks||0);return e?Math.round(t.bbbv/e*100)+"%":"—"}(e)}</td>\n          <td class="lb-date">${e.created_at}</td>\n          ${s}\n        </tr>`}).join("");n.innerHTML=`\n        <div class="lb-table-wrap">\n          <table class="lb-table">\n            <thead><tr>\n              <th>#</th><th>Name</th><th>Time</th><th>Board</th><th>Mines</th>\n              <th class="lb-th-stat" data-tip="Minimum clicks to solve the board">3BV</th>\n              <th class="lb-th-stat" data-tip="3BV per second">3BV/s</th>\n              <th class="lb-th-stat" data-tip="Efficiency: 3BV ÷ left+chord clicks">Eff</th>\n              <th>Date</th>\n              <th>Board</th>\n            </tr></thead>\n            <tbody>${a}</tbody>\n          </table>\n        </div>`}catch{n.innerHTML='<div class="lb-empty">⚠️ Could not load scores.</div>'}}}function u(t){return String(t).replace(/[&<>"]/g,t=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[t]))}function h(t,e){let n=document.getElementById("game-overlay");n||(n=document.createElement("div"),n.id="game-overlay",document.getElementById("board").appendChild(n)),n.className=e?"overlay win":"overlay loss";const o=document.getElementById("board"),s=o.dataset.username||"";d(o.dataset.mode);let r="";if(e)if(s)r='<div id="tor-score-msg" style="font-size:0.9rem">Saving score…</div>';else{const t="/auth/login?next="+encodeURIComponent(window.location.pathname+window.location.search);r=`\n          <div id="tor-score-form" class="overlay-score-form">\n            <input id="tor-player-name" type="text" maxlength="32"\n                   placeholder="Enter your name" autocomplete="off" />\n            <button onclick="torSubmitScore()">Save Score</button>\n          </div>\n          <div id="tor-score-msg" style="font-size:0.85rem;min-height:1.2em"></div>\n          <div class="overlay-guest-warning">🎉 Congratulations! <a href="${t}" onclick="guestLoginAndSave(event, '${t}', 'torSubmitScore', 'tor-player-name')">Login with Google</a> or your score will vanish at 0:00 UTC.</div>\n        `}n.innerHTML=`\n      <span>${t}</span>\n      ${r}\n      <button onclick="torResetGame()">Play Again</button>\n    `,n.style.display="flex",e&&s?i(s):e&&setTimeout(()=>{const t=document.getElementById("tor-player-name");t&&(t.focus(),t.addEventListener("keydown",t=>{"Enter"===t.key&&torSubmitScore()}))},50)}function g(e,n,o=!1){const s=cellEl(e,n),r=t.board[e][n],a=t.flagged[e][n];s.className="cell",t.revealed[e][n]?(s.classList.add("revealed"),-1===r?(s.classList.add(o?"mine-detonated":"mine"),s.textContent=getMineEmoji()):0===r?s.textContent="":(s.textContent=r,s.style.color=getNumColors()[r])):1===a?(s.classList.add("flagged"),s.textContent="🚩"):2===a?(s.classList.add("question"),s.textContent="❓"):(s.classList.add("hidden"),s.textContent="")}function b(e,n,o,s=!1,i=!0){r(),t=function(t,e,n,o=!1,s=!0){return{rows:t,cols:e,mines:n,board:Array.from({length:t},()=>Array(e).fill(0)),revealed:Array.from({length:t},()=>Array(e).fill(!1)),flagged:Array.from({length:t},()=>Array(e).fill(0)),mineSet:new Set,minesLeft:n,started:!1,over:!1,won:!1,elapsed:0,timerID:null,noGuess:o,chording:s,startTime:null,timeMs:null,boardHash:null,bbbv:null,leftClicks:0,rightClicks:0,chordClicks:0}}(e,n,o,s,i),document.getElementById("timer").textContent="000",document.getElementById("mines-left").textContent=String(o).padStart(3,"0"),document.getElementById("reset-btn").textContent="🙂",function(e,n){const o=document.getElementById("board");o.innerHTML="",o.style.setProperty("--cols",n);for(let s=0;s<e;s++)for(let r=0;r<n;r++){const i=document.createElement("div");i.className="cell hidden",i.dataset.r=s,i.dataset.c=r,0===r&&i.classList.add("wrap-edge-left"),r===n-1&&i.classList.add("wrap-edge-right"),0===s&&i.classList.add("wrap-edge-top"),s===e-1&&i.classList.add("wrap-edge-bottom"),i.addEventListener("click",()=>{t.leftClicks++,a(s,r)}),i.addEventListener("contextmenu",e=>{e.preventDefault(),t.rightClicks++,c(s,r)}),i.addEventListener("dblclick",()=>{t.chordClicks++,l(s,r)}),addTouchHandlers(i,()=>{t.leftClicks++,a(s,r)},()=>{t.rightClicks++,c(s,r)}),o.appendChild(i)}}(e,n),function(t){const e=document.getElementById("noguess-toggle");e&&e.classList.toggle("active",t)}(s)}function y(){b(t.rows,t.cols,t.mines,t.noGuess,t.chording)}window.torResetGame=y,window.torInitGame=b,window.torToggleNoGuess=function(){const e=!t.noGuess;localStorage.setItem("torNoGuess",e),b(t.rows,t.cols,t.mines,e,t.chording),f(d(document.getElementById("board").dataset.mode),e)},window.torSubmitScore=i,window.torState=()=>t,document.addEventListener("DOMContentLoaded",()=>{const t=document.getElementById("board");if(!t||!t.dataset.mode.startsWith("toroid"))return;t.classList.add("toroid-board");const e=t.closest(".variant-board-wrap--toroid");if(e){const t=document.createElement("div");t.className="wrap-overlay-top";const n=document.createElement("div");n.className="wrap-overlay-bottom",e.appendChild(t),e.appendChild(n)}const n=parseInt(t.dataset.rows),o=parseInt(t.dataset.cols),s=parseInt(t.dataset.mines),r="true"===localStorage.getItem("torNoGuess");b(n,o,s,r,"false"!==localStorage.getItem("chording")),document.getElementById("reset-btn").addEventListener("click",y),f(d(t.dataset.mode),r)})}();
+/**
+ * Toroid Minesweeper — Game Engine
+ * The board wraps on all sides: left↔right and top↔bottom edges are connected.
+ * Uses addTouchHandlers, cellEl, getNumColors from minesweeper.js (loaded first).
+ */
+(function () {
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let state = {};
+
+  function freshState(rows, cols, mines, noGuess = false, chording = true) {
+    return {
+      rows, cols, mines,
+      board:     Array.from({length: rows}, () => Array(cols).fill(0)),
+      revealed:  Array.from({length: rows}, () => Array(cols).fill(false)),
+      flagged:   Array.from({length: rows}, () => Array(cols).fill(0)),
+      mineSet:   new Set(),
+      minesLeft: mines,
+      started:   false,
+      over:      false,
+      won:       false,
+      elapsed:   0,
+      timerID:   null,
+      noGuess,
+      chording,
+      startTime:   null,
+      timeMs:      null,
+      boardHash:   null,
+      bbbv:        null,
+      leftClicks:  0,
+      rightClicks: 0,
+      chordClicks: 0,
+    };
+  }
+
+  // ── Toroid Neighbors (both rows and columns wrap) ──────────────────────────
+  function neighbors(r, c, rows, cols) {
+    const out = [];
+    for (let dr = -1; dr <= 1; dr++)
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        const nr = (r + dr + rows) % rows; // wrap rows
+        const nc = (c + dc + cols) % cols; // wrap cols
+        out.push([nr, nc]);
+      }
+    return out;
+  }
+
+  // ── 3BV (toroid-aware, uses local wrapping neighbors) ─────────────────────
+  function calc3BV(board, rows, cols, mineSet) {
+    const n       = rows * cols;
+    const covered = new Uint8Array(n);
+    let   bbbv    = 0;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const idx = r * cols + c;
+        if (board[r][c] !== 0 || covered[idx] || mineSet.has(idx)) continue;
+        bbbv++;
+        const queue = [[r, c]];
+        covered[idx] = 1;
+        while (queue.length) {
+          const [cr, cc] = queue.shift();
+          for (const [nr, nc] of neighbors(cr, cc, rows, cols)) {
+            const ni = nr * cols + nc;
+            if (covered[ni] || mineSet.has(ni)) continue;
+            covered[ni] = 1;
+            if (board[nr][nc] === 0) queue.push([nr, nc]);
+          }
+        }
+      }
+    }
+    for (let i = 0; i < n; i++) {
+      const r = Math.floor(i / cols), c = i % cols;
+      if (board[r][c] > 0 && !covered[i]) bbbv++;
+    }
+    return bbbv;
+  }
+
+  // ── Mine Placement (safe first click) ─────────────────────────────────────
+  function placeMines(rows, cols, mines, safeR, safeC) {
+    // Forbidden zone wraps both rows and cols
+    const forbidden = new Set();
+    for (let dr = -1; dr <= 1; dr++)
+      for (let dc = -1; dc <= 1; dc++) {
+        const nr = (safeR + dr + rows) % rows;
+        const nc = (safeC + dc + cols) % cols;
+        forbidden.add(nr * cols + nc);
+      }
+
+    const pool = [];
+    for (let i = 0; i < rows * cols; i++)
+      if (!forbidden.has(i)) pool.push(i);
+
+    for (let i = 0; i < mines; i++) {
+      const j = i + Math.floor(Math.random() * (pool.length - i));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+
+    const mineSet = new Set(pool.slice(0, mines));
+    const board   = Array.from({length: rows}, () => Array(cols).fill(0));
+
+    for (const idx of mineSet) {
+      const r = Math.floor(idx / cols), c = idx % cols;
+      board[r][c] = -1;
+      neighbors(r, c, rows, cols).forEach(([nr, nc]) => {
+        if (board[nr][nc] !== -1) board[nr][nc]++;
+      });
+    }
+    return {mineSet, board};
+  }
+
+  // ── No-Guess Solver (toroid-aware) ────────────────────────────────────────
+  function isSolvable(rows, cols, mineSet, board, startR, startC) {
+    const n = rows * cols;
+    const revealed  = new Uint8Array(n);
+    const knownMine = new Uint8Array(n);
+
+    function bfsReveal(startIdx) {
+      const q = [startIdx];
+      while (q.length) {
+        const idx = q.pop();
+        if (revealed[idx] || mineSet.has(idx)) continue;
+        revealed[idx] = 1;
+        if (board[Math.floor(idx / cols)][idx % cols] === 0) {
+          for (const [nr, nc] of neighbors(Math.floor(idx / cols), idx % cols, rows, cols)) {
+            const ni = nr * cols + nc;
+            if (!revealed[ni] && !mineSet.has(ni)) q.push(ni);
+          }
+        }
+      }
+    }
+
+    bfsReveal(startR * cols + startC);
+
+    let progress = true;
+    while (progress) {
+      progress = false;
+      const constraints = [];
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const i = r * cols + c;
+          if (!revealed[i] || board[r][c] <= 0) continue;
+
+          const hidden = [];
+          let mineCount = 0;
+          for (const [nr, nc] of neighbors(r, c, rows, cols)) {
+            const ni = nr * cols + nc;
+            if (knownMine[ni]) mineCount++;
+            else if (!revealed[ni]) hidden.push(ni);
+          }
+          const remaining = board[r][c] - mineCount;
+          if (remaining < 0 || remaining > hidden.length) continue;
+
+          if (remaining === 0 && hidden.length > 0) {
+            hidden.forEach(ni => bfsReveal(ni));
+            progress = true;
+          } else if (remaining > 0 && remaining === hidden.length) {
+            hidden.forEach(ni => { knownMine[ni] = 1; });
+            progress = true;
+          } else if (hidden.length > 0) {
+            constraints.push({cells: hidden, count: remaining});
+          }
+        }
+      }
+
+      for (let i = 0; i < constraints.length; i++) {
+        for (let j = 0; j < constraints.length; j++) {
+          if (i === j) continue;
+          const ci = constraints[i], cj = constraints[j];
+          if (ci.cells.length >= cj.cells.length) continue;
+          const ciSet = new Set(ci.cells);
+          if (!ci.cells.every(x => cj.cells.indexOf(x) >= 0)) continue;
+          const diff      = cj.cells.filter(x => !ciSet.has(x));
+          const diffCount = cj.count - ci.count;
+          if (diffCount < 0 || diffCount > diff.length) continue;
+          if (diffCount === 0 && diff.length > 0) {
+            diff.forEach(ni => bfsReveal(ni));
+            progress = true;
+          } else if (diffCount > 0 && diffCount === diff.length) {
+            diff.forEach(ni => { knownMine[ni] = 1; });
+            progress = true;
+          }
+        }
+      }
+    }
+
+    for (let i = 0; i < n; i++) {
+      if (!mineSet.has(i) && !revealed[i]) return false;
+    }
+    return true;
+  }
+
+  function placeMinesNoGuess(rows, cols, mines, safeR, safeC) {
+    for (let attempt = 0; attempt < 500; attempt++) {
+      const result = placeMines(rows, cols, mines, safeR, safeC);
+      if (isSolvable(rows, cols, result.mineSet, result.board, safeR, safeC))
+        return result;
+    }
+    return placeMines(rows, cols, mines, safeR, safeC);
+  }
+
+  // ── Timer ──────────────────────────────────────────────────────────────────
+  function startTimer() {
+    if (state.timerID) return;
+    state.timerID = setInterval(() => {
+      state.elapsed = Math.min(state.elapsed + 1, 999);
+      document.getElementById('timer').textContent =
+        String(state.elapsed).padStart(3, '0');
+    }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(state.timerID);
+    state.timerID = null;
+  }
+
+  // ── Reveal ─────────────────────────────────────────────────────────────────
+  function reveal(r, c) {
+    if (state.over || state.revealed[r][c] || state.flagged[r][c] === 1) return;
+
+    if (!state.started) {
+      const placer = state.noGuess ? placeMinesNoGuess : placeMines;
+      const {mineSet, board} = placer(state.rows, state.cols, state.mines, r, c);
+      state.mineSet    = mineSet;
+      state.board      = board;
+      state.started    = true;
+      state.startTime  = performance.now();
+      state.boardHash  = calcBoardHash(state.rows, state.cols, mineSet);
+      state.bbbv       = calc3BV(board, state.rows, state.cols, mineSet);
+      startTimer();
+    }
+
+    if (state.board[r][c] === -1) { boom(r, c); return; }
+
+    const queue = [[r, c]];
+    while (queue.length) {
+      const [cr, cc] = queue.shift();
+      if (state.revealed[cr][cc]) continue;
+      state.revealed[cr][cc] = true;
+      renderCell(cr, cc);
+      if (state.board[cr][cc] === 0) {
+        neighbors(cr, cc, state.rows, state.cols).forEach(([nr, nc]) => {
+          if (!state.revealed[nr][nc] && !state.flagged[nr][nc])
+            queue.push([nr, nc]);
+        });
+      }
+    }
+    checkWin();
+  }
+
+  // ── Chord ──────────────────────────────────────────────────────────────────
+  function chord(r, c) {
+    if (!state.chording || !state.revealed[r][c] || state.board[r][c] <= 0) return;
+    const nb    = neighbors(r, c, state.rows, state.cols);
+    const flags = nb.filter(([nr, nc]) => state.flagged[nr][nc] === 1).length;
+    if (flags === state.board[r][c]) nb.forEach(([nr, nc]) => reveal(nr, nc));
+  }
+
+  // ── Flag ───────────────────────────────────────────────────────────────────
+  function flag(r, c) {
+    if (state.over || state.revealed[r][c]) return;
+    const cur  = state.flagged[r][c];
+    const next = (cur + 1) % 3;
+    state.flagged[r][c] = next;
+    if (cur === 0 && next === 1) state.minesLeft--;
+    if (cur === 1 && next === 2) state.minesLeft++;
+    document.getElementById('mines-left').textContent =
+      String(state.minesLeft).padStart(3, '0');
+    renderCell(r, c);
+  }
+
+  // ── Win / Loss ─────────────────────────────────────────────────────────────
+  function boom(r, c) {
+    state.over   = true;
+    state.timeMs = state.startTime ? Math.round(performance.now() - state.startTime) : null;
+    stopTimer();
+    for (const idx of state.mineSet) {
+      const mr = Math.floor(idx / state.cols), mc = idx % state.cols;
+      state.revealed[mr][mc] = true;
+      renderCell(mr, mc, mr === r && mc === c);
+    }
+    document.getElementById('reset-btn').textContent = '😵';
+    showOverlay('💥 Game Over', false);
+  }
+
+  function checkWin() {
+    const unrevealed = state.rows * state.cols -
+      state.revealed.flat().filter(Boolean).length;
+    if (unrevealed === state.mines) {
+      state.over   = true;
+      state.won    = true;
+      state.timeMs = state.startTime ? Math.round(performance.now() - state.startTime) : null;
+      stopTimer();
+      document.getElementById('reset-btn').textContent = '😎';
+      for (const idx of state.mineSet) {
+        const mr = Math.floor(idx / state.cols), mc = idx % state.cols;
+        if (!state.flagged[mr][mc]) { state.flagged[mr][mc] = true; renderCell(mr, mc); }
+      }
+      document.getElementById('mines-left').textContent = '000';
+      showOverlay(`🎉 You Won! — ${state.elapsed}s`, true);
+    }
+  }
+
+  // ── Score submission ───────────────────────────────────────────────────────
+  async function submitScore(autoName = null) {
+    const board   = document.getElementById('board');
+    const msgEl   = document.getElementById('tor-score-msg');
+    const nameEl  = document.getElementById('tor-player-name');
+    const name    = autoName || nameEl?.value.trim();
+
+    if (!name) { if (msgEl) msgEl.textContent = '⚠️ Please enter your name.'; return; }
+
+    const torMode = torModeKey(board.dataset.mode);
+    const payload = {
+      name,
+      tor_mode:     torMode,
+      time_secs:    state.elapsed,
+      time_ms:      state.timeMs,
+      rows:         state.rows,
+      cols:         state.cols,
+      mines:        state.mines,
+      no_guess:     state.noGuess,
+      board_hash:   state.boardHash,
+      bbbv:         state.bbbv,
+      left_clicks:  state.leftClicks,
+      right_clicks: state.rightClicks,
+      chord_clicks: state.chordClicks,
+    };
+
+    try {
+      const res = await fetch('/api/toroid-scores', {
+        method:  'POST',
+        headers: {'Content-Type': 'application/json'},
+        body:    JSON.stringify(payload),
+      });
+      if (res.ok) {
+        if (msgEl) msgEl.textContent = `✅ Score saved for ${name}!`;
+        if (nameEl) nameEl.disabled = true;
+        const saveBtn = document.querySelector('#tor-score-form button');
+        if (saveBtn) saveBtn.disabled = true;
+        loadLeaderboard(torMode, state.noGuess);
+      } else {
+        const err = await res.json();
+        if (msgEl) msgEl.textContent = `❌ ${err.detail || 'Could not save score.'}`;
+      }
+    } catch {
+      if (msgEl) msgEl.textContent = '❌ Network error. Score not saved.';
+    }
+  }
+
+  // Map data-mode to API tor_mode key
+  function torModeKey(dataMode) {
+    const map = {
+      'toroid-beginner':     'easy',
+      'toroid-intermediate': 'intermediate',
+      'toroid-expert':       'expert',
+      'toroid-custom':       'custom',
+    };
+    return map[dataMode] || 'easy';
+  }
+
+  // ── Leaderboard ────────────────────────────────────────────────────────────
+  const TOR_MODE_LABELS = { easy: 'Easy', intermediate: 'Medium', expert: 'Hard', custom: 'Custom' };
+
+  async function loadLeaderboard(torMode, noGuess = false) {
+    const el      = document.getElementById('tor-lb-content');
+    const titleEl = document.getElementById('tor-lb-title');
+    if (!el) return;
+    if (titleEl) {
+      const label = TOR_MODE_LABELS[torMode] || torMode;
+      titleEl.textContent = `🏆 Today's Best — ${noGuess ? '⚡ No-Guess ' : ''}${label}`;
+    }
+    el.innerHTML = '<div class="lb-loading">Loading…</div>';
+    try {
+      const res  = await fetch(`/api/toroid-scores/${torMode}?no_guess=${noGuess}&period=daily`);
+      const data = await res.json();
+      if (!data.length) {
+        el.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
+        return;
+      }
+      const medals = ['🥇', '🥈', '🥉'];
+      const rows = data.map((s, i) => {
+        const nameCell = s.profile_url
+          ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
+          : esc(s.name);
+        let hashCell = '<td class="lb-hash">—</td>';
+        if (s.board_hash) {
+          const rp = new URLSearchParams({
+            rows: s.rows, cols: s.cols, mines: s.mines,
+            hash: s.board_hash, date: s.created_at,
+            mode: torMode, game: 'toroid',
+          });
+          const short = s.board_hash.slice(0, 8) + '…';
+          hashCell = `<td class="lb-hash"><a href="/variants/replay/?${rp}" class="lb-replay-link" title="${esc(s.board_hash)}">${short}</a></td>`;
+        }
+        return `
+        <tr class="${i < 3 ? 'top-' + (i + 1) : ''}">
+          <td class="lb-rank">${medals[i] || '#' + (i + 1)}</td>
+          <td class="lb-name">${nameCell}</td>
+          <td class="lb-time">${fmtTime(s)}</td>
+          <td class="lb-board">${s.rows}×${s.cols}</td>
+          <td class="lb-mines">${s.mines}</td>
+          <td class="lb-stat">${s.bbbv ?? '—'}</td>
+          <td class="lb-stat">${fmtBbbvS(s)}</td>
+          <td class="lb-stat">${fmtEff(s)}</td>
+          <td class="lb-date">${s.created_at}</td>
+          ${hashCell}
+        </tr>`;
+      }).join('');
+      el.innerHTML = `
+        <div class="lb-table-wrap">
+          <table class="lb-table">
+            <thead><tr>
+              <th>#</th><th>Name</th><th>Time</th><th>Board</th><th>Mines</th>
+              <th class="lb-th-stat" data-tip="Minimum clicks to solve the board">3BV</th>
+              <th class="lb-th-stat" data-tip="3BV per second">3BV/s</th>
+              <th class="lb-th-stat" data-tip="Efficiency: 3BV ÷ left+chord clicks">Eff</th>
+              <th>Date</th>
+              <th>Board</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    } catch {
+      el.innerHTML = '<div class="lb-empty">⚠️ Could not load scores.</div>';
+    }
+  }
+
+  function fmtTime(s) {
+    if (s.time_ms != null) return (s.time_ms / 1000).toFixed(3) + 's';
+    return s.time_secs + 's';
+  }
+
+  function fmtBbbvS(s) {
+    if (!s.bbbv) return '—';
+    const secs = s.time_ms != null ? s.time_ms / 1000 : s.time_secs;
+    if (!secs) return '—';
+    return (s.bbbv / secs).toFixed(3);
+  }
+
+  function fmtEff(s) {
+    if (!s.bbbv) return '—';
+    const total = (s.left_clicks || 0) + (s.chord_clicks || 0);
+    if (!total) return '—';
+    return Math.round(s.bbbv / total * 100) + '%';
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+
+  // ── Overlay ────────────────────────────────────────────────────────────────
+  function showOverlay(msg, won) {
+    let el = document.getElementById('game-overlay');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'game-overlay';
+      document.getElementById('board').appendChild(el);
+    }
+    el.className = won ? 'overlay win' : 'overlay loss';
+
+    const board    = document.getElementById('board');
+    const username = board.dataset.username || '';
+    const torMode  = torModeKey(board.dataset.mode);
+
+    let scoreForm = '';
+    if (won) {
+      if (username) {
+        scoreForm = `<div id="tor-score-msg" style="font-size:0.9rem">Saving score…</div>`;
+      } else {
+        const loginHref = '/auth/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        scoreForm = `
+          <div id="tor-score-form" class="overlay-score-form">
+            <input id="tor-player-name" type="text" maxlength="32"
+                   placeholder="Enter your name" autocomplete="off" />
+            <button onclick="torSubmitScore()">Save Score</button>
+          </div>
+          <div id="tor-score-msg" style="font-size:0.85rem;min-height:1.2em"></div>
+          <div class="overlay-guest-warning">🎉 Congratulations! <a href="${loginHref}" onclick="guestLoginAndSave(event, '${loginHref}', 'torSubmitScore', 'tor-player-name')">Login with Google</a> or your score will vanish at 0:00 UTC.</div>
+        `;
+      }
+    }
+
+    el.innerHTML = `
+      <span>${msg}</span>
+      ${scoreForm}
+      <button onclick="torResetGame()">Play Again</button>
+    `;
+    el.style.display = 'flex';
+
+    if (won && username) {
+      submitScore(username);
+    } else if (won) {
+      setTimeout(() => {
+        const inp = document.getElementById('tor-player-name');
+        if (inp) {
+          inp.focus();
+          inp.addEventListener('keydown', e => { if (e.key === 'Enter') torSubmitScore(); });
+        }
+      }, 50);
+    }
+  }
+
+  // ── Render Cell ────────────────────────────────────────────────────────────
+  function renderCell(r, c, isDetonated = false) {
+    const el  = cellEl(r, c);
+    const val = state.board[r][c];
+    const f   = state.flagged[r][c];
+
+    el.className = 'cell';
+
+    if (!state.revealed[r][c]) {
+      if (f === 1)      { el.classList.add('flagged');  el.textContent = '🚩'; }
+      else if (f === 2) { el.classList.add('question'); el.textContent = '❓'; }
+      else              { el.classList.add('hidden');   el.textContent = ''; }
+      return;
+    }
+
+    el.classList.add('revealed');
+    if (val === -1) {
+      el.classList.add(isDetonated ? 'mine-detonated' : 'mine');
+      el.textContent = getMineEmoji();
+    } else if (val === 0) {
+      el.textContent = '';
+    } else {
+      el.textContent = val;
+      el.style.color = getNumColors()[val];
+    }
+  }
+
+  // ── Build Board DOM ────────────────────────────────────────────────────────
+  function buildBoard(rows, cols) {
+    const boardEl = document.getElementById('board');
+    boardEl.innerHTML = '';
+    boardEl.style.setProperty('--cols', cols);
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell hidden';
+        cell.dataset.r = r;
+        cell.dataset.c = c;
+        if (c === 0)        cell.classList.add('wrap-edge-left');
+        if (c === cols - 1) cell.classList.add('wrap-edge-right');
+        if (r === 0)        cell.classList.add('wrap-edge-top');
+        if (r === rows - 1) cell.classList.add('wrap-edge-bottom');
+
+        cell.addEventListener('click',       () => { state.leftClicks++;  reveal(r, c); });
+        cell.addEventListener('contextmenu', e  => { e.preventDefault(); state.rightClicks++; flag(r, c); });
+        cell.addEventListener('dblclick',    () => { state.chordClicks++; chord(r, c); });
+        addTouchHandlers(cell, () => { state.leftClicks++; reveal(r, c); }, () => { state.rightClicks++; flag(r, c); });
+
+        boardEl.appendChild(cell);
+      }
+    }
+  }
+
+  // ── Init / Reset ───────────────────────────────────────────────────────────
+  function initGame(rows, cols, mines, noGuess = false, chording = true) {
+    stopTimer();
+    state = freshState(rows, cols, mines, noGuess, chording);
+    document.getElementById('timer').textContent      = '000';
+    document.getElementById('mines-left').textContent = String(mines).padStart(3, '0');
+    document.getElementById('reset-btn').textContent  = '🙂';
+    buildBoard(rows, cols);
+    updateNoGuessUI(noGuess);
+  }
+
+  function resetGame() {
+    initGame(state.rows, state.cols, state.mines, state.noGuess, state.chording);
+  }
+
+  // ── No-Guess Toggle ────────────────────────────────────────────────────────
+  function toggleNoGuess() {
+    const newVal = !state.noGuess;
+    localStorage.setItem('torNoGuess', newVal);
+    initGame(state.rows, state.cols, state.mines, newVal, state.chording);
+    const board = document.getElementById('board');
+    loadLeaderboard(torModeKey(board.dataset.mode), newVal);
+  }
+
+  function updateNoGuessUI(active) {
+    const btn = document.getElementById('noguess-toggle');
+    if (btn) btn.classList.toggle('active', active);
+  }
+
+  // ── Expose to window ───────────────────────────────────────────────────────
+  window.torResetGame     = resetGame;
+  window.torInitGame      = initGame;
+  window.torToggleNoGuess = toggleNoGuess;
+  window.torSubmitScore   = submitScore;
+  window.torState         = () => state; // read-only access for custom form
+
+  // ── Bootstrap ──────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    const board = document.getElementById('board');
+    if (!board || !board.dataset.mode.startsWith('toroid')) return;
+
+    board.classList.add('toroid-board');
+
+    // Inject top/bottom gradient overlays into the wrapper (CSS ::before/after cover left/right)
+    const wrap = board.closest('.variant-board-wrap--toroid');
+    if (wrap) {
+      const top = document.createElement('div');
+      top.className = 'wrap-overlay-top';
+      const bot = document.createElement('div');
+      bot.className = 'wrap-overlay-bottom';
+      wrap.appendChild(top);
+      wrap.appendChild(bot);
+    }
+
+    const rows    = parseInt(board.dataset.rows);
+    const cols    = parseInt(board.dataset.cols);
+    const mines   = parseInt(board.dataset.mines);
+    const noGuess  = localStorage.getItem('torNoGuess')  === 'true';
+    const chording = localStorage.getItem('chording') !== 'false';
+
+    initGame(rows, cols, mines, noGuess, chording);
+
+    document.getElementById('reset-btn').addEventListener('click', resetGame);
+
+    // Load leaderboard on page open
+    loadLeaderboard(torModeKey(board.dataset.mode), noGuess);
+  });
+
+})();

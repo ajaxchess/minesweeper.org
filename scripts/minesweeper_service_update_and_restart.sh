@@ -36,6 +36,10 @@ else
         git stash pop
     fi
 
+    # --- Minify static assets ---
+    echo "Building static assets..."
+    bash "$REPO_DIR/scripts/build_assets.sh" || echo "Warning: asset build failed (continuing)"
+
     # --- Sync Python dependencies ---
     echo "Installing/updating Python dependencies..."
     "$VENV_DIR/bin/pip" install -r "$REPO_DIR/requirements.txt" --quiet || { echo "Warning: pip install failed"; }
