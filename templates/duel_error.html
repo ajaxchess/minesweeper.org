@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | minesweeper.org{% endblock %}
+
+{% block content %}
+<div class="notfound-wrap">
+  <div class="notfound-board" aria-hidden="true">
+    <div class="nf-cell nf-mine">💣</div>
+    <div class="nf-cell nf-revealed">{{ code }}</div>
+    <div class="nf-cell nf-mine">💣</div>
+  </div>
+  <h1 class="notfound-title">{{ title }}</h1>
+  <p class="notfound-sub">{{ message }}</p>
+  <div class="notfound-links">
+    <a href="/duel" class="notfound-btn">⚔️ New Duel</a>
+    <a href="/pvp" class="notfound-btn notfound-btn--secondary">⚔️ PvP Matchmaking</a>
+  </div>
+</div>
+{% endblock %}

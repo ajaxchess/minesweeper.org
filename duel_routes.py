@@ -70,9 +70,17 @@ async def duel_lobby(request: Request, m: str = "standard"):
 async def duel_join(request: Request, game_id: str):
     game = get_game(game_id)
     if not game:
-        return HTMLResponse("<h2>Game not found or expired.</h2>", status_code=404)
+        return templates.TemplateResponse("duel_error.html", {
+            "request": request, "lang": get_lang(request), "t": get_t(request),
+            "code": 404, "title": "Game not found",
+            "message": "This duel has expired or never existed. Games are kept for 2 hours.",
+        }, status_code=404)
     if game.finished:
-        return HTMLResponse("<h2>This game has already ended.</h2>", status_code=410)
+        return templates.TemplateResponse("duel_error.html", {
+            "request": request, "lang": get_lang(request), "t": get_t(request),
+            "code": 410, "title": "Game already ended",
+            "message": "This duel has already finished. Start a new one!",
+        }, status_code=410)
 
     player_id  = uuid.uuid4().hex[:8]
     is_creator = len(game.players) == 0
@@ -590,7 +598,11 @@ async def _pvp_quick_wait_loop(ws: WebSocket, player_id: str):
 async def duel_watch(request: Request, game_id: str):
     game = get_game(game_id)
     if not game:
-        return HTMLResponse("<h2>Game not found or expired.</h2>", status_code=404)
+        return templates.TemplateResponse("duel_error.html", {
+            "request": request, "lang": get_lang(request), "t": get_t(request),
+            "code": 404, "title": "Game not found",
+            "message": "This duel has expired or never existed. Games are kept for 2 hours.",
+        }, status_code=404)
     spec_id = uuid.uuid4().hex[:8]
     user    = get_current_user(request)
     return templates.TemplateResponse("spectate.html", {
