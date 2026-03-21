@@ -2159,7 +2159,8 @@ def update_about(payload: AboutTextUpdate, request: Request, db: Session = Depen
 
 
 # ── Admin ─────────────────────────────────────────────────────────────────────
-ADMIN_EMAILS = {"ajaxchess@gmail.com", "ecgero@gmail.com", "gwarpp@gmail.com", "mark.hahs@gmail.com"}
+_admin_emails_raw = Config(".env")("ADMIN_EMAILS", default="")
+ADMIN_EMAILS = {e.strip() for e in _admin_emails_raw.split(",") if e.strip()}
 
 @app.get("/admin", response_class=HTMLResponse)
 def admin_dashboard(request: Request, db: Session = Depends(get_db)):
