@@ -1768,6 +1768,7 @@ async def mosaic_custom_page(
     rows: int = 9,
     cols: int = 9,
     density: float = 0.35,
+    mask: str = "",
 ):
     rows      = max(3, min(20, rows))
     cols      = max(3, min(20, cols))
@@ -1782,6 +1783,7 @@ async def mosaic_custom_page(
         "cols":      cols,
         "density":   density,
         "cell_size": cell_size,
+        "mask":      mask,
     })
 
 

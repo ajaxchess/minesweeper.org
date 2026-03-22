@@ -26,20 +26,21 @@ function esc(s) {
 
 // ── Game state ────────────────────────────────────────────────────────────────
 let G = {
-    rows:       10,
-    cols:       10,
-    hints:      [],
-    solution:   [],
-    player:     [],
-    totalMines: 0,
-    isPOTD:     true,
-    seedStr:    '',
-    scoreApi:   '/api/mosaic-scores',   // overridden for easy mode
-    startTime:  null,
-    elapsed:    0,
-    timer:      null,
-    won:        false,
-    density:    null,    // null → use generatePuzzle default; number → override
+    rows:         10,
+    cols:         10,
+    hints:        [],
+    solution:     [],
+    player:       [],
+    totalMines:   0,
+    isPOTD:       true,
+    seedStr:      '',
+    scoreApi:     '/api/mosaic-scores',   // overridden for easy mode
+    startTime:    null,
+    elapsed:      0,
+    timer:        null,
+    won:          false,
+    density:      null,    // null → use generatePuzzle default; number → override
+    maskedCells:  new Set(), // indices whose hint is hidden (from mask hash)
 };
 
 // ── Puzzle generation ─────────────────────────────────────────────────────────
@@ -126,12 +127,16 @@ function renderCell(r, c) {
     el.classList.toggle('ms-black', G.player[idx] === 1);
     el.classList.toggle('ms-white', G.player[idx] === 0);
 
-    const span    = el.querySelector('.ms-hint');
-    const hint    = G.hints[idx];
-    const current = neighborCount(r, c);
+    const span     = el.querySelector('.ms-hint');
+    const hint     = G.hints[idx];
+    const isMasked = G.maskedCells.has(idx);
+    const current  = neighborCount(r, c);
+    span.textContent = isMasked ? '' : hint;
     span.classList.remove('ms-hint-ok', 'ms-hint-over');
-    if (current === hint)    span.classList.add('ms-hint-ok');
-    else if (current > hint) span.classList.add('ms-hint-over');
+    if (!isMasked) {
+        if (current === hint)    span.classList.add('ms-hint-ok');
+        else if (current > hint) span.classList.add('ms-hint-over');
+    }
 }
 
 function renderBoard() {
@@ -153,10 +158,13 @@ function renderBoard() {
 
             const span = document.createElement('span');
             span.className   = 'ms-hint';
-            span.textContent = G.hints[idx];
+            const isMasked   = G.maskedCells.has(idx);
+            span.textContent = isMasked ? '' : G.hints[idx];
             const current = neighborCount(r, c);
-            if (current === G.hints[idx])    span.classList.add('ms-hint-ok');
-            else if (current > G.hints[idx]) span.classList.add('ms-hint-over');
+            if (!isMasked) {
+                if (current === G.hints[idx])    span.classList.add('ms-hint-ok');
+                else if (current > G.hints[idx]) span.classList.add('ms-hint-over');
+            }
             cell.appendChild(span);
 
             cell.addEventListener('click', () => handleClick(r, c, 0));
@@ -327,7 +335,7 @@ async function loadLeaderboard() {
 }
 
 // ── Hash-based init (custom board) ────────────────────────────────────────────
-function initGameFromHash(hash, rows, cols) {
+function initGameFromHash(hash, rows, cols, maskHash) {
     if (G.timer) { clearInterval(G.timer); G.timer = null; }
 
     const solution = new Array(rows * cols).fill(0);
@@ -353,17 +361,29 @@ function initGameFromHash(hash, rows, cols) {
         }
     }
 
-    G.rows       = rows;
-    G.cols       = cols;
-    G.won        = false;
-    G.isPOTD     = false;
-    G.seedStr    = '';
-    G.elapsed    = 0;
-    G.startTime  = null;
-    G.solution   = solution;
-    G.hints      = hints;
-    G.totalMines = solution.reduce((a, b) => a + b, 0);
-    G.player     = new Array(rows * cols).fill(2);
+    // Decode mask: cells with bit set will have their hint hidden
+    const maskedCells = new Set();
+    if (maskHash) {
+        try {
+            const maskBin = atob(maskHash);
+            for (let i = 0; i < rows * cols; i++) {
+                if (maskBin.charCodeAt(i >> 3) & (1 << (i & 7))) maskedCells.add(i);
+            }
+        } catch { /* invalid mask — show all hints */ }
+    }
+
+    G.rows        = rows;
+    G.cols        = cols;
+    G.won         = false;
+    G.isPOTD      = false;
+    G.seedStr     = '';
+    G.elapsed     = 0;
+    G.startTime   = null;
+    G.solution    = solution;
+    G.hints       = hints;
+    G.totalMines  = solution.reduce((a, b) => a + b, 0);
+    G.player      = new Array(rows * cols).fill(2);
+    G.maskedCells = maskedCells;
 
     document.getElementById('ms-overlay').style.display = 'none';
     document.getElementById('ms-timer').textContent = '0:00';
@@ -419,6 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const board    = document.getElementById('ms-board');
     const today    = board.dataset.today;
     const initHash = board.dataset.hash || '';
+    const initMask = board.dataset.mask || '';
 
     // Apply density override from data-density attribute (custom page)
     const dataDensity = parseFloat(board.dataset.density);
@@ -429,7 +450,8 @@ document.addEventListener('DOMContentLoaded', () => {
         initGameFromHash(
             initHash,
             parseInt(board.dataset.rows) || 9,
-            parseInt(board.dataset.cols) || 9
+            parseInt(board.dataset.cols) || 9,
+            initMask
         );
     } else if (board.dataset.custom === '1') {
         // Custom config page with no hash: start with a random board

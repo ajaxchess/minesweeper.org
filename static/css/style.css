@@ -4720,6 +4720,17 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
 .bg-cell.bg-mine { background: #1e1e2e; color: #fff; }
 .bg-cell.bg-mine:hover { background: #2a2a40; }
 
+.bg-mask-cell { font-weight: 700; }
+.bg-mask-cell.bg-masked { background: #777; color: #aaa; text-decoration: line-through; }
+.bg-mask-cell.bg-masked:hover { background: #666; }
+
+.bg-mask-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.bg-section-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.25rem; }
+
 .bg-stats {
   min-width: 260px;
   flex: 1;

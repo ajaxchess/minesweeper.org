@@ -5,13 +5,14 @@ const BG = {
     rows:  9,
     cols:  9,
     mines: new Set(),
+    mask:  new Set(),
 };
 
 // ── Hash encode ───────────────────────────────────────────────────────────────
-function encodeHash(rows, cols, mines) {
+function encodeHash(rows, cols, cells) {
     const n     = rows * cols;
     const bytes = new Uint8Array(Math.ceil(n / 8));
-    for (const idx of mines) {
+    for (const idx of cells) {
         bytes[idx >> 3] |= 1 << (idx & 7);
     }
     let bin = '';
@@ -98,9 +99,13 @@ function calc3BV(board, rows, cols, mines, neighborFn) {
 
 // ── Update stats panel ────────────────────────────────────────────────────────
 function updateStats() {
-    const { rows, cols, mines } = BG;
+    const { rows, cols, mines, mask } = BG;
     const mineCount = mines.size;
     document.getElementById('bg-mine-count').textContent = mineCount;
+
+    // Show/hide mask section
+    const maskWrap = document.getElementById('bg-mask-wrap');
+    if (maskWrap) maskWrap.style.display = mineCount > 0 ? 'block' : 'none';
 
     if (mineCount > 0) {
         const hash = encodeHash(rows, cols, mines);
@@ -117,9 +122,11 @@ function updateStats() {
         document.getElementById('bg-3bv-tor').textContent =
             calc3BV(torBoard, rows, cols, mines, torNeighbors);
 
-        const enc        = encodeURIComponent(hash);
-        const replayUrl  = `/variants/replay/?rows=${rows}&cols=${cols}&mines=${mineCount}&hash=${enc}`;
-        const mosaicUrl  = `/mosaic/custom/?rows=${rows}&cols=${cols}&hash=${enc}`;
+        const enc       = encodeURIComponent(hash);
+        const maskHash  = mask.size > 0 ? encodeHash(rows, cols, mask) : null;
+        const replayUrl = `/variants/replay/?rows=${rows}&cols=${cols}&mines=${mineCount}&hash=${enc}`;
+        const mosaicUrl = `/mosaic/custom/?rows=${rows}&cols=${cols}&hash=${enc}` +
+                          (maskHash ? `&mask=${encodeURIComponent(maskHash)}` : '');
 
         const replayLink = document.getElementById('bg-replay-link');
         replayLink.href        = replayUrl;
@@ -130,6 +137,16 @@ function updateStats() {
         mosaicLink.textContent = mosaicUrl;
 
         document.getElementById('bg-urls').style.display = 'block';
+
+        // Update mask stats
+        document.getElementById('bg-mask-count').textContent = mask.size;
+        const maskHashSection = document.getElementById('bg-mask-hash-section');
+        if (maskHashSection) {
+            maskHashSection.style.display = mask.size > 0 ? 'block' : 'none';
+            if (mask.size > 0) {
+                document.getElementById('bg-mask-hash').textContent = maskHash;
+            }
+        }
     } else {
         document.getElementById('bg-hash').textContent = '(place mines to generate)';
         document.getElementById('bg-3bv-std').textContent = '—';
@@ -139,7 +156,7 @@ function updateStats() {
     }
 }
 
-// ── Render grid ───────────────────────────────────────────────────────────────
+// ── Render mine grid ───────────────────────────────────────────────────────────
 function renderGrid() {
     const { rows, cols, mines } = BG;
     const grid = document.getElementById('bg-grid');
@@ -158,16 +175,71 @@ function renderGrid() {
         }
     }
     updateStats();
+    renderMaskGrid();
 }
 
 function toggleMine(idx) {
-    if (BG.mines.has(idx)) BG.mines.delete(idx);
-    else                   BG.mines.add(idx);
-    const cell = document.querySelector(`.bg-cell[data-idx="${idx}"]`);
+    if (BG.mines.has(idx)) {
+        BG.mines.delete(idx);
+    } else {
+        BG.mines.add(idx);
+        BG.mask.delete(idx); // mine cells cannot be masked
+    }
+    const cell = document.querySelector(`#bg-grid .bg-cell[data-idx="${idx}"]`);
     if (cell) {
         cell.classList.toggle('bg-mine', BG.mines.has(idx));
         cell.textContent = BG.mines.has(idx) ? '💣' : '';
     }
+    updateStats();
+    renderMaskGrid();
+}
+
+// ── Render mask grid ───────────────────────────────────────────────────────────
+function renderMaskGrid() {
+    const { rows, cols, mines, mask } = BG;
+    const grid = document.getElementById('bg-mask-grid');
+    if (!grid) return;
+
+    grid.style.gridTemplateColumns = `repeat(${cols}, 34px)`;
+    grid.innerHTML = '';
+
+    if (mines.size === 0) return;
+
+    // Use standard topology to compute mosaic numbers
+    const board = buildBoard(rows, cols, mines, stdNeighbors);
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            const idx  = r * cols + c;
+            const cell = document.createElement('div');
+            cell.dataset.idx = idx;
+
+            if (mines.has(idx)) {
+                cell.className   = 'bg-cell bg-mine';
+                cell.textContent = '💣';
+            } else {
+                const num    = board[r][c]; // mosaic neighbor count (0–8)
+                const masked = mask.has(idx);
+                cell.className   = 'bg-cell bg-mask-cell' + (masked ? ' bg-masked' : '');
+                cell.textContent = String(num);
+                cell.addEventListener('click', () => toggleMask(idx));
+            }
+            grid.appendChild(cell);
+        }
+    }
+}
+
+function toggleMask(idx) {
+    if (BG.mines.has(idx)) return;
+    if (BG.mask.has(idx)) BG.mask.delete(idx);
+    else                   BG.mask.add(idx);
+    renderMaskGrid();
+    updateStats();
+}
+
+function clearMask() {
+    BG.mask = new Set();
+    renderMaskGrid();
     updateStats();
 }
 
@@ -178,11 +250,13 @@ function applySize() {
     BG.rows  = Math.max(2, Math.min(30, rows));
     BG.cols  = Math.max(2, Math.min(50, cols));
     BG.mines = new Set();
+    BG.mask  = new Set();
     renderGrid();
 }
 
 function clearBoard() {
     BG.mines = new Set();
+    BG.mask  = new Set();
     renderGrid();
 }
 
@@ -190,6 +264,7 @@ function clearBoard() {
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('bg-apply').addEventListener('click', applySize);
     document.getElementById('bg-clear').addEventListener('click', clearBoard);
+    document.getElementById('bg-mask-clear')?.addEventListener('click', clearMask);
     document.getElementById('bg-rows').addEventListener('keydown', e => { if (e.key === 'Enter') applySize(); });
     document.getElementById('bg-cols').addEventListener('keydown', e => { if (e.key === 'Enter') applySize(); });
     renderGrid();

@@ -72,9 +72,34 @@
   <p class="bg-instructions">
     <strong>Click</strong> a cell to place or remove a mine. Change the grid size and click <em>Apply Size</em> to reset the board.
   </p>
+
+  <!-- Mask grid section — appears once mines are placed -->
+  <div id="bg-mask-wrap" style="display:none" class="bg-mask-section">
+    <h2 class="bg-section-title">🎭 Mosaic Mask</h2>
+    <p class="bg-subtitle">Each cell shows its Mosaic number (Standard topology). Click a cell to hide that number in the Mosaic puzzle — greyed cells will appear blank to the solver.</p>
+
+    <div class="bg-main">
+      <div class="bg-grid-wrap">
+        <div id="bg-mask-grid" class="bg-grid"></div>
+      </div>
+
+      <div class="bg-stats">
+        <div class="bg-stat-row">
+          <span class="bg-stat-label">🙈 Hidden cells</span>
+          <span id="bg-mask-count" class="bg-stat-value">0</span>
+        </div>
+        <div id="bg-mask-hash-section" style="display:none" class="bg-hash-section">
+          <span class="bg-stat-label">Mask Hash</span>
+          <code id="bg-mask-hash" class="bg-hash-value"></code>
+        </div>
+        <button id="bg-mask-clear" class="bg-btn bg-btn-secondary" style="margin-top:0.75rem">Clear Mask</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/board_generator.js?v=1"></script>
+<script src="/static/js/board_generator.js?v=2"></script>
 {% endblock %}
