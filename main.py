@@ -952,6 +952,17 @@ async def replay_page(request: Request):
     })
 
 
+# ── 3BV Info ──────────────────────────────────────────────────────────────────
+
+@app.get("/info/3bv", response_class=HTMLResponse)
+async def info_3bv_page(request: Request):
+    return templates.TemplateResponse("info_3bv.html", {
+        "request": request,
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 # ── Board Generator ────────────────────────────────────────────────────────────
 
 @app.get("/variants/board-generator", response_class=HTMLResponse)

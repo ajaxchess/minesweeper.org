@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}What is 3BV? — Minesweeper Difficulty Explained | minesweeper.org{% endblock %}
+{% block description %}3BV (Bechtel's Board Benchmark Value) measures Minesweeper board difficulty: the minimum left-clicks needed to clear a board. Learn how it's calculated and explore the max 3BV calculator.{% endblock %}
+{% block canonical %}https://minesweeper.org/info/3bv{% endblock %}
+{% block og_url %}https://minesweeper.org/info/3bv{% endblock %}
+{% block og_title %}What is 3BV? Minesweeper Difficulty Explained{% endblock %}
+{% block og_description %}3BV measures the minimum clicks to clear a Minesweeper board. Learn how it works and explore how board difficulty changes with mine count.{% endblock %}
+
+{% block content %}
+<div class="info-page">
+
+  <!-- ── Explanation ───────────────────────────────────────────────────────── -->
+  <h1 class="info-title">What is 3BV?</h1>
+
+  <div class="info-body">
+
+    <section class="info-section">
+      <h2>Definition</h2>
+      <p>
+        <strong>3BV</strong> (pronounced "three-BV") stands for <em>Bechtel's Board Benchmark Value</em>,
+        named after Nick Bechtel who introduced it to the Minesweeper community. It measures the
+        <strong>minimum number of left-clicks</strong> required to clear a board completely —
+        without using flags — assuming perfect play.
+      </p>
+      <p>
+        A higher 3BV means a harder board: more individual clicks are required even from a player
+        who knows exactly where every mine is.
+      </p>
+    </section>
+
+    <section class="info-section">
+      <h2>How 3BV is Calculated</h2>
+      <p>Every non-mine cell on a Minesweeper board falls into one of two categories:</p>
+      <ul>
+        <li>
+          <strong>Opening cells</strong> — cells with a value of <em>0</em> (no adjacent mines).
+          Clicking any cell in a connected group of zeros reveals the entire group and all its
+          numbered border cells in a single click. Each such connected region counts as
+          <strong>1 point</strong> toward 3BV, regardless of how many cells it contains.
+        </li>
+        <li>
+          <strong>Isolated numbered cells</strong> — cells with a value of 1–8 that are
+          <em>not</em> adjacent to any zero-cell opening. These cannot be revealed by flood-fill;
+          each one requires its own click. Each isolated numbered cell counts as
+          <strong>1 point</strong> toward 3BV.
+        </li>
+      </ul>
+      <p>
+        Therefore: <code>3BV = (number of distinct openings) + (isolated numbered cells)</code>
+      </p>
+
+      <div class="info-example">
+        <h3>Example — 4×4 board</h3>
+        <div class="info-example-grid">
+          <div class="ie-row">
+            <span class="ie-cell ie-num1">1</span>
+            <span class="ie-cell ie-mine">💣</span>
+            <span class="ie-cell ie-num1">1</span>
+            <span class="ie-cell ie-open">·</span>
+          </div>
+          <div class="ie-row">
+            <span class="ie-cell ie-num1">1</span>
+            <span class="ie-cell ie-num1">1</span>
+            <span class="ie-cell ie-num1">1</span>
+            <span class="ie-cell ie-open">·</span>
+          </div>
+          <div class="ie-row">
+            <span class="ie-cell ie-open">·</span>
+            <span class="ie-cell ie-open">·</span>
+            <span class="ie-cell ie-open">·</span>
+            <span class="ie-cell ie-open">·</span>
+          </div>
+          <div class="ie-row">
+            <span class="ie-cell ie-open">·</span>
+            <span class="ie-cell ie-open">·</span>
+            <span class="ie-cell ie-open">·</span>
+            <span class="ie-cell ie-open">·</span>
+          </div>
+        </div>
+        <p class="info-example-caption">
+          The bottom-left opening (all the <code>·</code> cells) is 1 click. The four numbered
+          cells along the boundary are revealed by that click. The cell at (0,2) is an isolated
+          <code>1</code> — it requires 1 additional click. <strong>3BV = 2.</strong>
+        </p>
+      </div>
+
+      <p>
+        Want to see a real board?
+        <a href="/variants/replay/?rows=9&cols=9&mines=10&hash=ACRBACAJAABJAAA%3D" class="info-link">
+          Play this Beginner (9×9, 10 mines) example board
+        </a>
+        and check the 3BV displayed after you solve it.
+      </p>
+    </section>
+
+    <section class="info-section">
+      <h2>Derived Metrics</h2>
+      <dl class="info-dl">
+        <dt>3BV/s (3BV per second)</dt>
+        <dd>
+          Speed metric: <code>3BV ÷ time_in_seconds</code>. Measures how many "clicks worth of
+          board" a player clears per second. The world's fastest players exceed 10 3BV/s on
+          Expert boards.
+        </dd>
+        <dt>Efficiency (%)</dt>
+        <dd>
+          <code>3BV ÷ total_clicks × 100</code>. Measures how economically a player used
+          their clicks. 100 % efficiency means every click contributed directly to clearing
+          the board. Chording (revealing numbered cells via a surrounding flag cluster)
+          can push efficiency above 100 % if done skillfully.
+        </dd>
+      </dl>
+    </section>
+
+    <section class="info-section">
+      <h2>3BV and Board Difficulty</h2>
+      <p>
+        For a fixed board size, 3BV varies with mine count in a characteristic curve:
+      </p>
+      <ul>
+        <li>
+          <strong>Very few mines</strong> — almost all cells are zero-value openings. One click
+          reveals nearly the entire board. <em>3BV ≈ 1.</em>
+        </li>
+        <li>
+          <strong>Moderate mines</strong> — the board is divided into several opening regions
+          plus many isolated numbered cells. 3BV is highest here.
+        </li>
+        <li>
+          <strong>Many mines</strong> — no opening regions form; every non-mine cell is
+          adjacent to at least one mine. 3BV = number of non-mine cells, but there are few
+          non-mine cells left.
+        </li>
+      </ul>
+      <p>
+        The standard Beginner (9×9, 10 mines) board has an average 3BV of ~45, while Expert
+        (16×30, 99 mines) boards average ~200–250. The maximum possible 3BV equals the
+        number of non-mine cells — achieved when every non-mine cell is adjacent to a mine.
+      </p>
+    </section>
+
+    <section class="info-section">
+      <h2>Topology Effects</h2>
+      <p>
+        On <strong>Cylinder</strong> boards (left↔right wrap) and <strong>Toroid</strong>
+        boards (all-edges wrap), every cell has more neighbors. This generally increases the
+        likelihood that zero-value openings form, which <em>lowers</em> 3BV compared to the
+        same board in Standard topology — the same mines produce larger flood-fill regions.
+        You can explore these effects in the calculator below.
+      </p>
+    </section>
+
+  </div>
+
+  <!-- ── Calculator ───────────────────────────────────────────────────────── -->
+  <div class="calc-section">
+    <h2 class="calc-title">Max 3BV Calculator</h2>
+    <p class="calc-subtitle">
+      For each mine count, the chart shows the highest 3BV observed across
+      <strong id="sample-count-label">100</strong> randomly generated boards.
+      This empirical maximum approaches the true maximum as sample count grows.
+    </p>
+
+    <div class="calc-controls">
+      <label class="calc-label">Rows
+        <input id="calc-rows" type="number" min="3" max="30" value="9" class="calc-input">
+      </label>
+      <label class="calc-label">Cols
+        <input id="calc-cols" type="number" min="3" max="50" value="9" class="calc-input">
+      </label>
+      <label class="calc-label">Samples / mine count
+        <select id="calc-samples" class="calc-input">
+          <option value="50">50 (fast)</option>
+          <option value="100" selected>100</option>
+          <option value="250">250 (accurate)</option>
+          <option value="500">500 (slow)</option>
+        </select>
+      </label>
+      <button id="calc-run" class="calc-btn">▶ Calculate</button>
+    </div>
+
+    <div class="calc-toggles">
+      <label class="calc-toggle">
+        <input type="checkbox" id="tog-std" checked>
+        <span class="tog-swatch tog-std"></span> Standard
+      </label>
+      <label class="calc-toggle">
+        <input type="checkbox" id="tog-cyl" checked>
+        <span class="tog-swatch tog-cyl"></span> Cylinder
+      </label>
+      <label class="calc-toggle">
+        <input type="checkbox" id="tog-tor" checked>
+        <span class="tog-swatch tog-tor"></span> Toroid
+      </label>
+      <label class="calc-toggle">
+        <input type="checkbox" id="tog-theory">
+        <span class="tog-swatch tog-theory"></span> Theoretical max
+      </label>
+    </div>
+
+    <div id="calc-progress-wrap" class="calc-progress-wrap" style="display:none">
+      <div id="calc-progress-bar" class="calc-progress-bar"></div>
+      <span id="calc-progress-label" class="calc-progress-label">0%</span>
+    </div>
+
+    <div class="calc-chart-wrap">
+      <canvas id="bbbv-chart"></canvas>
+    </div>
+
+    <p id="calc-hint" class="calc-hint">
+      Set rows, columns, and number of samples, then click <strong>Calculate</strong>.
+    </p>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="/static/js/three_bv.js?v=1"></script>
+{% endblock %}

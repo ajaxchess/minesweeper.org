@@ -965,6 +965,13 @@ footer a:hover { text-decoration: underline; }
   text-underline-offset: 3px;
 }
 
+/* Link inside stat header (3BV → /info/3bv) */
+.lb-th-link {
+  color: inherit;
+  text-decoration: none;
+}
+.lb-th-link:hover { text-decoration: underline; }
+
 /* Floating tooltip */
 .lb-tip {
   position: absolute;
@@ -4752,6 +4759,154 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
   font-size: 0.85rem;
   color: var(--text-muted);
 }
+
+/* ── 3BV Info Page ──────────────────────────────────────────────────────────── */
+.info-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+.info-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.info-body { display: flex; flex-direction: column; gap: 0; }
+
+.info-section {
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.info-section:last-child { border-bottom: none; }
+.info-section h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+  color: var(--accent2);
+}
+.info-section p { margin: 0.5rem 0; line-height: 1.65; }
+.info-section ul, .info-section ol { padding-left: 1.4rem; margin: 0.5rem 0; line-height: 1.65; }
+.info-section li { margin-bottom: 0.4rem; }
+.info-section code {
+  background: var(--surface2, #eef2ff);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+.info-link { color: var(--accent2); }
+.info-link:hover { text-decoration: underline; }
+
+/* Example grid */
+.info-example {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: inline-block;
+}
+.info-example h3 { font-size: 0.95rem; margin-bottom: 0.6rem; opacity: 0.8; }
+.info-example-grid { display: flex; flex-direction: column; gap: 2px; margin-bottom: 0.75rem; }
+.ie-row { display: flex; gap: 2px; }
+.ie-cell {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.9rem;
+  border-radius: 3px;
+}
+.ie-open { background: #e8f5e9; color: #888; }
+.ie-num1 { background: #e3f2fd; color: #1565C0; }
+.ie-mine { background: #ffebee; }
+.info-example-caption { font-size: 0.85rem; color: var(--text-muted); max-width: 360px; }
+
+/* Definition list */
+.info-dl { margin: 0.5rem 0; }
+.info-dl dt { font-weight: 700; margin-top: 0.75rem; }
+.info-dl dd { margin-left: 1.2rem; line-height: 1.6; color: var(--text-muted); }
+
+/* ── Calculator section ─────────────────────────────────────────────────────── */
+.calc-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--accent2);
+}
+.calc-title    { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+.calc-subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+
+.calc-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.calc-label {
+  display: flex; flex-direction: column; gap: 0.25rem;
+  font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
+}
+.calc-input {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.9rem;
+  width: 80px;
+}
+select.calc-input { width: 140px; }
+.calc-btn {
+  padding: 0.45rem 1.25rem;
+  background: var(--accent2);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-end;
+}
+.calc-btn:hover   { opacity: 0.85; }
+.calc-btn:disabled { opacity: 0.5; cursor: default; }
+
+.calc-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.calc-toggle {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.9rem; cursor: pointer; user-select: none;
+}
+.tog-swatch {
+  display: inline-block; width: 24px; height: 4px; border-radius: 2px;
+}
+.tog-std    { background: #1976D2; }
+.tog-cyl    { background: #388E3C; }
+.tog-tor    { background: #F57C00; }
+.tog-theory { background: #9E9E9E; }
+
+.calc-progress-wrap {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  height: 20px;
+}
+.calc-progress-bar {
+  height: 8px;
+  flex: 1;
+  background: var(--accent2);
+  border-radius: 4px;
+  transition: width 0.1s linear;
+  max-width: 400px;
+}
+.calc-progress-label { font-size: 0.8rem; color: var(--text-muted); min-width: 36px; }
+
+.calc-chart-wrap {
+  position: relative;
+  max-width: 800px;
+  margin-bottom: 0.5rem;
+}
+.calc-hint { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
 
 /* ── Blog Comments ─────────────────────────────────────────────────────────── */
 .blog-comments {
