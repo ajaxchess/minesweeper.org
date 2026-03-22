@@ -14,8 +14,8 @@
 #
 #   [Service]
 #   User=ubuntu
-#   WorkingDirectory=/home/ubuntu/minesweeper-staging
-#   ExecStart=/home/ubuntu/minesweeper-staging/scripts/start_staging.sh
+#   WorkingDirectory=/home/ubuntu/staging-minesweeper
+#   ExecStart=/home/ubuntu/staging-minesweeper/scripts/start_staging.sh
 #   Restart=always
 #   RestartSec=5
 #
