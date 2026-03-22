@@ -129,6 +129,24 @@ F34 Board Generator
   - Generates shareable links: /variants/replay/ (play the board) and /mosaic/custom/ (solve as Mosaic)
   - Board hash format: bit i of byte i>>3 is set if cell index i is a mine
 
+F37 Links Page at /links
+  - Static curated links page at /links
+  - Link sections are maintained in FeatureRequests/links-page.md; rebuild the page when new links are added
+  - Sections (in order):
+      Landmines        — Halo Trust and organizations removing landmines
+      Princess Di      — Pages about Diana and her landmine-clearing work
+      Minesweeper Theory — 3BV wiki, strategy videos, general theory
+      Play Minesweeper — Sites to play (include Google Minesweeper)
+      Tentaizu         — puzzle-minesweeper.com and related
+      Mosaic           — puzzle-minesweeper.com + how-to-play video
+      Minesweeper Rush — Steam store page
+      Minesweeper Variants — Variants advent calendar and related
+      Vibe Coding      — Vibe coding resources
+      Git Repos        — minesweeper.org, Tentaizu generator, Mosaic
+  - Route: GET /links → templates/links.html
+  - No dynamic data; pure Jinja2 template with info-page styling
+  - Add nav link where appropriate
+
 F35 Mosaic Custom Board
   - /mosaic/custom/ — configurable custom Mosaic board page
   - Without params: form to select rows (3–20), cols (3–20), and difficulty (easy/standard/hard)
