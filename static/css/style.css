@@ -1816,6 +1816,16 @@ html[data-skin="classic"] .bot-play-btn:visited { color: #fff; }
 .skin-preview-light .sp-n1 { color: #0033cc; }
 .skin-preview-light .sp-n2 { color: #006600; }
 
+.skin-preview-default {
+  background: linear-gradient(135deg, #16213e 50%, #f0f4f8 50%);
+  border: 1px solid #8892a4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
 .skin-label {
   font-size: 0.75rem;
   color: var(--text-dim);

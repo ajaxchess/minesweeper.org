@@ -11,7 +11,7 @@
 from datetime import date, datetime, timedelta
 
 DEFAULT_SKIN: str = 'dark'
-ALLOWED_SKINS: tuple[str, ...] = ('dark', 'light', 'tentaizu', 'diana')
+ALLOWED_SKINS: tuple[str, ...] = ('default', 'dark', 'light', 'tentaizu', 'diana')
 
 # ── PvP opponent board delay ───────────────────────────────────────────────────
 # Seconds to delay showing the opponent's board moves to the player.

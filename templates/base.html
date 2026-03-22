@@ -13,6 +13,14 @@
   <link rel="stylesheet" href="/static/css/style.css?v=30" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
+    // Resolve the "default" auto-theme: special-day override takes priority,
+    // then light during daytime (06:00–20:00 local) and dark at night.
+    window.resolveDefaultSkin = function() {
+      var serverSkin  = '{{ active_skin() }}';
+      var defaultSkin = '{{ DEFAULT_SKIN }}';
+      if (serverSkin !== defaultSkin) return serverSkin === 'diana' ? 'classic' : serverSkin;
+      return (new Date().getHours() >= 6 && new Date().getHours() < 20) ? 'light' : 'dark';
+    };
     (function(){
       var p = new URLSearchParams(window.location.search);
       var t = p.get('theme');
@@ -20,8 +28,10 @@
       else if (t === 'dark')     localStorage.setItem('skin', 'dark');
       else if (t === 'light')    localStorage.setItem('skin', 'light');
       else if (t === 'tentaizu') localStorage.setItem('skin', 'tentaizu');
-      var _def = '{{ active_skin() }}';
-      document.documentElement.dataset.skin = localStorage.getItem('skin') || (_def === 'diana' ? 'classic' : _def);
+      else if (t === 'default')  localStorage.setItem('skin', 'default');
+      var stored = localStorage.getItem('skin');
+      var skin = (!stored || stored === 'default') ? window.resolveDefaultSkin() : stored;
+      document.documentElement.dataset.skin = (skin === 'diana' ? 'classic' : skin);
     })();
   </script>
 
