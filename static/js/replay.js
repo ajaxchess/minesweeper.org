@@ -351,7 +351,7 @@
       board_hash:   HASH,
       variant:      currentVariant,
       name,
-      time_secs:    state.elapsed,
+      time_secs:    Math.max(1, state.elapsed),
       time_ms:      state.timeMs,
       rows:         state.rows,
       cols:         state.cols,
@@ -377,7 +377,10 @@
         loadLeaderboard(currentVariant);
       } else {
         const err = await res.json();
-        if (msgEl) msgEl.textContent = `❌ ${err.detail || 'Could not save score.'}`;
+        const detail = Array.isArray(err.detail)
+          ? err.detail.map(e => e.msg || String(e)).join('; ')
+          : (err.detail || 'Could not save score.');
+        if (msgEl) msgEl.textContent = `❌ ${detail}`;
       }
     } catch {
       if (msgEl) msgEl.textContent = '❌ Network error.';
