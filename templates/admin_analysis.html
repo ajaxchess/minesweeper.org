@@ -23,7 +23,16 @@
           {{ slug.replace('-', ' ').replace('_', ' ') }}
         </a>
         {% endfor %}
-      {% else %}
+      {% endif %}
+      {% if downloads %}
+        <p style="font-size:0.75rem;color:var(--text-muted);margin:1rem 0 0.25rem;text-transform:uppercase;letter-spacing:.05em;">Downloads</p>
+        {% for fname in downloads %}
+        <a href="/admin/analysis/download?file={{ fname }}" class="analysis-doc-link" download>
+          ⬇ {{ fname }}
+        </a>
+        {% endfor %}
+      {% endif %}
+      {% if not docs and not downloads %}
         <p class="analysis-empty">No documents yet.<br>Add .md files to the <code>analysis/</code> directory.</p>
       {% endif %}
     </div>

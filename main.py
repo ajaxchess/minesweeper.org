@@ -2566,10 +2566,14 @@ def admin_analysis(request: Request, doc: Optional[str] = None):
 
     analysis_dir = os.path.join(os.path.dirname(__file__), "analysis")
     docs = []
+    downloads = []
+    download_exts = {".pptx", ".xlsx", ".docx", ".pdf"}
     if os.path.isdir(analysis_dir):
         for fname in sorted(os.listdir(analysis_dir)):
             if fname.endswith(".md"):
                 docs.append(fname[:-3])
+            elif any(fname.endswith(ext) for ext in download_exts):
+                downloads.append(fname)
 
     content_html = None
     current_doc = None
@@ -2586,6 +2590,26 @@ def admin_analysis(request: Request, doc: Optional[str] = None):
         "t":            get_t(request),
         "mode":         "admin",
         "docs":         docs,
+        "downloads":    downloads,
         "content_html": content_html,
         "current_doc":  current_doc,
     })
+
+
+@app.get("/admin/analysis/download")
+def admin_analysis_download(request: Request, file: str):
+    import os
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # Prevent path traversal
+    if "/" in file or "\\" in file or ".." in file:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+
+    analysis_dir = os.path.join(os.path.dirname(__file__), "analysis")
+    path = os.path.join(analysis_dir, file)
+    if not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return FileResponse(path, filename=file)
