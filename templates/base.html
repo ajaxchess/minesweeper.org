@@ -120,12 +120,13 @@
         <a href="/tentaizu" class="{% if mode == 'tentaizu' %}active{% endif %}">🔢 {{ t.nav_tentaizu }}</a>
         <a href="/mosaic"   class="{% if mode == 'mosaic' %}active{% endif %}">🧩 Mosaic</a>
         <div class="nav-pvp-group">
-          <button class="nav-pvp-toggle{% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or mode == 'replay' %} active{% endif %}" onclick="togglePvpMenu(event)">🔄 {{ t.nav_variants }} ▾</button>
+          <button class="nav-pvp-toggle{% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or mode == 'replay' or mode == 'board-generator' %} active{% endif %}" onclick="togglePvpMenu(event)">🔄 {{ t.nav_variants }} ▾</button>
           <div class="nav-pvp-menu">
             <a href="/variants" class="{% if mode == 'variants' %}active{% endif %}">🔄 {{ t.nav_variants }}</a>
             <a href="/cylinder" class="{% if 'cylinder' in mode %}active{% endif %}">🔄 Cylinder</a>
             <a href="/toroid"   class="{% if 'toroid' in mode %}active{% endif %}">🍩 Toroid</a>
             <a href="/variants/replay/" class="{% if mode == 'replay' %}active{% endif %}">🔁 Replay</a>
+            <a href="/variants/board-generator" class="{% if mode == 'board-generator' %}active{% endif %}">🔧 Board Generator</a>
           </div>
         </div>
         <a href="/quests"      class="{% if mode == 'quests' %}active{% endif %}">🎯 {{ t.nav_quests }}</a>
