@@ -1,4 +1,5 @@
 Create a links page with links to other sites related to minesweeper.org.
+https://www.halotrust.org/
 
 Make a header Landmines .  Link to the halo trust and other organizations that are working to get rid of landmines.
 
