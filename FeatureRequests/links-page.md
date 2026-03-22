@@ -23,6 +23,8 @@ Then a header with links to mosaic sites.  Include
 https://puzzle-minesweeper.com
 How to play video:
 https://www.youtube.com/watch?v=Nt3kV7WpjME
+Fill-a-Pix site:
+https://www.conceptispuzzles.com/index.aspx?uri=puzzle/fill-a-pix
 
 Then a header with links to minesweeper rush sites.
 I think we only want the link directly to the site on Steam
