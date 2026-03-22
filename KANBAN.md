@@ -5,6 +5,8 @@
 - F9 SEO improvements
 - F13 Quests
 - F14 Website Analytics — Google Analytics
+- F38 Light theme
+- F39 Use light theme during daylight hours based on client browser local time, defaulting to dark otherwise
 
 ## In Progress
 - F23 PVP/Duel improvements @earl
