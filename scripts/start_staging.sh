@@ -46,7 +46,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
-REPO_DIR="/home/ubuntu/minesweeper"
+REPO_DIR="/home/ubuntu/staging-minesweeper"
 VENV_DIR="${REPO_DIR}/venv"
 
 cd "$REPO_DIR" || { echo "Error: REPO_DIR not found at ${REPO_DIR}"; exit 1; }
