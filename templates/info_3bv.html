@@ -213,10 +213,69 @@
     </p>
   </div>
 
+  <!-- ── Distribution chart ──────────────────────────────────────────────── -->
+  <div class="calc-section">
+    <h2 class="calc-title">3BV Distribution</h2>
+    <p class="calc-subtitle">
+      For a fixed board size and mine count, the chart shows how 3BV values are
+      distributed across <strong id="dist-sample-count-label">500</strong> randomly
+      generated boards — one bar per unique 3BV value.
+    </p>
+
+    <div class="calc-controls">
+      <label class="calc-label">Rows
+        <input id="dist-rows" type="number" min="3" max="30" value="9" class="calc-input">
+      </label>
+      <label class="calc-label">Cols
+        <input id="dist-cols" type="number" min="3" max="50" value="9" class="calc-input">
+      </label>
+      <label class="calc-label">Mines
+        <input id="dist-mines" type="number" min="1" max="899" value="10" class="calc-input">
+      </label>
+      <label class="calc-label">Samples
+        <select id="dist-samples" class="calc-input">
+          <option value="200">200 (fast)</option>
+          <option value="500" selected>500</option>
+          <option value="1000">1 000 (accurate)</option>
+          <option value="2000">2 000 (slow)</option>
+        </select>
+      </label>
+      <button id="dist-run" class="calc-btn">▶ Calculate</button>
+    </div>
+
+    <div class="calc-toggles">
+      <label class="calc-toggle">
+        <input type="checkbox" id="dist-tog-std" checked>
+        <span class="tog-swatch tog-std"></span> Standard
+      </label>
+      <label class="calc-toggle">
+        <input type="checkbox" id="dist-tog-cyl" checked>
+        <span class="tog-swatch tog-cyl"></span> Cylinder
+      </label>
+      <label class="calc-toggle">
+        <input type="checkbox" id="dist-tog-tor" checked>
+        <span class="tog-swatch tog-tor"></span> Toroid
+      </label>
+    </div>
+
+    <div id="dist-progress-wrap" class="calc-progress-wrap" style="display:none">
+      <div id="dist-progress-bar" class="calc-progress-bar"></div>
+      <span id="dist-progress-label" class="calc-progress-label">0%</span>
+    </div>
+
+    <div class="calc-chart-wrap">
+      <canvas id="dist-chart"></canvas>
+    </div>
+
+    <p id="dist-hint" class="calc-hint">
+      Set board size, mine count, and samples, then click <strong>Calculate</strong>.
+    </p>
+  </div>
+
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script src="/static/js/three_bv.js?v=1"></script>
+<script src="/static/js/three_bv.js?v=2"></script>
 {% endblock %}

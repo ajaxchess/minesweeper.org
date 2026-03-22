@@ -243,9 +243,170 @@ function updateChartVisibility() {
     chart.update();
 }
 
+// ── Distribution chart ────────────────────────────────────────────────────────
+let distChart = null;
+let distRunning = false;
+
+function initDistChart() {
+    const ctx = document.getElementById('dist-chart').getContext('2d');
+    distChart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: [], datasets: [] },
+        options: {
+            responsive: true,
+            animation: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        title: items => `3BV = ${items[0].label}`,
+                        label: item => ` ${item.dataset.label}: ${item.parsed.y} boards (${item.dataset._pcts[item.dataIndex]}%)`,
+                    }
+                }
+            },
+            scales: {
+                x: { title: { display: true, text: '3BV value' } },
+                y: { title: { display: true, text: 'Number of boards' }, beginAtZero: true }
+            }
+        }
+    });
+}
+
+async function runDistribution() {
+    if (distRunning) return;
+
+    const rows    = Math.max(3, Math.min(30,  parseInt(document.getElementById('dist-rows').value)  || 9));
+    const cols    = Math.max(3, Math.min(50,  parseInt(document.getElementById('dist-cols').value)  || 9));
+    const maxM    = rows * cols - 1;
+    const mines   = Math.max(1, Math.min(maxM, parseInt(document.getElementById('dist-mines').value) || 10));
+    const samples = parseInt(document.getElementById('dist-samples').value) || 500;
+    const n       = rows * cols;
+
+    const showStd = document.getElementById('dist-tog-std').checked;
+    const showCyl = document.getElementById('dist-tog-cyl').checked;
+    const showTor = document.getElementById('dist-tog-tor').checked;
+
+    if (!showStd && !showCyl && !showTor) {
+        document.getElementById('dist-hint').textContent = 'Select at least one topology.';
+        return;
+    }
+
+    distRunning = true;
+    document.getElementById('dist-run').disabled = true;
+    document.getElementById('dist-hint').textContent = '';
+
+    const progressWrap  = document.getElementById('dist-progress-wrap');
+    const progressBar   = document.getElementById('dist-progress-bar');
+    const progressLabel = document.getElementById('dist-progress-label');
+    progressWrap.style.display = 'flex';
+    progressBar.style.width = '0%';
+    progressLabel.textContent = '0%';
+
+    // Collect all 3BV values per topology
+    const topologies = [];
+    if (showStd) topologies.push({ key: 'std', fn: stdNeighbors, values: [] });
+    if (showCyl) topologies.push({ key: 'cyl', fn: cylNeighbors, values: [] });
+    if (showTor) topologies.push({ key: 'tor', fn: torNeighbors, values: [] });
+
+    // Run samples in chunks of ~50 per frame
+    const CHUNK = Math.max(10, Math.floor(200 / topologies.length));
+    let done = 0;
+
+    function processChunk() {
+        const end = Math.min(done + CHUNK, samples);
+        for (; done < end; done++) {
+            const mineSet = randomMineSet(n, mines);
+            for (const topo of topologies) {
+                const board = buildBoard(rows, cols, mineSet, topo.fn);
+                topo.values.push(calc3BV(board, rows, cols, mineSet, topo.fn));
+            }
+        }
+        const pct = Math.round(done / samples * 100);
+        progressBar.style.width = pct + '%';
+        progressLabel.textContent = pct + '%';
+
+        if (done < samples) {
+            requestAnimationFrame(processChunk);
+        } else {
+            finishDistChart(topologies, samples, rows, cols, mines);
+        }
+    }
+
+    requestAnimationFrame(processChunk);
+}
+
+function finishDistChart(topologies, samples, rows, cols, mines) {
+    // Build unified x-axis spanning all observed 3BV values
+    let minVal = Infinity, maxVal = 0;
+    for (const topo of topologies) {
+        for (const v of topo.values) {
+            if (v < minVal) minVal = v;
+            if (v > maxVal) maxVal = v;
+        }
+    }
+
+    const labels = [];
+    for (let v = minVal; v <= maxVal; v++) labels.push(v);
+
+    const datasets = [];
+    for (const topo of topologies) {
+        // Count frequency of each 3BV value
+        const freq = new Map();
+        for (const v of topo.values) freq.set(v, (freq.get(v) || 0) + 1);
+
+        const counts = labels.map(v => freq.get(v) || 0);
+        const pcts   = counts.map(c => (c / samples * 100).toFixed(1));
+
+        const style = DATASET_STYLES[topo.key];
+        datasets.push({
+            ...style,
+            data:   counts,
+            _pcts:  pcts,
+            backgroundColor: style.borderColor + 'cc',
+            borderColor:     style.borderColor,
+            borderWidth: 1,
+        });
+    }
+
+    // Compute summary stats for hint
+    const summaries = topologies.map(topo => {
+        const vals  = topo.values;
+        const mean  = (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1);
+        const sorted = [...vals].sort((a, b) => a - b);
+        const median = sorted[Math.floor(sorted.length / 2)];
+        const style  = DATASET_STYLES[topo.key];
+        return `${style.label}: avg ${mean}, median ${median}`;
+    }).join(' | ');
+
+    distChart.data.labels   = labels;
+    distChart.data.datasets = datasets;
+    distChart.update();
+
+    document.getElementById('dist-progress-wrap').style.display = 'none';
+    document.getElementById('dist-run').disabled = false;
+    document.getElementById('dist-hint').textContent =
+        `${samples} boards — ${rows}×${cols}, ${mines} mines. ${summaries}`;
+    distRunning = false;
+}
+
+function updateDistVisibility() {
+    if (!distChart || !distChart.data.datasets.length) return;
+    const checks = {
+        'Standard': document.getElementById('dist-tog-std').checked,
+        'Cylinder': document.getElementById('dist-tog-cyl').checked,
+        'Toroid':   document.getElementById('dist-tog-tor').checked,
+    };
+    distChart.data.datasets.forEach(ds => {
+        ds.hidden = checks[ds.label] === false;
+    });
+    distChart.update();
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     initChart();
+    initDistChart();
 
     document.getElementById('calc-run').addEventListener('click', runCalculation);
     document.getElementById('calc-rows').addEventListener('keydown', e => { if (e.key === 'Enter') runCalculation(); });
@@ -260,5 +421,21 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('calc-samples').addEventListener('change', () => {
         document.getElementById('sample-count-label').textContent =
             document.getElementById('calc-samples').value;
+    });
+
+    document.getElementById('dist-run').addEventListener('click', runDistribution);
+    ['dist-rows', 'dist-cols', 'dist-mines'].forEach(id => {
+        document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') runDistribution(); });
+    });
+
+    ['dist-tog-std', 'dist-tog-cyl', 'dist-tog-tor'].forEach(id => {
+        document.getElementById(id).addEventListener('change', updateDistVisibility);
+    });
+
+    document.getElementById('dist-sample-count-label').textContent =
+        document.getElementById('dist-samples').value;
+    document.getElementById('dist-samples').addEventListener('change', () => {
+        document.getElementById('dist-sample-count-label').textContent =
+            document.getElementById('dist-samples').value;
     });
 });
