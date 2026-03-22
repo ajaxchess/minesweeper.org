@@ -33,6 +33,8 @@ The variants advent calendar is important
 https://heptaveegesimal.com/2018/advent-calendar/
 
 Then a header about Vibe Coding
+This site is built with Claude Code:
+https://claude.com/product/claude-code
 
 Then a header about minesweeper related git repos
 This site:
