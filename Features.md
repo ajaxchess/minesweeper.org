@@ -5,17 +5,6 @@ F8 Improved Mobile Browser Support
 F9 SEO improvements
    For general SEO improvements.  If the improvement is for a specific platform, use Bing SEO improvements or Google SEO improvements
 
-F10 Multiple skin support (Default for minesweeper.org will be called Dark)
-
-F11 Implement Tentaizu on a sub-page https:/minesweeper.org/tentaizu
-    The puzzle of the day starts with 10 mines on a 7x7 board.  Some of the tiles that do not contain mines are revealed with the number of mines near them also shows.  The puzzle of the day should be solvable with the revealed numbers.
-    See https://puzzle-minesweeper.com
-    If your flag or blank contradicts a number, that number should highlight letting you know that you made a mistake
-    You should be able to toggle between flag, blank, and unknown
-    See also https://github.com/hellpig/minesweeper-puzzle-generator
-
-F12 Cylinder variant
-
 F13 Quests
 
 F14 Website Analytics Google Analytics
@@ -24,15 +13,9 @@ F15 Website Analytics on local admin page at /admin and subpages
 
 F16 Add a blog
 
-F17 Add linkedin link
-
-F18 Theme selection in url
-
 F19 Secret admin mode that displays site statistics
 
 F20 Tentaizu theme
-
-F21 Bing SEO improvements
 
 F22 Google SEO improvements
 
@@ -40,7 +23,7 @@ F23 PVP/Duel improvements
     View opponent's board beside your board for PVP
       Do we want a delay before we see you opponent's latest move?
         * i.e. Suppose you have been playing for 20 seconds, opponent board
-          shows their state as of 15 seconds.  
+          shows their state as of 15 seconds.
           What is the right amount of delay?  0 could be the right answer
     Implement a first click clear for both you and opponent
     Implement changes in behavoir when you click a mine
@@ -53,14 +36,14 @@ F23 PVP/Duel improvements
 
 F24 Add Kanban board to admin section of the site and create a link
 
-F25 Add timed banner support for special days
-
 F26 Mosaic game mode
 
 F27 Tentaizu game improvements
 
 F28 Blog comments
   Logged-in users can comment on blog posts
+  Comments require admin approval before appearing
+  Admin moderation page at /admin/blog
 
 F29 PvP bot opponent
    Constraint-based Minesweeper AI in bots/minesweeper_bot.py (easy/medium/hard).
@@ -72,13 +55,10 @@ F30 PvP rankings sortable columns
 
 F31 Archive anonymous PvP results nightly
    Daily cron job moves PvP results with no registered winner to anonymous_pvp_results backup table.
-  Comments require admin approval before appearing
-  Admin moderation page at /admin/blog
 
-D2 Add feature request code to the beginning of the commit message
-   If the commit has to do with the Tentaizu theme, the commit message should be
-   of the form:
-   F20 <Description of update>
+F38 Light theme
+
+F39 Use light theme during daylight hours based on client browser local time, defaulting to dark otherwise
 
 -- Addressed --
 
@@ -102,6 +82,32 @@ F6 Support Minesweeper Rush mode
 
 F7 Allow chording as an optional feature: https://minesweeper.fandom.com/wiki/Chording
 
+F10 Multiple skin support (Default for minesweeper.org will be called Dark)
+
+F11 Implement Tentaizu on a sub-page https:/minesweeper.org/tentaizu
+    The puzzle of the day starts with 10 mines on a 7x7 board.  Some of the tiles that do not contain mines are revealed with the number of mines near them also shows.  The puzzle of the day should be solvable with the revealed numbers.
+    See https://puzzle-minesweeper.com
+    If your flag or blank contradicts a number, that number should highlight letting you know that you made a mistake
+    You should be able to toggle between flag, blank, and unknown
+    See also https://github.com/hellpig/minesweeper-puzzle-generator
+
+F12 Cylinder variant
+
+F17 Add linkedin link
+
+F18 Theme selection in url
+
+F21 Bing SEO improvements
+
+F25 Add timed banner support for special days
+
+F32 Add chat support to the website
+  - Global lobby chat visible to all logged-in users
+  - In-game chat during PvP duels (between the two players)
+  - WebSocket-based (reuse existing WS infrastructure)
+  - Messages stored in DB for moderation; auto-expire after 24h
+  - Admin moderation: delete messages from /admin
+
 F33 Continuous Integration
   - Environment variable ENVIRONMENT identifies the running environment (dev, staging, prod)
   - GitHub repo and local development use ENVIRONMENT=dev
@@ -111,23 +117,18 @@ F33 Continuous Integration
       staging → dev.minesweeper.org
       prod    → minesweeper.org
 
-F32 Add chat support to the website
-  - Global lobby chat visible to all logged-in users
-  - In-game chat during PvP duels (between the two players)
-  - WebSocket-based (reuse existing WS infrastructure)
-  - Messages stored in DB for moderation; auto-expire after 24h
-  - Admin moderation: delete messages from /admin
-
-D1 Document the environment
-  Development is done on a Mac, Linux desktop, or Windows desktop and 
-  pushed to an Ubuntu server on AWS
-
-
 F34 Board Generator
   - Interactive grid at /variants/board-generator where you click cells to place mines
   - Shows board hash (base64 bit-array encoding), mine count, and 3BV for Standard/Cylinder/Toroid topologies
   - Generates shareable links: /variants/replay/ (play the board) and /mosaic/custom/ (solve as Mosaic)
   - Board hash format: bit i of byte i>>3 is set if cell index i is a mine
+
+F35 Mosaic Custom Board
+  - /mosaic/custom/ — configurable custom Mosaic board page
+  - Without params: form to select rows (3–20), cols (3–20), and difficulty (easy/standard/hard)
+  - With ?hash=...&rows=...&cols=... params: loads a specific board from the board generator
+  - "Hide Numbers" button in win overlay — toggles hint number visibility on the solved board
+  - "Hide Numbers" button also available on /mosaic and /mosaic/easy after solving
 
 F37 Links Page at /links
   - Static curated links page at /links
@@ -147,9 +148,11 @@ F37 Links Page at /links
   - No dynamic data; pure Jinja2 template with info-page styling
   - Add nav link where appropriate
 
-F35 Mosaic Custom Board
-  - /mosaic/custom/ — configurable custom Mosaic board page
-  - Without params: form to select rows (3–20), cols (3–20), and difficulty (easy/standard/hard)
-  - With ?hash=...&rows=...&cols=... params: loads a specific board from the board generator
-  - "Hide Numbers" button in win overlay — toggles hint number visibility on the solved board
-  - "Hide Numbers" button also available on /mosaic and /mosaic/easy after solving
+D1 Document the environment
+  Development is done on a Mac, Linux desktop, or Windows desktop and
+  pushed to an Ubuntu server on AWS
+
+D2 Add feature request code to the beginning of the commit message
+   If the commit has to do with the Tentaizu theme, the commit message should be
+   of the form:
+   F20 <Description of update>
