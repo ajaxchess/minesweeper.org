@@ -427,7 +427,7 @@ function showOverlay(msg, won) {
   if (!el) {
     el = document.createElement('div');
     el.id = 'game-overlay';
-    document.getElementById('board').appendChild(el);
+    (document.getElementById('game-result') || document.getElementById('board')).appendChild(el);
   }
   el.className = won ? 'overlay win' : 'overlay loss';
 
@@ -606,6 +606,8 @@ function initGame(rows, cols, mines, noGuess = false, chording = true) {
   document.getElementById('timer').textContent      = '000';
   document.getElementById('mines-left').textContent = String(mines).padStart(3,'0');
   document.getElementById('reset-btn').textContent  = '🙂';
+  const resultEl = document.getElementById('game-result');
+  if (resultEl) resultEl.innerHTML = '';
   buildBoard(rows, cols);
   updateNoGuessUI(noGuess);
 }

@@ -278,7 +278,7 @@
     if (!el) {
       el = document.createElement('div');
       el.id = 'game-overlay';
-      document.getElementById('board').appendChild(el);
+      (document.getElementById('game-result') || document.getElementById('board')).appendChild(el);
     }
     el.className = won ? 'overlay win' : 'overlay loss';
 
@@ -461,6 +461,8 @@
     document.getElementById('timer').textContent      = '000';
     document.getElementById('mines-left').textContent = String(MINES).padStart(3, '0');
     document.getElementById('reset-btn').textContent  = '🙂';
+    const resultEl = document.getElementById('game-result');
+    if (resultEl) resultEl.innerHTML = '';
     updateClickDisplay();
     buildBoard(ROWS, COLS);
 
