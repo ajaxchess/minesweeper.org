@@ -54,9 +54,9 @@ ok "Apache modules enabled."
 # ── 2. MySQL setup ────────────────────────────────────────────────────────────
 info "Setting up MySQL database..."
 # Prompt for DB password
-read -rsp "Enter a password for the MySQL minesweeper user: " DB_PASS
+read -rsp "Enter a password for the MySQL root user: " DB_PASS
 echo
-mysql -u root <<SQL
+sudo mysql -p <<SQL
 CREATE DATABASE IF NOT EXISTS minesweeper CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS 'minesweeper_user'@'localhost' IDENTIFIED BY '${DB_PASS}';
 GRANT ALL PRIVILEGES ON minesweeper.* TO 'minesweeper_user'@'localhost';
