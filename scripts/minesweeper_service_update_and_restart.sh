@@ -20,15 +20,40 @@ REMOTE_COMMIT=$(git rev-parse origin/main) # Replace 'main' if your branch name 
 if [ "$LOCAL_COMMIT" = "$REMOTE_COMMIT" ]; then
     echo "Local repository is up to date. No changes to pull."
 else
-    echo "Changes detected. Checking staging health before deploying to prod..."
-    STAGING_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://staging.minesweeper.org/health)
-    if [ "$STAGING_STATUS" != "200" ]; then
-        echo "ERROR: Staging health check failed (HTTP $STAGING_STATUS). Aborting prod deploy."
+    echo "Changes detected. Checking staging before deploying to prod..."
+
+    # Fetch the full health response and HTTP status code together
+    STAGING_RESPONSE=$(curl -s --max-time 10 \
+        -w "\n__HTTP_STATUS__%{http_code}" \
+        https://staging.minesweeper.org/health)
+    STAGING_HTTP=$(echo "$STAGING_RESPONSE" | grep '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//')
+    STAGING_BODY=$(echo "$STAGING_RESPONSE" | grep -v '__HTTP_STATUS__')
+
+    if [ "$STAGING_HTTP" != "200" ]; then
+        echo "ERROR: Staging /health returned HTTP $STAGING_HTTP. Aborting prod deploy."
         exit 1
     fi
-    echo "Staging is healthy (HTTP 200). Proceeding with prod deploy..."
 
-    echo "Changes detected. Pulling updates..."
+    # Verify staging reports status: ok
+    STAGING_STATUS=$(echo "$STAGING_BODY" | python3 -c \
+        "import sys,json; print(json.load(sys.stdin).get('status',''))" 2>/dev/null)
+    if [ "$STAGING_STATUS" != "ok" ]; then
+        echo "ERROR: Staging health status is '$STAGING_STATUS' (expected 'ok'). Aborting prod deploy."
+        exit 1
+    fi
+
+    # Verify staging is running the same commit we are about to deploy to prod
+    STAGING_COMMIT=$(echo "$STAGING_BODY" | python3 -c \
+        "import sys,json; print(json.load(sys.stdin).get('commit',''))" 2>/dev/null)
+    if [ "$STAGING_COMMIT" != "$REMOTE_COMMIT" ]; then
+        echo "ERROR: Staging is on commit $STAGING_COMMIT, prod target is $REMOTE_COMMIT."
+        echo "       Staging has not yet deployed this commit. Aborting prod deploy."
+        exit 1
+    fi
+
+    echo "Staging OK — HTTP 200, status=ok, commit=$STAGING_COMMIT. Proceeding with prod deploy..."
+
+    echo "Pulling updates..."
     # Ensure a clean working directory before pulling
     if [[ $(git status --porcelain) ]]; then
         echo "Warning: Uncommitted local changes found. Stashing before pull."
