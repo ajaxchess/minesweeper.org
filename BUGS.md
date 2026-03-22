@@ -1,6 +1,12 @@
 
 -- Fixed below --
 
+B5 Game Over / You Won overlay mis-positioned on Cylinder (and any variant) board
+   #board is a CSS grid, so the overlay div became the last grid item and landed
+   in the bottom-left corner instead of covering the board.
+   Fixed by giving .overlay position:absolute; inset:0; z-index:10 so it sits over
+   the board (#board already had position:relative).
+
 B4 "New Duel" button text invisible in Diana/classic skin
    The global rule `html[data-skin="classic"] a { color: #ff3300 }` made the button
    text red-on-red (button background is also var(--accent) = #ff3300).
