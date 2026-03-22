@@ -92,6 +92,12 @@
           <span class="bg-stat-label">Mask Hash</span>
           <code id="bg-mask-hash" class="bg-hash-value"></code>
         </div>
+        <div id="bg-mask-url-section" style="display:none" class="bg-url-section">
+          <div class="bg-url-row">
+            <span class="bg-url-label">🎨 Masked Mosaic</span>
+            <a id="bg-masked-mosaic-link" href="#" target="_blank" class="bg-url-link"></a>
+          </div>
+        </div>
         <button id="bg-mask-clear" class="bg-btn bg-btn-secondary" style="margin-top:0.75rem">Clear Mask</button>
       </div>
     </div>
@@ -101,5 +107,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/board_generator.js?v=2"></script>
+<script src="/static/js/board_generator.js?v=3"></script>
 {% endblock %}

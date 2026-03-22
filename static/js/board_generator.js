@@ -54,6 +54,24 @@ function torNeighbors(r, c, rows, cols) {
     return out;
 }
 
+// ── Mosaic board (Standard topology, all cells including mines) ───────────────
+// Returns a 2-D array where each entry = count of mines in the 3×3 neighbourhood
+// centred on that cell (including the cell itself if it is a mine).
+function buildMosaicBoard(rows, cols, mines) {
+    return Array.from({ length: rows }, (_, r) =>
+        Array.from({ length: cols }, (_, c) => {
+            let count = 0;
+            for (let dr = -1; dr <= 1; dr++)
+                for (let dc = -1; dc <= 1; dc++) {
+                    const nr = r + dr, nc = c + dc;
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols)
+                        if (mines.has(nr * cols + nc)) count++;
+                }
+            return count;
+        })
+    );
+}
+
 // ── Board + 3BV ───────────────────────────────────────────────────────────────
 function buildBoard(rows, cols, mines, neighborFn) {
     const board = Array.from({ length: rows }, () => Array(cols).fill(0));
@@ -141,10 +159,19 @@ function updateStats() {
         // Update mask stats
         document.getElementById('bg-mask-count').textContent = mask.size;
         const maskHashSection = document.getElementById('bg-mask-hash-section');
+        const maskUrlSection  = document.getElementById('bg-mask-url-section');
         if (maskHashSection) {
             maskHashSection.style.display = mask.size > 0 ? 'block' : 'none';
             if (mask.size > 0) {
                 document.getElementById('bg-mask-hash').textContent = maskHash;
+            }
+        }
+        if (maskUrlSection) {
+            maskUrlSection.style.display = mask.size > 0 ? 'block' : 'none';
+            if (mask.size > 0) {
+                const ml = document.getElementById('bg-masked-mosaic-link');
+                ml.href        = mosaicUrl;
+                ml.textContent = mosaicUrl;
             }
         }
     } else {
@@ -179,12 +206,8 @@ function renderGrid() {
 }
 
 function toggleMine(idx) {
-    if (BG.mines.has(idx)) {
-        BG.mines.delete(idx);
-    } else {
-        BG.mines.add(idx);
-        BG.mask.delete(idx); // mine cells cannot be masked
-    }
+    if (BG.mines.has(idx)) BG.mines.delete(idx);
+    else                   BG.mines.add(idx);
     const cell = document.querySelector(`#bg-grid .bg-cell[data-idx="${idx}"]`);
     if (cell) {
         cell.classList.toggle('bg-mine', BG.mines.has(idx));
@@ -205,32 +228,28 @@ function renderMaskGrid() {
 
     if (mines.size === 0) return;
 
-    // Use standard topology to compute mosaic numbers
-    const board = buildBoard(rows, cols, mines, stdNeighbors);
+    // Mosaic number for every cell (Standard topology, includes cell itself)
+    const mosaicBoard = buildMosaicBoard(rows, cols, mines);
 
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            const idx  = r * cols + c;
-            const cell = document.createElement('div');
+            const idx    = r * cols + c;
+            const num    = mosaicBoard[r][c];
+            const masked = mask.has(idx);
+            const isMine = mines.has(idx);
+            const cell   = document.createElement('div');
             cell.dataset.idx = idx;
-
-            if (mines.has(idx)) {
-                cell.className   = 'bg-cell bg-mine';
-                cell.textContent = '💣';
-            } else {
-                const num    = board[r][c]; // mosaic neighbor count (0–8)
-                const masked = mask.has(idx);
-                cell.className   = 'bg-cell bg-mask-cell' + (masked ? ' bg-masked' : '');
-                cell.textContent = String(num);
-                cell.addEventListener('click', () => toggleMask(idx));
-            }
+            cell.className   = 'bg-cell bg-mask-cell' +
+                               (isMine ? ' bg-mask-is-mine' : '') +
+                               (masked ? ' bg-masked'       : '');
+            cell.textContent = String(num);
+            cell.addEventListener('click', () => toggleMask(idx));
             grid.appendChild(cell);
         }
     }
 }
 
 function toggleMask(idx) {
-    if (BG.mines.has(idx)) return;
     if (BG.mask.has(idx)) BG.mask.delete(idx);
     else                   BG.mask.add(idx);
     renderMaskGrid();

@@ -4721,6 +4721,8 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
 .bg-cell.bg-mine:hover { background: #2a2a40; }
 
 .bg-mask-cell { font-weight: 700; }
+.bg-mask-cell.bg-mask-is-mine { background: #b0bac8; }
+.bg-mask-cell.bg-mask-is-mine:hover { background: #a0aaba; }
 .bg-mask-cell.bg-masked { background: #777; color: #aaa; text-decoration: line-through; }
 .bg-mask-cell.bg-masked:hover { background: #666; }
 
