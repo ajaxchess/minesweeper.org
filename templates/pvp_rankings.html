@@ -11,12 +11,12 @@
 
   <!-- ── View toggle: Win Count vs Elo ── -->
   <div class="lb-tabs" role="tablist" id="pvprk-view-tabs">
-    <button class="lb-tab active" data-view="wins" role="tab">👑 Win Count</button>
-    <button class="lb-tab"        data-view="elo"  role="tab">📊 Elo Ratings</button>
+    <button class="lb-tab"        data-view="wins" role="tab">👑 Win Count</button>
+    <button class="lb-tab active" data-view="elo"  role="tab">📊 Elo Ratings</button>
   </div>
 
   <!-- ── Win Count view ── -->
-  <div id="pvprk-wins-view">
+  <div id="pvprk-wins-view" style="display:none">
     <h1 class="lb-title">👑 PvP Win Rankings</h1>
     <p class="lb-daily-note">Players ranked by number of PvP wins.</p>
 
@@ -60,7 +60,7 @@
   </div>
 
   <!-- ── Elo view ── -->
-  <div id="pvprk-elo-view" style="display:none">
+  <div id="pvprk-elo-view">
     <h1 class="lb-title">📊 PvP Elo Rankings</h1>
     <p class="lb-daily-note">Players ranked by Elo rating. Starting rating: 1200. Only logged-in players with at least one match are shown.</p>
 
@@ -116,7 +116,7 @@ let currentMode   = 'all';
 let currentPeriod = 'daily';
 let currentDate   = new Date().toISOString().slice(0, 10);
 let currentSeason = computeCurrentSeason();
-let currentView   = 'wins';
+let currentView   = 'elo';
 let winsData      = null;
 let sortCol       = 'wins';
 let sortDir       = -1;  // -1 = descending, 1 = ascending
@@ -278,6 +278,6 @@ document.getElementById('pvprk-season-btn').textContent = `Season ${computeCurre
 document.getElementById('pvprk-date-input').value = currentDate;
 buildSeasonSelect();
 setPeriodUI(currentPeriod);
-loadPvpRankings();
+switchView('elo');
 </script>
 {% endblock %}
