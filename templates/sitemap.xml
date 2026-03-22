@@ -139,12 +139,26 @@
     <priority>0.8</priority>
   </url>
 
+  <url>
+    <loc>https://minesweeper.org/mosaic/custom/</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
   <!-- ── Variants ──────────────────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/variants</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/variants/board-generator</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 
   <url>

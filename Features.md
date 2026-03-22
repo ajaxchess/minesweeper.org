@@ -121,3 +121,17 @@ F32 Add chat support to the website
 D1 Document the environment
   Development is done on a Mac, Linux desktop, or Windows desktop and 
   pushed to an Ubuntu server on AWS
+
+
+F34 Board Generator
+  - Interactive grid at /variants/board-generator where you click cells to place mines
+  - Shows board hash (base64 bit-array encoding), mine count, and 3BV for Standard/Cylinder/Toroid topologies
+  - Generates shareable links: /variants/replay/ (play the board) and /mosaic/custom/ (solve as Mosaic)
+  - Board hash format: bit i of byte i>>3 is set if cell index i is a mine
+
+F35 Mosaic Custom Board
+  - /mosaic/custom/ — configurable custom Mosaic board page
+  - Without params: form to select rows (3–20), cols (3–20), and difficulty (easy/standard/hard)
+  - With ?hash=...&rows=...&cols=... params: loads a specific board from the board generator
+  - "Hide Numbers" button in win overlay — toggles hint number visibility on the solved board
+  - "Hide Numbers" button also available on /mosaic and /mosaic/easy after solving

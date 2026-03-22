@@ -39,13 +39,15 @@ let G = {
     elapsed:    0,
     timer:      null,
     won:        false,
+    density:    null,    // null → use generatePuzzle default; number → override
 };
 
 // ── Puzzle generation ─────────────────────────────────────────────────────────
 function generatePuzzle(seedStr, rows, cols) {
     const rng = mulberry32(strSeed(`mosaic:${rows}x${cols}:${seedStr}`));
-    // 5×5 easy targets ~8 black cells (32%); standard 9×9 uses 35%
-    const density = (rows <= 5 && cols <= 5) ? 0.32 : 0.35;
+    // 5×5 easy targets ~8 black cells (32%); standard 9×9 uses 35%; custom overrides
+    const density = G.density !== null ? G.density
+                  : ((rows <= 5 && cols <= 5) ? 0.32 : 0.35);
     const solution = Array.from({ length: rows * cols }, () => rng() < density ? 1 : 0);
 
     const hints = [];
@@ -195,6 +197,14 @@ function handleClick(r, c, dir) {
     }
 }
 
+// ── Hide Numbers toggle ───────────────────────────────────────────────────────
+function toggleHideNumbers() {
+    const board  = document.getElementById('ms-board');
+    const hidden = board.classList.toggle('ms-hints-hidden');
+    const btn    = document.getElementById('ms-hide-numbers-btn');
+    if (btn) btn.textContent = hidden ? '🔢 Show Numbers' : '🔢 Hide Numbers';
+}
+
 // ── Win ───────────────────────────────────────────────────────────────────────
 function onWin() {
     // Reveal the full solution: flip all non-mine cells to white
@@ -316,6 +326,51 @@ async function loadLeaderboard() {
     }
 }
 
+// ── Hash-based init (custom board) ────────────────────────────────────────────
+function initGameFromHash(hash, rows, cols) {
+    if (G.timer) { clearInterval(G.timer); G.timer = null; }
+
+    const solution = new Array(rows * cols).fill(0);
+    try {
+        const bin = atob(hash);
+        for (let i = 0; i < rows * cols; i++) {
+            if (bin.charCodeAt(i >> 3) & (1 << (i & 7))) solution[i] = 1;
+        }
+    } catch { /* invalid hash — all white */ }
+
+    const hints = [];
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            let count = 0;
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    const nr = r + dr, nc = c + dc;
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols)
+                        count += solution[nr * cols + nc];
+                }
+            }
+            hints.push(count);
+        }
+    }
+
+    G.rows       = rows;
+    G.cols       = cols;
+    G.won        = false;
+    G.isPOTD     = false;
+    G.seedStr    = '';
+    G.elapsed    = 0;
+    G.startTime  = null;
+    G.solution   = solution;
+    G.hints      = hints;
+    G.totalMines = solution.reduce((a, b) => a + b, 0);
+    G.player     = new Array(rows * cols).fill(2);
+
+    document.getElementById('ms-overlay').style.display = 'none';
+    document.getElementById('ms-timer').textContent = '0:00';
+    updateMineCount();
+    renderBoard();
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 function initGame(seedStr, isPOTD) {
     if (G.timer) { clearInterval(G.timer); G.timer = null; }
@@ -361,13 +416,42 @@ function initGame(seedStr, isPOTD) {
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    const board   = document.getElementById('ms-board');
-    const today   = board.dataset.today;
-    // Allow pre-seeding from data-seed (replay page)
-    const initSeed = board.dataset.seed || today;
-    const initPOTD = !board.dataset.seed;
+    const board    = document.getElementById('ms-board');
+    const today    = board.dataset.today;
+    const initHash = board.dataset.hash || '';
 
-    initGame(initSeed, initPOTD);
+    // Apply density override from data-density attribute (custom page)
+    const dataDensity = parseFloat(board.dataset.density);
+    if (!isNaN(dataDensity)) G.density = dataDensity;
+
+    if (initHash) {
+        // Custom board: initialize from board hash
+        initGameFromHash(
+            initHash,
+            parseInt(board.dataset.rows) || 9,
+            parseInt(board.dataset.cols) || 9
+        );
+    } else if (board.dataset.custom === '1') {
+        // Custom config page with no hash: start with a random board
+        initGame(Math.random().toString(36).slice(2, 10), false);
+    } else {
+        // Allow pre-seeding from data-seed (replay page)
+        const initSeed = board.dataset.seed || today;
+        const initPOTD = !board.dataset.seed;
+        initGame(initSeed, initPOTD);
+    }
+
+    // Custom board config panel — "Generate" button
+    document.getElementById('mc-generate')?.addEventListener('click', () => {
+        const board   = document.getElementById('ms-board');
+        const rows    = Math.max(3, Math.min(20, parseInt(document.getElementById('mc-rows')?.value) || 9));
+        const cols    = Math.max(3, Math.min(20, parseInt(document.getElementById('mc-cols')?.value) || 9));
+        const density = parseFloat(document.getElementById('mc-density')?.value) || 0.35;
+        board.dataset.rows = rows;
+        board.dataset.cols = cols;
+        G.density = density;
+        initGame(Math.random().toString(36).slice(2, 10), false);
+    });
 
     document.getElementById('ms-potd-btn')?.addEventListener('click', () => initGame(today, true));
     document.getElementById('ms-random-btn')?.addEventListener('click', () =>
@@ -383,4 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Manual score save button
     document.getElementById('ms-save-btn')?.addEventListener('click', () => saveScore());
+
+    // Hide Numbers toggle (shown in win overlay)
+    document.getElementById('ms-hide-numbers-btn')?.addEventListener('click', toggleHideNumbers);
 });

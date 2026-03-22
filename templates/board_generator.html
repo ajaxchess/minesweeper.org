@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Board Generator — Custom Minesweeper Boards | minesweeper.org{% endblock %}
+{% block description %}Design custom Minesweeper boards by placing mines on a grid. Get the board hash, 3BV for Standard/Cylinder/Toroid variants, and a shareable Mosaic puzzle link.{% endblock %}
+{% block canonical %}https://minesweeper.org/variants/board-generator{% endblock %}
+{% block og_url %}https://minesweeper.org/variants/board-generator{% endblock %}
+{% block og_title %}Board Generator — Custom Minesweeper Boards{% endblock %}
+{% block og_description %}Place mines on a grid to create a custom board. Get a board hash, 3BV values for all three topologies, and a shareable Mosaic link.{% endblock %}
+
+{% block content %}
+<div class="bg-page">
+  <h1 class="bg-title">🔨 Board Generator</h1>
+  <p class="bg-subtitle">Click cells to place mines. Share the board hash or open it as a Mosaic puzzle.</p>
+
+  <!-- Size controls -->
+  <div class="bg-controls">
+    <label class="bg-label">Rows
+      <input id="bg-rows" type="number" min="2" max="30" value="9" class="bg-input">
+    </label>
+    <label class="bg-label">Cols
+      <input id="bg-cols" type="number" min="2" max="50" value="9" class="bg-input">
+    </label>
+    <button id="bg-apply" class="bg-btn">Apply Size</button>
+    <button id="bg-clear" class="bg-btn bg-btn-secondary">Clear</button>
+  </div>
+
+  <!-- Main layout: grid + stats side by side on wide screens -->
+  <div class="bg-main">
+
+    <!-- Interactive grid -->
+    <div class="bg-grid-wrap">
+      <div id="bg-grid" class="bg-grid"></div>
+    </div>
+
+    <!-- Stats panel -->
+    <div class="bg-stats">
+      <div class="bg-stat-row">
+        <span class="bg-stat-label">💣 Mines</span>
+        <span id="bg-mine-count" class="bg-stat-value">0</span>
+      </div>
+      <div class="bg-stat-row">
+        <span class="bg-stat-label">3BV — Standard</span>
+        <span id="bg-3bv-std" class="bg-stat-value">—</span>
+      </div>
+      <div class="bg-stat-row">
+        <span class="bg-stat-label">3BV — Cylinder</span>
+        <span id="bg-3bv-cyl" class="bg-stat-value">—</span>
+      </div>
+      <div class="bg-stat-row">
+        <span class="bg-stat-label">3BV — Toroid</span>
+        <span id="bg-3bv-tor" class="bg-stat-value">—</span>
+      </div>
+
+      <div class="bg-hash-section">
+        <span class="bg-stat-label">Board Hash</span>
+        <code id="bg-hash" class="bg-hash-value">(place mines to generate)</code>
+      </div>
+
+      <div id="bg-urls" style="display:none" class="bg-url-section">
+        <div class="bg-url-row">
+          <span class="bg-url-label">🔁 Replay</span>
+          <a id="bg-replay-link" href="#" target="_blank" class="bg-url-link"></a>
+        </div>
+        <div class="bg-url-row">
+          <span class="bg-url-label">🎨 Mosaic</span>
+          <a id="bg-mosaic-link" href="#" target="_blank" class="bg-url-link"></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="bg-instructions">
+    <strong>Click</strong> a cell to place or remove a mine. Change the grid size and click <em>Apply Size</em> to reset the board.
+  </p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/board_generator.js?v=1"></script>
+{% endblock %}

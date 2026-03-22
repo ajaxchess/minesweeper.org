@@ -952,6 +952,17 @@ async def replay_page(request: Request):
     })
 
 
+# ── Board Generator ────────────────────────────────────────────────────────────
+
+@app.get("/variants/board-generator", response_class=HTMLResponse)
+async def board_generator_page(request: Request):
+    return templates.TemplateResponse("board_generator.html", {
+        "request": request, "mode": "board-generator",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 # ── Replay Score API ──────────────────────────────────────────────────────────
 
 REPLAY_VARIANTS_VALID = {"standard", "cylinder", "toroid"}
@@ -1723,6 +1734,32 @@ async def mosaic_replay_page(request: Request, seed: str = "", rows: int = 9, co
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
         "seed": seed, "rows": rows, "cols": cols, "cell_size": cell_size,
+    })
+
+
+# ── Mosaic Custom ──────────────────────────────────────────────────────────────
+
+@app.get("/mosaic/custom/", response_class=HTMLResponse)
+async def mosaic_custom_page(
+    request: Request,
+    hash: str = "",
+    rows: int = 9,
+    cols: int = 9,
+    density: float = 0.35,
+):
+    rows      = max(3, min(20, rows))
+    cols      = max(3, min(20, cols))
+    density   = max(0.1, min(0.6, density))
+    cell_size = 64 if (rows <= 5 and cols <= 5) else (46 if rows <= 9 else 34)
+    return templates.TemplateResponse("mosaic_custom.html", {
+        "request":   request, "mode": "mosaic",
+        "user":      get_current_user(request),
+        "lang":      get_lang(request), "t": get_t(request),
+        "hash":      hash,
+        "rows":      rows,
+        "cols":      cols,
+        "density":   density,
+        "cell_size": cell_size,
     })
 
 

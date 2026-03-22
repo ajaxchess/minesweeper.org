@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Mosaic Custom — Pick Your Board Size | minesweeper.org{% endblock %}
+{% block description %}Play a custom Mosaic puzzle. Pick board size and mine count, or load a specific board from a hash.{% endblock %}
+{% block canonical %}https://minesweeper.org/mosaic/custom/{% endblock %}
+{% block og_url %}https://minesweeper.org/mosaic/custom/{% endblock %}
+{% block og_title %}Mosaic Custom Board{% endblock %}
+{% block og_description %}Play a custom Mosaic puzzle — pick your board size and mine density.{% endblock %}
+
+{% block content %}
+<h1 class="tz-page-h1">Mosaic — Custom Board</h1>
+<div class="tz-wrapper">
+
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="game-section">
+
+    <div class="tz-mode-nav">
+      <a href="/mosaic" class="tz-mode-nav-link">⭐ Easy 5×5</a>
+      <a href="/mosaic/standard" class="tz-mode-nav-link">🟫 Standard 9×9</a>
+      <a href="/variants/board-generator" class="tz-mode-nav-link">🔨 Generator</a>
+    </div>
+
+    <!-- Config panel (hidden when a hash is loaded) -->
+    <div id="ms-custom-config" class="ms-custom-config">
+      <div class="ms-custom-fields">
+        <label class="ms-custom-label">Rows
+          <input id="mc-rows" type="number" min="3" max="20" value="{{ rows }}" class="ms-custom-input">
+        </label>
+        <label class="ms-custom-label">Cols
+          <input id="mc-cols" type="number" min="3" max="20" value="{{ cols }}" class="ms-custom-input">
+        </label>
+        <label class="ms-custom-label">Difficulty
+          <select id="mc-density" class="ms-custom-input">
+            <option value="0.25">Easy (~25%)</option>
+            <option value="0.35" selected>Standard (~35%)</option>
+            <option value="0.45">Hard (~45%)</option>
+          </select>
+        </label>
+        <button id="mc-generate" class="tz-mode-btn">🎲 Generate</button>
+      </div>
+    </div>
+
+    <div class="game-info">
+      <div class="mode-row">
+        <span id="ms-mode-label" class="mode-badge">🎨 Custom Board</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat" title="Black cells placed / total in solution">
+          <span class="stat-icon">⬛</span>
+          <span class="stat-value" id="ms-mine-count">0/0</span>
+        </div>
+        <div class="stat" title="Time elapsed">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="ms-timer">0:00</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="ms-board-wrap">
+      <div id="ms-board"
+           data-today=""
+           data-hash="{{ hash }}"
+           data-rows="{{ rows }}" data-cols="{{ cols }}" data-cell-size="{{ cell_size }}"
+           data-density="{{ density }}"
+           data-score-api=""
+           data-custom="1"
+           data-username=""></div>
+
+      <div id="ms-overlay" style="display:none">
+        <div class="tz-overlay-title">🎉 Solved!</div>
+        <div class="tz-overlay-time">Time: <strong id="ms-win-time">0:00</strong></div>
+        <div class="tz-overlay-btns">
+          <button id="ms-overlay-random" class="tz-btn-random">🎲 New Random</button>
+          <a href="/variants/board-generator" class="tz-btn-potd" style="text-decoration:none">🔨 Generator</a>
+        </div>
+        <button id="ms-hide-numbers-btn" class="bg-btn bg-btn-secondary" style="margin-top:0.5rem">🔢 Hide Numbers</button>
+      </div>
+    </div>
+
+    <p class="instructions">
+      <strong>Left click</strong>: white → black → unknown &nbsp;|&nbsp;
+      <strong>Right click</strong>: black → white → unknown &nbsp;|&nbsp;
+      Each number = black cells in its 3×3 neighborhood &nbsp;|&nbsp;
+      <span class="ms-legend-ok">green</span> = satisfied &nbsp;
+      <span class="ms-legend-over">red</span> = too many
+    </p>
+
+  </section>
+
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/mosaic.js?v=7"></script>
+{% endblock %}
