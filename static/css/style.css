@@ -4795,6 +4795,17 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
 }
 .info-link { color: var(--accent2); }
 .info-link:hover { text-decoration: underline; }
+.info-link-prominent {
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.45rem 1rem;
+  background: var(--accent2);
+  color: #fff;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-weight: 600;
+}
+.info-link-prominent:hover { opacity: 0.85; text-decoration: none; }
 
 /* Example grid */
 .info-example {
