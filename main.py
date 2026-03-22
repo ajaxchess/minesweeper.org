@@ -952,6 +952,17 @@ async def replay_page(request: Request):
     })
 
 
+# ── Links Page ────────────────────────────────────────────────────────────────
+
+@app.get("/links", response_class=HTMLResponse)
+async def links_page(request: Request):
+    return templates.TemplateResponse("links.html", {
+        "request": request,
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 # ── 3BV Info ──────────────────────────────────────────────────────────────────
 
 @app.get("/info/3bv", response_class=HTMLResponse)
