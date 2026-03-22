@@ -4,13 +4,14 @@
 #
 # Skin identifiers:
 #   'dark'      — default dark theme
+#   'light'     — daylight-friendly light theme (Diana palette, dark layout)
 #   'tentaizu'  — star/space theme used on the Tentaizu pages
 #   'diana'     — Lady Di's Mines classic skin (stored as 'classic' in CSS/DB)
 
 from datetime import date, datetime, timedelta
 
 DEFAULT_SKIN: str = 'dark'
-ALLOWED_SKINS: tuple[str, ...] = ('dark', 'tentaizu', 'diana')
+ALLOWED_SKINS: tuple[str, ...] = ('dark', 'light', 'tentaizu', 'diana')
 
 # ── PvP opponent board delay ───────────────────────────────────────────────────
 # Seconds to delay showing the opponent's board moves to the player.

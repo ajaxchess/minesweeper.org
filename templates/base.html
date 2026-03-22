@@ -17,7 +17,8 @@
       var p = new URLSearchParams(window.location.search);
       var t = p.get('theme');
       if (t === 'diana' || t === 'classic') localStorage.setItem('skin', 'classic');
-      else if (t === 'dark') localStorage.setItem('skin', 'dark');
+      else if (t === 'dark')     localStorage.setItem('skin', 'dark');
+      else if (t === 'light')    localStorage.setItem('skin', 'light');
       else if (t === 'tentaizu') localStorage.setItem('skin', 'tentaizu');
       var _def = '{{ active_skin() }}';
       document.documentElement.dataset.skin = localStorage.getItem('skin') || (_def === 'diana' ? 'classic' : _def);

@@ -1810,6 +1810,12 @@ html[data-skin="classic"] .bot-play-btn:visited { color: #fff; }
 .skin-preview-dark .sp-n1 { color: #6ab0f5; }
 .skin-preview-dark .sp-n2 { color: #57d474; }
 
+.skin-preview-light { background: #dde9f5; padding: 4px; border: 1px solid #88aac8; }
+.skin-preview-light .sp-hidden   { background: #c4d4e8; border: 1px solid #88aac8; }
+.skin-preview-light .sp-revealed { background: #eaf2fb; border: 1px solid #a0bcd4; }
+.skin-preview-light .sp-n1 { color: #0033cc; }
+.skin-preview-light .sp-n2 { color: #006600; }
+
 .skin-label {
   font-size: 0.75rem;
   color: var(--text-dim);
@@ -5343,3 +5349,94 @@ select.calc-input { width: 140px; }
 .duel-chat-send-btn:hover {
   opacity: 0.85;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Light Skin (F38) — daylight-friendly, Diana-palette colours, dark layout
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html[data-skin="light"] {
+  --bg:          #f0f4f8;
+  --surface:     #ffffff;
+  --surface2:    #dde6f0;
+  --accent:      #cc2200;
+  --accent2:     #0033cc;
+  --text:        #1a1e2e;
+  --text-dim:    #4a5568;
+  --cell-hidden: #c4d4e8;
+  --cell-hover:  #a8bdd6;
+  --cell-rev:    #eaf2fb;
+  --cell-border: #88aac8;
+  --border:      #ccd8e8;
+}
+
+html[data-skin="light"] body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Header */
+html[data-skin="light"] header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--surface2);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+/* Stat display — keep the LCD aesthetic, it reads well in daylight */
+html[data-skin="light"] .stat {
+  background: #1a1e2e;
+  border-color: #3a4468;
+}
+
+/* Toggle buttons active state — use accent2 tint */
+html[data-skin="light"] #noguess-toggle.active,
+html[data-skin="light"] #highlight-errors-toggle.active {
+  color: var(--accent2);
+  border-color: var(--accent2);
+  background: rgba(0, 51, 204, 0.08);
+}
+
+/* Board cells */
+html[data-skin="light"] .cell.mine { background: #b02000; }
+
+html[data-skin="light"] #board,
+html[data-skin="light"] #rush-board,
+html[data-skin="light"] #tz-board,
+html[data-skin="light"] #cyl-board,
+html[data-skin="light"] #tor-board {
+  background: #c8d8ec;
+  border-color: var(--cell-border);
+}
+
+html[data-skin="light"] .cell.hidden {
+  background: var(--cell-hidden);
+  border-color: var(--cell-border);
+}
+
+html[data-skin="light"] .cell.revealed {
+  background: var(--cell-rev);
+  border-color: #a0bcd4;
+}
+
+/* Footer */
+html[data-skin="light"] footer {
+  background: var(--surface);
+  border-top: 1px solid var(--surface2);
+  color: var(--text-dim);
+}
+
+html[data-skin="light"] footer a { color: var(--accent2); }
+
+/* Solstice / equinox banner adjustments */
+html[data-skin="light"] .solstice-banner,
+html[data-skin="light"] .diana-birthday-banner {
+  background: linear-gradient(90deg, #dde6f0 0%, #c8d8ec 40%, #dde6f0 100%);
+  color: #1a1e2e;
+  border-bottom-color: #88aac8;
+}
+
+/* Links */
+html[data-skin="light"] a { color: var(--accent2); }
+html[data-skin="light"] a:visited { color: #551a8b; }
+html[data-skin="light"] nav a,
+html[data-skin="light"] nav a:visited { color: var(--text-dim); }
+html[data-skin="light"] nav a.active  { color: #fff; }
