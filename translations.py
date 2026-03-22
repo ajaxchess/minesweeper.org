@@ -2065,9 +2065,22 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
 
 
 def get_lang(request) -> str:
-    # Query param takes precedence (enables direct language URLs for hreflang/SEO)
-    lang = request.query_params.get("lang") or request.cookies.get("lang", "en")
-    return lang if lang in TRANSLATIONS else "en"
+    # 1. Query param takes precedence (enables direct language URLs for hreflang/SEO)
+    lang = request.query_params.get("lang")
+    if lang and lang in TRANSLATIONS:
+        return lang
+    # 2. Explicit cookie (user's own choice)
+    lang = request.cookies.get("lang")
+    if lang and lang in TRANSLATIONS:
+        return lang
+    # 3. Subdomain default (e.g. de.minesweeper.org → "de")
+    host = request.headers.get("host", "").split(":")[0]
+    parts = host.split(".")
+    if len(parts) >= 3:
+        subdomain = parts[0]
+        if subdomain in TRANSLATIONS:
+            return subdomain
+    return "en"
 
 
 def get_t(request) -> dict:

@@ -289,7 +289,7 @@ def shutdown():
 
 @app.get("/set-lang")
 async def set_lang(request: Request, lang: str = "en", next: Optional[str] = None):
-    if lang not in ("en", "eo", "de", "es", "th", "pgl", "uk", "fr", "ko", "ja", "zh", "zh-hant", "pl"):
+    if lang not in ("en", "eo", "de", "es", "th", "pgl", "uk", "fr", "ko", "ja", "zh", "zh-hant", "pl", "tl"):
         lang = "en"
     # Use explicit next param, then referer, then home
     redirect_to = next or request.headers.get("referer", "/")
