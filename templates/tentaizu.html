@@ -30,8 +30,8 @@
 {% endblock %}
 
 {% block content %}
-<h1 class="tz-page-h1">Tentaizu – Free Daily Logic Puzzle</h1>
-<p class="tz-bridge-sentence">Tentaizu is the pure-logic minesweeper puzzle variant where all clues are pre-placed, with no guessing required.</p>
+<h1 class="tz-page-h1">{{ t["tz_page_h1"] }}</h1>
+<p class="tz-bridge-sentence">{{ t["tz_bridge"] }}</p>
 <div class="tz-wrapper">
 
   <!-- Left sidebar ad -->
@@ -48,19 +48,19 @@
 
     <!-- Mode nav -->
     <div class="tz-mode-nav">
-      <span class="tz-mode-nav-current">📅 Daily 7×7</span>
-      <a href="/tentaizu/easy-5x5-6" class="tz-mode-nav-link">⭐ Easy 5×5</a>
+      <span class="tz-mode-nav-current">📅 {{ t["tz_mode_daily"] }}</span>
+      <a href="/tentaizu/easy-5x5-6" class="tz-mode-nav-link">⭐ {{ t["tz_mode_easy"] }}</a>
     </div>
 
     <!-- Info panel -->
     <div class="game-info">
       <div class="mode-row">
-        <span id="tz-mode-label" class="mode-badge">📅 Puzzle of the Day</span>
+        <span id="tz-mode-label" class="mode-badge">📅 {{ t["tz_label_potd"] }}</span>
         <div class="tz-mode-btns">
-          <button id="tz-potd-btn" class="tz-mode-btn">📅 Daily</button>
-          <button id="tz-random-btn" class="tz-mode-btn">🎲 Random</button>
+          <button id="tz-potd-btn" class="tz-mode-btn">📅 {{ t["tz_btn_daily"] }}</button>
+          <button id="tz-random-btn" class="tz-mode-btn">🎲 {{ t["tz_btn_random"] }}</button>
         </div>
-        <button id="highlight-errors-toggle" onclick="toggleHighlightErrors()" title="Highlight incorrectly placed flags and safe marks">Highlight Errors</button>
+        <button id="highlight-errors-toggle" onclick="toggleHighlightErrors()" title="Highlight incorrectly placed flags and safe marks">{{ t["tz_btn_highlight_errors"] }}</button>
       </div>
       <div class="stat-row">
         <div class="stat" title="Flags placed / total mines">
@@ -82,42 +82,42 @@
 
       <!-- Win overlay -->
       <div id="tz-overlay">
-        <div class="tz-overlay-title">🎉 Solved!</div>
-        <div class="tz-overlay-time">Time: <strong id="tz-win-time">0:00</strong></div>
+        <div class="tz-overlay-title">🎉 {{ t["tz_overlay_solved"] }}</div>
+        <div class="tz-overlay-time">{{ t["tz_overlay_time"] }} <strong id="tz-win-time">0:00</strong></div>
         <div id="tz-score-form" class="overlay-score-form" style="display:none">
-          <input id="tz-name-input" type="text" maxlength="32" placeholder="Your name" autocomplete="nickname">
-          <button id="tz-save-btn">Save Score</button>
+          <input id="tz-name-input" type="text" maxlength="32" placeholder="{{ t['tz_name_placeholder'] }}" autocomplete="nickname">
+          <button id="tz-save-btn">{{ t["tz_save_score"] }}</button>
         </div>
         <div class="tz-overlay-btns">
-          <button id="tz-overlay-potd" class="tz-btn-potd">📅 Replay Daily</button>
-          <button id="tz-overlay-random" class="tz-btn-random">🎲 New Random</button>
+          <button id="tz-overlay-potd" class="tz-btn-potd">📅 {{ t["tz_btn_replay_daily"] }}</button>
+          <button id="tz-overlay-random" class="tz-btn-random">🎲 {{ t["tz_btn_new_random"] }}</button>
         </div>
       </div>
     </div>
 
     <p class="instructions">
-      <strong>Left-click</strong> to cycle:
-      <strong>✓</strong> mark safe &rarr;
-      <strong>⭐</strong> flag mine &rarr;
-      <strong>?</strong> reset &nbsp;|&nbsp;
-      <strong>Right-click</strong> to cycle:
-      <strong>⭐</strong> flag mine &rarr;
-      <strong>✓</strong> mark safe &rarr;
-      <strong>?</strong> reset &nbsp;|&nbsp;
-      Find all 10 mines to win!
+      <strong>{{ t["game_left_click"] }}</strong> {{ t["tz_instr_cycle"] }}
+      <strong>✓</strong> {{ t["tz_instr_mark_safe"] }} &rarr;
+      <strong>⭐</strong> {{ t["tz_instr_flag_mine"] }} &rarr;
+      <strong>?</strong> {{ t["tz_instr_reset"] }} &nbsp;|&nbsp;
+      <strong>{{ t["game_right_click"] }}</strong> {{ t["tz_instr_cycle"] }}
+      <strong>⭐</strong> {{ t["tz_instr_flag_mine"] }} &rarr;
+      <strong>✓</strong> {{ t["tz_instr_mark_safe"] }} &rarr;
+      <strong>?</strong> {{ t["tz_instr_reset"] }} &nbsp;|&nbsp;
+      {{ t["tz_instr_win"] }}
     </p>
 
     <!-- How to play -->
     <details class="tz-howto">
-      <summary>How to play Tentaizu</summary>
+      <summary>{{ t["tz_howto_summary"] }}</summary>
       <div class="tz-howto-body">
-        <p>Tentaizu is a 7×7 logic puzzle with exactly 10 hidden mines.</p>
+        <p>{{ t["tz_howto_intro"] }}</p>
         <ul>
-          <li><strong>Revealed numbers</strong> show how many mines are in the 8 surrounding cells.</li>
-          <li><strong>Click</strong> any unknown cell to cycle: ⭐ (mine) → ✓ (safe) → ? (unknown).</li>
-          <li>Use logic to deduce which cells contain mines.</li>
-          <li>The game never ends on a wrong guess — keep refining until all 10 mines are correctly flagged.</li>
-          <li>You win when exactly the 10 mine cells are flagged and no safe cells are flagged.</li>
+          <li>{{ t["tz_howto_li1"] | safe }}</li>
+          <li>{{ t["tz_howto_li2"] | safe }}</li>
+          <li>{{ t["tz_howto_li3"] }}</li>
+          <li>{{ t["tz_howto_li4"] }}</li>
+          <li>{{ t["tz_howto_li5"] }}</li>
         </ul>
       </div>
     </details>
@@ -129,7 +129,7 @@
 
     <!-- Leaderboard -->
     <div id="tz-lb-section" class="tz-lb-section">
-      <div id="tz-lb-title" class="tz-lb-title">🏆 Today's Best Times</div>
+      <div id="tz-lb-title" class="tz-lb-title">🏆 {{ t["tz_lb_today"] }}</div>
       <div id="tz-lb-content">
         <div class="lb-loading">Loading…</div>
       </div>
@@ -251,23 +251,23 @@
   <nav class="tz-subnav" aria-label="Tentaizu guides">
     <a href="/tentaizu/how-to-play" class="tz-subnav-card">
       <span class="tz-subnav-icon">📖</span>
-      <strong>How to Play</strong>
-      <span>Complete rules &amp; walkthrough</span>
+      <strong>{{ t["tz_subnav_howto_title"] }}</strong>
+      <span>{{ t["tz_subnav_howto_desc"] | safe }}</span>
     </a>
     <a href="/tentaizu/strategy" class="tz-subnav-card">
       <span class="tz-subnav-icon">🧠</span>
-      <strong>Strategy Guide</strong>
-      <span>Advanced solving techniques</span>
+      <strong>{{ t["tz_subnav_strategy_title"] }}</strong>
+      <span>{{ t["tz_subnav_strategy_desc"] }}</span>
     </a>
     <a href="/tentaizu/archive" class="tz-subnav-card">
       <span class="tz-subnav-icon">📅</span>
-      <strong>Puzzle Archive</strong>
-      <span>Replay past daily puzzles</span>
+      <strong>{{ t["tz_subnav_archive_title"] }}</strong>
+      <span>{{ t["tz_subnav_archive_desc"] }}</span>
     </a>
     <a href="/tentaizu/easy-5x5-6" class="tz-subnav-card">
       <span class="tz-subnav-icon">⭐</span>
-      <strong>Easy 5×5</strong>
-      <span>Beginner mode — 5×5 grid, 6 mines</span>
+      <strong>{{ t["tz_subnav_easy_title"] }}</strong>
+      <span>{{ t["tz_subnav_easy_desc"] }}</span>
     </a>
   </nav>
 
