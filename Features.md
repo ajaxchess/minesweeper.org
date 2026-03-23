@@ -78,6 +78,8 @@ F41 SEO structured data and page differentiation
 F40 Server Health Checks
   - GET /iamatestfile.txt returns plain text "healthy" for uptime monitors and load balancer probes
   - GET /health returns service status; restricted to localhost only (403 for external requests)
+  - Production deploy script runs smoke tests against staging before promoting:
+      /, /pvp, /duel, /tentaizu — checks HTTP 200 and absence of server errors in body
 
 -- Addressed --
 

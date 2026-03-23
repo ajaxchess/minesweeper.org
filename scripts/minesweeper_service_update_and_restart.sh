@@ -52,7 +52,47 @@ else
         exit 1
     fi
 
-    echo "Staging OK — HTTP 200, status=ok, commit=$STAGING_COMMIT. Proceeding with prod deploy..."
+    echo "Staging OK — HTTP 200, status=ok, commit=$STAGING_COMMIT. Running smoke tests..."
+
+    # ── Smoke tests: verify key pages render without errors ──────────────────
+    # Hits staging's Uvicorn port directly (same approach as /health check above).
+    # Each test checks: HTTP 200, no "Internal Server Error" in body.
+    smoke_test() {
+        local label="$1"
+        local path="$2"
+        local expect="$3"   # optional string that must appear in body
+
+        local RESP
+        RESP=$(curl -s --max-time 15 \
+            -w "\n__HTTP_STATUS__%{http_code}" \
+            "http://127.0.0.1:8002${path}")
+        local HTTP_CODE
+        HTTP_CODE=$(echo "$RESP" | grep '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//')
+        local BODY
+        BODY=$(echo "$RESP" | grep -v '__HTTP_STATUS__')
+
+        if [ "$HTTP_CODE" != "200" ]; then
+            echo "ERROR: Smoke test FAILED for $label ($path) — HTTP $HTTP_CODE. Aborting prod deploy."
+            exit 1
+        fi
+        if echo "$BODY" | grep -qi "internal server error\|traceback\|templateassertionerror\|jinja2.exceptions"; then
+            echo "ERROR: Smoke test FAILED for $label ($path) — server error in response body. Aborting prod deploy."
+            exit 1
+        fi
+        if [ -n "$expect" ] && ! echo "$BODY" | grep -qi "$expect"; then
+            echo "ERROR: Smoke test FAILED for $label ($path) — expected '$expect' not found in body. Aborting prod deploy."
+            exit 1
+        fi
+        echo "  PASS: $label ($path)"
+    }
+
+    smoke_test "Home"    "/"         "minesweeper"
+    smoke_test "PvP"     "/pvp"      "PvP Minesweeper"
+    smoke_test "Duel"    "/duel"     "Minesweeper"
+    smoke_test "Tentaizu" "/tentaizu" "Tentaizu"
+    # ─────────────────────────────────────────────────────────────────────────
+
+    echo "All smoke tests passed. Proceeding with prod deploy..."
 
     echo "Pulling updates..."
     # Ensure a clean working directory before pulling
