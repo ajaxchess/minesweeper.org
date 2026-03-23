@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Tentaizu – Free Daily Logic Puzzle | minesweeper.org{% endblock %}
-{% block description %}Play Tentaizu free online — a daily 7×7 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.{% endblock %}
+{% block title %}{{ t.meta_title_tentaizu }}{% endblock %}
+{% block description %}{{ t.meta_desc_tentaizu }}{% endblock %}
 {% block keywords %}<meta name="keywords" content="tentaizu, tentaizu puzzle, daily tentaizu, tentaizu online, tentaizu free, mine logic puzzle, daily logic puzzle, number puzzle, minesweeper variant">{% endblock %}
 {% block canonical %}https://minesweeper.org/tentaizu{% endblock %}
 {% block og_url %}https://minesweeper.org/tentaizu{% endblock %}
 {% block og_type %}game{% endblock %}
-{% block og_title %}Tentaizu – Free Daily Logic Puzzle{% endblock %}
-{% block og_description %}A daily 7×7 mine logic puzzle. Find all 10 mines using number clues — no guessing required. New puzzle every day, global leaderboard, unlimited randoms.{% endblock %}
-{% block tw_title %}Tentaizu – Free Daily Logic Puzzle{% endblock %}
-{% block tw_description %}A daily 7×7 mine logic puzzle. Find all 10 mines using number clues — no guessing required. New puzzle every day.{% endblock %}
+{% block og_title %}{{ t.meta_title_tentaizu | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ t.meta_desc_tentaizu }}{% endblock %}
+{% block tw_title %}{{ t.meta_title_tentaizu | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block tw_description %}{{ t.meta_desc_tentaizu }}{% endblock %}
 
 {% block jsonld %}
 <script type="application/ld+json">
@@ -19,9 +19,9 @@
   "name": "Tentaizu",
   "alternateName": "天体図",
   "url": "https://minesweeper.org/tentaizu",
-  "description": "A daily 7×7 mine logic puzzle from Japan. Find all 10 mines using number clues — no guessing required. Every puzzle is solvable by pure deduction.",
-  "genre": ["Puzzle", "Logic", "Brain Teaser", "Browser Game"],
-  "gamePlatform": "Web Browser",
+  "description": "{{ t.meta_jsonld_desc_tentaizu }}",
+  "genre": ["Puzzle", "{{ t.meta_jsonld_genre_logic }}", "{{ t.meta_jsonld_genre_brain_teaser }}", "{{ t.meta_genre_browser }}"],
+  "gamePlatform": "{{ t.meta_platform }}",
   "operatingSystem": "Any",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }

@@ -273,6 +273,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
         "meta_jsonld_genre_competitive": "Competitive",
         "meta_jsonld_genre_multiplayer": "Multiplayer",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Free Daily Logic Puzzle | minesweeper.org",
+        "meta_desc_tentaizu":            "Play Tentaizu free online \u2014 a daily 7\u00d77 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.",
+        "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
+        "meta_jsonld_genre_logic":       "Logic",
+        "meta_jsonld_genre_brain_teaser":"Brain Teaser",
     },
 
     "eo": {
@@ -547,6 +552,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
         "meta_jsonld_genre_competitive": "Competitive",
         "meta_jsonld_genre_multiplayer": "Multiplayer",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Free Daily Logic Puzzle | minesweeper.org",
+        "meta_desc_tentaizu":            "Play Tentaizu free online \u2014 a daily 7\u00d77 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.",
+        "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
+        "meta_jsonld_genre_logic":       "Logic",
+        "meta_jsonld_genre_brain_teaser":"Brain Teaser",
     },
 
     "de": {
@@ -821,6 +831,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Echtzeit-1v1-Minesweeper. Fordere einen Freund heraus und wer zuerst r\u00e4umt, gewinnt.",
         "meta_jsonld_genre_competitive": "Kompetitiv",
         "meta_jsonld_genre_multiplayer": "Mehrspieler",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Kostenloses Tages-Logikr\u00e4tsel | minesweeper.org",
+        "meta_desc_tentaizu":            "Tentaizu kostenlos online spielen \u2014 ein t\u00e4gliches 7\u00d77-Minenlogikr\u00e4tsel. Alle 10 Minen mit Zahlenhinweisen finden. Kein Raten n\u00f6tig. T\u00e4glich neues R\u00e4tsel.",
+        "meta_jsonld_desc_tentaizu":     "Ein t\u00e4gliches 7\u00d77-Logikr\u00e4tsel aus Japan. Alle 10 Minen mit Zahlenhinweisen finden \u2014 kein Raten n\u00f6tig. Jedes R\u00e4tsel ist durch reine Deduktion l\u00f6sbar.",
+        "meta_jsonld_genre_logic":       "Logik",
+        "meta_jsonld_genre_brain_teaser":"Denkspiel",
     },
 
     "es": {
@@ -1095,6 +1110,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
         "meta_jsonld_genre_competitive": "Competitive",
         "meta_jsonld_genre_multiplayer": "Multiplayer",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Free Daily Logic Puzzle | minesweeper.org",
+        "meta_desc_tentaizu":            "Play Tentaizu free online \u2014 a daily 7\u00d77 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.",
+        "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
+        "meta_jsonld_genre_logic":       "Logic",
+        "meta_jsonld_genre_brain_teaser":"Brain Teaser",
     },
 
     "th": {
@@ -1371,6 +1391,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
         "meta_jsonld_genre_competitive": "Competitive",
         "meta_jsonld_genre_multiplayer": "Multiplayer",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Free Daily Logic Puzzle | minesweeper.org",
+        "meta_desc_tentaizu":            "Play Tentaizu free online \u2014 a daily 7\u00d77 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.",
+        "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
+        "meta_jsonld_genre_logic":       "Logic",
+        "meta_jsonld_genre_brain_teaser":"Brain Teaser",
     },
 
     "pgl": {
@@ -1647,6 +1672,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
         "meta_jsonld_genre_competitive": "Competitive",
         "meta_jsonld_genre_multiplayer": "Multiplayer",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Free Daily Logic Puzzle | minesweeper.org",
+        "meta_desc_tentaizu":            "Play Tentaizu free online \u2014 a daily 7\u00d77 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.",
+        "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
+        "meta_jsonld_genre_logic":       "Logic",
+        "meta_jsonld_genre_brain_teaser":"Brain Teaser",
     },
 
     "uk": {
@@ -1923,6 +1953,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
         "meta_jsonld_genre_competitive": "Competitive",
         "meta_jsonld_genre_multiplayer": "Multiplayer",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Free Daily Logic Puzzle | minesweeper.org",
+        "meta_desc_tentaizu":            "Play Tentaizu free online \u2014 a daily 7\u00d77 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.",
+        "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
+        "meta_jsonld_genre_logic":       "Logic",
+        "meta_jsonld_genre_brain_teaser":"Brain Teaser",
     },
 
     "fr": {
@@ -2197,6 +2232,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
         "meta_jsonld_genre_competitive": "Competitive",
         "meta_jsonld_genre_multiplayer": "Multiplayer",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Free Daily Logic Puzzle | minesweeper.org",
+        "meta_desc_tentaizu":            "Play Tentaizu free online \u2014 a daily 7\u00d77 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.",
+        "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
+        "meta_jsonld_genre_logic":       "Logic",
+        "meta_jsonld_genre_brain_teaser":"Brain Teaser",
     },
 
     "ko": {
@@ -2471,6 +2511,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
         "meta_jsonld_genre_competitive": "Competitive",
         "meta_jsonld_genre_multiplayer": "Multiplayer",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Free Daily Logic Puzzle | minesweeper.org",
+        "meta_desc_tentaizu":            "Play Tentaizu free online \u2014 a daily 7\u00d77 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.",
+        "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
+        "meta_jsonld_genre_logic":       "Logic",
+        "meta_jsonld_genre_brain_teaser":"Brain Teaser",
     },
 
     "ja": {
@@ -2745,6 +2790,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
         "meta_jsonld_genre_competitive": "Competitive",
         "meta_jsonld_genre_multiplayer": "Multiplayer",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Free Daily Logic Puzzle | minesweeper.org",
+        "meta_desc_tentaizu":            "Play Tentaizu free online \u2014 a daily 7\u00d77 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.",
+        "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
+        "meta_jsonld_genre_logic":       "Logic",
+        "meta_jsonld_genre_brain_teaser":"Brain Teaser",
     },
     "zh": {
         # Nav
@@ -3018,6 +3068,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
         "meta_jsonld_genre_competitive": "Competitive",
         "meta_jsonld_genre_multiplayer": "Multiplayer",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Free Daily Logic Puzzle | minesweeper.org",
+        "meta_desc_tentaizu":            "Play Tentaizu free online \u2014 a daily 7\u00d77 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.",
+        "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
+        "meta_jsonld_genre_logic":       "Logic",
+        "meta_jsonld_genre_brain_teaser":"Brain Teaser",
     },
     "zh-hant": {
         # Nav
@@ -3291,6 +3346,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
         "meta_jsonld_genre_competitive": "Competitive",
         "meta_jsonld_genre_multiplayer": "Multiplayer",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Free Daily Logic Puzzle | minesweeper.org",
+        "meta_desc_tentaizu":            "Play Tentaizu free online \u2014 a daily 7\u00d77 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.",
+        "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
+        "meta_jsonld_genre_logic":       "Logic",
+        "meta_jsonld_genre_brain_teaser":"Brain Teaser",
     },
     "pl": {
         # Nav
@@ -3564,6 +3624,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
         "meta_jsonld_genre_competitive": "Competitive",
         "meta_jsonld_genre_multiplayer": "Multiplayer",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Free Daily Logic Puzzle | minesweeper.org",
+        "meta_desc_tentaizu":            "Play Tentaizu free online \u2014 a daily 7\u00d77 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.",
+        "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
+        "meta_jsonld_genre_logic":       "Logic",
+        "meta_jsonld_genre_brain_teaser":"Brain Teaser",
     },
 
     "tl": {
@@ -3838,6 +3903,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_duel":   "Real-time 1v1 Minesweeper. Challenge a friend and race to clear the board first.",
         "meta_jsonld_genre_competitive": "Competitive",
         "meta_jsonld_genre_multiplayer": "Multiplayer",
+        "meta_title_tentaizu":           "Tentaizu \u2013 Free Daily Logic Puzzle | minesweeper.org",
+        "meta_desc_tentaizu":            "Play Tentaizu free online \u2014 a daily 7\u00d77 mine logic puzzle. Find all 10 mines using number clues. No guessing required. New puzzle every day.",
+        "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
+        "meta_jsonld_genre_logic":       "Logic",
+        "meta_jsonld_genre_brain_teaser":"Brain Teaser",
     },
 }
 
