@@ -217,7 +217,7 @@
 
         <!-- Puzzles -->
         <div class="mega-group" id="mg-puzzles">
-          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')">🔢 Puzzles ▾</button>
+          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')">🧩 Puzzles ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/tentaizu" class="mega-card {% if mode=='tentaizu' %}active{% endif %}">
@@ -234,9 +234,17 @@
               </a>
             </div>
             <div class="mega-col">
-              <a href="/mosaic" class="mega-card {% if 'mosaic' in mode %}active{% endif %}">
-                <span class="mega-icon">🧩</span>
-                <span class="mega-card-text"><strong>Mosaic</strong><span>Fill cells using number logic</span></span>
+              <a href="/mosaic/standard" class="mega-card {% if mode=='mosaic' %}active{% endif %}">
+                <span class="mega-icon">🟫</span>
+                <span class="mega-card-text"><strong>Mosaic Daily</strong><span>9×9 daily fill puzzle</span></span>
+              </a>
+              <a href="/mosaic" class="mega-card {% if mode=='mosaic-easy' %}active{% endif %}">
+                <span class="mega-icon">⭐</span>
+                <span class="mega-card-text"><strong>Mosaic Easy</strong><span>5×5 beginner daily puzzle</span></span>
+              </a>
+              <a href="/mosaic/how-to-play" class="mega-card {% if mode=='mosaic-howto' %}active{% endif %}">
+                <span class="mega-icon">📖</span>
+                <span class="mega-card-text"><strong>How to Play Mosaic</strong><span>Rules, tips &amp; strategy</span></span>
               </a>
             </div>
           </div>

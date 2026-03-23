@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}How to Play Mosaic — Rules, Controls & Strategy | minesweeper.org{% endblock %}
+{% block description %}Learn how to play Mosaic (Fill-a-Pix): complete rules, controls, and a step-by-step solving guide. Understand the 3×3 neighborhood rule, black/white cells, and how to satisfy every clue without guessing.{% endblock %}
+{% block keywords %}<meta name="keywords" content="how to play mosaic, mosaic puzzle rules, fill-a-pix rules, mosaic tutorial, mosaic instructions, mosaic strategy, learn mosaic puzzle">{% endblock %}
+{% block canonical %}https://minesweeper.org/mosaic/how-to-play{% endblock %}
+{% block og_url %}https://minesweeper.org/mosaic/how-to-play{% endblock %}
+{% block og_title %}How to Play Mosaic — Rules, Controls & Strategy{% endblock %}
+{% block og_description %}Complete guide to Mosaic rules and controls. Learn the 3×3 neighborhood rule, how to read clues, and the strategies that crack every puzzle without guessing.{% endblock %}
+
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Play Mosaic",
+  "description": "Step-by-step guide to solving a Mosaic (Fill-a-Pix) puzzle.",
+  "url": "https://minesweeper.org/mosaic/how-to-play",
+  "step": [
+    {
+      "@type": "HowToStep",
+      "name": "Read the clues",
+      "text": "Each number tells you exactly how many of the 9 cells in its 3×3 neighborhood (including itself) must be filled black."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Start with 0s and 9s",
+      "text": "A 0 means every neighbor stays white — clear them. A 9 means every neighbor must be black — fill them all."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Use satisfied constraints",
+      "text": "When a clue turns green its neighborhood is fully determined. Use that to constrain adjacent clues."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Compare overlapping clues",
+      "text": "Adjacent cells share neighbors. Subtracting one clue's count from another reveals which shared cells must be black or white."
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Satisfy all clues simultaneously",
+      "text": "When every numbered cell shows green, the puzzle is solved."
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="tz-content-page">
+
+  <nav class="tz-breadcrumb" aria-label="Breadcrumb">
+    <a href="/mosaic/standard">Mosaic</a>
+    <span aria-hidden="true">›</span>
+    <span>How to Play</span>
+  </nav>
+
+  <h1 class="tz-content-h1">How to Play Mosaic</h1>
+  <p class="tz-content-lead">
+    Mosaic is a pure-logic puzzle — fill cells black so that every numbered clue is satisfied
+    simultaneously. No guessing, no luck. This guide walks you through the rules, controls,
+    and core solving strategies.
+  </p>
+
+  <a href="/mosaic/standard" class="tz-play-cta">Play Today's Puzzle →</a>
+
+  <section class="tz-section">
+    <h2>The Board</h2>
+    <p>
+      Each Mosaic puzzle is played on a grid — the daily standard puzzle uses a <strong>9×9 grid</strong>;
+      the easy mode uses <strong>5×5</strong>. Every cell is either <strong>black</strong> or
+      <strong>white</strong>. Some cells display a number clue. Your goal is to determine the
+      color of every cell so that all clues are satisfied at once.
+    </p>
+    <p>
+      Unlike Minesweeper, the entire constraint system is visible from the start. You never
+      click to reveal anything — you simply decide: is this cell black or white?
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>Reading the Clues</h2>
+    <p>
+      Each number on the board tells you the <strong>exact count of black cells</strong> in the
+      <strong>3×3 neighborhood</strong> centered on that cell — including the cell itself.
+      A cell always counts itself as one of its own neighbors.
+    </p>
+    <ul class="tz-list">
+      <li>A corner cell has a 2×2 neighborhood (4 cells, max clue = 4).</li>
+      <li>An edge cell has a 2×3 neighborhood (6 cells, max clue = 6).</li>
+      <li>An interior cell has the full 3×3 neighborhood (9 cells, max clue = 9).</li>
+    </ul>
+    <p>
+      This is the same counting logic as Minesweeper's mine-count numbers — if you can read
+      a Minesweeper board, you already understand Mosaic clues.
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>Controls</h2>
+    <p>Every cell without a clue starts in an <em>unknown</em> state and cycles through three states:</p>
+    <ul class="tz-list">
+      <li><strong>White (empty)</strong> — you have marked this cell as not black.</li>
+      <li><strong>Black (filled)</strong> — you have marked this cell as black.</li>
+      <li><strong>Unknown</strong> — not yet determined; the starting state.</li>
+    </ul>
+    <p>
+      <strong>Left-click</strong> advances: white → black → unknown.<br>
+      <strong>Right-click</strong> advances: black → white → unknown.
+    </p>
+    <p>
+      Clue cells change color as you fill their neighborhood:
+      a <strong style="color:#4caf50">green</strong> clue means exactly the right number of cells
+      are black — that constraint is fully satisfied.
+      A <strong style="color:#e53935">red</strong> clue means too many cells in its neighborhood
+      are black — undo one.
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>Win Condition</h2>
+    <p>
+      You win when <strong>every numbered clue is green simultaneously</strong>. There is exactly
+      one configuration of black and white cells that achieves this — every puzzle is
+      computer-verified to have a unique solution reachable by pure logic.
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>Obvious Patterns to Solve Immediately</h2>
+    <p>
+      These patterns let you fill or clear entire neighborhoods in one move — always scan for
+      them first before doing any harder reasoning.
+    </p>
+
+    <h3>Any position — clue = 0</h3>
+    <p>
+      Every cell in the 3×3 neighborhood must be <strong>white</strong>. A zero means zero
+      black cells anywhere nearby — clear all unknown neighbors immediately.
+    </p>
+
+    <h3>Corner — clue = 4</h3>
+    <p>
+      A corner cell has a 2×2 neighborhood of exactly 4 cells. A clue of <strong>4</strong>
+      means all 4 cells must be <strong>black</strong> — fill them all at once.
+      Similarly, a corner <strong>0</strong> clears all 4.
+    </p>
+
+    <h3>Edge (non-corner) — clue = 6</h3>
+    <p>
+      An edge cell has a 2×3 neighborhood of exactly 6 cells. A clue of <strong>6</strong>
+      means all 6 must be <strong>black</strong>. An edge <strong>0</strong> clears all 6.
+    </p>
+
+    <h3>Interior cell — clue = 9</h3>
+    <p>
+      An interior cell has the full 3×3 neighborhood of 9 cells. A clue of <strong>9</strong>
+      means every one of those 9 cells is <strong>black</strong> — fill the entire 3×3 block.
+    </p>
+
+    <h3>Any position — clue equals neighborhood size</h3>
+    <p>
+      The three examples above are all the same principle: when a clue equals the total number
+      of cells in its neighborhood, every neighbor must be black. Memorise the neighborhood
+      sizes — <strong>4</strong> (corner), <strong>6</strong> (edge), <strong>9</strong>
+      (interior) — and you can apply this rule instantly.
+    </p>
+
+    <h3>Any position — satisfied clue (turns green)</h3>
+    <p>
+      As soon as a clue turns green, the count is exact. Every remaining <em>unknown</em> cell
+      in its neighborhood must be <strong>white</strong> — clear them all without further thought.
+    </p>
+
+    <h3>Any position — remaining unknowns equal remaining count</h3>
+    <p>
+      If a clue still needs <em>N</em> more black cells and has exactly <em>N</em> unknown
+      neighbors left, every one of those unknowns must be <strong>black</strong>. This is the
+      complement of the green-clue rule and is equally powerful.
+    </p>
+  </section>
+
+  <section class="tz-section">
+    <h2>Step-by-Step: Your First Solve</h2>
+    <ol class="tz-list tz-steps">
+      <li>
+        <strong>Scan every clue for an obvious pattern.</strong>
+        Look for 0s (clear all neighbors), max-value clues (fill all neighbors), green clues
+        (clear all remaining unknown neighbors), and clues where unknowns equal the remaining
+        count (fill all). Apply every one you find before moving on.
+      </li>
+      <li>
+        <strong>Work corners and edges first.</strong>
+        Their smaller neighborhoods (4 or 6 cells) mean their clues resolve more easily.
+        A corner 3 out of 4 is tightly constrained; an interior 5 out of 9 has far more
+        possibilities.
+      </li>
+      <li>
+        <strong>Use green clues to propagate.</strong>
+        Filling or clearing cells near a clue can satisfy it. Once it turns green, every
+        unknown in its neighborhood is forced white. That in turn may satisfy adjacent clues,
+        creating a chain reaction.
+      </li>
+      <li>
+        <strong>Compare overlapping clues (subtraction technique).</strong>
+        Adjacent cells share neighbors. If clue A = 5 and clue B = 3, and B's entire
+        neighborhood is inside A's, then A must have A − B = 2 black cells in its exclusive
+        (non-shared) neighbors. This narrows down which cells are black without any guessing.
+      </li>
+      <li>
+        <strong>Repeat until all clues are green.</strong>
+        Every Mosaic puzzle on minesweeper.org is solvable by pure deduction. If you feel stuck,
+        look for a clue whose remaining-unknown count equals its remaining-black count — that
+        clue will unlock the next step.
+      </li>
+    </ol>
+  </section>
+
+  <section class="tz-section">
+    <h2>Daily Puzzle vs. Random Mode</h2>
+    <p>
+      The <strong>Daily puzzle</strong> is the same for every player worldwide and resets at
+      midnight UTC. Solve it to post your time to the global leaderboard.
+    </p>
+    <p>
+      <strong>Random mode</strong> generates a fresh unique-solution puzzle on demand —
+      use it for extra practice or to keep playing after the daily is solved.
+    </p>
+    <p>
+      The <strong>Easy 5×5</strong> mode at <a href="/mosaic" class="tz-link">/mosaic</a> is a
+      beginner-friendly version with a smaller grid and simpler constraints — a good starting
+      point before tackling the standard 9×9.
+    </p>
+  </section>
+
+  <nav class="tz-subnav" aria-label="More Mosaic pages">
+    <a href="/mosaic/standard" class="tz-subnav-card">
+      <span class="tz-subnav-icon">🟫</span>
+      <strong>Mosaic Daily</strong>
+      <span>9×9 standard daily puzzle</span>
+    </a>
+    <a href="/mosaic" class="tz-subnav-card">
+      <span class="tz-subnav-icon">⭐</span>
+      <strong>Mosaic Easy</strong>
+      <span>5×5 beginner daily puzzle</span>
+    </a>
+    <a href="/mosaic/custom/" class="tz-subnav-card">
+      <span class="tz-subnav-icon">🎨</span>
+      <strong>Custom Board</strong>
+      <span>Design your own Mosaic puzzle</span>
+    </a>
+  </nav>
+
+</div>
+{% endblock %}

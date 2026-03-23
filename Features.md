@@ -56,6 +56,14 @@ F30 PvP rankings sortable columns
 F31 Archive anonymous PvP results nightly
    Daily cron job moves PvP results with no registered winner to anonymous_pvp_results backup table.
 
+F42 Mosaic how-to-play page and expanded mega menu
+  - New page at /mosaic/how-to-play (templates/mosaic_howto.html) with rules, controls,
+    solving patterns, and strategy — parallel structure to /tentaizu/how-to-play
+  - Subnav cards added to /mosaic/standard and /mosaic (easy) linking to each other
+    and to /mosaic/how-to-play
+  - Mega menu Puzzles group expanded: Mosaic Daily (9×9), Mosaic Easy (5×5),
+    How to Play Mosaic — replacing the single Mosaic card
+
 F36 Mega menu navigation for dark / light / tentaizu skins
   - Replaces the old flat nav with a 5-group drop-down mega menu on non-classic skins
   - Groups: Play (Beginner/Intermediate/Expert/Custom/Rush/Leaderboard), PvP, Puzzles, Variants, More

@@ -1764,6 +1764,14 @@ async def mosaic_page(request: Request, seed: str = ""):
         "seed": seed.replace(".", "-"),
     })
 
+@app.get("/mosaic/how-to-play", response_class=HTMLResponse)
+async def mosaic_howto(request: Request):
+    return templates.TemplateResponse("mosaic_howto.html", {
+        "request": request, "mode": "mosaic-howto",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
 @app.get("/mosaic/easy", response_class=HTMLResponse)
 async def mosaic_easy_redirect(request: Request):
     from fastapi.responses import RedirectResponse
