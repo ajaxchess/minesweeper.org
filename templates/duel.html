@@ -1,18 +1,18 @@
 {% extends "base.html" %}
-{% if mode == 'pvp' %}
-{% block title %}Competitive Minesweeper — Ranked PvP Matchmaking | minesweeper.org{% endblock %}
-{% block description %}Play ranked competitive Minesweeper against real opponents. ELO-rated matchmaking, bot practice, leaderboards, and global rankings. Free to play.{% endblock %}
-{% block keywords %}<meta name="keywords" content="minesweeper pvp, competitive minesweeper, minesweeper ranked, minesweeper elo, minesweeper matchmaking, minesweeper vs">{% endblock %}
-{% block canonical %}https://minesweeper.org/pvp{% endblock %}
-{% block og_url %}https://minesweeper.org/pvp{% endblock %}
-{% block og_title %}PvP Minesweeper — Ranked Competitive Play{% endblock %}
-{% block og_description %}ELO-rated ranked Minesweeper matchmaking. Play competitive games, climb the leaderboard, and earn a global ranking.{% endblock %}
+{% block title %}{% if mode == 'pvp' %}Competitive Minesweeper — Ranked PvP Matchmaking | minesweeper.org{% else %}Multiplayer Minesweeper — 1v1 Duel Mode | minesweeper.org{% endif %}{% endblock %}
+{% block description %}{% if mode == 'pvp' %}Play ranked competitive Minesweeper against real opponents. ELO-rated matchmaking, bot practice, leaderboards, and global rankings. Free to play.{% else %}Challenge a friend to a real-time Minesweeper duel. Race head-to-head on the same board — first to clear it wins. Free, no account needed.{% endif %}{% endblock %}
+{% block keywords %}<meta name="keywords" content="{% if mode == 'pvp' %}minesweeper pvp, competitive minesweeper, minesweeper ranked, minesweeper elo, minesweeper matchmaking, minesweeper vs{% else %}minesweeper multiplayer, minesweeper 1v1, minesweeper duel, 2 player minesweeper, play minesweeper with friends, online minesweeper{% endif %}">{% endblock %}
+{% block canonical %}https://minesweeper.org/{% if mode == 'pvp' %}pvp{% else %}duel{% endif %}{% endblock %}
+{% block og_url %}https://minesweeper.org/{% if mode == 'pvp' %}pvp{% else %}duel{% endif %}{% endblock %}
+{% block og_title %}{% if mode == 'pvp' %}PvP Minesweeper — Ranked Competitive Play{% else %}Minesweeper 1v1 Duel — Challenge a Friend{% endif %}{% endblock %}
+{% block og_description %}{% if mode == 'pvp' %}ELO-rated ranked Minesweeper matchmaking. Play competitive games, climb the leaderboard, and earn a global ranking.{% else %}Real-time head-to-head Minesweeper. Race your opponent to clear the board. Free, no download required.{% endif %}{% endblock %}
 {% block og_image %}https://minesweeper.org/static/img/og-duel.png{% endblock %}
-{% block tw_title %}PvP Minesweeper — Ranked Competitive Play{% endblock %}
-{% block tw_description %}ELO-rated ranked Minesweeper matchmaking. Climb the leaderboard and earn a global ranking.{% endblock %}
+{% block tw_title %}{% if mode == 'pvp' %}PvP Minesweeper — Ranked Competitive Play{% else %}Minesweeper 1v1 Duel — Challenge a Friend{% endif %}{% endblock %}
+{% block tw_description %}{% if mode == 'pvp' %}ELO-rated ranked Minesweeper matchmaking. Climb the leaderboard and earn a global ranking.{% else %}Real-time head-to-head Minesweeper. Race your opponent to clear the board.{% endif %}{% endblock %}
 {% block tw_image %}https://minesweeper.org/static/img/og-duel.png{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">
+{% if mode == 'pvp' %}
 {
   "@context": "https://schema.org",
   "@type": "VideoGame",
@@ -25,22 +25,7 @@
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
 }
-</script>
-{% endblock %}
 {% else %}
-{% block title %}Multiplayer Minesweeper — 1v1 Duel Mode | minesweeper.org{% endblock %}
-{% block description %}Challenge a friend to a real-time Minesweeper duel. Race head-to-head on the same board — first to clear it wins. Free, no account needed.{% endblock %}
-{% block keywords %}<meta name="keywords" content="minesweeper multiplayer, minesweeper 1v1, minesweeper duel, 2 player minesweeper, play minesweeper with friends, online minesweeper">{% endblock %}
-{% block canonical %}https://minesweeper.org/duel{% endblock %}
-{% block og_url %}https://minesweeper.org/duel{% endblock %}
-{% block og_title %}Minesweeper 1v1 Duel — Challenge a Friend{% endblock %}
-{% block og_description %}Real-time head-to-head Minesweeper. Race your opponent to clear the board. Free, no download required.{% endblock %}
-{% block og_image %}https://minesweeper.org/static/img/og-duel.png{% endblock %}
-{% block tw_title %}Minesweeper 1v1 Duel — Challenge a Friend{% endblock %}
-{% block tw_description %}Real-time head-to-head Minesweeper. Race your opponent to clear the board.{% endblock %}
-{% block tw_image %}https://minesweeper.org/static/img/og-duel.png{% endblock %}
-{% block jsonld %}
-<script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "VideoGame",
@@ -52,9 +37,9 @@
   "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 2, "maxValue": 2 },
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
 }
+{% endif %}
 </script>
 {% endblock %}
-{% endif %}
 
 {% block content %}
 {% if mode == 'pvp' %}<h1 class="tz-page-h1">PvP Minesweeper — Real-Time Matchmaking</h1>

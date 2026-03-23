@@ -56,6 +56,13 @@ F30 PvP rankings sortable columns
 F31 Archive anonymous PvP results nightly
    Daily cron job moves PvP results with no registered winner to anonymous_pvp_results backup table.
 
+F36 Mega menu navigation for dark / light / tentaizu skins
+  - Replaces the old flat nav with a 5-group drop-down mega menu on non-classic skins
+  - Groups: Play (Beginner/Intermediate/Expert/Custom/Rush/Leaderboard), PvP, Puzzles, Variants, More
+  - Classic (Diana) skin retains its existing sidebar nav unchanged
+  - Each group opens a full-width panel of icon+title+description cards on click
+  - CSS scoped to html:not([data-skin="classic"]); JS toggleMega() opens/closes panels
+
 F38 Light theme
 
 F39 Use light theme during daylight hours based on client browser local time, defaulting to dark otherwise

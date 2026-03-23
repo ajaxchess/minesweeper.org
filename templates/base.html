@@ -10,7 +10,7 @@
   <link rel="canonical" href="{% block canonical %}https://minesweeper.org/{% endblock %}">
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=30" />
+  <link rel="stylesheet" href="/static/css/style.css?v=31" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     // Resolve the "default" auto-theme: special-day override takes priority,
@@ -112,7 +112,8 @@
         <img src="/static/img/LadyDisMinesLogo.png" class="logo-classic" alt="Lady Di's Mines">
         <span class="logo-text">💣 Minesweeper.org</span>
       </a>
-      <nav>
+      <!-- Classic skin sidebar nav (hidden in dark/light/tentaizu) -->
+      <nav class="classic-nav">
         <a href="/" class="{% if mode == 'beginner' %}active{% endif %}">{{ t.nav_beginner }}</a>
         <a href="/intermediate" class="{% if mode == 'intermediate' %}active{% endif %}">{{ t.nav_intermediate }}</a>
         <a href="/expert" class="{% if mode == 'expert' %}active{% endif %}">{{ t.nav_expert }}</a>
@@ -143,6 +144,158 @@
         <a href="/quests"      class="{% if mode == 'quests' %}active{% endif %}">🎯 {{ t.nav_quests }}</a>
         <a href="{% if 'tentaizu' in mode %}/tentaizu/how-to-play{% elif mode == 'rush' or mode == 'rush-howto' %}/rush/how-to-play{% else %}/how-to-play{% endif %}"
            class="{% if mode == 'how-to-play' or mode == 'tentaizu-howto' or mode == 'rush-howto' %}active{% endif %}">❓ {{ t.nav_how_to_play }}</a>
+      </nav>
+
+      <!-- Mega menu nav (dark / light / tentaizu skins) -->
+      <nav class="mega-nav">
+
+        <!-- Play -->
+        <div class="mega-group" id="mg-play">
+          <button class="mega-trigger {% if mode in ['beginner','intermediate','expert','custom','leaderboard','rush'] %}active{% endif %}" onclick="toggleMega(event,'mg-play')">💣 Play ▾</button>
+          <div class="mega-panel">
+            <div class="mega-col">
+              <a href="/" class="mega-card {% if mode=='beginner' %}active{% endif %}">
+                <span class="mega-icon">🟢</span>
+                <span class="mega-card-text"><strong>{{ t.nav_beginner }}</strong><span>9×9 · 10 mines</span></span>
+              </a>
+              <a href="/intermediate" class="mega-card {% if mode=='intermediate' %}active{% endif %}">
+                <span class="mega-icon">🟡</span>
+                <span class="mega-card-text"><strong>{{ t.nav_intermediate }}</strong><span>16×16 · 40 mines</span></span>
+              </a>
+              <a href="/expert" class="mega-card {% if mode=='expert' %}active{% endif %}">
+                <span class="mega-icon">🔴</span>
+                <span class="mega-card-text"><strong>{{ t.nav_expert }}</strong><span>16×30 · 99 mines</span></span>
+              </a>
+              <a href="/custom" class="mega-card {% if mode=='custom' %}active{% endif %}">
+                <span class="mega-icon">⚙️</span>
+                <span class="mega-card-text"><strong>{{ t.nav_custom }}</strong><span>Custom board size &amp; mine count</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/rush" class="mega-card {% if mode=='rush' %}active{% endif %}">
+                <span class="mega-icon">⚡</span>
+                <span class="mega-card-text"><strong>{{ t.nav_rush }}</strong><span>Clear waves before they fill up</span></span>
+              </a>
+              <a href="/leaderboard" class="mega-card {% if mode=='leaderboard' %}active{% endif %}">
+                <span class="mega-icon">🏆</span>
+                <span class="mega-card-text"><strong>{{ t.nav_leaderboard }}</strong><span>Today's best times</span></span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- PvP -->
+        <div class="mega-group" id="mg-pvp">
+          <button class="mega-trigger {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}active{% endif %}" onclick="toggleMega(event,'mg-pvp')">🎮 PvP ▾</button>
+          <div class="mega-panel">
+            <div class="mega-col">
+              <a href="/pvp" class="mega-card {% if mode=='pvp' %}active{% endif %}">
+                <span class="mega-icon">🎮</span>
+                <span class="mega-card-text"><strong>{{ t.nav_pvp }}</strong><span>Compete for ELO rating</span></span>
+              </a>
+              <a href="/duel" class="mega-card {% if mode=='duel' %}active{% endif %}">
+                <span class="mega-icon">⚔️</span>
+                <span class="mega-card-text"><strong>{{ t.nav_duel }}</strong><span>Challenge a friend directly</span></span>
+              </a>
+              <a href="/pvp/bot" class="mega-card {% if mode=='pvp-bot' %}active{% endif %}">
+                <span class="mega-icon">🤖</span>
+                <span class="mega-card-text"><strong>Vs Bot</strong><span>Practice against AI opponents</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/pvp/leaderboard" class="mega-card {% if mode=='pvp-leaderboard' %}active{% endif %}">
+                <span class="mega-icon">🏆</span>
+                <span class="mega-card-text"><strong>PvP Leaderboard</strong><span>Top wins this week</span></span>
+              </a>
+              <a href="/pvp/rankings" class="mega-card {% if mode=='pvp-rankings' %}active{% endif %}">
+                <span class="mega-icon">👑</span>
+                <span class="mega-card-text"><strong>ELO Rankings</strong><span>Rating standings</span></span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Puzzles -->
+        <div class="mega-group" id="mg-puzzles">
+          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')">🔢 Puzzles ▾</button>
+          <div class="mega-panel">
+            <div class="mega-col">
+              <a href="/tentaizu" class="mega-card {% if mode=='tentaizu' %}active{% endif %}">
+                <span class="mega-icon">📅</span>
+                <span class="mega-card-text"><strong>{{ t.nav_tentaizu }} Daily</strong><span>7×7 pure-logic daily puzzle</span></span>
+              </a>
+              <a href="/tentaizu/easy-5x5-6" class="mega-card">
+                <span class="mega-icon">⭐</span>
+                <span class="mega-card-text"><strong>Tentaizu Easy</strong><span>5×5 beginner mode, 6 mines</span></span>
+              </a>
+              <a href="/tentaizu/how-to-play" class="mega-card {% if mode=='tentaizu-howto' %}active{% endif %}">
+                <span class="mega-icon">📖</span>
+                <span class="mega-card-text"><strong>How to Play Tentaizu</strong><span>Rules, tips &amp; strategy</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/mosaic" class="mega-card {% if 'mosaic' in mode %}active{% endif %}">
+                <span class="mega-icon">🧩</span>
+                <span class="mega-card-text"><strong>Mosaic</strong><span>Fill cells using number logic</span></span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="mega-group" id="mg-variants">
+          <button class="mega-trigger {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or mode == 'replay' or mode == 'board-generator' %}active{% endif %}" onclick="toggleMega(event,'mg-variants')">🔄 {{ t.nav_variants }} ▾</button>
+          <div class="mega-panel">
+            <div class="mega-col">
+              <a href="/cylinder" class="mega-card {% if 'cylinder' in mode %}active{% endif %}">
+                <span class="mega-icon">🔄</span>
+                <span class="mega-card-text"><strong>Cylinder</strong><span>Left &amp; right edges wrap around</span></span>
+              </a>
+              <a href="/toroid" class="mega-card {% if 'toroid' in mode %}active{% endif %}">
+                <span class="mega-icon">🍩</span>
+                <span class="mega-card-text"><strong>Toroid</strong><span>All edges wrap — donut topology</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/variants/replay/" class="mega-card {% if mode=='replay' %}active{% endif %}">
+                <span class="mega-icon">🔁</span>
+                <span class="mega-card-text"><strong>Replay</strong><span>Play a specific board by hash</span></span>
+              </a>
+              <a href="/variants/board-generator" class="mega-card {% if mode=='board-generator' %}active{% endif %}">
+                <span class="mega-icon">🔧</span>
+                <span class="mega-card-text"><strong>Board Generator</strong><span>Design and share your own board</span></span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- More -->
+        <div class="mega-group" id="mg-more">
+          <button class="mega-trigger {% if mode in ['quests','how-to-play','rush-howto','blog','links','about','contact'] %}active{% endif %}" onclick="toggleMega(event,'mg-more')">More ▾</button>
+          <div class="mega-panel">
+            <div class="mega-col">
+              <a href="/quests" class="mega-card {% if mode=='quests' %}active{% endif %}">
+                <span class="mega-icon">🎯</span>
+                <span class="mega-card-text"><strong>{{ t.nav_quests }}</strong><span>Complete challenges, earn rewards</span></span>
+              </a>
+              <a href="/how-to-play" class="mega-card {% if mode in ['how-to-play','rush-howto'] %}active{% endif %}">
+                <span class="mega-icon">❓</span>
+                <span class="mega-card-text"><strong>{{ t.nav_how_to_play }}</strong><span>Learn Minesweeper rules &amp; tips</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/blog" class="mega-card {% if mode=='blog' %}active{% endif %}">
+                <span class="mega-icon">📝</span>
+                <span class="mega-card-text"><strong>Blog</strong><span>News, strategy, and updates</span></span>
+              </a>
+              <a href="/links" class="mega-card {% if mode=='links' %}active{% endif %}">
+                <span class="mega-icon">🔗</span>
+                <span class="mega-card-text"><strong>Links</strong><span>Related sites and resources</span></span>
+              </a>
+            </div>
+          </div>
+        </div>
+
       </nav>
       <div class="auth-area">
         {% if user %}
@@ -284,7 +437,17 @@
         g.classList.remove('open');
       }
     });
+    document.querySelectorAll('.mega-group.open').forEach(function(g) {
+      g.classList.remove('open');
+    });
   });
+  function toggleMega(e, groupId) {
+    e.stopPropagation();
+    var grp = document.getElementById(groupId);
+    var isOpen = grp.classList.contains('open');
+    document.querySelectorAll('.mega-group.open').forEach(function(g) { g.classList.remove('open'); });
+    if (!isOpen) grp.classList.add('open');
+  }
   </script>
   {% block scripts %}{% endblock %}
   <script>

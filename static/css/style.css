@@ -4141,6 +4141,104 @@ html[data-skin="classic"] .nav-pvp-menu a {
 html[data-skin="classic"] .nav-pvp-menu a:hover  { background: rgba(255,255,255,0.12); color: #fff; }
 html[data-skin="classic"] .nav-pvp-menu a.active { background: #c0c0c0; color: #000; text-shadow: none; }
 
+/* ── Mega menu nav (dark / light / tentaizu skins) ───────────────────────── */
+
+/* Classic skin: show classic-nav, hide mega-nav */
+html[data-skin="classic"] .classic-nav { display: flex; }
+html[data-skin="classic"] .mega-nav    { display: none; }
+
+/* All other skins: hide classic-nav, show mega-nav */
+html:not([data-skin="classic"]) .classic-nav { display: none; }
+html:not([data-skin="classic"]) .mega-nav    { display: flex; align-items: center; gap: 0.25rem; flex: 1; }
+
+.mega-group {
+  position: static;
+}
+
+.mega-trigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+.mega-trigger:hover { background: var(--surface2); color: var(--text); }
+.mega-trigger.active { background: var(--accent); color: #fff; }
+.mega-group.open .mega-trigger { background: var(--surface2); color: var(--text); }
+
+.mega-panel {
+  display: none;
+  position: fixed;
+  top: 54px;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: var(--surface);
+  border-top: 2px solid var(--accent);
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+  padding: 1rem 2rem;
+  gap: 1.5rem;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+.mega-group.open .mega-panel { display: flex; }
+
+.mega-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 180px;
+}
+
+.mega-card {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text-dim);
+  transition: background 0.15s, color 0.15s;
+}
+.mega-card:hover  { background: var(--surface2); color: var(--text); }
+.mega-card.active { background: var(--accent); color: #fff; }
+
+.mega-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  width: 1.6rem;
+  text-align: center;
+}
+
+.mega-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  line-height: 1.2;
+}
+.mega-card-text strong {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: inherit;
+}
+.mega-card-text span {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  opacity: 0.8;
+}
+.mega-card:hover .mega-card-text span,
+.mega-card.active .mega-card-text span {
+  opacity: 1;
+  color: inherit;
+}
+
 /* ── PvP sub-page links ──────────────────────────────────────────────────── */
 .pvp-sub-links {
   display: flex;
