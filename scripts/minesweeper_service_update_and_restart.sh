@@ -23,9 +23,10 @@ else
     echo "Changes detected. Checking staging before deploying to prod..."
 
     # Fetch the full health response and HTTP status code together
+    # Hit staging's Uvicorn port directly (bypasses Apache, localhost-only endpoint)
     STAGING_RESPONSE=$(curl -s --max-time 10 \
         -w "\n__HTTP_STATUS__%{http_code}" \
-        https://staging.minesweeper.org/health)
+        http://127.0.0.1:8002/health)
     STAGING_HTTP=$(echo "$STAGING_RESPONSE" | grep '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//')
     STAGING_BODY=$(echo "$STAGING_RESPONSE" | grep -v '__HTTP_STATUS__')
 

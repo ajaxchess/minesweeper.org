@@ -115,7 +115,9 @@ async def robots():
 _ENVIRONMENT = Config(".env")("ENVIRONMENT", default="unknown")
 
 @app.get("/health", include_in_schema=False)
-async def health():
+async def health(request: Request):
+    if request.client.host not in ("127.0.0.1", "::1"):
+        raise HTTPException(status_code=403, detail="Forbidden")
     try:
         commit = subprocess.check_output(
             ["git", "rev-parse", "HEAD"],
