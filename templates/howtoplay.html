@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% block title %}How to Play Minesweeper — Complete Guide | minesweeper.org{% endblock %}
-{% block description %}Learn how to play Minesweeper — from the basics to advanced strategies, game modes, no-guess mode, chording, and tips for improving your speed.{% endblock %}
+{% block title %}{{ t.meta_title_howtoplay }}{% endblock %}
+{% block description %}{{ t.meta_desc_howtoplay }}{% endblock %}
 {% block keywords %}<meta name="keywords" content="how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper">{% endblock %}
 {% block canonical %}https://minesweeper.org/how-to-play{% endblock %}
 {% block og_url %}https://minesweeper.org/how-to-play{% endblock %}
-{% block og_title %}How to Play Minesweeper — Complete Guide{% endblock %}
-{% block og_description %}Learn Minesweeper from the basics to advanced strategies, patterns, game modes, and speed tips.{% endblock %}
-{% block tw_title %}How to Play Minesweeper — Complete Guide{% endblock %}
-{% block tw_description %}Learn Minesweeper from the basics to advanced strategies, patterns, game modes, and speed tips.{% endblock %}
+{% block og_title %}{{ t.meta_title_howtoplay | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ t.meta_desc_howtoplay }}{% endblock %}
+{% block tw_title %}{{ t.meta_title_howtoplay | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block tw_description %}{{ t.meta_desc_howtoplay }}{% endblock %}
 
 {% block content %}
 <div class="lb-wrapper">

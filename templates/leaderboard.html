@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Minesweeper Leaderboard — Top Times & High Scores | minesweeper.org{% endblock %}
-{% block description %}Top Minesweeper times for Beginner, Intermediate, Expert, and Custom modes. Can you make the leaderboard?{% endblock %}
+{% block title %}{{ t.meta_title_leaderboard }}{% endblock %}
+{% block description %}{{ t.meta_desc_leaderboard }}{% endblock %}
 {% block keywords %}<meta name="keywords" content="minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper">{% endblock %}
 {% block canonical %}https://minesweeper.org/leaderboard{% endblock %}
 {% block og_url %}https://minesweeper.org/leaderboard{% endblock %}
-{% block og_title %}Minesweeper Leaderboard — Top Times & High Scores{% endblock %}
-{% block og_description %}Top Minesweeper times for Beginner, Intermediate, Expert, and Custom. Can you make the leaderboard?{% endblock %}
-{% block tw_title %}Minesweeper Leaderboard — Top Times & High Scores{% endblock %}
-{% block tw_description %}Top Minesweeper times for Beginner, Intermediate, Expert, and Custom. Can you make the leaderboard?{% endblock %}
+{% block og_title %}{{ t.meta_title_leaderboard | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ t.meta_desc_leaderboard }}{% endblock %}
+{% block tw_title %}{{ t.meta_title_leaderboard | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block tw_description %}{{ t.meta_desc_leaderboard }}{% endblock %}
 
 {% block content %}
 <div class="lb-wrapper">

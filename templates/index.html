@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 
 {% if mode == 'beginner' %}
-  {% set _title = "Minesweeper — Play Free Online | Multiplayer & Classic Modes" %}
-  {% set _desc  = "Play free Minesweeper online — classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo." %}
-  {% set _kw    = "minesweeper, minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game" %}
+  {% set _title = t.meta_title_beginner %}
+  {% set _desc  = t.meta_desc_beginner %}
+  {% set _kw    = t.meta_kw_beginner %}
   {% set _canon = "https://minesweeper.org/" %}
 {% elif mode == 'intermediate' %}
-  {% set _title = "Minesweeper Intermediate — Play Free Online | minesweeper.org" %}
-  {% set _desc  = "Play Minesweeper Intermediate online — " ~ rows ~ "×" ~ cols ~ " board with " ~ mines ~ " mines. Free, no download required." %}
-  {% set _kw    = "minesweeper intermediate, minesweeper online, play minesweeper, free minesweeper" %}
+  {% set _title = t.meta_title_intermediate %}
+  {% set _desc  = t.meta_desc_intermediate | replace("{rows}", rows|string) | replace("{cols}", cols|string) | replace("{mines}", mines|string) %}
+  {% set _kw    = t.meta_kw_intermediate %}
   {% set _canon = "https://minesweeper.org/intermediate" %}
 {% else %}
-  {% set _title = "Minesweeper Expert — Play Free Online | minesweeper.org" %}
-  {% set _desc  = "Play Minesweeper Expert online — " ~ rows ~ "×" ~ cols ~ " board with " ~ mines ~ " mines. Free, no download required." %}
-  {% set _kw    = "minesweeper expert, minesweeper hard, minesweeper online, play minesweeper, free minesweeper" %}
+  {% set _title = t.meta_title_expert %}
+  {% set _desc  = t.meta_desc_expert | replace("{rows}", rows|string) | replace("{cols}", cols|string) | replace("{mines}", mines|string) %}
+  {% set _kw    = t.meta_kw_expert %}
   {% set _canon = "https://minesweeper.org/expert" %}
 {% endif %}
 
@@ -42,13 +42,13 @@
   </aside>
 
   <section class="game-section">
-    {% if mode == 'beginner' %}<h1 class="visually-hidden">Play Minesweeper Online — Free</h1>
-    {% elif mode == 'intermediate' %}<h1 class="visually-hidden">Minesweeper Intermediate — 16×16, 40 Mines</h1>
-    {% elif mode == 'expert' %}<h1 class="visually-hidden">Minesweeper Expert — 30×16, 99 Mines</h1>{% endif %}
+    {% if mode == 'beginner' %}<h1 class="visually-hidden">{{ t.game_h1_beginner }}</h1>
+    {% elif mode == 'intermediate' %}<h1 class="visually-hidden">{{ t.game_h1_intermediate }}</h1>
+    {% elif mode == 'expert' %}<h1 class="visually-hidden">{{ t.game_h1_expert }}</h1>{% endif %}
     <div class="game-info">
       <div class="mode-row">
         <div class="mode-badge">{{ t['nav_' + mode] }}</div>
-        <button id="noguess-toggle" onclick="toggleNoGuess()" title="Generate boards that require no guessing">No Guess</button>
+        <button id="noguess-toggle" onclick="toggleNoGuess()" title="{{ t.game_no_guess_title }}">{{ t.game_no_guess_btn }}</button>
       </div>
       <div class="stat-row">
         <div class="stat" id="mine-count">
@@ -61,7 +61,7 @@
           <span class="stat-value" id="timer">000</span>
         </div>
       </div>
-      <button id="flag-mode-btn" class="flag-mode-btn" onclick="toggleFlagMode()" title="Toggle flag mode">🚩 Flag</button>
+      <button id="flag-mode-btn" class="flag-mode-btn" onclick="toggleFlagMode()" title="{{ t.game_flag_title }}">{{ t.game_flag_btn }}</button>
     </div>
 
     <div id="board"
@@ -97,11 +97,7 @@
 <div class="game-landing" id="game-landing">
 
   <section class="game-landing-lb">
-    <h2 class="game-landing-lb-title" id="page-lb-title">🏆 Today's Best Times —
-      {% if mode == 'beginner' %}Beginner
-      {% elif mode == 'intermediate' %}Intermediate
-      {% else %}Expert{% endif %}
-    </h2>
+    <h2 class="game-landing-lb-title" id="page-lb-title">🏆 {{ t.index_todays_best }} — {{ t['nav_' + mode] }}</h2>
     <div class="lb-table-wrap">
       <table class="lb-table" id="page-lb-table">
         <thead>
