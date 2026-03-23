@@ -148,6 +148,40 @@
     </table>
   </section>
 
+  <!-- Git -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Git — This Week</h2>
+    <p style="font-size:0.85rem;color:var(--text-dim);margin:0 0 0.75rem">
+      Latest commit: <code>{{ git_head }}</code>
+    </p>
+    {% if git_contributors %}
+    <table class="lb-table" style="margin-bottom:1rem">
+      <thead><tr><th>Contributor</th><th>Commits</th></tr></thead>
+      <tbody>
+        {% for author, count in git_contributors %}
+        <tr><td>{{ author }}</td><td>{{ count }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+    {% if git_commits_this_week %}
+    <table class="lb-table">
+      <thead><tr><th>Hash</th><th>Author</th><th>Message</th></tr></thead>
+      <tbody>
+        {% for c in git_commits_this_week %}
+        <tr>
+          <td><code>{{ c.hash }}</code></td>
+          <td>{{ c.author }}</td>
+          <td>{{ c.subject }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--text-dim);font-size:0.9rem">No commits this week yet.</p>
+    {% endif %}
+  </section>
+
   <div class="lb-back"><a href="/">← Home</a></div>
 
 </div>

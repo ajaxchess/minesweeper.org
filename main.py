@@ -2302,6 +2302,34 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         if hasattr(UserProfile, "created_at") else "n/a"
     )
 
+    # Git activity this week
+    def _git(*args, **kwargs):
+        return subprocess.check_output(
+            args, cwd=os.path.dirname(os.path.abspath(__file__)),
+            text=True, timeout=5,
+        ).strip()
+
+    try:
+        git_head = _git("git", "rev-parse", "HEAD")
+        week_since = (today - __import__("datetime").timedelta(days=today.weekday())).isoformat()
+        log_lines = _git(
+            "git", "log", f"--since={week_since}",
+            "--format=%H|%an|%s",
+        ).splitlines()
+        git_commits_this_week = []
+        contributors: dict = {}
+        for line in log_lines:
+            parts = line.split("|", 2)
+            if len(parts) == 3:
+                h, author, subject = parts
+                git_commits_this_week.append({"hash": h[:7], "author": author, "subject": subject})
+                contributors[author] = contributors.get(author, 0) + 1
+        git_contributors = sorted(contributors.items(), key=lambda x: -x[1])
+    except Exception:
+        git_head = "unknown"
+        git_commits_this_week = []
+        git_contributors = []
+
     return templates.TemplateResponse("admin.html", {
         "request": request,
         "user": user,
@@ -2322,6 +2350,9 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         "cyl_all": cyl_all,
         "tor_today": tor_today,
         "tor_all": tor_all,
+        "git_head": git_head,
+        "git_commits_this_week": git_commits_this_week,
+        "git_contributors": git_contributors,
     })
 
 
