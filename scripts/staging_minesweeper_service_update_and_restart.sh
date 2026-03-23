@@ -31,9 +31,10 @@ else
     echo "Building static assets..."
     bash "$REPO_DIR/scripts/build_assets.sh" || echo "Warning: asset build failed (continuing)"
 
-    # --- Sync Python dependencies ---
+    # --- Sync Python dependencies (hash-pinned) ---
     echo "Installing/updating Python dependencies..."
-    "$VENV_DIR/bin/pip" install -r "$REPO_DIR/requirements.txt" --quiet || { echo "Warning: pip install failed"; }
+    "$VENV_DIR/bin/pip" install --require-hashes -r "$REPO_DIR/requirements.lock" \
+        || { echo "ERROR: pip install failed — hash mismatch or missing package. Aborting."; exit 1; }
 
     # --- Copy database.py ---
     FILE_PATH="$REPO_DIR/database_template.py"

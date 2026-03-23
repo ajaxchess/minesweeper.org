@@ -1,0 +1,20 @@
+# Top-level dependencies — edit this file, then regenerate the lock file with:
+#   pip-compile --generate-hashes requirements.in --output-file requirements.lock
+#
+# Production uses requirements.txt (no hashes).
+# Staging uses requirements.lock (hash-pinned, all transitive deps).
+
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+jinja2==3.1.4
+python-multipart==0.0.9
+sqlalchemy==2.0.35
+pymysql==1.1.1
+cryptography==43.0.1
+apscheduler==3.10.4
+authlib==1.3.2
+httpx==0.27.2
+itsdangerous==2.2.0
+Markdown==3.7
+psutil==5.9.8
+slowapi==0.1.9
