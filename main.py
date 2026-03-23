@@ -313,7 +313,8 @@ async def set_lang(request: Request, lang: str = "en", next: Optional[str] = Non
     # Use explicit next param, then referer, then home
     redirect_to = next or request.headers.get("referer", "/")
     # Safety: only allow relative URLs to prevent open redirect
-    if redirect_to.startswith("http"):
+    # Block absolute (http/https) and protocol-relative (//evil.com) URLs
+    if not redirect_to.startswith("/") or redirect_to.startswith("//"):
         redirect_to = "/"
     response = RedirectResponse(url=redirect_to)
     response.set_cookie("lang", lang, max_age=365 * 24 * 3600, samesite="lax")
