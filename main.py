@@ -351,6 +351,9 @@ async def leaderboard_page(request: Request):
 @app.get("/auth/login")
 async def login(request: Request):
     next_url = request.query_params.get("next", "/")
+    # Reject absolute URLs to prevent open-redirect phishing via OAuth flow
+    if not next_url.startswith("/") or next_url.startswith("//"):
+        next_url = "/"
     request.session["next"] = next_url
     redirect_uri = request.url_for("auth_callback")
     return await oauth.google.authorize_redirect(request, redirect_uri)
