@@ -607,6 +607,17 @@ footer a {
 }
 footer a:hover { text-decoration: underline; }
 
+/* ── Result panel below the board (beginner / intermediate / expert / replay) */
+/* The overlay JS appends to #game-result when it exists.  Without a          */
+/* positioned ancestor between #game-result and <body>, position:absolute;    */
+/* inset:0 stretches the overlay to cover the entire viewport.  Override to   */
+/* static so it flows naturally below the board instead.                      */
+#game-result .overlay {
+  position: static;
+  margin-top: 0.75rem;
+  min-width: 260px;
+}
+
 /* ── Overlay score form ──────────────────────────────────────────────────── */
 .overlay-score-form {
   display: flex;

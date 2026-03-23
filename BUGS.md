@@ -1,6 +1,15 @@
 
 -- Fixed below --
 
+B14 Win/loss overlay covers the entire viewport on beginner/intermediate/expert
+   The JS appends #game-overlay to #game-result (a sibling of #board).
+   .overlay uses position:absolute; inset:0, but there is no positioned ancestor
+   between #game-result and <body>, so the overlay stretches to cover the whole page.
+   Fixed by adding #game-result .overlay { position: static; margin-top: 0.75rem; }
+   so the result panel flows naturally below the board.
+   Variant pages (cylinder, toroid) are unaffected — their overlay is appended
+   directly to #board which already has position:relative.
+
 B13 Tentaizu bridge sentence not centered
    The <p class="tz-bridge-sentence"> element had no CSS rule, so it rendered left-aligned
    while the rest of the page is centered.
