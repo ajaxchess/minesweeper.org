@@ -148,6 +148,13 @@
   </url>
 
   <url>
+    <loc>https://minesweeper.org/mosaic/how-to-play</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://minesweeper.org/mosaic/custom/</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
@@ -289,6 +296,14 @@
     <lastmod>2026-03-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+
+  <!-- ── Links page ───────────────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/links</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 
   <!-- ── Site info ─────────────────────────────────────────────────────────── -->

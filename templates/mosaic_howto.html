@@ -329,6 +329,136 @@
   </section>
 
   <section class="tz-section">
+    <h2>Intermediate Patterns</h2>
+    <p>
+      Once you apply a basic pattern you will often satisfy an adjacent clue for free.
+      These two rules let you read those consequences immediately.
+    </p>
+
+    <h3>Green clue &mdash; clear all remaining unknowns</h3>
+    <p>
+      The moment a clue turns green its count is exactly met.
+      Every unknown cell still in its neighborhood must be <strong>white</strong> — clear them right away.
+    </p>
+    <p>
+      Example: filling the corner's 2×2 block places 4 black cells inside this left-edge cell's
+      neighborhood, turning its clue of 4 green. The 2 unknowns at the top are forced white.
+    </p>
+    <div class="ms-demo-row">
+      <div class="ms-demo-pos">
+        <span class="ms-demo-pos-label">Left-edge clue = 4 — already satisfied</span>
+        <div class="ms-demo-pair">
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">Before</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(2,42px)">
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell ms-black"><span class="ms-hint ms-hint-ok">4</span></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"></div>
+            </div>
+          </div>
+          <span class="ms-demo-arrow">→</span>
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">After</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(2,42px)">
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-black"><span class="ms-hint ms-hint-ok">4</span></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Satisfied edge clue cascades up &mdash; interior clue forces white row</h3>
+    <p>
+      A bottom-edge clue of 6 fills its entire 2×3 neighborhood (middle and bottom rows of the
+      3×3 view below) — that is the basic pattern applied once.
+      The interior cell directly above it also has clue 6.
+      Its 9-cell neighborhood now contains those same 6 black cells, so it too turns green
+      immediately. Its top row of 3 unknowns must be <strong>white</strong>.
+    </p>
+    <div class="ms-demo-row">
+      <div class="ms-demo-pos">
+        <span class="ms-demo-pos-label">Edge clue = 6 below, interior clue = 6 above</span>
+        <div class="ms-demo-pair">
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">Before</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(3,42px)">
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"><span class="ms-hint">6</span></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"><span class="ms-hint">6</span></div>
+              <div class="ms-cell"></div>
+            </div>
+          </div>
+          <span class="ms-demo-arrow">→</span>
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">After</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(3,42px)">
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"><span class="ms-hint ms-hint-ok">6</span></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"><span class="ms-hint ms-hint-ok">6</span></div>
+              <div class="ms-cell ms-black"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Remaining unknowns = remaining count &mdash; fill all black</h3>
+    <p>
+      If a clue still needs <em>N</em> more black cells and has exactly <em>N</em> unknowns
+      remaining, every one of those unknowns must be <strong>black</strong>.
+    </p>
+    <p>
+      Example: a corner clue of 3 where one neighbor is already white.
+      Three cells are still unknown; the clue needs exactly 3 more black. Fill all three.
+    </p>
+    <div class="ms-demo-row">
+      <div class="ms-demo-pos">
+        <span class="ms-demo-pos-label">Corner clue = 3 — one neighbor already white</span>
+        <div class="ms-demo-pair">
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">Before</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(2,42px)">
+              <div class="ms-cell"><span class="ms-hint">3</span></div>
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+            </div>
+          </div>
+          <span class="ms-demo-arrow">→</span>
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">After</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(2,42px)">
+              <div class="ms-cell ms-black"><span class="ms-hint ms-hint-ok">3</span></div>
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="tz-section">
     <h2>Step-by-Step: Your First Solve</h2>
     <ol class="tz-list tz-steps">
       <li>
