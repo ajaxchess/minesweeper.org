@@ -20,6 +20,25 @@
   // ── State ──────────────────────────────────────────────────────────────────
   let state = {};
 
+  // ── XYZZY cheat ────────────────────────────────────────────────────────────
+  // Classic Windows 98/2000/XP Minesweeper easter egg — login required.
+  // Sequence: type "xyzzy", press Shift+Enter, then press Shift.
+  // A 1×1 pixel at the top-left corner: black = mine, white = safe.
+  // Activating the cheat marks the current game session — scores are not recorded.
+  let xyzzyStep   = 0;   // 0=idle 1=xyzzy-typed 2=shift+enter-pressed 3=active
+  let xyzzyBuffer = '';
+  let xyzzyUsed   = false;
+
+  function updateXyzzyPixel(r, c) {
+    const px = document.getElementById('xyzzy-pixel');
+    if (!px || xyzzyStep !== 3) return;
+    if (r === null || c === null || !state.board) {
+      px.style.background = 'white';
+      return;
+    }
+    px.style.background = (state.board[r][c] === -1) ? 'black' : 'white';
+  }
+
   function freshState() {
     return {
       rows: ROWS, cols: COLS, mines: MINES,
@@ -302,7 +321,9 @@
 
     let scoreForm = '';
     if (won) {
-      if (username) {
+      if (xyzzyUsed) {
+        scoreForm = `<div id="replay-score-msg" style="font-size:0.85rem;opacity:0.7">⚠️ Cheat mode was active — score not recorded.</div>`;
+      } else if (username) {
         scoreForm = `<div id="replay-score-msg" style="font-size:0.9rem">Saving score…</div>`;
       } else {
         const loginHref = '/auth/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
@@ -326,9 +347,9 @@
     `;
     el.style.display = 'flex';
 
-    if (won && username) {
+    if (won && !xyzzyUsed && username) {
       submitScore(username);
-    } else if (won) {
+    } else if (won && !xyzzyUsed) {
       setTimeout(() => {
         const inp = document.getElementById('replay-player-name');
         if (inp) {
@@ -345,6 +366,10 @@
     const nameEl = document.getElementById('replay-player-name');
     const name   = autoName || nameEl?.value.trim();
 
+    if (xyzzyUsed) {
+      if (msgEl) msgEl.textContent = '⚠️ Cheat mode was active — score not recorded.';
+      return;
+    }
     if (!name) { if (msgEl) msgEl.textContent = '⚠️ Please enter your name.'; return; }
 
     const payload = {
@@ -437,6 +462,8 @@
           () => { if (flagMode) { state.rightClicks++; flag(r, c); } else { state.leftClicks++; reveal(r, c); } },
           () => { state.rightClicks++; flag(r, c); }
         );
+        cell.addEventListener('mouseover', () => updateXyzzyPixel(r, c));
+        cell.addEventListener('mouseout',  () => updateXyzzyPixel(null, null));
         boardEl.appendChild(cell);
       }
     }
@@ -682,6 +709,45 @@
     document.getElementById('reset-btn')?.addEventListener('click', () => initGame(currentVariant));
 
     initGame(INIT_VARIANT);
+
+    // ── XYZZY pixel ────────────────────────────────────────────────────────────
+    const pixel = document.createElement('div');
+    pixel.id = 'xyzzy-pixel';
+    pixel.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;z-index:9999;display:none';
+    document.body.appendChild(pixel);
+
+    document.addEventListener('keydown', function(e) {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (xyzzyStep === 0) {
+        if (e.key.length === 1) {
+          xyzzyBuffer += e.key.toLowerCase();
+          if (xyzzyBuffer.length > 5) xyzzyBuffer = xyzzyBuffer.slice(-5);
+          if (xyzzyBuffer === 'xyzzy') xyzzyStep = 1;
+        }
+      } else if (xyzzyStep === 1) {
+        if (e.key === 'Enter' && e.shiftKey)  { xyzzyStep = 2; }
+        else if (e.key !== 'Shift')           { xyzzyStep = 0; xyzzyBuffer = ''; }
+      } else if (xyzzyStep === 2) {
+        if (e.key === 'Shift') {
+          const username = document.getElementById('board')?.dataset.username || '';
+          if (!username) {
+            xyzzyStep = 0;
+            xyzzyBuffer = '';
+            const loginHref = '/auth/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#eee;padding:10px 20px;border-radius:6px;z-index:9998;font-size:0.9rem;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.5)';
+            toast.innerHTML = '🔒 <a href="' + loginHref + '" style="color:#7ec8e3">Login with Google</a> to enable cheat mode.';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+          } else {
+            xyzzyStep = 3;
+            xyzzyUsed = true;
+            pixel.style.display = 'block';
+            pixel.style.background = 'white';
+          }
+        } else { xyzzyStep = 0; xyzzyBuffer = ''; }
+      }
+    });
   });
 
 })();

@@ -110,6 +110,62 @@
   </div>
 
   <div class="help-section">
+    <h2>Board Builder and Replay Mode</h2>
+    <p>
+      The <a href="/variants/board-generator">Board Generator</a> lets you design your own
+      Minesweeper board by clicking cells to place mines. Once you're happy with the layout, the
+      tool produces a <strong>board hash</strong> — a compact Base64 encoding of every mine
+      position — along with a shareable link.
+    </p>
+    <p>
+      Paste that link (or any board hash) into the <a href="/variants/replay/">Replay</a> page
+      to play that exact board, share it with friends, or race against their times. The Replay
+      page also supports Cylinder and Toroid topologies for the same hash.
+    </p>
+    <p>
+      Replay games operate on a <strong>separate leaderboard per board hash</strong>. Times
+      posted on a replay board are tracked against other players who have played that same
+      specific layout — they do <em>not</em> appear on the global leaderboard that tracks
+      standard Beginner / Intermediate / Expert games. Each unique hash has its own rankings,
+      so a particularly well-designed board can attract its own competitive community.
+    </p>
+  </div>
+
+  <div class="help-section" id="cheatcode">
+    <h2>Easter Egg: The XYZZY Cheat Code</h2>
+    <p>
+      The most famous Minesweeper cheat code dates back to the original Windows 98/2000/XP version
+      of the game. Its name, <strong>XYZZY</strong>, is a magic spell from
+      <em>Colossal Cave Adventure</em> (1975) — one of the earliest text adventure games — where
+      typing it teleported the player to a different location. It became a beloved Easter egg
+      trigger that appeared in dozens of programs over the following decades.
+    </p>
+    <p>
+      In Windows Minesweeper, typing <code>XYZZY</code>, then pressing <strong>Shift+Enter</strong>,
+      then pressing <strong>Shift</strong> again caused a single pixel to appear in the top-left
+      corner of the screen. The pixel turned <strong>black</strong> when the cursor was over a mine
+      and <strong>white</strong> when it was over a safe cell. Microsoft removed the cheat in
+      Windows Vista.
+    </p>
+    <p>
+      <strong>minesweeper.org has a faithful recreation of this cheat</strong>, available on the
+      <a href="/variants/replay/">Replay</a> page.
+      Because the board is pre-determined on a replay, the cheat works perfectly — the pixel
+      reflects the mine layout encoded in the board hash.
+    </p>
+    <p>
+      To activate: navigate to <a href="/variants/replay/">any Replay board</a>,
+      type <code>XYZZY</code>, press <strong>Shift+Enter</strong>, then press <strong>Shift</strong>.
+      A 1×1 pixel will appear at the very top-left corner of your browser window.
+    </p>
+    <ul>
+      <li>You must be <strong>signed in with Google</strong> to enable it — guests will see a login prompt instead.</li>
+      <li>Any game completed with cheat mode active will <strong>not</strong> be recorded on the leaderboard.</li>
+      <li>The cheat is available on the Replay page only; it is not available during standard, competitive, or daily games.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
     <h2>Tips for Improving Your Speed</h2>
     <p>Once you're comfortable with the logic, the next challenge is getting faster. Here are some tips:</p>
     <p><strong>Learn to chord.</strong> Chording (double-clicking) is a technique where you click on a revealed number that already has all its mines flagged. This instantly reveals all remaining covered neighbors of that cell. It saves enormous amounts of time compared to clicking each safe cell individually.</p>

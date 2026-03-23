@@ -83,6 +83,16 @@ F41 SEO structured data and page differentiation
     /pvp now targets "competitive minesweeper / minesweeper ranked / minesweeper elo" keyword cluster
     /duel retains its "challenge a friend / 1v1" positioning
 
+F43 XYZZY Cheat Code (Replay mode only)
+  - Classic Windows 98/2000/XP Minesweeper easter egg faithfully recreated
+  - Activation sequence: type "xyzzy", press Shift+Enter, then press Shift
+  - A 1×1 pixel appears at top-left corner: black = mine under cursor, white = safe
+  - Available on /variants/replay/ only (not standard, competitive, or daily games)
+  - Requires login — guests see a toast with a Google login link instead
+  - Games completed with cheat active are excluded from the replay leaderboard
+  - Documented in /how-to-play#cheatcode with history of the XYZZY origin
+    (Colossal Cave Adventure, 1975)
+
 F40 Server Health Checks and Deploy Gate
   - GET /iamatestfile.txt returns plain text "healthy" for uptime monitors and load balancer probes
   - GET /health returns service status; restricted to localhost only (403 for external requests)
