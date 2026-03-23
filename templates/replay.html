@@ -6,6 +6,21 @@
 {% block og_url %}https://minesweeper.org/variants/replay/{% endblock %}
 {% block og_title %}Board Replay — minesweeper.org{% endblock %}
 {% block og_description %}Play a specific Minesweeper board in Standard, Cylinder, or Toroid mode and compete for the fastest time.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Minesweeper Board Replay",
+  "url": "https://minesweeper.org/variants/replay/",
+  "description": "Replay a specific Minesweeper board in Standard, Cylinder, or Toroid mode. Share the board hash with friends and compete for the fastest time on identical boards.",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <h1 class="tz-page-h1">Minesweeper Board Replay</h1>

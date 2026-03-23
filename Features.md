@@ -60,6 +60,14 @@ F38 Light theme
 
 F39 Use light theme during daylight hours based on client browser local time, defaulting to dark otherwise
 
+F41 SEO structured data and page differentiation
+  - Self-referencing JSON-LD url on variant and tool pages (cylinder, toroid, board-generator, replay)
+    Previously all inherited the homepage url from base.html; each page now declares its own canonical url in JSON-LD
+  - board-generator and replay use WebApplication schema type (more accurate than VideoGame for interactive tools)
+  - /pvp differentiated from /duel: distinct title, meta description, canonical, keywords, og:*, and JSON-LD
+    /pvp now targets "competitive minesweeper / minesweeper ranked / minesweeper elo" keyword cluster
+    /duel retains its "challenge a friend / 1v1" positioning
+
 F40 Server Health Checks
   - GET /iamatestfile.txt returns plain text "healthy" for uptime monitors and load balancer probes
   - GET /health returns service status; restricted to localhost only (403 for external requests)

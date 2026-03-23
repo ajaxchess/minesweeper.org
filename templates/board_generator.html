@@ -6,6 +6,21 @@
 {% block og_url %}https://minesweeper.org/variants/board-generator{% endblock %}
 {% block og_title %}Board Generator — Custom Minesweeper Boards{% endblock %}
 {% block og_description %}Place mines on a grid to create a custom board. Get a board hash, 3BV values for all three topologies, and a shareable Mosaic link.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Minesweeper Board Generator",
+  "url": "https://minesweeper.org/variants/board-generator",
+  "description": "Design custom Minesweeper boards by placing mines on a grid. Get the board hash, 3BV for Standard/Cylinder/Toroid variants, and a shareable Mosaic puzzle link.",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="bg-page">

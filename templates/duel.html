@@ -1,4 +1,33 @@
 {% extends "base.html" %}
+{% if mode == 'pvp' %}
+{% block title %}Competitive Minesweeper — Ranked PvP Matchmaking | minesweeper.org{% endblock %}
+{% block description %}Play ranked competitive Minesweeper against real opponents. ELO-rated matchmaking, bot practice, leaderboards, and global rankings. Free to play.{% endblock %}
+{% block keywords %}<meta name="keywords" content="minesweeper pvp, competitive minesweeper, minesweeper ranked, minesweeper elo, minesweeper matchmaking, minesweeper vs">{% endblock %}
+{% block canonical %}https://minesweeper.org/pvp{% endblock %}
+{% block og_url %}https://minesweeper.org/pvp{% endblock %}
+{% block og_title %}PvP Minesweeper — Ranked Competitive Play{% endblock %}
+{% block og_description %}ELO-rated ranked Minesweeper matchmaking. Play competitive games, climb the leaderboard, and earn a global ranking.{% endblock %}
+{% block og_image %}https://minesweeper.org/static/img/og-duel.png{% endblock %}
+{% block tw_title %}PvP Minesweeper — Ranked Competitive Play{% endblock %}
+{% block tw_description %}ELO-rated ranked Minesweeper matchmaking. Climb the leaderboard and earn a global ranking.{% endblock %}
+{% block tw_image %}https://minesweeper.org/static/img/og-duel.png{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Competitive Minesweeper PvP",
+  "url": "https://minesweeper.org/pvp",
+  "description": "ELO-rated ranked Minesweeper matchmaking. Play competitive games against real opponents or bots, climb the leaderboard, and earn a global ranking.",
+  "genre": ["Puzzle", "Strategy", "Competitive", "Multiplayer"],
+  "gamePlatform": "Web Browser",
+  "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 2, "maxValue": 2 },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+}
+</script>
+{% endblock %}
+{% else %}
 {% block title %}Multiplayer Minesweeper — 1v1 Duel Mode | minesweeper.org{% endblock %}
 {% block description %}Challenge a friend to a real-time Minesweeper duel. Race head-to-head on the same board — first to clear it wins. Free, no account needed.{% endblock %}
 {% block keywords %}<meta name="keywords" content="minesweeper multiplayer, minesweeper 1v1, minesweeper duel, 2 player minesweeper, play minesweeper with friends, online minesweeper">{% endblock %}
@@ -25,6 +54,7 @@
 }
 </script>
 {% endblock %}
+{% endif %}
 
 {% block content %}
 {% if mode == 'pvp' %}<h1 class="tz-page-h1">PvP Minesweeper — Real-Time Matchmaking</h1>

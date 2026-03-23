@@ -24,6 +24,22 @@
 {% block og_url %}{{ _canon }}{% endblock %}
 {% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
 {% block og_description %}{{ _desc }}{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "{{ _title | replace(' | minesweeper.org', '') }}",
+  "url": "{{ _canon }}",
+  "description": "{{ _desc }}",
+  "genre": ["Puzzle", "Strategy", "Browser Game"],
+  "gamePlatform": "Web Browser",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <h1 class="tz-page-h1">{{ _title | replace(" | minesweeper.org", "") }}</h1>
