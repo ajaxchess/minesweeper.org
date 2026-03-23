@@ -2347,6 +2347,8 @@ html[data-skin="classic"] .bot-play-btn:visited { color: #fff; }
   margin: 0 auto;
 }
 
+.tz-bridge-sentence { text-align: center; }
+
 #tz-board-wrap { position: relative; }
 
 #tz-board {
