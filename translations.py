@@ -248,6 +248,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
+        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
         "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
@@ -511,6 +512,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
+        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
         "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
@@ -774,6 +776,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategie",
         "meta_genre_browser":  "Browserspiel",
         "meta_platform":       "Webbrowser",
+        "meta_jsonld_desc":    "Minesweeper kostenlos online spielen. Klassischer, Ohne-Raten- und Echtzeit-1v1-Duell-Modus. Kein Download n\u00f6tig.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Kostenlos Online Spielen | Mehrspieler & Klassische Modi",
         "meta_desc_beginner":      "Minesweeper kostenlos online spielen \u2014 klassischer, Ohne-Raten- und Echtzeit-1v1-Duell-Modus. Kein Download n\u00f6tig. Fordere einen Freund heraus oder spiele allein.",
@@ -1037,6 +1040,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
+        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
         "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
@@ -1302,6 +1306,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
+        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
         "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
@@ -1567,6 +1572,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
+        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
         "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
@@ -1832,6 +1838,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
+        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
         "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
@@ -2095,6 +2102,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
+        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
         "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
@@ -2358,6 +2366,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
+        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
         "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
@@ -2621,6 +2630,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
+        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
         "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
@@ -2883,6 +2893,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
+        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
         "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
@@ -3145,6 +3156,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
+        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
         "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
@@ -3407,6 +3419,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
+        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
         "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
@@ -3670,6 +3683,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
+        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
         "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
