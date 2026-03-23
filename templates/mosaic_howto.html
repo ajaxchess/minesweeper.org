@@ -128,56 +128,203 @@
   </section>
 
   <section class="tz-section">
-    <h2>Obvious Patterns to Solve Immediately</h2>
+    <h2>Basic Patterns</h2>
     <p>
-      These patterns let you fill or clear entire neighborhoods in one move — always scan for
-      them first before doing any harder reasoning.
+      These patterns let you fill or clear entire neighborhoods in one move.
+      Always scan for them first — they require no reasoning beyond recognising the clue value.
     </p>
 
-    <h3>Any position — clue = 0</h3>
+    <h3>Clue = 0 — clear all neighbors</h3>
     <p>
-      Every cell in the 3×3 neighborhood must be <strong>white</strong>. A zero means zero
-      black cells anywhere nearby — clear all unknown neighbors immediately.
+      Zero black cells anywhere in the neighborhood. Every unknown neighbor is immediately white.
+      The neighborhood size changes by position (corner 4, edge 6, interior 9) but the rule is always the same.
+    </p>
+    <div class="ms-demo-row">
+
+      <div class="ms-demo-pos">
+        <span class="ms-demo-pos-label">Corner &mdash; 4 cells</span>
+        <div class="ms-demo-pair">
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">Before</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(2,42px)">
+              <div class="ms-cell"><span class="ms-hint">0</span></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+            </div>
+          </div>
+          <span class="ms-demo-arrow">→</span>
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">After</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(2,42px)">
+              <div class="ms-cell ms-white"><span class="ms-hint ms-hint-ok">0</span></div>
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-white"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ms-demo-pos">
+        <span class="ms-demo-pos-label">Edge &mdash; 6 cells</span>
+        <div class="ms-demo-pair">
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">Before</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(3,42px)">
+              <div class="ms-cell"></div>
+              <div class="ms-cell"><span class="ms-hint">0</span></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+            </div>
+          </div>
+          <span class="ms-demo-arrow">→</span>
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">After</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(3,42px)">
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-white"><span class="ms-hint ms-hint-ok">0</span></div>
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-white"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ms-demo-pos">
+        <span class="ms-demo-pos-label">Interior &mdash; 9 cells</span>
+        <div class="ms-demo-pair">
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">Before</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(3,42px)">
+              <div class="ms-cell"></div><div class="ms-cell"></div><div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"><span class="ms-hint">0</span></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div><div class="ms-cell"></div><div class="ms-cell"></div>
+            </div>
+          </div>
+          <span class="ms-demo-arrow">→</span>
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">After</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(3,42px)">
+              <div class="ms-cell ms-white"></div><div class="ms-cell ms-white"></div><div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-white"><span class="ms-hint ms-hint-ok">0</span></div>
+              <div class="ms-cell ms-white"></div>
+              <div class="ms-cell ms-white"></div><div class="ms-cell ms-white"></div><div class="ms-cell ms-white"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <h3>Clue = maximum — fill all neighbors</h3>
+    <p>
+      When a clue equals the total number of cells in its neighborhood, every cell must be black.
+      Neighbourhood maxima: <strong>4</strong> at a corner, <strong>6</strong> on an edge, <strong>9</strong> in the interior.
+    </p>
+    <div class="ms-demo-row">
+
+      <div class="ms-demo-pos">
+        <span class="ms-demo-pos-label">Corner &mdash; clue = 4</span>
+        <div class="ms-demo-pair">
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">Before</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(2,42px)">
+              <div class="ms-cell"><span class="ms-hint">4</span></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+            </div>
+          </div>
+          <span class="ms-demo-arrow">→</span>
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">After</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(2,42px)">
+              <div class="ms-cell ms-black"><span class="ms-hint ms-hint-ok">4</span></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ms-demo-pos">
+        <span class="ms-demo-pos-label">Edge &mdash; clue = 6</span>
+        <div class="ms-demo-pair">
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">Before</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(3,42px)">
+              <div class="ms-cell"></div>
+              <div class="ms-cell"><span class="ms-hint">6</span></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+            </div>
+          </div>
+          <span class="ms-demo-arrow">→</span>
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">After</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(3,42px)">
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"><span class="ms-hint ms-hint-ok">6</span></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ms-demo-pos">
+        <span class="ms-demo-pos-label">Interior &mdash; clue = 9</span>
+        <div class="ms-demo-pair">
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">Before</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(3,42px)">
+              <div class="ms-cell"></div><div class="ms-cell"></div><div class="ms-cell"></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"><span class="ms-hint">9</span></div>
+              <div class="ms-cell"></div>
+              <div class="ms-cell"></div><div class="ms-cell"></div><div class="ms-cell"></div>
+            </div>
+          </div>
+          <span class="ms-demo-arrow">→</span>
+          <div class="ms-demo-step">
+            <span class="ms-demo-label">After</span>
+            <div class="ms-demo" style="grid-template-columns:repeat(3,42px)">
+              <div class="ms-cell ms-black"></div><div class="ms-cell ms-black"></div><div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"><span class="ms-hint ms-hint-ok">9</span></div>
+              <div class="ms-cell ms-black"></div>
+              <div class="ms-cell ms-black"></div><div class="ms-cell ms-black"></div><div class="ms-cell ms-black"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <h3>Satisfied clue (turns green) — clear remaining unknowns</h3>
+    <p>
+      As soon as a clue turns green its count is exactly met.
+      Every remaining <em>unknown</em> (grey) cell in its neighborhood must be <strong>white</strong> — clear them immediately.
     </p>
 
-    <h3>Corner — clue = 4</h3>
+    <h3>Remaining unknowns = remaining count — fill all black</h3>
     <p>
-      A corner cell has a 2×2 neighborhood of exactly 4 cells. A clue of <strong>4</strong>
-      means all 4 cells must be <strong>black</strong> — fill them all at once.
-      Similarly, a corner <strong>0</strong> clears all 4.
-    </p>
-
-    <h3>Edge (non-corner) — clue = 6</h3>
-    <p>
-      An edge cell has a 2×3 neighborhood of exactly 6 cells. A clue of <strong>6</strong>
-      means all 6 must be <strong>black</strong>. An edge <strong>0</strong> clears all 6.
-    </p>
-
-    <h3>Interior cell — clue = 9</h3>
-    <p>
-      An interior cell has the full 3×3 neighborhood of 9 cells. A clue of <strong>9</strong>
-      means every one of those 9 cells is <strong>black</strong> — fill the entire 3×3 block.
-    </p>
-
-    <h3>Any position — clue equals neighborhood size</h3>
-    <p>
-      The three examples above are all the same principle: when a clue equals the total number
-      of cells in its neighborhood, every neighbor must be black. Memorise the neighborhood
-      sizes — <strong>4</strong> (corner), <strong>6</strong> (edge), <strong>9</strong>
-      (interior) — and you can apply this rule instantly.
-    </p>
-
-    <h3>Any position — satisfied clue (turns green)</h3>
-    <p>
-      As soon as a clue turns green, the count is exact. Every remaining <em>unknown</em> cell
-      in its neighborhood must be <strong>white</strong> — clear them all without further thought.
-    </p>
-
-    <h3>Any position — remaining unknowns equal remaining count</h3>
-    <p>
-      If a clue still needs <em>N</em> more black cells and has exactly <em>N</em> unknown
-      neighbors left, every one of those unknowns must be <strong>black</strong>. This is the
-      complement of the green-clue rule and is equally powerful.
+      If a clue still needs <em>N</em> more black cells and has exactly <em>N</em> unknown neighbors left,
+      every one of those unknowns must be <strong>black</strong>.
+      This is the complement of the green-clue rule and is equally powerful.
     </p>
   </section>
 

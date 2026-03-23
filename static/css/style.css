@@ -4718,6 +4718,67 @@ html[data-skin="tentaizu"] #mine-count .stat-icon::after {
 .ms-replay-link { color: var(--accent2); text-decoration: none; font-size: 1rem; }
 .ms-replay-link:hover { opacity: 0.8; }
 
+/* ── Mosaic how-to-play demo illustrations ───────────────────────────────── */
+.ms-demo {
+  display: inline-grid;
+  gap: 2px;
+  background: var(--surface2);
+  padding: 2px;
+  border-radius: 4px;
+}
+/* Freeze hover colours so demo tiles don't change on mouseover */
+.ms-demo .ms-cell          { cursor: default; }
+.ms-demo .ms-cell:hover          { background: #b0b8c8; }
+.ms-demo .ms-cell.ms-white:hover { background: #f0f4ff; }
+.ms-demo .ms-cell.ms-black:hover { background: #1e1e2e; }
+
+.ms-demo-pair {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ms-demo-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ms-demo-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ms-demo-arrow {
+  font-size: 1.4rem;
+  color: var(--text-dim);
+}
+
+.ms-demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5rem;
+  margin: 0.75rem 0 1.75rem;
+  align-items: flex-start;
+}
+
+.ms-demo-pos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ms-demo-pos-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
 /* Hide Numbers toggle */
 .ms-hints-hidden .ms-hint { visibility: hidden; }
 .ms-hide-numbers-btn { font-size: 0.85rem; opacity: 0.8; }
