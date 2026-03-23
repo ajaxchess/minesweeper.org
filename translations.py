@@ -278,6 +278,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
         "meta_jsonld_genre_logic":       "Logic",
         "meta_jsonld_genre_brain_teaser":"Brain Teaser",
+        "meta_kw_leaderboard":     "minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper",
+        "meta_kw_howtoplay":       "how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper",
     },
 
     "eo": {
@@ -557,6 +559,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
         "meta_jsonld_genre_logic":       "Logic",
         "meta_jsonld_genre_brain_teaser":"Brain Teaser",
+        "meta_kw_leaderboard":     "minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper",
+        "meta_kw_howtoplay":       "how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper",
     },
 
     "de": {
@@ -836,6 +840,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "Ein t\u00e4gliches 7\u00d77-Logikr\u00e4tsel aus Japan. Alle 10 Minen mit Zahlenhinweisen finden \u2014 kein Raten n\u00f6tig. Jedes R\u00e4tsel ist durch reine Deduktion l\u00f6sbar.",
         "meta_jsonld_genre_logic":       "Logik",
         "meta_jsonld_genre_brain_teaser":"Denkspiel",
+        "meta_kw_leaderboard":     "minesweeper bestenliste, minesweeper highscores, minesweeper bestzeiten, minesweeper rekorde, schnellstes minesweeper",
+        "meta_kw_howtoplay":       "minesweeper spielanleitung, minesweeper tipps, minesweeper strategie, minesweeper regeln, minesweeper muster, minesweeper ohne raten",
     },
 
     "es": {
@@ -1115,6 +1121,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
         "meta_jsonld_genre_logic":       "Logic",
         "meta_jsonld_genre_brain_teaser":"Brain Teaser",
+        "meta_kw_leaderboard":     "minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper",
+        "meta_kw_howtoplay":       "how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper",
     },
 
     "th": {
@@ -1396,6 +1404,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
         "meta_jsonld_genre_logic":       "Logic",
         "meta_jsonld_genre_brain_teaser":"Brain Teaser",
+        "meta_kw_leaderboard":     "minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper",
+        "meta_kw_howtoplay":       "how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper",
     },
 
     "pgl": {
@@ -1677,6 +1687,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
         "meta_jsonld_genre_logic":       "Logic",
         "meta_jsonld_genre_brain_teaser":"Brain Teaser",
+        "meta_kw_leaderboard":     "minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper",
+        "meta_kw_howtoplay":       "how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper",
     },
 
     "uk": {
@@ -1958,6 +1970,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
         "meta_jsonld_genre_logic":       "Logic",
         "meta_jsonld_genre_brain_teaser":"Brain Teaser",
+        "meta_kw_leaderboard":     "minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper",
+        "meta_kw_howtoplay":       "how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper",
     },
 
     "fr": {
@@ -2237,6 +2251,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
         "meta_jsonld_genre_logic":       "Logic",
         "meta_jsonld_genre_brain_teaser":"Brain Teaser",
+        "meta_kw_leaderboard":     "minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper",
+        "meta_kw_howtoplay":       "how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper",
     },
 
     "ko": {
@@ -2516,6 +2532,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
         "meta_jsonld_genre_logic":       "Logic",
         "meta_jsonld_genre_brain_teaser":"Brain Teaser",
+        "meta_kw_leaderboard":     "minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper",
+        "meta_kw_howtoplay":       "how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper",
     },
 
     "ja": {
@@ -2795,6 +2813,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
         "meta_jsonld_genre_logic":       "Logic",
         "meta_jsonld_genre_brain_teaser":"Brain Teaser",
+        "meta_kw_leaderboard":     "minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper",
+        "meta_kw_howtoplay":       "how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper",
     },
     "zh": {
         # Nav
@@ -3073,6 +3093,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
         "meta_jsonld_genre_logic":       "Logic",
         "meta_jsonld_genre_brain_teaser":"Brain Teaser",
+        "meta_kw_leaderboard":     "minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper",
+        "meta_kw_howtoplay":       "how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper",
     },
     "zh-hant": {
         # Nav
@@ -3351,6 +3373,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
         "meta_jsonld_genre_logic":       "Logic",
         "meta_jsonld_genre_brain_teaser":"Brain Teaser",
+        "meta_kw_leaderboard":     "minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper",
+        "meta_kw_howtoplay":       "how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper",
     },
     "pl": {
         # Nav
@@ -3629,6 +3653,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
         "meta_jsonld_genre_logic":       "Logic",
         "meta_jsonld_genre_brain_teaser":"Brain Teaser",
+        "meta_kw_leaderboard":     "minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper",
+        "meta_kw_howtoplay":       "how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper",
     },
 
     "tl": {
@@ -3908,6 +3934,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc_tentaizu":     "A daily 7\u00d77 mine logic puzzle from Japan. Find all 10 mines using number clues \u2014 no guessing required. Every puzzle is solvable by pure deduction.",
         "meta_jsonld_genre_logic":       "Logic",
         "meta_jsonld_genre_brain_teaser":"Brain Teaser",
+        "meta_kw_leaderboard":     "minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper",
+        "meta_kw_howtoplay":       "how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper",
     },
 }
 

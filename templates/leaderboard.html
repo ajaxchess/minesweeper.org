@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ t.meta_title_leaderboard }}{% endblock %}
 {% block description %}{{ t.meta_desc_leaderboard }}{% endblock %}
-{% block keywords %}<meta name="keywords" content="minesweeper leaderboard, minesweeper high scores, minesweeper best times, minesweeper records, fastest minesweeper">{% endblock %}
+{% block keywords %}<meta name="keywords" content="{{ t.meta_kw_leaderboard }}">{% endblock %}
 {% block canonical %}https://minesweeper.org/leaderboard{% endblock %}
 {% block og_url %}https://minesweeper.org/leaderboard{% endblock %}
 {% block og_title %}{{ t.meta_title_leaderboard | replace(" | minesweeper.org", "") }}{% endblock %}

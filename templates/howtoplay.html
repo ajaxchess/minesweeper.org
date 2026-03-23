@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ t.meta_title_howtoplay }}{% endblock %}
 {% block description %}{{ t.meta_desc_howtoplay }}{% endblock %}
-{% block keywords %}<meta name="keywords" content="how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper">{% endblock %}
+{% block keywords %}<meta name="keywords" content="{{ t.meta_kw_howtoplay }}">{% endblock %}
 {% block canonical %}https://minesweeper.org/how-to-play{% endblock %}
 {% block og_url %}https://minesweeper.org/how-to-play{% endblock %}
 {% block og_title %}{{ t.meta_title_howtoplay | replace(" | minesweeper.org", "") }}{% endblock %}
