@@ -1959,7 +1959,11 @@ class TentaizuEasyScoreSubmit(BaseModel):
     @field_validator("name")
     @classmethod
     def sanitize_name(cls, v: str) -> str:
-        return v.strip()
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
 
 
 @app.post("/api/tentaizu-easy-scores", status_code=201)
