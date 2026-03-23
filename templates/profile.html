@@ -485,7 +485,7 @@ async function saveSettings() {
   favoriteGame = sel ? sel.value : favoriteGame;
   await fetch('/api/profile/settings', {
     method:  'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
     body:    JSON.stringify({
       is_public:     isPublic,
       favorite_game: favoriteGame,
@@ -518,7 +518,7 @@ async function saveVanitySlug() {
   try {
     const res = await fetch('/api/profile/vanity-slug', {
       method:  'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
       body:    JSON.stringify({ vanity_slug: slug }),
     });
     const data = await res.json();
@@ -564,7 +564,7 @@ async function saveAbout() {
   try {
     const res = await fetch('/api/profile/about', {
       method:  'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
       body:    JSON.stringify({ about_text: ta.value }),
     });
     msg.textContent = res.ok ? 'Saved!' : 'Could not save.';
@@ -586,7 +586,7 @@ async function saveDisplayName() {
   try {
     const res = await fetch('/api/profile/display-name', {
       method:  'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
       body:    JSON.stringify({ display_name: name }),
     });
     if (res.ok) {

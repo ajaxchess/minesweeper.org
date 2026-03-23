@@ -262,7 +262,7 @@ async function saveScore(autoName = null) {
     try {
         const r = await fetch(G.scoreApi, {
             method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body:    JSON.stringify({ name, puzzle_date: G.seedStr, time_secs: Math.max(1, G.elapsed) }),
         });
         if (r.ok) {

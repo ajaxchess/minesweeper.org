@@ -59,6 +59,17 @@ async def count_requests(request: Request, call_next):
         _req_count += 1
     return await call_next(request)
 
+@app.middleware("http")
+async def csrf_xhr_check(request: Request, call_next):
+    """Require X-Requested-With: XMLHttpRequest on all /api/ POST requests.
+    Cross-origin fetch() cannot set custom headers without a CORS preflight,
+    so this header is unforgeable by third-party pages.
+    """
+    if request.method == "POST" and request.url.path.startswith("/api/"):
+        if request.headers.get("X-Requested-With") != "XMLHttpRequest":
+            return JSONResponse({"detail": "CSRF check failed"}, status_code=403)
+    return await call_next(request)
+
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="127.0.0.1")
 app.include_router(duel_router)

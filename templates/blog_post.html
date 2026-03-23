@@ -129,7 +129,7 @@ document.getElementById('blog-comment-form').addEventListener('submit', async fu
   try {
     const r = await fetch('/api/blog/{{ post.slug }}/comments', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       body:    JSON.stringify({ body }),
     });
     const data = await r.json();

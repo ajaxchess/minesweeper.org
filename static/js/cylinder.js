@@ -331,7 +331,7 @@
     try {
       const res = await fetch('/api/cylinder-scores', {
         method:  'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
         body:    JSON.stringify(payload),
       });
       if (res.ok) {

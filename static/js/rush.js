@@ -1003,7 +1003,7 @@ async function submitRushScore(autoName = null) {
   try {
     const res = await fetch('/api/rush-scores', {
       method:  'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
       body: JSON.stringify({
         name,
         rush_mode:     rush.mode,

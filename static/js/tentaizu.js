@@ -294,7 +294,7 @@ async function saveScore(autoName = null) {
     try {
         const r = await fetch('/api/tentaizu-scores', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify({ name, puzzle_date: G.puzzleId, time_secs: Math.max(1, G.elapsed) }),
         });
         if (r.ok) {
