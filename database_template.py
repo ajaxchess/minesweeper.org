@@ -275,6 +275,31 @@ class MosaicEasyScore(Base):
             "created_at":  self.created_at.strftime("%Y-%m-%d"),
         }
 
+# ── Mosaic Custom Score model (per hash+mask board) ──────────────────────────
+class MosaicCustomScore(Base):
+    __tablename__ = "mosaic_custom_scores"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    board_id   = Column(String(64), nullable=False)   # SHA-256 of "RxC:hash:mask"
+    name       = Column(String(32), nullable=False)
+    user_email = Column(String(256), nullable=True, index=True)
+    time_secs  = Column(Integer, nullable=False)
+    guest_token= Column(String(36), nullable=True, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_mosaic_custom_board_time", "board_id", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":        self.id,
+            "name":      self.name,
+            "board_id":  self.board_id,
+            "time_secs": self.time_secs,
+            "created_at": self.created_at.strftime("%Y-%m-%d"),
+        }
+
 # ── Cylinder Score model (permanent — never reset) ────────────────────────────
 class CylinderScore(Base):
     __tablename__ = "cylinder_scores"

@@ -33,6 +33,9 @@ let G = {
     player:       [],
     totalMines:   0,
     isPOTD:       true,
+    isHashBoard:  false,   // true when a custom hash+mask board has a score API
+    boardHash:    '',
+    boardMask:    '',
     seedStr:      '',
     scoreApi:     '/api/mosaic-scores',   // overridden for easy mode
     startTime:    null,
@@ -242,7 +245,7 @@ function onWin() {
     const username = board.dataset.username || '';
     const form     = document.getElementById('ms-score-form');
 
-    if (G.isPOTD) {
+    if (G.isPOTD || G.isHashBoard) {
         if (username) {
             if (form) form.style.display = 'none';
             const msg = document.getElementById('ms-score-msg');
@@ -273,12 +276,18 @@ async function saveScore(autoName = null) {
     if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
 
     try {
+        const body = G.isHashBoard
+            ? { board_hash: G.boardHash, board_mask: G.boardMask, rows: G.rows, cols: G.cols,
+                name, time_secs: Math.max(1, G.elapsed) }
+            : { name, puzzle_date: G.seedStr, time_secs: Math.max(1, G.elapsed) };
         const r = await fetch(G.scoreApi, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-            body:    JSON.stringify({ name, puzzle_date: G.seedStr, time_secs: Math.max(1, G.elapsed) }),
+            body:    JSON.stringify(body),
         });
         if (r.ok) {
+            const data = await r.json();
+            if (data.board_id) G._boardId = data.board_id;
             localStorage.setItem('ms_name', name);
             if (btn) btn.textContent = '✓ Saved!';
             if (msg) msg.textContent = `✅ Score saved for ${esc(name)}!`;
@@ -307,16 +316,20 @@ function updatePermalink() {
 
 // ── Leaderboard ───────────────────────────────────────────────────────────────
 async function loadLeaderboard() {
-    if (!G.isPOTD) return;
+    if (!G.isPOTD && !G.isHashBoard) return;
     const el = document.getElementById('ms-lb-content');
     if (!el) return;
     el.innerHTML = '<div class="lb-loading">Loading…</div>';
 
     const title = document.getElementById('ms-lb-title');
-    if (title) title.textContent = `🏆 Best Times — ${G.seedStr}`;
+    if (title) title.textContent = G.isPOTD ? `🏆 Best Times — ${G.seedStr}` : '🏆 Best Times — This Board';
+
+    const lbUrl = G.isHashBoard
+        ? `${G.scoreApi}/${G._boardId}`
+        : `${G.scoreApi}/${G.seedStr}`;
 
     try {
-        const r    = await fetch(`${G.scoreApi}/${G.seedStr}`);
+        const r    = await fetch(lbUrl);
         const data = await r.json();
 
         if (!data.length) {
@@ -332,19 +345,26 @@ async function loadLeaderboard() {
                     ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
                     : esc(s.name)}</td>
                 <td class="lb-time">${fmtTime(s.time_secs)}</td>
-                <td class="lb-replay"><a href="/mosaic/replay?seed=${esc(s.puzzle_date)}&rows=${G.rows}&cols=${G.cols}" class="ms-replay-link" title="Replay this puzzle">🔗</a></td>
+                ${G.isPOTD ? `<td class="lb-replay"><a href="/mosaic/replay?seed=${esc(s.puzzle_date)}&rows=${G.rows}&cols=${G.cols}" class="ms-replay-link" title="Replay this puzzle">🔗</a></td>` : ''}
             </tr>`).join('');
 
         el.innerHTML = `
             <div class="lb-table-wrap">
               <table class="lb-table">
-                <thead><tr><th>#</th><th>Name</th><th>Time</th><th></th></tr></thead>
+                <thead><tr><th>#</th><th>Name</th><th>Time</th>${G.isPOTD ? '<th></th>' : ''}</tr></thead>
                 <tbody>${rows}</tbody>
               </table>
             </div>`;
     } catch {
         el.innerHTML = '<div class="lb-empty">⚠️ Could not load scores.</div>';
     }
+}
+
+// ── Board ID (SHA-256 of "RxC:hash:mask") ─────────────────────────────────────
+async function computeBoardId(rows, cols, boardHash, boardMask) {
+    const raw = `${rows}x${cols}:${boardHash}:${boardMask}`;
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // ── Hash-based init (custom board) ────────────────────────────────────────────
@@ -385,10 +405,15 @@ function initGameFromHash(hash, rows, cols, maskHash) {
         } catch { /* invalid mask — show all hints */ }
     }
 
+    const board   = document.getElementById('ms-board');
     G.rows        = rows;
     G.cols        = cols;
     G.won         = false;
     G.isPOTD      = false;
+    G.boardHash   = hash;
+    G.boardMask   = maskHash || '';
+    G.isHashBoard = !!(board && board.dataset.scoreApi);
+    G.scoreApi    = (board && board.dataset.scoreApi) || G.scoreApi;
     G.seedStr     = '';
     G.elapsed     = 0;
     G.startTime   = null;
@@ -402,6 +427,13 @@ function initGameFromHash(hash, rows, cols, maskHash) {
     document.getElementById('ms-timer').textContent = '0:00';
     updateMineCount();
     renderBoard();
+
+    if (G.isHashBoard) {
+        computeBoardId(rows, cols, hash, maskHash || '').then(id => {
+            G._boardId = id;
+            loadLeaderboard();
+        });
+    }
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

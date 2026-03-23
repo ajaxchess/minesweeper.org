@@ -71,13 +71,20 @@
            data-mask="{{ mask }}"
            data-rows="{{ rows }}" data-cols="{{ cols }}" data-cell-size="{{ cell_size }}"
            data-density="{{ density }}"
-           data-score-api=""
+           data-score-api="{{ '/api/mosaic-custom-scores' if hash else '' }}"
            data-custom="1"
-           data-username=""></div>
+           data-username="{{ user.display_name if user else '' }}"></div>
 
       <div id="ms-overlay" style="display:none">
         <div class="tz-overlay-title">🎉 Solved!</div>
         <div class="tz-overlay-time">Time: <strong id="ms-win-time">0:00</strong></div>
+        {% if hash %}
+        <div id="ms-score-msg" style="font-size:0.9rem"></div>
+        <div id="ms-score-form" class="overlay-score-form" style="display:none">
+          <input id="ms-name-input" type="text" maxlength="32" placeholder="Your name" autocomplete="nickname">
+          <button id="ms-save-btn">Save Score</button>
+        </div>
+        {% endif %}
         <div class="tz-overlay-btns">
           <button id="ms-overlay-random" class="tz-btn-random">🎲 New Random</button>
           <a href="/variants/board-generator" class="tz-btn-potd" style="text-decoration:none">🔨 Generator</a>
@@ -85,6 +92,13 @@
         <button id="ms-hide-numbers-btn" class="bg-btn bg-btn-secondary" style="margin-top:0.5rem">🔢 Hide Numbers</button>
       </div>
     </div>
+
+    {% if hash %}
+    <div id="ms-lb-section" class="tz-lb-section">
+      <div id="ms-lb-title" class="tz-lb-title">🏆 Best Times — This Board</div>
+      <div id="ms-lb-content"><div class="lb-loading">Loading…</div></div>
+    </div>
+    {% endif %}
 
     <p class="instructions">
       <strong>Left click</strong>: white → black → unknown &nbsp;|&nbsp;
@@ -109,5 +123,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/mosaic.js?v=9"></script>
+<script src="/static/js/mosaic.js?v=10"></script>
 {% endblock %}

@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, CylinderScore, ToroidScore, ReplayScore, UserProfile, PvpResult, ServerStats, GuestScoreArchive, BlogComment, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, ReplayScore, UserProfile, PvpResult, ServerStats, GuestScoreArchive, BlogComment, get_db, init_db, SessionLocal
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -1931,6 +1931,71 @@ def get_mosaic_easy_scores(puzzle_date: str, db: Session = Depends(get_db)):
         db.query(MosaicEasyScore)
         .filter(MosaicEasyScore.puzzle_date == puzzle_date)
         .order_by(MosaicEasyScore.time_secs.asc(), MosaicEasyScore.created_at.asc())
+        .limit(20)
+        .all()
+    )
+    return _enrich_with_profiles(top, db)
+
+
+# ── Mosaic Custom Board Leaderboard API (F44) ──────────────────────────────────
+
+class MosaicCustomScoreSubmit(BaseModel):
+    board_hash: str = Field(..., min_length=1, max_length=128)
+    board_mask: str = Field("", max_length=128)
+    rows:       int = Field(..., ge=3, le=20)
+    cols:       int = Field(..., ge=3, le=20)
+    name:       str = Field(..., min_length=1, max_length=32)
+    time_secs:  int = Field(..., ge=0, le=99999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+
+def _mosaic_custom_board_id(rows: int, cols: int, board_hash: str, board_mask: str) -> str:
+    import hashlib
+    raw = f"{rows}x{cols}:{board_hash}:{board_mask}"
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+
+@app.post("/api/mosaic-custom-scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_mosaic_custom_score(payload: MosaicCustomScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    board_id = _mosaic_custom_board_id(payload.rows, payload.cols, payload.board_hash, payload.board_mask)
+    entry = MosaicCustomScore(
+        board_id   = board_id,
+        name       = payload.name,
+        user_email = user["email"] if user else None,
+        time_secs  = payload.time_secs,
+        guest_token= guest_token,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"ok": True, "id": entry.id, "board_id": board_id}
+
+
+@app.get("/api/mosaic-custom-scores/{board_id}")
+def get_mosaic_custom_scores(board_id: str, db: Session = Depends(get_db)):
+    import re
+    if not re.match(r"^[0-9a-f]{64}$", board_id):
+        raise HTTPException(status_code=400, detail="Invalid board_id")
+    top = (
+        db.query(MosaicCustomScore)
+        .filter(MosaicCustomScore.board_id == board_id)
+        .order_by(MosaicCustomScore.time_secs.asc(), MosaicCustomScore.created_at.asc())
         .limit(20)
         .all()
     )
