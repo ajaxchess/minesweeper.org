@@ -75,11 +75,15 @@ F41 SEO structured data and page differentiation
     /pvp now targets "competitive minesweeper / minesweeper ranked / minesweeper elo" keyword cluster
     /duel retains its "challenge a friend / 1v1" positioning
 
-F40 Server Health Checks
+F40 Server Health Checks and Deploy Gate
   - GET /iamatestfile.txt returns plain text "healthy" for uptime monitors and load balancer probes
   - GET /health returns service status; restricted to localhost only (403 for external requests)
-  - Production deploy script runs smoke tests against staging before promoting:
-      /, /pvp, /duel, /tentaizu — checks HTTP 200 and absence of server errors in body
+  - Staging deploy script runs smoke tests (/, /pvp, /duel, /tentaizu) after every deploy:
+      Pass → writes SHA to /home/ubuntu/deploy_state/last_good_commit
+      Fail → writes SHA to blocked_commit, reverts staging to last known good commit
+  - Staging cron skips any commit listed in blocked_commit; clears block when a new commit arrives
+  - Production deploy script only promotes commits present in last_good_commit (staging-blessed)
+  - State files live at /home/ubuntu/deploy_state/ (runtime, not in git)
 
 -- Addressed --
 
