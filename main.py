@@ -26,6 +26,9 @@ import settings as site_settings
 import logging
 import psutil
 import threading
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +53,10 @@ def current_season_num() -> int:
 _req_lock  = threading.Lock()
 _req_count = 0
 
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Minesweeper")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.middleware("http")
 async def count_requests(request: Request, call_next):
@@ -444,6 +450,7 @@ class ScoreSubmit(BaseModel):
 
 
 @app.post("/api/scores", status_code=201)
+@limiter.limit("10/minute")
 def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
     if not user:
@@ -620,6 +627,7 @@ class RushScoreSubmit(BaseModel):
 
 
 @app.post("/api/rush-scores", status_code=201)
+@limiter.limit("10/minute")
 def submit_rush_score(payload: RushScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
     if not user:
@@ -1040,6 +1048,7 @@ class ReplayScoreSubmit(BaseModel):
 
 
 @app.post("/api/replay-scores", status_code=201)
+@limiter.limit("10/minute")
 def submit_replay_score(payload: ReplayScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
     if not user:
@@ -1233,6 +1242,7 @@ class CylinderScoreSubmit(BaseModel):
 
 
 @app.post("/api/cylinder-scores", status_code=201)
+@limiter.limit("10/minute")
 def submit_cylinder_score(payload: CylinderScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
     if not user:
@@ -1398,6 +1408,7 @@ class ToroidScoreSubmit(BaseModel):
 
 
 @app.post("/api/toroid-scores", status_code=201)
+@limiter.limit("10/minute")
 def submit_toroid_score(payload: ToroidScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
     if not user:
@@ -1821,6 +1832,7 @@ class MosaicScoreSubmit(BaseModel):
 
 
 @app.post("/api/mosaic-scores", status_code=201)
+@limiter.limit("10/minute")
 def submit_mosaic_score(payload: MosaicScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
     if not user:
@@ -1875,6 +1887,7 @@ class MosaicEasyScoreSubmit(BaseModel):
 
 
 @app.post("/api/mosaic-easy-scores", status_code=201)
+@limiter.limit("10/minute")
 def submit_mosaic_easy_score(payload: MosaicEasyScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
     if not user:
@@ -1929,6 +1942,7 @@ class TentaizuScoreSubmit(BaseModel):
 
 
 @app.post("/api/tentaizu-scores", status_code=201)
+@limiter.limit("10/minute")
 def submit_tentaizu_score(payload: TentaizuScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
     if not user:
@@ -1983,6 +1997,7 @@ class TentaizuEasyScoreSubmit(BaseModel):
 
 
 @app.post("/api/tentaizu-easy-scores", status_code=201)
+@limiter.limit("10/minute")
 def submit_tentaizu_easy_score(payload: TentaizuEasyScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
     entry = TentaizuEasyScore(
