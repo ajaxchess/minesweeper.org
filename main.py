@@ -862,7 +862,7 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
         "post":          post,
         "content":       html_content,
         "author":        front_matter.get("author", ""),
-        "authorurl":     front_matter.get("authorurl", ""),
+        "authorurl":     front_matter.get("authorurl", "") if front_matter.get("authorurl", "").startswith(("https://", "http://")) else "",
         "publisher":     front_matter.get("publisher", ""),
         "og_image":      front_matter.get("image", ""),
         "date_published": date_published,
