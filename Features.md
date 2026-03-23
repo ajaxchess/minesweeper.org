@@ -60,6 +60,10 @@ F38 Light theme
 
 F39 Use light theme during daylight hours based on client browser local time, defaulting to dark otherwise
 
+F40 Server Health Checks
+  - GET /iamatestfile.txt returns plain text "healthy" for uptime monitors and load balancer probes
+  - GET /health returns service status; restricted to localhost only (403 for external requests)
+
 -- Addressed --
 
 F1 User Profile

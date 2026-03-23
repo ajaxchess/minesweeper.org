@@ -158,6 +158,10 @@ async def sitemap(request: Request):
 async def ads_txt():
     return FileResponse("ads.txt", media_type="text/plain")
 
+@app.get("/iamatestfile.txt", include_in_schema=False)
+async def iamatestfile_txt():
+    return PlainTextResponse("healthy")
+
 GAME_MODES = {
     "beginner":     {"rows": 9, "cols": 9, "mines": 10},
     "intermediate": {"rows": 16, "cols": 16, "mines": 40},
