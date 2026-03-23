@@ -93,6 +93,16 @@ F43 XYZZY Cheat Code (Replay mode only)
   - Documented in /how-to-play#cheatcode with history of the XYZZY origin
     (Colossal Cave Adventure, 1975)
 
+F44 Custom Mosaic Board Leaderboard
+  - When a Mosaic board is loaded via hash+mask params (/mosaic/custom/?hash=...&mask=...),
+    show a per-board leaderboard keyed by (hash, mask) — similar to the Replay page's per-hash leaderboard
+  - Logged-in users' times are saved automatically on win; guests get a name-entry form
+  - The board ID is derived from the hash+mask pair (e.g. SHA-256 or concatenation)
+  - DB table: mosaic_custom_scores (board_id, name, time_secs, solved_at)
+  - API: POST /api/mosaic-custom-scores  GET /api/mosaic-custom-scores/<board_id>
+  - The custom board template sets data-score-api to the new endpoint when hash+mask are present
+  - Random/generated custom boards (no hash param) remain leaderboard-free
+
 F40 Server Health Checks and Deploy Gate
   - GET /iamatestfile.txt returns plain text "healthy" for uptime monitors and load balancer probes
   - GET /health returns service status; restricted to localhost only (403 for external requests)

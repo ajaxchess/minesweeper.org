@@ -167,8 +167,18 @@ function renderBoard() {
             }
             cell.appendChild(span);
 
-            cell.addEventListener('click', () => handleClick(r, c, 0));
-            cell.addEventListener('contextmenu', e => { e.preventDefault(); handleClick(r, c, 1); });
+            cell.addEventListener('mousedown', e => {
+                if (e.button !== 0 && e.button !== 2) return;
+                e.preventDefault();   // prevent text selection while dragging
+                if (G.won) return;
+                if (!G.startTime) startTimer();
+                const dir = e.button === 2 ? 1 : 0;
+                dragTarget = dir === 0 ? LEFT_NEXT[G.player[idx]] : RIGHT_NEXT[G.player[idx]];
+                dragActive = true;
+                paintCell(r, c);
+            });
+            cell.addEventListener('mouseenter', () => { if (dragActive) paintCell(r, c); });
+            cell.addEventListener('contextmenu', e => e.preventDefault());
             board.appendChild(cell);
         }
     }
@@ -182,22 +192,25 @@ function refreshAffected(r, c) {
         }
 }
 
-// ── Click ─────────────────────────────────────────────────────────────────────
+// ── Click / drag painting ─────────────────────────────────────────────────────
 // States: 0=white/safe  1=black/mine  2=unknown (initial)
 // Left  click (dir=0) cycles: white→black→unknown→white  (0→1→2→0)
 // Right click (dir=1) cycles: black→white→unknown→black  (1→0→2→1)
 const LEFT_NEXT  = [1, 2, 0];   // next state indexed by current state, left click
 const RIGHT_NEXT = [2, 0, 1];   // next state indexed by current state, right click
 
-function handleClick(r, c, dir) {
-    if (G.won) return;
-    if (!G.startTime) startTimer();
+// Drag state: set on mousedown, cleared on mouseup.
+// dragTarget is the state every cell is painted to for the duration of the drag.
+let dragActive = false;
+let dragTarget = null;
 
+function paintCell(r, c) {
+    if (G.won) return;
     const idx = r * G.cols + c;
-    G.player[idx] = dir === 0 ? LEFT_NEXT[G.player[idx]] : RIGHT_NEXT[G.player[idx]];
+    if (G.player[idx] === dragTarget) return;   // already the right state — no-op
+    G.player[idx] = dragTarget;
     refreshAffected(r, c);
     updateMineCount();
-
     if (checkWin()) {
         stopTimer();
         G.won = true;
@@ -486,6 +499,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('ms-overlay').style.display = 'none';
         initGame(Math.random().toString(36).slice(2, 10), false);
     });
+
+    // End drag when mouse button is released anywhere on the page
+    document.addEventListener('mouseup', () => { dragActive = false; });
 
     // Manual score save button
     document.getElementById('ms-save-btn')?.addEventListener('click', () => saveScore());
