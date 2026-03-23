@@ -53,7 +53,7 @@
   <link rel="alternate" hreflang="tl"      href="https://minesweeper.org{{ _path }}?lang=tl">
 
   <!-- Open Graph -->
-  <meta property="og:type"         content="website">
+  <meta property="og:type"         content="{% block og_type %}website{% endblock %}">
   <meta property="og:site_name"    content="minesweeper.org">
   <meta property="og:url"          content="{% block og_url %}https://minesweeper.org/{% endblock %}">
   <meta property="og:title"        content="{% block og_title %}Minesweeper — Play Free Online{% endblock %}">
