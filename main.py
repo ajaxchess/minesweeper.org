@@ -2777,7 +2777,7 @@ def admin_hscleaning(
     daily_q = db.query(Score).filter(
         Score.mode == mode,
         func.date(Score.created_at) == target_date,
-    ).order_by(Score.time_ms.asc().nullsfirst(), Score.time_secs.asc())
+    ).order_by(Score.time_ms.asc(), Score.time_secs.asc())
     daily_scores = daily_q.limit(50).all()
 
     # Hash search results
@@ -2790,7 +2790,7 @@ def admin_hscleaning(
             hq = hq.filter(Score.no_guess == True)
         elif no_guess == "false":
             hq = hq.filter(Score.no_guess == False)
-        hash_scores = hq.order_by(Score.time_ms.asc().nullsfirst(), Score.time_secs.asc()).limit(100).all()
+        hash_scores = hq.order_by(Score.time_ms.asc(), Score.time_secs.asc()).limit(100).all()
 
     return templates.TemplateResponse("admin_hscleaning.html", {
         "request": request,
