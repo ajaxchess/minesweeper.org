@@ -1,6 +1,5 @@
 """
 database.py — SQLAlchemy setup for MySQL via PyMySQL
-CD test
 """
 from sqlalchemy import (
     create_engine, Column, Integer, BigInteger, String, Float,
