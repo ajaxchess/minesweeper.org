@@ -620,6 +620,16 @@ async def rush(request: Request):
     })
 
 
+@app.get("/rush/custom", response_class=HTMLResponse)
+async def rush_custom(request: Request):
+    return templates.TemplateResponse("rush.html", {
+        "request": request, "mode": "rush",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "auto_custom": True,
+    })
+
+
 @app.get("/rush/how-to-play", response_class=HTMLResponse)
 async def rush_howto(request: Request):
     return templates.TemplateResponse("rush_howto.html", {

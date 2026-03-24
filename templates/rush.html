@@ -343,4 +343,5 @@
 
 {% block scripts %}
 <script src="/static/js/rush.js?v=10"></script>
+{% if auto_custom %}<script>document.addEventListener('DOMContentLoaded',()=>{document.querySelector('.rush-mode-btn[data-mode="custom"]')?.click();});</script>{% endif %}
 {% endblock %}
