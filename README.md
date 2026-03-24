@@ -191,6 +191,22 @@ Leave `OTEL_EXPORTER_OTLP_ENDPOINT` blank to disable tracing entirely (default i
 
 ---
 
+## Software Development Gamification
+
+Minesweeper.org uses gamification to keep the development team engaged and productive. The admin dashboard (accessible to team members at `/admin`) includes a **Git commit leaderboard** that tracks each contributor's weekly commit count — turning day-to-day development work into a friendly competition.
+
+![Git Commit Leaderboard](docs/SoftwareDevelopmentGamification.png)
+
+The leaderboard refreshes on every admin page load and shows:
+
+- **Contributor** — git author name
+- **Commits this week** — count of commits since Monday (UTC)
+- **Latest commit SHA** — the current HEAD on the running server, compared against staging to confirm deployments are in sync
+
+This lightweight approach to gamification encourages consistent contribution, surfaces who is actively shipping, and makes the weekly cadence of the team visible at a glance — without requiring any external tooling.
+
+---
+
 ## Blog
 
 To add a post: drop a `.md` file in `blog/` and add one dict to `BLOG_POSTS` in `main.py`. No other changes needed.
