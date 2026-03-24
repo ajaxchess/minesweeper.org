@@ -7,6 +7,11 @@ VENV_DIR="/home/ubuntu/minesweeper/venv"
 SERVICE_NAME="minesweeper"
 source /home/ubuntu/minesweeper/.env
 
+if [ "$(id -u)" -eq 0 ]; then
+    echo "Error: This script must not be run as root. Run as the 'ubuntu' user."
+    exit 1
+fi
+
 mkdir -p "$STATE_DIR"
 
 # --- Navigate to repository and fetch changes ---
