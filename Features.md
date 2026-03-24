@@ -118,6 +118,19 @@ F45 Automated Test Suite
       test_validation.py — Pydantic validation: 422 returned for all invalid payloads
   - Run with: pytest (configured in pytest.ini; testpaths=tests)
 
+F46 OpenTelemetry Instrumentation for AWS Bedrock Observability
+  - telemetry.py: setup_telemetry(app, db_engine) initialises OTLP tracing; no-op when
+    OTEL_EXPORTER_OTLP_ENDPOINT is unset so dev environments need no extra infrastructure
+  - Instruments FastAPI (every HTTP request → span) via opentelemetry-instrumentation-fastapi
+  - Instruments SQLAlchemy (every DB query → child span) via opentelemetry-instrumentation-sqlalchemy
+  - Exports via OTLP HTTP to the AWS Distro for OpenTelemetry (ADOT) Collector,
+    which forwards traces to X-Ray and metrics to CloudWatch for Bedrock to consume
+  - Resource attributes: service.name, service.version, deployment.environment
+  - Optional auth headers via OTEL_EXPORTER_OTLP_HEADERS (comma-separated key=value)
+  - New .env vars: OTEL_SERVICE_NAME, OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_HEADERS
+  - Packages: opentelemetry-api, opentelemetry-sdk, opentelemetry-instrumentation-fastapi,
+    opentelemetry-instrumentation-sqlalchemy, opentelemetry-exporter-otlp-proto-http
+
 F40 Server Health Checks and Deploy Gate
   - GET /iamatestfile.txt returns plain text "healthy" for uptime monitors and load balancer probes
   - GET /health returns service status; restricted to localhost only (403 for external requests)

@@ -1,6 +1,8 @@
 # Project Specific
 database.py
 .env
+*.pem
+*_credentials
 
 #Runtime environment
 venv/

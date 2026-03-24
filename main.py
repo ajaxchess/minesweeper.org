@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, ReplayScore, UserProfile, PvpResult, ServerStats, GuestScoreArchive, BlogComment, get_db, init_db, SessionLocal
+import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -57,6 +58,10 @@ limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Minesweeper")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# ── OpenTelemetry — AWS Bedrock observability ─────────────────────────────────
+from telemetry import setup_telemetry
+setup_telemetry(app, db_engine=_db_module.engine)
 
 @app.middleware("http")
 async def count_requests(request: Request, call_next):
