@@ -143,6 +143,23 @@ The deploy script (`scripts/minesweeper_service_update_and_restart.sh`):
 
 ---
 
+## Observability
+
+Minesweeper.org leverages **AWS Bedrock** to monitor the health of the infrastructure. Bedrock provides AI-powered analysis of application metrics, logs, and deployment events, enabling proactive detection of anomalies and degraded service conditions.
+
+Key observability touchpoints:
+
+| Signal | Source |
+|---|---|
+| Application health | `GET /health` — returns status, git commit, and environment |
+| Uptime probe | `GET /iamatestfile.txt` — lightweight endpoint for load balancer and external monitors |
+| Server metrics | CPU, memory, disk, and network stats recorded hourly to the `server_stats` table |
+| Deploy gate | Staging smoke tests run after every deploy; failed commits are blocked from reaching production |
+| App logs | `sudo journalctl -u minesweeper -f` |
+| Deploy logs | `tail -f /var/log/minesweeper-deploy.log` |
+
+---
+
 ## Blog
 
 To add a post: drop a `.md` file in `blog/` and add one dict to `BLOG_POSTS` in `main.py`. No other changes needed.
