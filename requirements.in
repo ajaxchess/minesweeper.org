@@ -18,3 +18,4 @@ itsdangerous==2.2.0
 Markdown==3.7
 psutil==5.9.8
 slowapi==0.1.9
+pytest==8.3.5

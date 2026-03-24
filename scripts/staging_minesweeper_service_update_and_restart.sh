@@ -58,17 +58,11 @@ echo "Installing/updating Python dependencies..."
 "$VENV_DIR/bin/pip" install --require-hashes -r "$REPO_DIR/requirements.lock" \
     || { echo "ERROR: pip install failed — hash mismatch or missing package. Aborting."; exit 1; }
 
-FILE_PATH="$REPO_DIR/database_template.py"
-MINUTES_AGO=5
-if [ -n "$(find "$FILE_PATH" -maxdepth 0 -mmin -"$MINUTES_AGO" 2>/dev/null)" ]; then
-    echo "database_template.py changed — regenerating database.py"
-    /usr/bin/cp database_template.py database.py
-    /usr/bin/sed -i "s/the_minesweeper_user/$DB_USER/g" database.py
-    /usr/bin/sed -i "s/the_password/$DB_PASS/g" database.py
-    /usr/bin/sed -i "s/the_db_name/$DB_NAME/g" database.py
-else
-    echo "database_template.py unchanged — skipping database.py regeneration."
-fi
+echo "Regenerating database.py from template..."
+/usr/bin/cp database_template.py database.py
+/usr/bin/sed -i "s/the_minesweeper_user/$DB_USER/g" database.py
+/usr/bin/sed -i "s/the_password/$DB_PASS/g" database.py
+/usr/bin/sed -i "s/the_db_name/$DB_NAME/g" database.py
 
 echo "Restarting staging service..."
 sudo systemctl restart "$SERVICE_NAME" || { echo "Error: Failed to restart staging service"; exit 1; }

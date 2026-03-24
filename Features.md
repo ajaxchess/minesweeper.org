@@ -103,6 +103,21 @@ F44 Custom Mosaic Board Leaderboard
   - The custom board template sets data-score-api to the new endpoint when hash+mask are present
   - Random/generated custom boards (no hash param) remain leaderboard-free
 
+F45 Automated Test Suite
+  - pytest-based test suite in tests/ covering all score submission and retrieval APIs
+  - tests/conftest.py bootstraps an in-memory SQLite database so tests run without MySQL
+  - Overrides FastAPI's get_db dependency; patches _apply_migrations() (MySQL-specific) to no-op
+  - Sets dummy env vars for Google OAuth so auth.py can be imported in CI without credentials
+  - Test modules:
+      test_health.py     — /health, /robots.txt, /sitemap.xml, homepage, 404 handler
+      test_csrf.py       — CSRF middleware (X-Requested-With guard) on all POST /api/* routes
+      test_scores.py     — Classic game score submission (all modes) and leaderboard ordering
+      test_mosaic.py     — Mosaic daily, easy, and custom-board (F44) leaderboard
+      test_tentaizu.py   — Tentaizu daily and easy scores
+      test_variants.py   — Cylinder, Toroid, and Replay score APIs
+      test_validation.py — Pydantic validation: 422 returned for all invalid payloads
+  - Run with: pytest (configured in pytest.ini; testpaths=tests)
+
 F40 Server Health Checks and Deploy Gate
   - GET /iamatestfile.txt returns plain text "healthy" for uptime monitors and load balancer probes
   - GET /health returns service status; restricted to localhost only (403 for external requests)

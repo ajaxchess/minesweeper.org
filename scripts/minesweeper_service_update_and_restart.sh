@@ -86,17 +86,11 @@ bash "$REPO_DIR/scripts/build_assets.sh" || echo "Warning: asset build failed (c
 echo "Installing/updating Python dependencies..."
 "$VENV_DIR/bin/pip" install -r "$REPO_DIR/requirements.txt" --quiet || echo "Warning: pip install failed"
 
-FILE_PATH="/home/ubuntu/git/minesweeper.org/database_template.py"
-MINUTES_AGO=5
-if [ -n "$(find "$FILE_PATH" -maxdepth 0 -mmin -"$MINUTES_AGO" 2>/dev/null)" ]; then
-    echo "database_template.py changed — regenerating database.py"
-    /usr/bin/cp database_template.py database.py
-    /usr/bin/sed -i "s/the_minesweeper_user/$DB_USER/g" database.py
-    /usr/bin/sed -i "s/the_password/$DB_PASS/g" database.py
-    /usr/bin/sed -i "s/the_db_name/$DB_NAME/g" database.py
-else
-    echo "database_template.py unchanged — skipping database.py regeneration."
-fi
+echo "Regenerating database.py from template..."
+/usr/bin/cp database_template.py database.py
+/usr/bin/sed -i "s/the_minesweeper_user/$DB_USER/g" database.py
+/usr/bin/sed -i "s/the_password/$DB_PASS/g" database.py
+/usr/bin/sed -i "s/the_db_name/$DB_NAME/g" database.py
 
 sudo systemctl restart "$SERVICE_NAME" || { echo "Error: Failed to restart service"; exit 1; }
 echo "Production deployed to commit $LAST_GOOD."
