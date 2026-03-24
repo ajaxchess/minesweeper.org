@@ -158,6 +158,37 @@ Key observability touchpoints:
 | App logs | `sudo journalctl -u minesweeper -f` |
 | Deploy logs | `tail -f /var/log/minesweeper-deploy.log` |
 
+### Operations — AWS X-Ray Performance Monitoring
+
+The application is instrumented with **OpenTelemetry** (via `telemetry.py`). Traces are exported over OTLP HTTP to the **AWS Distro for OpenTelemetry (ADOT) Collector**, which forwards them to **AWS X-Ray** for performance analysis.
+
+X-Ray provides a live trace map showing request flow from client to EC2 instance, latency distributions (p50/p99 response times), and per-route request counts — giving the team visibility into production performance without manual log analysis.
+
+![AWS X-Ray Trace Map](docs/AWSXRayMonitoringExample.png)
+
+**What is instrumented:**
+
+| Instrumentation | What it captures |
+|---|---|
+| FastAPI routes | Every HTTP request as a trace span |
+| SQLAlchemy | Every database query as a child span |
+| Outbound HTTP | External API calls (httpx / requests) as child spans |
+| Logging | `trace_id` and `span_id` injected into every log record |
+| Score submissions | Custom metric — completions by game type and mode |
+| Game duration | Custom histogram — time-to-complete in milliseconds |
+| Scheduler jobs | Success/failure counter for `reset_scores`, `collect_server_stats`, `archive_guest_scores` |
+| DB errors | Error counter tagged by operation |
+
+**Configuration** (in `.env`):
+
+```
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+OTEL_SERVICE_NAME=minesweeper.org
+OTEL_SERVICE_VERSION=1.0.0
+```
+
+Leave `OTEL_EXPORTER_OTLP_ENDPOINT` blank to disable tracing entirely (default in development).
+
 ---
 
 ## Blog
