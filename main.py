@@ -60,7 +60,14 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ── OpenTelemetry — AWS Bedrock observability ─────────────────────────────────
-from telemetry import setup_telemetry
+from telemetry import (
+    setup_telemetry,
+    record_score_submit,
+    record_game_complete,
+    record_duel_delta,
+    record_scheduler_run,
+    record_db_error,
+)
 setup_telemetry(app, db_engine=_db_module.engine)
 
 @app.middleware("http")
@@ -192,9 +199,11 @@ def reset_scores():
         deleted = db.query(Score).delete(synchronize_session=False)
         db.commit()
         logger.info(f"Daily score reset complete — {deleted} rows removed.")
+        record_scheduler_run("reset_scores", success=True)
     except Exception as e:
         db.rollback()
         logger.error(f"Score reset failed: {e}")
+        record_scheduler_run("reset_scores", success=False)
     finally:
         db.close()
 
@@ -245,9 +254,12 @@ def collect_server_stats():
         ))
         db.commit()
         logger.info("Server stats snapshot saved.")
+        record_scheduler_run("collect_server_stats", success=True)
     except Exception as e:
         db.rollback()
         logger.error(f"collect_server_stats failed: {e}")
+        record_scheduler_run("collect_server_stats", success=False)
+        record_db_error("collect_server_stats")
     finally:
         db.close()
 
@@ -288,9 +300,11 @@ def archive_guest_scores():
                 total += 1
         db.commit()
         logger.info(f"archive_guest_scores: archived {total} guest score(s).")
+        record_scheduler_run("archive_guest_scores", success=True)
     except Exception as e:
         db.rollback()
         logger.error(f"archive_guest_scores failed: {e}")
+        record_scheduler_run("archive_guest_scores", success=False)
     finally:
         db.close()
 
@@ -510,6 +524,9 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
 
     db.commit()
     db.refresh(score)
+    record_score_submit("minesweeper", payload.mode.value)
+    record_game_complete("minesweeper", mode=payload.mode.value,
+                         duration_ms=payload.time_ms or (payload.time_secs or 0) * 1000)
     return {"ok": True, "id": score.id}
 
 
@@ -661,6 +678,7 @@ def submit_rush_score(payload: RushScoreSubmit, request: Request, db: Session = 
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    record_score_submit("rush", payload.rush_mode)
     return {"ok": True, "id": entry.id}
 
 
@@ -2044,6 +2062,9 @@ def submit_tentaizu_score(payload: TentaizuScoreSubmit, request: Request, db: Se
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    record_score_submit("tentaizu", str(payload.puzzle_date))
+    record_game_complete("tentaizu", mode="daily",
+                         duration_ms=(payload.time_secs or 0) * 1000)
     return {"ok": True, "id": entry.id}
 
 
