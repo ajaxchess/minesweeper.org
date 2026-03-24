@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{% if mode == 'pvp' %}{{ t.meta_title_pvp }}{% else %}{{ t.meta_title_duel }}{% endif %}{% endblock %}
 {% block description %}{% if mode == 'pvp' %}{{ t.meta_desc_pvp }}{% else %}{{ t.meta_desc_duel }}{% endif %}{% endblock %}
-{% block keywords %}<meta name="keywords" content="{% if mode == 'pvp' %}minesweeper pvp, competitive minesweeper, minesweeper ranked, minesweeper elo, minesweeper matchmaking, minesweeper vs{% else %}minesweeper multiplayer, minesweeper 1v1, minesweeper duel, 2 player minesweeper, play minesweeper with friends, online minesweeper{% endif %}">{% endblock %}
+{% block keywords %}<meta name="keywords" content="{% if mode == 'pvp' %}{{ t.meta_kw_pvp }}{% else %}minesweeper multiplayer, minesweeper 1v1, minesweeper duel, 2 player minesweeper, play minesweeper with friends, online minesweeper{% endif %}">{% endblock %}
 {% block canonical %}https://minesweeper.org/{% if mode == 'pvp' %}pvp{% else %}duel{% endif %}{% endblock %}
 {% block og_url %}https://minesweeper.org/{% if mode == 'pvp' %}pvp{% else %}duel{% endif %}{% endblock %}
 {% block og_title %}{% if mode == 'pvp' %}{{ t.meta_title_pvp | replace(" | minesweeper.org", "") }}{% else %}{{ t.meta_title_duel | replace(" | minesweeper.org", "") }}{% endif %}{% endblock %}

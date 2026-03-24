@@ -61,11 +61,11 @@
           <th>{{ t.lb_col_time }}</th>
           <th>{{ t.lb_col_board }}</th>
           <th>{{ t.lb_col_mines }}</th>
-          <th class="lb-th-stat" data-tip="3BV is the minimum number of clicks required to complete a board without using flags. The higher it is, the more difficult is the game.">3BV</th>
-          <th class="lb-th-stat" data-tip="3BV per second. Represents speed of completing the game. The higher the better.">3BV/s</th>
-          <th class="lb-th-stat" data-tip="Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.">Eff</th>
+          <th class="lb-th-stat" data-tip="{{ t.lb_bbbv_tip }}">3BV</th>
+          <th class="lb-th-stat" data-tip="{{ t.lb_bbbv_s_tip }}">3BV/s</th>
+          <th class="lb-th-stat" data-tip="{{ t.lb_eff_tip }}">Eff</th>
           <th>{{ t.lb_col_date }}</th>
-          <th>Board</th>
+          <th>{{ t.lb_col_board }}</th>
         </tr>
       </thead>
       <tbody id="lb-body">
