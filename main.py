@@ -2747,6 +2747,84 @@ def admin_delete_comment(comment_id: int, request: Request, db: Session = Depend
     return RedirectResponse("/admin/blog", status_code=303)
 
 
+@app.get("/admin/hscleaning", response_class=HTMLResponse)
+def admin_hscleaning(
+    request: Request,
+    db: Session = Depends(get_db),
+    mode: str = "beginner",
+    date_str: str = "",
+    board_hash: str = "",
+    hmode: str = "all",
+    no_guess: str = "all",
+):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    from datetime import date as _date
+    target_date = date.today()
+    if date_str:
+        try:
+            target_date = _date.fromisoformat(date_str)
+        except ValueError:
+            pass
+
+    valid_modes = {"beginner", "intermediate", "expert", "custom"}
+    if mode not in valid_modes:
+        mode = "beginner"
+
+    # Daily scores for selected mode + date
+    daily_q = db.query(Score).filter(
+        Score.mode == mode,
+        func.date(Score.created_at) == target_date,
+    ).order_by(Score.time_ms.asc().nullsfirst(), Score.time_secs.asc())
+    daily_scores = daily_q.limit(50).all()
+
+    # Hash search results
+    hash_scores = []
+    if board_hash.strip():
+        hq = db.query(Score).filter(Score.board_hash == board_hash.strip())
+        if hmode in valid_modes:
+            hq = hq.filter(Score.mode == hmode)
+        if no_guess == "true":
+            hq = hq.filter(Score.no_guess == True)
+        elif no_guess == "false":
+            hq = hq.filter(Score.no_guess == False)
+        hash_scores = hq.order_by(Score.time_ms.asc().nullsfirst(), Score.time_secs.asc()).limit(100).all()
+
+    return templates.TemplateResponse("admin_hscleaning.html", {
+        "request": request,
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        "mode": mode,
+        "date_str": target_date.isoformat(),
+        "daily_scores": daily_scores,
+        "board_hash": board_hash.strip(),
+        "hmode": hmode,
+        "no_guess": no_guess,
+        "hash_scores": hash_scores,
+        "valid_modes": sorted(valid_modes),
+    })
+
+
+@app.post("/admin/hscleaning/delete/{score_id}")
+def admin_hscleaning_delete(
+    score_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    next_url: str = Query(default="/admin/hscleaning"),
+):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    score = db.query(Score).filter_by(id=score_id).first()
+    if score:
+        db.delete(score)
+        db.commit()
+    return RedirectResponse(next_url, status_code=303)
+
+
 @app.get("/admin/analysis", response_class=HTMLResponse)
 def admin_analysis(request: Request, doc: Optional[str] = None):
     import markdown as md_lib

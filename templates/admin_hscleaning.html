@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}High Score Cleaning — Admin{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">🧹 High Score Cleaning</h1>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;margin-bottom:1.5rem;">
+    <a href="/admin">← Admin Dashboard</a>
+  </p>
+
+  <!-- ── Section 1: Daily scores ─────────────────────────────────────────── -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Daily Scores</h2>
+
+    <form method="get" action="/admin/hscleaning" style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:flex-end;margin-bottom:1.25rem;">
+      <!-- preserve hash section params -->
+      {% if board_hash %}<input type="hidden" name="board_hash" value="{{ board_hash }}">{% endif %}
+      {% if hmode != "all" %}<input type="hidden" name="hmode" value="{{ hmode }}">{% endif %}
+      {% if no_guess != "all" %}<input type="hidden" name="no_guess" value="{{ no_guess }}">{% endif %}
+
+      <label style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.85rem;color:var(--text-dim);">
+        Mode
+        <select name="mode" class="admin-select">
+          {% for m in valid_modes %}
+          <option value="{{ m }}" {% if m == mode %}selected{% endif %}>{{ m }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.85rem;color:var(--text-dim);">
+        Date
+        <input type="date" name="date_str" value="{{ date_str }}" class="admin-input">
+      </label>
+
+      <button type="submit" class="admin-btn">Load</button>
+    </form>
+
+    {% if daily_scores %}
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Mode</th>
+          <th>Time</th>
+          <th>No-Guess</th>
+          <th>Hash</th>
+          <th>User</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in daily_scores %}
+        <tr>
+          <td style="color:var(--text-dim);font-size:0.8rem;">{{ s.id }}</td>
+          <td>{{ s.name }}</td>
+          <td>{{ s.mode.value }}</td>
+          <td>{{ "%.3f"|format((s.time_ms / 1000) if s.time_ms else s.time_secs) }}s</td>
+          <td>{{ "✓" if s.no_guess else "" }}</td>
+          <td style="font-size:0.75rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ s.board_hash or '' }}">{{ (s.board_hash or "")[:16] }}{% if s.board_hash and s.board_hash|length > 16 %}…{% endif %}</td>
+          <td style="font-size:0.8rem;">{{ s.user_email or "guest" }}</td>
+          <td style="font-size:0.8rem;">{{ s.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td>
+            <form method="post" action="/admin/hscleaning/delete/{{ s.id }}" onsubmit="return confirm('Remove score #{{ s.id }} by {{ s.name }}?')">
+              <input type="hidden" name="next_url" value="/admin/hscleaning?mode={{ mode }}&date_str={{ date_str }}{% if board_hash %}&board_hash={{ board_hash }}&hmode={{ hmode }}&no_guess={{ no_guess }}{% endif %}">
+              <button type="submit" class="admin-btn-danger">Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-top:0.5rem;">{{ daily_scores|length }} score(s) shown (max 50)</p>
+    {% else %}
+    <p style="color:var(--text-dim);font-size:0.9rem;">No scores found for {{ mode }} on {{ date_str }}.</p>
+    {% endif %}
+  </section>
+
+  <!-- ── Section 2: Search by board hash ────────────────────────────────── -->
+  <section class="admin-section">
+    <h2 class="admin-section-title">Search by Board Hash</h2>
+
+    <form method="get" action="/admin/hscleaning" style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:flex-end;margin-bottom:1.25rem;">
+      <!-- preserve daily section params -->
+      <input type="hidden" name="mode" value="{{ mode }}">
+      <input type="hidden" name="date_str" value="{{ date_str }}">
+
+      <label style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.85rem;color:var(--text-dim);">
+        Board Hash
+        <input type="text" name="board_hash" value="{{ board_hash }}" placeholder="paste board hash…" class="admin-input" style="width:22rem;">
+      </label>
+
+      <label style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.85rem;color:var(--text-dim);">
+        Mode
+        <select name="hmode" class="admin-select">
+          <option value="all" {% if hmode == "all" %}selected{% endif %}>All modes</option>
+          {% for m in valid_modes %}
+          <option value="{{ m }}" {% if m == hmode %}selected{% endif %}>{{ m }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.85rem;color:var(--text-dim);">
+        No-Guess
+        <select name="no_guess" class="admin-select">
+          <option value="all"   {% if no_guess == "all"   %}selected{% endif %}>All</option>
+          <option value="true"  {% if no_guess == "true"  %}selected{% endif %}>No-Guess only</option>
+          <option value="false" {% if no_guess == "false" %}selected{% endif %}>Guess only</option>
+        </select>
+      </label>
+
+      <button type="submit" class="admin-btn">Search</button>
+    </form>
+
+    {% if board_hash %}
+      {% if hash_scores %}
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Mode</th>
+            <th>Time</th>
+            <th>No-Guess</th>
+            <th>User</th>
+            <th>Date</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in hash_scores %}
+          <tr>
+            <td style="color:var(--text-dim);font-size:0.8rem;">{{ s.id }}</td>
+            <td>{{ s.name }}</td>
+            <td>{{ s.mode.value }}</td>
+            <td>{{ "%.3f"|format((s.time_ms / 1000) if s.time_ms else s.time_secs) }}s</td>
+            <td>{{ "✓" if s.no_guess else "" }}</td>
+            <td style="font-size:0.8rem;">{{ s.user_email or "guest" }}</td>
+            <td style="font-size:0.8rem;">{{ s.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            <td>
+              <form method="post" action="/admin/hscleaning/delete/{{ s.id }}" onsubmit="return confirm('Remove score #{{ s.id }} by {{ s.name }}?')">
+                <input type="hidden" name="next_url" value="/admin/hscleaning?mode={{ mode }}&date_str={{ date_str }}&board_hash={{ board_hash }}&hmode={{ hmode }}&no_guess={{ no_guess }}">
+                <button type="submit" class="admin-btn-danger">Remove</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p style="font-size:0.8rem;color:var(--text-dim);margin-top:0.5rem;">{{ hash_scores|length }} score(s) found (max 100)</p>
+      {% else %}
+      <p style="color:var(--text-dim);font-size:0.9rem;">No scores found for that hash with the selected filters.</p>
+      {% endif %}
+    {% else %}
+      <p style="color:var(--text-dim);font-size:0.9rem;">Enter a board hash above to search.</p>
+    {% endif %}
+  </section>
+
+</div>
+
+<style>
+.admin-select, .admin-input {
+  background: var(--bg2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.9rem;
+}
+.admin-btn {
+  background: var(--accent2);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  padding: 0.4rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+.admin-btn:hover { opacity: 0.85; }
+.admin-btn-danger {
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.admin-btn-danger:hover { background: #e74c3c; }
+</style>
+{% endblock %}
