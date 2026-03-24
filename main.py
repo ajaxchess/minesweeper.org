@@ -2473,6 +2473,15 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         git_commits_this_week = []
         git_contributors = []
 
+    # Staging commit — fetch from localhost:8002/health
+    staging_head = None
+    try:
+        import urllib.request, json as _json
+        with urllib.request.urlopen("http://localhost:8002/health", timeout=2) as resp:
+            staging_head = _json.loads(resp.read()).get("commit", "unknown")
+    except Exception:
+        staging_head = None
+
     return templates.TemplateResponse("admin.html", {
         "request": request,
         "user": user,
@@ -2496,6 +2505,7 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         "git_head": git_head,
         "git_commits_this_week": git_commits_this_week,
         "git_contributors": git_contributors,
+        "staging_head": staging_head,
     })
 
 

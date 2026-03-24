@@ -151,9 +151,24 @@
   <!-- Git -->
   <section class="admin-section">
     <h2 class="admin-section-title">Git — This Week</h2>
-    <p style="font-size:0.85rem;color:var(--text-dim);margin:0 0 0.75rem">
-      Latest commit: <code>{{ git_head }}</code>
+    <p style="font-size:0.85rem;color:var(--text-dim);margin:0 0 0.4rem">
+      Production:
+      {% if staging_head and staging_head == git_head %}
+        <code style="color:#4caf50">{{ git_head[:7] }}</code>
+      {% else %}
+        <code>{{ git_head[:7] }}</code>
+      {% endif %}
     </p>
+    {% if staging_head %}
+    <p style="font-size:0.85rem;color:var(--text-dim);margin:0 0 0.75rem">
+      Staging:
+      {% if staging_head == git_head %}
+        <code style="color:#4caf50">{{ staging_head[:7] }}</code>
+      {% else %}
+        <code style="color:#e5a00d">{{ staging_head[:7] }}</code>
+      {% endif %}
+    </p>
+    {% endif %}
     {% if git_contributors %}
     <table class="lb-table" style="margin-bottom:1rem">
       <thead><tr><th>Contributor</th><th>Commits</th></tr></thead>
