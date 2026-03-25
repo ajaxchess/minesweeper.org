@@ -25,15 +25,7 @@
 {% block og_url %}{{ _canon }}{% endblock %}
 {% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
 {% block og_description %}{{ _desc }}{% endblock %}
-{% if mode == 'hex-beginner' %}
-  {% block tw_title %}Hexsweeper Easy — Minesweeper on a Hex Board{% endblock %}
-{% elif mode == 'hex-intermediate' %}
-  {% block tw_title %}Hexsweeper Medium — Minesweeper on a Hex Board{% endblock %}
-{% elif mode == 'hex-expert' %}
-  {% block tw_title %}Hexsweeper Hard — Minesweeper on a Hex Board{% endblock %}
-{% else %}
-  {% block tw_title %}Hexsweeper Custom — Build Your Own Hex Board{% endblock %}
-{% endif %}
+{% block tw_title %}{% if mode == 'hex-beginner' %}Hexsweeper Easy — Minesweeper on a Hex Board{% elif mode == 'hex-intermediate' %}Hexsweeper Medium — Minesweeper on a Hex Board{% elif mode == 'hex-expert' %}Hexsweeper Hard — Minesweeper on a Hex Board{% else %}Hexsweeper Custom — Build Your Own Hex Board{% endif %}{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">
 {
