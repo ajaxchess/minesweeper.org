@@ -266,6 +266,127 @@ F52 Hexsweeper — Hexagonal Minesweeper Variant
   Deferred to a follow-on feature — hex no-guess generation is non-trivial.
   Board generator will note whether a board is logically solvable.
 
+F53 Daily Archive Leaderboard Pages
+
+  Purpose
+  ──────────────────────────────────────────────────────────────────────────────
+  Provide permanently-addressable, fully server-rendered (no JS required) daily
+  high-score pages for Beginner, Intermediate, and Expert minesweeper.  These
+  pages are spider-friendly and serve as a historical record of top scores by
+  authenticated users for each calendar day.
+
+  URL scheme
+  ──────────────────────────────────────────────────────────────────────────────
+  /beginner/<YYYY-MM-DD>/guess          — Beginner, standard (guess allowed)
+  /beginner/<YYYY-MM-DD>/no_guess       — Beginner, no-guess mode
+  /intermediate/<YYYY-MM-DD>/guess
+  /intermediate/<YYYY-MM-DD>/no_guess
+  /expert/<YYYY-MM-DD>/guess
+  /expert/<YYYY-MM-DD>/no_guess
+
+  Index / date-picker page
+  ──────────────────────────────────────────────────────────────────────────────
+  /archive                              — Archive index page
+    - Date input (defaults to today) + a "Go" button
+    - Mode tabs: Beginner / Intermediate / Expert
+    - Guess toggle: Standard / No-Guess
+    - On submit: navigates to /<mode>/<date>/<guess|no_guess>
+    - Lists the most recent 30 days that have at least one score as links
+      (one list per mode, but driven by a single combined query for speed)
+
+  Score selection rules
+  ──────────────────────────────────────────────────────────────────────────────
+  - Authenticated users only: WHERE user_email IS NOT NULL
+    (end-of-day cron already removes guest rows, but the query enforces it)
+  - One row per player: best time_ms (or time_secs * 1000 if time_ms is NULL)
+  - Date window: created_at >= <date> 00:00:00 UTC
+                 created_at <  <date+1> 00:00:00 UTC
+  - mode = <beginner|intermediate|expert>
+  - no_guess = <True for no_guess path, False for guess path>
+  - ORDER BY effective_ms ASC
+  - LIMIT 100
+
+  Page content (server-rendered HTML, no JS required)
+  ──────────────────────────────────────────────────────────────────────────────
+  1. h1: "Beginner Scores — 2026-03-25" (mode + date)
+  2. Mode tabs: Beginner | Intermediate | Expert (links, not JS tabs)
+  3. Guess toggle: Standard | No-Guess (links)
+  4. Score table columns:
+       # | Name | Time | Board | Mines | 3BV | 3BV/s | Eff | Board Hash
+     - # → rank (1-based)
+     - Name → display name (user_email masked)
+     - Time → time_ms/1000 formatted to 3 dp (e.g. 12.345s), fallback time_secs
+     - Board → rows×cols (e.g. 9×9)
+     - Mines → mines count
+     - 3BV → bbbv (or — if null)
+     - 3BV/s → bbbv / (time_ms/1000), 2 dp (or —)
+     - Eff → bbbv / (left_clicks + chord_clicks) * 100%, 0 dp (or —)
+     - Board Hash → link to /variants/replay?hash=...&rows=...&cols=...&mines=...
+       if board_hash is not null, otherwise —
+  5. Play buttons below table:
+       ← Play Beginner | Play Intermediate | Play Expert
+  6. Explanation paragraph (rendered from translation key):
+       "These are the best times posted by registered players on <date>.
+        Guest scores are not included. Each player appears once — their
+        personal best for the day."
+
+  404 handling
+  ──────────────────────────────────────────────────────────────────────────────
+  - Invalid date string → 404
+  - Valid date but no scores → render page with empty table and a
+    "No scores recorded for this day." message (not a 404)
+
+  SEO
+  ──────────────────────────────────────────────────────────────────────────────
+  - <title>: "Beginner Daily Scores — 2026-03-25 | minesweeper.org"
+  - <meta description>: "Top Beginner minesweeper times for 2026-03-25.
+      Server-rendered leaderboard of registered players."
+  - <link rel="canonical"> pointing to the canonical URL
+  - <link rel="prev"/"next"> for date pagination (previous/next day with scores)
+  - robots: index, follow (public pages)
+  - /archive: index page, robots: index, follow
+  - Add all 6 daily-archive URL patterns to sitemap.xml with
+    lastmod = today and priority = 0.6
+
+  Routes (main.py)
+  ──────────────────────────────────────────────────────────────────────────────
+  GET /archive
+      → render templates/archive_index.html
+      Query: for each mode, fetch last 30 distinct dates with ≥1 auth score
+
+  GET /{mode}/{date}/{guess_mode}
+      where mode ∈ {beginner, intermediate, expert}
+      and   date matches r"\d{4}-\d{2}-\d{2}"
+      and   guess_mode ∈ {guess, no_guess}
+      → render templates/archive_day.html
+      Validates date; returns 404 on invalid date string.
+
+  Template files
+  ──────────────────────────────────────────────────────────────────────────────
+  templates/archive_index.html  — date picker + recent days list
+  templates/archive_day.html    — static score table for one day
+
+  Translation keys needed (add to all 17 languages)
+  ──────────────────────────────────────────────────────────────────────────────
+  archive_title          "Daily Archive"
+  archive_desc           "Browse daily high-score leaderboards for each difficulty."
+  archive_go             "Go"
+  archive_recent         "Recent days"
+  archive_no_scores      "No scores recorded for this day."
+  archive_explanation    "These are the best times posted by registered players
+                          on {date}. Guest scores are not included. Each player
+                          appears once — their personal best for the day."
+  archive_standard       "Standard"
+  archive_no_guess       "No-Guess"
+
+  Notes
+  ──────────────────────────────────────────────────────────────────────────────
+  - Do NOT add hexsweeper or other variants to this feature; keep it to the
+    core three difficulties (beginner / intermediate / expert).
+  - The /archive index page is the entry point linked from the leaderboard page.
+  - Mode tabs use <a href="..."> links so they work without JavaScript.
+  - The score table uses existing .lb-table CSS class for visual consistency.
+
 F51 Blog post announcing the Flower Garden theme
   - Write a blog entry at /blog/flower-garden-theme announcing the new 🌸 skin
   - Cover: what it is (night garden / day garden), how to activate (theme picker
