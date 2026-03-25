@@ -2403,6 +2403,26 @@ def _build_stats(email: str, db: Session) -> dict:
         "elo":    pvp_elo,
     }
 
+    # Hexsweeper stats
+    hex_scores = (
+        db.query(HexsweeperScore)
+        .filter(HexsweeperScore.user_email == email)
+        .order_by(HexsweeperScore.created_at.desc())
+        .all()
+    )
+    if hex_scores:
+        times = [s.time_ms if s.time_ms else s.time_secs * 1000 for s in hex_scores]
+        best  = min(times)
+        stats["hexsweeper"] = {
+            "games_played": len(hex_scores),
+            "best_time_ms": best,
+            "best_time":    round(best / 1000, 3),
+            "avg_time":     round(sum(times) / len(times) / 1000, 1),
+            "recent":       [s.to_dict() for s in hex_scores[:10]],
+        }
+    else:
+        stats["hexsweeper"] = None
+
     return stats
 
 
