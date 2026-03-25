@@ -15,6 +15,8 @@ https://www.youtube.com/watch?v=ycPDDnQh2qE
 Then a header with sites where you can play minesweeper.  
 Be sure to include the Google Minesweeper version:
 https://www.google.com/fbx?fbx=minesweeper
+Microsoft's Casual Games version:
+https://www.microsoftcasualgames.com/minesweeper
 
 Then a header with links to Tentaizu sites.  Include
 https://puzzle-minesweeper.com
