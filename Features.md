@@ -166,6 +166,106 @@ F50 Flower Garden Theme (dark night-garden + light day-garden)
   - Skin name mapping: "flower" → "flower-light" for daytime auto-switch
     (mirror the "dark" → "light" mapping already in place)
 
+F52 Hexsweeper — Hexagonal Minesweeper Variant
+  Minesweeper played on a hexagonal-shaped board of pointy-top hexagonal tiles.
+  Each cell has 6 neighbours instead of 8, which changes strategy significantly.
+
+  ── Board sizes (hexagonal boards — axial radius R, diameter = 2R-1) ──────────
+    Beginner:     R=5  → diameter 9,  61 cells, ~8 mines  (13% — matches beginner ratio)
+    Intermediate: R=7  → diameter 13, 127 cells, ~20 mines (16% — matches intermediate ratio)
+    Expert:       R=10 → diameter 19, 271 cells, ~56 mines (21% — matches expert ratio)
+  All mine counts are tunable via HEXSWEEPER_MINES dict in settings.py.
+  A hexagonal board of radius R contains 3R²-3R+1 cells.
+  Cell set: all axial coords (q, r) where max(|q|, |r|, |q+r|) ≤ R-1.
+
+  ── Coordinate system ────────────────────────────────────────────────────────
+  Use axial coordinates (q, r); the third cube coordinate s = -q-r is implicit.
+  Six neighbours of (q, r): (q+1,r), (q-1,r), (q,r+1), (q,r-1), (q+1,r-1), (q-1,r+1)
+  Canonical cell index for hashing: sort cells by (r, q) then assign 0-based index.
+
+  ── Rendering ────────────────────────────────────────────────────────────────
+  Render using SVG (inline in a <div id="hex-board">).
+  Use pointy-top hexagons with hex size S px (default S=28 for beginner, scaled for larger).
+  Pixel center of axial cell (q, r):
+    x = S * √3 * (q + r/2)
+    y = S * 3/2 * r
+  SVG origin offset so board is centred in the viewport.
+  Each cell is a <polygon points="…"> with 6 vertices.
+  Cell states via CSS class: .hx-hidden, .hx-revealed, .hx-flagged,
+    .hx-question, .hx-mine, .hx-mine-detonated, .hx-n1…hx-n6
+  Left-click: reveal; Right-click / long-press: cycle flag → question → clear.
+  First click is always safe (regenerate board if needed).
+
+  ── Hash / board encoding ─────────────────────────────────────────────────────
+  Same approach as existing board-generator:
+    Sort cells by canonical index (r asc, q asc).
+    Build a bit-array: bit i = 1 if cell i is a mine.
+    Base64url-encode the byte array → board hash string.
+  Decode: same process in reverse.
+  Hash is shown as a permalink after the first reveal, same as /variants/replay/.
+
+  ── Routes ───────────────────────────────────────────────────────────────────
+    GET /hexsweeper               → beginner (R=5, 8 mines)
+    GET /hexsweeper/intermediate  → intermediate (R=7, 20 mines)
+    GET /hexsweeper/expert        → expert (R=10, 56 mines)
+    GET /hexsweeper/custom        → custom (form: radius 3–15, mine count)
+    GET /hexsweeper/generator     → hex board generator (click cells to place mines,
+                                    shows hash + mine count, generates replay link)
+    GET /hexsweeper/leaderboard   → best times per mode
+
+  ── Templates ────────────────────────────────────────────────────────────────
+    templates/hexsweeper.html          — shared base template (parameterised)
+    templates/hexsweeper_intermediate.html
+    templates/hexsweeper_expert.html
+    templates/hexsweeper_custom.html
+    templates/hexsweeper_generator.html
+    templates/hexsweeper_leaderboard.html
+
+  ── JS ───────────────────────────────────────────────────────────────────────
+  static/js/hexsweeper.js — single JS file for all hex game pages.
+  Key functions:
+    generateHexCells(R)            → sorted array of {q,r} objects (canonical order)
+    hexCenter(q, r, S)             → {x, y} pixel center
+    hexPolygonPoints(cx, cy, S)    → SVG points string for pointy-top hex
+    buildSVGBoard(cells, S)        → creates <polygon> elements, wires click/rightclick
+    generateMines(cells, count, safeIdx)  → Set of mine indices (avoids safeIdx)
+    countNeighbourMines(idx, mineSet, cells, cellIndex) → integer 0–6
+    revealCell(idx)                → flood-fill BFS for zero-count cells
+    boardToHash(mineSet, cells)    → base64url string
+    hashToBoard(hash, cells)       → Set of mine indices
+    renderCell(idx)                → updates <polygon> class + <text> child
+    getMineEmoji() / getFlagEmoji() → respects active skin (🌸/🌷 for flower, etc.)
+
+  ── Database ─────────────────────────────────────────────────────────────────
+  New table: hexsweeper_scores
+    id          INT AUTO_INCREMENT PRIMARY KEY
+    mode        VARCHAR(20)   -- 'beginner' | 'intermediate' | 'expert' | 'custom'
+    board_hash  VARCHAR(128)  -- NULL for daily/random; set for hash-based boards
+    user_email  VARCHAR(255)
+    display_name VARCHAR(64)
+    time_ms     INT
+    no_guess    TINYINT DEFAULT 0
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+
+  ── API ──────────────────────────────────────────────────────────────────────
+    POST /api/hexsweeper-scores          → submit score (time_ms, mode, board_hash, display_name)
+    GET  /api/hexsweeper-scores/{mode}   → leaderboard for mode (top 20, today + all-time)
+
+  ── Nav / sitemap ────────────────────────────────────────────────────────────
+  Add Hexsweeper to the Variants group in the mega menu (non-classic nav).
+  Add /hexsweeper, /hexsweeper/intermediate, /hexsweeper/expert,
+      /hexsweeper/custom, /hexsweeper/leaderboard to sitemap.xml.
+
+  ── Skin support ─────────────────────────────────────────────────────────────
+  SVG cells styled via CSS variable overrides: --hex-hidden, --hex-revealed,
+  --hex-mine, --hex-border, --hex-text. Each existing skin (dark, light,
+  tentaizu, flower/flower-light, classic) gets a hex-specific colour block
+  in style.css. getMineEmoji() / getFlagEmoji() from minesweeper.js apply.
+
+  ── No-guess mode ────────────────────────────────────────────────────────────
+  Deferred to a follow-on feature — hex no-guess generation is non-trivial.
+  Board generator will note whether a board is logically solvable.
+
 F51 Blog post announcing the Flower Garden theme
   - Write a blog entry at /blog/flower-garden-theme announcing the new 🌸 skin
   - Cover: what it is (night garden / day garden), how to activate (theme picker
