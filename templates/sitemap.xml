@@ -246,6 +246,34 @@
     <priority>0.6</priority>
   </url>
 
+  <url>
+    <loc>https://minesweeper.org/hexsweeper</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/hexsweeper/intermediate</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/hexsweeper/expert</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/hexsweeper/custom</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
   <!-- ── Leaderboards & social ─────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/leaderboard</loc>

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% if mode == 'hex-beginner' %}
+  {% set _title = "Hexsweeper — Easy | minesweeper.org" %}
+  {% set _desc  = "Play Hexsweeper — minesweeper on a hexagonal board. Easy mode: radius 5 hex board with 8 mines." %}
+  {% set _canon = "https://minesweeper.org/hexsweeper" %}
+{% elif mode == 'hex-intermediate' %}
+  {% set _title = "Hexsweeper — Medium | minesweeper.org" %}
+  {% set _desc  = "Play Hexsweeper — minesweeper on a hexagonal board. Medium mode: radius 7 hex board with 20 mines." %}
+  {% set _canon = "https://minesweeper.org/hexsweeper/intermediate" %}
+{% elif mode == 'hex-expert' %}
+  {% set _title = "Hexsweeper — Hard | minesweeper.org" %}
+  {% set _desc  = "Play Hexsweeper — minesweeper on a hexagonal board. Hard mode: radius 10 hex board with 57 mines." %}
+  {% set _canon = "https://minesweeper.org/hexsweeper/expert" %}
+{% else %}
+  {% set _title = "Hexsweeper — Custom | minesweeper.org" %}
+  {% set _desc  = "Play Hexsweeper with a custom board size — minesweeper on hexagonal tiles." %}
+  {% set _canon = "https://minesweeper.org/hexsweeper/custom" %}
+{% endif %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "{{ _title | replace(' | minesweeper.org', '') }}",
+  "url": "{{ _canon }}",
+  "description": "{{ _desc }}",
+  "genre": ["Puzzle", "Strategy", "Browser Game"],
+  "gamePlatform": "Web Browser",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<h1 class="tz-page-h1">{{ _title | replace(" | minesweeper.org", "") }}</h1>
+<div class="game-wrapper">
+
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="game-section">
+    <div class="game-info">
+      <div class="mode-row">
+        <div class="mode-badge">⬡ Hexsweeper</div>
+      </div>
+
+      <!-- Difficulty tabs -->
+      <div class="variant-tabs">
+        <a href="/hexsweeper"              class="variant-tab {% if mode == 'hex-beginner'     %}active{% endif %}">Easy</a>
+        <a href="/hexsweeper/intermediate" class="variant-tab {% if mode == 'hex-intermediate' %}active{% endif %}">Medium</a>
+        <a href="/hexsweeper/expert"       class="variant-tab {% if mode == 'hex-expert'       %}active{% endif %}">Hard</a>
+        <a href="/hexsweeper/custom"       class="variant-tab {% if mode == 'hex-custom'       %}active{% endif %}">Custom</a>
+      </div>
+
+      {% if mode == 'hex-custom' %}
+      <form id="hex-custom-form" class="custom-form">
+        <label>Radius <input type="number" id="h-radius" value="5" min="3" max="15"></label>
+        <label>Mines  <input type="number" id="h-mines"  value="8" min="1" max="999"></label>
+        <button type="submit">Start</button>
+      </form>
+      {% endif %}
+
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-icon">💣</span>
+          <span class="stat-value" id="hex-mines">{{ "%03d"|format(mines) }}</span>
+        </div>
+        <button id="hex-reset" title="New game" onclick="hexResetGame()">🙂</button>
+        <div class="stat">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="hex-timer">000</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="hex-board-wrap"
+         class="hex-board-wrap"
+         data-radius="{{ radius }}"
+         data-mines="{{ mines }}"
+         data-mode="{{ mode }}"
+         data-username="{{ user.display_name if user else '' }}">
+    </div>
+
+    <p class="instructions">
+      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
+      <strong>Right-click</strong> to flag &nbsp;|&nbsp;
+      <strong>🙂</strong> to reset &nbsp;|&nbsp;
+      <em>Each cell has 6 neighbours.</em>
+    </p>
+
+    <!-- Leaderboard -->
+    <div class="tz-lb-section" style="width:100%;max-width:600px">
+      {% set mode_label = {'hex-beginner': 'Easy', 'hex-intermediate': 'Medium', 'hex-expert': 'Hard', 'hex-custom': 'Custom'}[mode] %}
+      <div class="tz-lb-title" id="hex-lb-title">Today's Best — {{ mode_label }}</div>
+      <div id="hex-lb-content">
+        <div class="lb-loading">Loading…</div>
+      </div>
+    </div>
+
+  </section>
+
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/hexsweeper.js"></script>
+{% if mode == 'hex-custom' %}
+<script>
+  document.getElementById('hex-custom-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const radius = parseInt(document.getElementById('h-radius').value);
+    const mines  = parseInt(document.getElementById('h-mines').value);
+    const cells  = 3 * radius * radius - 3 * radius + 1;
+    const maxM   = Math.floor(cells * 0.85);
+    const wrap   = document.getElementById('hex-board-wrap');
+    wrap.dataset.radius = radius;
+    wrap.dataset.mines  = Math.min(mines, maxM);
+    document.getElementById('hex-mines').textContent =
+      String(Math.min(mines, maxM)).padStart(3, '0');
+    hexResetGame();
+  });
+</script>
+{% endif %}
+{% endblock %}

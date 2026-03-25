@@ -433,6 +433,48 @@ class ReplayScore(Base):
         }
 
 
+# ── Hexsweeper Score model (permanent — never reset) ─────────────────────────
+class HexsweeperScore(Base):
+    __tablename__ = "hexsweeper_scores"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String(32), nullable=False)
+    user_email = Column(String(256), nullable=True, index=True)
+    hex_mode     = Column(String(32), nullable=False)   # beginner/intermediate/expert/custom
+    time_secs    = Column(Integer, nullable=False)
+    time_ms      = Column(Integer, nullable=True)
+    radius       = Column(Integer, nullable=False)
+    mines        = Column(Integer, nullable=False)
+    board_hash   = Column(String(128), nullable=True)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
+    guest_token  = Column(String(36), nullable=True, index=True)
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_hexsweeper_scores_mode_time", "hex_mode", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":           self.id,
+            "name":         self.name,
+            "hex_mode":     self.hex_mode,
+            "time_secs":    self.time_secs,
+            "time_ms":      self.time_ms,
+            "radius":       self.radius,
+            "mines":        self.mines,
+            "board_hash":   self.board_hash,
+            "bbbv":         self.bbbv,
+            "left_clicks":  self.left_clicks,
+            "right_clicks": self.right_clicks,
+            "chord_clicks": self.chord_clicks,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
 # ── Guest Score Archive (scores from unregistered players archived at midnight) ─
 class GuestScoreArchive(Base):
     __tablename__ = "guest_score_archive"

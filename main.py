@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, ReplayScore, UserProfile, PvpResult, ServerStats, GuestScoreArchive, BlogComment, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, GuestScoreArchive, BlogComment, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -1523,6 +1523,174 @@ def get_toroid_scores(tor_mode: str, no_guess: bool = False, period: str = "allt
             q = q.filter(ToroidScore.created_at >= today.replace(day=1))
 
     raw = q.order_by(sort_key.asc(), ToroidScore.created_at.asc()).limit(500).all()
+    seen: set = set()
+    top: list = []
+    for s in raw:
+        key = s.user_email or s.name
+        if key not in seen:
+            seen.add(key)
+            top.append(s)
+            if len(top) >= 15:
+                break
+    return _enrich_with_profiles(top, db)
+
+
+# ── Hexsweeper Routes ─────────────────────────────────────────────────────────
+
+# Hex board cell count for radius R = 3R²−3R+1
+# R=5 → 61 cells, R=7 → 127 cells, R=10 → 271 cells
+HEXSWEEPER_MODES = {
+    "hex-beginner":     {"radius": 5, "mines": 8},
+    "hex-intermediate": {"radius": 7, "mines": 20},
+    "hex-expert":       {"radius": 10, "mines": 57},
+}
+
+
+@app.get("/hexsweeper", response_class=HTMLResponse)
+async def hexsweeper_beginner(request: Request):
+    return templates.TemplateResponse("hexsweeper.html", {
+        "request": request, "mode": "hex-beginner",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **HEXSWEEPER_MODES["hex-beginner"]
+    })
+
+
+@app.get("/hexsweeper/intermediate", response_class=HTMLResponse)
+async def hexsweeper_intermediate(request: Request):
+    return templates.TemplateResponse("hexsweeper.html", {
+        "request": request, "mode": "hex-intermediate",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **HEXSWEEPER_MODES["hex-intermediate"]
+    })
+
+
+@app.get("/hexsweeper/expert", response_class=HTMLResponse)
+async def hexsweeper_expert(request: Request):
+    return templates.TemplateResponse("hexsweeper.html", {
+        "request": request, "mode": "hex-expert",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **HEXSWEEPER_MODES["hex-expert"]
+    })
+
+
+@app.get("/hexsweeper/custom", response_class=HTMLResponse)
+async def hexsweeper_custom(request: Request):
+    return templates.TemplateResponse("hexsweeper.html", {
+        "request": request, "mode": "hex-custom",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "radius": 5, "mines": 8,
+    })
+
+
+# ── Hexsweeper Leaderboard API ────────────────────────────────────────────────
+
+HEX_MODES_VALID = {"beginner", "intermediate", "expert", "custom"}
+
+
+class HexscoreSubmit(BaseModel):
+    name:         str          = Field(..., min_length=1, max_length=32)
+    hex_mode:     str          = Field(..., pattern="^(beginner|intermediate|expert|custom)$")
+    time_secs:    int          = Field(..., ge=1, le=999)
+    time_ms:      Optional[int]  = Field(None, ge=1, le=3_600_000)
+    radius:       int          = Field(..., ge=3, le=20)
+    mines:        int          = Field(..., ge=1, le=999)
+    board_hash:   Optional[str]  = Field(None, max_length=128)
+    bbbv:         Optional[int]  = Field(None, ge=1, le=9999)
+    left_clicks:  Optional[int]  = Field(None, ge=0, le=99999)
+    right_clicks: Optional[int]  = Field(None, ge=0, le=99999)
+    chord_clicks: Optional[int]  = Field(None, ge=0, le=99999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+    @field_validator("mines")
+    @classmethod
+    def mines_not_exceeding_board(cls, v, info):
+        radius = info.data.get("radius")
+        if radius:
+            cells = 3 * radius * radius - 3 * radius + 1
+            if v > int(cells * 0.85):
+                raise ValueError("Too many mines for this board size")
+        return v
+
+
+@app.post("/api/hexsweeper-scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_hex_score(payload: HexscoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = HexsweeperScore(
+        name         = payload.name,
+        user_email   = user["email"] if user else None,
+        hex_mode     = payload.hex_mode,
+        time_secs    = payload.time_secs,
+        time_ms      = payload.time_ms,
+        radius       = payload.radius,
+        mines        = payload.mines,
+        board_hash   = payload.board_hash,
+        bbbv         = payload.bbbv,
+        left_clicks  = payload.left_clicks,
+        right_clicks = payload.right_clicks,
+        chord_clicks = payload.chord_clicks,
+        guest_token  = guest_token,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/hexsweeper-scores/{hex_mode}")
+def get_hex_scores(hex_mode: str, period: str = "alltime",
+                   score_date: Optional[str] = Query(None, alias="date"),
+                   season_num: Optional[int] = Query(None),
+                   db: Session = Depends(get_db)):
+    if hex_mode not in HEX_MODES_VALID:
+        raise HTTPException(status_code=400, detail="Invalid mode")
+    if period not in ("daily", "season", "alltime"):
+        period = "alltime"
+
+    sort_key = case(
+        (HexsweeperScore.time_ms.isnot(None), HexsweeperScore.time_ms),
+        else_=HexsweeperScore.time_secs * 1000
+    )
+
+    q = db.query(HexsweeperScore).filter(HexsweeperScore.hex_mode == hex_mode)
+
+    if period == "daily":
+        try:
+            target = date.fromisoformat(score_date) if score_date else date.today()
+        except ValueError:
+            target = date.today()
+        q = q.filter(HexsweeperScore.created_at >= target,
+                     HexsweeperScore.created_at < target + timedelta(days=1))
+        top = q.order_by(sort_key.asc(), HexsweeperScore.created_at.asc()).limit(15).all()
+        return _enrich_with_profiles(top, db)
+
+    if period == "season":
+        if season_num and season_num >= 1:
+            s_start, s_end = get_season_range(season_num)
+            q = q.filter(HexsweeperScore.created_at >= s_start, HexsweeperScore.created_at < s_end)
+        else:
+            today = date.today()
+            q = q.filter(HexsweeperScore.created_at >= today.replace(day=1))
+
+    raw = q.order_by(sort_key.asc(), HexsweeperScore.created_at.asc()).limit(500).all()
     seen: set = set()
     top: list = []
     for s in raw:
