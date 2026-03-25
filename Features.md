@@ -136,6 +136,14 @@ F48 Purpose-built og:image for Mosaic (1200×630)
     /mosaic/replay
   - Current placeholder: MosaicExample.png (small, square — not ideal)
 
+F49 Purpose-built og:image for Rush (1200×630)
+  - Replace static/img/og-rush.png with a purpose-built 1200×630 image
+  - Image should clearly represent Minesweeper Rush: the cascading row mechanic,
+    timer/score display, dark theme consistent with the Rush skin
+  - Used as og:image and twitter:image on all 3 Rush pages:
+    /rush, /rush/how-to-play, /rush/leaderboard
+  - Current placeholder: RushOGFirstAttempt.png (cropped from 1443×700 screenshot)
+
 F46 OpenTelemetry Instrumentation for AWS Bedrock Observability
   - telemetry.py: setup_telemetry(app, db_engine) initialises OTLP tracing; no-op when
     OTEL_EXPORTER_OTLP_ENDPOINT is unset so dev environments need no extra infrastructure
