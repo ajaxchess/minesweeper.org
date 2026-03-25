@@ -420,7 +420,7 @@
 
     el.className = 'cell';
     if (!state.revealed[r][c]) {
-      if (f === 1)      { el.classList.add('flagged');  el.textContent = '🚩'; }
+      if (f === 1)      { el.classList.add('flagged');  el.textContent = getFlagEmoji(); }
       else if (f === 2) { el.classList.add('question'); el.textContent = '❓'; }
       else              { el.classList.add('hidden');   el.textContent = ''; }
       return;

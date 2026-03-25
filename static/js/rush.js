@@ -519,7 +519,7 @@ function renderCell(r, c, isDetonated = false) {
   el.style.color = '';
 
   if (!rush.revealed[r][c]) {
-    if (f === 1)      { el.classList.add('flagged');  el.textContent = '🚩'; }
+    if (f === 1)      { el.classList.add('flagged');  el.textContent = getFlagEmoji(); }
     else if (f === 2) { el.classList.add('question'); el.textContent = '❓'; }
     else              { el.classList.add('hidden');   el.textContent = ''; }
     return;
@@ -528,7 +528,7 @@ function renderCell(r, c, isDetonated = false) {
   el.classList.add('revealed');
   if (val === -1) {
     el.classList.add(isDetonated ? 'mine-detonated' : 'mine');
-    el.textContent = '💣';
+    el.textContent = getMineEmoji();
   } else {
     const disp = getCellDisplay(r, c);
     if (disp) {

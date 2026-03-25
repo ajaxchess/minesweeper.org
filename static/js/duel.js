@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!revealed[r][c]) {
       if (flagged[r][c] === 1) {
         el.classList.add('flagged');
-        el.textContent = '🚩';
+        el.textContent = getFlagEmoji();
       } else if (flagged[r][c] === 2) {
         el.classList.add('question');
         el.textContent = '❓';
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     el.classList.add('revealed');
     if (val === -1) {
       el.classList.add(exploded ? 'mine-detonated' : 'mine');
-      el.textContent = '💣';
+      el.textContent = getMineEmoji();
     } else if (val === 0) {
       el.textContent = '';
     } else {
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     el.classList.add('revealed');
     if (val === -1) {
       el.classList.add(oppExploded ? 'mine-detonated' : 'mine');
-      el.textContent = '💣';
+      el.textContent = getMineEmoji();
     } else if (val === 0) {
       el.textContent = '';
     } else {

@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     el.classList.add('revealed');
     if (val === -1) {
       el.classList.add(b.exploded ? 'mine-detonated' : 'mine');
-      el.textContent = '💣';
+      el.textContent = getMineEmoji();
     } else if (val === 0) {
       el.textContent = '';
     } else {

@@ -7,6 +7,7 @@
 - F14 Website Analytics — Google Analytics
 - F38 Light theme
 - F39 Use light theme during daylight hours based on client browser local time, defaulting to dark otherwise
+- F51 Blog post announcing the Flower Garden theme @bill
 
 ## In Progress
 - F23 PVP/Duel improvements @earl
@@ -33,6 +34,7 @@
 - F6 Rush mode
 - F7 Chording support
 - F10 Multiple skin support — Dark, Classic, Tentaizu
+- F50 Flower Garden theme — night garden / day garden, mines=🌸, flags=🌷
 - F11 Tentaizu puzzle page at /tentaizu
 - F12 Cylinder variant
 - F17 LinkedIn link

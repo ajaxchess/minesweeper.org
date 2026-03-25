@@ -10,7 +10,7 @@
   <link rel="canonical" href="{% block canonical %}https://minesweeper.org/{% endblock %}">
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=33" />
+  <link rel="stylesheet" href="/static/css/style.css?v=34" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     // Resolve the "default" auto-theme: special-day override takes priority,
@@ -21,16 +21,31 @@
       if (serverSkin !== defaultSkin) return serverSkin === 'diana' ? 'classic' : serverSkin;
       return (new Date().getHours() >= 6 && new Date().getHours() < 20) ? 'light' : 'dark';
     };
+    // For skins that have day/night pairs, resolve the correct variant by time.
+    window.resolveStoredSkin = function(stored) {
+      var h = new Date().getHours();
+      var day = (h >= 6 && h < 20);
+      if (stored === 'flower' || stored === 'flower-light') return day ? 'flower-light' : 'flower';
+      return stored;
+    };
     (function(){
       var p = new URLSearchParams(window.location.search);
       var t = p.get('theme');
       if (t === 'diana' || t === 'classic') localStorage.setItem('skin', 'classic');
-      else if (t === 'dark')     localStorage.setItem('skin', 'dark');
-      else if (t === 'light')    localStorage.setItem('skin', 'light');
-      else if (t === 'tentaizu') localStorage.setItem('skin', 'tentaizu');
-      else if (t === 'default')  localStorage.setItem('skin', 'default');
+      else if (t === 'dark')         localStorage.setItem('skin', 'dark');
+      else if (t === 'light')        localStorage.setItem('skin', 'light');
+      else if (t === 'tentaizu')     localStorage.setItem('skin', 'tentaizu');
+      else if (t === 'flower')       localStorage.setItem('skin', 'flower');
+      else if (t === 'default')      localStorage.setItem('skin', 'default');
       var stored = localStorage.getItem('skin');
-      var skin = (!stored || stored === 'default') ? window.resolveDefaultSkin() : stored;
+      var skin;
+      if (!stored || stored === 'default') {
+        skin = window.resolveDefaultSkin();
+      } else if (stored === 'flower' || stored === 'flower-light') {
+        skin = window.resolveStoredSkin(stored);
+      } else {
+        skin = stored;
+      }
       document.documentElement.dataset.skin = (skin === 'diana' ? 'classic' : skin);
     })();
   </script>
@@ -305,6 +320,17 @@
                 <span class="mega-card-text"><strong>{{ t.nav_links_label }}</strong><span>{{ t.nav_sub_links }}</span></span>
               </a>
             </div>
+            <div class="mega-col mega-col-themes">
+              <div class="mega-theme-label">Theme</div>
+              <div class="mega-theme-btns">
+                <button class="mega-theme-btn" onclick="setTheme('default')"    title="Auto (day/night)">🌓</button>
+                <button class="mega-theme-btn" onclick="setTheme('dark')"       title="Dark">🌑</button>
+                <button class="mega-theme-btn" onclick="setTheme('light')"      title="Light">☀️</button>
+                <button class="mega-theme-btn" onclick="setTheme('tentaizu')"   title="Tentaizu">⭐</button>
+                <button class="mega-theme-btn" onclick="setTheme('flower')"     title="Flower Garden">🌸</button>
+                <button class="mega-theme-btn" onclick="setTheme('classic')"    title="Classic">🟦</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -462,6 +488,19 @@
     var isOpen = grp.classList.contains('open');
     document.querySelectorAll('.mega-group.open').forEach(function(g) { g.classList.remove('open'); });
     if (!isOpen) grp.classList.add('open');
+  }
+  function setTheme(skin) {
+    localStorage.setItem('skin', skin);
+    var resolved;
+    if (skin === 'flower' || skin === 'flower-light') {
+      resolved = window.resolveStoredSkin(skin);
+    } else if (!skin || skin === 'default') {
+      resolved = window.resolveDefaultSkin();
+    } else {
+      resolved = skin === 'diana' ? 'classic' : skin;
+    }
+    document.documentElement.dataset.skin = resolved;
+    document.querySelectorAll('.mega-group.open').forEach(function(g) { g.classList.remove('open'); });
   }
   </script>
   {% block scripts %}{% endblock %}

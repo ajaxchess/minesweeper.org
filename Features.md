@@ -166,6 +166,15 @@ F50 Flower Garden Theme (dark night-garden + light day-garden)
   - Skin name mapping: "flower" → "flower-light" for daytime auto-switch
     (mirror the "dark" → "light" mapping already in place)
 
+F51 Blog post announcing the Flower Garden theme
+  - Write a blog entry at /blog/flower-garden-theme announcing the new 🌸 skin
+  - Cover: what it is (night garden / day garden), how to activate (theme picker
+    in the More menu or ?theme=flower URL param), what changed (mines = 🌸,
+    flags = 🌷, deep plum night palette / sage green day palette)
+  - Include a screenshot showing the day and night variants side by side
+  - Target audience: returning players who might not notice the new theme
+  - Assign to Bill
+
 F49 Purpose-built og:image for Rush (1200×630)
   - Replace static/img/og-rush.png with a purpose-built 1200×630 image
   - Image should clearly represent Minesweeper Rush: the cascading row mechanic,

@@ -5641,3 +5641,214 @@ html[data-skin="light"] nav a.active  { color: #fff; }
 /* Button-styled links must keep white text on the dark accent2 background */
 html[data-skin="light"] .tz-btn-potd,
 html[data-skin="light"] .tz-btn-potd:visited { color: #fff; }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   F50  Flower Garden — Night theme  (data-skin="flower")
+   ══════════════════════════════════════════════════════════════════════════════ */
+html[data-skin="flower"] {
+  --bg:          #1a0f2e;
+  --surface:     #231638;
+  --surface2:    #2e1f4a;
+  --accent:      #e05878;
+  --accent2:     #7dd4a0;
+  --text:        #f0e8ff;
+  --text-dim:    #9080b0;
+  --cell-hidden: #2d1f4e;
+  --cell-hover:  #3d2a66;
+  --cell-rev:    #150d22;
+  --cell-border: #4a2d7a;
+  --border:      #3a2560;
+}
+
+html[data-skin="flower"] body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+html[data-skin="flower"] header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--surface2);
+}
+
+html[data-skin="flower"] #board,
+html[data-skin="flower"] #rush-board,
+html[data-skin="flower"] #tz-board,
+html[data-skin="flower"] #cyl-board,
+html[data-skin="flower"] #tor-board {
+  background: #200f38;
+  border-color: var(--cell-border);
+}
+
+html[data-skin="flower"] .cell.hidden {
+  background: var(--cell-hidden);
+  border-color: var(--cell-border);
+}
+
+html[data-skin="flower"] .cell.revealed {
+  background: var(--cell-rev);
+  border-color: #3a2060;
+}
+
+html[data-skin="flower"] .cell.mine          { background: #4a1030; }
+html[data-skin="flower"] .cell.mine-detonated { background: #7a1040; }
+
+html[data-skin="flower"] footer {
+  background: var(--surface);
+  border-top: 1px solid var(--surface2);
+  color: var(--text-dim);
+}
+
+html[data-skin="flower"] footer a    { color: var(--accent2); }
+html[data-skin="flower"] a           { color: var(--accent2); }
+html[data-skin="flower"] a:visited   { color: #b07ad4; }
+html[data-skin="flower"] nav a,
+html[data-skin="flower"] nav a:visited { color: var(--text-dim); }
+html[data-skin="flower"] nav a.active  { color: #fff; }
+
+html[data-skin="flower"] .tz-btn-potd,
+html[data-skin="flower"] .tz-btn-potd:visited { color: #fff; }
+
+html[data-skin="flower"] .solstice-banner,
+html[data-skin="flower"] .diana-birthday-banner {
+  background: linear-gradient(90deg, #2e1f4a 0%, #3d2a66 40%, #2e1f4a 100%);
+  color: var(--text);
+  border-bottom-color: #4a2d7a;
+}
+
+/* Replace bomb counter icon with flower in the stat display */
+html[data-skin="flower"] #mine-count .stat-icon,
+html[data-skin="flower-light"] #mine-count .stat-icon {
+  font-size: 0;
+}
+html[data-skin="flower"] #mine-count .stat-icon::after,
+html[data-skin="flower-light"] #mine-count .stat-icon::after {
+  content: '🌸';
+  font-size: 1rem;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   F50  Flower Garden — Day theme  (data-skin="flower-light")
+   ══════════════════════════════════════════════════════════════════════════════ */
+html[data-skin="flower-light"] {
+  --bg:          #f0f5e8;
+  --surface:     #fdf8f0;
+  --surface2:    #e8f0d8;
+  --accent:      #c0405a;
+  --accent2:     #2a7a50;
+  --text:        #1a2810;
+  --text-dim:    #4a6040;
+  --cell-hidden: #c8ddb0;
+  --cell-hover:  #b0cc90;
+  --cell-rev:    #f5f8ee;
+  --cell-border: #90b870;
+  --border:      #c0d8a0;
+}
+
+html[data-skin="flower-light"] body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+html[data-skin="flower-light"] header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--surface2);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+html[data-skin="flower-light"] .stat {
+  background: #1a2810;
+  border-color: #3a5030;
+}
+
+html[data-skin="flower-light"] #board,
+html[data-skin="flower-light"] #rush-board,
+html[data-skin="flower-light"] #tz-board,
+html[data-skin="flower-light"] #cyl-board,
+html[data-skin="flower-light"] #tor-board {
+  background: #d8ecc0;
+  border-color: var(--cell-border);
+}
+
+html[data-skin="flower-light"] .cell.hidden {
+  background: var(--cell-hidden);
+  border-color: var(--cell-border);
+}
+
+html[data-skin="flower-light"] .cell.revealed {
+  background: var(--cell-rev);
+  border-color: #a8c888;
+}
+
+html[data-skin="flower-light"] .cell.mine          { background: #e87090; }
+html[data-skin="flower-light"] .cell.mine-detonated { background: #c02040; }
+
+html[data-skin="flower-light"] footer {
+  background: var(--surface);
+  border-top: 1px solid var(--surface2);
+  color: var(--text-dim);
+}
+
+html[data-skin="flower-light"] footer a    { color: var(--accent2); }
+html[data-skin="flower-light"] a           { color: var(--accent2); }
+html[data-skin="flower-light"] a:visited   { color: #7a3090; }
+html[data-skin="flower-light"] nav a,
+html[data-skin="flower-light"] nav a:visited { color: var(--text-dim); }
+html[data-skin="flower-light"] nav a.active  { color: #fff; }
+
+html[data-skin="flower-light"] #noguess-toggle.active,
+html[data-skin="flower-light"] #highlight-errors-toggle.active {
+  color: var(--accent2);
+  border-color: var(--accent2);
+  background: rgba(42, 122, 80, 0.1);
+}
+
+html[data-skin="flower-light"] .tz-btn-potd,
+html[data-skin="flower-light"] .tz-btn-potd:visited { color: #fff; }
+
+html[data-skin="flower-light"] .solstice-banner,
+html[data-skin="flower-light"] .diana-birthday-banner {
+  background: linear-gradient(90deg, #e8f0d8 0%, #d8ecc0 40%, #e8f0d8 100%);
+  color: #1a2810;
+  border-bottom-color: #90b870;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   F50  Theme switcher buttons (mega menu More panel)
+   ══════════════════════════════════════════════════════════════════════════════ */
+.mega-col-themes {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  min-width: 90px;
+}
+
+.mega-theme-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 0.4rem;
+}
+
+.mega-theme-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.mega-theme-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0.3rem 0.35rem;
+  transition: transform 0.1s, background 0.15s;
+}
+
+.mega-theme-btn:hover {
+  background: var(--cell-hover);
+  transform: scale(1.15);
+}

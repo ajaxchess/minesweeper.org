@@ -21,7 +21,10 @@ function strSeed(s) {
 }
 
 function getMineEmoji() {
-    return document.documentElement.dataset.skin === 'tentaizu' ? '⭐' : '💣';
+    const skin = document.documentElement.dataset.skin;
+    if (skin === 'tentaizu')                         return '⭐';
+    if (skin === 'flower' || skin === 'flower-light') return '🌸';
+    return '💣';
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
