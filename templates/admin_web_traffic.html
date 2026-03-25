@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+{% block title %}Web Traffic — minesweeper.org{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+const LABELS   = {{ chart_labels | safe }};
+const TOTAL    = {{ total_req    | safe }};
+const UNIQ     = {{ unique_ips   | safe }};
+const H200     = {{ http_200     | safe }};
+const H201     = {{ http_201     | safe }};
+const H206     = {{ http_206     | safe }};
+const H101     = {{ http_101     | safe }};
+const H302     = {{ http_302     | safe }};
+const H304     = {{ http_304     | safe }};
+const H307     = {{ http_307     | safe }};
+const H403     = {{ http_403     | safe }};
+const H404     = {{ http_404     | safe }};
+const H405     = {{ http_405     | safe }};
+const H422     = {{ http_422     | safe }};
+const H500     = {{ http_500     | safe }};
+const H503     = {{ http_503     | safe }};
+
+// Hourly ops data
+const HR_LABELS   = {{ hr_labels   | safe }};
+const HR_NET_SENT = {{ hr_net_sent | safe }};
+const HR_NET_RECV = {{ hr_net_recv | safe }};
+const HR_REQUESTS = {{ hr_requests | safe }};
+
+function makeLineChart(id, datasets, yLabel) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'line',
+    data: { labels: LABELS, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { color: '#aaa', boxWidth: 12 } } },
+      scales: {
+        x: { ticks: { color: '#888', maxTicksLimit: 20, maxRotation: 45 }, grid: { color: '#333' } },
+        y: {
+          ticks: { color: '#888' }, grid: { color: '#333' },
+          title: { display: !!yLabel, text: yLabel, color: '#888' },
+          min: 0,
+        }
+      }
+    }
+  });
+}
+
+function makeStackedBar(id, datasets) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'bar',
+    data: { labels: LABELS, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { color: '#aaa', boxWidth: 12 } } },
+      scales: {
+        x: { stacked: true, ticks: { color: '#888', maxTicksLimit: 20, maxRotation: 45 }, grid: { color: '#333' } },
+        y: { stacked: true, ticks: { color: '#888' }, grid: { color: '#333' }, min: 0 },
+      }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Chart 1 — total requests & unique visitors
+  makeLineChart('chartTraffic', [
+    { label: 'Total Requests', data: TOTAL,
+      borderColor: 'rgba(74,158,255,0.9)', backgroundColor: 'rgba(74,158,255,0.15)',
+      borderWidth: 1.5, fill: true, tension: 0.3, pointRadius: 2 },
+    { label: 'Unique IPs', data: UNIQ,
+      borderColor: 'rgba(80,200,120,0.9)', backgroundColor: 'rgba(80,200,120,0.15)',
+      borderWidth: 1.5, fill: true, tension: 0.3, pointRadius: 2 },
+  ], 'Requests / day');
+
+  // Chart 2 — 2xx success codes
+  makeStackedBar('chartSuccess', [
+    { label: '200 OK',          data: H200, backgroundColor: 'rgba(80,200,120,0.75)' },
+    { label: '201 Created',     data: H201, backgroundColor: 'rgba(80,200,120,0.45)' },
+    { label: '206 Partial',     data: H206, backgroundColor: 'rgba(80,200,120,0.25)' },
+    { label: '101 Switching',   data: H101, backgroundColor: 'rgba(160,220,160,0.5)' },
+  ]);
+
+  // Chart 3 — 3xx redirects
+  makeStackedBar('chartRedirect', [
+    { label: '302 Found',       data: H302, backgroundColor: 'rgba(255,200,60,0.75)' },
+    { label: '304 Not Modified',data: H304, backgroundColor: 'rgba(255,200,60,0.5)'  },
+    { label: '307 Temp Redirect',data: H307,backgroundColor: 'rgba(255,200,60,0.3)'  },
+  ]);
+
+  // Chart 4 — 4xx & 5xx errors
+  makeStackedBar('chartErrors', [
+    { label: '404 Not Found',   data: H404, backgroundColor: 'rgba(255,100,80,0.75)' },
+    { label: '403 Forbidden',   data: H403, backgroundColor: 'rgba(255,120,60,0.7)'  },
+    { label: '405 Method',      data: H405, backgroundColor: 'rgba(255,140,50,0.65)' },
+    { label: '422 Unprocessable',data:H422, backgroundColor: 'rgba(255,160,40,0.6)'  },
+    { label: '500 Server Error',data: H500, backgroundColor: 'rgba(200,50,50,0.75)'  },
+    { label: '503 Unavailable', data: H503, backgroundColor: 'rgba(180,30,30,0.7)'   },
+  ]);
+
+  // Chart 5 — hourly network bandwidth (last 48 h)
+  if (HR_LABELS.length) {
+    const a = 'rgba(74,158,255,0.8)', g = 'rgba(80,200,120,0.8)';
+    new Chart(document.getElementById('chartHrNet'), {
+      type: 'line',
+      data: { labels: HR_LABELS, datasets: [
+        { label: 'Sent (MB)',  data: HR_NET_SENT, borderColor: a, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.3, pointRadius: 2 },
+        { label: 'Recv (MB)',  data: HR_NET_RECV, borderColor: g, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.3, pointRadius: 2 },
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { labels: { color: '#aaa', boxWidth: 12 } } },
+        scales: {
+          x: { ticks: { color: '#888', maxTicksLimit: 12 }, grid: { color: '#333' } },
+          y: { ticks: { color: '#888' }, grid: { color: '#333' }, min: 0,
+               title: { display: true, text: 'MB / hr', color: '#888' } },
+        }
+      }
+    });
+
+    // Chart 6 — hourly HTTP requests
+    new Chart(document.getElementById('chartHrReqs'), {
+      type: 'line',
+      data: { labels: HR_LABELS, datasets: [
+        { label: 'Requests / hr', data: HR_REQUESTS,
+          borderColor: 'rgba(255,160,60,0.9)', backgroundColor: 'rgba(255,160,60,0.15)',
+          borderWidth: 1.5, fill: true, tension: 0.3, pointRadius: 2 },
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { labels: { color: '#aaa', boxWidth: 12 } } },
+        scales: {
+          x: { ticks: { color: '#888', maxTicksLimit: 12 }, grid: { color: '#333' } },
+          y: { ticks: { color: '#888' }, grid: { color: '#333' }, min: 0,
+               title: { display: true, text: 'Requests', color: '#888' } },
+        }
+      }
+    });
+  }
+});
+</script>
+<style>
+.wt-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+.wt-chart-card {
+  background: var(--bg2, #1a1a2e);
+  border: 1px solid var(--border, #333);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+.wt-chart-card h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim, #888);
+}
+.wt-chart-wrap { position: relative; height: 220px; }
+.wt-table-wrap { overflow-x: auto; margin-top: 1.5rem; }
+.wt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.wt-table th, .wt-table td {
+  padding: 0.3rem 0.6rem;
+  border-bottom: 1px solid var(--surface2, #333);
+  text-align: right;
+}
+.wt-table th { color: var(--text-dim, #888); font-weight: 600; }
+.wt-table td:first-child, .wt-table th:first-child { text-align: left; font-family: monospace; }
+.wt-table tr:last-child td { border-bottom: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">🌐 Web Traffic</h1>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">{{ t.admin_signed_in_as }} {{ user.email }}</p>
+  <p style="text-align:center;margin-bottom:1.5rem;"><a href="/admin">← {{ t.admin_dashboard }}</a></p>
+
+  {% if rows %}
+  <div class="wt-charts">
+
+    <div class="wt-chart-card" style="grid-column: 1 / -1;">
+      <h3>Total Requests &amp; Unique Visitors per Day</h3>
+      <div class="wt-chart-wrap" style="height:240px;"><canvas id="chartTraffic"></canvas></div>
+    </div>
+
+    <div class="wt-chart-card">
+      <h3>2xx Success &amp; 101 Upgrade</h3>
+      <div class="wt-chart-wrap"><canvas id="chartSuccess"></canvas></div>
+    </div>
+
+    <div class="wt-chart-card">
+      <h3>3xx Redirects</h3>
+      <div class="wt-chart-wrap"><canvas id="chartRedirect"></canvas></div>
+    </div>
+
+    <div class="wt-chart-card" style="grid-column: 1 / -1;">
+      <h3>4xx Client Errors &amp; 5xx Server Errors</h3>
+      <div class="wt-chart-wrap"><canvas id="chartErrors"></canvas></div>
+    </div>
+
+    <div class="wt-chart-card">
+      <h3>Network Bandwidth — Hourly (last 48 h)</h3>
+      <div class="wt-chart-wrap"><canvas id="chartHrNet"></canvas></div>
+    </div>
+
+    <div class="wt-chart-card">
+      <h3>HTTP Requests — Hourly (last 48 h)</h3>
+      <div class="wt-chart-wrap"><canvas id="chartHrReqs"></canvas></div>
+    </div>
+
+  </div>
+
+  <!-- Data table -->
+  <h2 style="font-size:1rem;margin-top:2rem;">Daily Breakdown</h2>
+  <div class="wt-table-wrap">
+    <table class="wt-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Total</th>
+          <th>Unique IPs</th>
+          <th>200</th>
+          <th>201</th>
+          <th>206</th>
+          <th>101</th>
+          <th>302</th>
+          <th>304</th>
+          <th>307</th>
+          <th>403</th>
+          <th>404</th>
+          <th>405</th>
+          <th>422</th>
+          <th>500</th>
+          <th>503</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows | reverse %}
+        <tr>
+          <td>{{ r.stat_date }}</td>
+          <td>{{ "{:,}".format(r.total_requests) }}</td>
+          <td>{{ "{:,}".format(r.unique_ips) }}</td>
+          <td>{{ "{:,}".format(r.http_200) }}</td>
+          <td>{% if r.http_201 %}{{ r.http_201 }}{% else %}—{% endif %}</td>
+          <td>{% if r.http_206 %}{{ r.http_206 }}{% else %}—{% endif %}</td>
+          <td>{% if r.http_101 %}{{ r.http_101 }}{% else %}—{% endif %}</td>
+          <td>{{ "{:,}".format(r.http_302) }}</td>
+          <td>{{ "{:,}".format(r.http_304) }}</td>
+          <td>{% if r.http_307 %}{{ r.http_307 }}{% else %}—{% endif %}</td>
+          <td>{% if r.http_403 %}{{ r.http_403 }}{% else %}—{% endif %}</td>
+          <td>{{ "{:,}".format(r.http_404) }}</td>
+          <td>{% if r.http_405 %}{{ r.http_405 }}{% else %}—{% endif %}</td>
+          <td>{% if r.http_422 %}{{ r.http_422 }}{% else %}—{% endif %}</td>
+          <td>{% if r.http_500 %}{{ r.http_500 }}{% else %}—{% endif %}</td>
+          <td>{% if r.http_503 %}{{ r.http_503 }}{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <p style="text-align:center;color:var(--text-dim);">
+    No traffic data yet. The collector runs at 1 AM UTC and will backfill from 2026-03-25.
+  </p>
+  {% endif %}
+
+</div>
+{% endblock %}

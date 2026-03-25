@@ -588,6 +588,35 @@ class ServerStats(Base):
 
 
 # ── Blog Comment model ────────────────────────────────────────────────────────
+# ── Web Traffic Stats (daily, parsed from Apache access logs) ─────────────────
+class WebTrafficStats(Base):
+    __tablename__ = "web_traffic_stats"
+
+    id              = Column(Integer, primary_key=True, index=True)
+    stat_date       = Column(Date, nullable=False, unique=True, index=True)
+    total_requests  = Column(Integer, nullable=False, default=0)
+    unique_ips      = Column(Integer, nullable=False, default=0)
+    # 2xx
+    http_200        = Column(Integer, nullable=False, default=0)
+    http_201        = Column(Integer, nullable=False, default=0)
+    http_206        = Column(Integer, nullable=False, default=0)
+    # 1xx / protocol upgrade
+    http_101        = Column(Integer, nullable=False, default=0)
+    # 3xx
+    http_302        = Column(Integer, nullable=False, default=0)
+    http_304        = Column(Integer, nullable=False, default=0)
+    http_307        = Column(Integer, nullable=False, default=0)
+    # 4xx
+    http_403        = Column(Integer, nullable=False, default=0)
+    http_404        = Column(Integer, nullable=False, default=0)
+    http_405        = Column(Integer, nullable=False, default=0)
+    http_422        = Column(Integer, nullable=False, default=0)
+    # 5xx
+    http_500        = Column(Integer, nullable=False, default=0)
+    http_503        = Column(Integer, nullable=False, default=0)
+    recorded_at     = Column(DateTime, nullable=True)
+
+
 class BlogComment(Base):
     __tablename__ = "blog_comments"
 

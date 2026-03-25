@@ -266,6 +266,53 @@ F52 Hexsweeper — Hexagonal Minesweeper Variant
   Deferred to a follow-on feature — hex no-guess generation is non-trivial.
   Board generator will note whether a board is logically solvable.
 
+F54 Admin Web Traffic Dashboard
+
+  Purpose
+  ──────────────────────────────────────────────────────────────────────────────
+  Give admins a daily view of web traffic parsed directly from Apache access
+  logs — request counts by HTTP status code, unique visitor IPs, plus the
+  existing hourly network bandwidth and HTTP-request charts from the operations
+  page, all in one place.
+
+  Data collection
+  ──────────────────────────────────────────────────────────────────────────────
+  - APScheduler job `collect_web_traffic_stats` runs at 1 AM UTC daily
+  - Parses both log files with glob: /var/log/apache2/minesweeper.org-ssl-access.log*
+    (covers current log and .1 rotation in case log rotates mid-day)
+  - Filters lines to the previous calendar day (UTC)
+  - Counts requests per tracked HTTP status code:
+      2xx: 200, 201, 206   |  1xx: 101
+      3xx: 302, 304, 307   |  4xx: 403, 404, 405, 422   |  5xx: 500, 503
+  - Counts unique client IPs (unique visitors proxy)
+  - Upserts one row per day into web_traffic_stats table
+
+  Backfill
+  ──────────────────────────────────────────────────────────────────────────────
+  - On startup, a daemon thread calls `_backfill_web_traffic()` which processes
+    all days from 2026-03-25 to yesterday that are not yet in the DB
+  - Idempotent: skips days already present
+
+  Database model: WebTrafficStats
+  ──────────────────────────────────────────────────────────────────────────────
+  Table: web_traffic_stats
+  Fields: id, stat_date (unique Date), total_requests, unique_ips,
+          http_200/201/206/101/302/304/307/403/404/405/422/500/503, recorded_at
+
+  Admin page: /admin/web_traffic
+  ──────────────────────────────────────────────────────────────────────────────
+  - Linked from the main /admin nav bar as "🌐 Web Traffic"
+  - Chart 1 (full-width line): Total Requests + Unique IPs per day
+  - Chart 2 (stacked bar): 2xx success codes + 101 per day
+  - Chart 3 (stacked bar): 3xx redirect codes per day
+  - Chart 4 (full-width stacked bar): 4xx + 5xx error codes per day
+  - Chart 5 (line): Hourly network bandwidth (from ServerStats, last 48 h)
+  - Chart 6 (line): Hourly HTTP requests (from ServerStats, last 48 h)
+  - Data table: all days newest-first with comma-formatted numbers
+
+  Template: templates/admin_web_traffic.html
+  Route:    GET /admin/web_traffic (admin-only, 403 otherwise)
+
 F53 Daily Archive Leaderboard Pages
 
   Purpose

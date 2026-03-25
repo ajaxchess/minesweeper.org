@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, GuestScoreArchive, BlogComment, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -267,6 +267,93 @@ def collect_server_stats():
         db.close()
 
 
+_APACHE_LOG_GLOB   = "/var/log/apache2/minesweeper.org-ssl-access.log*"
+_TRAFFIC_ARCHIVE_START = date(2026, 3, 25)
+_LOG_RE = __import__("re").compile(
+    r'^(\S+)\s+\S+\s+\S+\s+\[(\d{2}/\w{3}/\d{4}):[^\]]+\]\s+"[^"]*"\s+(\d{3})'
+)
+_TRACKED_CODES = {"200","201","206","101","302","304","307","403","404","405","422","500","503"}
+
+
+def collect_web_traffic_stats(target_date: date = None):
+    """Parse Apache access logs for target_date and upsert daily traffic stats."""
+    import glob as _glob
+    if target_date is None:
+        target_date = date.today() - timedelta(days=1)
+
+    target_str = target_date.strftime("%d/%b/%Y")   # e.g. "25/Mar/2026"
+    status_counts: dict = {}
+    unique_ips: set = set()
+
+    for log_path in sorted(_glob.glob(_APACHE_LOG_GLOB)):
+        try:
+            with open(log_path, "r", errors="replace") as fh:
+                for line in fh:
+                    m = _LOG_RE.match(line)
+                    if not m:
+                        continue
+                    ip, log_date, code = m.group(1), m.group(2), m.group(3)
+                    if log_date != target_str:
+                        continue
+                    unique_ips.add(ip)
+                    if code in _TRACKED_CODES:
+                        status_counts[code] = status_counts.get(code, 0) + 1
+                    else:
+                        status_counts["other"] = status_counts.get("other", 0) + 1
+        except OSError as exc:
+            logger.warning(f"collect_web_traffic_stats: cannot read {log_path}: {exc}")
+
+    total = sum(status_counts.values())
+
+    db = SessionLocal()
+    try:
+        row = db.query(WebTrafficStats).filter(WebTrafficStats.stat_date == target_date).first()
+        if row is None:
+            row = WebTrafficStats(stat_date=target_date)
+            db.add(row)
+        row.total_requests = total
+        row.unique_ips     = len(unique_ips)
+        row.http_200  = status_counts.get("200", 0)
+        row.http_201  = status_counts.get("201", 0)
+        row.http_206  = status_counts.get("206", 0)
+        row.http_101  = status_counts.get("101", 0)
+        row.http_302  = status_counts.get("302", 0)
+        row.http_304  = status_counts.get("304", 0)
+        row.http_307  = status_counts.get("307", 0)
+        row.http_403  = status_counts.get("403", 0)
+        row.http_404  = status_counts.get("404", 0)
+        row.http_405  = status_counts.get("405", 0)
+        row.http_422  = status_counts.get("422", 0)
+        row.http_500  = status_counts.get("500", 0)
+        row.http_503  = status_counts.get("503", 0)
+        row.recorded_at = datetime.now(timezone.utc)
+        db.commit()
+        logger.info(f"Web traffic stats saved for {target_date}: {total} requests, {len(unique_ips)} unique IPs")
+        record_scheduler_run("collect_web_traffic_stats", success=True)
+    except Exception as exc:
+        db.rollback()
+        logger.error(f"collect_web_traffic_stats DB write failed: {exc}")
+        record_scheduler_run("collect_web_traffic_stats", success=False)
+        record_db_error("collect_web_traffic_stats")
+    finally:
+        db.close()
+
+
+def _backfill_web_traffic():
+    """On startup: process any days from ARCHIVE_START to yesterday missing from DB."""
+    yesterday = date.today() - timedelta(days=1)
+    db = SessionLocal()
+    try:
+        existing = {str(r.stat_date) for r in db.query(WebTrafficStats.stat_date).all()}
+    finally:
+        db.close()
+    d = _TRAFFIC_ARCHIVE_START
+    while d <= yesterday:
+        if str(d) not in existing:
+            collect_web_traffic_stats(target_date=d)
+        d += timedelta(days=1)
+
+
 def archive_guest_scores():
     """Archive (move) all guest scores to guest_score_archive at midnight UTC."""
     db = SessionLocal()
@@ -313,10 +400,11 @@ def archive_guest_scores():
 
 
 scheduler = BackgroundScheduler(timezone="UTC")
-scheduler.add_job(archive_guest_scores,  CronTrigger(hour=23, minute=59)) # 23:59 UTC — archive guests before reset
-scheduler.add_job(reset_scores,          CronTrigger(hour=0,  minute=0))  # midnight UTC — clear all scores
-scheduler.add_job(cleanup_old_games,     CronTrigger(hour="*"))             # hourly
-scheduler.add_job(collect_server_stats,  CronTrigger(minute=0))             # top of every hour
+scheduler.add_job(archive_guest_scores,        CronTrigger(hour=23, minute=59)) # 23:59 UTC — archive guests before reset
+scheduler.add_job(reset_scores,               CronTrigger(hour=0,  minute=0))  # midnight UTC — clear all scores
+scheduler.add_job(cleanup_old_games,          CronTrigger(hour="*"))             # hourly
+scheduler.add_job(collect_server_stats,       CronTrigger(minute=0))             # top of every hour
+scheduler.add_job(collect_web_traffic_stats,  CronTrigger(hour=1,  minute=0))   # 1 AM UTC — parse yesterday's logs
 
 # Create DB tables and start scheduler on startup
 @app.on_event("startup")
@@ -324,6 +412,7 @@ def startup():
     init_db()
     scheduler.start()
     logger.info("Scheduler started — scores reset daily at midnight UTC.")
+    threading.Thread(target=_backfill_web_traffic, daemon=True).start()
 
 @app.on_event("shutdown")
 def shutdown():
@@ -3012,6 +3101,77 @@ def admin_operations(request: Request, db: Session = Depends(get_db)):
         "chart_net_sent": _json.dumps(chart_net_sent),
         "chart_net_recv": _json.dumps(chart_net_recv),
         "chart_requests": _json.dumps(chart_requests),
+    })
+
+
+@app.get("/admin/web_traffic", response_class=HTMLResponse)
+def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
+    import json as _json
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    rows = (
+        db.query(WebTrafficStats)
+        .order_by(WebTrafficStats.stat_date.asc())
+        .all()
+    )
+
+    labels       = [str(r.stat_date)      for r in rows]
+    total_req    = [r.total_requests       for r in rows]
+    unique_ips   = [r.unique_ips           for r in rows]
+    http_200     = [r.http_200             for r in rows]
+    http_201     = [r.http_201             for r in rows]
+    http_206     = [r.http_206             for r in rows]
+    http_101     = [r.http_101             for r in rows]
+    http_302     = [r.http_302             for r in rows]
+    http_304     = [r.http_304             for r in rows]
+    http_307     = [r.http_307             for r in rows]
+    http_403     = [r.http_403             for r in rows]
+    http_404     = [r.http_404             for r in rows]
+    http_405     = [r.http_405             for r in rows]
+    http_422     = [r.http_422             for r in rows]
+    http_500     = [r.http_500             for r in rows]
+    http_503     = [r.http_503             for r in rows]
+
+    # Hourly ops data (last 48 snapshots) — same as admin/operations
+    history = list(reversed(
+        db.query(ServerStats)
+        .order_by(ServerStats.recorded_at.desc())
+        .limit(48)
+        .all()
+    ))
+    hr_labels    = [r.recorded_at.strftime("%-m/%-d %-I%p") for r in history]
+    hr_net_sent  = [round((r.net_delta_sent or 0) / (1024 ** 2), 2) for r in history]
+    hr_net_recv  = [round((r.net_delta_recv or 0) / (1024 ** 2), 2) for r in history]
+    hr_requests  = [r.http_requests for r in history]
+
+    return templates.TemplateResponse("admin_web_traffic.html", {
+        "request":      request,
+        "user":         user,
+        "lang":         get_lang(request),
+        "t":            get_t(request),
+        "rows":         rows,
+        "chart_labels": _json.dumps(labels),
+        "total_req":    _json.dumps(total_req),
+        "unique_ips":   _json.dumps(unique_ips),
+        "http_200":     _json.dumps(http_200),
+        "http_201":     _json.dumps(http_201),
+        "http_206":     _json.dumps(http_206),
+        "http_101":     _json.dumps(http_101),
+        "http_302":     _json.dumps(http_302),
+        "http_304":     _json.dumps(http_304),
+        "http_307":     _json.dumps(http_307),
+        "http_403":     _json.dumps(http_403),
+        "http_404":     _json.dumps(http_404),
+        "http_405":     _json.dumps(http_405),
+        "http_422":     _json.dumps(http_422),
+        "http_500":     _json.dumps(http_500),
+        "http_503":     _json.dumps(http_503),
+        "hr_labels":    _json.dumps(hr_labels),
+        "hr_net_sent":  _json.dumps(hr_net_sent),
+        "hr_net_recv":  _json.dumps(hr_net_recv),
+        "hr_requests":  _json.dumps(hr_requests),
     })
 
 
