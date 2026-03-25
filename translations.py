@@ -329,6 +329,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "No wrapping edges (unlike Cylinder or Toroid variants).",
         "hex_info_diff_li4":      "Density of information is higher \u2014 each number accounts for a smaller proportion of the board.",
         "hex_info_diff_li5":      "Unique symmetry: the hex board looks the same from any of its six sides.",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "Daily Archive",
+        "archive_desc":          "Browse daily and monthly high-score leaderboards for Beginner, Intermediate, and Expert.",
+        "archive_go":            "Go",
+        "archive_recent":        "Recent days",
+        "archive_recent_months": "Recent months",
+        "archive_no_scores":     "No scores recorded for this period.",
+        "archive_explanation":   "These are the best times posted by registered players. Guest scores are not included. Each player appears once — their personal best for the period.",
+        "archive_standard":      "Standard",
+        "archive_no_guess_lbl":  "No-Guess",
     },
 
     "eo": {
@@ -659,6 +670,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "Neniuj envolviĝantaj randoj (male al Cylinder aŭ Toroid variantoj).",
         "hex_info_diff_li4":      "Informa denseco estas pli alta \u2014 ĉiu nombro konsideras pli malgrandan proporcion de la tablo.",
         "hex_info_diff_li5":      "Unika simetrio: la heksa tablo aspektas same el iu ajn el ĝiaj ses flankoj.",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "Taĝa Arkivo",
+        "archive_desc":          "Trarigardi taĝajn kaj monatajn rangotabelojn por Komencanto, Mezulo kaj Eksperto.",
+        "archive_go":            "Iri",
+        "archive_recent":        "Lastatempaj tagoj",
+        "archive_recent_months": "Lastatempaj monatoj",
+        "archive_no_scores":     "Neniuj poentoj registritaj por ĉi tiu periodo.",
+        "archive_explanation":   "Ĉi tiuj estas la plej bonaj tempoj afiŝitaj de registritaj ludantoj. Gastaj poentoj ne estas inkluditaj. Ĉiu ludanto aperas unufoje — ilia persona plej bona por la periodo.",
+        "archive_standard":      "Norma",
+        "archive_no_guess_lbl":  "Sen-divena",
     },
 
     "de": {
@@ -989,6 +1011,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "Keine umwickelnden Ränder (im Gegensatz zu Cylinder- oder Toroid-Varianten).",
         "hex_info_diff_li4":      "Die Informationsdichte ist höher \u2014 jede Zahl deckt einen kleineren Teil des Feldes ab.",
         "hex_info_diff_li5":      "Einzigartige Symmetrie: Das Hex-Feld sieht von jeder seiner sechs Seiten gleich aus.",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "Tagesarchiv",
+        "archive_desc":          "Tägliche und monatliche Bestenlisten für Anfänger, Mittel und Experte durchsuchen.",
+        "archive_go":            "Los",
+        "archive_recent":        "Letzte Tage",
+        "archive_recent_months": "Letzte Monate",
+        "archive_no_scores":     "Keine Ergebnisse für diesen Zeitraum aufgezeichnet.",
+        "archive_explanation":   "Dies sind die besten Zeiten registrierter Spieler. Gastpunkte sind nicht enthalten. Jeder Spieler erscheint einmal — seine persönliche Bestzeit für den Zeitraum.",
+        "archive_standard":      "Standard",
+        "archive_no_guess_lbl":  "Ohne Raten",
     },
 
     "es": {
@@ -1319,6 +1352,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "Sin bordes envolventes (a diferencia de las variantes Cylinder o Toroid).",
         "hex_info_diff_li4":      "La densidad de información es mayor \u2014 cada número representa una proporción menor del tablero.",
         "hex_info_diff_li5":      "Simetría única: el tablero hexagonal se ve igual desde cualquiera de sus seis lados.",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "Archivo diario",
+        "archive_desc":          "Explora clasificaciones diarias y mensuales para Principiante, Intermedio y Experto.",
+        "archive_go":            "Ir",
+        "archive_recent":        "Días recientes",
+        "archive_recent_months": "Meses recientes",
+        "archive_no_scores":     "No se registraron puntuaciones para este período.",
+        "archive_explanation":   "Estas son las mejores marcas publicadas por jugadores registrados. Las puntuaciones de invitados no están incluidas. Cada jugador aparece una vez — su mejor marca personal del período.",
+        "archive_standard":      "Estándar",
+        "archive_no_guess_lbl":  "Sin adivinar",
     },
 
     "th": {
@@ -1651,6 +1695,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "ไม่มีขอบที่พันรอบ (ต่างจากตัวแปร Cylinder หรือ Toroid)",
         "hex_info_diff_li4":      "ความหนาแน่นของข้อมูลสูงกว่า \u2014 แต่ละตัวเลขคิดเป็นสัดส่วนที่น้อยกว่าของกระดาน",
         "hex_info_diff_li5":      "ความสมมาตรเฉพาะตัว: กระดานหกเหลี่ยมดูเหมือนกันจากทั้งหกด้าน",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "คลังข้อมูลรายวัน",
+        "archive_desc":          "ดูตารางคะแนนรายวันและรายเดือนสำหรับระดับเริ่มต้น กลาง และผู้เชี่ยวชาญ",
+        "archive_go":            "ไป",
+        "archive_recent":        "วันล่าสุด",
+        "archive_recent_months": "เดือนล่าสุด",
+        "archive_no_scores":     "ไม่มีคะแนนบันทึกไว้ในช่วงเวลานี้",
+        "archive_explanation":   "นี่คือเวลาที่ดีที่สุดของผู้เล่นที่ลงทะเบียน คะแนนของผู้เยี่ยมชมไม่รวมอยู่ด้วย แต่ละผู้เล่นปรากฏหนึ่งครั้ง — สถิติส่วนตัวที่ดีที่สุดในช่วงเวลานั้น",
+        "archive_standard":      "มาตรฐาน",
+        "archive_no_guess_lbl":  "ไม่เดา",
     },
 
     "pgl": {
@@ -1983,6 +2038,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "Onay rappingway edgesway (unlikeway Cylinder orway Toroid ariantsvay).",
         "hex_info_diff_li4":      "Ensityday ofway informationway isway igherhay \u2014 eachway umbernay accountsway orfay away mallersay roportionpay ofway ethay oardbay.",
         "hex_info_diff_li5":      "Uniqueway ymmetrysay: ethay exhay oardbay ookslay ethay amesay omfray anyway ofway itsway ixsay idessay.",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "Ailyyday Archiveway",
+        "archive_desc":          "Owsebray ailyyday andway onthlymay ighway-orescay eaderboardslay orfay Eginnersbay, Etermediinaynay, andway Expertway.",
+        "archive_go":            "Ogay",
+        "archive_recent":        "Ecentray aysday",
+        "archive_recent_months": "Ecentray onthsmay",
+        "archive_no_scores":     "Onay orescay ecordedray orfay isthay eriodpay.",
+        "archive_explanation":   "Esethay areway ethay estbay imestay ostedpay ybay egisteredray ayersplay. Uestgay orescay areway otnay includedway. Eachway ayerplay appearsbay onceway — eirthay ersonalpay estbay orfay ethay eriodpay.",
+        "archive_standard":      "Andardstay",
+        "archive_no_guess_lbl":  "Onay-Uessgay",
     },
 
     "uk": {
@@ -2315,6 +2381,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "Немає замкнутих країв (на відміну від варіантів Cylinder або Toroid).",
         "hex_info_diff_li4":      "Щільність інформації вища \u2014 кожне число охоплює меншу частину дошки.",
         "hex_info_diff_li5":      "Унікальна симетрія: гексагональна дошка виглядає однаково з будь-якого з шести боків.",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "Денний архів",
+        "archive_desc":          "Перегляд щоденних і щомісячних таблиць рекордів для рівнів Початківець, Середній та Експерт.",
+        "archive_go":            "Перейти",
+        "archive_recent":        "Останні дні",
+        "archive_recent_months": "Останні місяці",
+        "archive_no_scores":     "Результати за цей період не записані.",
+        "archive_explanation":   "Це найкращі часи зареєстрованих гравців. Результати гостей не включені. Кожен гравець з'являється один раз — його особистий рекорд за цей період.",
+        "archive_standard":      "Стандарт",
+        "archive_no_guess_lbl":  "Без здогадок",
     },
 
     "fr": {
@@ -2645,6 +2722,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "Pas de bords enveloppants (contrairement aux variantes Cylinder ou Toroid).",
         "hex_info_diff_li4":      "La densité d\u2019information est plus élevée \u2014 chaque chiffre représente une plus petite proportion du plateau.",
         "hex_info_diff_li5":      "Symétrie unique\u00a0: le plateau hexagonal semble identique depuis chacun de ses six côtés.",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "Archive quotidienne",
+        "archive_desc":          "Consultez les classements quotidiens et mensuels pour Débutant, Intermédiaire et Expert.",
+        "archive_go":            "Aller",
+        "archive_recent":        "Jours récents",
+        "archive_recent_months": "Mois récents",
+        "archive_no_scores":     "Aucun score enregistré pour cette période.",
+        "archive_explanation":   "Ce sont les meilleurs temps publiés par des joueurs enregistrés. Les scores des invités ne sont pas inclus. Chaque joueur apparaît une fois — son meilleur score personnel pour la période.",
+        "archive_standard":      "Standard",
+        "archive_no_guess_lbl":  "Sans devinette",
     },
 
     "ko": {
@@ -2975,6 +3063,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "감싸는 가장자리 없음 (Cylinder 또는 Toroid 변형과 달리).",
         "hex_info_diff_li4":      "정보 밀도가 더 높습니다 \u2014 각 숫자는 보드의 더 작은 비율을 차지합니다.",
         "hex_info_diff_li5":      "독특한 대칭: 육각형 보드는 여섯 면 중 어느 방향에서도 동일하게 보입니다.",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "일일 아카이브",
+        "archive_desc":          "초급, 중급, 고급의 일별 및 월별 최고 점수 순위를 확인하세요.",
+        "archive_go":            "이동",
+        "archive_recent":        "최근 일자",
+        "archive_recent_months": "최근 월",
+        "archive_no_scores":     "이 기간에 기록된 점수가 없습니다.",
+        "archive_explanation":   "등록된 플레이어가 게시한 최고 기록입니다. 게스트 점수는 포함되지 않습니다. 각 플레이어는 한 번씩 등장합니다 — 해당 기간의 개인 최고 기록.",
+        "archive_standard":      "표준",
+        "archive_no_guess_lbl":  "노 게스",
     },
 
     "ja": {
@@ -3305,6 +3404,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "端のラップなし（CylinderやToroidバリアントとは異なります）。",
         "hex_info_diff_li4":      "情報密度が高い \u2014 各数字はボードのより小さな割合を占めます。",
         "hex_info_diff_li5":      "独自の対称性：六角形ボードはどの六面から見ても同じように見えます。",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "デイリーアーカイブ",
+        "archive_desc":          "初級・中級・上級の日別および月別ハイスコアランキングを閲覧できます。",
+        "archive_go":            "移動",
+        "archive_recent":        "最近の日付",
+        "archive_recent_months": "最近の月",
+        "archive_no_scores":     "この期間のスコアは記録されていません。",
+        "archive_explanation":   "登録ユーザーが達成した最高タイムです。ゲストのスコアは含まれません。各プレイヤーは1回のみ表示されます — その期間の個人ベスト。",
+        "archive_standard":      "スタンダード",
+        "archive_no_guess_lbl":  "ノーゲス",
     },
     "zh": {
         # Nav
@@ -3634,6 +3744,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "无环绕边缘（不像Cylinder或Toroid变体）。",
         "hex_info_diff_li4":      "信息密度更高\u2014每个数字占棋盘比例更小。",
         "hex_info_diff_li5":      "独特对称性：六边形棋盘从任意六个面看都一样。",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "每日档案",
+        "archive_desc":          "浏览初级、中级和专家级的每日及每月最高分排行榜。",
+        "archive_go":            "前往",
+        "archive_recent":        "最近几天",
+        "archive_recent_months": "最近几个月",
+        "archive_no_scores":     "此时间段内没有记录分数。",
+        "archive_explanation":   "这些是注册玩家发布的最佳成绩。访客分数不包括在内。每位玩家出现一次 — 该时间段内的个人最佳成绩。",
+        "archive_standard":      "标准",
+        "archive_no_guess_lbl":  "无猜测",
     },
     "zh-hant": {
         # Nav
@@ -3963,6 +4084,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "無環繞邊緣（不像Cylinder或Toroid變體）。",
         "hex_info_diff_li4":      "資訊密度更高\u2014每個數字占棋盤比例更小。",
         "hex_info_diff_li5":      "獨特對稱性：六邊形棋盤從任意六個面看都一樣。",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "每日檔案",
+        "archive_desc":          "瀏覽初級、中級和專家級的每日及每月最高分排行榜。",
+        "archive_go":            "前往",
+        "archive_recent":        "最近幾天",
+        "archive_recent_months": "最近幾個月",
+        "archive_no_scores":     "此時間段內沒有記錄分數。",
+        "archive_explanation":   "這些是註冊玩家發布的最佳成績。訪客分數不包括在內。每位玩家出現一次 — 該時間段內的個人最佳成績。",
+        "archive_standard":      "標準",
+        "archive_no_guess_lbl":  "無猜測",
     },
     "pl": {
         # Nav
@@ -4292,6 +4424,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "Brak zawijających się krawędzi (w przeciwieństwie do wariantów Cylinder lub Toroid).",
         "hex_info_diff_li4":      "Gęstość informacji jest wyższa \u2014 każda liczba obejmuje mniejszy udział planszy.",
         "hex_info_diff_li5":      "Unikalna symetria: plansza sześciokątna wygląda tak samo z każdego ze swoich sześciu boków.",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "Archiwum dzienne",
+        "archive_desc":          "Przeglądaj dzienne i miesięczne rankingi najlepszych wyników dla Początkujących, Średnich i Ekspertów.",
+        "archive_go":            "Idź",
+        "archive_recent":        "Ostatnie dni",
+        "archive_recent_months": "Ostatnie miesiące",
+        "archive_no_scores":     "Brak wyników zapisanych w tym okresie.",
+        "archive_explanation":   "To są najlepsze czasy zarejestrowanych graczy. Wyniki gości nie są uwzględnione. Każdy gracz pojawia się raz — jego osobisty rekord w danym okresie.",
+        "archive_standard":      "Standardowy",
+        "archive_no_guess_lbl":  "Bez zgadywania",
     },
 
     "tl": {
@@ -4622,6 +4765,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "Walang mga nagtatabing gilid (hindi tulad ng mga variant na Cylinder o Toroid).",
         "hex_info_diff_li4":      "Ang densidad ng impormasyon ay mas mataas \u2014 ang bawat numero ay sumasaklaw sa mas maliit na proporsyon ng board.",
         "hex_info_diff_li5":      "Natatanging symmetry: ang hex board ay magkaparehong hitsura mula sa alinman sa anim na gilid nito.",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "Pang-araw-araw na Arkibo",
+        "archive_desc":          "I-browse ang araw-araw at buwanang mga ranggo para sa Baguhan, Katamtaman, at Eksperto.",
+        "archive_go":            "Pumunta",
+        "archive_recent":        "Mga kamakailang araw",
+        "archive_recent_months": "Mga kamakailang buwan",
+        "archive_no_scores":     "Walang nakitang iskor para sa panahong ito.",
+        "archive_explanation":   "Ito ang pinakamahusay na oras ng mga nakarehistrong manlalaro. Hindi kasama ang mga marka ng panauhin. Isang beses lamang lumalabas ang bawat manlalaro — ang kanilang personal na pinakamahusay para sa panahon.",
+        "archive_standard":      "Pamantayan",
+        "archive_no_guess_lbl":  "Walang-Hulaan",
     },
 
     "ru": {
@@ -4952,6 +5106,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "Без замкнутых краёв (в отличие от вариантов Cylinder или Toroid).",
         "hex_info_diff_li4":      "Плотность информации выше \u2014 каждое число охватывает меньшую долю поля.",
         "hex_info_diff_li5":      "Уникальная симметрия: шестиугольное поле выглядит одинаково с любой из шести сторон.",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "Ежедневный архив",
+        "archive_desc":          "Просматривайте ежедневные и ежемесячные таблицы рекордов для Новичка, Среднего и Эксперта.",
+        "archive_go":            "Перейти",
+        "archive_recent":        "Последние дни",
+        "archive_recent_months": "Последние месяцы",
+        "archive_no_scores":     "За этот период результаты не записаны.",
+        "archive_explanation":   "Это лучшие результаты зарегистрированных игроков. Результаты гостей не включены. Каждый игрок появляется один раз — его личный рекорд за период.",
+        "archive_standard":      "Стандарт",
+        "archive_no_guess_lbl":  "Без угадывания",
     },
 
     "pt": {
@@ -5282,6 +5447,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "Sem bordas que se conectam (ao contrário das variantes Cylinder ou Toroid).",
         "hex_info_diff_li4":      "A densidade de informação é maior \u2014 cada número representa uma proporção menor do tabuleiro.",
         "hex_info_diff_li5":      "Simetria única: o tabuleiro hexagonal tem a mesma aparência de qualquer um de seus seis lados.",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "Arquivo diário",
+        "archive_desc":          "Veja os rankings diários e mensais para Iniciante, Intermediário e Especialista.",
+        "archive_go":            "Ir",
+        "archive_recent":        "Dias recentes",
+        "archive_recent_months": "Meses recentes",
+        "archive_no_scores":     "Nenhuma pontuação registrada para este período.",
+        "archive_explanation":   "Estes são os melhores tempos publicados por jogadores registrados. Pontuações de convidados não estão incluídas. Cada jogador aparece uma vez — seu melhor desempenho pessoal no período.",
+        "archive_standard":      "Padrão",
+        "archive_no_guess_lbl":  "Sem adivinhar",
     },
 
     "it": {
@@ -5612,6 +5788,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "hex_info_diff_li3":      "Nessun bordo avvolgente (a differenza delle varianti Cylinder o Toroid).",
         "hex_info_diff_li4":      "La densità di informazioni è più alta \u2014 ogni numero rappresenta una proporzione minore della griglia.",
         "hex_info_diff_li5":      "Simmetria unica: la griglia esagonale appare uguale da ognuno dei suoi sei lati.",
+
+        # ── Archive ──────────────────────────────────────────────────────────
+        "archive_title":         "Archivio giornaliero",
+        "archive_desc":          "Sfoglia le classifiche giornaliere e mensili per Principiante, Intermedio ed Esperto.",
+        "archive_go":            "Vai",
+        "archive_recent":        "Giorni recenti",
+        "archive_recent_months": "Mesi recenti",
+        "archive_no_scores":     "Nessun punteggio registrato per questo periodo.",
+        "archive_explanation":   "Questi sono i migliori tempi pubblicati dai giocatori registrati. I punteggi degli ospiti non sono inclusi. Ogni giocatore appare una volta — il suo miglior risultato personale per il periodo.",
+        "archive_standard":      "Standard",
+        "archive_no_guess_lbl":  "Senza indovinare",
     },
 }
 

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}{{ _title }} | minesweeper.org{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block keywords %}<meta name="robots" content="index, follow">{% endblock %}
+
+{% block og_title %}{{ _title }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+
+{% if is_daily %}
+{% block extra_head %}
+  {% if prev_date %}<link rel="prev" href="https://minesweeper.org/{{ mode }}/{{ prev_date }}/{{ guess_mode }}">{% endif %}
+  {% if next_date %}<link rel="next" href="https://minesweeper.org/{{ mode }}/{{ next_date }}/{{ guess_mode }}">{% endif %}
+{% endblock %}
+{% endif %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">{{ _title | replace(" | minesweeper.org", "") }}</h1>
+
+  <!-- Mode tabs (plain links — no JS required) -->
+  <div class="lb-tabs" role="tablist">
+    <a href="/beginner/{{ date_str }}/{{ guess_mode }}"
+       class="lb-tab {% if mode == 'beginner' %}active{% endif %}">{{ t.nav_beginner }}</a>
+    <a href="/intermediate/{{ date_str }}/{{ guess_mode }}"
+       class="lb-tab {% if mode == 'intermediate' %}active{% endif %}">{{ t.nav_intermediate }}</a>
+    <a href="/expert/{{ date_str }}/{{ guess_mode }}"
+       class="lb-tab {% if mode == 'expert' %}active{% endif %}">{{ t.nav_expert }}</a>
+  </div>
+
+  <!-- Guess toggle -->
+  <div class="lb-ng-toggle">
+    <a href="/{{ mode }}/{{ date_str }}/guess"
+       class="lb-ng-btn {% if not no_guess %}active{% endif %}">{{ t.archive_standard }}</a>
+    <a href="/{{ mode }}/{{ date_str }}/no_guess"
+       class="lb-ng-btn {% if no_guess %}active{% endif %}">{{ t.archive_no_guess_lbl }}</a>
+  </div>
+
+  {% if is_daily %}
+  <!-- Prev / Next date navigation -->
+  <div class="archive-nav">
+    {% if prev_date %}
+    <a class="archive-nav-btn" href="/{{ mode }}/{{ prev_date }}/{{ guess_mode }}">← {{ prev_date }}</a>
+    {% else %}
+    <span class="archive-nav-btn disabled"></span>
+    {% endif %}
+    <span class="archive-nav-date">{{ date_str }}</span>
+    {% if next_date %}
+    <a class="archive-nav-btn" href="/{{ mode }}/{{ next_date }}/{{ guess_mode }}">{{ next_date }} →</a>
+    {% else %}
+    <span class="archive-nav-btn disabled"></span>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Score table -->
+  <div class="lb-table-wrap">
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>{{ t.lb_col_rank }}</th>
+          <th>{{ t.lb_col_name }}</th>
+          <th>{{ t.lb_col_time }}</th>
+          <th>{{ t.lb_col_board }}</th>
+          <th>{{ t.lb_col_mines }}</th>
+          <th class="lb-th-stat">3BV</th>
+          <th class="lb-th-stat">3BV/s</th>
+          <th class="lb-th-stat">Eff</th>
+          <th>{{ t.lb_col_board }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in scores %}
+        <tr class="{% if s.rank == 1 %}top-1{% elif s.rank == 2 %}top-2{% elif s.rank == 3 %}top-3{% endif %}">
+          <td class="lb-rank">
+            {% if s.rank == 1 %}🥇{% elif s.rank == 2 %}🥈{% elif s.rank == 3 %}🥉{% else %}{{ s.rank }}{% endif %}
+          </td>
+          <td class="lb-name">{{ s.name }}</td>
+          <td class="lb-time">{{ s.time }}</td>
+          <td class="lb-board">{{ s.board }}</td>
+          <td class="lb-mines">{{ s.mines }}</td>
+          <td class="lb-stat">{{ s.bbbv }}</td>
+          <td class="lb-stat">{{ s.bbbv_s }}</td>
+          <td class="lb-stat">{{ s.eff }}</td>
+          <td class="lb-hash">
+            {% if s.board_url %}<a href="{{ s.board_url }}" class="lb-replay-link">▶</a>{% else %}—{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="lb-empty">{{ t.archive_no_scores }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Explanation -->
+  <p class="lb-daily-note">{{ t.archive_explanation }}</p>
+
+  <!-- Play buttons -->
+  <div class="lb-back">
+    <a href="/">{{ t.lb_play_beginner }}</a>
+    <a href="/intermediate">{{ t.lb_play_intermediate }}</a>
+    <a href="/expert">{{ t.lb_play_expert }}</a>
+  </div>
+
+  <!-- Archive link -->
+  <p style="text-align:center;margin-top:1rem">
+    <a href="/archive">{{ t.archive_title }} →</a>
+  </p>
+
+</div>
+{% endblock %}

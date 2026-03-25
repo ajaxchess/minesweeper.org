@@ -228,7 +228,9 @@ async function loadScores(mode, noGuess, period, game) {
     const data = await res.json();
 
     if (!data.length) {
-      const emptyMsg = currentPeriod === 'daily'   ? 'No scores yet today — be the first!'
+      const emptyMsg = currentPeriod === 'daily' && currentDate !== TODAY_STR
+                       ? `No scores recorded for ${currentDate}.`
+                     : currentPeriod === 'daily'   ? 'No scores yet today — be the first!'
                      : currentPeriod === 'season'  ? 'No scores yet this season — be the first!'
                      :                               'No all-time scores yet — be the first!';
       body.innerHTML = `<tr><td colspan="10" class="lb-empty">${emptyMsg}</td></tr>`;

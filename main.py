@@ -12,7 +12,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import func, case, text
+from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -192,6 +192,8 @@ TOROID_MODES = {
     "toroid-intermediate": {"rows": 16, "cols": 16, "mines": 40},
     "toroid-expert":       {"rows": 16, "cols": 30, "mines": 99},
 }
+
+ARCHIVE_MODES = {"beginner", "intermediate", "expert"}
 
 # ── Daily score reset ─────────────────────────────────────────────────────────
 def reset_scores():
@@ -388,6 +390,34 @@ async def leaderboard_page(request: Request):
         "lang": get_lang(request), "t": get_t(request),
     })
 
+@app.get("/archive", response_class=HTMLResponse)
+async def archive_index(request: Request, db: Session = Depends(get_db)):
+    raw_dates = (
+        db.query(cast(Score.created_at, SQLDate).label("d"))
+        .filter(Score.user_email.isnot(None), Score.mode.in_(list(ARCHIVE_MODES)))
+        .distinct()
+        .order_by(cast(Score.created_at, SQLDate).desc())
+        .limit(90)
+        .all()
+    )
+    recent_days: list = [str(r.d) for r in raw_dates[:30]]
+    seen_months: dict = {}
+    for r in raw_dates:
+        m = str(r.d)[:7]
+        if m not in seen_months:
+            seen_months[m] = True
+    recent_months: list = list(seen_months.keys())[:24]
+    return templates.TemplateResponse("archive_index.html", {
+        "request":       request,
+        "mode":          "archive",
+        "user":          get_current_user(request),
+        "lang":          get_lang(request),
+        "t":             get_t(request),
+        "recent_days":   recent_days,
+        "recent_months": recent_months,
+        "today":         str(date.today()),
+    })
+
 # ── Auth routes ───────────────────────────────────────────────────────────────
 
 @app.get("/auth/login")
@@ -557,6 +587,89 @@ def _enrich_with_profiles(scores: list, db) -> list:
         d["profile_url"] = url_map.get(s.user_email) if s.user_email else None
         result.append(d)
     return result
+
+
+def _archive_ng_filter(no_guess: bool):
+    if no_guess:
+        return Score.no_guess == True
+    return (Score.no_guess == False) | Score.no_guess.is_(None)
+
+
+def _archive_sort_key():
+    return case((Score.time_ms.isnot(None), Score.time_ms), else_=Score.time_secs * 1000)
+
+
+def _dedup_by_user(raw: list, limit: int = 100) -> list:
+    seen: set = set()
+    result = []
+    for s in raw:
+        if s.user_email not in seen:
+            seen.add(s.user_email)
+            result.append(s)
+            if len(result) >= limit:
+                break
+    return result
+
+
+def _get_archive_scores_day(db: Session, mode: str, target: date, no_guess: bool) -> list:
+    raw = (
+        db.query(Score)
+        .filter(
+            Score.mode == mode,
+            Score.user_email.isnot(None),
+            _archive_ng_filter(no_guess),
+            Score.created_at >= target,
+            Score.created_at < target + timedelta(days=1),
+        )
+        .order_by(_archive_sort_key().asc(), Score.created_at.asc())
+        .limit(500)
+        .all()
+    )
+    return _dedup_by_user(raw)
+
+
+def _get_archive_scores_month(db: Session, mode: str, year: int, month: int, no_guess: bool) -> list:
+    start = date(year, month, 1)
+    end   = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
+    raw = (
+        db.query(Score)
+        .filter(
+            Score.mode == mode,
+            Score.user_email.isnot(None),
+            _archive_ng_filter(no_guess),
+            Score.created_at >= start,
+            Score.created_at < end,
+        )
+        .order_by(_archive_sort_key().asc(), Score.created_at.asc())
+        .limit(500)
+        .all()
+    )
+    return _dedup_by_user(raw)
+
+
+def _enrich_archive(scores: list) -> list:
+    enriched = []
+    for i, s in enumerate(scores, start=1):
+        ms        = s.time_ms if s.time_ms else s.time_secs * 1000
+        t_display = f"{ms / 1000:.3f}s"
+        bbbv_s    = f"{s.bbbv / (ms / 1000):.2f}" if s.bbbv else "—"
+        clicks    = (s.left_clicks or 0) + (s.chord_clicks or 0)
+        eff       = f"{round(s.bbbv / clicks * 100)}%" if (s.bbbv and clicks) else "—"
+        board_url = None
+        if s.board_hash:
+            board_url = f"/variants/replay/?hash={s.board_hash}&rows={s.rows}&cols={s.cols}&mines={s.mines}"
+        enriched.append({
+            "rank":      i,
+            "name":      s.name,
+            "time":      t_display,
+            "board":     f"{s.rows}×{s.cols}",
+            "mines":     s.mines,
+            "bbbv":      s.bbbv if s.bbbv else "—",
+            "bbbv_s":    bbbv_s,
+            "eff":       eff,
+            "board_url": board_url,
+        })
+    return enriched
 
 
 @app.get("/api/scores/{mode}")
@@ -3082,3 +3195,91 @@ def admin_analysis_download(request: Request, file: str):
         raise HTTPException(status_code=404, detail="File not found")
 
     return FileResponse(path, filename=file)
+
+
+# ── Archive routes (must be last — parameterised path catches all 3-segment URLs) ─
+
+_DATE_DAILY_RE   = __import__("re").compile(r"^\d{4}-\d{2}-\d{2}$")
+_DATE_MONTHLY_RE = __import__("re").compile(r"^\d{4}-\d{2}$")
+
+
+@app.get("/{mode}/{date_str}/{guess_mode}", response_class=HTMLResponse)
+async def archive_day(
+    request: Request,
+    mode: str,
+    date_str: str,
+    guess_mode: str,
+    db: Session = Depends(get_db),
+):
+    if mode not in ARCHIVE_MODES or guess_mode not in ("guess", "no_guess"):
+        raise HTTPException(status_code=404)
+
+    is_daily   = bool(_DATE_DAILY_RE.match(date_str))
+    is_monthly = bool(_DATE_MONTHLY_RE.match(date_str)) and not is_daily
+
+    if not is_daily and not is_monthly:
+        raise HTTPException(status_code=404)
+
+    no_guess = guess_mode == "no_guess"
+
+    try:
+        if is_daily:
+            target = date.fromisoformat(date_str)
+            scores = _get_archive_scores_day(db, mode, target, no_guess)
+            # prev / next dates with any auth score for this mode
+            prev_row = (
+                db.query(func.max(cast(Score.created_at, SQLDate)))
+                .filter(Score.mode == mode, Score.user_email.isnot(None),
+                        cast(Score.created_at, SQLDate) < target)
+                .scalar()
+            )
+            next_row = (
+                db.query(func.min(cast(Score.created_at, SQLDate)))
+                .filter(Score.mode == mode, Score.user_email.isnot(None),
+                        cast(Score.created_at, SQLDate) > target,
+                        Score.created_at <= datetime.now(timezone.utc))
+                .scalar()
+            )
+            prev_date = str(prev_row) if prev_row else None
+            next_date = str(next_row) if next_row else None
+            period_label = date_str
+        else:
+            parts = date_str.split("-")
+            year, month = int(parts[0]), int(parts[1])
+            if not (1 <= month <= 12):
+                raise ValueError("bad month")
+            scores = _get_archive_scores_month(db, mode, year, month, no_guess)
+            prev_date = next_date = None
+            period_label = date_str
+    except (ValueError, IndexError):
+        raise HTTPException(status_code=404)
+
+    enriched = _enrich_archive(scores)
+    mode_cap = mode.capitalize()
+    ng_label = " No-Guess" if no_guess else ""
+    period_word = "Monthly" if is_monthly else "Daily"
+    _title = f"{mode_cap}{ng_label} {period_word} Scores — {date_str}"
+    _desc  = (f"Top {mode_cap} minesweeper times for {date_str}"
+              f"{' (No-Guess)' if no_guess else ''}. "
+              "Server-rendered leaderboard of registered players.")
+    _canon = f"https://minesweeper.org/{mode}/{date_str}/{guess_mode}"
+
+    return templates.TemplateResponse("archive_day.html", {
+        "request":      request,
+        "mode":         mode,
+        "date_str":     date_str,
+        "guess_mode":   guess_mode,
+        "no_guess":     no_guess,
+        "is_daily":     is_daily,
+        "is_monthly":   is_monthly,
+        "scores":       enriched,
+        "prev_date":    prev_date,
+        "next_date":    next_date,
+        "period_label": period_label,
+        "user":         get_current_user(request),
+        "lang":         get_lang(request),
+        "t":            get_t(request),
+        "_title":       _title,
+        "_desc":        _desc,
+        "_canon":       _canon,
+    })

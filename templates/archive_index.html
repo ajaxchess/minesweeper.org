@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% set _title = t.archive_title + " | minesweeper.org" %}
+{% set _desc  = t.archive_desc %}
+{% set _canon = "https://minesweeper.org/archive" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block keywords %}<meta name="robots" content="index, follow">{% endblock %}
+
+{% block og_title %}{{ t.archive_title }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">{{ t.archive_title }}</h1>
+  <p style="text-align:center;margin-bottom:1.5rem">{{ t.archive_desc }}</p>
+
+  <!-- Date / mode picker -->
+  <div class="archive-picker">
+    <select id="ap-mode" class="archive-select">
+      <option value="beginner">{{ t.nav_beginner }}</option>
+      <option value="intermediate">{{ t.nav_intermediate }}</option>
+      <option value="expert">{{ t.nav_expert }}</option>
+    </select>
+    <input type="date" id="ap-date" class="archive-date-input" value="{{ today }}" max="{{ today }}">
+    <select id="ap-guess" class="archive-select">
+      <option value="guess">{{ t.archive_standard }}</option>
+      <option value="no_guess">{{ t.archive_no_guess_lbl }}</option>
+    </select>
+    <button class="archive-go-btn" onclick="goArchive()">{{ t.archive_go }}</button>
+  </div>
+
+  {% if recent_days %}
+  <!-- Recent days -->
+  <h2 class="archive-section-h2">{{ t.archive_recent }}</h2>
+  <div class="archive-date-list">
+    {% for d in recent_days %}
+    <div class="archive-date-row">
+      <span class="archive-date-label">{{ d }}</span>
+      <a class="archive-mode-link" href="/beginner/{{ d }}/guess">{{ t.nav_beginner }}</a>
+      <a class="archive-mode-link" href="/intermediate/{{ d }}/guess">{{ t.nav_intermediate }}</a>
+      <a class="archive-mode-link" href="/expert/{{ d }}/guess">{{ t.nav_expert }}</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if recent_months %}
+  <!-- Recent months -->
+  <h2 class="archive-section-h2">{{ t.archive_recent_months }}</h2>
+  <div class="archive-date-list">
+    {% for m in recent_months %}
+    <div class="archive-date-row">
+      <span class="archive-date-label">{{ m }}</span>
+      <a class="archive-mode-link" href="/beginner/{{ m }}/guess">{{ t.nav_beginner }}</a>
+      <a class="archive-mode-link" href="/intermediate/{{ m }}/guess">{{ t.nav_intermediate }}</a>
+      <a class="archive-mode-link" href="/expert/{{ m }}/guess">{{ t.nav_expert }}</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Play buttons -->
+  <div class="lb-back" style="margin-top:2rem">
+    <a href="/">{{ t.lb_play_beginner }}</a>
+    <a href="/intermediate">{{ t.lb_play_intermediate }}</a>
+    <a href="/expert">{{ t.lb_play_expert }}</a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function goArchive() {
+  const mode  = document.getElementById('ap-mode').value;
+  const d     = document.getElementById('ap-date').value;
+  const guess = document.getElementById('ap-guess').value;
+  if (d) window.location.href = `/${mode}/${d}/${guess}`;
+}
+document.getElementById('ap-date').addEventListener('keydown', e => {
+  if (e.key === 'Enter') goArchive();
+});
+</script>
+{% endblock %}

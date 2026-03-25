@@ -1034,6 +1034,90 @@ footer a:hover { text-decoration: underline; }
 
 .lb-back a:hover { background: var(--surface2); }
 
+/* ── Archive pages ───────────────────────────────────────────────────────── */
+.archive-picker {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.archive-select,
+.archive-date-input {
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--surface2);
+  background: var(--surface1);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+.archive-go-btn {
+  padding: 0.35rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent2);
+  background: var(--accent2);
+  color: #000;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.archive-go-btn:hover { opacity: 0.85; }
+.archive-section-h2 {
+  font-size: 1.1rem;
+  color: var(--accent2);
+  margin: 1.5rem 0 0.5rem;
+}
+.archive-date-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.archive-date-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+.archive-date-label {
+  min-width: 7rem;
+  font-family: monospace;
+  color: var(--text-muted, var(--text));
+  opacity: 0.75;
+}
+.archive-mode-link {
+  color: var(--accent2);
+  text-decoration: none;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--surface2);
+  font-size: 0.8rem;
+  transition: background 0.15s;
+}
+.archive-mode-link:hover { background: var(--surface2); }
+.archive-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+}
+.archive-nav-btn {
+  color: var(--accent2);
+  text-decoration: none;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--surface2);
+  transition: background 0.15s;
+}
+.archive-nav-btn:hover { background: var(--surface2); }
+.archive-nav-btn.disabled { visibility: hidden; }
+.archive-nav-date {
+  font-family: monospace;
+  font-size: 1rem;
+}
+
 /* ── How-to-play page sections ───────────────────────────────────────────── */
 .help-section {
   display: flex;
