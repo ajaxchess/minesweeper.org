@@ -3,7 +3,7 @@ database.py — SQLAlchemy setup for MySQL via PyMySQL
 """
 from sqlalchemy import (
     create_engine, Column, Integer, BigInteger, String, Float,
-    DateTime, Enum, Index, Boolean, text
+    DateTime, Date, Enum, Index, Boolean, text
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from datetime import datetime, timezone
