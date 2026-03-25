@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Private Profile | minesweeper.org{% endblock %}
+{% block description %}This player's profile is private.{% endblock %}
+{% block canonical %}https://minesweeper.org/{% endblock %}
+
+{% block content %}
+<div class="notfound-wrap">
+  <div class="notfound-board" aria-hidden="true">
+    <div class="nf-cell nf-revealed">🔒</div>
+  </div>
+  <h1 class="notfound-title">Private Profile</h1>
+  <p class="notfound-sub">{{ display_name }}'s profile is set to private.</p>
+  <div class="notfound-links">
+    <a href="/" class="notfound-btn">Play Minesweeper</a>
+    <a href="/leaderboard" class="notfound-btn notfound-btn--secondary">Leaderboard</a>
+  </div>
+</div>
+{% endblock %}

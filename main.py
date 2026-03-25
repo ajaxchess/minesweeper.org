@@ -538,12 +538,14 @@ def _enrich_with_profiles(scores: list, db) -> list:
         return [s.to_dict() for s in scores]
 
     profiles = (
-        db.query(UserProfile.email, UserProfile.vanity_slug, UserProfile.public_id)
+        db.query(UserProfile.email, UserProfile.vanity_slug, UserProfile.public_id, UserProfile.is_public)
         .filter(UserProfile.email.in_(emails))
         .all()
     )
     url_map: dict = {}
     for p in profiles:
+        if not p.is_public:
+            continue
         if p.vanity_slug:
             url_map[p.email] = f"/u/{p.vanity_slug}"
         elif p.public_id:
@@ -1185,11 +1187,13 @@ def get_replay_scores(board_hash: str, variant: str = "standard", db: Session = 
     url_map: dict = {}
     if emails:
         profiles = (
-            db.query(UserProfile.email, UserProfile.vanity_slug, UserProfile.public_id)
+            db.query(UserProfile.email, UserProfile.vanity_slug, UserProfile.public_id, UserProfile.is_public)
             .filter(UserProfile.email.in_(emails))
             .all()
         )
         for p in profiles:
+            if not p.is_public:
+                continue
             if p.vanity_slug:
                 url_map[p.email] = f"/u/{p.vanity_slug}"
             elif p.public_id:
@@ -2283,8 +2287,14 @@ async def public_profile_page(request: Request, slug: str, db: Session = Depends
         db.query(UserProfile).filter(UserProfile.vanity_slug == slug).first()
         or db.query(UserProfile).filter(UserProfile.public_id == slug).first()
     )
-    if not profile or not profile.is_public:
+    if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
+    if not profile.is_public:
+        return templates.TemplateResponse("profile_private.html", {
+            "request": request,
+            "display_name": profile.display_name or "This player",
+            "lang": get_lang(request), "t": get_t(request),
+        }, status_code=200)
     return templates.TemplateResponse("profile_public.html", {
         "request":       request,
         "mode":          "profile",
