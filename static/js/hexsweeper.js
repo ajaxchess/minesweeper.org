@@ -426,7 +426,6 @@
     if (state.over) return;
     const k = key(q, r);
     if (state.revealed.has(k)) {
-      state.chordClicks++;
       chordCell(q, r);
     } else if (!state.flagged.has(k) && !state.qflagged.has(k)) {
       state.leftClicks++;
@@ -576,6 +575,7 @@
           <td class="lb-mines">${s.mines}</td>
           <td class="lb-stat">${s.bbbv ?? '—'}</td>
           <td class="lb-stat">${fmtBbbvS(s)}</td>
+          <td class="lb-stat">${fmtEff(s)}</td>
           <td class="lb-date">${s.created_at}</td>
         </tr>`;
       }).join('');
@@ -586,6 +586,7 @@
               <th>#</th><th>Name</th><th>Time</th><th>Board</th><th>Mines</th>
               <th class="lb-th-stat" data-tip="Minimum clicks to solve">3BV</th>
               <th class="lb-th-stat" data-tip="3BV per second">3BV/s</th>
+              <th class="lb-th-stat" data-tip="Efficiency: 3BV ÷ left+chord clicks">Eff</th>
               <th>Date</th>
             </tr></thead>
             <tbody>${rows}</tbody>
@@ -606,6 +607,13 @@
     const secs = s.time_ms != null ? s.time_ms / 1000 : s.time_secs;
     if (!secs) return '—';
     return (s.bbbv / secs).toFixed(3);
+  }
+
+  function fmtEff(s) {
+    if (!s.bbbv) return '—';
+    const total = (s.left_clicks || 0) + (s.chord_clicks || 0);
+    if (!total) return '—';
+    return Math.round(s.bbbv / total * 100) + '%';
   }
 
   function esc(s) {
