@@ -136,6 +136,36 @@ F48 Purpose-built og:image for Mosaic (1200×630)
     /mosaic/replay
   - Current placeholder: MosaicExample.png (small, square — not ideal)
 
+F50 Flower Garden Theme (dark night-garden + light day-garden)
+  - New skin pair: `flower` (night) and `flower-light` (day), following the
+    dark/light auto-switch pattern in resolveDefaultSkin (base.html)
+  - Auto-switches flower-light during 06:00–20:00 local time; flower at night
+  - User can pin either variant via the theme selector (localStorage key "skin")
+  - Mine icon: 🌸 (cherry blossom) replaces 💣 in all game JS files
+      getMineEmoji() already checks data-skin for tentaizu (⭐) — add flower check
+      Files: minesweeper.js, cylinder.js, toroid.js, rush.js, duel.js,
+             spectate.js, replay.js (and any inline assignments)
+  - Flag icon: 🌷 (tulip on stem) replaces 🚩 in all game JS files
+      Same files as mine icon — replace el.textContent = '🚩' with getFlagEmoji()
+      helper that returns '🌷' for flower/flower-light, '🚩' otherwise
+  - CSS — `flower` (dark night-garden palette):
+      Background: deep plum / midnight green (#1a0d2e, #0d1f0d)
+      Cells hidden: mossy dark green; revealed: soft dark cream
+      Numbers: warm botanical colors replacing the standard blue/green/red set
+      Mine cell background: deep burgundy (consistent with current dark skin)
+      Detonated cell: dark rose
+  - CSS — `flower-light` (day-garden palette):
+      Background: soft sage / pale petal (#f0f5e8, #fdf6f0)
+      Cells hidden: light sage green; revealed: warm white
+      Numbers: rich botanical greens/pinks/purples
+      Mine cell background: rose pink
+      Detonated cell: vivid coral
+  - Mega menu: add "🌸 Flower Garden" to the skin switcher (non-classic nav)
+  - base.html resolveDefaultSkin: extend to respect flower/flower-light pair
+    when stored skin is one of the flower variants
+  - Skin name mapping: "flower" → "flower-light" for daytime auto-switch
+    (mirror the "dark" → "light" mapping already in place)
+
 F49 Purpose-built og:image for Rush (1200×630)
   - Replace static/img/og-rush.png with a purpose-built 1200×630 image
   - Image should clearly represent Minesweeper Rush: the cascading row mechanic,
