@@ -118,6 +118,24 @@ F45 Automated Test Suite
       test_validation.py — Pydantic validation: 422 returned for all invalid payloads
   - Run with: pytest (configured in pytest.ini; testpaths=tests)
 
+F47 Purpose-built og:image for Tentaizu (1200×630)
+  - Replace static/img/og-tentaizu.png with a purpose-built 1200×630 image
+  - Image should clearly represent the Tentaizu game: 7×7 star-placement grid,
+    number clues, dark/space theme consistent with the Tentaizu skin
+  - Used as og:image and twitter:image on all 5 Tentaizu pages:
+    /tentaizu, /tentaizu/easy-5x5-6, /tentaizu/how-to-play,
+    /tentaizu/strategy, /tentaizu/archive
+  - Current placeholder: screenshot crop from TentaizuPuzzle20260320Equinox.png
+
+F48 Purpose-built og:image for Mosaic (1200×630)
+  - Replace static/img/og-mosaic.png with a purpose-built 1200×630 image
+  - Image should clearly represent the Mosaic game: filled black/white grid
+    with number clues, showing a partially or fully solved puzzle
+  - Used as og:image and twitter:image on all 5 Mosaic pages:
+    /mosaic, /mosaic/standard, /mosaic/custom, /mosaic/how-to-play,
+    /mosaic/replay
+  - Current placeholder: MosaicExample.png (small, square — not ideal)
+
 F46 OpenTelemetry Instrumentation for AWS Bedrock Observability
   - telemetry.py: setup_telemetry(app, db_engine) initialises OTLP tracing; no-op when
     OTEL_EXPORTER_OTLP_ENDPOINT is unset so dev environments need no extra infrastructure
