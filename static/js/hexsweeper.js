@@ -215,9 +215,9 @@
 
       const txt = document.createElementNS(SVG_NS, 'text');
       txt.setAttribute('x', (cx + ox).toFixed(2));
-      txt.setAttribute('y', (cy + oy + cellSize * 0.38).toFixed(2));
+      txt.setAttribute('y', (cy + oy).toFixed(2));
       txt.setAttribute('text-anchor', 'middle');
-      txt.setAttribute('dominant-baseline', 'auto');
+      txt.setAttribute('dominant-baseline', 'central');
       txt.classList.add('hex-label');
       txt.style.fontSize = `${Math.round(cellSize * 0.72)}px`;
 
