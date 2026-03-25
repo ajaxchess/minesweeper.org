@@ -48,6 +48,10 @@
       <div class="card-mode">⚔️ PvP Rating</div>
       <div class="card-body">{{ t.profile_loading }}</div>
     </div>
+    <div class="summary-card" id="card-hexsweeper" style="display:none">
+      <div class="card-mode">⬡ Hexsweeper</div>
+      <div class="card-body"></div>
+    </div>
   </div>
 
   <!-- ── Settings ── -->
@@ -214,6 +218,7 @@
       <button class="lb-tab" data-mode="custom">{{ t.nav_custom }}</button>
       <button class="lb-tab" data-mode="rush">⚡ Rush</button>
       <button class="lb-tab" data-mode="tentaizu">🔢 Tentaizu</button>
+      <button class="lb-tab" data-mode="hexsweeper" id="tab-hexsweeper" style="display:none">⬡ Hexsweeper</button>
     </div>
 
     <div class="lb-table-wrap" style="margin-top:0.75rem">
@@ -396,6 +401,29 @@ async function loadStats() {
     `;
   }
 
+  // Hexsweeper card (only shown if user has played)
+  const hexCard = document.getElementById('card-hexsweeper');
+  const hd = allStats['hexsweeper'];
+  if (hd) {
+    hexCard.style.display = '';
+    const hexTab = document.getElementById('tab-hexsweeper');
+    if (hexTab) hexTab.style.display = '';
+    hexCard.querySelector('.card-body').innerHTML = `
+      <div class="card-stat">
+        <span class="cs-label">${window.T.profile_games}</span>
+        <span class="cs-value">${hd.games_played}</span>
+      </div>
+      <div class="card-stat highlight">
+        <span class="cs-label">${window.T.profile_best}</span>
+        <span class="cs-value">${hd.best_time}s</span>
+      </div>
+      <div class="card-stat">
+        <span class="cs-label">${window.T.profile_avg}</span>
+        <span class="cs-value">${hd.avg_time}s</span>
+      </div>
+    `;
+  }
+
   renderRecent('beginner');
 }
 
@@ -431,6 +459,20 @@ function renderRecent(mode) {
         <td class="lb-date">${s.created_at}</td>
       </tr>
     `).join('');
+  } else if (mode === 'hexsweeper') {
+    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>Board</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th></tr>`;
+    body.innerHTML = data.recent.map((s, i) => {
+      const t = s.time_ms ? (s.time_ms / 1000).toFixed(3) + 's' : s.time_secs + 's';
+      return `
+        <tr>
+          <td class="lb-rank">${i + 1}</td>
+          <td class="lb-time">${t}</td>
+          <td class="lb-board">R${s.radius}</td>
+          <td class="lb-mines">${s.mines}</td>
+          <td class="lb-date">${s.created_at}</td>
+        </tr>
+      `;
+    }).join('');
   } else {
     thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>${window.T.lb_col_board}</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th></tr>`;
     body.innerHTML = data.recent.map((s, i) => `
