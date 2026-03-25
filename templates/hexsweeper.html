@@ -117,6 +117,86 @@
       </div>
     </div>
 
+    <!-- About / How to Play -->
+    <div class="info-body" style="width:100%;max-width:600px;margin-top:1.5rem">
+
+      <div class="info-section">
+        <h2>What is Hexsweeper?</h2>
+        <p>
+          Hexsweeper is a hexagonal take on the classic Minesweeper puzzle. Instead of a
+          rectangular grid, the board is shaped like a large hexagon and every cell is itself
+          a hexagon. The most important difference: each cell has exactly <strong>6 neighbours</strong>
+          rather than 8, which changes how numbers are interpreted and how solving logic works.
+        </p>
+        <p>
+          The goal is the same — reveal every safe cell without clicking a mine.
+          Numbers show how many of the 6 surrounding hexes contain mines.
+          A blank cell has zero mine neighbours and automatically expands to reveal
+          the surrounding safe area.
+        </p>
+      </div>
+
+      <div class="info-section">
+        <h2>How to Play</h2>
+        <ul>
+          <li><strong>Left-click</strong> a hidden cell to reveal it.</li>
+          <li><strong>Right-click</strong> a hidden cell to place a flag (🚩), then again for a question mark (?), then again to clear it.</li>
+          <li><strong>Left-click</strong> a revealed number to chord — if the correct number of neighbouring flags are placed, all remaining neighbours are revealed at once.</li>
+          <li>The mine counter (top-left) decreases with each flag placed.</li>
+          <li>Click 🙂 or press the button to start a new game at the same difficulty.</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h2>Board Sizes</h2>
+        <ul>
+          <li><strong>Easy</strong> — radius 5, 61 cells, 8 mines (~13%). Good for learning hex geometry.</li>
+          <li><strong>Medium</strong> — radius 7, 127 cells, 20 mines (~16%). Comparable to classic intermediate.</li>
+          <li><strong>Hard</strong> — radius 10, 271 cells, 57 mines (~21%). A serious challenge.</li>
+          <li><strong>Custom</strong> — choose any radius from 3 to 15 and set your own mine count.</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h2>Strategy Tips for Hexagonal Boards</h2>
+        <ul>
+          <li>
+            <strong>Re-learn the number scale.</strong> A "1" on a hex board touches only 6 cells,
+            not 8, so it is proportionally more constraining — use it aggressively to flag mines.
+          </li>
+          <li>
+            <strong>Corner cells are easier.</strong> Cells near the edge of the hex board have
+            fewer neighbours (as few as 3 at the corners), making them easier to deduce.
+          </li>
+          <li>
+            <strong>Think in three axes.</strong> Hex grids have three natural directions
+            (flat, diagonal-left, diagonal-right). When a number is satisfied in one axis,
+            you can often eliminate mines in the other two.
+          </li>
+          <li>
+            <strong>Use chording aggressively.</strong> Once a number's neighbours are all flagged,
+            left-clicking it opens all remaining neighbours in one move — essential on the larger boards.
+          </li>
+          <li>
+            <strong>Start from the edges inward.</strong> Opening edge cells on the first click
+            tends to produce larger blank cascades, giving you more information to work with early.
+          </li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h2>How Hexsweeper Differs from Classic Minesweeper</h2>
+        <ul>
+          <li>6 neighbours per cell instead of 8 — numbers range from 0 to 6.</li>
+          <li>The board is hexagon-shaped rather than rectangular.</li>
+          <li>No wrapping edges (unlike <a href="/cylinder" class="info-link">Cylinder</a> or <a href="/toroid" class="info-link">Toroid</a> variants).</li>
+          <li>Density of information is higher — each number accounts for a smaller proportion of the board.</li>
+          <li>Unique symmetry: the hex board looks the same from any of its six sides.</li>
+        </ul>
+      </div>
+
+    </div>
+
   </section>
 
   <aside class="ad-sidebar ad-right">
