@@ -67,6 +67,7 @@
 
   <!-- Twitter / X Card -->
   <meta name="twitter:card"        content="summary_large_image">
+  {% if twitter_handle %}<meta name="twitter:site" content="@{{ twitter_handle }}">{% endif %}
   <meta name="twitter:title"       content="{% block tw_title %}Minesweeper — Play Free Online{% endblock %}">
   <meta name="twitter:description" content="{% block tw_description %}Play classic Minesweeper or challenge a friend to a real-time 1v1 duel. Free, no download required.{% endblock %}">
   <meta name="twitter:image"       content="{% block tw_image %}https://minesweeper.org/static/img/og-default.png{% endblock %}">

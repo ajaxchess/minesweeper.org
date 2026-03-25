@@ -94,7 +94,8 @@ app.include_router(duel_router)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["ga_tag"]         = Config(".env")("GA_TAG", default="")
+templates.env.globals["ga_tag"]          = Config(".env")("GA_TAG", default="")
+templates.env.globals["twitter_handle"]  = Config(".env")("TWITTER_HANDLE", default="")
 templates.env.globals["DEFAULT_SKIN"]   = site_settings.DEFAULT_SKIN
 templates.env.globals["active_skin"]     = site_settings.active_skin
 templates.env.globals["solstice_banner"]       = site_settings.solstice_banner
