@@ -3134,7 +3134,33 @@ def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
     http_500     = [r.http_500             for r in rows]
     http_503     = [r.http_503             for r in rows]
 
-    # Hourly ops data (last 48 snapshots) — same as admin/operations
+    # ── Operations data (same as admin/operations) ────────────────────────────
+    disk        = psutil.disk_usage("/")
+    cpu_percent = psutil.cpu_percent(interval=0.5)
+    mem         = psutil.virtual_memory()
+    net         = psutil.net_io_counters()
+    try:
+        conns = psutil.net_connections(kind="tcp")
+        active_connections = sum(1 for c in conns if c.status == "ESTABLISHED")
+    except (psutil.AccessDenied, PermissionError):
+        active_connections = None
+
+    table_counts = {
+        "Score (leaderboard)": db.query(func.count()).select_from(Score).scalar(),
+        "GameHistory":         db.query(func.count()).select_from(GameHistory).scalar(),
+        "RushScore":           db.query(func.count()).select_from(RushScore).scalar(),
+        "TentaizuScore":       db.query(func.count()).select_from(TentaizuScore).scalar(),
+        "CylinderScore":       db.query(func.count()).select_from(CylinderScore).scalar(),
+        "ToroidScore":         db.query(func.count()).select_from(ToroidScore).scalar(),
+        "PvpResult":           db.query(func.count()).select_from(PvpResult).scalar(),
+        "UserProfile":         db.query(func.count()).select_from(UserProfile).scalar(),
+    }
+    total_records = sum(table_counts.values())
+    db_size_bytes = db.execute(
+        text("SELECT SUM(data_length + index_length) "
+             "FROM information_schema.tables WHERE table_schema = DATABASE()")
+    ).scalar() or 0
+
     history = list(reversed(
         db.query(ServerStats)
         .order_by(ServerStats.recorded_at.desc())
@@ -3142,6 +3168,10 @@ def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
         .all()
     ))
     hr_labels    = [r.recorded_at.strftime("%-m/%-d %-I%p") for r in history]
+    hr_cpu       = [round(r.cpu_percent, 1)  for r in history]
+    hr_mem       = [round(r.mem_percent, 1)  for r in history]
+    hr_disk      = [round(r.disk_percent, 1) for r in history]
+    hr_db_mb     = [round(r.db_size_mb, 2)   for r in history]
     hr_net_sent  = [round((r.net_delta_sent or 0) / (1024 ** 2), 2) for r in history]
     hr_net_recv  = [round((r.net_delta_recv or 0) / (1024 ** 2), 2) for r in history]
     hr_requests  = [r.http_requests for r in history]
@@ -3169,9 +3199,31 @@ def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
         "http_500":     _json.dumps(http_500),
         "http_503":     _json.dumps(http_503),
         "hr_labels":    _json.dumps(hr_labels),
+        "hr_cpu":       _json.dumps(hr_cpu),
+        "hr_mem":       _json.dumps(hr_mem),
+        "hr_disk":      _json.dumps(hr_disk),
+        "hr_db_mb":     _json.dumps(hr_db_mb),
         "hr_net_sent":  _json.dumps(hr_net_sent),
         "hr_net_recv":  _json.dumps(hr_net_recv),
         "hr_requests":  _json.dumps(hr_requests),
+        # live snapshot
+        "cpu_percent":        cpu_percent,
+        "mem_used":           _fmt_bytes(mem.used),
+        "mem_total":          _fmt_bytes(mem.total),
+        "mem_free":           _fmt_bytes(mem.available),
+        "mem_percent":        mem.percent,
+        "disk_used":          _fmt_bytes(disk.used),
+        "disk_total":         _fmt_bytes(disk.total),
+        "disk_free":          _fmt_bytes(disk.free),
+        "disk_percent":       disk.percent,
+        "net_bytes_sent":     _fmt_bytes(net.bytes_sent),
+        "net_bytes_recv":     _fmt_bytes(net.bytes_recv),
+        "net_packets_sent":   f"{net.packets_sent:,}",
+        "net_packets_recv":   f"{net.packets_recv:,}",
+        "active_connections": active_connections,
+        "table_counts":       table_counts,
+        "total_records":      total_records,
+        "db_size":            _fmt_bytes(db_size_bytes),
     })
 
 

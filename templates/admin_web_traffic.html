@@ -23,6 +23,10 @@ const H503     = {{ http_503     | safe }};
 
 // Hourly ops data
 const HR_LABELS   = {{ hr_labels   | safe }};
+const HR_CPU      = {{ hr_cpu      | safe }};
+const HR_MEM      = {{ hr_mem      | safe }};
+const HR_DISK     = {{ hr_disk     | safe }};
+const HR_DB_MB    = {{ hr_db_mb    | safe }};
 const HR_NET_SENT = {{ hr_net_sent | safe }};
 const HR_NET_RECV = {{ hr_net_recv | safe }};
 const HR_REQUESTS = {{ hr_requests | safe }};
@@ -105,14 +109,40 @@ document.addEventListener('DOMContentLoaded', () => {
     { label: '503 Unavailable', data: H503, backgroundColor: 'rgba(180,30,30,0.7)'   },
   ]);
 
-  // Chart 5 — hourly network bandwidth (last 48 h)
+  // Hourly ops charts (last 48 h)
   if (HR_LABELS.length) {
-    const a = 'rgba(74,158,255,0.8)', g = 'rgba(80,200,120,0.8)';
+    const a  = 'rgba(74,158,255,0.8)',  a2 = 'rgba(74,158,255,0.15)';
+    const g  = 'rgba(80,200,120,0.8)',  g2 = 'rgba(80,200,120,0.15)';
+    const o  = 'rgba(255,160,60,0.8)',  o2 = 'rgba(255,160,60,0.15)';
+
+    function hrLine(id, label, data, bc, bg, yLabel) {
+      new Chart(document.getElementById(id), {
+        type: 'line',
+        data: { labels: HR_LABELS, datasets: [{ label, data, borderColor: bc, backgroundColor: bg, borderWidth: 1.5, fill: !!bg, tension: 0.3, pointRadius: 2 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { labels: { color: '#aaa', boxWidth: 12 } } },
+          scales: {
+            x: { ticks: { color: '#888', maxTicksLimit: 12 }, grid: { color: '#333' } },
+            y: { ticks: { color: '#888' }, grid: { color: '#333' }, min: 0,
+                 title: { display: !!yLabel, text: yLabel || '', color: '#888' } },
+          }
+        }
+      });
+    }
+
+    hrLine('chartCpu',   'CPU %',        HR_CPU,      a,  a2, '');
+    hrLine('chartMem',   'Memory %',     HR_MEM,      g,  g2, '');
+    hrLine('chartDisk',  'Disk %',       HR_DISK,     o,  o2, '');
+    hrLine('chartDbMb',  'DB Size MB',   HR_DB_MB,    a,  a2, 'MB');
+    hrLine('chartHrReqs','Requests / hr',HR_REQUESTS, o,  o2, 'Requests');
+
     new Chart(document.getElementById('chartHrNet'), {
       type: 'line',
       data: { labels: HR_LABELS, datasets: [
-        { label: 'Sent (MB)',  data: HR_NET_SENT, borderColor: a, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.3, pointRadius: 2 },
-        { label: 'Recv (MB)',  data: HR_NET_RECV, borderColor: g, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.3, pointRadius: 2 },
+        { label: 'Sent (MB)', data: HR_NET_SENT, borderColor: a, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.3, pointRadius: 2 },
+        { label: 'Recv (MB)', data: HR_NET_RECV, borderColor: g, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.3, pointRadius: 2 },
       ]},
       options: {
         responsive: true, maintainAspectRatio: false,
@@ -122,26 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
           x: { ticks: { color: '#888', maxTicksLimit: 12 }, grid: { color: '#333' } },
           y: { ticks: { color: '#888' }, grid: { color: '#333' }, min: 0,
                title: { display: true, text: 'MB / hr', color: '#888' } },
-        }
-      }
-    });
-
-    // Chart 6 — hourly HTTP requests
-    new Chart(document.getElementById('chartHrReqs'), {
-      type: 'line',
-      data: { labels: HR_LABELS, datasets: [
-        { label: 'Requests / hr', data: HR_REQUESTS,
-          borderColor: 'rgba(255,160,60,0.9)', backgroundColor: 'rgba(255,160,60,0.15)',
-          borderWidth: 1.5, fill: true, tension: 0.3, pointRadius: 2 },
-      ]},
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { labels: { color: '#aaa', boxWidth: 12 } } },
-        scales: {
-          x: { ticks: { color: '#888', maxTicksLimit: 12 }, grid: { color: '#333' } },
-          y: { ticks: { color: '#888' }, grid: { color: '#333' }, min: 0,
-               title: { display: true, text: 'Requests', color: '#888' } },
         }
       }
     });
@@ -183,6 +193,11 @@ document.addEventListener('DOMContentLoaded', () => {
 .wt-table th { color: var(--text-dim, #888); font-weight: 600; }
 .wt-table td:first-child, .wt-table th:first-child { text-align: left; font-family: monospace; }
 .wt-table tr:last-child td { border-bottom: none; }
+/* ops chart reuse */
+.ops-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 1.25rem; margin: 1rem 0; }
+.ops-chart-card { background: var(--bg2, #1a1a2e); border: 1px solid var(--border, #333); border-radius: 8px; padding: 1rem 1.25rem; }
+.ops-chart-card h3 { margin: 0 0 0.6rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim, #888); }
+.ops-chart-wrap { position: relative; height: 180px; }
 </style>
 {% endblock %}
 
@@ -216,20 +231,67 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="wt-chart-wrap"><canvas id="chartErrors"></canvas></div>
     </div>
 
-    <div class="wt-chart-card">
-      <h3>Network Bandwidth — Hourly (last 48 h)</h3>
-      <div class="wt-chart-wrap"><canvas id="chartHrNet"></canvas></div>
-    </div>
-
-    <div class="wt-chart-card">
-      <h3>HTTP Requests — Hourly (last 48 h)</h3>
-      <div class="wt-chart-wrap"><canvas id="chartHrReqs"></canvas></div>
-    </div>
-
   </div>
 
-  <!-- Data table -->
-  <h2 style="font-size:1rem;margin-top:2rem;">Daily Breakdown</h2>
+  <!-- Hourly Operations Charts (last 48 h) -->
+  <h2 style="font-size:1rem;margin-top:2rem;color:var(--accent2);">Server Operations — Hourly (last 48 h)</h2>
+  <div class="ops-charts">
+    <div class="ops-chart-card"><h3>CPU Usage</h3><div class="ops-chart-wrap"><canvas id="chartCpu"></canvas></div></div>
+    <div class="ops-chart-card"><h3>Memory Usage</h3><div class="ops-chart-wrap"><canvas id="chartMem"></canvas></div></div>
+    <div class="ops-chart-card"><h3>Disk Usage</h3><div class="ops-chart-wrap"><canvas id="chartDisk"></canvas></div></div>
+    <div class="ops-chart-card"><h3>Database Size</h3><div class="ops-chart-wrap"><canvas id="chartDbMb"></canvas></div></div>
+    <div class="ops-chart-card"><h3>Network Bandwidth (per hour)</h3><div class="ops-chart-wrap"><canvas id="chartHrNet"></canvas></div></div>
+    <div class="ops-chart-card"><h3>HTTP Requests (per hour)</h3><div class="ops-chart-wrap"><canvas id="chartHrReqs"></canvas></div></div>
+  </div>
+
+  <!-- Live Snapshot -->
+  <h2 style="font-size:1rem;margin-top:2rem;color:var(--accent2);">Live Snapshot</h2>
+  <table class="lb-table" style="max-width:600px;margin:0 auto;">
+    <thead><tr><th>Metric</th><th>Value</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>CPU Usage</td><td>{{ cpu_percent }}%</td>
+        <td><div style="background:var(--border);border-radius:4px;height:8px;width:120px;display:inline-block;vertical-align:middle;"><div style="background:var(--accent2);border-radius:4px;height:8px;width:{{ cpu_percent }}%;max-width:100%;"></div></div></td>
+      </tr>
+      <tr>
+        <td>Memory Used</td><td>{{ mem_used }} / {{ mem_total }}</td>
+        <td><div style="background:var(--border);border-radius:4px;height:8px;width:120px;display:inline-block;vertical-align:middle;"><div style="background:var(--accent2);border-radius:4px;height:8px;width:{{ mem_percent }}%;max-width:100%;"></div></div> {{ mem_percent }}% · {{ mem_free }} free</td>
+      </tr>
+      <tr>
+        <td>Disk Used</td><td>{{ disk_used }} / {{ disk_total }}</td>
+        <td><div style="background:var(--border);border-radius:4px;height:8px;width:120px;display:inline-block;vertical-align:middle;"><div style="background:{% if disk_percent > 85 %}#e55{% else %}var(--accent2){% endif %};border-radius:4px;height:8px;width:{{ disk_percent }}%;max-width:100%;"></div></div> {{ disk_percent }}% · {{ disk_free }} free</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Application Statistics -->
+  <h2 style="font-size:1rem;margin-top:1.5rem;color:var(--accent2);">Application Statistics</h2>
+  <table class="lb-table" style="max-width:400px;margin:0 auto;">
+    <thead><tr><th>Table</th><th>Records</th></tr></thead>
+    <tbody>
+      {% for table, count in table_counts.items() %}
+      <tr><td>{{ table }}</td><td>{{ "{:,}".format(count) }}</td></tr>
+      {% endfor %}
+      <tr><td><strong>Total Records</strong></td><td><strong>{{ "{:,}".format(total_records) }}</strong></td></tr>
+      <tr><td>Database Size</td><td>{{ db_size }}</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Network Statistics -->
+  <h2 style="font-size:1rem;margin-top:1.5rem;color:var(--accent2);">Network Statistics</h2>
+  <table class="lb-table" style="max-width:400px;margin:0 auto;">
+    <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Bytes Received (since boot)</td><td>{{ net_bytes_recv }}</td></tr>
+      <tr><td>Bytes Sent (since boot)</td><td>{{ net_bytes_sent }}</td></tr>
+      <tr><td>Packets Received (since boot)</td><td>{{ net_packets_recv }}</td></tr>
+      <tr><td>Packets Sent (since boot)</td><td>{{ net_packets_sent }}</td></tr>
+      <tr><td>Active TCP Connections</td><td>{% if active_connections is not none %}{{ active_connections }}{% else %}n/a{% endif %}</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Daily Apache Log Breakdown -->
+  <h2 style="font-size:1rem;margin-top:2rem;color:var(--accent2);">Daily Apache Log Breakdown</h2>
   <div class="wt-table-wrap">
     <table class="wt-table">
       <thead>
