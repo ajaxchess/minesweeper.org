@@ -59,22 +59,22 @@
   <section class="game-section">
     <div class="game-info">
       <div class="mode-row">
-        <div class="mode-badge">⬡ Hexsweeper</div>
+        <div class="mode-badge">⬡ {{ t.nav_hexsweeper }}</div>
       </div>
 
       <!-- Difficulty tabs -->
       <div class="variant-tabs">
-        <a href="/hexsweeper"              class="variant-tab {% if mode == 'hex-beginner'     %}active{% endif %}">Easy</a>
-        <a href="/hexsweeper/intermediate" class="variant-tab {% if mode == 'hex-intermediate' %}active{% endif %}">Medium</a>
-        <a href="/hexsweeper/expert"       class="variant-tab {% if mode == 'hex-expert'       %}active{% endif %}">Hard</a>
-        <a href="/hexsweeper/custom"       class="variant-tab {% if mode == 'hex-custom'       %}active{% endif %}">Custom</a>
+        <a href="/hexsweeper"              class="variant-tab {% if mode == 'hex-beginner'     %}active{% endif %}">{{ t.hex_easy }}</a>
+        <a href="/hexsweeper/intermediate" class="variant-tab {% if mode == 'hex-intermediate' %}active{% endif %}">{{ t.hex_medium }}</a>
+        <a href="/hexsweeper/expert"       class="variant-tab {% if mode == 'hex-expert'       %}active{% endif %}">{{ t.hex_hard }}</a>
+        <a href="/hexsweeper/custom"       class="variant-tab {% if mode == 'hex-custom'       %}active{% endif %}">{{ t.hex_custom }}</a>
       </div>
 
       {% if mode == 'hex-custom' %}
       <form id="hex-custom-form" class="custom-form">
-        <label>Radius <input type="number" id="h-radius" value="5" min="3" max="15"></label>
-        <label>Mines  <input type="number" id="h-mines"  value="8" min="1" max="999"></label>
-        <button type="submit">Start</button>
+        <label>{{ t.hex_radius }} <input type="number" id="h-radius" value="5" min="3" max="15"></label>
+        <label>{{ t.custom_mines }}  <input type="number" id="h-mines"  value="8" min="1" max="999"></label>
+        <button type="submit">{{ t.custom_start }}</button>
       </form>
       {% endif %}
 
@@ -83,7 +83,7 @@
           <span class="stat-icon">💣</span>
           <span class="stat-value" id="hex-mines">{{ "%03d"|format(mines) }}</span>
         </div>
-        <button id="hex-reset" title="New game" onclick="hexResetGame()">🙂</button>
+        <button id="hex-reset" title="{{ t.game_new_game }}" onclick="hexResetGame()">🙂</button>
         <div class="stat">
           <span class="stat-icon">⏱</span>
           <span class="stat-value" id="hex-timer">000</span>
@@ -102,18 +102,18 @@
     <div id="hex-result"></div>
 
     <p class="instructions">
-      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
-      <strong>Right-click</strong> to flag &nbsp;|&nbsp;
-      <strong>🙂</strong> to reset &nbsp;|&nbsp;
-      <em>Each cell has 6 neighbours.</em>
+      <strong>{{ t.game_left_click }}</strong> {{ t.game_to_reveal }} &nbsp;|&nbsp;
+      <strong>{{ t.game_right_click }}</strong> {{ t.game_to_flag }} &nbsp;|&nbsp;
+      <strong>🙂</strong> {{ t.game_to_reset }} &nbsp;|&nbsp;
+      <em>{{ t.hex_6neighbours }}</em>
     </p>
 
     <!-- Leaderboard -->
     <div class="tz-lb-section" style="width:100%;max-width:600px">
-      {% set mode_label = {'hex-beginner': 'Easy', 'hex-intermediate': 'Medium', 'hex-expert': 'Hard', 'hex-custom': 'Custom'}[mode] %}
-      <div class="tz-lb-title" id="hex-lb-title">Today's Best — {{ mode_label }}</div>
+      {% set mode_label = {'hex-beginner': t.hex_easy, 'hex-intermediate': t.hex_medium, 'hex-expert': t.hex_hard, 'hex-custom': t.hex_custom}[mode] %}
+      <div class="tz-lb-title" id="hex-lb-title">{{ t.hex_lb_today }} — {{ mode_label }}</div>
       <div id="hex-lb-content">
-        <div class="lb-loading">Loading…</div>
+        <div class="lb-loading">{{ t.lb_loading }}</div>
       </div>
     </div>
 
@@ -121,77 +121,51 @@
     <div class="info-body" style="width:100%;max-width:600px;margin-top:1.5rem">
 
       <div class="info-section">
-        <h2>What is Hexsweeper?</h2>
-        <p>
-          Hexsweeper is a hexagonal take on the classic Minesweeper puzzle. Instead of a
-          rectangular grid, the board is shaped like a large hexagon and every cell is itself
-          a hexagon. The most important difference: each cell has exactly <strong>6 neighbours</strong>
-          rather than 8, which changes how numbers are interpreted and how solving logic works.
-        </p>
-        <p>
-          The goal is the same — reveal every safe cell without clicking a mine.
-          Numbers show how many of the 6 surrounding hexes contain mines.
-          A blank cell has zero mine neighbours and automatically expands to reveal
-          the surrounding safe area.
-        </p>
+        <h2>{{ t.hex_info_what_h2 }}</h2>
+        <p>{{ t.hex_info_what_p1 | safe }}</p>
+        <p>{{ t.hex_info_what_p2 | safe }}</p>
       </div>
 
       <div class="info-section">
-        <h2>How to Play</h2>
+        <h2>{{ t.hex_info_howto_h2 }}</h2>
         <ul>
-          <li><strong>Left-click</strong> a hidden cell to reveal it.</li>
-          <li><strong>Right-click</strong> a hidden cell to place a flag (🚩), then again for a question mark (?), then again to clear it.</li>
-          <li><strong>Left-click</strong> a revealed number to chord — if the correct number of neighbouring flags are placed, all remaining neighbours are revealed at once.</li>
-          <li>The mine counter (top-left) decreases with each flag placed.</li>
-          <li>Click 🙂 or press the button to start a new game at the same difficulty.</li>
+          <li>{{ t.hex_info_howto_li1 | safe }}</li>
+          <li>{{ t.hex_info_howto_li2 | safe }}</li>
+          <li>{{ t.hex_info_howto_li3 | safe }}</li>
+          <li>{{ t.hex_info_howto_li4 | safe }}</li>
+          <li>{{ t.hex_info_howto_li5 | safe }}</li>
         </ul>
       </div>
 
       <div class="info-section">
-        <h2>Board Sizes</h2>
+        <h2>{{ t.hex_info_sizes_h2 }}</h2>
         <ul>
-          <li><strong>Easy</strong> — radius 5, 61 cells, 8 mines (~13%). Good for learning hex geometry.</li>
-          <li><strong>Medium</strong> — radius 7, 127 cells, 20 mines (~16%). Comparable to classic intermediate.</li>
-          <li><strong>Hard</strong> — radius 10, 271 cells, 57 mines (~21%). A serious challenge.</li>
-          <li><strong>Custom</strong> — choose any radius from 3 to 15 and set your own mine count.</li>
+          <li>{{ t.hex_info_sizes_li1 | safe }}</li>
+          <li>{{ t.hex_info_sizes_li2 | safe }}</li>
+          <li>{{ t.hex_info_sizes_li3 | safe }}</li>
+          <li>{{ t.hex_info_sizes_li4 | safe }}</li>
         </ul>
       </div>
 
       <div class="info-section">
-        <h2>Strategy Tips for Hexagonal Boards</h2>
+        <h2>{{ t.hex_info_strategy_h2 }}</h2>
         <ul>
-          <li>
-            <strong>Re-learn the number scale.</strong> A "1" on a hex board touches only 6 cells,
-            not 8, so it is proportionally more constraining — use it aggressively to flag mines.
-          </li>
-          <li>
-            <strong>Corner cells are easier.</strong> Cells near the edge of the hex board have
-            fewer neighbours (as few as 3 at the corners), making them easier to deduce.
-          </li>
-          <li>
-            <strong>Think in three axes.</strong> Hex grids have three natural directions
-            (flat, diagonal-left, diagonal-right). When a number is satisfied in one axis,
-            you can often eliminate mines in the other two.
-          </li>
-          <li>
-            <strong>Use chording aggressively.</strong> Once a number's neighbours are all flagged,
-            left-clicking it opens all remaining neighbours in one move — essential on the larger boards.
-          </li>
-          <li>
-            <strong>Start from the edges inward.</strong> Opening edge cells on the first click
-            tends to produce larger blank cascades, giving you more information to work with early.
-          </li>
+          <li>{{ t.hex_info_strategy_li1 | safe }}</li>
+          <li>{{ t.hex_info_strategy_li2 | safe }}</li>
+          <li>{{ t.hex_info_strategy_li3 | safe }}</li>
+          <li>{{ t.hex_info_strategy_li4 | safe }}</li>
+          <li>{{ t.hex_info_strategy_li5 | safe }}</li>
         </ul>
       </div>
 
       <div class="info-section">
-        <h2>How Hexsweeper Differs from Classic Minesweeper</h2>
+        <h2>{{ t.hex_info_diff_h2 }}</h2>
         <ul>
-          <li>6 neighbours per cell instead of 8 — numbers range from 0 to 6.</li>
-          <li>The board is hexagon-shaped rather than rectangular.</li>
-          <li>No wrapping edges (unlike <a href="/cylinder" class="info-link">Cylinder</a> or <a href="/toroid" class="info-link">Toroid</a> variants).</li>
-          <li>Density of information is higher — each number accounts for a smaller proportion of the board.</li>
-          <li>Unique symmetry: the hex board looks the same from any of its six sides.</li>
+          <li>{{ t.hex_info_diff_li1 | safe }}</li>
+          <li>{{ t.hex_info_diff_li2 | safe }}</li>
+          <li>{{ t.hex_info_diff_li3 | safe }}</li>
+          <li>{{ t.hex_info_diff_li4 | safe }}</li>
+          <li>{{ t.hex_info_diff_li5 | safe }}</li>
         </ul>
       </div>
 

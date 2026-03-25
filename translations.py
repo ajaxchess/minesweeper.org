@@ -286,6 +286,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "Hex board, 6 neighbours",
+        # Hexsweeper page UI
+        "hex_easy":               "Easy",
+        "hex_medium":             "Medium",
+        "hex_hard":               "Hard",
+        "hex_custom":             "Custom",
+        "hex_radius":             "Radius",
+        "hex_6neighbours":        "Each cell has 6 neighbours.",
+        "hex_lb_today":           "Today's Best",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "What is Hexsweeper?",
+        "hex_info_howto_h2":      "How to Play",
+        "hex_info_sizes_h2":      "Board Sizes",
+        "hex_info_strategy_h2":   "Strategy Tips for Hexagonal Boards",
+        "hex_info_diff_h2":       "How Hexsweeper Differs from Classic Minesweeper",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper is a hexagonal take on the classic Minesweeper puzzle. Instead of a rectangular grid, the board is shaped like a large hexagon and every cell is itself a hexagon. The most important difference: each cell has exactly <strong>6 neighbours</strong> rather than 8, which changes how numbers are interpreted and how solving logic works.",
+        "hex_info_what_p2":       "The goal is the same — reveal every safe cell without clicking a mine. Numbers show how many of the 6 surrounding hexes contain mines. A blank cell has zero mine neighbours and automatically expands to reveal the surrounding safe area.",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>Left-click</strong> a hidden cell to reveal it.",
+        "hex_info_howto_li2":     "<strong>Right-click</strong> a hidden cell to place a flag (🚩), then again for a question mark (?), then again to clear it.",
+        "hex_info_howto_li3":     "<strong>Left-click</strong> a revealed number to chord — if the correct number of neighbouring flags are placed, all remaining neighbours are revealed at once.",
+        "hex_info_howto_li4":     "The mine counter (top-left) decreases with each flag placed.",
+        "hex_info_howto_li5":     "Click 🙂 or press the button to start a new game at the same difficulty.",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>Easy</strong> — radius 5, 61 cells, 8 mines (~13%). Good for learning hex geometry.",
+        "hex_info_sizes_li2":     "<strong>Medium</strong> — radius 7, 127 cells, 20 mines (~16%). Comparable to classic intermediate.",
+        "hex_info_sizes_li3":     "<strong>Hard</strong> — radius 10, 271 cells, 57 mines (~21%). A serious challenge.",
+        "hex_info_sizes_li4":     "<strong>Custom</strong> — choose any radius from 3 to 15 and set your own mine count.",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>Re-learn the number scale.</strong> A \"1\" on a hex board touches only 6 cells, not 8, so it is proportionally more constraining — use it aggressively to flag mines.",
+        "hex_info_strategy_li2":  "<strong>Corner cells are easier.</strong> Cells near the edge of the hex board have fewer neighbours (as few as 3 at the corners), making them easier to deduce.",
+        "hex_info_strategy_li3":  "<strong>Think in three axes.</strong> Hex grids have three natural directions (flat, diagonal-left, diagonal-right). When a number is satisfied in one axis, you can often eliminate mines in the other two.",
+        "hex_info_strategy_li4":  "<strong>Use chording aggressively.</strong> Once a number\u2019s neighbours are all flagged, left-clicking it opens all remaining neighbours in one move \u2014 essential on the larger boards.",
+        "hex_info_strategy_li5":  "<strong>Start from the edges inward.</strong> Opening edge cells on the first click tends to produce larger blank cascades, giving you more information to work with early.",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "6 neighbours per cell instead of 8 \u2014 numbers range from 0 to 6.",
+        "hex_info_diff_li2":      "The board is hexagon-shaped rather than rectangular.",
+        "hex_info_diff_li3":      "No wrapping edges (unlike Cylinder or Toroid variants).",
+        "hex_info_diff_li4":      "Density of information is higher \u2014 each number accounts for a smaller proportion of the board.",
+        "hex_info_diff_li5":      "Unique symmetry: the hex board looks the same from any of its six sides.",
     },
 
     "eo": {
@@ -573,6 +616,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "Heksa tablo, 6 najbaroj",
+        # Hexsweeper page UI
+        "hex_easy":               "Facila",
+        "hex_medium":             "Meza",
+        "hex_hard":               "Malfacila",
+        "hex_custom":             "Propra",
+        "hex_radius":             "Radiuso",
+        "hex_6neighbours":        "Ĉiu ĉelo havas 6 najbarojn.",
+        "hex_lb_today":           "Hodiaŭa Plej Bona",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Kio estas Hexsweeper?",
+        "hex_info_howto_h2":      "Kiel Ludi",
+        "hex_info_sizes_h2":      "Tablaj Grandoj",
+        "hex_info_strategy_h2":   "Strategiaj Konsiloj por Heksagonaj Tabloj",
+        "hex_info_diff_h2":       "Kiel Hexsweeper Diferencas de Klasika Minesweeper",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper estas heksagona versio de la klasika Minesweeper-puzlo. Anstataŭ rektangula krado, la tablo formas grandan heksagonon kaj ĉiu ĉelo mem estas heksagono. La plej grava diferenco: ĉiu ĉelo havas ekzakte <strong>6 najbarojn</strong> anstataŭ 8, kio ŝanĝas kiel nombroj estas interpretataj kaj kiel funkcias la solva logiko.",
+        "hex_info_what_p2":       "La celo estas la sama — malkovri ĉiun sekuran ĉelon sen alklaki minejon. Nombroj montras kiom el la 6 ĉirkaŭaj heksoj enhavas minejojn. Blanka ĉelo havas nul minejajn najbarojn kaj aŭtomate etendiĝas por malkovri la ĉirkaŭan sekuran areon.",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>Maldekstra-klako</strong> sur kaŝitan ĉelon por malkovri ĝin.",
+        "hex_info_howto_li2":     "<strong>Dekstra-klako</strong> sur kaŝitan ĉelon por meti flagon (🚩), denove por demandosigno (?), denove por forigi ĝin.",
+        "hex_info_howto_li3":     "<strong>Maldekstra-klako</strong> sur malkovrita nombro por akordi — se la ĝusta nombro da najbaraj flagoj estas metitaj, ĉiuj ceteraj najbaroj estas malkovritaj samtempe.",
+        "hex_info_howto_li4":     "La minejokontisto (supre-maldekstre) malpliiĝas kun ĉiu metita flago.",
+        "hex_info_howto_li5":     "Alklaku 🙂 aŭ premu la butonon por komenci novan ludon ĉe la sama malfacileco.",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>Facila</strong> — radiuso 5, 61 ĉeloj, 8 minejoj (~13%). Bona por lerni heksan geometrion.",
+        "hex_info_sizes_li2":     "<strong>Meza</strong> — radiuso 7, 127 ĉeloj, 20 minejoj (~16%). Kompareblaj al klasika meza nivelo.",
+        "hex_info_sizes_li3":     "<strong>Malfacila</strong> — radiuso 10, 271 ĉeloj, 57 minejoj (~21%). Serioza defio.",
+        "hex_info_sizes_li4":     "<strong>Propra</strong> — elektu ajnan radiasuon de 3 ĝis 15 kaj agordu vian propran minejokonton.",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>Relernadu la nombran skalon.</strong> \"1\" sur heksa tablo tuŝas nur 6 ĉelojn, ne 8, do ĝi estas proporcie pli limiga — uzu ĝin agreseme por flagi minejojn.",
+        "hex_info_strategy_li2":  "<strong>Angulaj ĉeloj estas pli facilaj.</strong> Ĉeloj apud la rando de la heksa tablo havas malpli da najbaroj (nur 3 ĉe la anguloj), farante ilin pli facile dedukteblaj.",
+        "hex_info_strategy_li3":  "<strong>Pensu en tri aksoj.</strong> Heksaj kradoj havas tri naturajn direktojn (flata, skiba-maldekstre, skiba-dekstra). Kiam nombro estas kontentita en unu akso, vi povas ofte elimini minejojn en la aliaj du.",
+        "hex_info_strategy_li4":  "<strong>Uzu akordon agreseme.</strong> Kiam la najbaroj de nombro estas ĉiuj flagitaj, maldekstra-klako malfermas ĉiujn ceterajn najbarojn per unu movo \u2014 esenca sur la pli grandaj tabloj.",
+        "hex_info_strategy_li5":  "<strong>Komencu de la randoj al la centro.</strong> Malfermi randajn ĉelojn ĉe la unua klako tendencas produkti pli grandajn blankajn kaskadjojn, donante al vi pli da informoj frue.",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "6 najbaroj po ĉelo anstataŭ 8 \u2014 nombroj intervalas de 0 ĝis 6.",
+        "hex_info_diff_li2":      "La tablo estas heksagone formita anstataŭ rektangula.",
+        "hex_info_diff_li3":      "Neniuj envolviĝantaj randoj (male al Cylinder aŭ Toroid variantoj).",
+        "hex_info_diff_li4":      "Informa denseco estas pli alta \u2014 ĉiu nombro konsideras pli malgrandan proporcion de la tablo.",
+        "hex_info_diff_li5":      "Unika simetrio: la heksa tablo aspektas same el iu ajn el ĝiaj ses flankoj.",
     },
 
     "de": {
@@ -860,6 +946,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV pro Sekunde – Geschwindigkeit beim Lösen des Spiels. Je höher, desto besser.",
         "lb_eff_tip":              "Effizienz: gelöste 3BV dividiert durch Klickanzahl. Weniger Klicks = höhere Effizienz.",
         "lb_bbbv_link_title":      "Mehr über 3BV erfahren",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "Hex-Feld, 6 Nachbarn",
+        # Hexsweeper page UI
+        "hex_easy":               "Einfach",
+        "hex_medium":             "Mittel",
+        "hex_hard":               "Schwer",
+        "hex_custom":             "Benutzerdefiniert",
+        "hex_radius":             "Radius",
+        "hex_6neighbours":        "Jede Zelle hat 6 Nachbarn.",
+        "hex_lb_today":           "Bestes heute",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Was ist Hexsweeper?",
+        "hex_info_howto_h2":      "Wie man spielt",
+        "hex_info_sizes_h2":      "Feldgrößen",
+        "hex_info_strategy_h2":   "Strategietipps für hexagonale Felder",
+        "hex_info_diff_h2":       "Wie sich Hexsweeper vom klassischen Minesweeper unterscheidet",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper ist eine hexagonale Version des klassischen Minesweeper-Rätsels. Anstatt eines rechteckigen Gitters hat das Spielfeld die Form eines großen Sechsecks, und jede Zelle ist selbst ein Sechseck. Der wichtigste Unterschied: Jede Zelle hat genau <strong>6 Nachbarn</strong> statt 8, was die Interpretation der Zahlen und die Lösungslogik verändert.",
+        "hex_info_what_p2":       "Das Ziel ist dasselbe — alle sicheren Zellen aufdecken, ohne auf eine Mine zu klicken. Zahlen zeigen, wie viele der 6 umliegenden Sechsecke Minen enthalten. Eine leere Zelle hat keine Minennachbarn und deckt automatisch den umliegenden sicheren Bereich auf.",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>Linksklick</strong> auf eine versteckte Zelle, um sie aufzudecken.",
+        "hex_info_howto_li2":     "<strong>Rechtsklick</strong> auf eine versteckte Zelle, um eine Flagge (🚩) zu setzen, erneut für ein Fragezeichen (?), erneut zum Löschen.",
+        "hex_info_howto_li3":     "<strong>Linksklick</strong> auf eine aufgedeckte Zahl zum Chordspielen — wenn die richtige Anzahl benachbarter Flaggen gesetzt ist, werden alle verbleibenden Nachbarn auf einmal aufgedeckt.",
+        "hex_info_howto_li4":     "Der Minenzähler (oben links) verringert sich mit jeder gesetzten Flagge.",
+        "hex_info_howto_li5":     "Klicke auf 🙂 oder drücke den Knopf, um ein neues Spiel mit derselben Schwierigkeit zu starten.",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>Einfach</strong> — Radius 5, 61 Zellen, 8 Minen (~13%). Gut zum Erlernen der Hex-Geometrie.",
+        "hex_info_sizes_li2":     "<strong>Mittel</strong> — Radius 7, 127 Zellen, 20 Minen (~16%). Vergleichbar mit dem klassischen mittleren Schwierigkeitsgrad.",
+        "hex_info_sizes_li3":     "<strong>Schwer</strong> — Radius 10, 271 Zellen, 57 Minen (~21%). Eine ernsthafte Herausforderung.",
+        "hex_info_sizes_li4":     "<strong>Benutzerdefiniert</strong> — Wähle einen Radius von 3 bis 15 und lege deine eigene Minenanzahl fest.",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>Lerne die Zahlenskala neu.</strong> Eine \"1\" auf einem Hex-Feld berührt nur 6 Zellen, nicht 8, daher ist sie proportional einschränkender — nutze sie aggressiv zum Markieren von Minen.",
+        "hex_info_strategy_li2":  "<strong>Eckenfelder sind einfacher.</strong> Zellen am Rand des Hex-Feldes haben weniger Nachbarn (nur 3 an den Ecken), was sie leichter deduzierbar macht.",
+        "hex_info_strategy_li3":  "<strong>Denke in drei Achsen.</strong> Hex-Gitter haben drei natürliche Richtungen (flach, diagonal-links, diagonal-rechts). Wenn eine Zahl in einer Achse erfüllt ist, kann man Minen in den anderen beiden oft ausschließen.",
+        "hex_info_strategy_li4":  "<strong>Nutze Chording aggressiv.</strong> Sobald alle Nachbarn einer Zahl markiert sind, öffnet ein Linksklick alle verbleibenden Nachbarn in einem Zug \u2014 unerlässlich bei größeren Feldern.",
+        "hex_info_strategy_li5":  "<strong>Beginne von den Rändern nach innen.</strong> Das Öffnen von Randzellen beim ersten Klick erzeugt tendenziell größere leere Kaskaden und gibt dir früh mehr Informationen.",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "6 Nachbarn pro Zelle statt 8 \u2014 Zahlen reichen von 0 bis 6.",
+        "hex_info_diff_li2":      "Das Spielfeld ist sechseckig statt rechteckig.",
+        "hex_info_diff_li3":      "Keine umwickelnden Ränder (im Gegensatz zu Cylinder- oder Toroid-Varianten).",
+        "hex_info_diff_li4":      "Die Informationsdichte ist höher \u2014 jede Zahl deckt einen kleineren Teil des Feldes ab.",
+        "hex_info_diff_li5":      "Einzigartige Symmetrie: Das Hex-Feld sieht von jeder seiner sechs Seiten gleich aus.",
     },
 
     "es": {
@@ -1147,6 +1276,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "Tablero hexagonal, 6 vecinos",
+        # Hexsweeper page UI
+        "hex_easy":               "Fácil",
+        "hex_medium":             "Medio",
+        "hex_hard":               "Difícil",
+        "hex_custom":             "Personalizado",
+        "hex_radius":             "Radio",
+        "hex_6neighbours":        "Cada celda tiene 6 vecinos.",
+        "hex_lb_today":           "Mejor de hoy",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "¿Qué es Hexsweeper?",
+        "hex_info_howto_h2":      "Cómo jugar",
+        "hex_info_sizes_h2":      "Tamaños del tablero",
+        "hex_info_strategy_h2":   "Consejos de estrategia para tableros hexagonales",
+        "hex_info_diff_h2":       "Cómo Hexsweeper difiere del Minesweeper clásico",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper es una versión hexagonal del clásico rompecabezas Minesweeper. En lugar de una cuadrícula rectangular, el tablero tiene forma de gran hexágono y cada celda es a su vez un hexágono. La diferencia más importante: cada celda tiene exactamente <strong>6 vecinos</strong> en lugar de 8, lo que cambia cómo se interpretan los números y cómo funciona la lógica de resolución.",
+        "hex_info_what_p2":       "El objetivo es el mismo: revelar todas las celdas seguras sin hacer clic en una mina. Los números muestran cuántos de los 6 hexágonos circundantes contienen minas. Una celda en blanco no tiene vecinos con minas y se expande automáticamente para revelar el área segura circundante.",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>Clic izquierdo</strong> en una celda oculta para revelarla.",
+        "hex_info_howto_li2":     "<strong>Clic derecho</strong> en una celda oculta para colocar una bandera (🚩), otra vez para un signo de interrogación (?), otra vez para quitarla.",
+        "hex_info_howto_li3":     "<strong>Clic izquierdo</strong> en un número revelado para acordar — si el número correcto de banderas vecinas está colocado, todos los vecinos restantes se revelan a la vez.",
+        "hex_info_howto_li4":     "El contador de minas (arriba a la izquierda) disminuye con cada bandera colocada.",
+        "hex_info_howto_li5":     "Haz clic en 🙂 o presiona el botón para comenzar un nuevo juego con la misma dificultad.",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>Fácil</strong> — radio 5, 61 celdas, 8 minas (~13%). Bueno para aprender geometría hexagonal.",
+        "hex_info_sizes_li2":     "<strong>Medio</strong> — radio 7, 127 celdas, 20 minas (~16%). Comparable al nivel intermedio clásico.",
+        "hex_info_sizes_li3":     "<strong>Difícil</strong> — radio 10, 271 celdas, 57 minas (~21%). Un reto serio.",
+        "hex_info_sizes_li4":     "<strong>Personalizado</strong> — elige cualquier radio de 3 a 15 y establece tu propio número de minas.",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>Reaprender la escala numérica.</strong> Un \"1\" en un tablero hexagonal toca solo 6 celdas, no 8, por lo que es proporcionalmente más restrictivo — úsalo agresivamente para marcar minas.",
+        "hex_info_strategy_li2":  "<strong>Las celdas de esquina son más fáciles.</strong> Las celdas cerca del borde del tablero hexagonal tienen menos vecinos (tan pocos como 3 en las esquinas), lo que las hace más fáciles de deducir.",
+        "hex_info_strategy_li3":  "<strong>Piensa en tres ejes.</strong> Las cuadrículas hexagonales tienen tres direcciones naturales (plana, diagonal-izquierda, diagonal-derecha). Cuando un número está satisfecho en un eje, a menudo puedes eliminar minas en los otros dos.",
+        "hex_info_strategy_li4":  "<strong>Usa el acordado agresivamente.</strong> Una vez que todos los vecinos de un número están marcados, hacer clic izquierdo abre todos los vecinos restantes de un movimiento \u2014 esencial en los tableros más grandes.",
+        "hex_info_strategy_li5":  "<strong>Comienza desde los bordes hacia adentro.</strong> Abrir celdas del borde en el primer clic tiende a producir cascadas en blanco más grandes, dándote más información para trabajar desde el principio.",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "6 vecinos por celda en lugar de 8 \u2014 los números van de 0 a 6.",
+        "hex_info_diff_li2":      "El tablero tiene forma hexagonal en lugar de rectangular.",
+        "hex_info_diff_li3":      "Sin bordes envolventes (a diferencia de las variantes Cylinder o Toroid).",
+        "hex_info_diff_li4":      "La densidad de información es mayor \u2014 cada número representa una proporción menor del tablero.",
+        "hex_info_diff_li5":      "Simetría única: el tablero hexagonal se ve igual desde cualquiera de sus seis lados.",
     },
 
     "th": {
@@ -1436,6 +1608,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "กระดานหกเหลี่ยม, 6 เพื่อนบ้าน",
+        # Hexsweeper page UI
+        "hex_easy":               "ง่าย",
+        "hex_medium":             "ปานกลาง",
+        "hex_hard":               "ยาก",
+        "hex_custom":             "กำหนดเอง",
+        "hex_radius":             "รัศมี",
+        "hex_6neighbours":        "แต่ละช่องมี 6 เพื่อนบ้าน",
+        "hex_lb_today":           "ดีที่สุดวันนี้",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Hexsweeper คืออะไร?",
+        "hex_info_howto_h2":      "วิธีเล่น",
+        "hex_info_sizes_h2":      "ขนาดกระดาน",
+        "hex_info_strategy_h2":   "เคล็ดลับกลยุทธ์สำหรับกระดานหกเหลี่ยม",
+        "hex_info_diff_h2":       "Hexsweeper แตกต่างจาก Minesweeper ดั้งเดิมอย่างไร",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper คือเกม Minesweeper รูปแบบหกเหลี่ยม แทนที่จะเป็นตารางสี่เหลี่ยม กระดานจะมีรูปร่างเป็นหกเหลี่ยมขนาดใหญ่ และแต่ละช่องก็เป็นหกเหลี่ยมเช่นกัน ความแตกต่างที่สำคัญที่สุดคือ: แต่ละช่องมีเพื่อนบ้านพอดี <strong>6 ช่อง</strong> แทนที่จะเป็น 8 ซึ่งเปลี่ยนวิธีการตีความตัวเลขและวิธีการแก้ปริศนา",
+        "hex_info_what_p2":       "เป้าหมายเดิม — เปิดเผยทุกช่องที่ปลอดภัยโดยไม่คลิกบนกับดัก ตัวเลขแสดงจำนวนช่องหกเหลี่ยมใน 6 ช่องรอบข้างที่มีกับดัก ช่องว่างไม่มีกับดักเป็นเพื่อนบ้านและขยายโดยอัตโนมัติเพื่อเปิดเผยพื้นที่ปลอดภัยรอบข้าง",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>คลิกซ้าย</strong> บนช่องที่ซ่อนอยู่เพื่อเปิดเผย",
+        "hex_info_howto_li2":     "<strong>คลิกขวา</strong> บนช่องที่ซ่อนอยู่เพื่อวางธง (🚩) คลิกอีกครั้งสำหรับเครื่องหมายคำถาม (?) และอีกครั้งเพื่อลบ",
+        "hex_info_howto_li3":     "<strong>คลิกซ้าย</strong> บนตัวเลขที่เปิดเผยแล้วเพื่อ chord — หากวางธงเพื่อนบ้านถูกจำนวน เพื่อนบ้านที่เหลือทั้งหมดจะถูกเปิดเผยพร้อมกัน",
+        "hex_info_howto_li4":     "ตัวนับกับดัก (ซ้ายบน) จะลดลงเมื่อวางธงแต่ละอัน",
+        "hex_info_howto_li5":     "คลิก 🙂 หรือกดปุ่มเพื่อเริ่มเกมใหม่ที่ระดับความยากเดิม",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>ง่าย</strong> — รัศมี 5, 61 ช่อง, 8 กับดัก (~13%) เหมาะสำหรับเรียนรู้รูปทรงหกเหลี่ยม",
+        "hex_info_sizes_li2":     "<strong>ปานกลาง</strong> — รัศมี 7, 127 ช่อง, 20 กับดัก (~16%) เทียบได้กับระดับกลางดั้งเดิม",
+        "hex_info_sizes_li3":     "<strong>ยาก</strong> — รัศมี 10, 271 ช่อง, 57 กับดัก (~21%) ความท้าทายที่จริงจัง",
+        "hex_info_sizes_li4":     "<strong>กำหนดเอง</strong> — เลือกรัศมีตั้งแต่ 3 ถึง 15 และกำหนดจำนวนกับดักของคุณเอง",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>เรียนรู้สเกลตัวเลขใหม่</strong> \"1\" บนกระดานหกเหลี่ยมสัมผัสเพียง 6 ช่อง ไม่ใช่ 8 ดังนั้นมันจึงจำกัดมากขึ้นสัดส่วน — ใช้มันอย่างก้าวร้าวเพื่อทำธงกับดัก",
+        "hex_info_strategy_li2":  "<strong>ช่องมุมง่ายกว่า</strong> ช่องใกล้ขอบกระดานหกเหลี่ยมมีเพื่อนบ้านน้อยกว่า (น้อยถึง 3 ที่มุม) ทำให้อนุมานได้ง่ายกว่า",
+        "hex_info_strategy_li3":  "<strong>คิดในสามแกน</strong> ตารางหกเหลี่ยมมีสามทิศทางธรรมชาติ (แนวราบ เฉียงซ้าย เฉียงขวา) เมื่อตัวเลขถูกตอบสนองในแกนหนึ่ง คุณมักสามารถขจัดกับดักในอีกสองแกนได้",
+        "hex_info_strategy_li4":  "<strong>ใช้ chording อย่างก้าวร้าว</strong> เมื่อเพื่อนบ้านทั้งหมดของตัวเลขถูกทำธงแล้ว การคลิกซ้ายจะเปิดเพื่อนบ้านที่เหลือทั้งหมดในครั้งเดียว \u2014 จำเป็นบนกระดานขนาดใหญ่",
+        "hex_info_strategy_li5":  "<strong>เริ่มจากขอบเข้าสู่ศูนย์กลาง</strong> การเปิดช่องขอบในการคลิกแรกมักจะสร้างการระเบิดว่างขนาดใหญ่ขึ้น ให้ข้อมูลมากขึ้นในการทำงานในช่วงต้น",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "6 เพื่อนบ้านต่อช่องแทนที่จะเป็น 8 \u2014 ตัวเลขอยู่ในช่วง 0 ถึง 6",
+        "hex_info_diff_li2":      "กระดานมีรูปร่างหกเหลี่ยมแทนที่จะเป็นสี่เหลี่ยม",
+        "hex_info_diff_li3":      "ไม่มีขอบที่พันรอบ (ต่างจากตัวแปร Cylinder หรือ Toroid)",
+        "hex_info_diff_li4":      "ความหนาแน่นของข้อมูลสูงกว่า \u2014 แต่ละตัวเลขคิดเป็นสัดส่วนที่น้อยกว่าของกระดาน",
+        "hex_info_diff_li5":      "ความสมมาตรเฉพาะตัว: กระดานหกเหลี่ยมดูเหมือนกันจากทั้งหกด้าน",
     },
 
     "pgl": {
@@ -1725,6 +1940,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "Exhay oardbay, 6 eighboursnay",
+        # Hexsweeper page UI
+        "hex_easy":               "Asyeay",
+        "hex_medium":             "Ediummay",
+        "hex_hard":               "Ardhay",
+        "hex_custom":             "Ustomcay",
+        "hex_radius":             "Adiusray",
+        "hex_6neighbours":        "Acheay ellcay ashay 6 eighboursnay.",
+        "hex_lb_today":           "Odaytay\u2019s Estbay",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Atwhay isway Hexsweeper?",
+        "hex_info_howto_h2":      "Owhay otay Ayplay",
+        "hex_info_sizes_h2":      "Oardbay Izessay",
+        "hex_info_strategy_h2":   "Ategystray Ipstay orfay Exagonalhay Oardsbay",
+        "hex_info_diff_h2":       "Owhay Hexsweeper Iffersday omfray Assiclay Minesweeper",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper isway away exagonalhay aketay onway ethay assiclay Minesweeper uzzlepay. Insteadway ofway away ectangularrray idgray, ethay oardbay isway apedshay ikelay away argelay exagonhay andway everyway ellcay isway itselfway away exagonhay. Ethay ostmay importantway ifferenceday: eachway ellcay ashay exactlyway <strong>6 eighboursnay</strong> atherray anthay 8, ichwhay angeschay owhay umbersnay areway interpretedway andway owhay olvingsay ogiclay orksway.",
+        "hex_info_what_p2":       "Ethay oalway isway ethay amesay \u2014 evealray everyway afesay ellcay ithoutway ickingclay away inemay. Umbersnay owshay owhay anymay ofway ethay 6 urroundingsay exeshay ontaincay inesmay. Away ankblay ellcay ashay erozay inemay eighboursnay andway automaticallyway expandsway otay evealray ethay urroundingsay afesay areaay.",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>Eft-licklay</strong> away iddenhay ellcay otay evealray itway.",
+        "hex_info_howto_li2":     "<strong>Ight-lickray</strong> away iddenhay ellcay otay aceplay away agflay (🚩), enthay againway orfay away estionquay arkway (?), enthay againway otay earclay itway.",
+        "hex_info_howto_li3":     "<strong>Eft-licklay</strong> away evealedray umbernay otay ordchay \u2014 ifway ethay orrectcay umbernay ofway eighbouringnay agsflay areway acedplay, allway emainingray eighboursnay areway evealedray atway onceway.",
+        "hex_info_howto_li4":     "Ethay inemay ountercay (optay-eftlay) ecreasesday ithway eachway agflay acedplay.",
+        "hex_info_howto_li5":     "Ickclay 🙂 orway esspray ethay uttonbay otay artstay away ewnay amegay atway ethay amesay ifficultyday.",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>Asyeay</strong> \u2014 adiusray 5, 61 ellscay, 8 inesmay (~13%). Oodgay orfay earninglay exhay eometryway.",
+        "hex_info_sizes_li2":     "<strong>Ediummay</strong> \u2014 adiusray 7, 127 ellscay, 20 inesmay (~16%). Omparablecay otay assiclay intermediateway.",
+        "hex_info_sizes_li3":     "<strong>Ardhay</strong> \u2014 adiusray 10, 271 ellscay, 57 inesmay (~21%). Away erioussay allengechay.",
+        "hex_info_sizes_li4":     "<strong>Ustomcay</strong> \u2014 oosechay anyway adiusray omfray 3 otay 15 andway etsay ouryay ownway inemay ountcay.",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>E-learnray ethay umbernay alescay.</strong> Away \"1\" onway away exhay oardbay ouchestay onlyway 6 ellscay, otnay 8, osay itway isway roportionallyway oremay onstrainingcay \u2014 useway itway aggressivelyway otay agflay inesmay.",
+        "hex_info_strategy_li2":  "<strong>Ornercay ellscay areway aserway.</strong> Ellscay earnay ethay edgeday ofway ethay exhay oardbay avehay ewerfay eighboursnay (asway ewfay asway 3 atway ethay ornerscay), akingmay emthay aserway otay educedday.",
+        "hex_info_strategy_li3":  "<strong>Inkthay inway eethray axesway.</strong> Exhay idsgray avehay eethray aturalnay irectionsday (atflay, iagonalday-eftlay, iagonalday-ightray). Enwhay away umbernay isway atisfiedsay inway oneway axisway, ouyay ancay oftenway eliminateway inesmay inway ethay otherway otway.",
+        "hex_info_strategy_li4":  "<strong>Useway ordingchay aggressivelyway.</strong> Onceway away umbernay\u2019say eighboursnay areway allway aggedflay, eft-lickinglay itway opensway allway emainingray eighboursnay inway oneway ovemay \u2014 essentialway onway ethay argerlay oardsbay.",
+        "hex_info_strategy_li5":  "<strong>Artstay omfray ethay edgesway inwardway.</strong> Openingway edgeday ellscay onway ethay irstfay ickclay endstay otay oducepray argerlay ankblay ascadescay, ivingway ouyay oremay informationway otay orkway ithway earlyway.",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "6 eighboursnay erpay ellcay insteadway ofway 8 \u2014 umbersnay angeray omfray 0 otay 6.",
+        "hex_info_diff_li2":      "Ethay oardbay isway exagonhay-apedshay atherray anthay ectangularrray.",
+        "hex_info_diff_li3":      "Onay rappingway edgesway (unlikeway Cylinder orway Toroid ariantsvay).",
+        "hex_info_diff_li4":      "Ensityday ofway informationway isway igherhay \u2014 eachway umbernay accountsway orfay away mallersay roportionpay ofway ethay oardbay.",
+        "hex_info_diff_li5":      "Uniqueway ymmetrysay: ethay exhay oardbay ookslay ethay amesay omfray anyway ofway itsway ixsay idessay.",
     },
 
     "uk": {
@@ -2014,6 +2272,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "Гексагональна дошка, 6 сусідів",
+        # Hexsweeper page UI
+        "hex_easy":               "Легкий",
+        "hex_medium":             "Середній",
+        "hex_hard":               "Важкий",
+        "hex_custom":             "Власний",
+        "hex_radius":             "Радіус",
+        "hex_6neighbours":        "Кожна клітинка має 6 сусідів.",
+        "hex_lb_today":           "Найкраще сьогодні",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Що таке Hexsweeper?",
+        "hex_info_howto_h2":      "Як грати",
+        "hex_info_sizes_h2":      "Розміри дошки",
+        "hex_info_strategy_h2":   "Стратегічні поради для гексагональних дошок",
+        "hex_info_diff_h2":       "Чим Hexsweeper відрізняється від класичного Minesweeper",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper — це гексагональна версія класичної головоломки Minesweeper. Замість прямокутної сітки дошка має форму великого шестикутника, і кожна клітинка сама є шестикутником. Найважливіша відмінність: кожна клітинка має рівно <strong>6 сусідів</strong>, а не 8, що змінює інтерпретацію чисел і логіку розв'язання.",
+        "hex_info_what_p2":       "Мета та сама — відкрити всі безпечні клітинки, не натиснувши на міну. Числа показують, скільки з 6 сусідніх шестикутників містять міни. Порожня клітинка не має сусідів-мін і автоматично розширюється, відкриваючи навколишню безпечну зону.",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>Клік лівою кнопкою</strong> по прихованій клітинці, щоб відкрити її.",
+        "hex_info_howto_li2":     "<strong>Клік правою кнопкою</strong> по прихованій клітинці, щоб поставити прапорець (🚩), ще раз — знак питання (?), ще раз — щоб прибрати.",
+        "hex_info_howto_li3":     "<strong>Клік лівою кнопкою</strong> по відкритому числу для chord — якщо правильна кількість сусідніх прапорців встановлена, всі решта сусідів відкриваються одразу.",
+        "hex_info_howto_li4":     "Лічильник мін (верхній лівий кут) зменшується з кожним встановленим прапорцем.",
+        "hex_info_howto_li5":     "Натисніть 🙂 або кнопку, щоб розпочати нову гру з тією ж складністю.",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>Легкий</strong> — радіус 5, 61 клітинка, 8 мін (~13%). Добре для вивчення гексагональної геометрії.",
+        "hex_info_sizes_li2":     "<strong>Середній</strong> — радіус 7, 127 клітинок, 20 мін (~16%). Порівнянний із класичним середнім рівнем.",
+        "hex_info_sizes_li3":     "<strong>Важкий</strong> — радіус 10, 271 клітинка, 57 мін (~21%). Серйозне випробування.",
+        "hex_info_sizes_li4":     "<strong>Власний</strong> — виберіть будь-який радіус від 3 до 15 і встановіть власну кількість мін.",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>Перевчіть числову шкалу.</strong> «1» на гексагональній дошці торкається лише 6 клітинок, а не 8, тому вона пропорційно більш обмежувальна — використовуйте її агресивно для позначення мін.",
+        "hex_info_strategy_li2":  "<strong>Кутові клітинки простіші.</strong> Клітинки біля краю гексагональної дошки мають менше сусідів (лише 3 у кутах), що полегшує їх дедукцію.",
+        "hex_info_strategy_li3":  "<strong>Думайте у трьох осях.</strong> Гексагональні сітки мають три природні напрямки (плаский, діагональ-ліво, діагональ-право). Коли число задоволено по одній осі, часто можна усунути міни в двох інших.",
+        "hex_info_strategy_li4":  "<strong>Використовуйте chord агресивно.</strong> Коли всі сусіди числа позначені прапорцями, клік лівою кнопкою відкриває всі сусіди, що залишились, за один хід \u2014 необхідно на великих дошках.",
+        "hex_info_strategy_li5":  "<strong>Починайте з країв до центру.</strong> Відкриття крайніх клітинок при першому кліку зазвичай дає більші порожні каскади, надаючи більше інформації на початку.",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "6 сусідів на клітинку замість 8 \u2014 числа в діапазоні від 0 до 6.",
+        "hex_info_diff_li2":      "Дошка має форму шестикутника, а не прямокутника.",
+        "hex_info_diff_li3":      "Немає замкнутих країв (на відміну від варіантів Cylinder або Toroid).",
+        "hex_info_diff_li4":      "Щільність інформації вища \u2014 кожне число охоплює меншу частину дошки.",
+        "hex_info_diff_li5":      "Унікальна симетрія: гексагональна дошка виглядає однаково з будь-якого з шести боків.",
     },
 
     "fr": {
@@ -2301,6 +2602,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "Plateau hexagonal, 6 voisins",
+        # Hexsweeper page UI
+        "hex_easy":               "Facile",
+        "hex_medium":             "Moyen",
+        "hex_hard":               "Difficile",
+        "hex_custom":             "Personnalisé",
+        "hex_radius":             "Rayon",
+        "hex_6neighbours":        "Chaque cellule a 6 voisins.",
+        "hex_lb_today":           "Meilleur du jour",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Qu\u2019est-ce que Hexsweeper\u00a0?",
+        "hex_info_howto_h2":      "Comment jouer",
+        "hex_info_sizes_h2":      "Tailles du plateau",
+        "hex_info_strategy_h2":   "Conseils de stratégie pour les plateaux hexagonaux",
+        "hex_info_diff_h2":       "En quoi Hexsweeper diffère du Minesweeper classique",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper est une version hexagonale du classique jeu Minesweeper. Au lieu d\u2019une grille rectangulaire, le plateau a la forme d\u2019un grand hexagone et chaque cellule est elle-même un hexagone. La différence la plus importante\u00a0: chaque cellule a exactement <strong>6 voisins</strong> au lieu de 8, ce qui change l\u2019interprétation des chiffres et la logique de résolution.",
+        "hex_info_what_p2":       "L\u2019objectif est le même \u2014 révéler toutes les cellules sûres sans cliquer sur une mine. Les chiffres indiquent combien des 6 hexagones voisins contiennent des mines. Une cellule vide n\u2019a aucun voisin miné et s\u2019étend automatiquement pour révéler la zone sûre environnante.",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>Clic gauche</strong> sur une cellule cachée pour la révéler.",
+        "hex_info_howto_li2":     "<strong>Clic droit</strong> sur une cellule cachée pour placer un drapeau (🚩), encore pour un point d\u2019interrogation (?), encore pour l\u2019effacer.",
+        "hex_info_howto_li3":     "<strong>Clic gauche</strong> sur un chiffre révélé pour accorder \u2014 si le bon nombre de drapeaux voisins est placé, tous les voisins restants sont révélés en une fois.",
+        "hex_info_howto_li4":     "Le compteur de mines (en haut à gauche) diminue à chaque drapeau posé.",
+        "hex_info_howto_li5":     "Cliquez sur 🙂 ou appuyez sur le bouton pour commencer une nouvelle partie avec la même difficulté.",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>Facile</strong> — rayon 5, 61 cellules, 8 mines (~13%). Idéal pour apprendre la géométrie hexagonale.",
+        "hex_info_sizes_li2":     "<strong>Moyen</strong> — rayon 7, 127 cellules, 20 mines (~16%). Comparable au niveau intermédiaire classique.",
+        "hex_info_sizes_li3":     "<strong>Difficile</strong> — rayon 10, 271 cellules, 57 mines (~21%). Un vrai défi.",
+        "hex_info_sizes_li4":     "<strong>Personnalisé</strong> — choisissez un rayon de 3 à 15 et définissez votre propre nombre de mines.",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>Réapprenez l\u2019échelle numérique.</strong> Un «\u00a01\u00a0» sur un plateau hexagonal ne touche que 6 cellules, pas 8, il est donc proportionnellement plus contraignant \u2014 utilisez-le de manière agressive pour signaler les mines.",
+        "hex_info_strategy_li2":  "<strong>Les cellules d\u2019angle sont plus faciles.</strong> Les cellules proches du bord du plateau hexagonal ont moins de voisins (aussi peu que 3 aux coins), ce qui les rend plus faciles à déduire.",
+        "hex_info_strategy_li3":  "<strong>Pensez en trois axes.</strong> Les grilles hexagonales ont trois directions naturelles (plat, diagonal-gauche, diagonal-droit). Quand un chiffre est satisfait sur un axe, vous pouvez souvent éliminer des mines sur les deux autres.",
+        "hex_info_strategy_li4":  "<strong>Utilisez le chord de manière agressive.</strong> Une fois que tous les voisins d\u2019un chiffre sont marqués, un clic gauche ouvre tous les voisins restants en un seul mouvement \u2014 essentiel sur les plateaux plus grands.",
+        "hex_info_strategy_li5":  "<strong>Commencez par les bords vers l\u2019intérieur.</strong> Ouvrir les cellules de bord au premier clic tend à produire de plus grandes cascades vides, vous donnant plus d\u2019informations dès le départ.",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "6 voisins par cellule au lieu de 8 \u2014 les chiffres vont de 0 à 6.",
+        "hex_info_diff_li2":      "Le plateau est de forme hexagonale plutôt que rectangulaire.",
+        "hex_info_diff_li3":      "Pas de bords enveloppants (contrairement aux variantes Cylinder ou Toroid).",
+        "hex_info_diff_li4":      "La densité d\u2019information est plus élevée \u2014 chaque chiffre représente une plus petite proportion du plateau.",
+        "hex_info_diff_li5":      "Symétrie unique\u00a0: le plateau hexagonal semble identique depuis chacun de ses six côtés.",
     },
 
     "ko": {
@@ -2588,6 +2932,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "육각형 보드, 6개의 이웃",
+        # Hexsweeper page UI
+        "hex_easy":               "쉬움",
+        "hex_medium":             "보통",
+        "hex_hard":               "어려움",
+        "hex_custom":             "사용자 지정",
+        "hex_radius":             "반지름",
+        "hex_6neighbours":        "각 칸에는 6개의 이웃이 있습니다.",
+        "hex_lb_today":           "오늘의 최고",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Hexsweeper란 무엇인가요?",
+        "hex_info_howto_h2":      "게임 방법",
+        "hex_info_sizes_h2":      "보드 크기",
+        "hex_info_strategy_h2":   "육각형 보드 전략 팁",
+        "hex_info_diff_h2":       "Hexsweeper가 클래식 Minesweeper와 다른 점",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper는 클래식 지뢰찾기 퍼즐의 육각형 버전입니다. 직사각형 격자 대신 보드는 큰 육각형 모양으로, 모든 칸도 육각형입니다. 가장 중요한 차이점: 각 칸에는 8개가 아닌 정확히 <strong>6개의 이웃</strong>이 있으며, 이는 숫자의 해석 방식과 풀이 논리에 영향을 미칩니다.",
+        "hex_info_what_p2":       "목표는 동일합니다 — 지뢰를 클릭하지 않고 모든 안전한 칸을 공개하는 것입니다. 숫자는 주변 6개의 육각형 중 지뢰가 있는 칸의 수를 나타냅니다. 빈 칸은 지뢰 이웃이 없으며 자동으로 확장되어 주변 안전 영역을 공개합니다.",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>왼쪽 클릭</strong>으로 숨겨진 칸을 공개합니다.",
+        "hex_info_howto_li2":     "<strong>오른쪽 클릭</strong>으로 숨겨진 칸에 깃발(🚩)을 놓고, 다시 클릭하면 물음표(?), 또 다시 클릭하면 지웁니다.",
+        "hex_info_howto_li3":     "<strong>왼쪽 클릭</strong>으로 공개된 숫자를 코드합니다 — 이웃 깃발이 올바른 수만큼 놓이면 남은 이웃이 한 번에 모두 공개됩니다.",
+        "hex_info_howto_li4":     "지뢰 카운터(왼쪽 상단)는 깃발을 놓을 때마다 줄어듭니다.",
+        "hex_info_howto_li5":     "🙂를 클릭하거나 버튼을 눌러 같은 난이도로 새 게임을 시작합니다.",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>쉬움</strong> — 반지름 5, 61칸, 8개의 지뢰 (~13%). 육각형 기하학을 배우기에 좋습니다.",
+        "hex_info_sizes_li2":     "<strong>보통</strong> — 반지름 7, 127칸, 20개의 지뢰 (~16%). 클래식 중급과 비슷합니다.",
+        "hex_info_sizes_li3":     "<strong>어려움</strong> — 반지름 10, 271칸, 57개의 지뢰 (~21%). 진지한 도전.",
+        "hex_info_sizes_li4":     "<strong>사용자 지정</strong> — 반지름 3~15 중 선택하고 지뢰 수를 직접 설정합니다.",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>숫자 스케일을 다시 배우세요.</strong> 육각형 보드에서 \"1\"은 8개가 아닌 6개의 칸에만 접하므로 비례적으로 더 제한적입니다 — 지뢰를 표시하는 데 적극적으로 활용하세요.",
+        "hex_info_strategy_li2":  "<strong>모서리 칸이 더 쉽습니다.</strong> 육각형 보드 가장자리 근처의 칸은 이웃이 더 적어(모서리에서 최소 3개) 추론하기 더 쉽습니다.",
+        "hex_info_strategy_li3":  "<strong>세 축으로 생각하세요.</strong> 육각형 격자에는 세 가지 자연스러운 방향(수평, 대각선-왼쪽, 대각선-오른쪽)이 있습니다. 한 축에서 숫자가 충족되면 나머지 두 축에서 지뢰를 제거할 수 있습니다.",
+        "hex_info_strategy_li4":  "<strong>코딩을 적극적으로 사용하세요.</strong> 숫자의 이웃이 모두 플래그 처리되면 왼쪽 클릭으로 남은 이웃을 한 번에 열 수 있습니다 \u2014 큰 보드에서 필수적입니다.",
+        "hex_info_strategy_li5":  "<strong>가장자리에서 안쪽으로 시작하세요.</strong> 첫 클릭에서 가장자리 칸을 열면 더 큰 빈 캐스케이드가 발생하여 초반에 더 많은 정보를 얻을 수 있습니다.",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "8개 대신 칸당 6개의 이웃 \u2014 숫자 범위는 0에서 6까지입니다.",
+        "hex_info_diff_li2":      "보드가 직사각형이 아닌 육각형입니다.",
+        "hex_info_diff_li3":      "감싸는 가장자리 없음 (Cylinder 또는 Toroid 변형과 달리).",
+        "hex_info_diff_li4":      "정보 밀도가 더 높습니다 \u2014 각 숫자는 보드의 더 작은 비율을 차지합니다.",
+        "hex_info_diff_li5":      "독특한 대칭: 육각형 보드는 여섯 면 중 어느 방향에서도 동일하게 보입니다.",
     },
 
     "ja": {
@@ -2875,6 +3262,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "六角形ボード、6つの隣接セル",
+        # Hexsweeper page UI
+        "hex_easy":               "かんたん",
+        "hex_medium":             "ふつう",
+        "hex_hard":               "むずかしい",
+        "hex_custom":             "カスタム",
+        "hex_radius":             "半径",
+        "hex_6neighbours":        "各セルには6つの隣接セルがあります。",
+        "hex_lb_today":           "本日のベスト",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Hexsweeperとは？",
+        "hex_info_howto_h2":      "遊び方",
+        "hex_info_sizes_h2":      "ボードサイズ",
+        "hex_info_strategy_h2":   "六角形ボードの戦略ヒント",
+        "hex_info_diff_h2":       "Hexsweeperがクラシックマインスイーパーと異なる点",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeperは、クラシックなマインスイーパーパズルの六角形バージョンです。長方形のグリッドではなく、ボードは大きな六角形の形をしており、各セル自体も六角形です。最も重要な違い：各セルには8つではなく正確に<strong>6つの隣接セル</strong>があり、これにより数字の解釈と解法のロジックが変わります。",
+        "hex_info_what_p2":       "目標は同じです — 地雷をクリックせずにすべての安全なセルを開けること。数字は周囲6つの六角形のうち地雷が含まれているものの数を示します。空白のセルは地雷の隣接セルがゼロで、自動的に展開して周囲の安全なエリアを開けます。",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>左クリック</strong>で隠れたセルを開けます。",
+        "hex_info_howto_li2":     "<strong>右クリック</strong>で隠れたセルに旗(🚩)を立て、もう一度でクエスチョンマーク(?)、さらにもう一度でクリアします。",
+        "hex_info_howto_li3":     "<strong>左クリック</strong>で開いた数字をコード — 正しい数の隣接旗が置かれていれば、残りの隣接セルがすべて一度に開けられます。",
+        "hex_info_howto_li4":     "地雷カウンター（左上）は旗を置くたびに減少します。",
+        "hex_info_howto_li5":     "🙂をクリックするかボタンを押して、同じ難易度で新しいゲームを始めます。",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>かんたん</strong> — 半径5、61セル、8地雷（～13%）。六角形ジオメトリを学ぶのに最適。",
+        "hex_info_sizes_li2":     "<strong>ふつう</strong> — 半径7、127セル、20地雷（～16%）。クラシックの中級レベルに相当。",
+        "hex_info_sizes_li3":     "<strong>むずかしい</strong> — 半径10、271セル、57地雷（～21%）。本格的な挑戦。",
+        "hex_info_sizes_li4":     "<strong>カスタム</strong> — 半径3〜15の中から選び、独自の地雷数を設定できます。",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>数字のスケールを学び直しましょう。</strong> 六角形ボードの「1」は8つではなく6つのセルにしか接していないため、比例的により制約が多くなります — 地雷を旗立てするために積極的に活用しましょう。",
+        "hex_info_strategy_li2":  "<strong>隅のセルは簡単です。</strong> 六角形ボードの端近くのセルは隣接セルが少なく（隅では最小3つ）、推測しやすいです。",
+        "hex_info_strategy_li3":  "<strong>3つの軸で考えましょう。</strong> 六角形グリッドには3つの自然な方向（水平、斜め左、斜め右）があります。ある軸で数字が満たされたとき、他の2軸で地雷を排除できることが多いです。",
+        "hex_info_strategy_li4":  "<strong>コーディングを積極的に使いましょう。</strong> 数字のすべての隣接セルに旗が立てられたら、左クリックで残りの隣接セルをすべて一度に開けられます \u2014 大きなボードでは必須です。",
+        "hex_info_strategy_li5":  "<strong>端から内側に始めましょう。</strong> 最初のクリックで端のセルを開けると、より大きな空白カスケードが生まれやすく、序盤に多くの情報を得られます。",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "8つではなくセルごとに6つの隣接セル \u2014 数字の範囲は0〜6。",
+        "hex_info_diff_li2":      "ボードが長方形ではなく六角形。",
+        "hex_info_diff_li3":      "端のラップなし（CylinderやToroidバリアントとは異なります）。",
+        "hex_info_diff_li4":      "情報密度が高い \u2014 各数字はボードのより小さな割合を占めます。",
+        "hex_info_diff_li5":      "独自の対称性：六角形ボードはどの六面から見ても同じように見えます。",
     },
     "zh": {
         # Nav
@@ -3161,6 +3591,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "六边形棋盘，6个邻居",
+        # Hexsweeper page UI
+        "hex_easy":               "简单",
+        "hex_medium":             "中等",
+        "hex_hard":               "困难",
+        "hex_custom":             "自定义",
+        "hex_radius":             "半径",
+        "hex_6neighbours":        "每个格子有6个邻居。",
+        "hex_lb_today":           "今日最佳",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Hexsweeper是什么？",
+        "hex_info_howto_h2":      "如何游戏",
+        "hex_info_sizes_h2":      "棋盘大小",
+        "hex_info_strategy_h2":   "六边形棋盘的策略技巧",
+        "hex_info_diff_h2":       "Hexsweeper与经典扫雷的区别",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper是经典扫雷谜题的六边形版本。棋盘不是矩形网格，而是一个大六边形，每个格子本身也是六边形。最重要的区别：每个格子恰好有<strong>6个邻居</strong>而不是8个，这改变了数字的解读方式和解谜逻辑。",
+        "hex_info_what_p2":       "目标相同——在不点击地雷的情况下揭示所有安全格子。数字显示周围6个六边形中有多少个含有地雷。空白格子没有地雷邻居，会自动扩展以揭示周围的安全区域。",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>左键单击</strong>隐藏的格子以揭示它。",
+        "hex_info_howto_li2":     "<strong>右键单击</strong>隐藏的格子放置旗帜(🚩)，再次点击为问号(?)，再次点击以清除。",
+        "hex_info_howto_li3":     "<strong>左键单击</strong>已揭示的数字进行和弦——如果放置了正确数量的相邻旗帜，所有剩余的邻居将同时被揭示。",
+        "hex_info_howto_li4":     "地雷计数器（左上角）随每个放置的旗帜减少。",
+        "hex_info_howto_li5":     "点击🙂或按下按钮，以相同难度开始新游戏。",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>简单</strong>——半径5，61个格子，8个地雷（约13%）。适合学习六边形几何。",
+        "hex_info_sizes_li2":     "<strong>中等</strong>——半径7，127个格子，20个地雷（约16%）。相当于经典中级难度。",
+        "hex_info_sizes_li3":     "<strong>困难</strong>——半径10，271个格子，57个地雷（约21%）。严峻挑战。",
+        "hex_info_sizes_li4":     "<strong>自定义</strong>——选择3到15的任意半径并设置自己的地雷数量。",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>重新学习数字刻度。</strong>六边形棋盘上的\"1\"只接触6个格子而非8个，因此比例上更具约束力——积极用它来标记地雷。",
+        "hex_info_strategy_li2":  "<strong>角落格子更容易。</strong>靠近六边形棋盘边缘的格子邻居更少（角落处最少只有3个），使其更容易推断。",
+        "hex_info_strategy_li3":  "<strong>以三轴思考。</strong>六边形网格有三个自然方向（平坦、左对角、右对角）。当一个轴上的数字得到满足时，通常可以消除另外两个轴上的地雷。",
+        "hex_info_strategy_li4":  "<strong>积极使用和弦。</strong>一旦数字的所有邻居都被标记，左键单击它即可一次打开所有剩余邻居\u2014在较大的棋盘上必不可少。",
+        "hex_info_strategy_li5":  "<strong>从边缘向内开始。</strong>在第一次点击时打开边缘格子往往会产生更大的空白级联，让你在早期获得更多信息。",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "每个格子6个邻居而非8个\u2014数字范围从0到6。",
+        "hex_info_diff_li2":      "棋盘是六边形而非矩形。",
+        "hex_info_diff_li3":      "无环绕边缘（不像Cylinder或Toroid变体）。",
+        "hex_info_diff_li4":      "信息密度更高\u2014每个数字占棋盘比例更小。",
+        "hex_info_diff_li5":      "独特对称性：六边形棋盘从任意六个面看都一样。",
     },
     "zh-hant": {
         # Nav
@@ -3447,6 +3920,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "六邊形棋盤，6個鄰居",
+        # Hexsweeper page UI
+        "hex_easy":               "簡單",
+        "hex_medium":             "中等",
+        "hex_hard":               "困難",
+        "hex_custom":             "自訂",
+        "hex_radius":             "半徑",
+        "hex_6neighbours":        "每個格子有6個鄰居。",
+        "hex_lb_today":           "今日最佳",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Hexsweeper是什麼？",
+        "hex_info_howto_h2":      "如何遊戲",
+        "hex_info_sizes_h2":      "棋盤大小",
+        "hex_info_strategy_h2":   "六邊形棋盤的策略技巧",
+        "hex_info_diff_h2":       "Hexsweeper與經典踩地雷的區別",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper是經典踩地雷謎題的六邊形版本。棋盤不是矩形網格，而是一個大六邊形，每個格子本身也是六邊形。最重要的區別：每個格子恰好有<strong>6個鄰居</strong>而不是8個，這改變了數字的解讀方式和解謎邏輯。",
+        "hex_info_what_p2":       "目標相同——在不點擊地雷的情況下揭示所有安全格子。數字顯示周圍6個六邊形中有多少個含有地雷。空白格子沒有地雷鄰居，會自動擴展以揭示周圍的安全區域。",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>左鍵單擊</strong>隱藏的格子以揭示它。",
+        "hex_info_howto_li2":     "<strong>右鍵單擊</strong>隱藏的格子放置旗幟(🚩)，再次點擊為問號(?)，再次點擊以清除。",
+        "hex_info_howto_li3":     "<strong>左鍵單擊</strong>已揭示的數字進行和弦——如果放置了正確數量的相鄰旗幟，所有剩餘的鄰居將同時被揭示。",
+        "hex_info_howto_li4":     "地雷計數器（左上角）隨每個放置的旗幟減少。",
+        "hex_info_howto_li5":     "點擊🙂或按下按鈕，以相同難度開始新遊戲。",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>簡單</strong>——半徑5，61個格子，8個地雷（約13%）。適合學習六邊形幾何。",
+        "hex_info_sizes_li2":     "<strong>中等</strong>——半徑7，127個格子，20個地雷（約16%）。相當於經典中級難度。",
+        "hex_info_sizes_li3":     "<strong>困難</strong>——半徑10，271個格子，57個地雷（約21%）。嚴峻挑戰。",
+        "hex_info_sizes_li4":     "<strong>自訂</strong>——選擇3到15的任意半徑並設定自己的地雷數量。",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>重新學習數字刻度。</strong>六邊形棋盤上的\"1\"只接觸6個格子而非8個，因此比例上更具約束力——積極用它來標記地雷。",
+        "hex_info_strategy_li2":  "<strong>角落格子更容易。</strong>靠近六邊形棋盤邊緣的格子鄰居更少（角落處最少只有3個），使其更容易推斷。",
+        "hex_info_strategy_li3":  "<strong>以三軸思考。</strong>六邊形網格有三個自然方向（平坦、左對角、右對角）。當一個軸上的數字得到滿足時，通常可以消除另外兩個軸上的地雷。",
+        "hex_info_strategy_li4":  "<strong>積極使用和弦。</strong>一旦數字的所有鄰居都被標記，左鍵單擊它即可一次開啟所有剩餘鄰居\u2014在較大的棋盤上必不可少。",
+        "hex_info_strategy_li5":  "<strong>從邊緣向內開始。</strong>在第一次點擊時開啟邊緣格子往往會產生更大的空白級聯，讓你在早期獲得更多資訊。",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "每個格子6個鄰居而非8個\u2014數字範圍從0到6。",
+        "hex_info_diff_li2":      "棋盤是六邊形而非矩形。",
+        "hex_info_diff_li3":      "無環繞邊緣（不像Cylinder或Toroid變體）。",
+        "hex_info_diff_li4":      "資訊密度更高\u2014每個數字占棋盤比例更小。",
+        "hex_info_diff_li5":      "獨特對稱性：六邊形棋盤從任意六個面看都一樣。",
     },
     "pl": {
         # Nav
@@ -3733,6 +4249,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "Plansza sześciokątna, 6 sąsiadów",
+        # Hexsweeper page UI
+        "hex_easy":               "Łatwy",
+        "hex_medium":             "Średni",
+        "hex_hard":               "Trudny",
+        "hex_custom":             "Własny",
+        "hex_radius":             "Promień",
+        "hex_6neighbours":        "Każde pole ma 6 sąsiadów.",
+        "hex_lb_today":           "Najlepszy dzisiaj",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Czym jest Hexsweeper?",
+        "hex_info_howto_h2":      "Jak grać",
+        "hex_info_sizes_h2":      "Rozmiary planszy",
+        "hex_info_strategy_h2":   "Wskazówki strategiczne dla plansz sześciokątnych",
+        "hex_info_diff_h2":       "Czym Hexsweeper różni się od klasycznego Minera",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper to sześciokątna wersja klasycznej układanki Minesweeper. Zamiast prostokątnej siatki, plansza ma kształt dużego sześciokąta, a każde pole jest samo w sobie sześciokątem. Najważniejsza różnica: każde pole ma dokładnie <strong>6 sąsiadów</strong>, a nie 8, co zmienia sposób interpretacji liczb i logikę rozwiązywania.",
+        "hex_info_what_p2":       "Cel jest ten sam — odkryć wszystkie bezpieczne pola bez kliknięcia na minę. Liczby pokazują, ile z 6 otaczających sześciokątów zawiera miny. Puste pole nie ma sąsiadów-min i automatycznie rozszerza się, odkrywając otaczający bezpieczny obszar.",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>Lewy przycisk myszy</strong> na ukrytym polu, aby je odkryć.",
+        "hex_info_howto_li2":     "<strong>Prawy przycisk myszy</strong> na ukrytym polu, aby postawić flagę (🚩), ponownie dla znaku zapytania (?), ponownie aby usunąć.",
+        "hex_info_howto_li3":     "<strong>Lewy przycisk myszy</strong> na odkrytej liczbie, aby użyć chordu — jeśli postawiono właściwą liczbę sąsiednich flag, wszystkie pozostałe sąsiednie pola zostaną odkryte naraz.",
+        "hex_info_howto_li4":     "Licznik min (lewy górny róg) zmniejsza się z każdą postawioną flagą.",
+        "hex_info_howto_li5":     "Kliknij 🙂 lub naciśnij przycisk, aby rozpocząć nową grę z tym samym poziomem trudności.",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>Łatwy</strong> — promień 5, 61 pól, 8 min (~13%). Dobry do nauki geometrii sześciokątnej.",
+        "hex_info_sizes_li2":     "<strong>Średni</strong> — promień 7, 127 pól, 20 min (~16%). Porównywalny z klasycznym poziomem pośrednim.",
+        "hex_info_sizes_li3":     "<strong>Trudny</strong> — promień 10, 271 pól, 57 min (~21%). Poważne wyzwanie.",
+        "hex_info_sizes_li4":     "<strong>Własny</strong> — wybierz dowolny promień od 3 do 15 i ustaw własną liczbę min.",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>Ponownie naucz się skali liczb.</strong> \"1\" na planszy sześciokątnej dotyka tylko 6 pól, a nie 8, więc jest proporcjonalnie bardziej ograniczające — używaj jej agresywnie do oznaczania min.",
+        "hex_info_strategy_li2":  "<strong>Pola narożne są łatwiejsze.</strong> Pola blisko krawędzi planszy sześciokątnej mają mniej sąsiadów (nawet 3 w rogach), co ułatwia ich dedukcję.",
+        "hex_info_strategy_li3":  "<strong>Myśl w trzech osiach.</strong> Siatki sześciokątne mają trzy naturalne kierunki (poziomy, ukośny-lewy, ukośny-prawy). Gdy liczba jest spełniona w jednej osi, często można wyeliminować miny w pozostałych dwóch.",
+        "hex_info_strategy_li4":  "<strong>Używaj chordu agresywnie.</strong> Gdy wszystkie sąsiednie pola liczby są oznaczone flagami, lewy przycisk myszy otwiera wszystkie pozostałe sąsiednie pola jednym ruchem \u2014 niezbędne na większych planszach.",
+        "hex_info_strategy_li5":  "<strong>Zaczynaj od krawędzi ku środkowi.</strong> Otwieranie pól krawędziowych przy pierwszym kliknięciu zazwyczaj tworzy większe puste kaskady, dając więcej informacji na początku.",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "6 sąsiadów na pole zamiast 8 \u2014 liczby w zakresie od 0 do 6.",
+        "hex_info_diff_li2":      "Plansza ma kształt sześciokąta, a nie prostokąta.",
+        "hex_info_diff_li3":      "Brak zawijających się krawędzi (w przeciwieństwie do wariantów Cylinder lub Toroid).",
+        "hex_info_diff_li4":      "Gęstość informacji jest wyższa \u2014 każda liczba obejmuje mniejszy udział planszy.",
+        "hex_info_diff_li5":      "Unikalna symetria: plansza sześciokątna wygląda tak samo z każdego ze swoich sześciu boków.",
     },
 
     "tl": {
@@ -4020,6 +4579,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "Hexagonal na board, 6 na kapitbahay",
+        # Hexsweeper page UI
+        "hex_easy":               "Madali",
+        "hex_medium":             "Katamtaman",
+        "hex_hard":               "Mahirap",
+        "hex_custom":             "Pasadya",
+        "hex_radius":             "Radius",
+        "hex_6neighbours":        "Ang bawat cell ay may 6 na kapitbahay.",
+        "hex_lb_today":           "Pinakamahusay Ngayon",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Ano ang Hexsweeper?",
+        "hex_info_howto_h2":      "Paano Maglaro",
+        "hex_info_sizes_h2":      "Mga Sukat ng Board",
+        "hex_info_strategy_h2":   "Mga Tip sa Istratehiya para sa Hexagonal na mga Board",
+        "hex_info_diff_h2":       "Paano Naiiba ang Hexsweeper mula sa Klasikong Minesweeper",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Ang Hexsweeper ay isang hexagonal na bersyon ng klasikong Minesweeper puzzle. Sa halip na isang rectangular na grid, ang board ay may hugis ng isang malaking hexagon at ang bawat cell ay hexagon din. Ang pinakamahalagang pagkakaiba: ang bawat cell ay may eksaktong <strong>6 na kapitbahay</strong> sa halip na 8, na nagbabago kung paano binibigyang-kahulugan ang mga numero at kung paano gumagana ang lohika ng paglutas.",
+        "hex_info_what_p2":       "Ang layunin ay pareho — ilantad ang bawat ligtas na cell nang hindi nag-click sa isang mina. Ang mga numero ay nagpapakita kung ilan sa 6 na nakapaligid na hexes ang naglalaman ng mga mina. Ang isang blangkong cell ay walang mga kapitbahayang mina at awtomatikong lumalawak upang ilantad ang nakapaligid na ligtas na lugar.",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>I-left-click</strong> ang isang nakatagong cell upang ilantad ito.",
+        "hex_info_howto_li2":     "<strong>I-right-click</strong> ang isang nakatagong cell upang maglagay ng bandila (🚩), pagkatapos muli para sa tandang pananong (?), pagkatapos muli upang alisin ito.",
+        "hex_info_howto_li3":     "<strong>I-left-click</strong> ang isang nabunyag na numero upang mag-chord — kung ang tamang bilang ng mga kalapit na bandila ay nakalagay, lahat ng natitirang kapitbahay ay nailantad nang sabay.",
+        "hex_info_howto_li4":     "Ang counter ng mina (kaliwa sa itaas) ay bumababa sa bawat bandilang inilagay.",
+        "hex_info_howto_li5":     "I-click ang 🙂 o pindutin ang button upang magsimula ng bagong laro sa parehong kahirapan.",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>Madali</strong> — radius 5, 61 na cell, 8 na mina (~13%). Maganda para sa pag-aaral ng hex geometry.",
+        "hex_info_sizes_li2":     "<strong>Katamtaman</strong> — radius 7, 127 na cell, 20 na mina (~16%). Katulad ng klasikong intermediate.",
+        "hex_info_sizes_li3":     "<strong>Mahirap</strong> — radius 10, 271 na cell, 57 na mina (~21%). Isang seryosong hamon.",
+        "hex_info_sizes_li4":     "<strong>Pasadya</strong> — pumili ng anumang radius mula 3 hanggang 15 at itakda ang iyong sariling bilang ng mina.",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>Muling pag-aralan ang sukat ng numero.</strong> Ang \"1\" sa isang hex board ay humahawak lamang sa 6 na cell, hindi 8, kaya ito ay proporsyonalmente mas nakahadlang — gamitin ito nang agresibo upang markahan ang mga mina.",
+        "hex_info_strategy_li2":  "<strong>Ang mga sulok na cell ay mas madali.</strong> Ang mga cell malapit sa gilid ng hex board ay may mas kaunting kapitbahay (kasing kaunti ng 3 sa mga sulok), na ginagawa silang mas madaling mahula.",
+        "hex_info_strategy_li3":  "<strong>Mag-isip sa tatlong axis.</strong> Ang mga hex grid ay may tatlong natural na direksyon (patag, diagonal-kaliwa, diagonal-kanan). Kapag ang isang numero ay nasiyahan sa isang axis, maaari kang madalas na alisin ang mga mina sa iba pang dalawa.",
+        "hex_info_strategy_li4":  "<strong>Gamitin ang chording nang agresibo.</strong> Kapag ang lahat ng kapitbahay ng isang numero ay may bandila na, ang pag-left-click dito ay nagbubukas ng lahat ng natitirang kapitbahay sa isang galaw \u2014 mahalaga sa mas malalaking board.",
+        "hex_info_strategy_li5":  "<strong>Magsimula mula sa mga gilid patungo sa loob.</strong> Ang pagbubukas ng mga cell sa gilid sa unang click ay may tendensyang gumawa ng mas malalaking blangkong cascade, na nagbibigay sa iyo ng mas maraming impormasyon na gagamitin sa una.",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "6 na kapitbahay bawat cell sa halip na 8 \u2014 ang mga numero ay mula 0 hanggang 6.",
+        "hex_info_diff_li2":      "Ang board ay hexagon-hugis sa halip na rectangular.",
+        "hex_info_diff_li3":      "Walang mga nagtatabing gilid (hindi tulad ng mga variant na Cylinder o Toroid).",
+        "hex_info_diff_li4":      "Ang densidad ng impormasyon ay mas mataas \u2014 ang bawat numero ay sumasaklaw sa mas maliit na proporsyon ng board.",
+        "hex_info_diff_li5":      "Natatanging symmetry: ang hex board ay magkaparehong hitsura mula sa alinman sa anim na gilid nito.",
     },
 
     "ru": {
@@ -4307,6 +4909,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV в секунду. Представляет скорость прохождения игры. Чем выше, тем лучше.",
         "lb_eff_tip":              "Эффективность рассчитывается делением решённого 3BV на количество совершённых кликов. Чем меньше кликов, тем выше эффективность.",
         "lb_bbbv_link_title":      "Узнать о 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "Гексагональное поле, 6 соседей",
+        # Hexsweeper page UI
+        "hex_easy":               "Лёгкий",
+        "hex_medium":             "Средний",
+        "hex_hard":               "Сложный",
+        "hex_custom":             "Свой",
+        "hex_radius":             "Радиус",
+        "hex_6neighbours":        "У каждой клетки 6 соседей.",
+        "hex_lb_today":           "Лучший сегодня",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Что такое Hexsweeper?",
+        "hex_info_howto_h2":      "Как играть",
+        "hex_info_sizes_h2":      "Размеры поля",
+        "hex_info_strategy_h2":   "Стратегические советы для шестиугольных полей",
+        "hex_info_diff_h2":       "Чем Hexsweeper отличается от классического Сапёра",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper — это шестиугольная версия классической головоломки Сапёр. Вместо прямоугольной сетки поле имеет форму большого шестиугольника, и каждая клетка сама является шестиугольником. Главное отличие: у каждой клетки ровно <strong>6 соседей</strong>, а не 8, что меняет интерпретацию чисел и логику решения.",
+        "hex_info_what_p2":       "Цель та же — открыть все безопасные клетки, не нажав на мину. Числа показывают, сколько из 6 соседних шестиугольников содержат мины. Пустая клетка не имеет соседей-мин и автоматически раскрывается, открывая окружающую безопасную зону.",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>Левая кнопка мыши</strong> по скрытой клетке, чтобы открыть её.",
+        "hex_info_howto_li2":     "<strong>Правая кнопка мыши</strong> по скрытой клетке, чтобы поставить флаг (🚩), ещё раз — знак вопроса (?), ещё раз — чтобы убрать.",
+        "hex_info_howto_li3":     "<strong>Левая кнопка мыши</strong> по открытому числу для аккорда — если поставлено нужное количество флагов на соседних клетках, все оставшиеся соседи открываются сразу.",
+        "hex_info_howto_li4":     "Счётчик мин (левый верхний угол) уменьшается с каждым поставленным флагом.",
+        "hex_info_howto_li5":     "Нажмите 🙂 или кнопку, чтобы начать новую игру с той же сложностью.",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>Лёгкий</strong> — радиус 5, 61 клетка, 8 мин (~13%). Хорошо для изучения шестиугольной геометрии.",
+        "hex_info_sizes_li2":     "<strong>Средний</strong> — радиус 7, 127 клеток, 20 мин (~16%). Сопоставим с классическим средним уровнем.",
+        "hex_info_sizes_li3":     "<strong>Сложный</strong> — радиус 10, 271 клетка, 57 мин (~21%). Серьёзное испытание.",
+        "hex_info_sizes_li4":     "<strong>Свой</strong> — выберите любой радиус от 3 до 15 и задайте своё количество мин.",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>Переучите числовую шкалу.</strong> «1» на шестиугольном поле касается только 6 клеток, а не 8, поэтому она пропорционально более ограничивающая — используйте её агрессивно для пометки мин.",
+        "hex_info_strategy_li2":  "<strong>Угловые клетки проще.</strong> Клетки вблизи края шестиугольного поля имеют меньше соседей (всего 3 в углах), что делает их проще для дедукции.",
+        "hex_info_strategy_li3":  "<strong>Думайте в трёх осях.</strong> Шестиугольные сетки имеют три естественных направления (горизонтальное, диагональ-влево, диагональ-вправо). Когда число выполнено по одной оси, часто можно устранить мины на двух других.",
+        "hex_info_strategy_li4":  "<strong>Используйте аккорд агрессивно.</strong> Когда все соседи числа помечены флагами, щелчок левой кнопкой мыши открывает все оставшиеся соседи за один ход \u2014 необходимо на больших полях.",
+        "hex_info_strategy_li5":  "<strong>Начинайте с краёв к центру.</strong> Открытие крайних клеток при первом щелчке обычно создаёт более крупные пустые каскады, давая больше информации в начале.",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "6 соседей на клетку вместо 8 \u2014 числа в диапазоне от 0 до 6.",
+        "hex_info_diff_li2":      "Поле имеет форму шестиугольника, а не прямоугольника.",
+        "hex_info_diff_li3":      "Без замкнутых краёв (в отличие от вариантов Cylinder или Toroid).",
+        "hex_info_diff_li4":      "Плотность информации выше \u2014 каждое число охватывает меньшую долю поля.",
+        "hex_info_diff_li5":      "Уникальная симметрия: шестиугольное поле выглядит одинаково с любой из шести сторон.",
     },
 
     "pt": {
@@ -4594,6 +5239,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV por segundo. Representa a velocidade de conclusão do jogo. Quanto maior, melhor.",
         "lb_eff_tip":              "A eficiência é calculada dividindo o 3BV resolvido pela quantidade de cliques efetuados. Quanto menos cliques, maior a eficiência.",
         "lb_bbbv_link_title":      "Saber mais sobre 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "Tabuleiro hexagonal, 6 vizinhos",
+        # Hexsweeper page UI
+        "hex_easy":               "Fácil",
+        "hex_medium":             "Médio",
+        "hex_hard":               "Difícil",
+        "hex_custom":             "Personalizado",
+        "hex_radius":             "Raio",
+        "hex_6neighbours":        "Cada célula tem 6 vizinhos.",
+        "hex_lb_today":           "Melhor de hoje",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "O que é Hexsweeper?",
+        "hex_info_howto_h2":      "Como jogar",
+        "hex_info_sizes_h2":      "Tamanhos do tabuleiro",
+        "hex_info_strategy_h2":   "Dicas de estratégia para tabuleiros hexagonais",
+        "hex_info_diff_h2":       "Como o Hexsweeper difere do Campo Minado clássico",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper é uma versão hexagonal do clássico jogo Campo Minado. Em vez de uma grade retangular, o tabuleiro tem a forma de um grande hexágono e cada célula é ela mesma um hexágono. A diferença mais importante: cada célula tem exatamente <strong>6 vizinhos</strong> em vez de 8, o que muda como os números são interpretados e como a lógica de resolução funciona.",
+        "hex_info_what_p2":       "O objetivo é o mesmo — revelar todas as células seguras sem clicar em uma mina. Os números mostram quantos dos 6 hexágonos vizinhos contêm minas. Uma célula em branco não tem vizinhos com minas e se expande automaticamente para revelar a área segura ao redor.",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>Clique com o botão esquerdo</strong> em uma célula oculta para revelá-la.",
+        "hex_info_howto_li2":     "<strong>Clique com o botão direito</strong> em uma célula oculta para colocar uma bandeira (🚩), novamente para um ponto de interrogação (?), novamente para remover.",
+        "hex_info_howto_li3":     "<strong>Clique com o botão esquerdo</strong> em um número revelado para fazer chord — se o número correto de bandeiras vizinhas estiver colocado, todos os vizinhos restantes são revelados de uma vez.",
+        "hex_info_howto_li4":     "O contador de minas (canto superior esquerdo) diminui a cada bandeira colocada.",
+        "hex_info_howto_li5":     "Clique em 🙂 ou pressione o botão para iniciar um novo jogo com a mesma dificuldade.",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>Fácil</strong> — raio 5, 61 células, 8 minas (~13%). Bom para aprender geometria hexagonal.",
+        "hex_info_sizes_li2":     "<strong>Médio</strong> — raio 7, 127 células, 20 minas (~16%). Comparável ao nível intermediário clássico.",
+        "hex_info_sizes_li3":     "<strong>Difícil</strong> — raio 10, 271 células, 57 minas (~21%). Um desafio sério.",
+        "hex_info_sizes_li4":     "<strong>Personalizado</strong> — escolha qualquer raio de 3 a 15 e defina seu próprio número de minas.",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>Reaprender a escala numérica.</strong> Um \"1\" em um tabuleiro hexagonal toca apenas 6 células, não 8, então é proporcionalmente mais restritivo — use-o agressivamente para marcar minas.",
+        "hex_info_strategy_li2":  "<strong>Células de canto são mais fáceis.</strong> Células próximas à borda do tabuleiro hexagonal têm menos vizinhos (tão poucos quanto 3 nos cantos), tornando-as mais fáceis de deduzir.",
+        "hex_info_strategy_li3":  "<strong>Pense em três eixos.</strong> Grades hexagonais têm três direções naturais (plano, diagonal-esquerda, diagonal-direita). Quando um número é satisfeito em um eixo, muitas vezes você pode eliminar minas nos outros dois.",
+        "hex_info_strategy_li4":  "<strong>Use chord agressivamente.</strong> Assim que todos os vizinhos de um número estiverem marcados com bandeiras, clicar com o botão esquerdo abre todos os vizinhos restantes em um movimento \u2014 essencial nos tabuleiros maiores.",
+        "hex_info_strategy_li5":  "<strong>Comece pelas bordas em direção ao centro.</strong> Abrir células das bordas no primeiro clique tende a produzir maiores cascatas em branco, dando mais informações para trabalhar no início.",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "6 vizinhos por célula em vez de 8 \u2014 números variam de 0 a 6.",
+        "hex_info_diff_li2":      "O tabuleiro tem forma de hexágono em vez de retângulo.",
+        "hex_info_diff_li3":      "Sem bordas que se conectam (ao contrário das variantes Cylinder ou Toroid).",
+        "hex_info_diff_li4":      "A densidade de informação é maior \u2014 cada número representa uma proporção menor do tabuleiro.",
+        "hex_info_diff_li5":      "Simetria única: o tabuleiro hexagonal tem a mesma aparência de qualquer um de seus seis lados.",
     },
 
     "it": {
@@ -4881,6 +5569,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV al secondo. Rappresenta la velocità di completamento del gioco. Più è alto, meglio è.",
         "lb_eff_tip":              "L'efficienza è calcolata dividendo il 3BV risolto per il numero di clic effettuati. Meno clic usi, maggiore è l'efficienza.",
         "lb_bbbv_link_title":      "Scopri il 3BV",
+        # Hexsweeper nav
+        "nav_hexsweeper":         "Hexsweeper",
+        "nav_sub_hexsweeper":     "Griglia esagonale, 6 vicini",
+        # Hexsweeper page UI
+        "hex_easy":               "Facile",
+        "hex_medium":             "Medio",
+        "hex_hard":               "Difficile",
+        "hex_custom":             "Personalizzato",
+        "hex_radius":             "Raggio",
+        "hex_6neighbours":        "Ogni cella ha 6 vicini.",
+        "hex_lb_today":           "Il meglio di oggi",
+        # Hexsweeper info sections — headings
+        "hex_info_what_h2":       "Cos\u2019è Hexsweeper?",
+        "hex_info_howto_h2":      "Come si gioca",
+        "hex_info_sizes_h2":      "Dimensioni della griglia",
+        "hex_info_strategy_h2":   "Consigli strategici per griglie esagonali",
+        "hex_info_diff_h2":       "Come Hexsweeper differisce dal Campo Minato classico",
+        # Hexsweeper info — What is Hexsweeper body
+        "hex_info_what_p1":       "Hexsweeper è una versione esagonale del classico puzzle Campo Minato. Invece di una griglia rettangolare, la plancia ha la forma di un grande esagono e ogni cella è anch\u2019essa un esagono. La differenza più importante: ogni cella ha esattamente <strong>6 vicini</strong> invece di 8, il che cambia l\u2019interpretazione dei numeri e la logica di risoluzione.",
+        "hex_info_what_p2":       "L\u2019obiettivo è lo stesso — rivelare ogni cella sicura senza cliccare su una mina. I numeri indicano quanti dei 6 esagoni circostanti contengono mine. Una cella vuota non ha vicini con mine e si espande automaticamente per rivelare l\u2019area sicura circostante.",
+        # Hexsweeper info — How to Play list items
+        "hex_info_howto_li1":     "<strong>Clic sinistro</strong> su una cella nascosta per rivelarla.",
+        "hex_info_howto_li2":     "<strong>Clic destro</strong> su una cella nascosta per posizionare una bandiera (🚩), di nuovo per un punto interrogativo (?), di nuovo per rimuoverla.",
+        "hex_info_howto_li3":     "<strong>Clic sinistro</strong> su un numero rivelato per fare chord — se il numero corretto di bandiere vicine è posizionato, tutti i vicini rimasti vengono rivelati contemporaneamente.",
+        "hex_info_howto_li4":     "Il contatore delle mine (in alto a sinistra) diminuisce con ogni bandiera posizionata.",
+        "hex_info_howto_li5":     "Clicca su 🙂 o premi il pulsante per iniziare una nuova partita con la stessa difficoltà.",
+        # Hexsweeper info — Board Sizes list items
+        "hex_info_sizes_li1":     "<strong>Facile</strong> — raggio 5, 61 celle, 8 mine (~13%). Ottimo per imparare la geometria esagonale.",
+        "hex_info_sizes_li2":     "<strong>Medio</strong> — raggio 7, 127 celle, 20 mine (~16%). Paragonabile al livello intermedio classico.",
+        "hex_info_sizes_li3":     "<strong>Difficile</strong> — raggio 10, 271 celle, 57 mine (~21%). Una sfida seria.",
+        "hex_info_sizes_li4":     "<strong>Personalizzato</strong> — scegli qualsiasi raggio da 3 a 15 e imposta il tuo numero di mine.",
+        # Hexsweeper info — Strategy list items
+        "hex_info_strategy_li1":  "<strong>Impara di nuovo la scala numerica.</strong> Un \"1\" su una griglia esagonale tocca solo 6 celle, non 8, quindi è proporzionalmente più restrittivo — usalo in modo aggressivo per segnalare le mine.",
+        "hex_info_strategy_li2":  "<strong>Le celle d\u2019angolo sono più facili.</strong> Le celle vicino al bordo della griglia esagonale hanno meno vicini (appena 3 negli angoli), rendendole più facili da dedurre.",
+        "hex_info_strategy_li3":  "<strong>Pensa su tre assi.</strong> Le griglie esagonali hanno tre direzioni naturali (piatto, diagonale-sinistra, diagonale-destra). Quando un numero è soddisfatto su un asse, spesso puoi eliminare le mine sugli altri due.",
+        "hex_info_strategy_li4":  "<strong>Usa il chord in modo aggressivo.</strong> Una volta che tutti i vicini di un numero sono contrassegnati, un clic sinistro apre tutti i vicini rimanenti in una sola mossa \u2014 essenziale sulle griglie più grandi.",
+        "hex_info_strategy_li5":  "<strong>Inizia dai bordi verso l\u2019interno.</strong> Aprire le celle di bordo al primo clic tende a produrre cascate vuote più grandi, fornendo più informazioni su cui lavorare dall\u2019inizio.",
+        # Hexsweeper info — Differences list items
+        "hex_info_diff_li1":      "6 vicini per cella invece di 8 \u2014 i numeri vanno da 0 a 6.",
+        "hex_info_diff_li2":      "La griglia ha forma esagonale piuttosto che rettangolare.",
+        "hex_info_diff_li3":      "Nessun bordo avvolgente (a differenza delle varianti Cylinder o Toroid).",
+        "hex_info_diff_li4":      "La densità di informazioni è più alta \u2014 ogni numero rappresenta una proporzione minore della griglia.",
+        "hex_info_diff_li5":      "Simmetria unica: la griglia esagonale appare uguale da ognuno dei suoi sei lati.",
     },
 }
 
