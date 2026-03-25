@@ -46,7 +46,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "however it will never drop below 0."
         ),
         # Leaderboard
-        "lb_title":           "🏆 Leaderboard",
+        "lb_title":           "Leaderboard",
         "lb_col_rank":        "#",
         "lb_col_name":        "Name",
         "lb_col_time":        "Time",
@@ -620,7 +620,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "berechnet, wird jedoch nie unter 0 fallen."
         ),
         # Leaderboard
-        "lb_title":           "\U0001f3c6 Bestenliste",
+        "lb_title":           "Bestenliste",
         "lb_col_rank":        "#",
         "lb_col_name":        "Name",
         "lb_col_time":        "Zeit",
@@ -907,7 +907,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "aunque nunca bajar\u00e1 de 0."
         ),
         # Leaderboard
-        "lb_title":           "\U0001f3c6 Clasificaci\u00f3n",
+        "lb_title":           "Clasificaci\u00f3n",
         "lb_col_rank":        "#",
         "lb_col_name":        "Nombre",
         "lb_col_time":        "Tiempo",
@@ -1196,7 +1196,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "\u0e41\u0e15\u0e48\u0e08\u0e30\u0e44\u0e21\u0e48\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32 0 \u0e40\u0e25\u0e22"
         ),
         # Leaderboard
-        "lb_title":           "\U0001f3c6 \u0e15\u0e32\u0e23\u0e32\u0e07\u0e04\u0e30\u0e41\u0e19\u0e19",
+        "lb_title":           "\u0e15\u0e32\u0e23\u0e32\u0e07\u0e04\u0e30\u0e41\u0e19\u0e19",
         "lb_col_rank":        "#",
         "lb_col_name":        "\u0e0a\u0e37\u0e48\u0e2d",
         "lb_col_time":        "\u0e40\u0e27\u0e25\u0e32",
@@ -1485,7 +1485,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "oweverhay itway illway evernay opday elowbay 0."
         ),
         # Leaderboard
-        "lb_title":           "\U0001f3c6 Eaderboardlay",
+        "lb_title":           "Eaderboardlay",
         "lb_col_rank":        "#",
         "lb_col_name":        "Amenay",
         "lb_col_time":        "Imetay",
@@ -1774,7 +1774,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "\u043e\u0434\u043d\u0430\u043a \u0432\u0456\u043d \u043d\u0456\u043a\u043e\u043b\u0438 \u043d\u0435 \u043e\u043f\u0443\u0441\u0442\u0438\u0442\u044c\u0441\u044f \u043d\u0438\u0436\u0095 0."
         ),
         # Leaderboard
-        "lb_title":           "\U0001f3c6 \u0420\u0435\u0439\u0442\u0438\u043d\u0433",
+        "lb_title":           "\u0420\u0435\u0439\u0442\u0438\u043d\u0433",
         "lb_col_rank":        "#",
         "lb_col_name":        "\u0406\u043c\u2019\u044f",
         "lb_col_time":        "\u0427\u0430\u0441",
@@ -2061,7 +2061,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "mais ne descendra jamais en dessous de 0."
         ),
         # Leaderboard
-        "lb_title":           "\U0001f3c6 Classement",
+        "lb_title":           "Classement",
         "lb_col_rank":        "#",
         "lb_col_name":        "Nom",
         "lb_col_time":        "Temps",
@@ -2348,7 +2348,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "0 미만으로 내려가지 않습니다."
         ),
         # Leaderboard
-        "lb_title":           "🏆 순위표",
+        "lb_title":           "순위표",
         "lb_col_rank":        "#",
         "lb_col_name":        "이름",
         "lb_col_time":        "시간",
@@ -2635,7 +2635,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "0\u672a\u6e80\u306b\u306f\u306a\u308a\u307e\u305b\u3093\u3002"
         ),
         # Leaderboard
-        "lb_title":           "\U0001f3c6 \u30e9\u30f3\u30ad\u30f3\u30b0",
+        "lb_title":           "\u30e9\u30f3\u30ad\u30f3\u30b0",
         "lb_col_rank":        "#",
         "lb_col_name":        "\u540d\u524d",
         "lb_col_time":        "\u30bf\u30a4\u30e0",
@@ -2921,7 +2921,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "且最低不低于0。"
         ),
         # Leaderboard
-        "lb_title":           "🏆 排行榜",
+        "lb_title":           "排行榜",
         "lb_col_rank":        "#",
         "lb_col_name":        "名字",
         "lb_col_time":        "时间",
@@ -3207,7 +3207,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "且最低不低於0。"
         ),
         # Leaderboard
-        "lb_title":           "🏆 排行榜",
+        "lb_title":           "排行榜",
         "lb_col_rank":        "#",
         "lb_col_name":        "名字",
         "lb_col_time":        "時間",
@@ -3493,7 +3493,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "i nigdy nie spada poniżej 0."
         ),
         # Leaderboard
-        "lb_title":           "🏆 Ranking",
+        "lb_title":           "Ranking",
         "lb_col_rank":        "#",
         "lb_col_name":        "Nazwa",
         "lb_col_time":        "Czas",
@@ -3780,7 +3780,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "ngunit hindi ito bababa sa 0."
         ),
         # Leaderboard
-        "lb_title":           "🏆 Talaan ng Pinakamahusay",
+        "lb_title":           "Talaan ng Pinakamahusay",
         "lb_col_rank":        "#",
         "lb_col_name":        "Pangalan",
         "lb_col_time":        "Oras",
@@ -4067,7 +4067,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "однако он никогда не опустится ниже 0."
         ),
         # Leaderboard
-        "lb_title":           "\U0001f3c6 Рейтинг",
+        "lb_title":           "Рейтинг",
         "lb_col_rank":        "#",
         "lb_col_name":        "Имя",
         "lb_col_time":        "Время",
@@ -4354,7 +4354,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "mas nunca será inferior a 0."
         ),
         # Leaderboard
-        "lb_title":           "\U0001f3c6 Classificação",
+        "lb_title":           "Classificação",
         "lb_col_rank":        "#",
         "lb_col_name":        "Nome",
         "lb_col_time":        "Tempo",
@@ -4641,7 +4641,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
             "ma non scenderà mai sotto 0."
         ),
         # Leaderboard
-        "lb_title":           "\U0001f3c6 Classifica",
+        "lb_title":           "Classifica",
         "lb_col_rank":        "#",
         "lb_col_name":        "Nome",
         "lb_col_time":        "Tempo",

@@ -97,7 +97,7 @@
 <div class="game-landing" id="game-landing">
 
   <section class="game-landing-lb">
-    <h2 class="game-landing-lb-title" id="page-lb-title">🏆 {{ t.index_todays_best }} — {{ t['nav_' + mode] }}</h2>
+    <h2 class="game-landing-lb-title" id="page-lb-title">{{ t.index_todays_best }} — {{ t['nav_' + mode] }}</h2>
     <div class="lb-table-wrap">
       <table class="lb-table" id="page-lb-table">
         <thead>
@@ -181,7 +181,7 @@ async function loadPageLb() {
   if (title) {
     const label = `${noGuess ? window.T.index_no_guess : window.T.index_guess} ${LB_MODE_LABEL}`;
     const url   = `${LB_MODE_URL}?ng=${noGuess ? '1' : '0'}`;
-    title.innerHTML = `🏆 ${window.T.index_todays_best} — <a href="${url}" class="lb-title-link">${label}</a>`;
+    title.innerHTML = `${window.T.index_todays_best} — <a href="${url}" class="lb-title-link">${label}</a>`;
   }
   body.innerHTML = `<tr><td colspan="10" class="lb-loading">${window.T.lb_loading}</td></tr>`;
 
