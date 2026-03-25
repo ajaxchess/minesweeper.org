@@ -5871,20 +5871,20 @@ html[data-skin="flower-light"] .diana-birthday-banner {
 
 /* Hidden cell */
 .hex-cell.hex-hidden .hex-poly {
-  fill:   var(--cell-bg, #3a3a4a);
-  stroke: var(--border, #555);
+  fill:   var(--cell-hidden);
+  stroke: var(--cell-border);
   stroke-width: 1.5;
   cursor: pointer;
   transition: fill 0.1s;
 }
 .hex-cell.hex-hidden .hex-poly:hover {
-  fill: var(--cell-hover, #4a4a5a);
+  fill: var(--cell-hover);
 }
 
 /* Revealed cell */
 .hex-cell.hex-revealed .hex-poly {
-  fill:   var(--cell-revealed, #1e1e2e);
-  stroke: var(--border, #444);
+  fill:   var(--cell-rev);
+  stroke: var(--cell-border);
   stroke-width: 1;
 }
 
