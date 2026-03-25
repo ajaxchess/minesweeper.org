@@ -1,6 +1,14 @@
 
 -- Fixed below --
 
+B15 Private-profile users shown as clickable links on leaderboard
+   Users with an account but is_public=False had a /u/{public_id} URL generated
+   in the leaderboard url_map, producing a clickable name that 404'd.
+   Fixed by checking is_public in both url_map builders (scores API and replay
+   leaderboard enrichment) so private users get no link.
+   Also hardened /u/{slug}: if the profile exists but is private, returns a
+   friendly "Private Profile" page (HTTP 200) instead of a raw 404.
+
 B14 Win/loss overlay covers the entire viewport on beginner/intermediate/expert
    The JS appends #game-overlay to #game-result (a sibling of #board).
    .overlay uses position:absolute; inset:0, but there is no positioned ancestor
