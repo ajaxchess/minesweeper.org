@@ -612,7 +612,8 @@ footer a:hover { text-decoration: underline; }
 /* positioned ancestor between #game-result and <body>, position:absolute;    */
 /* inset:0 stretches the overlay to cover the entire viewport.  Override to   */
 /* static so it flows naturally below the board instead.                      */
-#game-result .overlay {
+#game-result .overlay,
+#hex-result .overlay {
   position: static;
   margin-top: 0.75rem;
   min-width: 260px;
@@ -5924,20 +5925,3 @@ html[data-skin="flower-light"] .diana-birthday-banner {
   dominant-baseline: central;
 }
 
-/* Overlay (reuses existing overlay styles) */
-.hex-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  border-radius: 8px;
-  z-index: 10;
-  padding: 1.5rem;
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-.hex-overlay.win  { background: rgba(30,60,30,0.92); color: #7fff7f; }
-.hex-overlay.loss { background: rgba(60,20,20,0.92); color: #ff9999; }

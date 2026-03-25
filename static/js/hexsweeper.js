@@ -503,9 +503,9 @@
     if (!el) {
       el = document.createElement('div');
       el.id = 'hex-overlay';
-      document.getElementById('hex-board-wrap').appendChild(el);
+      (document.getElementById('hex-result') || document.getElementById('hex-board-wrap')).appendChild(el);
     }
-    el.className = won ? 'hex-overlay overlay win' : 'hex-overlay overlay loss';
+    el.className = won ? 'overlay win' : 'overlay loss';
 
     const boardEl  = document.getElementById('hex-board-wrap');
     const username = boardEl.dataset.username || '';
