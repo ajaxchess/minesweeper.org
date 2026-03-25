@@ -551,17 +551,9 @@
 
   // ── Leaderboard ────────────────────────────────────────────────────────────
 
-  const HEX_MODE_LABELS = {
-    beginner: 'Easy', intermediate: 'Medium', expert: 'Hard', custom: 'Custom'
-  };
-
   async function loadLeaderboard(hexMode) {
-    const el      = document.getElementById('hex-lb-content');
-    const titleEl = document.getElementById('hex-lb-title');
+    const el = document.getElementById('hex-lb-content');
     if (!el) return;
-    if (titleEl) {
-      titleEl.textContent = `Today's Best — ${HEX_MODE_LABELS[hexMode] || hexMode}`;
-    }
     el.innerHTML = '<div class="lb-loading">Loading…</div>';
     try {
       const res  = await fetch(`/api/hexsweeper-scores/${hexMode}?period=daily`);
