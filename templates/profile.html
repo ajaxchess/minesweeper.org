@@ -202,6 +202,20 @@
             </div>
             <span class="skin-label">Tentaizu ⭐</span>
           </div>
+          <div class="skin-card" data-skin="flower" onclick="setSkin('flower')">
+            <div class="skin-preview skin-preview-flower">
+              <div class="sp-cell sp-hidden"></div>
+              <div class="sp-cell sp-hidden"></div>
+              <div class="sp-cell sp-hidden"></div>
+              <div class="sp-cell sp-revealed sp-n1">1</div>
+              <div class="sp-cell sp-revealed sp-n2">2</div>
+              <div class="sp-cell sp-mine">🌸</div>
+              <div class="sp-cell sp-revealed"></div>
+              <div class="sp-cell sp-revealed sp-n1">1</div>
+              <div class="sp-cell sp-revealed"></div>
+            </div>
+            <span class="skin-label">Flower Garden 🌸</span>
+          </div>
         </div>
       </div>
     </div>
@@ -679,8 +693,11 @@ updateChordingUI();
 function setSkin(skin) {
   prefSkin = skin;
   localStorage.setItem('skin', skin);
-  var resolved = (skin === 'default') ? window.resolveDefaultSkin() : skin;
-  document.documentElement.dataset.skin = (resolved === 'diana' ? 'classic' : resolved);
+  var resolved;
+  if (skin === 'default') resolved = window.resolveDefaultSkin();
+  else if (skin === 'flower' || skin === 'flower-light') resolved = window.resolveStoredSkin(skin);
+  else resolved = skin === 'diana' ? 'classic' : skin;
+  document.documentElement.dataset.skin = resolved;
   document.querySelectorAll('.skin-card').forEach(c =>
     c.classList.toggle('active', c.dataset.skin === skin)
   );
