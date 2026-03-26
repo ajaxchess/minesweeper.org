@@ -1,3 +1,13 @@
+B16 When I click on a hash on the high scores list in no-guess mode 
+  I go to the replay page.  
+  But the high score that I got does not display.
+  Does the replay High Scores list only show records from standard mode?
+  2026-03-26 No-guess leaderboard, I clicked on this:
+  https://minesweeper.org/variants/replay/?rows=9&cols=9&mines=10&hash=aAAwAAQAIEIABAA%3D&date=2026-03-26&mode=beginner&game=standard
+  Does it make sense to pull both guess and no-guess records for that 
+  hash and board?
+  screenshots/BeginnerNoGuessTodayHighScores
+  screenshots/ReplayHasNoScores
 
 -- Fixed below --
 
