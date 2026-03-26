@@ -936,6 +936,7 @@ footer a:hover { text-decoration: underline; }
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--text-dim);
+  white-space: nowrap;
 }
 
 .lb-sortable:hover { color: var(--accent); }
