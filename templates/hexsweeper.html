@@ -26,6 +26,7 @@
 {% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
 {% block og_description %}{{ _desc }}{% endblock %}
 {% block tw_title %}{% if mode == 'hex-beginner' %}Hexsweeper Easy — Minesweeper on a Hex Board{% elif mode == 'hex-intermediate' %}Hexsweeper Medium — Minesweeper on a Hex Board{% elif mode == 'hex-expert' %}Hexsweeper Hard — Minesweeper on a Hex Board{% else %}Hexsweeper Custom — Build Your Own Hex Board{% endif %}{% endblock %}
+{% block tw_description %}Play Hexsweeper — minesweeper on a hexagonal board where each cell has 6 neighbours. Easy, Medium, Hard or Custom. Free, no download.{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">
 {
