@@ -1,20 +1,5 @@
 List of active features
 
-F56 Replay, show your first recorded score for that board.  I.e. 
-  https://minesweeper.org/variants/replay/?rows=9&cols=9&mines=10&hash=aAAwAAQAIEIABAA%3D&date=2026-03-26&mode=beginner&game=standard
-  I am logged in with Google and am user Richard.
-  The first time I played the board, I got 13 seconds and 75% EFF.
-  I have played the board a few times.  My best score is displayed on the
-  "Board High Scores - Standard - aAAwAAQA" Board and is better (faster)
-  then my first score.
-  Can we add to the Board High Scores the first play and highlight it?
-  Replay_BHS-S_Example -> I am player Richard (authenticated)
-  Display Richard 13.x 6 0.7 75% 2026-03-26, the score from my
-  first time to clear the board and make it clear that his is a special
-  first time score (highlight or bold or ?).
-  This feature should only be available for authenticated users.
-  Why? This gives players a benchmark to see how much they have improved.
-
 F55 Globesweeper — Minesweeper on a Goldberg Polyhedron
 
   Overview
@@ -796,6 +781,14 @@ F9 SEO improvements
 F8 Improved Mobile Browser Support
 
 -- Addressed --
+
+F56 Replay — show authenticated user's first board clear as a benchmark
+  - GET /api/replay-scores/my-first?board_hash=&variant= returns the user's
+    earliest win, querying both replay_scores and scores tables
+  - "Your First Clear" section rendered below Board High Scores (green tint)
+  - Only shown for logged-in users; uses data-username on #board element
+  - Works for all variants: standard, no-guess, cylinder, toroid
+  - examplescreenshots/Replay_BHS-S_Example
 
 F56 URL Traffic Ranking on Admin Web Traffic Page
   - On /admin/web_traffic, show a "Top URLs — <date>" table ranked by hit count for the previous day
