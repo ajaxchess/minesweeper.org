@@ -1277,7 +1277,7 @@ async def board_generator_page(request: Request):
 
 # ── Replay Score API ──────────────────────────────────────────────────────────
 
-REPLAY_VARIANTS_VALID = {"standard", "cylinder", "toroid"}
+REPLAY_VARIANTS_VALID = {"standard", "no-guess", "cylinder", "toroid"}
 
 class ReplayScoreSubmit(BaseModel):
     board_hash:   str  = Field(..., min_length=1, max_length=128)

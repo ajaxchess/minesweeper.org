@@ -245,7 +245,7 @@ async function loadScores(mode, noGuess, period, game) {
         : escHtml(s.name);
       let hashCell = '<td class="lb-hash">—</td>';
       if (s.board_hash) {
-        const game = currentGame === 'classic' ? 'standard' : currentGame;
+        const game = currentGame === 'classic' ? (currentNoGuess ? 'no-guess' : 'standard') : currentGame;
         const rp = new URLSearchParams({
           rows: s.rows, cols: s.cols, mines: s.mines,
           hash: s.board_hash, date: s.created_at,

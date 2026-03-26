@@ -511,9 +511,10 @@
     if (variant === 'cylinder') boardEl.classList.add('cylinder-board');
     if (variant === 'toroid')   boardEl.classList.add('toroid-board');
 
-    // Highlight active variant tab
+    // Highlight active variant tab (no-guess uses standard topology)
+    const tabVariant = variant === 'no-guess' ? 'standard' : variant;
     document.querySelectorAll('.replay-variant-tab').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.variant === variant);
+      btn.classList.toggle('active', btn.dataset.variant === tabVariant);
     });
 
     // Load leaderboard for this variant
@@ -553,7 +554,7 @@
     // Update leaderboard title
     const titleEl = document.getElementById('replay-lb-title');
     if (titleEl) {
-      const label = variant === 'cylinder' ? '🔄 Cylinder' : variant === 'toroid' ? '🍩 Toroid' : '🏁 Standard';
+      const label = variant === 'cylinder' ? '🔄 Cylinder' : variant === 'toroid' ? '🍩 Toroid' : variant === 'no-guess' ? '🚫 No-Guess' : '🏁 Standard';
       if (HASH) {
         const rp = new URLSearchParams(window.location.search);
         rp.set('game', variant);
