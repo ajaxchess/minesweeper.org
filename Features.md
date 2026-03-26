@@ -868,6 +868,15 @@ F37 Links Page at /links
   - No dynamic data; pure Jinja2 template with info-page styling
   - Add nav link where appropriate
 
+F38 URL Traffic Ranking on Admin Web Traffic Page
+  - On /admin/web_traffic, show a "Top URLs — <date>" table ranked by hit count for the previous day
+  - Parses Apache access logs live at page load (no additional DB table required)
+  - Strips query strings so URL paths are grouped (e.g. /game counts all /game?... requests together)
+  - Columns: rank (#), full URL (https://minesweeper.org + path, clickable), hit count
+  - Uses _LOG_RE_URL regex to extract path from each log line
+  - get_url_traffic_stats(target_date) helper function handles the parsing
+  - Displayed between Network Statistics and Daily Apache Log Breakdown sections
+
 D1 Document the environment
   Development is done on a Mac, Linux desktop, or Windows desktop and
   pushed to an Ubuntu server on AWS

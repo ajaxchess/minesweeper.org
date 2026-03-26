@@ -272,6 +272,9 @@ _TRAFFIC_ARCHIVE_START = date(2026, 3, 25)
 _LOG_RE = __import__("re").compile(
     r'^(\S+)\s+\S+\s+\S+\s+\[(\d{2}/\w{3}/\d{4}):[^\]]+\]\s+"[^"]*"\s+(\d{3})'
 )
+_LOG_RE_URL = __import__("re").compile(
+    r'^\S+\s+\S+\s+\S+\s+\[(\d{2}/\w{3}/\d{4}):[^\]]+\]\s+"\S+\s+([^?\s#"]+)'
+)
 _TRACKED_CODES = {"200","201","206","101","302","304","307","403","404","405","422","500","503"}
 
 
@@ -337,6 +340,26 @@ def collect_web_traffic_stats(target_date: date = None):
         record_db_error("collect_web_traffic_stats")
     finally:
         db.close()
+
+
+def get_url_traffic_stats(target_date: date = None):
+    """Parse Apache logs for target_date and return URL hit counts sorted by count desc."""
+    import glob as _glob
+    if target_date is None:
+        target_date = date.today() - timedelta(days=1)
+    target_str = target_date.strftime("%d/%b/%Y")
+    url_counts: dict = {}
+    for log_path in sorted(_glob.glob(_APACHE_LOG_GLOB)):
+        try:
+            with open(log_path, "r", errors="replace") as fh:
+                for line in fh:
+                    m = _LOG_RE_URL.match(line)
+                    if not m or m.group(1) != target_str:
+                        continue
+                    url_counts[m.group(2)] = url_counts.get(m.group(2), 0) + 1
+        except OSError:
+            pass
+    return sorted(url_counts.items(), key=lambda x: x[1], reverse=True)
 
 
 def _backfill_web_traffic():
@@ -3161,6 +3184,9 @@ def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
              "FROM information_schema.tables WHERE table_schema = DATABASE()")
     ).scalar() or 0
 
+    yesterday = date.today() - timedelta(days=1)
+    url_traffic = get_url_traffic_stats(yesterday)
+
     history = list(reversed(
         db.query(ServerStats)
         .order_by(ServerStats.recorded_at.desc())
@@ -3224,6 +3250,8 @@ def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
         "table_counts":       table_counts,
         "total_records":      total_records,
         "db_size":            _fmt_bytes(db_size_bytes),
+        "url_traffic":        url_traffic,
+        "url_traffic_date":   str(yesterday),
     })
 
 

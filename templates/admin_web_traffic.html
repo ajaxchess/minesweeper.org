@@ -290,6 +290,31 @@ document.addEventListener('DOMContentLoaded', () => {
     </tbody>
   </table>
 
+  <!-- Top URLs — Past Day -->
+  <h2 style="font-size:1rem;margin-top:2rem;color:var(--accent2);">Top URLs — {{ url_traffic_date }}</h2>
+  {% if url_traffic %}
+  <div class="wt-table-wrap">
+    <table class="lb-table" style="max-width:720px;margin:0 auto;">
+      <thead>
+        <tr><th>#</th><th style="text-align:left;">URL</th><th>Hits</th></tr>
+      </thead>
+      <tbody>
+        {% for path, hits in url_traffic %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td style="text-align:left;font-family:monospace;font-size:0.85rem;">
+            <a href="https://minesweeper.org{{ path }}" target="_blank" rel="noopener" style="color:var(--accent2);">https://minesweeper.org{{ path }}</a>
+          </td>
+          <td>{{ "{:,}".format(hits) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p style="text-align:center;color:var(--text-dim);">No URL data available for {{ url_traffic_date }}.</p>
+  {% endif %}
+
   <!-- Daily Apache Log Breakdown -->
   <h2 style="font-size:1rem;margin-top:2rem;color:var(--accent2);">Daily Apache Log Breakdown</h2>
   <div class="wt-table-wrap">
