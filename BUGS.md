@@ -1,15 +1,15 @@
-B16 When I click on a hash on the high scores list in no-guess mode 
-  I go to the replay page.  
-  But the high score that I got does not display.
-  Does the replay High Scores list only show records from standard mode?
-  2026-03-26 No-guess leaderboard, I clicked on this:
-  https://minesweeper.org/variants/replay/?rows=9&cols=9&mines=10&hash=aAAwAAQAIEIABAA%3D&date=2026-03-26&mode=beginner&game=standard
-  Does it make sense to pull both guess and no-guess records for that 
-  hash and board?
-  screenshots/BeginnerNoGuessTodayHighScores
-  screenshots/ReplayHasNoScores
-
 -- Fixed below --
+
+B16 No-guess scores missing from replay page leaderboard
+   The replay link on the no-guess leaderboard always passed game=standard,
+   so the replay page fetched standard scores (no_guess=False) and found nothing.
+   Also "no-guess" was absent from REPLAY_VARIANTS_VALID, causing a 400 before
+   reaching the existing no-guess query branch.
+   Fixed by: passing game=no-guess in the replay link when currentNoGuess is true
+   (leaderboard.html), adding "no-guess" to REPLAY_VARIANTS_VALID (main.py),
+   and updating the replay leaderboard title/tab logic for no-guess (replay.js).
+   examplescreenshots/BeginnerNoGuessTodayHighScores
+   examplescreenshots/ReplayHasNoScores
 
 B15 Private-profile users shown as clickable links on leaderboard
    Users with an account but is_public=False had a /u/{public_id} URL generated
