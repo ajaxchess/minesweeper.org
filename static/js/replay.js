@@ -547,6 +547,49 @@
 
   const MEDALS = ['🥇', '🥈', '🥉'];
 
+  async function loadFirstScore(variant) {
+    const board    = document.getElementById('board');
+    const username = board?.dataset.username;
+    const el       = document.getElementById('replay-first-score');
+    if (!el) return;
+    el.innerHTML = '';
+    if (!username || !HASH) return;
+
+    try {
+      const url = `/api/replay-scores/my-first?board_hash=${encodeURIComponent(HASH)}&variant=${variant}`;
+      const res  = await fetch(url);
+      if (!res.ok) return;
+      const s = await res.json();
+      if (!s) return;
+
+      const timeStr  = s.time_ms != null ? (s.time_ms / 1000).toFixed(3) + 's' : s.time_secs + 's';
+      const bbbvs    = fmtBbbvSRow(s);
+      const eff      = fmtEffRow(s);
+
+      el.innerHTML = `
+        <div class="replay-first-score-section">
+          <div class="replay-first-score-title">⭐ Your First Clear</div>
+          <table class="lb-table replay-first-score-table">
+            <thead><tr>
+              <th>Name</th><th>Time</th>
+              <th class="lb-th-stat" title="3BV">3BV</th>
+              <th class="lb-th-stat" title="3BV per second">3BV/s</th>
+              <th class="lb-th-stat" title="Efficiency: 3BV ÷ clicks">Eff</th>
+              <th>Date</th>
+            </tr></thead>
+            <tbody><tr class="replay-first-score-row">
+              <td class="lb-name">${esc(s.name)}</td>
+              <td class="lb-time">${timeStr}</td>
+              <td class="lb-stat">${s.bbbv ?? '—'}</td>
+              <td class="lb-stat">${bbbvs}</td>
+              <td class="lb-stat">${eff}</td>
+              <td class="lb-date">${s.created_at}</td>
+            </tr></tbody>
+          </table>
+        </div>`;
+    } catch { /* silently ignore */ }
+  }
+
   async function loadLeaderboard(variant) {
     const el = document.getElementById('replay-lb-content');
     if (!el) return;
@@ -607,6 +650,8 @@
     } catch {
       el.innerHTML = '<div class="lb-empty">⚠️ Could not load scores.</div>';
     }
+
+    loadFirstScore(variant);
   }
 
   // ── Setup form helpers ─────────────────────────────────────────────────────

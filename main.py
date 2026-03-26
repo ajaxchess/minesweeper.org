@@ -1430,6 +1430,57 @@ def get_replay_scores(board_hash: str, variant: str = "standard", db: Session = 
     return top
 
 
+@app.get("/api/replay-scores/my-first")
+def get_my_first_replay_score(board_hash: str, request: Request, variant: str = "standard", db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return None
+
+    email = user["email"]
+
+    if variant not in REPLAY_VARIANTS_VALID:
+        raise HTTPException(status_code=400, detail="Invalid variant")
+
+    candidates = []  # list of (orm_row, dict)
+
+    # Pull from replay_scores for this user
+    rr = (
+        db.query(ReplayScore)
+        .filter(ReplayScore.board_hash == board_hash, ReplayScore.variant == variant, ReplayScore.user_email == email)
+        .order_by(ReplayScore.created_at.asc())
+        .first()
+    )
+    if rr:
+        candidates.append((rr, rr.to_dict()))
+
+    # Pull from global scores table for standard / no-guess
+    if variant == "standard":
+        gs = (
+            db.query(Score)
+            .filter(Score.board_hash == board_hash, Score.no_guess == False, Score.user_email == email)
+            .order_by(Score.created_at.asc())
+            .first()
+        )
+        if gs:
+            candidates.append((gs, gs.to_dict()))
+    elif variant == "no-guess":
+        gs = (
+            db.query(Score)
+            .filter(Score.board_hash == board_hash, Score.no_guess == True, Score.user_email == email)
+            .order_by(Score.created_at.asc())
+            .first()
+        )
+        if gs:
+            candidates.append((gs, gs.to_dict()))
+
+    if not candidates:
+        return None
+
+    # Pick the earliest across both sources by raw ORM created_at datetime
+    first_row = min(candidates, key=lambda pair: pair[0].created_at)
+    return first_row[1]
+
+
 @app.get("/cylinder", response_class=HTMLResponse)
 async def cylinder_beginner(request: Request):
     return templates.TemplateResponse("cylinder.html", {

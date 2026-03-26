@@ -4539,6 +4539,30 @@ html:not([data-skin="classic"]) .mega-nav    { display: flex; align-items: cente
   opacity: 0.65;
 }
 
+.replay-first-score-section {
+  margin-top: 1rem;
+  padding: 0.6rem 0.75rem 0.5rem;
+  background: rgba(100,200,100,0.07);
+  border: 1px solid rgba(100,200,100,0.25);
+  border-radius: var(--radius);
+}
+
+.replay-first-score-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--accent2);
+}
+
+.replay-first-score-table {
+  width: 100%;
+}
+
+.replay-first-score-row td {
+  font-weight: 600;
+  background: rgba(100,200,100,0.06);
+}
+
 /* Board hash column + replay link */
 .lb-hash {
   font-size: 0.78rem;
