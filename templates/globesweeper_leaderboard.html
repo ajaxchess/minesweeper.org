@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% set _title = "Globesweeper Leaderboard | minesweeper.org" %}
+{% set _desc  = "Top times for Globesweeper — minesweeper on a rotating 3D Goldberg polyhedron globe." %}
+{% set _canon = "https://minesweeper.org/globesweeper/leaderboard" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<div class="lb-wrap">
+  <h1 class="tz-page-h1">Globesweeper Leaderboard</h1>
+
+  <div style="text-align:center;margin-bottom:1.5rem;">
+    <a href="/globesweeper" class="btn" style="margin:0.25rem;">Beginner</a>
+    <a href="/globesweeper/intermediate" class="btn" style="margin:0.25rem;">Intermediate</a>
+    <a href="/globesweeper/expert" class="btn" style="margin:0.25rem;">Expert</a>
+    <a href="/globesweeper/custom" class="btn" style="margin:0.25rem;">Custom</a>
+  </div>
+
+  {% for mode_key, mode_label, t_val, f_val in [
+      ('beginner',     'Beginner (T=3, 32 faces, 4 mines)',   3,  32),
+      ('intermediate', 'Intermediate (T=7, 72 faces, 8 mines)', 7, 72),
+      ('expert',       'Expert (T=25, 252 faces, 50 mines)',  25, 252),
+  ] %}
+  <h2 style="font-size:1rem;color:var(--accent2);margin-top:2rem;">{{ mode_label }}</h2>
+  <div id="lb-{{ mode_key }}" class="wt-table-wrap">
+    <table class="lb-table">
+      <thead><tr><th>#</th><th>Name</th><th>Time</th><th>Date</th></tr></thead>
+      <tbody id="lb-body-{{ mode_key }}">
+        <tr><td colspan="4" style="color:var(--text-dim);">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+</div>
+
+<script>
+async function loadBoard(mode) {
+  const tbody = document.getElementById('lb-body-' + mode);
+  try {
+    const r = await fetch('/api/globesweeper-scores/' + mode);
+    const scores = await r.json();
+    if (!scores.length) {
+      tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);">No scores yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = scores.map((s, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${s.name}</td>
+        <td>${(s.time_ms / 1000).toFixed(2)}s</td>
+        <td>${s.created_at}</td>
+      </tr>`).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);">Failed to load.</td></tr>';
+  }
+}
+['beginner', 'intermediate', 'expert'].forEach(loadBoard);
+</script>
+{% endblock %}

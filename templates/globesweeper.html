@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% if mode == 'beginner' %}
+  {% set _title = "Globesweeper — Beginner | minesweeper.org" %}
+  {% set _desc  = "Play Globesweeper — minesweeper on a rotating 3D globe. Beginner: 32 faces, 4 mines. Free to play, no download required." %}
+  {% set _canon = "https://minesweeper.org/globesweeper" %}
+{% elif mode == 'intermediate' %}
+  {% set _title = "Globesweeper — Intermediate | minesweeper.org" %}
+  {% set _desc  = "Play Globesweeper — minesweeper on a rotating 3D globe. Intermediate: 72 faces, 8 mines." %}
+  {% set _canon = "https://minesweeper.org/globesweeper/intermediate" %}
+{% elif mode == 'expert' %}
+  {% set _title = "Globesweeper — Expert | minesweeper.org" %}
+  {% set _desc  = "Play Globesweeper — minesweeper on a rotating 3D globe. Expert: 252 faces, 50 mines." %}
+  {% set _canon = "https://minesweeper.org/globesweeper/expert" %}
+{% else %}
+  {% set _title = "Globesweeper — Custom | minesweeper.org" %}
+  {% set _desc  = "Play Globesweeper with a custom Goldberg polyhedron — minesweeper on a 3D rotating globe." %}
+  {% set _canon = "https://minesweeper.org/globesweeper/custom" %}
+{% endif %}
+
+{% block keywords %}<meta name="keywords" content="globesweeper, globe minesweeper, 3D minesweeper, minesweeper, minesweeper online, play minesweeper, free minesweeper">{% endblock %}
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+{% block tw_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block tw_description %}Play Globesweeper — minesweeper on a rotating 3D Goldberg polyhedron globe. Drag to rotate, click to reveal. Free, no download.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "{{ _title | replace(' | minesweeper.org', '') }}",
+  "url": "{{ _canon }}",
+  "description": "{{ _desc }}",
+  "genre": ["Puzzle", "Strategy", "Browser Game"],
+  "gamePlatform": "Web Browser",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="game-wrapper"
+     data-mode="{{ mode }}"
+     data-a="{{ a }}"
+     data-b="{{ b }}"
+     data-t="{{ t_param }}"
+     data-faces="{{ face_count }}"
+     data-mines="{{ mines }}">
+
+  <h1 class="tz-page-h1">
+    {% if mode == 'beginner' %}Globesweeper — Beginner
+    {% elif mode == 'intermediate' %}Globesweeper — Intermediate
+    {% elif mode == 'expert' %}Globesweeper — Expert
+    {% else %}Globesweeper — Custom
+    {% endif %}
+  </h1>
+
+  <div class="stat-row">
+    <span class="stat" id="mine-count">🌍 <span id="mines-remaining">{{ mines }}</span></span>
+    <button id="reset-btn" class="btn-reset" title="New game">↺</button>
+    <span class="stat" id="timer-display">⏱ <span id="elapsed">0.00</span>s</span>
+  </div>
+
+  <div id="globe-wrap" style="width:100%;max-width:700px;height:500px;margin:0 auto;position:relative;">
+    <canvas id="globe-canvas" style="width:100%;height:100%;display:block;"></canvas>
+    <div id="globe-overlay" style="display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,0.65);border-radius:8px;">
+      <p id="overlay-msg" style="font-size:1.4rem;font-weight:bold;color:#fff;margin-bottom:1rem;"></p>
+      <button id="overlay-reset" class="btn-reset">Play Again</button>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;margin-top:0.5rem;">
+    Drag to rotate &middot; Left-click to reveal &middot; Right-click to flag
+  </p>
+
+  {% if mode == 'custom' %}
+  <div style="margin:1.5rem auto;max-width:420px;text-align:center;">
+    <h2 style="font-size:1rem;color:var(--accent2);margin-bottom:0.75rem;">Custom Board</h2>
+    <label style="display:block;margin-bottom:0.5rem;">
+      Goldberg T parameter:
+      <select id="t-select" style="margin-left:0.5rem;">
+        <option value="1">T=1 — 12 faces (dodecahedron)</option>
+        <option value="3" selected>T=3 — 32 faces (truncated icosahedron)</option>
+        <option value="4">T=4 — 42 faces</option>
+        <option value="7">T=7 — 72 faces</option>
+        <option value="9">T=9 — 92 faces</option>
+        <option value="12">T=12 — 122 faces</option>
+        <option value="13">T=13 — 132 faces</option>
+        <option value="16">T=16 — 162 faces</option>
+        <option value="19">T=19 — 192 faces</option>
+        <option value="21">T=21 — 212 faces</option>
+        <option value="25">T=25 — 252 faces</option>
+        <option value="27">T=27 — 272 faces</option>
+        <option value="28">T=28 — 282 faces</option>
+        <option value="31">T=31 — 312 faces</option>
+        <option value="36">T=36 — 362 faces</option>
+        <option value="37">T=37 — 372 faces</option>
+        <option value="48">T=48 — 482 faces</option>
+        <option value="49">T=49 — 492 faces</option>
+        <option value="75">T=75 — 752 faces</option>
+      </select>
+    </label>
+    <p id="face-info" style="color:var(--text-dim);font-size:0.85rem;margin-bottom:0.5rem;">
+      This board has 32 faces (12 pentagons, 20 hexagons).
+    </p>
+    <label style="display:block;margin-bottom:0.75rem;">
+      Mines: <input id="mine-input" type="number" min="1" max="31" value="4"
+                    style="width:60px;margin-left:0.5rem;">
+    </label>
+    <button id="custom-play-btn" class="btn" style="padding:0.4rem 1.2rem;">Play</button>
+  </div>
+  {% endif %}
+
+  <div style="text-align:center;margin-top:1rem;">
+    <a href="/globesweeper/leaderboard" style="color:var(--accent2);font-size:0.9rem;">View Leaderboard</a>
+    &nbsp;|&nbsp;
+    {% if mode != 'beginner' %}<a href="/globesweeper" style="color:var(--text-dim);font-size:0.9rem;">Beginner</a> &nbsp;|&nbsp;{% endif %}
+    {% if mode != 'intermediate' %}<a href="/globesweeper/intermediate" style="color:var(--text-dim);font-size:0.9rem;">Intermediate</a> &nbsp;|&nbsp;{% endif %}
+    {% if mode != 'expert' %}<a href="/globesweeper/expert" style="color:var(--text-dim);font-size:0.9rem;">Expert</a> &nbsp;|&nbsp;{% endif %}
+    {% if mode != 'custom' %}<a href="/globesweeper/custom" style="color:var(--text-dim);font-size:0.9rem;">Custom</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

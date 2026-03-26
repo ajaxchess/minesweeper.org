@@ -475,6 +475,40 @@ class HexsweeperScore(Base):
         }
 
 
+# ── Globesweeper Score model ──────────────────────────────────────────────────
+class GlobesweeperScore(Base):
+    __tablename__ = "globesweeper_scores"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String(32), nullable=False)
+    user_email = Column(String(256), nullable=True, index=True)
+    glob_mode  = Column(String(20), nullable=False)   # beginner/intermediate/expert/custom
+    time_ms    = Column(Integer, nullable=False)
+    t_param    = Column(Integer, nullable=False)       # Goldberg T value (e.g. 3, 7, 25)
+    face_count = Column(Integer, nullable=False)       # 10*T+2
+    mines      = Column(Integer, nullable=False)
+    board_hash = Column(String(128), nullable=True)
+    guest_token = Column(String(36), nullable=True, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_globesweeper_scores_mode_time", "glob_mode", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":         self.id,
+            "name":       self.name,
+            "glob_mode":  self.glob_mode,
+            "time_ms":    self.time_ms,
+            "t_param":    self.t_param,
+            "face_count": self.face_count,
+            "mines":      self.mines,
+            "board_hash": self.board_hash,
+            "created_at": self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
 # ── Guest Score Archive (scores from unregistered players archived at midnight) ─
 class GuestScoreArchive(Base):
     __tablename__ = "guest_score_archive"

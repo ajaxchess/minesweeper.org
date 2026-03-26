@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -1926,6 +1926,158 @@ def get_hex_scores(hex_mode: str, period: str = "alltime",
             if len(top) >= 15:
                 break
     return _enrich_with_profiles(top, db)
+
+
+# ── Globesweeper (F55) ────────────────────────────────────────────────────────
+
+GLOBESWEEPER_MODES = {
+    "beginner":     {"a": 1, "b": 1, "t_param": 3,  "face_count": 32,  "mines": 4},
+    "intermediate": {"a": 2, "b": 1, "t_param": 7,  "face_count": 72,  "mines": 8},
+    "expert":       {"a": 5, "b": 0, "t_param": 25, "face_count": 252, "mines": 50},
+}
+GLOBE_MODES_VALID = {"beginner", "intermediate", "expert", "custom"}
+
+
+@app.get("/globesweeper", response_class=HTMLResponse)
+async def globesweeper_beginner(request: Request):
+    m = GLOBESWEEPER_MODES["beginner"]
+    return templates.TemplateResponse("globesweeper.html", {
+        "request": request, "mode": "beginner",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **m,
+    })
+
+
+@app.get("/globesweeper/intermediate", response_class=HTMLResponse)
+async def globesweeper_intermediate(request: Request):
+    m = GLOBESWEEPER_MODES["intermediate"]
+    return templates.TemplateResponse("globesweeper.html", {
+        "request": request, "mode": "intermediate",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **m,
+    })
+
+
+@app.get("/globesweeper/expert", response_class=HTMLResponse)
+async def globesweeper_expert(request: Request):
+    m = GLOBESWEEPER_MODES["expert"]
+    return templates.TemplateResponse("globesweeper.html", {
+        "request": request, "mode": "expert",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **m,
+    })
+
+
+@app.get("/globesweeper/custom", response_class=HTMLResponse)
+async def globesweeper_custom(request: Request):
+    return templates.TemplateResponse("globesweeper.html", {
+        "request": request, "mode": "custom",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "a": 1, "b": 1, "t_param": 3, "face_count": 32, "mines": 4,
+    })
+
+
+@app.get("/globesweeper/leaderboard", response_class=HTMLResponse)
+async def globesweeper_leaderboard(request: Request):
+    return templates.TemplateResponse("globesweeper_leaderboard.html", {
+        "request": request,
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+class GlobesweeperScoreSubmit(BaseModel):
+    name:       str           = Field(..., min_length=1, max_length=32)
+    glob_mode:  str           = Field(..., pattern="^(beginner|intermediate|expert|custom)$")
+    time_ms:    int           = Field(..., ge=1, le=3_600_000)
+    t_param:    int           = Field(..., ge=1, le=75)
+    face_count: int           = Field(..., ge=12, le=752)
+    mines:      int           = Field(..., ge=1, le=750)
+    board_hash: Optional[str] = Field(None, max_length=128)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+    @field_validator("mines")
+    @classmethod
+    def mines_not_exceeding_board(cls, v, info):
+        face_count = info.data.get("face_count")
+        if face_count and v >= face_count:
+            raise ValueError("Too many mines for this board size")
+        return v
+
+
+@app.post("/api/globesweeper-scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_globe_score(payload: GlobesweeperScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = GlobesweeperScore(
+        name       = payload.name,
+        user_email = user["email"] if user else None,
+        glob_mode  = payload.glob_mode,
+        time_ms    = payload.time_ms,
+        t_param    = payload.t_param,
+        face_count = payload.face_count,
+        mines      = payload.mines,
+        board_hash = payload.board_hash,
+        guest_token = guest_token,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/globesweeper-scores/{glob_mode}")
+def get_globe_scores(glob_mode: str, period: str = "alltime",
+                     score_date: Optional[str] = Query(None, alias="date"),
+                     db: Session = Depends(get_db)):
+    if glob_mode not in GLOBE_MODES_VALID:
+        raise HTTPException(status_code=400, detail="Invalid mode")
+    if period not in ("daily", "alltime"):
+        period = "alltime"
+
+    q = db.query(GlobesweeperScore).filter(GlobesweeperScore.glob_mode == glob_mode)
+
+    if period == "daily":
+        try:
+            target = date.fromisoformat(score_date) if score_date else date.today()
+        except ValueError:
+            target = date.today()
+        q = q.filter(GlobesweeperScore.created_at >= target,
+                     GlobesweeperScore.created_at < target + timedelta(days=1))
+        top = q.order_by(GlobesweeperScore.time_ms.asc(),
+                         GlobesweeperScore.created_at.asc()).limit(20).all()
+        return [s.to_dict() for s in top]
+
+    raw = q.order_by(GlobesweeperScore.time_ms.asc(),
+                     GlobesweeperScore.created_at.asc()).limit(500).all()
+    seen: set = set()
+    top: list = []
+    for s in raw:
+        key = s.user_email or s.name
+        if key not in seen:
+            seen.add(key)
+            top.append(s.to_dict())
+            if len(top) >= 20:
+                break
+    return top
 
 
 # ── PvP Leaderboard & Rankings API ───────────────────────────────────────────
