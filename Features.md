@@ -266,6 +266,312 @@ F52 Hexsweeper — Hexagonal Minesweeper Variant
   Deferred to a follow-on feature — hex no-guess generation is non-trivial.
   Board generator will note whether a board is logically solvable.
 
+F55 Globesweeper — Minesweeper on a Goldberg Polyhedron
+
+  Overview
+  ──────────────────────────────────────────────────────────────────────────────
+  Minesweeper played on the faces of a Goldberg polyhedron — a 3D globe-shaped
+  solid with exactly 12 pentagonal faces and a variable number of hexagonal faces.
+  The player rotates the globe with the mouse (or touch) to see all sides and
+  clicks faces to reveal or flag them.  See:
+    https://en.wikipedia.org/wiki/Goldberg_polyhedron
+
+  Mathematics — Goldberg polyhedra
+  ──────────────────────────────────────────────────────────────────────────────
+  A Goldberg polyhedron GP(a, b) is characterised by the Goldberg-Coxeter
+  parameter T = a² + ab + b², where a ≥ 1, b ≥ 0.
+
+    Total faces  F = 10T + 2
+    Pentagon faces  = 12  (always — at the 12 icosahedron vertices)
+    Hexagon  faces  = F − 12 = 10T − 10
+
+  Enumeration of small valid T values (a ≥ 1, b ≥ 0):
+
+    T  1  → F  12  (dodecahedron — all pentagons, GP(1,0))
+    T  3  → F  32  (truncated icosahedron / soccer ball, GP(1,1))
+    T  4  → F  42  GP(2,0)
+    T  7  → F  72  GP(2,1)
+    T  9  → F  92  GP(3,0)
+    T 12  → F 122  GP(2,2)
+    T 13  → F 132  GP(3,1)
+    T 16  → F 162  GP(4,0)
+    T 19  → F 192  GP(3,2)
+    T 21  → F 212  GP(4,1)
+    T 25  → F 252  GP(5,0)
+    T 27  → F 272  GP(3,3)
+    T 28  → F 282  GP(4,2)
+    T 31  → F 312  GP(5,1)
+    T 36  → F 362  GP(6,0)
+    T 37  → F 372  GP(4,3)
+    T 39  → F 392  GP(5,2)
+    T 43  → F 432  GP(6,1)
+    T 48  → F 482  GP(4,4)
+    T 49  → F 492  GP(7,0)
+    T 52  → F 522  GP(5,3) [note: T=52 is NOT a valid Goldberg T; listed for completeness — always validate]
+    T 57  → F 572  GP(6,2)
+    T 61  → F 612  GP(7,1)
+    T 63  → F 632  GP(5,4) [validate]
+    T 75  → F 752  GP(5,5)
+
+  Not every integer is a valid T. T is valid iff it can be expressed as a²+ab+b²
+  for integers a ≥ 1, b ≥ 0.  The custom page must validate this and offer only
+  valid T values (enumerate via brute force over a ∈ [1,10], b ∈ [0,a]).
+
+  Board sizes
+  ──────────────────────────────────────────────────────────────────────────────
+  Beginner:     GP(1,1)  T=3   F=32   mines=4   (~12.5 %)
+  Intermediate: GP(2,1)  T=7   F=72   mines=8   (~11.1 %)
+  Expert:       GP(5,0)  T=25  F=252  mines=50  (~19.8 %)
+  Custom:       any valid T ∈ {1,3,4,7,9,12,13,16,19,21,25,27,28,31,36,37,39,
+                                43,48,49,57,61,75} (up to T=75 = F=752); user
+                selects T from a dropdown and enters a mine count.
+
+  Geometry generation — goldberg.js
+  ──────────────────────────────────────────────────────────────────────────────
+  Algorithm: dual of a geodesic sphere (Class I for b=0, Class II for b=a,
+  Class III otherwise).
+
+  Step 1 — Subdivide the icosahedron.
+    Start with the 20 triangular faces of a regular icosahedron.
+    For each triangular face with vertices P0, P1, P2, subdivide it into T
+    smaller triangles using the Goldberg-Coxeter (a,b) lattice:
+      for i in 0..a:
+        for j in 0..(a-i):
+          place vertex at barycentric coords (1−u−v, u, v) where
+          u = (i*b + j*a)/(a*a + a*b + b*b) style coords (use the
+          standard class-I/II/III subdivision pattern for the (a,b) pair)
+    After placing all subdivision vertices, project each onto the unit sphere
+    (normalise to radius 1).
+    Merge vertices that are within ε = 1e-9 of each other (shared icosahedron
+    edges produce duplicate vertices before merging).
+
+  Step 2 — Build the dual polyhedron (= the Goldberg polyhedron).
+    For each unique vertex V of the subdivided + projected geodesic sphere:
+      Collect all triangular faces that contain V (the "fan" around V).
+      The valence of V is 5 (for the 12 original icosahedron vertices) or 6
+      (for all others) — giving pentagonal and hexagonal Goldberg faces.
+      Sort the fan faces in angular order around V to get an ordered face polygon.
+      The centroid of each fan triangle (projected to unit sphere) becomes a
+      vertex of the Goldberg face.
+    Each Goldberg face is stored as an ordered list of unit-sphere vertex coords.
+
+  Step 3 — Compute adjacency.
+    Two Goldberg faces share an edge iff their vertex lists share exactly 2
+    consecutive vertices (modulo cyclic order).  Build adjacency list:
+      faceAdj[i] = [j, k, l, ...]   // indices of neighbouring Goldberg faces
+    Pentagons have 5 neighbours; hexagons have 6.
+
+  Step 4 — Canonical face index for hashing.
+    Sort all F face centroids lexicographically by (x, y, z) rounded to 6 dp.
+    Assign 0-based indices in that order.  This gives a deterministic,
+    orientation-independent canonical ordering.
+
+  Step 5 — Export.
+    goldberg(a, b) returns:
+      { faces, adj, T, F, pentagons }
+    where:
+      faces     — Array[F] of { verts: [{x,y,z}], centroid: {x,y,z}, isPentagon }
+      adj       — Array[F] of number[]   (neighbour indices)
+      T         — Goldberg parameter
+      F         — face count (= 10T+2)
+      pentagons — Set of 12 face indices that are pentagons
+
+  Rendering — globesweeper.js + Three.js
+  ──────────────────────────────────────────────────────────────────────────────
+  Library: Three.js r165 (loaded from CDN or bundled in static/js/vendor/).
+
+  Scene setup:
+    - WebGLRenderer, antialiased, transparent background — fills #globe-canvas
+      (a <canvas> element); resized to container on window resize
+    - PerspectiveCamera, FOV 45°, near 0.1, far 100
+    - Camera positioned at (0, 0, 3.5) looking at origin
+    - AmbientLight (0xffffff, 0.6) + DirectionalLight (0xffffff, 0.8) at (5,5,5)
+    - Globe sits at origin; faces are at radius ~1.0
+
+  Globe mesh:
+    Each Goldberg face is rendered as a flat filled polygon (fan triangulation
+    from centroid) scaled to radius 0.98 (slightly inside the unit sphere to
+    leave visible gaps between faces acting as cell borders).
+    Each face is a separate THREE.Mesh with its own MeshLambertMaterial so its
+    colour can be updated independently on state change.
+    Face polygon vertices:
+      verts projected to unit sphere, then scaled to 0.98 before triangulation.
+      Fan triangulate: centroid_at_0.98 → vert[0] → vert[1], vert[1] → vert[2], …
+    Border lines: each face edge rendered as a THREE.Line at radius 1.001
+      (slightly outside) in the border colour.
+
+  Rotation / interaction:
+    - THREE.OrbitControls (or a manual quaternion-based drag implementation if
+      OrbitControls is not bundled) attached to the renderer's domElement.
+    - Zoom disabled (fixed camera distance); auto-rotation disabled.
+    - On pointerdown + pointermove: rotate the globe group.
+    - Distinguish click vs drag: if total pointer travel < 6 px, treat as a click.
+
+  Face picking (raycasting):
+    - THREE.Raycaster with mouse coordinates normalised to [-1,1].
+    - Cast against all face meshes; take the nearest intersection.
+    - Left-click (or tap): reveal the face.
+    - Right-click / long-press (500 ms): cycle flag → question → clear.
+
+  Face visual states (colours from CSS variables read at JS init time):
+    hidden      — --glob-hidden   (default: same family as --cell-hidden)
+    revealed    — --glob-rev      (depends on mine count — see number colours)
+    flagged     — --glob-hidden with 🚩 / 🌷 text overlay
+    question    — --glob-hidden with ? overlay
+    mine        — --glob-mine
+    detonated   — --glob-detonated
+  Number overlays on revealed faces:
+    Three.js Sprite with a Canvas2D texture (draw digit + colour); re-used from
+    a small sprite pool; same NUM_COLORS_* palettes as minesweeper.js.
+    Blank revealed faces (0 mines adjacent) show no sprite.
+  Mine/flag emoji overlay: same Sprite approach; uses getMineEmoji() /
+    getFlagEmoji() values from minesweeper.js.
+
+  Animation:
+    requestAnimationFrame loop calls renderer.render(); OrbitControls.update().
+    On first win/loss: brief camera "pulse" scale 1→1.05→1 over 0.3 s.
+
+  Game logic — globesweeper.js
+  ──────────────────────────────────────────────────────────────────────────────
+  State per face: HIDDEN | REVEALED | FLAGGED | QUESTION | MINE | DETONATED
+  mineSet: Set of face indices containing mines.
+  adjCount[i]: number of mine-containing neighbours of face i (pre-computed).
+
+  generateMines(faces, adj, count, safeIdx):
+    Randomly sample `count` faces from all faces except safeIdx (first click).
+    Regenerate if safeIdx would be a mine (guarantee safe first click).
+    Returns Set of mine indices.
+
+  revealFace(idx):
+    If HIDDEN: mark REVEALED.
+    If adjCount[idx] === 0: BFS flood-fill — reveal all reachable zero-count
+      HIDDEN faces and their HIDDEN non-mine neighbours.
+    If mine: mark DETONATED; reveal all mines; game over.
+
+  boardToHash(mineSet, F):
+    Build bit-array of length F; bit i = 1 iff face i is a mine.
+    Base64url-encode the byte array → hash string.
+
+  hashToBoard(hash, F):
+    Decode base64url → bytes → bit-array → Set of mine indices.
+
+  Key exported functions:
+    initGlobe(a, b, mineCount, canvasId)   — build geometry + start render loop
+    revealFace(idx), flagFace(idx)          — game actions
+    boardToHash, hashToBoard
+    getMineEmoji, getFlagEmoji             — imported from minesweeper.js
+
+  Routes
+  ──────────────────────────────────────────────────────────────────────────────
+    GET /globesweeper               → beginner (T=3, 32 faces, 4 mines)
+    GET /globesweeper/intermediate  → intermediate (T=7, 72 faces, 8 mines)
+    GET /globesweeper/expert        → expert (T=25, 252 faces, 50 mines)
+    GET /globesweeper/custom        → custom (select T + mine count)
+    GET /globesweeper/leaderboard   → best times per mode
+
+  Templates
+  ──────────────────────────────────────────────────────────────────────────────
+    templates/globesweeper.html              — shared base template (parameterised)
+    templates/globesweeper_intermediate.html
+    templates/globesweeper_expert.html
+    templates/globesweeper_custom.html
+    templates/globesweeper_leaderboard.html
+
+  Template structure (globesweeper.html):
+    - data-a="{{ a }}" data-b="{{ b }}" data-mines="{{ mines }}" on <body>
+      (or passed as JS constants in a <script> block)
+    - <div id="globe-wrap"> containing <canvas id="globe-canvas">
+      styled to fill a fixed-height container (min 420 px, max 700 px on desktop)
+    - Game info bar above canvas: mine counter, timer, reset button (same .stat
+      layout as classic minesweeper)
+    - Controls hint below canvas: "Drag to rotate · Left-click to reveal ·
+      Right-click to flag"
+    - Win/loss overlay (same .game-over-overlay pattern as other variants)
+    - Score submission form (same pattern as cylinder/toroid)
+
+  Custom page (globesweeper_custom.html):
+    - <select id="t-select"> populated from VALID_T list (JS constant):
+        T=1 (12 faces), T=3 (32 faces), T=4 (42 faces), T=7 (72 faces), …
+      Label format: "T=3 — 32 faces (truncated icosahedron)"
+      Special names: T=1 "dodecahedron", T=3 "truncated icosahedron"
+    - Face count display updates on change: "This board has F faces (12 pentagons,
+      F-12 hexagons)."
+    - Mine count <input type="number"> min=1 max=F-1; default = floor(F*0.15).
+    - "Play" button generates new game and renders globe.
+    - URL after starting: /globesweeper/custom?t=7&mines=12 (pushState, no reload)
+
+  JavaScript files
+  ──────────────────────────────────────────────────────────────────────────────
+  static/js/vendor/three.min.js      — Three.js r165 (copy to avoid CDN dependency)
+  static/js/goldberg.js              — Goldberg polyhedron geometry generator
+                                        exports: goldberg(a, b)
+  static/js/globesweeper.js          — game logic + Three.js scene
+                                        depends on: three.min.js, minesweeper.js
+                                          (for getMineEmoji/getFlagEmoji/getNumColors)
+
+  Database
+  ──────────────────────────────────────────────────────────────────────────────
+  New table: globesweeper_scores
+    id           INT AUTO_INCREMENT PRIMARY KEY
+    mode         VARCHAR(20)    -- 'beginner' | 'intermediate' | 'expert' | 'custom'
+    t_param      INT            -- Goldberg T value (e.g. 3, 7, 25)
+    face_count   INT            -- 10*T+2 (denormalised for query convenience)
+    board_hash   VARCHAR(128)   -- base64url mine bitfield; NULL for random boards
+    user_email   VARCHAR(255)
+    display_name VARCHAR(64)
+    time_ms      INT
+    created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+
+  API
+  ──────────────────────────────────────────────────────────────────────────────
+    POST /api/globesweeper-scores
+         Body: { time_ms, mode, t_param, face_count, board_hash, display_name }
+         Auth: logged-in user (email from session); guests submit with display_name
+    GET  /api/globesweeper-scores/{mode}
+         Returns top 20 for that mode (today + all-time), ordered by time_ms ASC
+
+  Nav / sitemap
+  ──────────────────────────────────────────────────────────────────────────────
+  Add Globesweeper to the Variants group in the mega menu:
+    icon 🌍, title "Globesweeper", desc "Minesweeper on a rotating 3D globe"
+  Add to sitemap.xml:
+    /globesweeper, /globesweeper/intermediate, /globesweeper/expert,
+    /globesweeper/custom, /globesweeper/leaderboard
+
+  Skin support
+  ──────────────────────────────────────────────────────────────────────────────
+  CSS variables for Three.js colours (read by globesweeper.js at scene init via
+  getComputedStyle(document.documentElement)):
+    --glob-hidden         hidden face fill colour
+    --glob-hidden-border  edge line colour
+    --glob-rev            revealed face fill (blank)
+    --glob-mine           mine face fill
+    --glob-detonated      detonated face fill
+  Each skin block in style.css gets a glob-specific override section.
+  Default (dark skin) values:
+    --glob-hidden:         #2a3a5c
+    --glob-hidden-border:  #3a5278
+    --glob-rev:            #111b2a
+    --glob-mine:           #7a0000
+    --glob-detonated:      #c00000
+  Number colours re-use NUM_COLORS_* from minesweeper.js (passed as JS array).
+  getMineEmoji() / getFlagEmoji() from minesweeper.js drive face overlays.
+
+  No-guess mode
+  ──────────────────────────────────────────────────────────────────────────────
+  Deferred to a follow-on feature.  No-guess generation on a graph of irregular
+  pentagon/hexagon face valences is non-trivial.
+
+  Performance notes
+  ──────────────────────────────────────────────────────────────────────────────
+  - For T≤25 (F≤252) geometry generation runs in < 5 ms in a modern browser.
+  - For T=75 (F=752) generation takes ~20–40 ms; acceptable for custom play.
+  - Cache the generated geometry object by (a,b) key in a module-level Map so
+    resetting the board does not recompute geometry.
+  - Each face mesh is a separate THREE.Mesh; for T=75 that is 752 meshes —
+    within WebGL draw-call budgets for desktop.  Consider merging into a single
+    BufferGeometry with per-face vertex colours for mobile optimisation (future).
+
 F54 Admin Web Traffic Dashboard
 
   Purpose
