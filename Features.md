@@ -1,8 +1,128 @@
 List of active features
 
-F56 Implement Nonosweeper
-  https://minesweeper.fandom.com/wiki/Nonosweeper
-  The game is based on two different puzzle games. The interface has been designed to mimic that of the popular Windows game Minesweeper, but the game itself is actually a variation on the puzzles known as Nonograms.
+F56 Nonosweeper — Minesweeper meets Nonogram
+
+  Overview
+  ──────────────────────────────────────────────────────────────────────────────
+  Nonosweeper is a hybrid daily puzzle that fuses Minesweeper with Nonogram
+  (Picross) logic.  Instead of revealing numbers that count adjacent mines,
+  the player is given row and column clues — nonogram-style — showing the
+  sizes of consecutive mine groups in each line.  The goal is to deduce every
+  mine's location from those clues, then left-click every safe cell without
+  ever hitting a mine.  A new puzzle is generated for each difficulty level
+  every day; the seed is deterministic so every player gets the same board.
+  See: https://minesweeper.fandom.com/wiki/Nonosweeper
+
+  Rules
+  ──────────────────────────────────────────────────────────────────────────────
+  Left-click   — Reveal a cell.
+                  • If the cell is a mine → GAME OVER (💥).  All mines are
+                    uncovered and wrongly-flagged safe cells are marked ❌.
+                  • If the cell is safe → revealed (✓).
+                  Clicking a revealed cell does nothing.
+
+  Right-click  — Cycle the cell state:
+                    hidden → flagged (💣) → uncertain (?) → hidden
+                  Flagging does NOT reveal the cell.  It is cosmetic only
+                  (helps the player track deduced mines).
+
+  Win          — All non-mine cells have been revealed.  Remaining unflagged
+                  mines are auto-flagged.  The win overlay shows elapsed time
+                  and (on POTD) a score-submit form.
+
+  Loss         — Any mine is left-clicked.  That cell shows 💥.  All other
+                  mines are revealed; incorrectly flagged safe cells show ❌.
+                  The player may retry the same board.
+
+  No safe-first-click guarantee — use the nonogram clues to deduce safe
+  cells before clicking.  Guessing is penalised only by a loss.
+
+  Clue format  — Each row/column clue is a list of positive integers, e.g.
+                  [3, 1, 2].  Each integer is a consecutive run of mines in
+                  reading order (left→right for rows, top→bottom for cols).
+                  Runs are separated by ≥1 safe cell.  A clue of [0] (no
+                  mines in that line) is rendered as "—".
+
+  Difficulty levels
+  ──────────────────────────────────────────────────────────────────────────────
+  Beginner:     8 × 8  grid,  16 mines  (~25 %)
+  Intermediate: 10×10  grid,  35 mines  (~35 %)
+  Expert:       15×15  grid,  75 mines  (~33 %)
+
+  Puzzle generation
+  ──────────────────────────────────────────────────────────────────────────────
+  Algorithm: seeded Fisher-Yates shuffle, same RNG as Tentaizu.
+  RNG:    mulberry32 (identical implementation to tentaizu.js).
+  Seed:   strSeed(dateISO + ':' + difficulty)
+            e.g. strSeed("2026-03-27:beginner")
+  The seed string is hashed to a 32-bit unsigned integer via FNV-1a, then
+  fed to mulberry32.  The first `mines` indices from the shuffled index
+  array [0 … rows*cols-1] are the mine positions.
+  Row and column clues are computed from the mine positions after generation.
+
+  Scoring & leaderboard
+  ──────────────────────────────────────────────────────────────────────────────
+  • Time-based (lower is better), measured in whole seconds from first click
+    to win.
+  • Leaderboard is per-difficulty per-date (POTD only).  Random puzzles are
+    not scored.
+  • Top 20 scores are returned by the API; top 3 receive medal icons.
+  • Logged-in users submit under their display name; guests submit a custom
+    name stored in localStorage.  Each guest session is identified by a UUID
+    cookie (guest_token).
+
+  Database table: nonosweeper_scores
+  ──────────────────────────────────────────────────────────────────────────────
+  Column       Type           Notes
+  id           INTEGER PK     auto-increment
+  name         VARCHAR(32)    display name, NOT NULL
+  user_email   VARCHAR(256)   NULL for guests, indexed
+  puzzle_date  VARCHAR(10)    YYYY-MM-DD, NOT NULL
+  difficulty   VARCHAR(16)    beginner|intermediate|expert, NOT NULL
+  time_secs    INTEGER        elapsed seconds, NOT NULL
+  guest_token  VARCHAR(36)    UUID, NULL for registered users, indexed
+  created_at   DATETIME       UTC, default now()
+
+  Composite index: (puzzle_date, difficulty, time_secs) for leaderboard
+  queries.
+
+  Routes
+  ──────────────────────────────────────────────────────────────────────────────
+  GET  /nonosweeper
+       Renders today's POTD.  Optional ?date=YYYY-MM-DD query param to view
+       a past puzzle (leaderboard shown but score submission disabled).
+
+  GET  /nonosweeper/{YYYY-MM-DD}
+       Permalink for a specific date's puzzle.  Redirects to /nonosweeper if
+       the date format is invalid.
+
+  POST /api/nonosweeper-scores          (rate-limited 10/min)
+       Body: { name, puzzle_date, difficulty, time_secs }
+       Saves a completed puzzle score.  Returns { ok: true, id }.
+
+  GET  /api/nonosweeper-scores/{date}?difficulty=beginner
+       Returns top-20 scores for the given date+difficulty as JSON array.
+
+  Frontend files
+  ──────────────────────────────────────────────────────────────────────────────
+  templates/nonosweeper.html   — Jinja2 page template (extends base.html)
+  static/js/nonosweeper.js     — All game logic, rendering, leaderboard
+
+  Board rendering
+  ──────────────────────────────────────────────────────────────────────────────
+  CSS Grid layout:
+    • Column 0:          row-clue cells (right-aligned numbers)
+    • Columns 1…cols:    game cells
+    • Row 0:             col-clue cells (bottom-aligned numbers) + corner spacer
+    • Rows 1…rows:       one row-clue cell + cols game cells
+  Grid gap: 2 px.  Cell size: 34 px (CSS variable --nn-cell-size).
+  Column clues stack vertically; row clues stack horizontally.
+  A "—" is rendered for zero-mine rows/columns.
+
+  Navigation
+  ──────────────────────────────────────────────────────────────────────────────
+  Add a Nonosweeper mega-card to the Puzzles mega-menu in base.html, after
+  the existing Mosaic cards.  Icon: 🔢.  Active state: mode=='nonosweeper'.
 
 F55 Globesweeper — Minesweeper on a Goldberg Polyhedron
 

@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -3726,3 +3726,102 @@ async def archive_day(
         "_desc":        _desc,
         "_canon":       _canon,
     })
+
+# ── Nonosweeper ───────────────────────────────────────────────────────────────
+
+@app.get("/nonosweeper", response_class=HTMLResponse)
+async def nonosweeper_page(request: Request, date_param: str = Query(None, alias="date")):
+    import re
+    real_today = date.today().isoformat()
+    puzzle_date = real_today
+    if date_param and re.match(r"^\d{4}-\d{2}-\d{2}$", date_param):
+        puzzle_date = date_param
+    return templates.TemplateResponse("nonosweeper.html", {
+        "request": request, "mode": "nonosweeper",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": puzzle_date,
+        "real_today": real_today,
+    })
+
+
+@app.get("/nonosweeper/{date_str}", response_class=HTMLResponse)
+async def nonosweeper_permalink(request: Request, date_str: str):
+    import re
+    real_today = date.today().isoformat()
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
+        return RedirectResponse("/nonosweeper", status_code=302)
+    return templates.TemplateResponse("nonosweeper.html", {
+        "request": request, "mode": "nonosweeper",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": date_str,
+        "real_today": real_today,
+    })
+
+
+class NonosweeperScoreSubmit(BaseModel):
+    name:        str = Field(..., min_length=1, max_length=32)
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    difficulty:  str = Field(..., pattern=r"^(beginner|intermediate|expert)$")
+    time_secs:   int = Field(..., ge=0, le=99999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+
+@app.post("/api/nonosweeper-scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_nonosweeper_score(payload: NonosweeperScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = NonosweeperScore(
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        puzzle_date = payload.puzzle_date,
+        difficulty  = payload.difficulty,
+        time_secs   = payload.time_secs,
+        guest_token = guest_token,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    record_score_submit("nonosweeper", str(payload.puzzle_date))
+    record_game_complete("nonosweeper", mode=payload.difficulty,
+                         duration_ms=(payload.time_secs or 0) * 1000)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/nonosweeper-scores/{puzzle_date}")
+def get_nonosweeper_scores(
+    puzzle_date: str,
+    difficulty: str = Query("beginner"),
+    db: Session = Depends(get_db),
+):
+    import re
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
+        raise HTTPException(status_code=400, detail="Invalid date format")
+    if difficulty not in ("beginner", "intermediate", "expert"):
+        difficulty = "beginner"
+    top = (
+        db.query(NonosweeperScore)
+        .filter(
+            NonosweeperScore.puzzle_date == puzzle_date,
+            NonosweeperScore.difficulty  == difficulty,
+        )
+        .order_by(NonosweeperScore.time_secs.asc(), NonosweeperScore.created_at.asc())
+        .limit(20)
+        .all()
+    )
+    return _enrich_with_profiles(top, db)

@@ -667,6 +667,34 @@ class BlogComment(Base):
     )
 
 
+# ── Nonosweeper Score model ────────────────────────────────────────────────────
+class NonosweeperScore(Base):
+    __tablename__ = "nonosweeper_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD
+    difficulty  = Column(String(16), nullable=False)   # beginner|intermediate|expert
+    time_secs   = Column(Integer, nullable=False)
+    guest_token = Column(String(36), nullable=True, index=True)
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_nonosweeper_scores_date_diff_time", "puzzle_date", "difficulty", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "difficulty":  self.difficulty,
+            "time_secs":   self.time_secs,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
     Base.metadata.create_all(bind=engine)

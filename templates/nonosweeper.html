@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block title %}Nonosweeper — Minesweeper meets Nonogram | minesweeper.org{% endblock %}
+{% block description %}Nonosweeper: use row and column nonogram clues to locate the mines, then reveal every safe cell without triggering a single one.{% endblock %}
+{% block keywords %}<meta name="keywords" content="nonosweeper, nonogram minesweeper, picross minesweeper, logic puzzle, daily puzzle">{% endblock %}
+{% block canonical %}https://minesweeper.org/nonosweeper{% endblock %}
+{% block og_url %}https://minesweeper.org/nonosweeper{% endblock %}
+{% block og_type %}game{% endblock %}
+{% block og_title %}Nonosweeper — Minesweeper meets Nonogram{% endblock %}
+{% block og_description %}Use nonogram clues to find the mines. Click safe cells — one wrong click and it's game over.{% endblock %}
+
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Nonosweeper",
+  "url": "https://minesweeper.org/nonosweeper",
+  "description": "A hybrid puzzle combining Minesweeper and Nonogram. Use row and column clues to deduce mine positions, then reveal every safe cell.",
+  "genre": ["Puzzle", "Logic", "Brain Teaser"],
+  "gamePlatform": "Web Browser",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<style>
+/* ── Nonosweeper page styles ─────────────────────────────────────────────── */
+.nn-page-h1 {
+    font-size: 1.8rem; font-weight: 700;
+    text-align: center; margin: 0.5rem 0 0.2rem;
+}
+.nn-bridge {
+    text-align: center; color: var(--fg-muted, #888);
+    margin: 0 0 1.2rem; font-size: 0.95rem;
+}
+.nn-wrapper {
+    display: flex; gap: 1.5rem;
+    justify-content: center; align-items: flex-start;
+    flex-wrap: wrap;
+}
+.nn-section { flex: 0 1 auto; max-width: 100%; }
+
+/* Info panel */
+.nn-info   { margin-bottom: 0.75rem; }
+.nn-mode-row {
+    display: flex; align-items: center; gap: 0.5rem;
+    flex-wrap: wrap; margin-bottom: 0.5rem;
+}
+.nn-mode-btns { display: flex; gap: 0.4rem; }
+.nn-mode-btn  {
+    font-size: 0.8rem; padding: 0.25rem 0.6rem;
+    border-radius: 4px; cursor: pointer;
+    background: var(--btn-bg, #333); border: 1px solid var(--btn-border, #555);
+    color: var(--fg, #eee);
+}
+.nn-mode-btn:hover { background: var(--btn-hover, #444); }
+
+.nn-diff-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.nn-diff-btn {
+    font-size: 0.8rem; padding: 0.25rem 0.6rem;
+    border-radius: 4px; cursor: pointer; opacity: 0.55;
+    background: var(--btn-bg, #333); border: 1px solid var(--btn-border, #555);
+    color: var(--fg, #eee); transition: opacity 0.15s;
+}
+.nn-diff-btn:hover  { opacity: 0.85; }
+.nn-diff-btn.active { opacity: 1; font-weight: 700; border-color: var(--accent, #6ab0f5); }
+
+.nn-stat-row {
+    display: flex; gap: 1.5rem; align-items: center; margin-bottom: 0.75rem;
+}
+.nn-stat { display: flex; align-items: center; gap: 0.3rem; font-variant-numeric: tabular-nums; }
+.nn-stat-icon  { font-size: 1.1rem; }
+.nn-stat-value { font-size: 1.3rem; font-weight: 700; min-width: 2.5ch; }
+
+/* Board */
+#nn-board-wrap { position: relative; display: inline-block; overflow-x: auto; max-width: 100%; }
+
+#nn-grid {
+    display: grid;
+    grid-template-columns: minmax(24px, auto) repeat(var(--nn-cols), var(--nn-cell-size, 34px));
+    gap: 2px;
+    width: fit-content;
+    padding: 4px;
+}
+
+.nn-corner { /* spacer */ }
+
+.nn-col-clue {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-end;
+    gap: 2px; padding: 4px 0 6px;
+    font-size: 0.7rem; font-weight: 700;
+    color: var(--fg-muted, #aaa);
+    min-width: var(--nn-cell-size, 34px);
+    line-height: 1.3;
+}
+.nn-col-clue span { display: block; text-align: center; }
+
+.nn-row-clue {
+    display: flex; flex-direction: row;
+    align-items: center; justify-content: flex-end;
+    gap: 3px; padding: 0 5px 0 0;
+    font-size: 0.7rem; font-weight: 700;
+    color: var(--fg-muted, #aaa);
+    height: var(--nn-cell-size, 34px);
+    white-space: nowrap;
+}
+
+.nn-cell {
+    width: var(--nn-cell-size, 34px);
+    height: var(--nn-cell-size, 34px);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; user-select: none;
+    border-radius: 3px; box-sizing: border-box;
+    font-size: 0.85rem; transition: background 0.06s;
+    border: 1px solid var(--cell-border, #555);
+}
+.nn-cell.nn-hidden        { background: var(--cell-bg, #3a3a3a); }
+.nn-cell.nn-hidden:hover  { background: var(--cell-hover, #484848); }
+.nn-cell.nn-revealed      { background: var(--cell-open, #222); border-color: var(--cell-border-open, #333); color: #4caf50; font-size: 0.7rem; }
+.nn-cell.nn-flagged       { background: var(--cell-bg, #3a3a3a); }
+.nn-cell.nn-question      { background: var(--cell-bg, #3a3a3a); color: var(--fg-muted, #aaa); }
+.nn-cell.nn-exploded      { background: #c62828; border-color: #ff1744; font-size: 1rem; }
+.nn-cell.nn-mine-revealed { background: var(--cell-open, #222); border-color: var(--cell-border-open, #333); }
+.nn-cell.nn-wrong-flag    { background: #c62828; border-color: #ff1744; font-size: 0.75rem; }
+
+/* Overlay */
+#nn-overlay {
+    display: none; position: absolute; inset: 0;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 0.75rem; padding: 1.5rem; border-radius: 4px; z-index: 10;
+}
+#nn-overlay.win, #nn-overlay.lose { background: rgba(0,0,0,0.88); }
+.nn-overlay-title { font-size: 1.5rem; font-weight: 700; }
+.nn-overlay-time  { font-size: 0.95rem; color: var(--fg-muted, #aaa); }
+.nn-overlay-btns  { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
+
+.overlay-score-form {
+    display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: center;
+}
+.overlay-score-form input {
+    padding: 0.4rem 0.6rem; border-radius: 4px;
+    border: 1px solid #666; background: #222; color: #fff;
+    font-size: 0.9rem; width: 150px;
+}
+#nn-score-msg { font-size: 0.85rem; color: var(--fg-muted, #aaa); }
+
+/* Leaderboard */
+.nn-lb-section    { margin-top: 1.5rem; }
+.nn-lb-title      { font-weight: 700; margin-bottom: 0.5rem; font-size: 1rem; }
+.nn-prev-days     { margin-top: 0.75rem; font-size: 0.8rem; color: var(--fg-muted, #aaa); }
+.nn-prev-days a   { margin: 0 0.25rem; color: inherit; }
+.nn-prev-days-label { margin-right: 0.25rem; }
+.nn-permalink-row { margin-top: 0.5rem; font-size: 0.8rem; color: var(--fg-muted, #aaa); }
+.nn-permalink-row a { color: inherit; }
+
+.instructions { font-size: 0.8rem; color: var(--fg-muted, #aaa); margin-top: 0.75rem; line-height: 1.7; }
+</style>
+
+<h1 class="nn-page-h1">Nonosweeper</h1>
+<p class="nn-bridge">Minesweeper meets Nonogram — use row &amp; column clues to find the mines.</p>
+
+<div class="nn-wrapper">
+
+  <!-- Left sidebar ad -->
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle" style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696" data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="nn-section">
+
+    <div class="nn-info">
+      <div class="nn-mode-row">
+        <span id="nn-mode-label" class="mode-badge">📅 Puzzle of the Day</span>
+        <div class="nn-mode-btns">
+          <button id="nn-potd-btn" class="nn-mode-btn">📅 Daily</button>
+          <button id="nn-random-btn" class="nn-mode-btn">🎲 Random</button>
+        </div>
+      </div>
+      <div class="nn-diff-row">
+        <button class="nn-diff-btn active" data-diff="beginner">Beginner (8×8)</button>
+        <button class="nn-diff-btn"        data-diff="intermediate">Intermediate (10×10)</button>
+        <button class="nn-diff-btn"        data-diff="expert">Expert (15×15)</button>
+      </div>
+      <div class="nn-stat-row">
+        <div class="nn-stat" title="Mines remaining">
+          <span class="nn-stat-icon">💣</span>
+          <span class="nn-stat-value" id="nn-mines-left">16</span>
+        </div>
+        <div class="nn-stat" title="Time elapsed">
+          <span class="nn-stat-icon">⏱</span>
+          <span class="nn-stat-value" id="nn-timer">0:00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Board -->
+    <div id="nn-board-wrap">
+      <div id="nn-grid"
+           data-today="{{ today }}"
+           data-real-today="{{ real_today }}"
+           data-username="{{ user.display_name if user else '' }}">
+      </div>
+
+      <!-- Win / Lose overlay -->
+      <div id="nn-overlay">
+        <div class="nn-overlay-title" id="nn-overlay-title">🎉 Solved!</div>
+        <div class="nn-overlay-time"  id="nn-overlay-time-row">
+          Time: <strong id="nn-win-time">0:00</strong>
+        </div>
+        <div id="nn-score-form" class="overlay-score-form" style="display:none">
+          <input id="nn-name-input" type="text" maxlength="32"
+                 placeholder="Your name" autocomplete="nickname">
+          <button id="nn-save-btn" class="nn-mode-btn">Save Score</button>
+        </div>
+        <div id="nn-score-msg" style="display:none"></div>
+        <div class="nn-overlay-btns">
+          <button id="nn-overlay-retry"  class="nn-mode-btn">🔄 Retry</button>
+          <button id="nn-overlay-potd"   class="nn-mode-btn">📅 Daily</button>
+          <button id="nn-overlay-random" class="nn-mode-btn">🎲 New Random</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="instructions">
+      <strong>Left-click</strong> to reveal — <em>clicking a mine ends the game!</em> &nbsp;|&nbsp;
+      <strong>Right-click</strong> to cycle: flag 💣 &rarr; uncertain ? &rarr; hidden. &nbsp;|&nbsp;
+      <strong>Win</strong> by revealing every safe cell.
+    </p>
+
+    <div id="nn-permalink-row" class="nn-permalink-row" style="display:none">
+      🔗 <a id="nn-permalink-link" href="#"></a>
+    </div>
+
+    <!-- Leaderboard -->
+    <div id="nn-lb-section" class="nn-lb-section">
+      <div id="nn-lb-title" class="nn-lb-title">🏆 Today's Best Times</div>
+      <div id="nn-lb-content"><div class="lb-loading">Loading…</div></div>
+      <div id="nn-prev-days" class="nn-prev-days"></div>
+    </div>
+
+  </section>
+
+  <!-- Right sidebar ad -->
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle" style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696" data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+
+<!-- SEO Landing Content -->
+<div class="tz-landing">
+  <h2>About Nonosweeper</h2>
+  <div class="tz-landing-grid">
+
+    <section class="tz-section">
+      <h2>What is Nonosweeper?</h2>
+      <p>
+        Nonosweeper is a hybrid puzzle that fuses two beloved puzzle formats:
+        the mine-clearing tension of <strong>Minesweeper</strong> and the
+        grid-deduction logic of a <strong>Nonogram</strong> (also known as
+        Picross or Griddler). Unlike standard Minesweeper, you never click
+        blindly to reveal numbers — instead, the full set of row and column
+        clues is visible from the very start, just as in a nonogram. Your job
+        is to use those clues to work out exactly which cells hide mines,
+        then click the safe cells to reveal them.
+      </p>
+      <p>
+        The Minesweeper element keeps the stakes high: one wrong click on a
+        mine and the puzzle ends immediately. There is no safe first click
+        and no random guessing allowed — every move must be deduced from the
+        clues.
+      </p>
+    </section>
+
+    <section class="tz-section">
+      <h2>How to read the clues</h2>
+      <p>
+        Each row and column has a clue made up of one or more numbers. Each
+        number represents a <strong>consecutive run of mines</strong> in that
+        row or column. The runs appear in order (left-to-right for rows,
+        top-to-bottom for columns) and are separated by at least one safe
+        cell.
+      </p>
+      <p>
+        For example, a row clue of <strong>3 &nbsp;1 &nbsp;2</strong> means:
+        three mines in a row, a gap, one mine, a gap, then two mines in a row.
+        A clue of <strong>—</strong> means no mines at all in that row or
+        column.
+      </p>
+    </section>
+
+    <section class="tz-section">
+      <h2>Strategy tips</h2>
+      <ol class="tz-list">
+        <li><strong>Start with zero-clue rows/columns.</strong> A "—" clue means every cell in that line is safe — reveal them all for free.</li>
+        <li><strong>Use overlap analysis.</strong> If a run is large enough that it must overlap itself in every valid placement, those overlapping cells are definitely mines.</li>
+        <li><strong>Cross-reference rows and columns.</strong> A cell's row clue and column clue together often narrow down its state completely.</li>
+        <li><strong>Flag mines before revealing.</strong> Once you are certain a cell is a mine, flag it before clicking adjacent safe cells — it keeps the mine counter accurate and the board readable.</li>
+      </ol>
+    </section>
+
+    <section class="tz-section">
+      <h2>Difficulty levels</h2>
+      <ul class="tz-list">
+        <li><strong>Beginner (8×8, 16 mines):</strong> A compact grid with short clues. Good for learning the mechanic.</li>
+        <li><strong>Intermediate (10×10, 35 mines):</strong> More cells and denser runs require careful cross-referencing.</li>
+        <li><strong>Expert (15×15, 75 mines):</strong> A large grid with complex multi-run clues — a serious nonogram challenge.</li>
+      </ul>
+    </section>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/nonosweeper.js?v=1"></script>
+{% endblock %}
