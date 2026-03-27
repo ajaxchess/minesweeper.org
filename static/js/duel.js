@@ -8,7 +8,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const boardEl = document.getElementById('board');
-  if (!boardEl || !['duel', 'pvp', 'pvp-bot'].includes(boardEl.dataset.mode)) return;
+  if (!boardEl || !['duel', 'pvp', 'pvp-bot', 'pvp-beta', 'pvp-bot-beta'].includes(boardEl.dataset.mode)) return;
 
   // ── Config ────────────────────────────────────────────────────────────────
   const ROWS        = parseInt(boardEl.dataset.rows);
@@ -16,8 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const GAME_ID     = boardEl.dataset.gameId;
   const PLAYER_ID   = boardEl.dataset.playerId;
   const MODE        = boardEl.dataset.mode;
-  const IS_PVP      = MODE === 'pvp';
-  const IS_BOT      = MODE === 'pvp-bot';
+  const IS_BETA     = MODE === 'pvp-beta' || MODE === 'pvp-bot-beta';
+  const IS_PVP      = MODE === 'pvp' || MODE === 'pvp-beta';
+  const IS_BOT      = MODE === 'pvp-bot' || MODE === 'pvp-bot-beta';
   const IS_CREATOR  = boardEl.dataset.isCreator === 'true';
   const SUBMODE     = boardEl.dataset.submode || 'standard';
   const BOT_DIFF    = boardEl.dataset.botDifficulty || 'medium';
@@ -288,11 +289,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const proto  = location.protocol === 'https:' ? 'wss' : 'ws';
   let wsPath;
   if (IS_BOT) {
-    wsPath = `/ws/pvp/bot/${PLAYER_ID}?m=${SUBMODE}&d=${BOT_DIFF}`;
+    const botBase = IS_BETA ? '/ws/pvpbeta/bot' : '/ws/pvp/bot';
+    wsPath = `${botBase}/${PLAYER_ID}?m=${SUBMODE}&d=${BOT_DIFF}`;
   } else if (IS_PVP) {
+    const pvpBase = IS_BETA ? '/ws/pvpbeta' : '/ws/pvp';
     wsPath = SUBMODE === 'quick'
-      ? `/ws/pvp/quick/${PLAYER_ID}`
-      : `/ws/pvp/${PLAYER_ID}`;
+      ? `${pvpBase}/quick/${PLAYER_ID}`
+      : `${pvpBase}/${PLAYER_ID}`;
   } else {
     wsPath = `/ws/${GAME_ID}/${PLAYER_ID}`;
   }
@@ -456,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p class="result-time">Time: ${msg.elapsed}s</p>
             ${hashLine}
             ${rematchBtn}
-            <a href="${IS_PVP ? '/pvp' : '/duel'}?m=${SUBMODE}" class="duel-play-again duel-play-again--secondary">⚔️ New Duel</a>
+            <a href="${IS_BETA ? '/pvpbeta' : IS_PVP ? '/pvp' : '/duel'}?m=${SUBMODE}" class="duel-play-again duel-play-again--secondary">⚔️ New Duel</a>
           </div>
         `);
         break;

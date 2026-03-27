@@ -1,5 +1,11 @@
 List of active features
 
+F57 PvP Beta — Hidden /pvpbeta route for live user testing
+  A copy of the PvP matchmaking system at /pvpbeta (not linked from the main site).
+  Uses separate matchmaking queues so beta players are isolated from the main /pvp pool.
+  Game results are not saved to the leaderboard or ELO rankings.
+  Includes standard, quick, and vs-bot sub-modes mirroring /pvp.
+
 F56 Nonosweeper — Minesweeper meets Nonogram
 
   Overview

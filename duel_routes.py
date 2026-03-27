@@ -12,6 +12,8 @@ from duel import (
     create_game, get_game, manager,
     pvp_enqueue, pvp_dequeue, pvp_queue_length,
     pvp_quick_enqueue, pvp_quick_dequeue, pvp_quick_queue_length,
+    pvpbeta_enqueue, pvpbeta_dequeue, pvpbeta_queue_length,
+    pvpbeta_quick_enqueue, pvpbeta_quick_dequeue, pvpbeta_quick_queue_length,
     ROWS, COLS, MINES, PVP_ROWS, PVP_COLS, PVP_MINES,
     QUICK_ROWS, QUICK_COLS, QUICK_MINES,
 )
@@ -591,6 +593,199 @@ async def _pvp_quick_wait_loop(ws: WebSocket, player_id: str):
                     await _handle_reveal(ws, game, player_id, msg)
     except WebSocketDisconnect:
         pvp_quick_dequeue(player_id)
+
+
+# ── PvP Beta: hidden routes for live user testing ─────────────────────────────
+# Not linked from the main site. Uses isolated queues; results not saved to DB.
+
+@duel_router.get("/pvpbeta", response_class=HTMLResponse)
+async def pvpbeta_lobby(request: Request, m: str = "standard"):
+    if m == "quick":
+        rows, cols, mines = QUICK_ROWS, QUICK_COLS, QUICK_MINES
+    else:
+        m = "standard"
+        rows, cols, mines = PVP_ROWS, PVP_COLS, PVP_MINES
+    player_id = uuid.uuid4().hex[:8]
+    return templates.TemplateResponse("duel.html", {
+        "request":    request,
+        "game_id":    "",
+        "player_id":  player_id,
+        "rows":       rows,
+        "cols":       cols,
+        "mines":      mines,
+        "mode":       "pvp-beta",
+        "submode":    m,
+        "is_creator": False,
+        "opp_delay":  site_settings.PVP_OPPONENT_BOARD_DELAY_SECS,
+        "user":       get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+@duel_router.get("/pvpbeta/bot", response_class=HTMLResponse)
+async def pvpbeta_bot_lobby(request: Request):
+    return templates.TemplateResponse("pvpbeta_bot_lobby.html", {
+        "request": request,
+        "user":    get_current_user(request),
+        "lang":    get_lang(request), "t": get_t(request),
+    })
+
+@duel_router.get("/pvpbeta/bot/play", response_class=HTMLResponse)
+async def pvpbeta_bot_play(request: Request, d: str = "medium", m: str = "standard"):
+    d = d if d in ("easy", "medium", "hard") else "medium"
+    if m == "quick":
+        rows, cols, mines = QUICK_ROWS, QUICK_COLS, QUICK_MINES
+    else:
+        m = "standard"
+        rows, cols, mines = PVP_ROWS, PVP_COLS, PVP_MINES
+    player_id = uuid.uuid4().hex[:8]
+    return templates.TemplateResponse("duel.html", {
+        "request":        request,
+        "game_id":        "",
+        "player_id":      player_id,
+        "rows":           rows,
+        "cols":           cols,
+        "mines":          mines,
+        "mode":           "pvp-bot-beta",
+        "submode":        m,
+        "bot_difficulty": d,
+        "is_creator":     False,
+        "opp_delay":      site_settings.PVP_OPPONENT_BOARD_DELAY_SECS,
+        "user":           get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+@duel_router.websocket("/ws/pvpbeta/{player_id}")
+async def pvpbeta_ws(ws: WebSocket, player_id: str):
+    await ws.accept()
+    await ws.send_json({
+        "type": "queued",
+        "queue_pos": pvpbeta_queue_length() + 1,
+        "msg": "Looking for an opponent…",
+    })
+
+    game = await pvpbeta_enqueue(player_id, ws)
+
+    if game:
+        await ws.send_json({
+            "type":    "matched",
+            "game_id": game.game_id,
+            "msg":     "Opponent found! Get ready…",
+        })
+        await asyncio.sleep(3)
+        game.start()
+        await manager.broadcast(game, {
+            "type": "start",
+            "msg":  "⚔️ PvP Beta match started! Good luck!",
+            **game.start_payload(),
+        })
+        await _game_loop(ws, game, player_id)
+    else:
+        await _pvpbeta_wait_loop(ws, player_id)
+
+
+async def _pvpbeta_wait_loop(ws: WebSocket, player_id: str):
+    try:
+        while True:
+            raw = await ws.receive_text()
+            msg = json.loads(raw)
+            mtype = msg.get("type")
+            if mtype == "player_name":
+                from duel import _games
+                game = next((g for g in _games.values()
+                             if g.get_player(player_id)), None)
+                if game:
+                    p = game.get_player(player_id)
+                    if p:
+                        p.name  = msg.get("name", "")[:32]
+                        p.email = msg.get("email", "")[:256]
+    except WebSocketDisconnect:
+        pvpbeta_dequeue(player_id)
+
+
+@duel_router.websocket("/ws/pvpbeta/quick/{player_id}")
+async def pvpbeta_quick_ws(ws: WebSocket, player_id: str):
+    await ws.accept()
+    await ws.send_json({
+        "type": "queued",
+        "queue_pos": pvpbeta_quick_queue_length() + 1,
+        "msg": "Looking for an opponent…",
+    })
+
+    game = await pvpbeta_quick_enqueue(player_id, ws)
+
+    if game:
+        await ws.send_json({
+            "type":    "matched",
+            "game_id": game.game_id,
+            "msg":     "Opponent found! Get ready…",
+        })
+        await asyncio.sleep(3)
+        game.start()
+        await manager.broadcast(game, {
+            "type": "start",
+            "msg":  "⚔️ Quick PvP Beta match started! Good luck!",
+            **game.start_payload(),
+        })
+        await _game_loop(ws, game, player_id)
+    else:
+        await _pvpbeta_quick_wait_loop(ws, player_id)
+
+
+async def _pvpbeta_quick_wait_loop(ws: WebSocket, player_id: str):
+    try:
+        while True:
+            raw = await ws.receive_text()
+            msg = json.loads(raw)
+            mtype = msg.get("type")
+            if mtype == "player_name":
+                from duel import _games
+                game = next((g for g in _games.values()
+                             if g.get_player(player_id)), None)
+                if game:
+                    p = game.get_player(player_id)
+                    if p:
+                        p.name  = msg.get("name", "")[:32]
+                        p.email = msg.get("email", "")[:256]
+    except WebSocketDisconnect:
+        pvpbeta_quick_dequeue(player_id)
+
+
+@duel_router.websocket("/ws/pvpbeta/bot/{player_id}")
+async def pvpbeta_bot_ws(ws: WebSocket, player_id: str,
+                         d: str = "medium", m: str = "standard"):
+    d = d if d in ("easy", "medium", "hard") else "medium"
+    if m == "quick":
+        rows, cols, mines, submode = QUICK_ROWS, QUICK_COLS, QUICK_MINES, "quick"
+    else:
+        rows, cols, mines, submode = PVP_ROWS, PVP_COLS, PVP_MINES, "standard"
+
+    await ws.accept()
+
+    game = create_game(rows=rows, cols=cols, mines=mines, submode=submode, is_pvp=False)
+    game.add_player(player_id, ws)
+
+    bot_id = "bot_" + uuid.uuid4().hex[:6]
+    game.add_player(bot_id, None)
+    bot_p = game.get_player(bot_id)
+    bot_p.name  = BOT_NAMES[d]
+    bot_p.email = BOT_EMAILS[d]
+
+    await ws.send_json({
+        "type":    "matched",
+        "game_id": game.game_id,
+        "msg":     f"Bot opponent ready! ({d.capitalize()} difficulty) Get ready…",
+    })
+
+    await asyncio.sleep(3)
+    game.start()
+    await manager.broadcast(game, {
+        "type": "start",
+        "msg":  f"⚔️ vs Bot ({d.capitalize()}) — Good luck!",
+        **game.start_payload(),
+    })
+
+    asyncio.create_task(_run_bot(game, bot_id, d))
+    await _game_loop(ws, game, player_id)
 
 
 # ── Page: spectate an existing duel ──────────────────────────────────────────

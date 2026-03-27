@@ -377,6 +377,68 @@ def pvp_quick_dequeue(player_id: str):
 def pvp_quick_queue_length() -> int:
     return len(_pvp_quick_queue)
 
+# ── PvP Beta matchmaking queue (isolated; results not saved) ──────────────────
+_pvpbeta_queue: list[dict] = []
+
+async def pvpbeta_enqueue(player_id: str, ws) -> Optional[DuelGame]:
+    global _pvpbeta_queue
+    _pvpbeta_queue = [e for e in _pvpbeta_queue if e["player_id"] != player_id]
+    if _pvpbeta_queue:
+        opponent = _pvpbeta_queue.pop(0)
+        game = create_game(rows=PVP_ROWS, cols=PVP_COLS, mines=PVP_MINES, is_pvp=False)
+        game.add_player(opponent["player_id"], opponent["ws"])
+        game.add_player(player_id, ws)
+        try:
+            await opponent["ws"].send_json({
+                "type":    "matched",
+                "game_id": game.game_id,
+                "msg":     "Opponent found! Get ready…",
+            })
+        except Exception:
+            pass
+        return game
+    else:
+        _pvpbeta_queue.append({"player_id": player_id, "ws": ws})
+        return None
+
+def pvpbeta_dequeue(player_id: str):
+    global _pvpbeta_queue
+    _pvpbeta_queue = [e for e in _pvpbeta_queue if e["player_id"] != player_id]
+
+def pvpbeta_queue_length() -> int:
+    return len(_pvpbeta_queue)
+
+# ── Quick PvP Beta matchmaking queue ──────────────────────────────────────────
+_pvpbeta_quick_queue: list[dict] = []
+
+async def pvpbeta_quick_enqueue(player_id: str, ws) -> Optional[DuelGame]:
+    global _pvpbeta_quick_queue
+    _pvpbeta_quick_queue = [e for e in _pvpbeta_quick_queue if e["player_id"] != player_id]
+    if _pvpbeta_quick_queue:
+        opponent = _pvpbeta_quick_queue.pop(0)
+        game = create_game(rows=QUICK_ROWS, cols=QUICK_COLS, mines=QUICK_MINES, submode="quick", is_pvp=False)
+        game.add_player(opponent["player_id"], opponent["ws"])
+        game.add_player(player_id, ws)
+        try:
+            await opponent["ws"].send_json({
+                "type":    "matched",
+                "game_id": game.game_id,
+                "msg":     "Opponent found! Get ready…",
+            })
+        except Exception:
+            pass
+        return game
+    else:
+        _pvpbeta_quick_queue.append({"player_id": player_id, "ws": ws})
+        return None
+
+def pvpbeta_quick_dequeue(player_id: str):
+    global _pvpbeta_quick_queue
+    _pvpbeta_quick_queue = [e for e in _pvpbeta_quick_queue if e["player_id"] != player_id]
+
+def pvpbeta_quick_queue_length() -> int:
+    return len(_pvpbeta_quick_queue)
+
 # ── WebSocket connection manager ──────────────────────────────────────────────
 class ConnectionManager:
     async def send(self, ws: WebSocket, data: dict):
