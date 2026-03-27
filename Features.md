@@ -1,5 +1,9 @@
 List of active features
 
+F56 Implement Nonosweeper
+  https://minesweeper.fandom.com/wiki/Nonosweeper
+  The game is based on two different puzzle games. The interface has been designed to mimic that of the popular Windows game Minesweeper, but the game itself is actually a variation on the puzzles known as Nonograms.
+
 F55 Globesweeper — Minesweeper on a Goldberg Polyhedron
 
   Overview
