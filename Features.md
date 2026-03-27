@@ -887,6 +887,8 @@ F1 User Profile
 
 -- Documentation --
 
+D3 Outline the site structure and approach
+
 D2 Add feature request code to the beginning of the commit message
    If the commit has to do with the Tentaizu theme, the commit message should be
    of the form:
