@@ -87,6 +87,8 @@ The site supports a blog where games, announcements, and discussions happen.
 The site supports permanent pages like How-to-Play guides and 
 a global links collection of minesweeper.org related sites.
 
+The site and any mobile clients support the ability to serve ads.
+
 The site has an admin section where the server administrators can monitor resource usage 
 and game activity.
 
