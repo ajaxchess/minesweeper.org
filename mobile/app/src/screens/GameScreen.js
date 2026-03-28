@@ -23,7 +23,15 @@ import {
 
 import { useTheme } from '../context/ThemeContext';
 import useGameState  from '../hooks/useGameState';
+import useTimer      from '../hooks/useTimer';
 import BoardView     from '../components/BoardView';
+
+function formatTime(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}s`;
+}
 
 const MODES = ['beginner', 'intermediate', 'expert'];
 
@@ -47,6 +55,9 @@ export default function GameScreen({ navigation }) {
   // ── Local UI state ────────────────────────────────────────────────────────
   const [flagMode,  setFlagMode]  = useState(false);
   const [zoomScale, setZoomScale] = useState(1.0);
+
+  // ── Timer (Phase 3c) ──────────────────────────────────────────────────────
+  const elapsedMs = useTimer(started, over);
 
   // ── Press routing ─────────────────────────────────────────────────────────
   //
@@ -89,9 +100,11 @@ export default function GameScreen({ navigation }) {
   }, [mode, noGuess, newGame]);
 
   // ── Status text ───────────────────────────────────────────────────────────
-  let statusText = `${mines} mines`;
+  let statusText;
   if (won)          statusText = '🎉 You win!';
-  if (over && !won) statusText = '💥 Game over';
+  else if (over)    statusText = '💥 Game over';
+  else if (started) statusText = formatTime(elapsedMs);
+  else              statusText = `${mines} mines`;
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.background }]}>
