@@ -3639,7 +3639,7 @@ def admin_hscleaning_delete(
 
 
 @app.get("/admin/analysis", response_class=HTMLResponse)
-def admin_analysis(request: Request, doc: Optional[str] = None):
+def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional[str] = None):
     import markdown as md_lib
     import os
 
@@ -3648,11 +3648,33 @@ def admin_analysis(request: Request, doc: Optional[str] = None):
         raise HTTPException(status_code=403, detail="Forbidden")
 
     analysis_dir = os.path.join(os.path.dirname(__file__), "analysis")
+    download_exts = {".pptx", ".xlsx", ".docx", ".pdf"}
+
+    # Validate folder param — no traversal, no nesting
+    if folder and (".." in folder or "/" in folder or "\\" in folder):
+        folder = None
+    current_folder = None
+    if folder:
+        candidate = os.path.join(analysis_dir, folder)
+        if os.path.isdir(candidate):
+            current_folder = folder
+
+    active_dir = os.path.join(analysis_dir, current_folder) if current_folder else analysis_dir
+
+    # Always list subfolders from the root (one level only)
+    folders = []
     docs = []
     downloads = []
-    download_exts = {".pptx", ".xlsx", ".docx", ".pdf"}
     if os.path.isdir(analysis_dir):
-        for fname in sorted(os.listdir(analysis_dir)):
+        for name in sorted(os.listdir(analysis_dir)):
+            if os.path.isdir(os.path.join(analysis_dir, name)) and not name.startswith("."):
+                folders.append(name)
+
+    if os.path.isdir(active_dir):
+        for fname in sorted(os.listdir(active_dir)):
+            fpath = os.path.join(active_dir, fname)
+            if not os.path.isfile(fpath):
+                continue
             if fname.endswith(".md"):
                 docs.append(fname[:-3])
             elif any(fname.endswith(ext) for ext in download_exts):
@@ -3661,21 +3683,23 @@ def admin_analysis(request: Request, doc: Optional[str] = None):
     content_html = None
     current_doc = None
     if doc and doc in docs:
-        path = os.path.join(analysis_dir, doc + ".md")
+        path = os.path.join(active_dir, doc + ".md")
         with open(path, encoding="utf-8") as f:
             content_html = md_lib.markdown(f.read(), extensions=["extra", "sane_lists"])
         current_doc = doc
 
     return templates.TemplateResponse("admin_analysis.html", {
-        "request":      request,
-        "user":         user,
-        "lang":         get_lang(request),
-        "t":            get_t(request),
-        "mode":         "admin",
-        "docs":         docs,
-        "downloads":    downloads,
-        "content_html": content_html,
-        "current_doc":  current_doc,
+        "request":        request,
+        "user":           user,
+        "lang":           get_lang(request),
+        "t":              get_t(request),
+        "mode":           "admin",
+        "folders":        folders,
+        "current_folder": current_folder,
+        "docs":           docs,
+        "downloads":      downloads,
+        "content_html":   content_html,
+        "current_doc":    current_doc,
     })
 
 
@@ -3686,16 +3710,20 @@ def admin_analysis_download(request: Request, file: str):
     if not user or user.get("email") not in ADMIN_EMAILS:
         raise HTTPException(status_code=403, detail="Forbidden")
 
-    # Prevent path traversal
-    if "/" in file or "\\" in file or ".." in file:
+    # Allow at most one subfolder level (e.g. "folder/file.pdf").
+    # Reject anything with ".." or backslashes, or more than one slash.
+    if "\\" in file or ".." in file or file.count("/") > 1:
         raise HTTPException(status_code=400, detail="Invalid filename")
 
     analysis_dir = os.path.join(os.path.dirname(__file__), "analysis")
-    path = os.path.join(analysis_dir, file)
+    path = os.path.realpath(os.path.join(analysis_dir, file))
+    # Confirm resolved path is still inside analysis_dir
+    if not path.startswith(os.path.realpath(analysis_dir) + os.sep):
+        raise HTTPException(status_code=400, detail="Invalid filename")
     if not os.path.isfile(path):
         raise HTTPException(status_code=404, detail="File not found")
 
-    return FileResponse(path, filename=file)
+    return FileResponse(path, filename=os.path.basename(file))
 
 
 # ── Archive routes (must be last — parameterised path catches all 3-segment URLs) ─

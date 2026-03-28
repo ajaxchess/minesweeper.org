@@ -16,9 +16,26 @@
   <div class="analysis-layout">
 
     <div class="analysis-sidebar">
+      {% if folders and not current_folder %}
+        <p style="font-size:0.75rem;color:var(--text-muted);margin:0 0 0.25rem;text-transform:uppercase;letter-spacing:.05em;">Folders</p>
+        {% for f in folders %}
+        <a href="/admin/analysis?folder={{ f }}" class="analysis-doc-link analysis-folder-link">
+          📁 {{ f.replace('-', ' ').replace('_', ' ') }}
+        </a>
+        {% endfor %}
+        {% if docs or downloads %}
+          <p style="font-size:0.75rem;color:var(--text-muted);margin:1rem 0 0.25rem;text-transform:uppercase;letter-spacing:.05em;">Documents</p>
+        {% endif %}
+      {% endif %}
+      {% if current_folder %}
+        <a href="/admin/analysis" class="analysis-doc-link analysis-folder-link" style="margin-bottom:0.5rem;">
+          ← Back
+        </a>
+        <p style="font-size:0.75rem;color:var(--text-muted);margin:0 0 0.25rem;text-transform:uppercase;letter-spacing:.05em;">📁 {{ current_folder.replace('-', ' ').replace('_', ' ') }}</p>
+      {% endif %}
       {% if docs %}
         {% for slug in docs %}
-        <a href="/admin/analysis?doc={{ slug }}"
+        <a href="/admin/analysis?{% if current_folder %}folder={{ current_folder }}&{% endif %}doc={{ slug }}"
            class="analysis-doc-link {% if slug == current_doc %}active{% endif %}">
           {{ slug.replace('-', ' ').replace('_', ' ') }}
         </a>
@@ -27,12 +44,12 @@
       {% if downloads %}
         <p style="font-size:0.75rem;color:var(--text-muted);margin:1rem 0 0.25rem;text-transform:uppercase;letter-spacing:.05em;">Downloads</p>
         {% for fname in downloads %}
-        <a href="/admin/analysis/download?file={{ fname }}" class="analysis-doc-link" download>
+        <a href="/admin/analysis/download?file={% if current_folder %}{{ current_folder }}/{% endif %}{{ fname }}" class="analysis-doc-link" download>
           ⬇ {{ fname }}
         </a>
         {% endfor %}
       {% endif %}
-      {% if not docs and not downloads %}
+      {% if not folders and not docs and not downloads %}
         <p class="analysis-empty">No documents yet.<br>Add .md files to the <code>analysis/</code> directory.</p>
       {% endif %}
     </div>

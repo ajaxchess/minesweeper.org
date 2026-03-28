@@ -5559,6 +5559,11 @@ select.calc-input { width: 140px; }
   font-weight: 600;
 }
 
+.analysis-folder-link {
+  font-weight: 600;
+  text-transform: none;
+}
+
 .analysis-content {
   flex: 1;
   min-width: 0;
