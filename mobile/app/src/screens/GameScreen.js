@@ -25,6 +25,7 @@ import { useTheme } from '../context/ThemeContext';
 import useGameState  from '../hooks/useGameState';
 import useTimer      from '../hooks/useTimer';
 import BoardView     from '../components/BoardView';
+import WinModal      from '../components/WinModal';
 
 function formatTime(ms) {
   const totalSec = Math.floor(ms / 1000);
@@ -50,6 +51,7 @@ export default function GameScreen({ navigation }) {
   const {
     rows, cols, mines, board, mineSet, revealed, flagged,
     explodedIdx, over, won, mode, noGuess, started,
+    leftClicks, rightClicks, chordClicks,
   } = state;
 
   // ── Local UI state ────────────────────────────────────────────────────────
@@ -191,6 +193,24 @@ export default function GameScreen({ navigation }) {
         onZoomChange={setZoomScale}
         onPressCell={handlePressCell}
         onLongPressCell={handleLongPressCell}
+      />
+
+      {/* ── Win modal (Phase 4c) ────────────────────────────────────────── */}
+      <WinModal
+        visible={won}
+        mode={mode}
+        noGuess={noGuess}
+        rows={rows}
+        cols={cols}
+        mines={mines}
+        board={board}
+        mineSet={mineSet}
+        elapsedMs={elapsedMs}
+        leftClicks={leftClicks}
+        rightClicks={rightClicks}
+        chordClicks={chordClicks}
+        theme={theme}
+        onNewGame={handleNewGame}
       />
 
     </SafeAreaView>

@@ -131,7 +131,7 @@ Follow OS by default; allow lock to light or dark in preferences.
 | 6 | 3c | Implement game timer — starts on first tap, stops on win/loss | done |
 | 7 | 4a | Implement AsyncStorage service — prefs keys and score keys (6 modes, top 20, sorted) | done |
 | 8 | 4b | Implement API service — POST /api/scores with required headers | done |
-| 9 | 4c | Implement win flow — compute stats, name prompt, submit, offline fallback | pending |
+| 9 | 4c | Implement win flow — compute stats, name prompt, submit, offline fallback | done |
 | 10 | 5a | Implement leaderboard fetch — GET /api/scores/{mode} with period selector | pending |
 | 11 | 5b | Implement score merge and deduplication — local + server on (mode + time_ms + board_hash) | pending |
 | 12 | 5c | Build leaderboard UI — Name, Time, 3BV, 3BV/s, Efficiency, Board hash (8 chars) | pending |
