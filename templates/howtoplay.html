@@ -10,31 +10,42 @@
 {% block tw_description %}{{ t.meta_desc_howtoplay }}{% endblock %}
 
 {% block content %}
+<script>if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||'ontouchstart'in window)document.documentElement.classList.add('is-mobile');</script>
+<style>
+.is-mobile .desktop-only{display:none!important}
+html:not(.is-mobile) .mobile-only{display:none!important}
+</style>
 <div class="lb-wrapper">
 
   <h1 class="lb-title">How to Play Minesweeper</h1>
 
   <div class="help-section">
-    <p>Minesweeper is a classic logic puzzle where your goal is to uncover every safe cell on a grid without clicking on a hidden mine. It looks simple, but beneath the surface lies a game of deduction, pattern recognition, and careful reasoning. This guide will teach you everything you need to know — from the very basics to strategies that will help you climb the leaderboard.</p>
+    <p>Minesweeper is a classic logic puzzle where your goal is to uncover every safe cell on a grid without <span class="desktop-only">clicking on</span><span class="mobile-only">tapping</span> a hidden mine. It looks simple, but beneath the surface lies a game of deduction, pattern recognition, and careful reasoning. This guide will teach you everything you need to know — from the very basics to strategies that will help you climb the leaderboard.</p>
   </div>
 
   <div class="help-section">
     <h2>The Basics</h2>
-    <p>A minesweeper board is a grid of covered cells. Some of those cells contain hidden mines. Your job is to reveal all the cells that don't contain mines. If you click on a mine, the game is over.</p>
+    <p>A minesweeper board is a grid of covered cells. Some of those cells contain hidden mines. Your job is to reveal all the cells that don't contain mines. If you <span class="desktop-only">click on</span><span class="mobile-only">tap</span> a mine, the game is over.</p>
     <p>When you reveal a cell, one of two things happens:</p>
     <ul>
       <li><strong>A number appears.</strong> This number tells you exactly how many mines are hidden in the eight cells immediately surrounding it (above, below, left, right, and the four diagonals). A "1" means one of its eight neighbors is a mine. A "3" means three of its neighbors are mines. This is the core information you use to solve the puzzle.</li>
-      <li><strong>A blank space opens up.</strong> If a revealed cell has zero neighboring mines, it appears blank and the game automatically reveals all of its neighbors too. This can cascade outward, opening up large sections of the board at once. These cascading openings are how most games begin — your first click will never be a mine, and it usually opens up a region that gives you enough information to start reasoning.</li>
+      <li><strong>A blank space opens up.</strong> If a revealed cell has zero neighboring mines, it appears blank and the game automatically reveals all of its neighbors too. This can cascade outward, opening up large sections of the board at once. These cascading openings are how most games begin — your first <span class="desktop-only">click</span><span class="mobile-only">tap</span> will never be a mine, and it usually opens up a region that gives you enough information to start reasoning.</li>
     </ul>
   </div>
 
   <div class="help-section">
     <h2>Controls</h2>
-    <ul>
+    <ul class="desktop-only">
       <li><strong>Left-click</strong> on a covered cell to reveal it.</li>
-      <li><strong>Right-click</strong> on a covered cell to place a flag. Flags mark cells you believe contain mines. Right-click again to cycle through question mark (❓) and back to unmarked. On mobile, use the flag button to toggle flag mode.</li>
+      <li><strong>Right-click</strong> on a covered cell to place a flag. Flags mark cells you believe contain mines. Right-click again to cycle through question mark (❓) and back to unmarked.</li>
       <li><strong>Double-click</strong> a revealed number to chord — instantly reveal all non-flagged neighbors when the flag count matches the number.</li>
       <li><strong>Click the smiley face</strong> (🙂) to reset the board and start a new game.</li>
+    </ul>
+    <ul class="mobile-only">
+      <li><strong>Tap</strong> a covered cell to reveal it.</li>
+      <li><strong>To flag a cell:</strong> long-press it, or enable Flag Mode by tapping the 🚩 button and then tap cells to flag them. In Flag Mode every tap places or cycles a flag rather than revealing — toggle it back off to return to reveal mode. Flags cycle: flagged (🚩) → question mark (❓) → unmarked.</li>
+      <li><strong>Tap a revealed number</strong> to chord — instantly reveals all non-flagged neighbors when the flag count matches the number.</li>
+      <li><strong>Tap the smiley face</strong> (🙂) to reset the board and start a new game.</li>
     </ul>
     <p>The mine counter in the top left shows how many mines remain unflagged. The timer in the top right tracks your solving time in seconds.</p>
   </div>
@@ -63,7 +74,7 @@
     <p><strong>Look for easy deductions first.</strong> After the board opens up, scan for cells where the logic is obvious — a "1" with only one covered neighbor means that neighbor is definitely a mine. Flag it. A "1" that already has a flag next to it means all its other covered neighbors are safe. Reveal them.</p>
     <p><strong>Work from what you know outward.</strong> Each flag you place or safe cell you reveal gives you new information. Follow the chain of logic from the edges of the revealed area, working outward into the unknown.</p>
     <p><strong>Don't guess if you don't have to.</strong> On Minesweeper.org, you can enable No Guess mode, which guarantees that every puzzle is fully solvable through logic alone. With No Guess mode on, there is always a deduction available somewhere on the board — you never need to take a 50/50 chance.</p>
-    <p><strong>Use flags generously.</strong> Flagging confirmed mines makes it much easier to count remaining mines around numbered cells. Some advanced players skip flagging to save time, but as a beginner, flags are your best friend.</p>
+    <p><strong>Use flags generously.</strong> Flagging confirmed mines makes it much easier to count remaining mines around numbered cells. Some advanced players skip flagging to save time, but as a beginner, flags are your best friend. <span class="mobile-only">On mobile, long-press a cell to flag it, or turn on Flag Mode (🚩) to flag with a tap.</span></p>
   </div>
 
   <div class="help-section">
@@ -168,9 +179,9 @@
   <div class="help-section">
     <h2>Tips for Improving Your Speed</h2>
     <p>Once you're comfortable with the logic, the next challenge is getting faster. Here are some tips:</p>
-    <p><strong>Learn to chord.</strong> Chording (double-clicking) is a technique where you click on a revealed number that already has all its mines flagged. This instantly reveals all remaining covered neighbors of that cell. It saves enormous amounts of time compared to clicking each safe cell individually.</p>
+    <p><strong>Learn to chord.</strong> Chording is a technique where you <span class="desktop-only">double-click</span><span class="mobile-only">tap</span> a revealed number that already has all its mines flagged. This instantly reveals all remaining covered neighbors of that cell. It saves enormous amounts of time compared to <span class="desktop-only">clicking</span><span class="mobile-only">tapping</span> each safe cell individually.</p>
     <p><strong>Scan, don't stare.</strong> Experienced players keep their eyes moving across the board, scanning for easy deductions and satisfied numbers rather than fixating on one difficult spot. If you get stuck in one area, move to another — you'll often find easier progress elsewhere that eventually gives you the information you need.</p>
-    <p><strong>Reduce unnecessary flagging.</strong> While flags are helpful for beginners, competitive players often skip flagging obvious mines to save time. If you can see that a cell is a mine and don't need the flag to help you reason about surrounding cells, you can leave it unflagged and move on.</p>
+    <p><strong>Reduce unnecessary flagging.</strong> While flags are helpful for beginners, competitive players often skip flagging obvious mines to save time. If you can see that a cell is a mine and don't need the flag to help you reason about surrounding cells, you can leave it unflagged and move on. <span class="mobile-only">On mobile this means skipping the long-press or Flag Mode tap and simply remembering where the mine is.</span></p>
     <p><strong>Practice on Intermediate before jumping to Expert.</strong> Intermediate boards build your pattern recognition and speed in a less punishing environment. Once you can consistently solve Intermediate boards in under two minutes, you're ready for Expert.</p>
   </div>
 

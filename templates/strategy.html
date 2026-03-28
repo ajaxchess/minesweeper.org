@@ -32,6 +32,11 @@
 {% endblock %}
 
 {% block content %}
+<script>if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||'ontouchstart'in window)document.documentElement.classList.add('is-mobile');</script>
+<style>
+.is-mobile .desktop-only{display:none!important}
+html:not(.is-mobile) .mobile-only{display:none!important}
+</style>
 <div class="tz-content-page">
 
   <nav class="tz-breadcrumb" aria-label="Breadcrumb">
@@ -46,7 +51,7 @@
     <a href="/how-to-play">how to play minesweeper</a> and want to get faster,
     smarter, and more consistent. We'll cover the pattern recognition that
     eliminates slow thinking, the logical techniques that solve ambiguous positions,
-    the speed techniques that competitive players use, and the probability reasoning
+    the <span class="desktop-only">speed techniques that competitive players use</span><span class="mobile-only">tap and gesture techniques that mobile players use</span>, and the probability reasoning
     that helps you make the best decision when logic alone isn't enough.
   </p>
 
@@ -165,21 +170,26 @@
     <h2>Speed Techniques</h2>
     <p>Pattern recognition makes you accurate. Speed techniques make you fast.</p>
 
-    <h3>Chording (Double-Click)</h3>
+    <h3>Chording (<span class="desktop-only">Double-Click</span><span class="mobile-only">Tap</span>)</h3>
     <p>
       Chording is the most important mechanical technique in minesweeper. When a
       revealed number has exactly the right number of flagged neighbors, you can
-      double-click (or middle-click) that number to instantly reveal all of its
-      remaining covered neighbors. Instead of clicking five safe cells individually,
-      you click once on the number and all five open at once.
+      <span class="desktop-only">double-click (or middle-click)</span><span class="mobile-only">tap</span>
+      that number to instantly reveal all of its remaining covered neighbors.
+      Instead of <span class="desktop-only">clicking</span><span class="mobile-only">tapping</span>
+      five safe cells individually, you
+      <span class="desktop-only">click</span><span class="mobile-only">tap</span>
+      once on the number and all five open at once.
     </p>
     <p>
       Chording is most powerful when combined with flagging in a smooth sequence:
-      flag a mine, immediately chord the adjacent number, flag the next mine
-      revealed, chord the next number, and so on. Top players chain these actions
-      into a fluid rhythm that clears large sections of the board in seconds.
+      flag a mine<span class="mobile-only"> (long-press or use Flag Mode)</span>,
+      immediately chord the adjacent number, flag the next mine revealed, chord
+      the next number, and so on. Top players chain these actions into a fluid
+      rhythm that clears large sections of the board in seconds.
     </p>
 
+    <div class="desktop-only">
     <h3>The 1.5-Click Technique</h3>
     <p>
       This is an optimization used by competitive speedrunners to combine flagging
@@ -197,33 +207,43 @@
       3. It takes practice to execute reliably, but once it becomes muscle memory,
       it dramatically reduces the number of clicks per game.
     </p>
+    </div>
 
     <h3>Flagging vs. Non-Flagging (NF) Style</h3>
     <p>
       The minesweeper community has debated this for over 30 years: should you flag
-      mines, or skip flagging entirely and only click safe cells?
+      mines, or skip flagging entirely and only
+      <span class="desktop-only">click</span><span class="mobile-only">tap</span>
+      safe cells?
     </p>
     <p>
       <strong>Flagging style</strong> works well when combined with chording. You
       flag mines and use chords to open groups of safe cells efficiently. The
-      advantage is fewer individual clicks because each chord opens multiple cells
-      at once. The disadvantage is that you spend time placing flags that aren't
-      strictly necessary.
+      advantage is fewer individual <span class="desktop-only">clicks</span><span class="mobile-only">taps</span>
+      because each chord opens multiple cells at once. The disadvantage is that you
+      spend time placing flags that aren't strictly necessary.
+      <span class="mobile-only">On mobile, use long-press or Flag Mode (🚩) to place flags; Flag Mode lets you batch-flag several cells in a row without long-pressing each one.</span>
     </p>
     <p>
       <strong>Non-flagging (NF) style</strong> skips flagging entirely. You only
-      left-click safe cells, never right-click to flag. The advantage is that you
-      never waste time on a click that doesn't reveal new information. The
-      disadvantage is that you must click every safe cell individually, and you
-      have to mentally track mine locations without visual flags to help you.
+      <span class="desktop-only">left-click</span><span class="mobile-only">tap</span>
+      safe cells, never
+      <span class="desktop-only">right-click to flag</span><span class="mobile-only">flag</span>.
+      The advantage is that you never waste time on a
+      <span class="desktop-only">click</span><span class="mobile-only">tap</span>
+      that doesn't reveal new information. The disadvantage is that you must
+      <span class="desktop-only">click</span><span class="mobile-only">tap</span>
+      every safe cell individually, and you have to mentally track mine locations
+      without visual flags to help you.
     </p>
     <p>
       The best approach depends on your personal speed and accuracy. Many top players
       use a hybrid style: they flag when it sets up an efficient chord, and skip
-      flagging when it doesn't save any clicks. The golden rule is simple — if
-      flagging makes you faster, do it. If it doesn't, don't.
+      flagging when it doesn't save any <span class="desktop-only">clicks</span><span class="mobile-only">taps</span>.
+      The golden rule is simple — if flagging makes you faster, do it. If it doesn't, don't.
     </p>
 
+    <div class="desktop-only">
     <h3>Mouse Movement and Ergonomics</h3>
     <p>
       Competitive players pay close attention to physical setup. Use a mouse with
@@ -238,6 +258,22 @@
       scanning pattern — for example, working left to right across each row of the
       boundary, chording as they go.
     </p>
+    </div>
+    <div class="mobile-only">
+    <h3>Touch Flow and Finger Movement</h3>
+    <p>
+      On mobile, finger travel and rhythm matter as much as they do with a mouse.
+      Plan your taps to sweep across the boundary systematically rather than jumping
+      around the board. Minimize backtracking — work a section until it's exhausted,
+      then move to the next.
+    </p>
+    <p>
+      Use Flag Mode (🚩) to batch-flag several mines in a row without long-pressing
+      each one individually. Toggle it on, flag your known mines across a section,
+      then toggle it off to return to reveal mode. This is faster than long-pressing
+      each cell when you have multiple consecutive mines to mark.
+    </p>
+    </div>
   </section>
 
   <!-- ── Endgame and Probability ─────────────────────────────────────────── -->
