@@ -6,6 +6,23 @@ Developer account: Richard Cross (individual) — `ajaxchess@gmail.com`
 
 ## Prerequisites
 
+### Node.js version
+
+EAS CLI requires Node 18 or later. Check your version first:
+
+```bash
+node --version
+```
+
+If it's below 18, upgrade via [nvm](https://github.com/nvm-sh/nvm):
+
+```bash
+nvm install 18
+nvm use 18
+nvm alias default 18         # make 18 the default for new shells
+node --version               # should print v18.x.x or higher
+```
+
 ### One-time machine setup
 
 ```bash
