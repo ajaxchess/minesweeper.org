@@ -32,6 +32,7 @@ function addTouchHandlers(el, onTap, onLongPress) {
   let startX, startY;
 
   el.addEventListener('touchstart', e => {
+    if (e.touches.length > 1) { clearTimeout(timer); timer = null; return; } // pinch-to-zoom
     e.preventDefault();
     moved  = false;
     startX = e.touches[0].clientX;
@@ -40,6 +41,7 @@ function addTouchHandlers(el, onTap, onLongPress) {
   }, { passive: false });
 
   el.addEventListener('touchmove', e => {
+    if (e.touches.length > 1) { clearTimeout(timer); timer = null; return; } // pinch in progress
     if (!timer) return;
     if (Math.abs(e.touches[0].clientX - startX) > 10 ||
         Math.abs(e.touches[0].clientY - startY) > 10) {
@@ -48,6 +50,7 @@ function addTouchHandlers(el, onTap, onLongPress) {
   }, { passive: true });
 
   el.addEventListener('touchend', e => {
+    if (e.touches.length > 0) { clearTimeout(timer); timer = null; return; } // other finger still down
     e.preventDefault();
     if (timer) { clearTimeout(timer); timer = null; if (!moved) onTap(); }
   }, { passive: false });
