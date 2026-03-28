@@ -171,6 +171,10 @@ async def sitemap(request: Request):
 async def ads_txt():
     return FileResponse("ads.txt", media_type="text/plain")
 
+@app.get("/app-ads.txt", include_in_schema=False)
+async def app_ads_txt():
+    return FileResponse("app-ads.txt", media_type="text/plain")
+
 @app.get("/iamatestfile.txt", include_in_schema=False)
 async def iamatestfile_txt():
     return PlainTextResponse("healthy")
