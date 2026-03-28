@@ -1,16 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { SafeAreaView, StyleSheet } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
+import LocalWebView from '../components/LocalWebView';
+
+// Metro resolves require() statically — must be a literal here, not a variable.
+const ASSET = require('../../assets/strategy_content.html');
 
 export default function StrategyScreen() {
   const { theme } = useTheme();
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={{ color: theme.text }}>Strategy — Phase 6</Text>
-    </View>
+    <SafeAreaView style={[styles.root, { backgroundColor: theme.background }]}>
+      <LocalWebView assetModule={ASSET} />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  root: { flex: 1 },
 });
