@@ -35,7 +35,7 @@
       "ios": {
         "appleId": "ajaxchess@gmail.com",
         "ascAppId": "",
-        "appleTeamId": ""
+        "appleTeamId": "JGY24WS6U2"
       },
       "android": {
         "serviceAccountKeyPath": "./google-play-service-account.json",
