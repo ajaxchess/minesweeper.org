@@ -199,11 +199,51 @@ TOROID_MODES = {
 
 ARCHIVE_MODES = {"beginner", "intermediate", "expert"}
 
+# ── Client type detection ─────────────────────────────────────────────────────
+def get_client_type(request: Request) -> str:
+    """
+    Derive client type from request headers.
+    Apps identify themselves via X-Client-Type: ios_app | android_app.
+    Browsers are classified by User-Agent; mobile browsers get 'mobile_browser'.
+    Historical / unrecognised clients return 'na'.
+    """
+    explicit = request.headers.get("X-Client-Type", "").lower().strip()
+    if explicit in ("ios_app", "android_app"):
+        return explicit
+
+    ua = request.headers.get("User-Agent", "").lower()
+    if not ua:
+        return "na"
+
+    # Mobile UA check must come before browser-name checks (Chrome/Safari appear in mobile UAs too)
+    if any(kw in ua for kw in ("mobi", "android", "iphone", "ipad", "ipod")):
+        return "mobile_browser"
+
+    # Desktop browser detection — order matters (Edge and Opera include "chrome" in their UA)
+    if "edg/" in ua or "edghtml" in ua:
+        return "edge"
+    if "opr/" in ua or "opera" in ua:
+        return "opera"
+    if "chrome" in ua or "chromium" in ua:
+        return "chrome"
+    if "firefox" in ua:
+        return "firefox"
+    if "safari" in ua:
+        return "safari"
+
+    return "browser"
+
+
 # ── Daily score reset ─────────────────────────────────────────────────────────
 def reset_scores():
     db = SessionLocal()
     try:
-        deleted = db.query(Score).delete(synchronize_session=False)
+        # ios_app and android_app scores are exempt from the daily reset
+        deleted = (
+            db.query(Score)
+            .filter(~Score.client_type.in_(["ios_app", "android_app"]))
+            .delete(synchronize_session=False)
+        )
         db.commit()
         logger.info(f"Daily score reset complete — {deleted} rows removed.")
         record_scheduler_run("reset_scores", success=True)
@@ -631,6 +671,7 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
     else:
         guest_token = None
 
+    client_type = get_client_type(request)
     score = Score(
         name         = payload.name,
         user_email   = user["email"] if user else None,
@@ -647,6 +688,7 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
         right_clicks = payload.right_clicks,
         chord_clicks = payload.chord_clicks,
         guest_token  = guest_token,
+        client_type  = client_type,
     )
     db.add(score)
 
@@ -667,6 +709,7 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
             left_clicks  = payload.left_clicks,
             right_clicks = payload.right_clicks,
             chord_clicks = payload.chord_clicks,
+            client_type  = client_type,
         ))
 
     db.commit()
@@ -916,6 +959,7 @@ def submit_rush_score(payload: RushScoreSubmit, request: Request, db: Session = 
         density       = payload.density,
         rush_mode     = payload.rush_mode,
         guest_token   = guest_token,
+        client_type   = get_client_type(request),
     )
     db.add(entry)
     db.commit()
@@ -1342,6 +1386,7 @@ def submit_replay_score(payload: ReplayScoreSubmit, request: Request, db: Sessio
         right_clicks = payload.right_clicks,
         chord_clicks = payload.chord_clicks,
         guest_token  = guest_token,
+        client_type  = get_client_type(request),
     )
     db.add(entry)
     db.commit()
@@ -1590,6 +1635,7 @@ def submit_cylinder_score(payload: CylinderScoreSubmit, request: Request, db: Se
         right_clicks = payload.right_clicks,
         chord_clicks = payload.chord_clicks,
         guest_token  = guest_token,
+        client_type  = get_client_type(request),
     )
     db.add(entry)
     db.commit()
@@ -1756,6 +1802,7 @@ def submit_toroid_score(payload: ToroidScoreSubmit, request: Request, db: Sessio
         right_clicks = payload.right_clicks,
         chord_clicks = payload.chord_clicks,
         guest_token  = guest_token,
+        client_type  = get_client_type(request),
     )
     db.add(entry)
     db.commit()
@@ -1928,6 +1975,7 @@ def submit_hex_score(payload: HexscoreSubmit, request: Request, db: Session = De
         right_clicks = payload.right_clicks,
         chord_clicks = payload.chord_clicks,
         guest_token  = guest_token,
+        client_type  = get_client_type(request),
     )
     db.add(entry)
     db.commit()
@@ -2083,15 +2131,16 @@ def submit_globe_score(payload: GlobesweeperScoreSubmit, request: Request, db: S
     else:
         guest_token = None
     entry = GlobesweeperScore(
-        name       = payload.name,
-        user_email = user["email"] if user else None,
-        glob_mode  = payload.glob_mode,
-        time_ms    = payload.time_ms,
-        t_param    = payload.t_param,
-        face_count = payload.face_count,
-        mines      = payload.mines,
-        board_hash = payload.board_hash,
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        glob_mode   = payload.glob_mode,
+        time_ms     = payload.time_ms,
+        t_param     = payload.t_param,
+        face_count  = payload.face_count,
+        mines       = payload.mines,
+        board_hash  = payload.board_hash,
         guest_token = guest_token,
+        client_type = get_client_type(request),
     )
     db.add(entry)
     db.commit()
@@ -2498,6 +2547,7 @@ def submit_mosaic_score(payload: MosaicScoreSubmit, request: Request, db: Sessio
         puzzle_date = payload.puzzle_date,
         time_secs   = payload.time_secs,
         guest_token = guest_token,
+        client_type = get_client_type(request),
     )
     db.add(entry)
     db.commit()
@@ -2553,6 +2603,7 @@ def submit_mosaic_easy_score(payload: MosaicEasyScoreSubmit, request: Request, d
         puzzle_date = payload.puzzle_date,
         time_secs   = payload.time_secs,
         guest_token = guest_token,
+        client_type = get_client_type(request),
     )
     db.add(entry)
     db.commit()
@@ -2613,11 +2664,12 @@ def submit_mosaic_custom_score(payload: MosaicCustomScoreSubmit, request: Reques
         guest_token = None
     board_id = _mosaic_custom_board_id(payload.rows, payload.cols, payload.board_hash, payload.board_mask)
     entry = MosaicCustomScore(
-        board_id   = board_id,
-        name       = payload.name,
-        user_email = user["email"] if user else None,
-        time_secs  = payload.time_secs,
-        guest_token= guest_token,
+        board_id    = board_id,
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        time_secs   = payload.time_secs,
+        guest_token = guest_token,
+        client_type = get_client_type(request),
     )
     db.add(entry)
     db.commit()
@@ -2673,6 +2725,7 @@ def submit_tentaizu_score(payload: TentaizuScoreSubmit, request: Request, db: Se
         puzzle_date = payload.puzzle_date,
         time_secs   = payload.time_secs,
         guest_token = guest_token,
+        client_type = get_client_type(request),
     )
     db.add(entry)
     db.commit()
@@ -2724,6 +2777,7 @@ def submit_tentaizu_easy_score(payload: TentaizuEasyScoreSubmit, request: Reques
         user_email  = user["email"] if user else None,
         puzzle_date = payload.puzzle_date,
         time_secs   = payload.time_secs,
+        client_type = get_client_type(request),
     )
     db.add(entry)
     db.commit()
@@ -3797,6 +3851,7 @@ def submit_nonosweeper_score(payload: NonosweeperScoreSubmit, request: Request, 
         difficulty  = payload.difficulty,
         time_secs   = payload.time_secs,
         guest_token = guest_token,
+        client_type = get_client_type(request),
     )
     db.add(entry)
     db.commit()

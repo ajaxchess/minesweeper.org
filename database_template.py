@@ -61,6 +61,7 @@ class Score(Base):
     right_clicks = Column(Integer, nullable=True)
     chord_clicks = Column(Integer, nullable=True)
     guest_token  = Column(String(36), nullable=True, index=True)  # links guest score to login session
+    client_type  = Column(String(32), nullable=False, server_default="na")  # chrome/firefox/safari/edge/mobile_browser/ios_app/android_app/na
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Fast lookups by mode + time for leaderboard queries
@@ -107,6 +108,7 @@ class GameHistory(Base):
     left_clicks  = Column(Integer, nullable=True)
     right_clicks = Column(Integer, nullable=True)
     chord_clicks = Column(Integer, nullable=True)
+    client_type  = Column(String(32), nullable=False, server_default="na")
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -155,6 +157,7 @@ class RushScore(Base):
     density       = Column(Float, nullable=True)             # mines/cell (custom mode)
     rush_mode    = Column(String(16), nullable=False)  # easy/normal/hard/custom
     guest_token  = Column(String(36), nullable=True, index=True)
+    client_type  = Column(String(32), nullable=False, server_default="na")
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -185,6 +188,7 @@ class TentaizuScore(Base):
     puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD
     time_secs   = Column(Integer, nullable=False)
     guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
     created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -209,6 +213,7 @@ class TentaizuEasyScore(Base):
     user_email  = Column(String(256), nullable=True, index=True)
     puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD
     time_secs   = Column(Integer, nullable=False)
+    client_type = Column(String(32), nullable=False, server_default="na")
     created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -234,6 +239,7 @@ class MosaicScore(Base):
     puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD
     time_secs   = Column(Integer, nullable=False)
     guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
     created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -259,6 +265,7 @@ class MosaicEasyScore(Base):
     puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD
     time_secs   = Column(Integer, nullable=False)
     guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
     created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -283,8 +290,9 @@ class MosaicCustomScore(Base):
     name       = Column(String(32), nullable=False)
     user_email = Column(String(256), nullable=True, index=True)
     time_secs  = Column(Integer, nullable=False)
-    guest_token= Column(String(36), nullable=True, index=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
         Index("ix_mosaic_custom_board_time", "board_id", "time_secs"),
@@ -319,6 +327,7 @@ class CylinderScore(Base):
     right_clicks = Column(Integer, nullable=True)
     chord_clicks = Column(Integer, nullable=True)
     guest_token  = Column(String(36), nullable=True, index=True)
+    client_type  = Column(String(32), nullable=False, server_default="na")
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -364,6 +373,7 @@ class ToroidScore(Base):
     right_clicks = Column(Integer, nullable=True)
     chord_clicks = Column(Integer, nullable=True)
     guest_token  = Column(String(36), nullable=True, index=True)
+    client_type  = Column(String(32), nullable=False, server_default="na")
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -408,6 +418,7 @@ class ReplayScore(Base):
     right_clicks = Column(Integer, nullable=True)
     chord_clicks = Column(Integer, nullable=True)
     guest_token  = Column(String(36), nullable=True, index=True)
+    client_type  = Column(String(32), nullable=False, server_default="na")
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -451,6 +462,7 @@ class HexsweeperScore(Base):
     right_clicks = Column(Integer, nullable=True)
     chord_clicks = Column(Integer, nullable=True)
     guest_token  = Column(String(36), nullable=True, index=True)
+    client_type  = Column(String(32), nullable=False, server_default="na")
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -489,7 +501,8 @@ class GlobesweeperScore(Base):
     mines      = Column(Integer, nullable=False)
     board_hash = Column(String(128), nullable=True)
     guest_token = Column(String(36), nullable=True, index=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
         Index("ix_globesweeper_scores_mode_time", "glob_mode", "time_ms"),
@@ -678,6 +691,7 @@ class NonosweeperScore(Base):
     difficulty  = Column(String(16), nullable=False)   # beginner|intermediate|expert
     time_secs   = Column(Integer, nullable=False)
     guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
     created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -729,14 +743,29 @@ def _seed_bot_profiles():
 def _apply_migrations():
     """Idempotent ALTER TABLE migrations for columns added after initial deploy."""
     migrations = [
-        ("scores",           "guest_token", "VARCHAR(36) NULL"),
-        ("rush_scores",      "guest_token", "VARCHAR(36) NULL"),
-        ("cylinder_scores",  "guest_token", "VARCHAR(36) NULL"),
-        ("toroid_scores",    "guest_token", "VARCHAR(36) NULL"),
-        ("tentaizu_scores",  "guest_token", "VARCHAR(36) NULL"),
-        ("replay_scores",    "guest_token", "VARCHAR(36) NULL"),
-        ("pvp_results",      "board_hash",  "VARCHAR(128) NULL"),
-        ("user_profiles",    "pvp_elo",     "INT NOT NULL DEFAULT 1200"),
+        ("scores",                "guest_token",  "VARCHAR(36) NULL"),
+        ("rush_scores",           "guest_token",  "VARCHAR(36) NULL"),
+        ("cylinder_scores",       "guest_token",  "VARCHAR(36) NULL"),
+        ("toroid_scores",         "guest_token",  "VARCHAR(36) NULL"),
+        ("tentaizu_scores",       "guest_token",  "VARCHAR(36) NULL"),
+        ("replay_scores",         "guest_token",  "VARCHAR(36) NULL"),
+        ("pvp_results",           "board_hash",   "VARCHAR(128) NULL"),
+        ("user_profiles",         "pvp_elo",      "INT NOT NULL DEFAULT 1200"),
+        # client_type tracking (added 2026-03-27); historical rows default to 'na'
+        ("scores",                "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("game_history",          "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("rush_scores",           "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("tentaizu_scores",       "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("tentaizu_easy_scores",  "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("mosaic_scores",         "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("mosaic_easy_scores",    "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("mosaic_custom_scores",  "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("cylinder_scores",       "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("toroid_scores",         "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("replay_scores",         "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("hexsweeper_scores",     "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("globesweeper_scores",   "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("nonosweeper_scores",    "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:
