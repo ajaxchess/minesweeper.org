@@ -1,5 +1,7 @@
 List of active features
 
+F59 Serve up Resume
+
 F58 Basic iOS version
 
 F57 PvP Beta — Hidden /pvpbeta route for live user testing
