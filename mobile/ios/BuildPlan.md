@@ -126,8 +126,8 @@ Follow OS by default; allow lock to light or dark in preferences.
 | 1 | 1 | Initialize Expo project, configure React Navigation, AsyncStorage, theme provider | pending |
 | 2 | 2a | Port neighbors, placeMines, placeMinesNoGuess, isSolvable into gameEngine.js | pending |
 | 3 | 2b | Port calc3BV and calcBoardHash; validate against spec test vectors | pending |
-| 4 | 3a | Build Board component — render cells, mines, numbers, flags for all 3 board sizes | pending |
-| 5 | 3b | Implement touch handling — tap, long-press, flag mode button, chord tap, pinch-to-zoom | pending |
+| 4 | 3a | Build Board component — render cells, mines, numbers, flags for all 3 board sizes | done |
+| 5 | 3b | Implement touch handling — tap, long-press, flag mode button, chord tap, pinch-to-zoom | done |
 | 6 | 3c | Implement game timer — starts on first tap, stops on win/loss | pending |
 | 7 | 4a | Implement AsyncStorage service — prefs keys and score keys (6 modes, top 20, sorted) | pending |
 | 8 | 4b | Implement API service — POST /api/scores with required headers | pending |
