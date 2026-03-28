@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- Primary Meta -->
+  <title>How to Play Minesweeper — Complete Guide | minesweeper.org</title>
+  <meta name="description" content="Learn how to play Minesweeper — from the basics to advanced strategies, game modes, no-guess mode, chording, and tips for improving your speed.">
+  <meta name="keywords" content="how to play minesweeper, minesweeper guide, minesweeper strategy, minesweeper tips, minesweeper rules, minesweeper patterns, no guess minesweeper">
+  <link rel="canonical" href="https://minesweeper.org/how-to-play">
+
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+  <link rel="stylesheet" href="/static/css/style.css?v=35" />
+  <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
+  <script>
+    // Resolve the "default" auto-theme: special-day override takes priority,
+    // then light during daytime (06:00–20:00 local) and dark at night.
+    window.resolveDefaultSkin = function() {
+      var serverSkin  = 'dark';
+      var defaultSkin = 'dark';
+      if (serverSkin !== defaultSkin) return serverSkin === 'diana' ? 'classic' : serverSkin;
+      return (new Date().getHours() >= 6 && new Date().getHours() < 20) ? 'light' : 'dark';
+    };
+    // For skins that have day/night pairs, resolve the correct variant by time.
+    window.resolveStoredSkin = function(stored) {
+      var h = new Date().getHours();
+      var day = (h >= 6 && h < 20);
+      if (stored === 'flower' || stored === 'flower-light') return day ? 'flower-light' : 'flower';
+      return stored;
+    };
+    (function(){
+      var p = new URLSearchParams(window.location.search);
+      var t = p.get('theme');
+      if (t === 'diana' || t === 'classic') localStorage.setItem('skin', 'classic');
+      else if (t === 'dark')         localStorage.setItem('skin', 'dark');
+      else if (t === 'light')        localStorage.setItem('skin', 'light');
+      else if (t === 'tentaizu')     localStorage.setItem('skin', 'tentaizu');
+      else if (t === 'flower')       localStorage.setItem('skin', 'flower');
+      else if (t === 'default')      localStorage.setItem('skin', 'default');
+      var stored = localStorage.getItem('skin');
+      var skin;
+      if (!stored || stored === 'default') {
+        skin = window.resolveDefaultSkin();
+      } else if (stored === 'flower' || stored === 'flower-light') {
+        skin = window.resolveStoredSkin(stored);
+      } else {
+        skin = stored;
+      }
+      document.documentElement.dataset.skin = (skin === 'diana' ? 'classic' : skin);
+    })();
+  </script>
+
+  <!-- hreflang: tell Google about language variants -->
+  
+  <link rel="alternate" hreflang="x-default" href="https://minesweeper.org/how-to-play">
+  <link rel="alternate" hreflang="en"      href="https://minesweeper.org/how-to-play">
+  <link rel="alternate" hreflang="eo"      href="https://minesweeper.org/how-to-play?lang=eo">
+  <link rel="alternate" hreflang="de"      href="https://minesweeper.org/how-to-play?lang=de">
+  <link rel="alternate" hreflang="es"      href="https://minesweeper.org/how-to-play?lang=es">
+  <link rel="alternate" hreflang="fr"      href="https://minesweeper.org/how-to-play?lang=fr">
+  <link rel="alternate" hreflang="ko"      href="https://minesweeper.org/how-to-play?lang=ko">
+  <link rel="alternate" hreflang="ja"      href="https://minesweeper.org/how-to-play?lang=ja">
+  <link rel="alternate" hreflang="th"      href="https://minesweeper.org/how-to-play?lang=th">
+  <link rel="alternate" hreflang="uk"      href="https://minesweeper.org/how-to-play?lang=uk">
+  <link rel="alternate" hreflang="zh-Hans" href="https://minesweeper.org/how-to-play?lang=zh">
+  <link rel="alternate" hreflang="zh-Hant" href="https://minesweeper.org/how-to-play?lang=zh-hant">
+  <link rel="alternate" hreflang="pl"      href="https://minesweeper.org/how-to-play?lang=pl">
+  <link rel="alternate" hreflang="tl"      href="https://minesweeper.org/how-to-play?lang=tl">
+  <link rel="alternate" hreflang="ru"      href="https://minesweeper.org/how-to-play?lang=ru">
+  <link rel="alternate" hreflang="pt"      href="https://minesweeper.org/how-to-play?lang=pt">
+  <link rel="alternate" hreflang="it"      href="https://minesweeper.org/how-to-play?lang=it">
+
+  <!-- Open Graph -->
+  <meta property="og:type"         content="website">
+  <meta property="og:site_name"    content="minesweeper.org">
+  <meta property="og:url"          content="https://minesweeper.org/how-to-play">
+  <meta property="og:title"        content="How to Play Minesweeper — Complete Guide">
+  <meta property="og:description"  content="Learn how to play Minesweeper — from the basics to advanced strategies, game modes, no-guess mode, chording, and tips for improving your speed.">
+  <meta property="og:image"        content="https://minesweeper.org/static/img/og-default.png">
+  <meta property="og:image:width"  content="1024">
+  <meta property="og:image:height" content="541">
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:site" content="@minesweeper_org">
+  <meta name="twitter:title"       content="How to Play Minesweeper — Complete Guide">
+  <meta name="twitter:description" content="Learn how to play Minesweeper — from the basics to advanced strategies, game modes, no-guess mode, chording, and tips for improving your speed.">
+  <meta name="twitter:image"       content="https://minesweeper.org/static/img/og-default.png">
+
+  <!-- JSON-LD Structured Data -->
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Minesweeper",
+    "url": "https://minesweeper.org/",
+    "description": "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
+    "genre": ["Puzzle", "Strategy", "Browser Game"],
+    "gamePlatform": "Web Browser",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+  }
+  </script>
+  
+
+  <!-- Quest reward: disable ads if earned -->
+  <script>try{if(localStorage.getItem('quests_ads_disabled')==='true'){window.adsbygoogle={push:function(){}};document.head.insertAdjacentHTML('beforeend','<style>.ad-sidebar,.ad-left,.ad-right,.ad-container{display:none!important}<\/style>');}}catch(e){}</script>
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8102958922361899"
+     crossorigin="anonymous"></script>
+
+  <!-- Google Analytics -->
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-R8DZN6QZ7G"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-R8DZN6QZ7G');
+  </script>
+  
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <img src="/static/img/LadyDisMinesLogo.png" class="logo-classic" alt="Lady Di's Mines">
+        <span class="logo-text">💣 Minesweeper.org</span>
+      </a>
+      <!-- Classic skin sidebar nav (hidden in dark/light/tentaizu) -->
+      <nav class="classic-nav">
+        <a href="/" class="">Beginner</a>
+        <a href="/intermediate" class="">Intermediate</a>
+        <a href="/expert" class="">Expert</a>
+        <a href="/custom" class="">Custom</a>
+        <a href="/leaderboard" class="">🏆 Leaderboard</a>
+        <a href="/rush" class="">⚡ Rush</a>
+        <div class="nav-pvp-group">
+          <button class="nav-pvp-toggle" onclick="togglePvpMenu(event)">🎮 PvP ▾</button>
+          <div class="nav-pvp-menu">
+            <a href="/pvp"            class="">🎮 PvP</a>
+            <a href="/duel"           class="">⚔️ Duel</a>
+            <a href="/pvp/leaderboard" class="">🏆 PvP Leaderboard</a>
+            <a href="/pvp/rankings"    class="">👑 PvP Rankings</a>
+          </div>
+        </div>
+        <a href="/tentaizu" class="">🔢 Tentaizu</a>
+        <a href="/mosaic"   class="">🧩 Mosaic</a>
+        <div class="nav-pvp-group">
+          <button class="nav-pvp-toggle" onclick="togglePvpMenu(event)">🔄 Variants ▾</button>
+          <div class="nav-pvp-menu">
+            <a href="/variants" class="">🔄 Variants</a>
+            <a href="/cylinder" class="">🔄 Cylinder</a>
+            <a href="/toroid"   class="">🍩 Toroid</a>
+            <a href="/variants/replay/" class="">🔁 Replay</a>
+            <a href="/variants/board-generator" class="">🔧 Board Generator</a>
+          </div>
+        </div>
+        <a href="/quests"      class="">🎯 Quests</a>
+        <a href="/how-to-play"
+           class="active">❓ How to Play</a>
+      </nav>
+
+      <!-- Mega menu nav (dark / light / tentaizu skins) -->
+      <nav class="mega-nav">
+
+        <!-- Play -->
+        <div class="mega-group" id="mg-play">
+          <button class="mega-trigger " onclick="toggleMega(event,'mg-play')">💣 Play ▾</button>
+          <div class="mega-panel">
+            <div class="mega-col">
+              <a href="/" class="mega-card ">
+                <span class="mega-icon">🟢</span>
+                <span class="mega-card-text"><strong>Beginner</strong><span>9×9 · 10 mines</span></span>
+              </a>
+              <a href="/intermediate" class="mega-card ">
+                <span class="mega-icon">🟡</span>
+                <span class="mega-card-text"><strong>Intermediate</strong><span>16×16 · 40 mines</span></span>
+              </a>
+              <a href="/expert" class="mega-card ">
+                <span class="mega-icon">🔴</span>
+                <span class="mega-card-text"><strong>Expert</strong><span>16×30 · 99 mines</span></span>
+              </a>
+              <a href="/custom" class="mega-card ">
+                <span class="mega-icon">⚙️</span>
+                <span class="mega-card-text"><strong>Custom</strong><span>Custom board size &amp; mine count</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/rush" class="mega-card ">
+                <span class="mega-icon">⚡</span>
+                <span class="mega-card-text"><strong>Rush</strong><span>Clear waves before they fill up</span></span>
+              </a>
+              <a href="/leaderboard" class="mega-card ">
+                <span class="mega-icon">🏆</span>
+                <span class="mega-card-text"><strong>Leaderboard</strong><span>Today’s best times</span></span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- PvP -->
+        <div class="mega-group" id="mg-pvp">
+          <button class="mega-trigger " onclick="toggleMega(event,'mg-pvp')">🎮 PvP ▾</button>
+          <div class="mega-panel">
+            <div class="mega-col">
+              <a href="/pvp" class="mega-card ">
+                <span class="mega-icon">🎮</span>
+                <span class="mega-card-text"><strong>PvP</strong><span>Compete for ELO rating</span></span>
+              </a>
+              <a href="/duel" class="mega-card ">
+                <span class="mega-icon">⚔️</span>
+                <span class="mega-card-text"><strong>Duel</strong><span>Challenge a friend directly</span></span>
+              </a>
+              <a href="/pvp/bot" class="mega-card ">
+                <span class="mega-icon">🤖</span>
+                <span class="mega-card-text"><strong>Vs Bot</strong><span>Practice against AI opponents</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/pvp/leaderboard" class="mega-card ">
+                <span class="mega-icon">🏆</span>
+                <span class="mega-card-text"><strong>PvP Leaderboard</strong><span>Top wins this week</span></span>
+              </a>
+              <a href="/pvp/rankings" class="mega-card ">
+                <span class="mega-icon">👑</span>
+                <span class="mega-card-text"><strong>ELO Rankings</strong><span>Rating standings</span></span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Puzzles -->
+        <div class="mega-group" id="mg-puzzles">
+          <button class="mega-trigger " onclick="toggleMega(event,'mg-puzzles')">🧩 Puzzles ▾</button>
+          <div class="mega-panel">
+            <div class="mega-col">
+              <a href="/tentaizu" class="mega-card ">
+                <span class="mega-icon">📅</span>
+                <span class="mega-card-text"><strong>Tentaizu Daily</strong><span>7×7 pure-logic daily puzzle</span></span>
+              </a>
+              <a href="/tentaizu/easy-5x5-6" class="mega-card">
+                <span class="mega-icon">⭐</span>
+                <span class="mega-card-text"><strong>Tentaizu Easy</strong><span>5×5 beginner mode, 6 mines</span></span>
+              </a>
+              <a href="/tentaizu/how-to-play" class="mega-card ">
+                <span class="mega-icon">📖</span>
+                <span class="mega-card-text"><strong>How to Play Tentaizu</strong><span>Rules, tips &amp; strategy</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/mosaic/standard" class="mega-card ">
+                <span class="mega-icon">🟫</span>
+                <span class="mega-card-text"><strong>Mosaic Daily</strong><span>9×9 daily fill puzzle</span></span>
+              </a>
+              <a href="/mosaic" class="mega-card ">
+                <span class="mega-icon">⭐</span>
+                <span class="mega-card-text"><strong>Mosaic Easy</strong><span>5×5 beginner daily puzzle</span></span>
+              </a>
+              <a href="/mosaic/how-to-play" class="mega-card ">
+                <span class="mega-icon">📖</span>
+                <span class="mega-card-text"><strong>How to Play Mosaic</strong><span>Rules, tips &amp; strategy</span></span>
+              </a>
+              <a href="/nonosweeper" class="mega-card ">
+                <span class="mega-icon">🔢</span>
+                <span class="mega-card-text"><strong>Nonosweeper</strong><span>Minesweeper + Nonogram daily</span></span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="mega-group" id="mg-variants">
+          <button class="mega-trigger " onclick="toggleMega(event,'mg-variants')">🔄 Variants ▾</button>
+          <div class="mega-panel">
+            <div class="mega-col">
+              <a href="/cylinder" class="mega-card ">
+                <span class="mega-icon">🔄</span>
+                <span class="mega-card-text"><strong>Cylinder</strong><span>Left &amp; right edges wrap around</span></span>
+              </a>
+              <a href="/toroid" class="mega-card ">
+                <span class="mega-icon">🍩</span>
+                <span class="mega-card-text"><strong>Toroid</strong><span>All edges wrap — donut topology</span></span>
+              </a>
+              <a href="/hexsweeper" class="mega-card ">
+                <span class="mega-icon">⬡</span>
+                <span class="mega-card-text"><strong>Hexsweeper</strong><span>Hex board, 6 neighbours</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/variants/replay/" class="mega-card ">
+                <span class="mega-icon">🔁</span>
+                <span class="mega-card-text"><strong>Replay</strong><span>Play a specific board by hash</span></span>
+              </a>
+              <a href="/variants/board-generator" class="mega-card ">
+                <span class="mega-icon">🔧</span>
+                <span class="mega-card-text"><strong>Board Generator</strong><span>Design and share your own board</span></span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- More -->
+        <div class="mega-group" id="mg-more">
+          <button class="mega-trigger active" onclick="toggleMega(event,'mg-more')">More ▾</button>
+          <div class="mega-panel">
+            <div class="mega-col">
+              <a href="/quests" class="mega-card ">
+                <span class="mega-icon">🎯</span>
+                <span class="mega-card-text"><strong>Quests</strong><span>Complete challenges, earn rewards</span></span>
+              </a>
+              <a href="/how-to-play" class="mega-card active">
+                <span class="mega-icon">❓</span>
+                <span class="mega-card-text"><strong>How to Play</strong><span>Learn Minesweeper rules &amp; tips</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/blog" class="mega-card ">
+                <span class="mega-icon">📝</span>
+                <span class="mega-card-text"><strong>Blog</strong><span>News, strategy, and updates</span></span>
+              </a>
+              <a href="/links" class="mega-card ">
+                <span class="mega-icon">🔗</span>
+                <span class="mega-card-text"><strong>Links</strong><span>Related sites and resources</span></span>
+              </a>
+            </div>
+            <div class="mega-col mega-col-themes">
+              <div class="mega-theme-label">Theme</div>
+              <div class="mega-theme-btns">
+                <button class="mega-theme-btn" onclick="setTheme('default')"    title="Auto (day/night)">🌓</button>
+                <button class="mega-theme-btn" onclick="setTheme('dark')"       title="Dark">🌑</button>
+                <button class="mega-theme-btn" onclick="setTheme('light')"      title="Light">☀️</button>
+                <button class="mega-theme-btn" onclick="setTheme('tentaizu')"   title="Tentaizu">⭐</button>
+                <button class="mega-theme-btn" onclick="setTheme('flower')"     title="Flower Garden">🌸</button>
+                <button class="mega-theme-btn" onclick="setTheme('classic')"    title="Classic">🟦</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </nav>
+      <div class="auth-area">
+        
+          <a href="/auth/login?next=/how-to-play" class="auth-btn login-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.93 6.36h-1.65c-.19 0-.4.25-.4.59v1.19h2.05l-.27 2.08H14.88V18h-2.15v-5.78h-1.4v-2.08h1.4v-1.37C12.73 7.47 13.83 6 15.72 6c.86 0 1.21.06 1.21.06v1.3z"/></svg>
+            Sign in with Google
+          </a>
+        
+        <select class="lang-select" onchange="window.location='/set-lang?lang='+this.value">
+          <option value="en"      selected>EN</option>
+          <option value="de"      >DE</option>
+          <option value="fr"      >FR</option>
+          <option value="es"      >ES</option>
+          <option value="pt"      >PT</option>
+          <option value="it"      >IT</option>
+          <option value="pl"      >PL</option>
+          <option value="ru"      >RU</option>
+          <option value="uk"      >UK</option>
+          <option value="zh"      >ZH</option>
+          <option value="zh-hant" >繁體</option>
+          <option value="ja"      >JA</option>
+          <option value="ko"      >KO</option>
+          <option value="th"      >TH</option>
+          <option value="tl"      >TL</option>
+          <option value="pgl"     >PGL</option>
+          <option value="eo"      >EO</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  
+  
+  
+
+
+  <main class="page-how-to-play">
+    
+<script>if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||'ontouchstart'in window)document.documentElement.classList.add('is-mobile');</script>
+<style>
+.is-mobile .desktop-only{display:none!important}
+html:not(.is-mobile) .mobile-only{display:none!important}
+</style>
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">How to Play Minesweeper</h1>
+
+  <div class="help-section">
+    <p>Minesweeper is a classic logic puzzle where your goal is to uncover every safe cell on a grid without <span class="desktop-only">clicking on</span><span class="mobile-only">tapping</span> a hidden mine. It looks simple, but beneath the surface lies a game of deduction, pattern recognition, and careful reasoning. This guide will teach you everything you need to know — from the very basics to strategies that will help you climb the leaderboard.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>The Basics</h2>
+    <p>A minesweeper board is a grid of covered cells. Some of those cells contain hidden mines. Your job is to reveal all the cells that don't contain mines. If you <span class="desktop-only">click on</span><span class="mobile-only">tap</span> a mine, the game is over.</p>
+    <p>When you reveal a cell, one of two things happens:</p>
+    <ul>
+      <li><strong>A number appears.</strong> This number tells you exactly how many mines are hidden in the eight cells immediately surrounding it (above, below, left, right, and the four diagonals). A "1" means one of its eight neighbors is a mine. A "3" means three of its neighbors are mines. This is the core information you use to solve the puzzle.</li>
+      <li><strong>A blank space opens up.</strong> If a revealed cell has zero neighboring mines, it appears blank and the game automatically reveals all of its neighbors too. This can cascade outward, opening up large sections of the board at once. These cascading openings are how most games begin — your first <span class="desktop-only">click</span><span class="mobile-only">tap</span> will never be a mine, and it usually opens up a region that gives you enough information to start reasoning.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Controls</h2>
+    <ul class="desktop-only">
+      <li><strong>Left-click</strong> on a covered cell to reveal it.</li>
+      <li><strong>Right-click</strong> on a covered cell to place a flag. Flags mark cells you believe contain mines. Right-click again to cycle through question mark (❓) and back to unmarked.</li>
+      <li><strong>Double-click</strong> a revealed number to chord — instantly reveal all non-flagged neighbors when the flag count matches the number.</li>
+      <li><strong>Click the smiley face</strong> (🙂) to reset the board and start a new game.</li>
+    </ul>
+    <ul class="mobile-only">
+      <li><strong>Tap</strong> a covered cell to reveal it.</li>
+      <li><strong>To flag a cell:</strong> long-press it, or enable Flag Mode by tapping the 🚩 button and then tap cells to flag them. In Flag Mode every tap places or cycles a flag rather than revealing — toggle it back off to return to reveal mode. Flags cycle: flagged (🚩) → question mark (❓) → unmarked.</li>
+      <li><strong>Tap a revealed number</strong> to chord — instantly reveals all non-flagged neighbors when the flag count matches the number.</li>
+      <li><strong>Tap the smiley face</strong> (🙂) to reset the board and start a new game.</li>
+    </ul>
+    <p>The mine counter in the top left shows how many mines remain unflagged. The timer in the top right tracks your solving time in seconds.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>How to Use the Numbers</h2>
+    <p>The numbers are everything in minesweeper. Learning to read them quickly and accurately is what separates beginners from experienced players.</p>
+    <p>Consider a cell showing "1" at the edge of a revealed region. It has eight neighbors, but suppose five of them are already revealed and safe. That means the one mine must be among the three remaining covered cells. If two of those covered cells are also accounted for by other numbers, you can narrow it down to exactly one cell — that's your mine. Flag it.</p>
+    <p>The reverse logic is just as important: if a numbered cell already has all of its mines accounted for (for example, a "1" that already has one flagged neighbor), then every other covered neighbor of that cell is guaranteed safe. You can click them all without risk.</p>
+    <p>This back-and-forth reasoning — identifying mines and identifying safe cells — is the fundamental loop of minesweeper.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Common Patterns to Recognize</h2>
+    <p>As you play more, you'll start to recognize certain number arrangements instantly. Here are some of the most common:</p>
+    <p><strong>The 1-1 pattern along a wall.</strong> When two "1" cells sit side by side along the edge of an opening, and they share covered neighbors, the mine must be in the cell that is a neighbor to both of them. The cells that only neighbor one of the two 1s are safe.</p>
+    <p><strong>The 1-2-1 pattern.</strong> In a row of three numbers reading 1-2-1 along a boundary, the mine for the "2" is in the middle covered cell, and the outer covered cells are safe.</p>
+    <p><strong>The 1-2-2-1 pattern.</strong> Similar to the above but extended. Once you recognize these patterns, you can solve entire sections of the board at a glance rather than reasoning through each cell individually.</p>
+    <p><strong>Satisfied numbers.</strong> Any number whose flag count already matches its value is "satisfied" — all remaining covered neighbors are safe. Scanning for satisfied numbers is one of the fastest ways to make progress.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Beginner Strategy</h2>
+    <p>If you're new to minesweeper, start with the Beginner board (9×9 with 10 mines). Here's a simple approach:</p>
+    <p><strong>Start by clicking near the center of the board.</strong> Your first click is always safe, and clicking near the center gives you the best chance of a large opening that reveals lots of numbers to work with.</p>
+    <p><strong>Look for easy deductions first.</strong> After the board opens up, scan for cells where the logic is obvious — a "1" with only one covered neighbor means that neighbor is definitely a mine. Flag it. A "1" that already has a flag next to it means all its other covered neighbors are safe. Reveal them.</p>
+    <p><strong>Work from what you know outward.</strong> Each flag you place or safe cell you reveal gives you new information. Follow the chain of logic from the edges of the revealed area, working outward into the unknown.</p>
+    <p><strong>Don't guess if you don't have to.</strong> On Minesweeper.org, you can enable No Guess mode, which guarantees that every puzzle is fully solvable through logic alone. With No Guess mode on, there is always a deduction available somewhere on the board — you never need to take a 50/50 chance.</p>
+    <p><strong>Use flags generously.</strong> Flagging confirmed mines makes it much easier to count remaining mines around numbered cells. Some advanced players skip flagging to save time, but as a beginner, flags are your best friend. <span class="mobile-only">On mobile, long-press a cell to flag it, or turn on Flag Mode (🚩) to flag with a tap.</span></p>
+  </div>
+
+  <div class="help-section">
+    <h2>Difficulty Levels</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>Level</th><th>Board</th><th>Mines</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><a href="/">Beginner</a></td><td>9×9</td><td>10</td></tr>
+        <tr><td><a href="/intermediate">Intermediate</a></td><td>16×16</td><td>40</td></tr>
+        <tr><td><a href="/expert">Expert</a></td><td>30×16</td><td>99</td></tr>
+        <tr><td><a href="/custom">Custom</a></td><td>your choice</td><td>your choice</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>No Guess Mode</h2>
+    <p>One of the most frustrating aspects of traditional minesweeper is the endgame coin flip — reaching a point where no amount of logic can tell you which cell is the mine, and you just have to guess. Minesweeper.org solves this problem with No Guess mode.</p>
+    <p>When No Guess is enabled, every board that is generated is guaranteed to be solvable through pure logic. There will always be at least one safe deduction available at every step of the puzzle. This means that if you lose, it was because you made a reasoning error — not because the game forced you into an impossible situation. No Guess mode makes minesweeper a true test of logic.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Game Modes Beyond Classic</h2>
+
+    <h3><a href="/rush">Rush</a></h3>
+    <p>Rush is an endless, fast-paced mode where new rows of mines continuously push up from the bottom of the board. Your goal is to survive as long as possible by flagging all the mines in each row to clear it. Hitting a mine adds two penalty rows, making the board even harder to manage. Rush is pure speed and pressure — great for players who want a more action-oriented minesweeper experience.</p>
+
+    <h3><a href="/duel">Duel</a></h3>
+    <p>Duel is a real-time 1v1 multiplayer mode. You and an opponent both play the same board simultaneously. Scoring is based on tiles revealed plus a time bonus calculated from your speed and the percentage of the board you've uncovered. Share the link with a friend, hit Start, and race to see who can clear the board faster.</p>
+
+    <h3><a href="/pvp">PvP</a></h3>
+    <p>PvP is matchmaking-based head-to-head minesweeper. Join the queue and get paired with another player automatically — no link sharing needed.</p>
+
+    <h3><a href="/tentaizu">Tentaizu</a></h3>
+    <p>Tentaizu is a logic puzzle that uses minesweeper-style number clues but plays very differently. You're given a 7×7 grid with some numbers already revealed. There are exactly 10 hidden mines, and the numbers tell you how many mines are adjacent to that cell — just like in minesweeper. But instead of clicking to reveal cells, you cycle through three states: flag as a mine (💣), mark as safe (✓), or leave as unknown (?). The game doesn't end on a wrong guess — you keep refining until you've correctly identified all 10 mines. A daily Tentaizu puzzle is available each day, plus a random mode for extra practice.</p>
+
+    <h3><a href="/variants">Variants: Cylinder and Toroid</a></h3>
+    <p>These variants change the shape of the board itself. In Cylinder mode, the left and right edges of the board are connected, so a mine on the far right side affects cells on the far left. In Toroid mode, all four edges wrap around — left connects to right, and top connects to bottom — so you're effectively playing on the surface of a donut. Every cell on a toroid board has exactly eight neighbors, even corner cells. These wrapping edges change familiar patterns in surprising ways and force you to rethink strategies you take for granted on a flat board.</p>
+
+    <h3><a href="/quests">Quests</a></h3>
+    <p>Quests give you daily and seasonal goals to work toward. A new daily quest appears every 24 hours, and seasonal quests run for the entire month. Completing enough quests earns you rewards, including the ability to permanently disable ads on your device by maintaining a 20-day daily quest streak or completing 10 daily quests in a season.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Board Builder and Replay Mode</h2>
+    <p>
+      The <a href="/variants/board-generator">Board Generator</a> lets you design your own
+      Minesweeper board by clicking cells to place mines. Once you're happy with the layout, the
+      tool produces a <strong>board hash</strong> — a compact Base64 encoding of every mine
+      position — along with a shareable link.
+    </p>
+    <p>
+      Paste that link (or any board hash) into the <a href="/variants/replay/">Replay</a> page
+      to play that exact board, share it with friends, or race against their times. The Replay
+      page also supports Cylinder and Toroid topologies for the same hash.
+    </p>
+    <p>
+      Replay games operate on a <strong>separate leaderboard per board hash</strong>. Times
+      posted on a replay board are tracked against other players who have played that same
+      specific layout — they do <em>not</em> appear on the global leaderboard that tracks
+      standard Beginner / Intermediate / Expert games. Each unique hash has its own rankings,
+      so a particularly well-designed board can attract its own competitive community.
+    </p>
+  </div>
+
+  <div class="help-section" id="cheatcode">
+    <h2>Easter Egg: The XYZZY Cheat Code</h2>
+    <p>
+      The most famous Minesweeper cheat code dates back to the original Windows 98/2000/XP version
+      of the game. Its name, <strong>XYZZY</strong>, is a magic spell from
+      <em>Colossal Cave Adventure</em> (1975) — one of the earliest text adventure games — where
+      typing it teleported the player to a different location. It became a beloved Easter egg
+      trigger that appeared in dozens of programs over the following decades.
+    </p>
+    <p>
+      In Windows Minesweeper, typing <code>XYZZY</code>, then pressing <strong>Shift+Enter</strong>,
+      then pressing <strong>Shift</strong> again caused a single pixel to appear in the top-left
+      corner of the screen. The pixel turned <strong>black</strong> when the cursor was over a mine
+      and <strong>white</strong> when it was over a safe cell. Microsoft removed the cheat in
+      Windows Vista.
+    </p>
+    <p>
+      <strong>minesweeper.org has a faithful recreation of this cheat</strong>, available on the
+      <a href="/variants/replay/">Replay</a> page.
+      Because the board is pre-determined on a replay, the cheat works perfectly — the pixel
+      reflects the mine layout encoded in the board hash.
+    </p>
+    <p>
+      To activate: navigate to <a href="/variants/replay/">any Replay board</a>,
+      type <code>XYZZY</code>, press <strong>Shift+Enter</strong>, then press <strong>Shift</strong>.
+      A 1×1 pixel will appear at the very top-left corner of your browser window.
+    </p>
+    <ul>
+      <li>You must be <strong>signed in with Google</strong> to enable it — guests will see a login prompt instead.</li>
+      <li>Any game completed with cheat mode active will <strong>not</strong> be recorded on the leaderboard.</li>
+      <li>The cheat is available on the Replay page only; it is not available during standard, competitive, or daily games.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Tips for Improving Your Speed</h2>
+    <p>Once you're comfortable with the logic, the next challenge is getting faster. Here are some tips:</p>
+    <p><strong>Learn to chord.</strong> Chording is a technique where you <span class="desktop-only">double-click</span><span class="mobile-only">tap</span> a revealed number that already has all its mines flagged. This instantly reveals all remaining covered neighbors of that cell. It saves enormous amounts of time compared to <span class="desktop-only">clicking</span><span class="mobile-only">tapping</span> each safe cell individually.</p>
+    <p><strong>Scan, don't stare.</strong> Experienced players keep their eyes moving across the board, scanning for easy deductions and satisfied numbers rather than fixating on one difficult spot. If you get stuck in one area, move to another — you'll often find easier progress elsewhere that eventually gives you the information you need.</p>
+    <p><strong>Reduce unnecessary flagging.</strong> While flags are helpful for beginners, competitive players often skip flagging obvious mines to save time. If you can see that a cell is a mine and don't need the flag to help you reason about surrounding cells, you can leave it unflagged and move on. <span class="mobile-only">On mobile this means skipping the long-press or Flag Mode tap and simply remembering where the mine is.</span></p>
+    <p><strong>Practice on Intermediate before jumping to Expert.</strong> Intermediate boards build your pattern recognition and speed in a less punishing environment. Once you can consistently solve Intermediate boards in under two minutes, you're ready for Expert.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>The Leaderboard</h2>
+    <p>Minesweeper.org has a <a href="/leaderboard">global leaderboard</a> that tracks the fastest times for each difficulty level. Scores reset daily at midnight UTC, so every day is a fresh competition. Sign in with Google to save your times and see how you stack up against other players around the world.</p>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← Play Beginner</a>
+    <a href="/intermediate">Play Intermediate</a>
+    <a href="/expert">Play Expert</a>
+    <a href="/custom">Play Custom</a>
+  </div>
+
+</div>
+
+  </main>
+
+  <!-- Bottom Banner Ad -->
+  <div class="ad-container ad-bottom">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+
+  <footer>
+    <p>© 2026 Minesweeper.org &mdash; Built by <a href="https://regis.consulting">Regis Consulting</a> with Python &amp; FastAPI &mdash; <a href="/about">About</a> &mdash; <a href="/contact">Contact</a> &mdash; <a href="/privacy">Privacy Policy</a> &mdash; <a href="/terms">Terms of Service</a> &mdash; <a href="/blog">Blog</a> &mdash; <a href="/links">Links</a> &mdash; <a href="https://www.linkedin.com/company/minesweeper-org" target="_blank" rel="noopener">LinkedIn</a></p>
+  </footer>
+
+  <!-- Translations available to all page scripts -->
+  <script>
+  window.T = {
+    lb_loading:         "Loading\u2026",
+    lb_no_scores:       "No scores yet \u2014 be the first!",
+    lb_error:           "\u26a0\ufe0f Could not load scores.",
+    lb_top_prefix:      "Top",
+    lb_top_suffix_one:  "time",
+    lb_top_suffix_many: "times",
+    lb_col_rank:        "#",
+    lb_col_name:        "Name",
+    lb_col_time:        "Time",
+    lb_col_board:       "Board",
+    lb_col_mines:       "Mines",
+    lb_col_date:        "Date",
+    profile_loading:    "Loading\u2026",
+    profile_games:      "Games",
+    profile_best:       "Best",
+    profile_avg:        "Avg",
+    profile_worst:      "Worst",
+    profile_no_games:   "No games yet",
+    profile_play_now:   "Play now \u2192",
+    profile_no_recent:  "No games recorded yet.",
+    rush_flash_no_penalty:  "No penalty!",
+    rush_flash_rows:        "+2 rows!",
+    rush_flash_salvage:     "\ud83d\udd25 Salvage token!",
+    rush_btn_salvage_title: "Use salvage token \u2014 remove this exploded row",
+    rush_btn_no_mines:      "No mines \u2014 click to clear row",
+    rush_btn_all_flagged:   "All mines flagged \u2014 click to clear row",
+    rush_game_over:         "\ud83d\udca5 Game Over",
+    rush_mines_cleared:     "Mines Cleared:",
+    rush_rows_cleared:      "Rows Cleared:",
+    rush_time:              "Time:",
+    rush_score:             "Score:",
+    rush_saving:            "Saving score\u2026",
+    rush_name_placeholder:  "Enter your name",
+    rush_save_score:        "Save Score",
+    rush_play_again:        "Play Again",
+    rush_saved_for:         "\u2705 Score saved for",
+    rush_save_failed:       "\u274c Could not save score.",
+    rush_sign_in:           "Sign in to skip this step",
+    rush_lb_loading:        "Loading\u2026",
+    index_todays_best:      "Today\u0027s Best",
+    index_guess:            "\ud83c\udfb2 Guess",
+    index_no_guess:         "\u26a1 No-Guess",
+    game_over:              "\ud83d\udca5 Game Over",
+    game_you_won:           "\ud83c\udf89 You Won! \u2014 {time}",
+    game_view_lb:           "View Leaderboard \u2192",
+    game_no_guess_mode:     "\u26a1 No-Guess mode",
+    game_congrats:          "\ud83c\udf89 Congratulations!",
+    game_score_vanish:      "or your score will vanish at 0:00 UTC.",
+  };
+  </script>
+
+  <script src="/static/js/minesweeper.js?v=6"></script>
+  <script src="/static/js/quests.js?v=1"></script>
+  <script>
+  function togglePvpMenu(e) {
+    e.stopPropagation();
+    const group  = e.currentTarget.closest('.nav-pvp-group');
+    const isOpen = group.classList.contains('open');
+    group.classList.toggle('open');
+    // In dark theme: position the fixed menu under the button
+    if (!isOpen && document.documentElement.dataset.skin !== 'classic') {
+      const btn  = group.querySelector('.nav-pvp-toggle');
+      const menu = group.querySelector('.nav-pvp-menu');
+      const rect = btn.getBoundingClientRect();
+      menu.style.top  = rect.bottom + 4 + 'px';
+      menu.style.left = rect.left + 'px';
+    }
+  }
+  document.addEventListener('click', function() {
+    document.querySelectorAll('.nav-pvp-group.open').forEach(function(g) {
+      if (document.documentElement.dataset.skin !== 'classic') {
+        g.classList.remove('open');
+      }
+    });
+    document.querySelectorAll('.mega-group.open').forEach(function(g) {
+      g.classList.remove('open');
+    });
+  });
+  function toggleMega(e, groupId) {
+    e.stopPropagation();
+    var grp = document.getElementById(groupId);
+    var isOpen = grp.classList.contains('open');
+    document.querySelectorAll('.mega-group.open').forEach(function(g) { g.classList.remove('open'); });
+    if (!isOpen) grp.classList.add('open');
+  }
+  function setTheme(skin) {
+    localStorage.setItem('skin', skin);
+    var resolved;
+    if (skin === 'flower' || skin === 'flower-light') {
+      resolved = window.resolveStoredSkin(skin);
+    } else if (!skin || skin === 'default') {
+      resolved = window.resolveDefaultSkin();
+    } else {
+      resolved = skin === 'diana' ? 'classic' : skin;
+    }
+    document.documentElement.dataset.skin = resolved;
+    document.querySelectorAll('.mega-group.open').forEach(function(g) { g.classList.remove('open'); });
+  }
+  </script>
+  
+  <script>
+  // Collapse ad containers when AdSense reports unfilled (JS fallback for browsers without :has())
+  document.querySelectorAll('.ad-container ins.adsbygoogle').forEach(function(ins) {
+    new MutationObserver(function() {
+      if (ins.dataset.adStatus === 'unfilled') {
+        ins.closest('.ad-container').style.display = 'none';
+      }
+    }).observe(ins, { attributes: true, attributeFilter: ['data-ad-status'] });
+  });
+  </script>
+</body>
+</html>
