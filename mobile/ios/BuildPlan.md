@@ -135,7 +135,7 @@ Follow OS by default; allow lock to light or dark in preferences.
 | 10 | 5a | Implement leaderboard fetch — GET /api/scores/{mode} with period selector | done |
 | 11 | 5b | Implement score merge and deduplication — local + server on (mode + time_ms + board_hash) | done |
 | 12 | 5c | Build leaderboard UI — Name, Time, 3BV, 3BV/s, Efficiency, Board hash (8 chars) | done |
-| 13 | 6a | Build About screen | pending |
+| 13 | 6a | Build About screen | done |
 | 14 | 6b | Build How-to-Play and Strategy screens as WebViews | pending |
 | 15 | 6c | Build Settings screen | pending |
 | 16 | 7 | Implement theme system — auto/light/dark, persisted in AsyncStorage | pending |
