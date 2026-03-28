@@ -1,5 +1,44 @@
 List of active features
 
+F60 Android App
+
+  Build the Minesweeper.org Android app using the existing React Native + Expo
+  managed workflow project at mobile/app/ (shared with iOS).
+
+  All game logic, screens, hooks, and services are already implemented as part
+  of F58. Android-specific work covers:
+
+  A1 — Platform-aware X-Client-Type header
+    Update apiService.js to send android_app (vs ios_app) using Platform.OS.
+    Update APISpec.md and main.py to accept and attribute android_app scores.
+
+  A2 — Adaptive icon and Play Store assets
+    Produce production-quality adaptive icon layers (foreground 1024×1024,
+    background 1024×1024, monochrome 1024×1024) respecting the safe-zone
+    rule (content in center 66% only).
+    Produce feature graphic 1024×500 px (required by Play Store).
+
+  A3 — Google Play Console setup
+    Create app record, complete store listing (short/full description,
+    icon, feature graphic, screenshots), content rating questionnaire,
+    privacy policy URL (https://minesweeper.org/privacy).
+
+  A4 — EAS service account
+    Create Google Play service account with Release Manager role.
+    Download JSON key to mobile/app/google-play-service-account.json
+    (gitignored — never commit).
+
+  A5 — EAS build and Play Store submission
+    eas build --platform android --profile production → AAB
+    eas submit --platform android --profile production --latest
+    Internal track testing → promote to production.
+
+  A6 — Android UX verification
+    Hardware back button, edge-to-edge insets (SDK 55 default on Android 15+),
+    keyboard behavior on Settings screen, tablet layout (10").
+
+  See mobile/android/BuildPlan.md for full task list and risk items.
+
 F59 Serve up Resume
 
 F58 Basic iOS version
