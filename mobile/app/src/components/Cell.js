@@ -83,7 +83,13 @@ function Cell({
     >
       {label !== null && (
         <Text
-          style={[styles.label, { fontSize, color: labelColor }]}
+          style={[
+            styles.label,
+            { fontSize, color: labelColor },
+            typeof label === 'string' && label.length === 1 && label >= '1' && label <= '8'
+              ? styles.bold
+              : null,
+          ]}
           allowFontScaling={false}
         >
           {label}
@@ -100,9 +106,11 @@ const styles = StyleSheet.create({
     overflow:       'hidden',
   },
   label: {
-    fontWeight: '700',
     textAlign:  'center',
     lineHeight: undefined,   // let it be natural
+  },
+  bold: {
+    fontWeight: '700',
   },
 });
 
