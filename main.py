@@ -179,6 +179,14 @@ async def app_ads_txt():
 async def iamatestfile_txt():
     return PlainTextResponse("healthy")
 
+@app.get("/business/Richard_Cross_Resume.docx", include_in_schema=False)
+async def richard_cross_resume():
+    return FileResponse(
+        "business/Richard_Cross_Resume.docx",
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename="Richard_Cross_Resume.docx",
+    )
+
 GAME_MODES = {
     "beginner":     {"rows": 9, "cols": 9, "mines": 10},
     "intermediate": {"rows": 16, "cols": 16, "mines": 40},
