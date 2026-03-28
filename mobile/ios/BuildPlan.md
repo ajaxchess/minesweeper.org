@@ -138,7 +138,7 @@ Follow OS by default; allow lock to light or dark in preferences.
 | 13 | 6a | Build About screen | done |
 | 14 | 6b | Build How-to-Play and Strategy screens as WebViews | done |
 | 15 | 6c | Build Settings screen | done |
-| 16 | 7 | Implement theme system — auto/light/dark, persisted in AsyncStorage | pending |
+| 16 | 7 | Implement theme system — auto/light/dark, persisted in AsyncStorage | done |
 | 17 | 8a | Design and produce app icon and splash screen assets | pending |
 | 18 | 8b | Configure app.json for App Store submission | pending |
 | 19 | 8c | EAS Build, TestFlight, App Store submission | pending |
