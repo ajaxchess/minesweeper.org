@@ -8,19 +8,21 @@ Developer account: Richard Cross (individual) — `ajaxchess@gmail.com`
 
 ### Node.js version
 
-EAS CLI requires Node 18 or later. Check your version first:
+Metro (the Expo bundler) requires Node 20 or later — Node 18 is missing
+`Array.prototype.toReversed()` and will fail at build time with
+`configs.toReversed is not a function`. Check your version first:
 
 ```bash
 node --version
 ```
 
-If it's below 18, upgrade via [nvm](https://github.com/nvm-sh/nvm):
+If it's below 20, upgrade via [nvm](https://github.com/nvm-sh/nvm):
 
 ```bash
-nvm install 18
-nvm use 18
-nvm alias default 18         # make 18 the default for new shells
-node --version               # should print v18.x.x or higher
+nvm install 20
+nvm use 20
+nvm alias default 20         # make 20 the default for new shells
+node --version               # should print v20.x.x or higher
 ```
 
 ### One-time machine setup
