@@ -14,10 +14,15 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.minesweeper.app",
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "privacyManifests": {}
     },
     "android": {
       "package": "org.minesweeper.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",

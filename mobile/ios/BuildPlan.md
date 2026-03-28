@@ -140,7 +140,7 @@ Follow OS by default; allow lock to light or dark in preferences.
 | 15 | 6c | Build Settings screen | done |
 | 16 | 7 | Implement theme system — auto/light/dark, persisted in AsyncStorage | done |
 | 17 | 8a | Design and produce app icon and splash screen assets | pending |
-| 18 | 8b | Configure app.json for App Store submission | pending |
+| 18 | 8b | Configure app.json for App Store submission | done |
 | 19 | 8c | EAS Build, TestFlight, App Store submission | pending |
 
 ---
