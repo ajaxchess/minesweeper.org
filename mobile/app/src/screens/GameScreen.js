@@ -156,7 +156,7 @@ export default function GameScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* ── Tool row: flag mode + zoom reset ──────────────────────────── */}
+      {/* ── Tool row: flag mode + zoom reset + scores ─────────────────── */}
       <View style={[styles.toolRow, { borderBottomColor: theme.border }]}>
         <TouchableOpacity
           style={[styles.toolBtn, flagMode && { backgroundColor: theme.accent }]}
@@ -175,6 +175,13 @@ export default function GameScreen({ navigation }) {
             <Text style={{ color: theme.textDim, fontSize: 12 }}>Reset Zoom</Text>
           </TouchableOpacity>
         )}
+
+        <TouchableOpacity
+          style={[styles.toolBtn, styles.scoresBtn]}
+          onPress={() => navigation.navigate('Leaderboard', { mode, noGuess })}
+        >
+          <Text style={{ color: theme.accent, fontSize: 12, fontWeight: '600' }}>Scores</Text>
+        </TouchableOpacity>
       </View>
 
       {/* ── Board ──────────────────────────────────────────────────────── */}
@@ -268,5 +275,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical:   4,
     borderRadius:      6,
+  },
+  scoresBtn: {
+    marginLeft: 'auto',
   },
 });
