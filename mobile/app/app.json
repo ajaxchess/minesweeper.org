@@ -32,6 +32,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3b8c5077-08fd-400d-8604-48305d7adb1e"
+      }
+    },
+    "owner": "ajaxchess"
   }
 }
