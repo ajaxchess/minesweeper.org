@@ -34,7 +34,7 @@ The feature spec lives in Features.md under F55.
 | `static/js/goldberg.js` (G1a-beta: Class II subdivision → soccer ball GP(1,1)) | 1 | ✗ Not started |
 | `static/js/goldberg.js` (G1b: dual + adjacency) | 1 | ✗ Not started |
 | `static/js/goldberg.js` (G1c: export + GP(1,1) tests) | 1 | ✗ Not started |
-| `static/js/globesweeper.js` (G2: Classic skin, hardcoded GP(1,1)) | 1 | ✗ Not started |
+| `static/js/globesweeper.js` (G2: Classic skin, hardcoded GP(1,0)) | 1 | ✓ Done |
 | `static/js/globesweeper.js` (G3: game logic) | 1 | ✗ Not started |
 | CSS `--glob-*` variables, Classic theme | 1 | ✗ Not started |
 | Score submission form (post-win) | 1 | ✗ Not started |
