@@ -12,7 +12,9 @@ The feature spec lives in Features.md under F55.
 | `templates/globesweeper.html` | ✓ Done (HTML shell, data attrs, canvas, custom form) |
 | `templates/globesweeper_leaderboard.html` | ✓ Done |
 | `static/js/vendor/three.min.js` | ✓ Done |
-| `static/js/goldberg.js` | ✗ Not started |
+| `static/js/goldberg.js` (G1a: icosahedron + subdivision) | ✗ Not started |
+| `static/js/goldberg.js` (G1b: dual + adjacency) | ✗ Not started |
+| `static/js/goldberg.js` (G1c: canonical index + export + tests) | ✗ Not started |
 | `static/js/globesweeper.js` | ✗ Not started |
 | CSS `--glob-*` skin variables | ✗ Not started |
 | Score submission form (post-win) | ✗ Not started |
@@ -21,69 +23,144 @@ The feature spec lives in Features.md under F55.
 
 ---
 
-## Subtask G1 — goldberg.js: Goldberg polyhedron geometry generator
+## Subtask G1a — goldberg.js: Icosahedron base + geodesic subdivision
 
-**File:** `static/js/goldberg.js`
+**File:** `static/js/goldberg.js` (partial — scaffold + first two steps)
 **Depends on:** nothing
-**Exported API:** `goldberg(a, b)` → `{ faces, adj, T, F, pentagons }`
+**Output contract:** a module-level function `subdivide(a, b)` that returns
+an array of triangular faces `{ v0, v1, v2 }` where each vertex is a
+unit-sphere `{x, y, z}`. No exports yet — G1b consumes this internally.
 
 ### What to implement
 
 **Icosahedron base**
 Define the 12 vertices of a unit icosahedron using the golden-ratio formula
-and the 20 triangular faces as index triples.
+and the 20 triangular faces as index triples. (These are constants at the
+top of the file.)
 
 **Step 1 — Subdivide each icosahedron triangle**
 For each of the 20 triangular faces with vertices `[P0, P1, P2]`, place
-subdivision vertices using the Goldberg-Coxeter `(a, b)` lattice. The
-subdivision pattern differs by class:
+subdivision vertices using the Goldberg-Coxeter `(a, b)` lattice:
 - Class I (`b = 0`): simple grid subdivision, `T = a²`
 - Class II (`a = b`): rotated grid, `T = 3a²`
 - Class III (general): skewed grid, `T = a² + ab + b²`
 
-For each sub-triangle, compute barycentric coordinates and interpolate between
-`P0`, `P1`, `P2`. Project each resulting vertex onto the unit sphere (normalise).
+For each sub-triangle, compute barycentric coordinates `(u, v, w)` with
+`u + v + w = 1` and interpolate: `P = u*P0 + v*P1 + w*P2`. Project each
+resulting vertex onto the unit sphere (normalise to length 1).
 
 **Step 2 — Merge duplicate vertices**
 Shared icosahedron edges produce duplicate vertices. Merge any two vertices
-within `ε = 1e-9` of each other. Build a canonical vertex list and re-map
-face indices.
+within `ε = 1e-9` of each other using a string-keyed map
+(`"${x.toFixed(9)},${y.toFixed(9)},${z.toFixed(9)}"` → canonical index).
+Re-map each triangle's vertex indices to canonical indices.
 
-**Step 3 — Build the dual (= Goldberg polyhedron)**
-For each unique vertex `V` of the geodesic sphere:
-  1. Collect the fan of triangular faces that contain `V`.
-  2. Sort fan faces in angular order around `V` (use cross-product winding).
-  3. The centroid of each fan triangle (projected to unit sphere) becomes a
-     Goldberg face vertex.
-  4. Valence 5 vertices become pentagons; valence 6 → hexagons.
-
-Each Goldberg face = ordered array of unit-sphere `{x, y, z}` vertices
-plus a centroid.
-
-**Step 4 — Compute adjacency**
-Two Goldberg faces are neighbours iff their vertex lists share exactly 2
-consecutive vertices (modulo cyclic order). Build `adj[i]` = array of
-neighbour indices.
-
-**Step 5 — Canonical face indexing**
-Sort all `F` face centroids lexicographically by `(x, y, z)` rounded to
-6 decimal places. Assign 0-based indices in that order. This ensures a
-deterministic, seed-independent canonical ordering for `boardToHash`.
-
-**Step 6 — Export**
+Return value of `subdivide(a, b)`:
 ```js
-export function goldberg(a, b) {
-    // returns { faces, adj, T, F, pentagons }
-    // faces[i]   = { verts: [{x,y,z}], centroid: {x,y,z}, isPentagon: bool }
-    // adj[i]     = number[]  (neighbour indices)
-    // T          = a*a + a*b + b*b
-    // F          = 10*T + 2
-    // pentagons  = Set<number>  (the 12 pentagon face indices)
+{
+    verts: [{x, y, z}, ...],   // unique unit-sphere vertices
+    tris:  [{i0, i1, i2}, ...]  // triangles as index triples into verts
 }
 ```
 
-**Cache:** wrap the result in a module-level `Map` keyed on `"${a},${b}"` so
-repeated calls (reset game) don't recompute.
+### Acceptance criteria
+- `subdivide(1, 0)` → 12 verts, 20 tris (bare icosahedron, T=1)
+- `subdivide(2, 0)` → T=4, so 20*4=80 tris, 42 verts
+- `subdivide(1, 1)` → T=3, so 20*3=60 tris, 32 verts
+- Every vertex has unit length (≤ 1e-9 error from 1.0)
+- No duplicate vertices (all pairwise distances > 1e-9)
+
+### Testing
+No test file yet — acceptance criteria are verified manually in the browser
+console (`subdivide(2,0).tris.length === 80`) before G1c writes the test file.
+
+---
+
+## Subtask G1b — goldberg.js: Dual polyhedron + adjacency
+
+**File:** `static/js/goldberg.js` (continues from G1a)
+**Depends on:** G1a (`subdivide` function in the same file)
+**Output contract:** a module-level function `buildDual(verts, tris)` that
+returns `{ faces, adj }` — the Goldberg polygon faces and their adjacency.
+
+### What to implement
+
+**Step 3 — Build the dual (= Goldberg polyhedron)**
+For each unique vertex `V` (index `vi`) in `verts`:
+  1. Collect all triangles that contain `vi` — this is the fan.
+  2. Sort fan triangles in angular order around `V`:
+     - Pick any fan triangle as start.
+     - Greedily append the next triangle that shares an edge with the
+       previous one (shared edge = two vertices in common, one of which is `vi`).
+     - This gives a cyclic ordering of the fan.
+  3. Compute each fan triangle's centroid and project to the unit sphere.
+  4. The ordered list of projected centroids = vertices of one Goldberg face.
+  5. Valence 5 vertex → pentagon; valence 6 → hexagon.
+
+Each Goldberg face:
+```js
+{ verts: [{x,y,z}, ...], centroid: {x,y,z}, isPentagon: bool }
+```
+(centroid = average of the Goldberg face vertices, projected to unit sphere)
+
+**Step 4 — Compute adjacency**
+Two Goldberg faces `i` and `j` are neighbours iff their vertex arrays share
+exactly 2 consecutive vertices (cyclically). Because each Goldberg face vertex
+is a geodesic triangle centroid, the key insight is: two Goldberg faces share
+an edge iff they were built from two geodesic triangles that share an edge,
+and those triangles each contain the same pair of adjacent vertices around
+`vi` and `vj`. A simpler implementation:
+
+For each pair of Goldberg faces, check if they share ≥ 2 vertices within
+ε = 1e-9. Mark as neighbours. Because F is at most 252 (for the largest
+supported board) this O(F²) check is acceptable.
+
+Return value of `buildDual(verts, tris)`:
+```js
+{ faces: [...], adj: [[neighbourIdx, ...], ...] }
+```
+
+### Acceptance criteria
+- `buildDual` on `subdivide(1,0)` output → 12 faces, all pentagons, each has 5 neighbours
+- `buildDual` on `subdivide(1,1)` output → 32 faces, 12 pentagons + 20 hexagons
+- `adj` is symmetric: if `j ∈ adj[i]` then `i ∈ adj[j]`
+- Pentagon faces each have exactly 5 neighbours; hexagons have 6
+
+---
+
+## Subtask G1c — goldberg.js: Canonical indexing, export, cache, tests
+
+**File:** `static/js/goldberg.js` (final pass) + `src/__tests__/goldberg.test.js`
+**Depends on:** G1a + G1b (all steps in same file)
+**Exported API:** `goldberg(a, b)` → `{ faces, adj, T, F, pentagons }`
+
+### What to implement
+
+**Step 5 — Canonical face indexing**
+Sort all `F` face centroids lexicographically by `(x, y, z)` rounded to
+6 decimal places. Assign 0-based indices in that order. Re-index `adj`
+to match the sorted order. This ensures a deterministic ordering for
+`boardToHash`.
+
+**Step 6 — Export + cache**
+```js
+const _cache = new Map();
+
+export function goldberg(a, b) {
+    const key = `${a},${b}`;
+    if (_cache.has(key)) return _cache.get(key);
+
+    const { verts, tris } = subdivide(a, b);
+    const { faces, adj }  = buildDual(verts, tris);
+    // ... canonical sort, re-index adj ...
+    const T = a*a + a*b + b*b;
+    const F = 10*T + 2;
+    const pentagons = new Set(faces.map((f, i) => f.isPentagon ? i : -1).filter(i => i >= 0));
+    const result = { faces, adj, T, F, pentagons };
+    _cache.set(key, result);
+    return result;
+}
+```
 
 ### Acceptance criteria
 - `goldberg(1, 0)` → F=12, all pentagons, every face has 5 neighbours
@@ -91,11 +168,12 @@ repeated calls (reset game) don't recompute.
 - `goldberg(2, 1)` → F=72
 - `goldberg(5, 0)` → F=252
 - Each face in `adj` is bidirectionally consistent
-- Canonical indices are stable across two calls with the same `(a, b)`
+- Canonical indices are stable: two calls with the same `(a, b)` return
+  identical index assignments (test by calling twice and comparing)
 
 ### Testing
-Write `src/__tests__/goldberg.test.js` covering the four cases above.
-Run with `npx jest` (or however the project runs tests).
+Write `src/__tests__/goldberg.test.js` covering all four board sizes above
+plus the stability check. Run with `npx jest`.
 
 ---
 
@@ -497,15 +575,18 @@ Add the five Globesweeper URLs with weekly changefreq and priority 0.7:
 ## Recommended implementation order
 
 ```
-G1 goldberg.js          ← foundation; test in isolation first
-G2 scene & rendering    ← can stub game logic to verify mesh looks right
-G3 game logic           ← complete the JS; full playable game
-G4 CSS variables        ← can be done anytime, needed before G2 ships
-G5 score submission     ← add after G3; needs game to be complete
-G6 nav + sitemap        ← final step before launch
+G1a goldberg.js — icosahedron base + geodesic subdivision   ← start here
+G1b goldberg.js — dual polyhedron + adjacency               ← same file, next step
+G1c goldberg.js — canonical indexing + export + tests       ← completes the module
+G2  scene & rendering    ← stub game logic to verify mesh looks right
+G3  game logic           ← complete the JS; full playable game
+G4  CSS variables        ← can be done anytime, needed before G2 ships
+G5  score submission     ← add after G3; needs game to be complete
+G6  nav + sitemap        ← final step before launch
 ```
 
 G4 and G6 are independent of the JS work and can be parallelised with G1/G2/G3.
+G1a → G1b → G1c must be sequential (each builds on the previous in the same file).
 
 ---
 
@@ -514,7 +595,9 @@ G4 and G6 are independent of the JS work and can be parallelised with G1/G2/G3.
 Use `F55` prefix on all commits:
 
 ```
-F55 G1 Add goldberg.js — Goldberg polyhedron geometry generator
+F55 G1a Add goldberg.js — icosahedron base and geodesic subdivision
+F55 G1b Add goldberg.js — dual polyhedron construction and adjacency
+F55 G1c Add goldberg.js — canonical indexing, export, cache, and tests
 F55 G2 Add globesweeper.js — Three.js scene and rendering
 F55 G3 Add globesweeper.js — game logic (state, mines, flood-fill, hash)
 F55 G4 Add --glob-* CSS variables for all skins
