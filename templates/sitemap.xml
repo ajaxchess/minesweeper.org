@@ -281,6 +281,42 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- ── Globesweeper ────────────────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/globesweeper</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/globesweeper/intermediate</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/globesweeper/expert</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/globesweeper/custom</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/globesweeper/leaderboard</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.5</priority>
+  </url>
+
   <!-- ── Leaderboards & social ─────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/leaderboard</loc>

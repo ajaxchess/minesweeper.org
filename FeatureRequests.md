@@ -37,9 +37,9 @@ The feature spec lives in Features.md under F55.
 | `static/js/globesweeper.js` (G2: Classic skin, hardcoded GP(1,0)) | 1 | ✓ Done |
 | `static/js/globesweeper.js` (G3: game logic) | 1 | ✓ Done |
 | CSS `--glob-*` variables, Classic theme | 1 | ✓ Done |
-| Score submission form (post-win) | 1 | ✗ Not started |
-| Globesweeper in nav mega-menu (`base.html`) | 1 | ✗ Not started |
-| Sitemap entry (`/globesweeper`) | 1 | ✗ Not started |
+| Score submission form (post-win) | 1 | ✓ Done |
+| Globesweeper in nav mega-menu (`base.html`) | 1 | ✓ Done |
+| Sitemap entry (`/globesweeper`) | 1 | ✓ Done |
 | `static/js/goldberg.js` (Class I + III generalisation + full tests) | 2 | ✗ Not started |
 | T-selector UI + dynamic `goldberg(a,b)` | 2 | ✗ Not started |
 | Earth skin (textured sphere + starfield) | 2 | ✗ Not started |

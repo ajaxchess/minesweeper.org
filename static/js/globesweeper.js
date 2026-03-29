@@ -60,8 +60,9 @@ let mineSet    = null;  // Set<number>    — face indices that hold mines
 let gameOver   = false;
 let firstClick = true;
 let _mineCount = 0;     // target mine count, read from data-mines
-let _timerHandle = null;
-let _startTime   = 0;
+let _timerHandle  = null;
+let _startTime    = 0;
+let _finalTimeMs  = 0;   // captured at game-over so submitScore uses the stopped value
 
 // Drag tracking
 const _drag = { active: false, lastX: 0, lastY: 0, travelSq: 0 };
@@ -483,6 +484,7 @@ function _checkWin() {
 
 function _triggerGameOver(won) {
     gameOver = true;
+    _finalTimeMs = Math.round(performance.now() - _startTime);
     _stopTimer();
     triggerPulse();
     document.getElementById('overlay-msg').textContent = won ? '🎉 You win!' : '💥 Game over!';
@@ -490,8 +492,63 @@ function _triggerGameOver(won) {
     if (won) _showScoreForm();
 }
 
+// ── G5 — Score submission ─────────────────────────────────────────────────────
+
 function _showScoreForm() {
-    // G5 will implement score submission here.
+    const form = document.getElementById('score-form');
+    if (!form) return;
+    form.style.display = 'block';
+    document.getElementById('score-msg').textContent = '';
+
+    // Pre-fill name from localStorage
+    const saved = localStorage.getItem('globesweeper_name');
+    if (saved) document.getElementById('score-name').value = saved;
+
+    document.getElementById('score-submit').onclick = async () => {
+        const name = document.getElementById('score-name').value.trim();
+        if (!name) {
+            document.getElementById('score-msg').textContent = 'Please enter your name.';
+            return;
+        }
+        localStorage.setItem('globesweeper_name', name);
+        document.getElementById('score-submit').disabled = true;
+        document.getElementById('score-msg').textContent = 'Saving…';
+
+        const ok = await _submitScore(name);
+        document.getElementById('score-submit').disabled = false;
+        if (ok) {
+            document.getElementById('score-form').innerHTML =
+                '<p style="color:#6fcf97;">Score saved! ' +
+                '<a href="/globesweeper/leaderboard" style="color:#53d8fb;">View leaderboard →</a></p>';
+        } else {
+            document.getElementById('score-msg').textContent = 'Error saving score — please try again.';
+        }
+    };
+}
+
+async function _submitScore(name) {
+    const wrapper = document.querySelector('.game-wrapper');
+    const mode    = wrapper ? wrapper.dataset.mode : 'beginner';
+    const F       = _globeData.faces.length;
+    const T       = _globeData.T;
+    try {
+        const r = await fetch('/api/globesweeper-scores', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name,
+                time_ms:    _finalTimeMs,
+                glob_mode:  mode,
+                t_param:    T,
+                face_count: F,
+                mines:      _mineCount,
+                board_hash: boardToHash(mineSet, F),
+            }),
+        });
+        return r.ok;
+    } catch {
+        return false;
+    }
 }
 
 // ── Reset ─────────────────────────────────────────────────────────────────────
