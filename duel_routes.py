@@ -516,6 +516,9 @@ async def _game_loop(ws: WebSocket, game, player_id: str):
                 if p:
                     p.name  = msg.get("name", "")[:32]
                     p.email = msg.get("email", "")[:256]
+                    opp = game.opponent(player_id)
+                    if opp and opp.ws:
+                        await manager.send(opp.ws, {"type": "opp_name", "name": p.name or "Anonymous"})
             elif mtype == "reveal":
                 await _handle_reveal(ws, game, player_id, msg)
             elif mtype == "chat":
@@ -698,6 +701,9 @@ async def _pvpbeta_wait_loop(ws: WebSocket, player_id: str):
                     if p:
                         p.name  = msg.get("name", "")[:32]
                         p.email = msg.get("email", "")[:256]
+                        opp = game.opponent(player_id)
+                        if opp and opp.ws:
+                            await manager.send(opp.ws, {"type": "opp_name", "name": p.name or "Anonymous"})
     except WebSocketDisconnect:
         pvpbeta_dequeue(player_id)
 
@@ -746,6 +752,9 @@ async def _pvpbeta_quick_wait_loop(ws: WebSocket, player_id: str):
                     if p:
                         p.name  = msg.get("name", "")[:32]
                         p.email = msg.get("email", "")[:256]
+                        opp = game.opponent(player_id)
+                        if opp and opp.ws:
+                            await manager.send(opp.ws, {"type": "opp_name", "name": p.name or "Anonymous"})
     except WebSocketDisconnect:
         pvpbeta_quick_dequeue(player_id)
 

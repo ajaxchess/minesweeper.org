@@ -218,6 +218,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('duel-status').textContent = msg;
   }
 
+  function setOppName(name) {
+    const scoreLabel = document.getElementById('opp-score-label');
+    if (scoreLabel) scoreLabel.textContent = name;
+    const boardLabel = document.getElementById('opp-board-label');
+    if (boardLabel) {
+      const badge = boardLabel.querySelector('.opp-board-delay-badge');
+      boardLabel.textContent = '👁 ' + name;
+      if (badge) boardLabel.appendChild(badge);
+    }
+  }
+
   // ── Overlay ───────────────────────────────────────────────────────────────
   function showDuelOverlay(html) {
     const ov = document.getElementById('duel-overlay');
@@ -332,6 +343,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       case 'matched':
         setStatus('🎯 ' + msg.msg);
+        if (IS_BETA) {
+          const pName  = boardEl.dataset.username  || '';
+          const pEmail = boardEl.dataset.useremail || '';
+          if (pName) ws.send(JSON.stringify({type: 'player_name', name: pName, email: pEmail}));
+        }
         break;
 
       case 'connected':
@@ -481,6 +497,10 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
           location.href = `/duel/${msg.game_id}/watch`;
         }, 1200);
+        break;
+
+      case 'opp_name':
+        setOppName(msg.name || 'Opponent');
         break;
 
       case 'error':
