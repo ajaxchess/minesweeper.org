@@ -534,7 +534,7 @@ async function _submitScore(name) {
     try {
         const r = await fetch('/api/globesweeper-scores', {
             method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify({
                 name,
                 time_ms:    _finalTimeMs,
