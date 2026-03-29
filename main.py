@@ -441,12 +441,13 @@ def archive_guest_scores():
     try:
         now = datetime.now(timezone.utc)
         tables = [
-            (Score,         "scores",          "mode"),
-            (RushScore,     "rush_scores",      "rush_mode"),
-            (CylinderScore, "cylinder_scores",  "cyl_mode"),
-            (ToroidScore,   "toroid_scores",    "tor_mode"),
-            (TentaizuScore, "tentaizu_scores",  "puzzle_date"),
-            (ReplayScore,   "replay_scores",    "variant"),
+            (Score,             "scores",             "mode"),
+            (RushScore,         "rush_scores",         "rush_mode"),
+            (CylinderScore,     "cylinder_scores",     "cyl_mode"),
+            (ToroidScore,       "toroid_scores",       "tor_mode"),
+            (TentaizuScore,     "tentaizu_scores",     "puzzle_date"),
+            (ReplayScore,       "replay_scores",       "variant"),
+            (NonosweeperScore,  "nonosweeper_scores",  "puzzle_date"),
         ]
         total = 0
         for model, table_name, mode_attr in tables:

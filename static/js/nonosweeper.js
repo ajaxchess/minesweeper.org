@@ -389,10 +389,14 @@ async function loadLeaderboard() {
     el.innerHTML = '<div class="lb-loading">Loading…</div>';
 
     try {
-        const r    = await fetch(`/api/nonosweeper-scores/${G.puzzleId}?difficulty=${G.difficulty}`);
+        const r = await fetch(`/api/nonosweeper-scores/${G.puzzleId}?difficulty=${G.difficulty}`);
+        if (!r.ok) {
+            el.innerHTML = `<div class="lb-empty">⚠️ Could not load scores (${r.status}).</div>`;
+            return;
+        }
         const data = await r.json();
 
-        if (!data.length) {
+        if (!Array.isArray(data) || !data.length) {
             el.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
             return;
         }

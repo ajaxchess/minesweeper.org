@@ -766,6 +766,9 @@ def _apply_migrations():
         ("hexsweeper_scores",     "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
         ("globesweeper_scores",   "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
         ("nonosweeper_scores",    "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        # nonosweeper user/guest tracking — missing from initial deploy
+        ("nonosweeper_scores",    "user_email",   "VARCHAR(256) NULL"),
+        ("nonosweeper_scores",    "guest_token",  "VARCHAR(36) NULL"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:
