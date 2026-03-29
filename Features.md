@@ -97,6 +97,16 @@ F59 Serve up Resume
 
 F58 Basic iOS version
 
+  Assets
+  ──────────────────────────────────────────────────────────────────────
+  icon.png       — replaced with Minesweeper_Org_Mobile_Icon.png ✓
+  splash-icon.png — currently same as icon.png (placeholder)
+
+  TODO: Generate a proper splash screen PNG.
+    Recommended spec: 1284×2778 px (iPhone 14 Pro Max), white or branded
+    background, centred logo/wordmark, no text near edges (safe zone).
+    Replace mobile/app/assets/splash-icon.png and commit as F58.
+
 F57 PvP Beta — Hidden /pvpbeta route for live user testing
   A copy of the PvP matchmaking system at /pvpbeta (not linked from the main site).
   Uses separate matchmaking queues so beta players are isolated from the main /pvp pool.
