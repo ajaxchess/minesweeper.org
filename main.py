@@ -246,10 +246,16 @@ def get_client_type(request: Request) -> str:
 def reset_scores():
     db = SessionLocal()
     try:
-        # ios_app and android_app scores are exempt from the daily reset
+        # Exempt from daily reset: app scores (ios_app/android_app) and
+        # registered users (user_email is set) — their scores persist for
+        # season and all-time leaderboards. Only anonymous guest web scores
+        # are cleared each night.
         deleted = (
             db.query(Score)
-            .filter(~Score.client_type.in_(["ios_app", "android_app"]))
+            .filter(
+                ~Score.client_type.in_(["ios_app", "android_app"]),
+                Score.user_email.is_(None),
+            )
             .delete(synchronize_session=False)
         )
         db.commit()

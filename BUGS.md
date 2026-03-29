@@ -1,5 +1,13 @@
 -- Fixed below --
 
+B17 Season and All Time leaderboards only show today's scores
+   reset_scores() at midnight deleted all web scores including registered users,
+   leaving only ios_app/android_app scores in the table. Season and all-time
+   queries therefore found no registered user history.
+   Fixed by: adding Score.user_email.is_(None) to the reset filter so only
+   anonymous guest web scores are cleared nightly. App scores and registered
+   user scores are now both preserved across days.
+
 B16 No-guess scores missing from replay page leaderboard
    The replay link on the no-guess leaderboard always passed game=standard,
    so the replay page fetched standard scores (no_guess=False) and found nothing.
