@@ -2,7 +2,7 @@
  * globesweeper.js
  *
  * G2 — Three.js scene, face meshes, drag rotation, raycasting, sprite overlays.
- * G3 — Game logic (state machine, mines, reveal, hash, win/loss, timer) — pending.
+ * G3 — Game logic: state machine, mine generation, BFS reveal, hash, win/loss, timer.
  *
  * Phase 1: Classic skin only. Hardcoded goldberg(1,0) until G1a-beta ships GP(1,1).
  * Depends on: goldberg.js (goldberg fn in global scope), THREE (vendor/three.min.js).
@@ -51,9 +51,15 @@ let _faceMeshes = [];   // THREE.Mesh[F]
 let _sprites    = [];   // THREE.Sprite|null[F]
 let _globeData  = null; // { faces, adj, T, F, pentagons }
 
-// Shared game state — allocated in initGlobe, written by G3
-let faceState = null;   // Uint8Array[F]  — per-face enum (HIDDEN … DETONATED)
-let adjCount  = null;   // Uint8Array[F]  — mine-neighbour count per face
+// Shared game state — allocated in initGlobe, managed by G3
+let faceState  = null;  // Uint8Array[F]  — per-face enum (HIDDEN … DETONATED)
+let adjCount   = null;  // Uint8Array[F]  — mine-neighbour count per face
+let mineSet    = null;  // Set<number>    — face indices that hold mines
+let gameOver   = false;
+let firstClick = true;
+let _mineCount = 0;     // target mine count, read from data-mines
+let _timerHandle = null;
+let _startTime   = 0;
 
 // Drag tracking
 const _drag = { active: false, lastX: 0, lastY: 0, travelSq: 0 };
@@ -76,8 +82,13 @@ function initGlobe() {
     _globeData = goldberg(1, 0);
     const F = _globeData.faces.length;
 
+    // Read mine count from template data attribute
+    const wrapper = document.querySelector('.game-wrapper');
+    _mineCount = wrapper ? (parseInt(wrapper.dataset.mines, 10) || 4) : 4;
+
     faceState = new Uint8Array(F);   // all HIDDEN at start
-    adjCount  = new Uint8Array(F);   // filled by G3 after mine placement
+    adjCount  = new Uint8Array(F);
+    mineSet   = new Set();
     _sprites  = new Array(F).fill(null);
 
     // ── Renderer ────────────────────────────────────────────────────────────
@@ -117,6 +128,13 @@ function initGlobe() {
         _camera.aspect = w / h;
         _camera.updateProjectionMatrix();
     });
+
+    // ── Reset button ────────────────────────────────────────────────────────
+    document.getElementById('reset-btn')?.addEventListener('click', resetGame);
+    document.getElementById('overlay-reset')?.addEventListener('click', resetGame);
+
+    // ── Initial game state ──────────────────────────────────────────────────
+    _initGameState();
 
     // ── Start render loop ───────────────────────────────────────────────────
     _animate();
@@ -344,14 +362,184 @@ function updateFaceVisual(idx) {
 }
 
 // ---------------------------------------------------------------------------
-// faceClicked — stub; overwritten by G3
+// G3 — Game logic
 // ---------------------------------------------------------------------------
 
+// ── Internal state helpers ──────────────────────────────────────────────────
+
+function _initGameState() {
+    const F = _globeData.faces.length;
+    faceState.fill(HIDDEN);
+    adjCount.fill(0);
+    mineSet    = new Set();
+    gameOver   = false;
+    firstClick = true;
+    _stopTimer();
+    document.getElementById('elapsed').textContent = '0.00';
+    document.getElementById('mines-remaining').textContent = String(_mineCount);
+    document.getElementById('globe-overlay').style.display = 'none';
+    for (let i = 0; i < F; i++) updateFaceVisual(i);
+}
+
+// ── Mine generation — Fisher-Yates partial shuffle ──────────────────────────
+
+function _generateMines(F, count, safeIdx) {
+    const pool = Array.from({ length: F }, (_, i) => i).filter(i => i !== safeIdx);
+    const mines = new Set();
+    for (let i = 0; i < count; i++) {
+        const j = i + Math.floor(Math.random() * (pool.length - i));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+        mines.add(pool[i]);
+    }
+    return mines;
+}
+
+function _computeAdjCount() {
+    const adj = _globeData.adj;
+    adjCount.fill(0);
+    for (const m of mineSet) {
+        for (const nb of adj[m]) adjCount[nb]++;
+    }
+}
+
+// ── Reveal ──────────────────────────────────────────────────────────────────
+
+function revealFace(idx) {
+    if (gameOver || faceState[idx] !== HIDDEN) return;
+
+    if (firstClick) {
+        firstClick = false;
+        mineSet = _generateMines(_globeData.faces.length, _mineCount, idx);
+        _computeAdjCount();
+        _startTimer();
+    }
+
+    const adj = _globeData.adj;
+
+    if (mineSet.has(idx)) {
+        faceState[idx] = DETONATED;
+        for (const m of mineSet) {
+            if (faceState[m] === HIDDEN) faceState[m] = MINE;
+            updateFaceVisual(m);
+        }
+        updateFaceVisual(idx);
+        _triggerGameOver(false);
+        return;
+    }
+
+    // BFS flood-fill for zero-adjacency cells
+    const queue = [idx];
+    faceState[idx] = REVEALED;
+    updateFaceVisual(idx);
+    if (adjCount[idx] === 0) {
+        while (queue.length) {
+            const cur = queue.shift();
+            for (const nb of adj[cur]) {
+                if (faceState[nb] !== HIDDEN || mineSet.has(nb)) continue;
+                faceState[nb] = REVEALED;
+                updateFaceVisual(nb);
+                if (adjCount[nb] === 0) queue.push(nb);
+            }
+        }
+    }
+    _checkWin();
+}
+
+// ── Flag cycling ─────────────────────────────────────────────────────────────
+
+function cycleFlagFace(idx) {
+    if (gameOver) return;
+    const s = faceState[idx];
+    if (s === REVEALED) return;  // can't flag a revealed cell
+
+    if (s === HIDDEN) {
+        faceState[idx] = FLAGGED;
+    } else if (s === FLAGGED) {
+        faceState[idx] = QUESTION;
+    } else if (s === QUESTION) {
+        faceState[idx] = HIDDEN;
+    }
+    updateFaceVisual(idx);
+    _updateMineCounter();
+}
+
+function _updateMineCounter() {
+    const flagged = faceState.reduce((n, s) => n + (s === FLAGGED ? 1 : 0), 0);
+    document.getElementById('mines-remaining').textContent = String(_mineCount - flagged);
+}
+
+// ── Win check ────────────────────────────────────────────────────────────────
+
+function _checkWin() {
+    const F = _globeData.faces.length;
+    let revealed = 0;
+    for (let i = 0; i < F; i++) if (faceState[i] === REVEALED) revealed++;
+    if (revealed === F - _mineCount) _triggerGameOver(true);
+}
+
+// ── Win / loss overlay ────────────────────────────────────────────────────────
+
+function _triggerGameOver(won) {
+    gameOver = true;
+    _stopTimer();
+    triggerPulse();
+    document.getElementById('overlay-msg').textContent = won ? '🎉 You win!' : '💥 Game over!';
+    document.getElementById('globe-overlay').style.display = 'flex';
+    if (won) _showScoreForm();
+}
+
+function _showScoreForm() {
+    // G5 will implement score submission here.
+}
+
+// ── Reset ─────────────────────────────────────────────────────────────────────
+
+function resetGame() {
+    _initGameState();
+}
+
+// ── Entry point for clicks ────────────────────────────────────────────────────
+
 function faceClicked(idx, button) {
-    // G3 will implement real game logic here.
-    // Left-click (button=0) → revealFace(idx)
-    // Right-click (button=2) → cycleFlagFace(idx)
-    console.log('faceClicked', idx, 'button', button);
+    if (button === 2) {
+        cycleFlagFace(idx);
+    } else {
+        revealFace(idx);
+    }
+}
+
+// ── Board hash ────────────────────────────────────────────────────────────────
+
+function boardToHash(mines, F) {
+    const bytes = new Uint8Array(Math.ceil(F / 8));
+    for (const i of mines) bytes[i >> 3] |= 1 << (i & 7);
+    return btoa(String.fromCharCode(...bytes))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function hashToBoard(hash, F) {
+    const b64   = hash.replace(/-/g, '+').replace(/_/g, '/');
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const mines = new Set();
+    for (let i = 0; i < F; i++) {
+        if (bytes[i >> 3] & (1 << (i & 7))) mines.add(i);
+    }
+    return mines;
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────────
+
+function _startTimer() {
+    _startTime = performance.now();
+    _timerHandle = setInterval(() => {
+        const s = ((performance.now() - _startTime) / 1000).toFixed(2);
+        document.getElementById('elapsed').textContent = s;
+    }, 100);
+}
+
+function _stopTimer() {
+    clearInterval(_timerHandle);
+    _timerHandle = null;
 }
 
 // ---------------------------------------------------------------------------
