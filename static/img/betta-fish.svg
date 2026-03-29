@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 170">
+  <!-- Caudal fin rays (behind body) -->
+  <path d="M 148 85 L 232 28" stroke="#a07ef0" stroke-width="1.2" fill="none" opacity="0.6"/>
+  <path d="M 148 85 L 238 58" stroke="#a07ef0" stroke-width="1.2" fill="none" opacity="0.6"/>
+  <path d="M 148 85 L 238 85" stroke="#a07ef0" stroke-width="1.2" fill="none" opacity="0.6"/>
+  <path d="M 148 85 L 238 112" stroke="#a07ef0" stroke-width="1.2" fill="none" opacity="0.6"/>
+  <path d="M 148 85 L 232 142" stroke="#a07ef0" stroke-width="1.2" fill="none" opacity="0.6"/>
+
+  <!-- Caudal fin (tail) - large flowing veil -->
+  <path d="M 148 85
+           C 168 55, 200 18, 232 28
+           C 218 45, 196 62, 192 85
+           C 196 108, 218 125, 232 142
+           C 200 152, 168 115, 148 85 Z"
+        fill="#7a45d8" opacity="0.88"/>
+
+  <!-- Anal fin (long bottom fin) -->
+  <path d="M 108 105 C 122 120, 138 135, 148 145 C 132 138, 116 122, 108 105 Z"
+        fill="#5a28b8" opacity="0.9"/>
+  <path d="M 100 108 C 115 128, 130 140, 138 148 C 122 142, 106 128, 100 108 Z"
+        fill="#6232c8" opacity="0.75"/>
+
+  <!-- Body -->
+  <ellipse cx="95" cy="85" rx="58" ry="32" fill="#1a3da8"/>
+
+  <!-- Iridescent sheen on body -->
+  <ellipse cx="88" cy="76" rx="32" ry="13" fill="#3a6acc" opacity="0.45"/>
+  <ellipse cx="78" cy="80" rx="18" ry="7" fill="#5080e0" opacity="0.3"/>
+
+  <!-- Dorsal fin (long flowing top fin) -->
+  <path d="M 72 55 C 88 28, 118 18, 138 32 C 126 36, 108 44, 94 55 Z"
+        fill="#6232c8" opacity="0.9"/>
+  <path d="M 72 55 L 136 32" stroke="#9060e8" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M 82 52 L 126 28" stroke="#9060e8" stroke-width="1" fill="none" opacity="0.4"/>
+
+  <!-- Gill cover / head -->
+  <ellipse cx="57" cy="85" rx="23" ry="26" fill="#1e44b8"/>
+  <!-- Gill line -->
+  <path d="M 66 62 C 74 72, 74 98, 66 108" stroke="#0e2a80" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+  <!-- Pectoral fin -->
+  <path d="M 68 90 C 60 102, 56 116, 60 122 C 65 114, 70 100, 74 93 Z"
+        fill="#2a52c0" opacity="0.72"/>
+
+  <!-- Mouth -->
+  <path d="M 36 85 Q 32 80, 36 75" stroke="#0a1a60" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+
+  <!-- Eye -->
+  <circle cx="48" cy="78" r="6.5" fill="#080818"/>
+  <circle cx="46" cy="76" r="2.2" fill="white" opacity="0.85"/>
+
+  <!-- Tail edge highlight -->
+  <path d="M 148 85 C 170 58, 200 22, 230 30" stroke="#c0a0ff" stroke-width="1" fill="none" opacity="0.4"/>
+  <path d="M 148 85 C 170 112, 200 148, 230 140" stroke="#c0a0ff" stroke-width="1" fill="none" opacity="0.4"/>
+</svg>
