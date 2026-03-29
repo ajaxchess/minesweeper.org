@@ -717,6 +717,18 @@ class NonosweeperScore(Base):
         }
 
 
+# ── Contact Message model ─────────────────────────────────────────────────────
+class ContactMessage(Base):
+    __tablename__ = "contact_messages"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String(128), nullable=False)
+    email      = Column(String(256), nullable=False)
+    message    = Column(String(4000), nullable=False)
+    read       = Column(Boolean, default=False, nullable=False, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
     Base.metadata.create_all(bind=engine)

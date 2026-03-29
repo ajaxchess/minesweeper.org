@@ -24,14 +24,38 @@
 
   <section class="tz-section">
     <h2>Get in Touch</h2>
-    <p>
-      <strong>Email:</strong>
-      <a href="mailto:rcross@fiberxl.com">rcross@fiberxl.com</a>
+
+    {% if submitted %}
+    <p style="color:var(--accent2);font-weight:600;">Thanks! Your message has been sent. We'll be in touch.</p>
+    {% else %}
+    <form method="post" action="/contact" style="display:flex;flex-direction:column;gap:0.85rem;max-width:520px;">
+      <label>
+        <span style="display:block;font-size:0.85rem;margin-bottom:0.25rem;">Name</span>
+        <input type="text" name="name" required maxlength="128"
+               style="width:100%;padding:0.45rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);">
+      </label>
+      <label>
+        <span style="display:block;font-size:0.85rem;margin-bottom:0.25rem;">Email</span>
+        <input type="email" name="email" required maxlength="256"
+               style="width:100%;padding:0.45rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);">
+      </label>
+      <label>
+        <span style="display:block;font-size:0.85rem;margin-bottom:0.25rem;">Message</span>
+        <textarea name="message" required maxlength="4000" rows="6"
+                  style="width:100%;padding:0.45rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);resize:vertical;"></textarea>
+      </label>
+      <button type="submit" class="btn" style="align-self:flex-start;">Send Message</button>
+    </form>
+    {% endif %}
+
+    <p style="margin-top:1rem;">
+      Or email us directly at <a href="mailto:rcross@fiberxl.com">rcross@fiberxl.com</a>.
+      We typically respond within a few business days.
     </p>
     <p>
-      We typically respond within a few business days. When reporting a bug, please
-      include the browser and device you were using, the game mode you were playing,
-      and a description of what happened — this helps us track down the issue faster.
+      When reporting a bug, please include the browser and device you were using, the game
+      mode you were playing, and a description of what happened — this helps us track down
+      the issue faster.
     </p>
   </section>
 

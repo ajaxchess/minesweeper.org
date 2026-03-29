@@ -3,7 +3,7 @@ import uuid
 import subprocess
 import os
 from typing import Optional
-from fastapi import FastAPI, Request, Depends, HTTPException, Query, Response
+from fastapi import FastAPI, Request, Depends, HTTPException, Query, Response, Form
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -1031,12 +1031,30 @@ async def strategy_page(request: Request):
 
 
 @app.get("/contact", response_class=HTMLResponse)
-async def contact_page(request: Request):
+async def contact_page(request: Request, submitted: bool = False):
     return templates.TemplateResponse("contact.html", {
         "request": request, "mode": "contact",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
+        "submitted": submitted,
     })
+
+
+@app.post("/contact", response_class=HTMLResponse)
+async def contact_submit(
+    request: Request,
+    db: Session = Depends(get_db),
+    name: str = Form(...),
+    email: str = Form(...),
+    message: str = Form(...),
+):
+    name    = name.strip()[:128]
+    email   = email.strip()[:256]
+    message = message.strip()[:4000]
+    if name and email and message:
+        db.add(ContactMessage(name=name, email=email, message=message))
+        db.commit()
+    return RedirectResponse("/contact?submitted=true", status_code=303)
 
 
 @app.get("/history", response_class=HTMLResponse)
@@ -3610,6 +3628,49 @@ def admin_delete_comment(comment_id: int, request: Request, db: Session = Depend
     db.delete(comment)
     db.commit()
     return RedirectResponse("/admin/blog", status_code=303)
+
+
+@app.get("/admin/contact", response_class=HTMLResponse)
+def admin_contact(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    unread = db.query(ContactMessage).filter_by(read=False).order_by(ContactMessage.created_at.desc()).all()
+    read   = db.query(ContactMessage).filter_by(read=True).order_by(ContactMessage.created_at.desc()).limit(50).all()
+    return templates.TemplateResponse("admin_contact.html", {
+        "request": request,
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        "unread": unread,
+        "read": read,
+    })
+
+
+@app.post("/admin/contact/{msg_id}/mark-read")
+def admin_contact_mark_read(msg_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    msg = db.query(ContactMessage).filter_by(id=msg_id).first()
+    if not msg:
+        raise HTTPException(status_code=404, detail="Not found")
+    msg.read = True
+    db.commit()
+    return RedirectResponse("/admin/contact", status_code=303)
+
+
+@app.post("/admin/contact/{msg_id}/delete")
+def admin_contact_delete(msg_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    msg = db.query(ContactMessage).filter_by(id=msg_id).first()
+    if not msg:
+        raise HTTPException(status_code=404, detail="Not found")
+    db.delete(msg)
+    db.commit()
+    return RedirectResponse("/admin/contact", status_code=303)
 
 
 @app.get("/admin/hscleaning", response_class=HTMLResponse)
