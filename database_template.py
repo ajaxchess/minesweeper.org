@@ -494,11 +494,13 @@ class GlobesweeperScore(Base):
     id         = Column(Integer, primary_key=True, index=True)
     name       = Column(String(32), nullable=False)
     user_email = Column(String(256), nullable=True, index=True)
-    glob_mode  = Column(String(20), nullable=False)   # beginner/intermediate/expert/custom
+    glob_mode  = Column(String(20), nullable=False)   # dodecahedron/beginner/intermediate/expert/custom
     time_ms    = Column(Integer, nullable=False)
-    t_param    = Column(Integer, nullable=False)       # Goldberg T value (e.g. 3, 7, 25)
+    t_param    = Column(Integer, nullable=False)       # Goldberg T value (e.g. 1, 3, 7, 25)
     face_count = Column(Integer, nullable=False)       # 10*T+2
     mines      = Column(Integer, nullable=False)
+    bbbv        = Column(Integer, nullable=True)        # 3BV of the solved board
+    left_clicks = Column(Integer, nullable=True)        # non-rotation left clicks
     board_hash = Column(String(128), nullable=True)
     guest_token = Column(String(36), nullable=True, index=True)
     client_type = Column(String(32), nullable=False, server_default="na")
@@ -509,16 +511,22 @@ class GlobesweeperScore(Base):
     )
 
     def to_dict(self):
+        bbbv_s = f"{self.bbbv / (self.time_ms / 1000):.2f}" if self.bbbv and self.time_ms else "—"
+        eff    = f"{round(self.bbbv / self.left_clicks * 100)}%" if (self.bbbv and self.left_clicks) else "—"
         return {
-            "id":         self.id,
-            "name":       self.name,
-            "glob_mode":  self.glob_mode,
-            "time_ms":    self.time_ms,
-            "t_param":    self.t_param,
-            "face_count": self.face_count,
-            "mines":      self.mines,
-            "board_hash": self.board_hash,
-            "created_at": self.created_at.strftime("%Y-%m-%d"),
+            "id":          self.id,
+            "name":        self.name,
+            "glob_mode":   self.glob_mode,
+            "time_ms":     self.time_ms,
+            "t_param":     self.t_param,
+            "face_count":  self.face_count,
+            "mines":       self.mines,
+            "bbbv":        self.bbbv if self.bbbv else "—",
+            "bbbv_s":      bbbv_s,
+            "eff":         eff,
+            "left_clicks": self.left_clicks if self.left_clicks else "—",
+            "board_hash":  self.board_hash,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
         }
 
 
@@ -765,6 +773,9 @@ def _apply_migrations():
         ("replay_scores",         "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
         ("hexsweeper_scores",     "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
         ("globesweeper_scores",   "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        # 3BV + click tracking for Worldsweeper (added 2026-03-29)
+        ("globesweeper_scores",   "bbbv",         "INT NULL"),
+        ("globesweeper_scores",   "left_clicks",  "INT NULL"),
         ("nonosweeper_scores",    "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
         # nonosweeper user/guest tracking — missing from initial deploy
         ("nonosweeper_scores",    "user_email",   "VARCHAR(256) NULL"),

@@ -16,6 +16,7 @@
   <h1 class="tz-page-h1">Worldsweeper Leaderboard</h1>
 
   <div style="text-align:center;margin-bottom:1.5rem;">
+    <a href="/worldsweeper/dodecahedron" class="btn" style="margin:0.25rem;">Dodecahedron</a>
     <a href="/worldsweeper" class="btn" style="margin:0.25rem;">Beginner</a>
     <a href="/worldsweeper/intermediate" class="btn" style="margin:0.25rem;">Intermediate</a>
     <a href="/worldsweeper/expert" class="btn" style="margin:0.25rem;">Expert</a>
@@ -23,16 +24,17 @@
   </div>
 
   {% for mode_key, mode_label, t_val, f_val in [
-      ('beginner',     'Beginner (T=3, 32 faces, 4 mines)',   3,  32),
-      ('intermediate', 'Intermediate (T=7, 72 faces, 8 mines)', 7, 72),
-      ('expert',       'Expert (T=25, 252 faces, 50 mines)',  25, 252),
+      ('dodecahedron', 'Dodecahedron (T=1, 12 faces, 2 mines)',  1,  12),
+      ('beginner',     'Beginner (T=3, 32 faces, 4 mines)',      3,  32),
+      ('intermediate', 'Intermediate (T=7, 72 faces, 8 mines)',  7,  72),
+      ('expert',       'Expert (T=25, 252 faces, 50 mines)',     25, 252),
   ] %}
   <h2 style="font-size:1rem;color:var(--accent2);margin-top:2rem;">{{ mode_label }}</h2>
   <div id="lb-{{ mode_key }}" class="wt-table-wrap">
     <table class="lb-table">
-      <thead><tr><th>#</th><th>Name</th><th>Time</th><th>Date</th></tr></thead>
+      <thead><tr><th>#</th><th>Name</th><th>Time</th><th>3BV</th><th>3BV/s</th><th>Eff</th><th>Date</th></tr></thead>
       <tbody id="lb-body-{{ mode_key }}">
-        <tr><td colspan="4" style="color:var(--text-dim);">Loading…</td></tr>
+        <tr><td colspan="7" style="color:var(--text-dim);">Loading…</td></tr>
       </tbody>
     </table>
   </div>
@@ -54,12 +56,15 @@ async function loadBoard(mode) {
         <td>${i + 1}</td>
         <td>${s.name}</td>
         <td>${(s.time_ms / 1000).toFixed(2)}s</td>
+        <td>${s.bbbv}</td>
+        <td>${s.bbbv_s}</td>
+        <td>${s.eff}</td>
         <td>${s.created_at}</td>
       </tr>`).join('');
   } catch (e) {
-    tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);">Failed to load.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--text-dim);">Failed to load.</td></tr>';
   }
 }
-['beginner', 'intermediate', 'expert'].forEach(loadBoard);
+['dodecahedron', 'beginner', 'intermediate', 'expert'].forEach(loadBoard);
 </script>
 {% endblock %}

@@ -63,6 +63,8 @@ let _mineCount = 0;     // target mine count, read from data-mines
 let _timerHandle  = null;
 let _startTime    = 0;
 let _finalTimeMs  = 0;   // captured at game-over so submitScore uses the stopped value
+let _leftClicks   = 0;   // non-rotation left clicks (excludes drags)
+let _bbbv         = 0;   // 3BV of the current board (computed after mines placed)
 
 // Drag tracking
 const _drag = { active: false, lastX: 0, lastY: 0, travelSq: 0 };
@@ -80,13 +82,19 @@ function initGlobe() {
     if (!wrap || !canvas) return;
 
     // ── Geometry ────────────────────────────────────────────────────────────
-    // Phase 1: GP(1,0) = 12-face dodecahedron (Class I, available from G1a-alpha).
-    // Switch to goldberg(1,1) once G1a-beta is merged.
-    _globeData = goldberg(1, 0);
+    // Read GP(a,b) parameters from template data attributes.
+    // Class II (b>0) requires G1a-beta; falls back to GP(1,0) if not yet implemented.
+    const wrapper = document.querySelector('.game-wrapper');
+    const _a = wrapper ? (parseInt(wrapper.dataset.a, 10) || 1) : 1;
+    const _b = wrapper ? (parseInt(wrapper.dataset.b, 10) || 0) : 0;
+    try {
+        _globeData = goldberg(_a, _b);
+    } catch (e) {
+        console.warn(`goldberg(${_a},${_b}) not yet implemented — falling back to GP(1,0)`, e);
+        _globeData = goldberg(1, 0);
+    }
     const F = _globeData.faces.length;
 
-    // Read mine count from template data attribute
-    const wrapper = document.querySelector('.game-wrapper');
     _mineCount = wrapper ? (parseInt(wrapper.dataset.mines, 10) || 4) : 4;
 
     faceState = new Uint8Array(F);   // all HIDDEN at start
@@ -273,11 +281,17 @@ function _doRaycast(e, button) {
 // Sprite overlays — number labels, flags, mines
 // ---------------------------------------------------------------------------
 
-function _makeSprite(text, color, size) {
+function _makeSprite(text, color, size, bgColor) {
     const c   = document.createElement('canvas');
     c.width   = c.height = 128;
     const ctx = c.getContext('2d');
     ctx.clearRect(0, 0, 128, 128);
+    if (bgColor) {
+        ctx.beginPath();
+        ctx.arc(64, 64, 54, 0, Math.PI * 2);
+        ctx.fillStyle = bgColor;
+        ctx.fill();
+    }
     ctx.font         = 'bold 80px sans-serif';
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
@@ -301,11 +315,11 @@ function _clearSprite(idx) {
     _sprites[idx] = null;
 }
 
-function _placeSprite(idx, text, color) {
+function _placeSprite(idx, text, color, bgColor) {
     _clearSprite(idx);
     const face = _globeData.faces[idx];
     const size = face.isPentagon ? 0.18 : 0.22;
-    const spr  = _makeSprite(text, color, size);
+    const spr  = _makeSprite(text, color, size, bgColor);
     const c    = face.centroid;
     spr.position.set(c.x * 1.02, c.y * 1.02, c.z * 1.02);
     _globeGroup.add(spr);
@@ -344,12 +358,12 @@ function updateFaceVisual(idx) {
 
         case FLAGGED:
             mesh.material.color.set(_css('--glob-hidden'));
-            _placeSprite(idx, flagEmoji, '#ffffff');
+            _placeSprite(idx, flagEmoji, '#ffffff', 'rgba(255,255,255,0.85)');
             break;
 
         case QUESTION:
             mesh.material.color.set(_css('--glob-hidden'));
-            _placeSprite(idx, '?', '#ffdd44');
+            _placeSprite(idx, '?', '#333333', 'rgba(255,221,68,0.9)');
             break;
 
         case MINE:
@@ -374,13 +388,16 @@ function _initGameState() {
     const F = _globeData.faces.length;
     faceState.fill(HIDDEN);
     adjCount.fill(0);
-    mineSet    = new Set();
-    gameOver   = false;
-    firstClick = true;
+    mineSet     = new Set();
+    gameOver    = false;
+    firstClick  = true;
+    _leftClicks = 0;
+    _bbbv       = 0;
     _stopTimer();
     document.getElementById('elapsed').textContent = '0.00';
     document.getElementById('mines-remaining').textContent = String(_mineCount);
     document.getElementById('globe-overlay').style.display = 'none';
+    document.getElementById('score-form').style.display = 'none';
     for (let i = 0; i < F; i++) updateFaceVisual(i);
 }
 
@@ -405,6 +422,36 @@ function _computeAdjCount() {
     }
 }
 
+// 3BV: number of openings (blank connected components) + isolated numbered cells.
+function _compute3BV() {
+    const adj     = _globeData.adj;
+    const F       = _globeData.faces.length;
+    const visited = new Uint8Array(F);
+    let openings  = 0;
+
+    for (let start = 0; start < F; start++) {
+        if (mineSet.has(start) || visited[start] || adjCount[start] !== 0) continue;
+        openings++;
+        const queue = [start];
+        visited[start] = 1;
+        while (queue.length) {
+            const cur = queue.shift();
+            for (const nb of adj[cur]) {
+                if (mineSet.has(nb) || visited[nb]) continue;
+                visited[nb] = 1;
+                if (adjCount[nb] === 0) queue.push(nb);
+            }
+        }
+    }
+
+    let isolated = 0;
+    for (let i = 0; i < F; i++) {
+        if (!mineSet.has(i) && !visited[i]) isolated++;
+    }
+
+    return openings + isolated;
+}
+
 // ── Reveal ──────────────────────────────────────────────────────────────────
 
 function revealFace(idx) {
@@ -414,6 +461,7 @@ function revealFace(idx) {
         firstClick = false;
         mineSet = _generateMines(_globeData.faces.length, _mineCount, idx);
         _computeAdjCount();
+        _bbbv = _compute3BV();
         _startTimer();
     }
 
@@ -489,6 +537,7 @@ function _triggerGameOver(won) {
     triggerPulse();
     document.getElementById('overlay-msg').textContent = won ? '🎉 You win!' : '💥 Game over!';
     document.getElementById('globe-overlay').style.display = 'flex';
+    document.getElementById('globe-overlay').style.flexDirection = 'column';
     if (won) _showScoreForm();
 }
 
@@ -498,6 +547,7 @@ function _showScoreForm() {
     const form = document.getElementById('score-form');
     if (!form) return;
     form.style.display = 'block';
+    form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     document.getElementById('score-msg').textContent = '';
 
     // Pre-fill name from localStorage
@@ -537,12 +587,14 @@ async function _submitScore(name) {
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify({
                 name,
-                time_ms:    _finalTimeMs,
-                glob_mode:  mode,
-                t_param:    T,
-                face_count: F,
-                mines:      _mineCount,
-                board_hash: boardToHash(mineSet, F),
+                time_ms:     _finalTimeMs,
+                glob_mode:   mode,
+                t_param:     T,
+                face_count:  F,
+                mines:       _mineCount,
+                bbbv:        _bbbv || undefined,
+                left_clicks: _leftClicks || undefined,
+                board_hash:  boardToHash(mineSet, F),
             }),
         });
         return r.ok;
@@ -563,6 +615,7 @@ function faceClicked(idx, button) {
     if (button === 2) {
         cycleFlagFace(idx);
     } else {
+        _leftClicks++;
         revealFace(idx);
     }
 }

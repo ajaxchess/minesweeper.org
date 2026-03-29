@@ -2070,11 +2070,12 @@ async def redirect_globesweeper_leaderboard():
     return RedirectResponse(url="/worldsweeper/leaderboard", status_code=301)
 
 GLOBESWEEPER_MODES = {
+    "dodecahedron": {"a": 1, "b": 0, "t_param": 1,  "face_count": 12,  "mines": 2},
     "beginner":     {"a": 1, "b": 1, "t_param": 3,  "face_count": 32,  "mines": 4},
     "intermediate": {"a": 2, "b": 1, "t_param": 7,  "face_count": 72,  "mines": 8},
     "expert":       {"a": 5, "b": 0, "t_param": 25, "face_count": 252, "mines": 50},
 }
-GLOBE_MODES_VALID = {"beginner", "intermediate", "expert", "custom"}
+GLOBE_MODES_VALID = {"dodecahedron", "beginner", "intermediate", "expert", "custom"}
 
 
 @app.get("/worldsweeper", response_class=HTMLResponse)
@@ -2082,6 +2083,17 @@ async def worldsweeper_beginner(request: Request):
     m = GLOBESWEEPER_MODES["beginner"]
     return templates.TemplateResponse("worldsweeper.html", {
         "request": request, "mode": "beginner",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **m,
+    })
+
+
+@app.get("/worldsweeper/dodecahedron", response_class=HTMLResponse)
+async def worldsweeper_dodecahedron(request: Request):
+    m = GLOBESWEEPER_MODES["dodecahedron"]
+    return templates.TemplateResponse("worldsweeper.html", {
+        "request": request, "mode": "dodecahedron",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **m,
@@ -2130,13 +2142,15 @@ async def worldsweeper_leaderboard(request: Request):
 
 
 class WorldsweeperScoreSubmit(BaseModel):
-    name:       str           = Field(..., min_length=1, max_length=32)
-    glob_mode:  str           = Field(..., pattern="^(beginner|intermediate|expert|custom)$")
-    time_ms:    int           = Field(..., ge=1, le=3_600_000)
-    t_param:    int           = Field(..., ge=1, le=75)
-    face_count: int           = Field(..., ge=12, le=752)
-    mines:      int           = Field(..., ge=1, le=750)
-    board_hash: Optional[str] = Field(None, max_length=128)
+    name:        str           = Field(..., min_length=1, max_length=32)
+    glob_mode:   str           = Field(..., pattern="^(dodecahedron|beginner|intermediate|expert|custom)$")
+    time_ms:     int           = Field(..., ge=1, le=3_600_000)
+    t_param:     int           = Field(..., ge=1, le=75)
+    face_count:  int           = Field(..., ge=12, le=752)
+    mines:       int           = Field(..., ge=1, le=750)
+    bbbv:        Optional[int] = Field(None, ge=1, le=9999)
+    left_clicks: Optional[int] = Field(None, ge=1, le=99999)
+    board_hash:  Optional[str] = Field(None, max_length=128)
 
     @field_validator("name")
     @classmethod
@@ -2174,6 +2188,8 @@ def submit_world_score(payload: WorldsweeperScoreSubmit, request: Request, db: S
         t_param     = payload.t_param,
         face_count  = payload.face_count,
         mines       = payload.mines,
+        bbbv        = payload.bbbv,
+        left_clicks = payload.left_clicks,
         board_hash  = payload.board_hash,
         guest_token = guest_token,
         client_type = get_client_type(request),

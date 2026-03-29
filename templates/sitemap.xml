@@ -283,6 +283,13 @@
 
   <!-- ── Worldsweeper ────────────────────────────────────────────────────────── -->
   <url>
+    <loc>https://minesweeper.org/worldsweeper/dodecahedron</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
     <loc>https://minesweeper.org/worldsweeper</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>weekly</changefreq>
