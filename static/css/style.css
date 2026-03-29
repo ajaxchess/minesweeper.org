@@ -16,6 +16,12 @@
   --radius:      6px;
   --cell-size:   36px;
   --font-mono:   'Courier New', Courier, monospace;
+  /* Globesweeper face colors — dark skin defaults */
+  --glob-hidden:        #2a3a5c;
+  --glob-hidden-border: #3a5278;
+  --glob-rev:           #e8e8e8;
+  --glob-mine:          #7a0000;
+  --glob-detonated:     #c00000;
 }
 
 body {
@@ -3596,6 +3602,12 @@ html[data-skin="classic"] {
   --cell-border: #808080;
   --radius:      0px;
   background:    #ffffff;  /* paint the viewport canvas white */
+  /* Globesweeper — classic site skin (no globe-specific override active) */
+  --glob-hidden:        #c0c0c0;
+  --glob-hidden-border: #808080;
+  --glob-rev:           #e8e8e8;
+  --glob-mine:          #7a0000;
+  --glob-detonated:     #c00000;
 }
 
 html[data-skin="classic"] body {
@@ -4593,6 +4605,12 @@ html[data-skin="tentaizu"] {
   --accent:      #7ec8e3;
   --accent2:     #ffe066;
   --border:      #1e2d4a;
+  /* Globesweeper — tentaizu skin */
+  --glob-hidden:        #1e2d4a;
+  --glob-hidden-border: #2a3f6f;
+  --glob-rev:           #e0e8ff;
+  --glob-mine:          #7a0000;
+  --glob-detonated:     #c00000;
 }
 
 /* Starry background via SVG data URL */
@@ -5698,6 +5716,12 @@ html[data-skin="light"] {
   --cell-rev:    #eaf2fb;
   --cell-border: #88aac8;
   --border:      #ccd8e8;
+  /* Globesweeper — light skin */
+  --glob-hidden:        #c4d4e8;
+  --glob-hidden-border: #88aac8;
+  --glob-rev:           #eaf2fb;
+  --glob-mine:          #7a0000;
+  --glob-detonated:     #c00000;
 }
 
 html[data-skin="light"] body {
@@ -5792,6 +5816,12 @@ html[data-skin="flower"] {
   --cell-rev:    #150d22;
   --cell-border: #4a2d7a;
   --border:      #3a2560;
+  /* Globesweeper — flower skin */
+  --glob-hidden:        #2d1f4e;
+  --glob-hidden-border: #4a2d7a;
+  --glob-rev:           #e8e0ff;
+  --glob-mine:          #7a0000;
+  --glob-detonated:     #c00000;
 }
 
 html[data-skin="flower"] body {
@@ -6057,4 +6087,26 @@ html[data-skin="flower-light"] .diana-birthday-banner {
   fill: var(--text, #eee);
   dominant-baseline: central;
 }
+
+/* ── Globesweeper visual themes ──────────────────────────────────────────────
+   Set data-glob-skin on #globe-wrap to override face colors.
+   JS reads --glob-* via getComputedStyle(globeWrapEl).
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Classic theme — concept-art orange background (applied via JS radial gradient) */
+[data-glob-skin="classic"] {
+  --glob-hidden:        #4a4a4a;   /* dark metallic gray */
+  --glob-hidden-border: #c8892a;   /* orange-gold border */
+  --glob-rev:           #e8e8e8;   /* plain white reveal */
+  --glob-mine:          #7a0000;
+  --glob-detonated:     #c00000;
+}
+
+/* Earth theme — Phase 2; Milky Way background set via scene.background in JS */
+/* [data-glob-skin="earth"] {
+  --glob-hidden:        #c87020;
+  --glob-hidden-border: #7a4010;
+  --glob-mine:          #7a0000;
+  --glob-detonated:     #c00000;
+} */
 

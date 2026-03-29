@@ -34,7 +34,9 @@ const _COLOR_FALLBACK = {
 };
 
 function _css(varName) {
-    const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    // Read from #globe-wrap so [data-glob-skin] overrides on that element take effect.
+    const el = document.getElementById('globe-wrap') || document.documentElement;
+    const v  = getComputedStyle(el).getPropertyValue(varName).trim();
     return v || _COLOR_FALLBACK[varName];
 }
 
