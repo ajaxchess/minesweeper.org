@@ -5450,6 +5450,12 @@ select.calc-input { width: 140px; }
   letter-spacing: 0.04em;
   color: var(--text-dim);
   text-align: center;
+  min-height: 2.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.25em;
 }
 
 .duel-board-col-mine .duel-board-col-label { color: var(--accent2); }
@@ -5477,9 +5483,10 @@ select.calc-input { width: 140px; }
   border-radius: var(--radius);
 }
 
-/* Player board inside PvP — match gap and font-size to opponent board */
+/* Player board inside PvP — match sizing to opponent board */
 .duel-boards-row #board {
   gap: 1px;
+  padding: 4px;
 }
 
 /* Spectator boards */
