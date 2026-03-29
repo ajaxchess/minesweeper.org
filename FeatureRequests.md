@@ -1,6 +1,17 @@
 # F55 Globesweeper — Implementation Plan
 
-This document breaks F55 (Globesweeper) into discrete implementation subtasks.
+This document breaks F55 (Globesweeper) into discrete implementation subtasks
+organised across two phases.
+
+**Phase 1** delivers a fully playable game on the 32-face GP(1,1) soccer-ball
+board (the truncated icosahedron). The entire stack — geometry, rendering, game
+logic, Classic skin, scoring — is validated on one fixed board before any
+generalisation work begins.
+
+**Phase 2** extends the working game to support selectable GP(a,b) board sizes
+via a T-selector UI, implements the remaining subdivision classes (I and III),
+and adds the Earth visual skin with texture assets.
+
 The feature spec lives in Features.md under F55.
 
 ## Status of existing work
@@ -12,17 +23,29 @@ The feature spec lives in Features.md under F55.
 | `templates/globesweeper.html` | ✓ Done (HTML shell, data attrs, canvas, custom form) |
 | `templates/globesweeper_leaderboard.html` | ✓ Done |
 | `static/js/vendor/three.min.js` | ✓ Done |
-| `static/js/goldberg.js` (G1a: icosahedron + subdivision) | ✗ Not started |
-| `static/js/goldberg.js` (G1b: dual + adjacency) | ✗ Not started |
-| `static/js/goldberg.js` (G1c: canonical index + export + tests) | ✗ Not started |
-| `static/js/globesweeper.js` | ✗ Not started |
-| CSS `--glob-*` skin variables | ✗ Not started |
-| Globe skin system (Classic + Earth themes) | ✗ Not started |
-| World map equirectangular texture (`static/img/earth.jpg`) | ✗ Not started |
-| Milky Way background texture (`static/img/milkyway.jpg`) | ✗ Not started |
-| Score submission form (post-win) | ✗ Not started |
-| Globesweeper in nav mega-menu (`base.html`) | ✗ Not started |
-| Sitemap entries | ✗ Not started |
+| Asset | Phase | Status |
+|---|---|---|
+| Routes in `main.py` | — | ✓ Done |
+| `GlobesweeperScore` model in `database_template.py` | — | ✓ Done |
+| `templates/globesweeper.html` | — | ✓ Done (HTML shell, data attrs, canvas, custom form) |
+| `templates/globesweeper_leaderboard.html` | — | ✓ Done |
+| `static/js/vendor/three.min.js` | — | ✓ Done |
+| `static/js/goldberg.js` (G1a: icosahedron + Class II subdivision) | 1 | ✗ Not started |
+| `static/js/goldberg.js` (G1b: dual + adjacency) | 1 | ✗ Not started |
+| `static/js/goldberg.js` (G1c: export + GP(1,1) tests) | 1 | ✗ Not started |
+| `static/js/globesweeper.js` (G2: Classic skin, hardcoded GP(1,1)) | 1 | ✗ Not started |
+| `static/js/globesweeper.js` (G3: game logic) | 1 | ✗ Not started |
+| CSS `--glob-*` variables, Classic theme | 1 | ✗ Not started |
+| Score submission form (post-win) | 1 | ✗ Not started |
+| Globesweeper in nav mega-menu (`base.html`) | 1 | ✗ Not started |
+| Sitemap entry (`/globesweeper`) | 1 | ✗ Not started |
+| `static/js/goldberg.js` (Class I + III generalisation + full tests) | 2 | ✗ Not started |
+| T-selector UI + dynamic `goldberg(a,b)` | 2 | ✗ Not started |
+| Earth skin (textured sphere + starfield) | 2 | ✗ Not started |
+| CSS Earth theme (`[data-glob-skin="earth"]`) | 2 | ✗ Not started |
+| `static/img/earth.jpg` (equirectangular world map) | 2 | ✗ Not started |
+| `static/img/milkyway.jpg` (starfield background) | 2 | ✗ Not started |
+| Remaining sitemap entries (intermediate/expert/custom/leaderboard) | 2 | ✗ Not started |
 
 ---
 
@@ -48,7 +71,24 @@ the custom board form later.
 
 ---
 
-## Subtask G1a — goldberg.js: Icosahedron base + geodesic subdivision
+---
+
+## Phase 1 — GP(1,1) Proof of Concept (soccer ball, F=32)
+
+**Goal:** Ship a fully playable Globesweeper on the 32-face truncated icosahedron.
+Review the concept — feel, performance, visual polish — before generalising.
+
+| Restriction | Phase 1 decision |
+|---|---|
+| Board geometry | GP(1,1) only — `goldberg(1,1)` hardcoded in globesweeper.js |
+| Subdivision classes | Class II (a=b) only — sufficient for GP(1,1) |
+| Visual skin | Classic only — no Earth skin, no texture assets required |
+| Score modes | beginner / intermediate / expert by mine count on F=32 |
+| Nav / sitemap | `/globesweeper` route only; one sitemap URL |
+
+---
+
+## Phase 1 — Subtask G1a — goldberg.js: Icosahedron base + geodesic subdivision
 
 **File:** `static/js/goldberg.js` (partial — scaffold + first two steps)
 **Depends on:** nothing
@@ -67,8 +107,12 @@ top of the file.)
 For each of the 20 triangular faces with vertices `[P0, P1, P2]`, place
 subdivision vertices using the Goldberg-Coxeter `(a, b)` lattice:
 - Class I (`b = 0`): simple grid subdivision, `T = a²`
-- Class II (`a = b`): rotated grid, `T = 3a²`
-- Class III (general): skewed grid, `T = a² + ab + b²`
+- Class II (`a = b`): rotated grid, `T = 3a²`  ← **Phase 1 implements this class only**
+- Class III (general): skewed grid, `T = a² + ab + b²`  ← deferred to Phase 2
+
+Phase 1 only needs GP(1,1) to work. Implement the general barycentric
+interpolation loop so that Class II falls out naturally; Class I and III can be
+verified later. Do not block on getting all three classes correct at once.
 
 For each sub-triangle, compute barycentric coordinates `(u, v, w)` with
 `u + v + w = 1` and interpolate: `P = u*P0 + v*P1 + w*P2`. Project each
@@ -88,20 +132,23 @@ Return value of `subdivide(a, b)`:
 }
 ```
 
-### Acceptance criteria
-- `subdivide(1, 0)` → 12 verts, 20 tris (bare icosahedron, T=1)
-- `subdivide(2, 0)` → T=4, so 20*4=80 tris, 42 verts
-- `subdivide(1, 1)` → T=3, so 20*3=60 tris, 32 verts
+### Acceptance criteria (Phase 1 — GP(1,1) only)
+- `subdivide(1, 1)` → T=3, so 20×3=60 tris, 32 verts  ← **must pass in Phase 1**
 - Every vertex has unit length (≤ 1e-9 error from 1.0)
 - No duplicate vertices (all pairwise distances > 1e-9)
 
+Phase 2 will add:
+- `subdivide(1, 0)` → 12 verts, 20 tris (Class I)
+- `subdivide(2, 0)` → 80 tris, 42 verts (Class I)
+- `subdivide(2, 1)` → T=7, 140 tris (Class III)
+
 ### Testing
-No test file yet — acceptance criteria are verified manually in the browser
-console (`subdivide(2,0).tris.length === 80`) before G1c writes the test file.
+No test file yet — verify in browser console:
+`subdivide(1,1).tris.length === 60 && subdivide(1,1).verts.length === 32`
 
 ---
 
-## Subtask G1b — goldberg.js: Dual polyhedron + adjacency
+## Phase 1 — Subtask G1b — goldberg.js: Dual polyhedron + adjacency
 
 **File:** `static/js/goldberg.js` (continues from G1a)
 **Depends on:** G1a (`subdivide` function in the same file)
@@ -153,7 +200,7 @@ Return value of `buildDual(verts, tris)`:
 
 ---
 
-## Subtask G1c — goldberg.js: Canonical indexing, export, cache, tests
+## Phase 1 — Subtask G1c — goldberg.js: Canonical indexing, export, cache, tests
 
 **File:** `static/js/goldberg.js` (final pass) + `src/__tests__/goldberg.test.js`
 **Depends on:** G1a + G1b (all steps in same file)
@@ -187,26 +234,29 @@ export function goldberg(a, b) {
 }
 ```
 
-### Acceptance criteria
+### Acceptance criteria (Phase 1 — GP(1,1) only)
+- `goldberg(1, 1)` → F=32, 12 pentagons + 20 hexagons  ← **must pass in Phase 1**
+- Each face in `adj` is bidirectionally consistent
+- Canonical indices are stable: two calls with `(1, 1)` return identical assignments
+
+Phase 2 will add:
 - `goldberg(1, 0)` → F=12, all pentagons, every face has 5 neighbours
-- `goldberg(1, 1)` → F=32, 12 pentagons + 20 hexagons
 - `goldberg(2, 1)` → F=72
 - `goldberg(5, 0)` → F=252
-- Each face in `adj` is bidirectionally consistent
-- Canonical indices are stable: two calls with the same `(a, b)` return
-  identical index assignments (test by calling twice and comparing)
 
 ### Testing
-Write `src/__tests__/goldberg.test.js` covering all four board sizes above
-plus the stability check. Run with `npx jest`.
+Write `src/__tests__/goldberg.test.js` covering the GP(1,1) case + stability check.
+Phase 2 expands this to all board sizes. Run with `npx jest`.
 
 ---
 
-## Subtask G2 — globesweeper.js Part 1: Three.js scene and rendering
+## Phase 1 — Subtask G2 — globesweeper.js Part 1: Three.js scene and rendering
 
 **File:** `static/js/globesweeper.js`
 **Depends on:** G1 (goldberg.js), Three.js vendor
 **Scope:** scene setup, face meshes, rotation, raycasting, sprite overlays
+**Phase 1 restriction:** Classic skin only. Hardcode `goldberg(1,1)` — no T-selector.
+Earth skin (inner textured sphere + starfield background) is deferred to Phase 2.
 
 ### Scene setup (called by `initGlobe`)
 
@@ -346,7 +396,7 @@ over 300 ms using linear interpolation in the render loop.
 
 ---
 
-## Subtask G3 — globesweeper.js Part 2: game logic
+## Phase 1 — Subtask G3 — globesweeper.js Part 2: game logic
 
 **File:** `static/js/globesweeper.js` (same file, continues from G2)
 **Depends on:** G1 (goldberg.js output)
@@ -522,12 +572,14 @@ mine generation setup (keeping geometry).
 
 ---
 
-## Subtask G4 — CSS skin variables and globe themes
+## Phase 1 — Subtask G4 — CSS skin variables (Classic theme only)
 
 **File:** `static/css/style.css`
 **Depends on:** nothing
 **Scope:** add `--glob-*` CSS variables to each site skin block, and define the
 two globe-specific visual themes (Classic and Earth) driven by `data-glob-skin`.
+**Phase 1 restriction:** Implement Classic theme CSS variables only. The
+`[data-glob-skin="earth"]` block and texture assets are deferred to Phase 2.
 
 ### Site skin CSS variables — add to each existing skin block
 
@@ -577,7 +629,7 @@ custom board form in a later pass.
 
 ---
 
-## Subtask G5 — Score submission (post-win)
+## Phase 1 — Subtask G5 — Score submission (post-win)
 
 **File:** `templates/globesweeper.html`
 **Depends on:** G3 (game logic exposes `finalTimeMs`, `boardHash`)
@@ -624,11 +676,14 @@ On error: show error message, allow retry.
 
 ---
 
-## Subtask G6 — Nav mega-menu and sitemap
+## Phase 1 — Subtask G6 — Nav mega-menu and sitemap
 
 **Files:** `templates/base.html`, `templates/sitemap.xml`
 **Depends on:** nothing
 **Scope:** surface Globesweeper in navigation and search indexing
+**Phase 1 restriction:** Add `/globesweeper` to the nav and one sitemap entry only.
+The intermediate/expert/custom/leaderboard URLs are added in Phase 2 once those
+routes are driven by the T-selector.
 
 ### base.html
 
@@ -667,23 +722,141 @@ Add the five Globesweeper URLs with weekly changefreq and priority 0.7:
 
 ---
 
+---
+
+## Phase 2 — General Goldberg Polyhedra (multiple board sizes + Earth skin)
+
+**Goal:** Extend the Phase 1 game to support selectable GP(a,b) board sizes,
+all three subdivision classes, and the Earth visual theme.
+
+**Prerequisites:** Phase 1 shipped and concept approved.
+
+---
+
+## Phase 2 — Extension G1 — goldberg.js: Generalise to all subdivision classes
+
+**File:** `static/js/goldberg.js` (extend existing file)
+**Depends on:** Phase 1 G1a/G1b/G1c
+
+Extend `subdivide(a, b)` to handle:
+
+- **Class I (`b = 0`):** straightforward frequency subdivision of each triangle
+  into `a²` sub-triangles along a regular grid.
+- **Class III (general `a ≠ b`, `b ≠ 0`):** skewed Goldberg-Coxeter lattice;
+  most complex — implement after Class I is verified.
+
+The barycentric interpolation loop from Phase 1 already handles all classes
+in principle; the difference is how the lattice points `(i, j)` are enumerated
+for each `(a, b)`. Verify Class III with GP(2,1) → T=7, F=72.
+
+### Extended acceptance criteria
+- `goldberg(1, 0)` → F=12, all pentagons, each with 5 neighbours (Class I)
+- `goldberg(2, 0)` → F=42 (Class I)
+- `goldberg(5, 0)` → F=252 (Class I — largest supported board)
+- `goldberg(2, 1)` → F=72 (Class III)
+- All existing GP(1,1) tests continue to pass
+- `npx jest` passes all cases in `src/__tests__/goldberg.test.js`
+
+---
+
+## Phase 2 — Extension G2 — T-selector UI + dynamic board sizes
+
+**Files:** `static/js/globesweeper.js`, `templates/globesweeper.html`
+**Depends on:** Phase 2 G1
+
+### T-selector in globesweeper.html
+
+The custom board form already has a T-select dropdown (from the existing HTML
+shell). Wire the predefined options to named modes:
+
+| Mode | GP(a,b) | T | F | Suggested mines |
+|---|---|---|---|---|
+| Beginner | GP(1,1) | 3 | 32 | 5 |
+| Intermediate | GP(2,0) | 4 | 42 | 10 |
+| Expert | GP(5,0) | 25 | 252 | 50 |
+| Custom | user-entered a,b | — | — | user-entered |
+
+### globesweeper.js changes
+
+Replace the hardcoded `goldberg(1,1)` call with:
+```js
+const { faces, adj, T, F, pentagons } = goldberg(a, b)
+```
+where `a` and `b` are read from the T-selector or URL parameters (matching the
+existing `data-a` and `data-b` attributes on the template).
+
+Tear down and rebuild the Three.js scene on board change (dispose all geometries
+and materials to avoid GPU memory leaks).
+
+### Earth skin (deferred from Phase 1 G2)
+
+Once Phase 1 is reviewed and the concept is approved, implement the Earth skin
+additions documented in Phase 1 G2:
+- Milky Way `scene.background` texture
+- Inner `SphereGeometry` at radius 0.97 with equirectangular Earth texture
+- `visible = false` on reveal instead of recolor
+- `data-glob-skin` switching
+
+---
+
+## Phase 2 — Extension G4 — Earth skin CSS + texture assets
+
+**Files:** `static/css/style.css`, `static/img/earth.jpg`, `static/img/milkyway.jpg`
+**Depends on:** Phase 2 G2 (Earth skin)
+
+Source texture assets (see Visual themes section for specs and licensing notes).
+Add the `[data-glob-skin="earth"]` CSS block documented in Phase 1 G4.
+
+---
+
+## Phase 2 — Extension G6 — Full nav and sitemap
+
+**Files:** `templates/base.html`, `templates/sitemap.xml`
+**Depends on:** Phase 2 G2 (dynamic board sizes)
+
+Add the remaining sitemap URLs once the routes are live:
+```xml
+<url><loc>https://minesweeper.org/globesweeper/intermediate</loc>
+     <changefreq>weekly</changefreq><priority>0.6</priority></url>
+<url><loc>https://minesweeper.org/globesweeper/expert</loc>
+     <changefreq>weekly</changefreq><priority>0.6</priority></url>
+<url><loc>https://minesweeper.org/globesweeper/custom</loc>
+     <changefreq>weekly</changefreq><priority>0.5</priority></url>
+<url><loc>https://minesweeper.org/globesweeper/leaderboard</loc>
+     <changefreq>daily</changefreq><priority>0.5</priority></url>
+```
+
+---
+
 ## Recommended implementation order
 
+### Phase 1
+
 ```
-[asset]  Source earth.jpg + milkyway.jpg → static/img/   ← can be done immediately, blocks G2 Earth skin
-G1a goldberg.js — icosahedron base + geodesic subdivision ← start here
-G1b goldberg.js — dual polyhedron + adjacency             ← same file, next step
-G1c goldberg.js — canonical indexing + export + tests     ← completes the module
-G2  scene & rendering (Classic skin first, Earth skin after assets land)
-G3  game logic           ← complete the JS; full playable game
-G4  CSS variables + globe theme overrides ← can be done anytime, needed before G2 ships
-G5  score submission     ← add after G3; needs game to be complete
-G6  nav + sitemap        ← final step before launch
+G4  Classic CSS variables     ← independent; do first or in parallel
+G1a goldberg.js — icosahedron + Class II subdivision (GP(1,1) only)
+G1b goldberg.js — dual polyhedron + adjacency
+G1c goldberg.js — export, cache, GP(1,1) test
+G2  globesweeper.js — Three.js scene, Classic skin, hardcoded goldberg(1,1)
+G3  globesweeper.js — game logic
+G5  score submission form
+G6  nav (one entry) + one sitemap URL
 ```
 
-G4 and G6 are independent of the JS work and can be parallelised with G1/G2/G3.
-G1a → G1b → G1c must be sequential (each builds on the previous in the same file).
-Earth skin in G2 can be skipped on first pass and added once texture assets are committed.
+→ **Review Phase 1. If concept is approved, proceed to Phase 2.**
+
+### Phase 2
+
+```
+[asset]  Source earth.jpg + milkyway.jpg → static/img/
+G1 ext  goldberg.js — Class I (b=0) + Class III (general); expand tests
+G2 ext  T-selector UI; dynamic goldberg(a,b); Earth skin
+G4 ext  Earth skin CSS + data-glob-skin block
+G6 ext  Remaining sitemap URLs + leaderboard modes
+```
+
+G4 (Classic) and Phase 1 G6 are always independent and can be parallelised
+with G1a/G1b/G1c. G1a → G1b → G1c must be sequential.
 
 ---
 
@@ -692,15 +865,22 @@ Earth skin in G2 can be skipped on first pass and added once texture assets are 
 Use `F55` prefix on all commits:
 
 ```
-F55 G1a Add goldberg.js — icosahedron base and geodesic subdivision
+// Phase 1
+F55 G1a Add goldberg.js — icosahedron base and Class II subdivision
 F55 G1b Add goldberg.js — dual polyhedron construction and adjacency
-F55 G1c Add goldberg.js — canonical indexing, export, cache, and tests
-F55 G2 Add globesweeper.js — Three.js scene and rendering (Classic skin)
-F55 G2 Add globesweeper.js — Earth skin (textured sphere + starfield background)
+F55 G1c Add goldberg.js — GP(1,1) canonical indexing, export, cache, and tests
+F55 G2 Add globesweeper.js — Three.js scene and rendering, Classic skin, GP(1,1)
 F55 G3 Add globesweeper.js — game logic (state, mines, flood-fill, hash)
-F55 G4 Add --glob-* CSS variables and Classic/Earth globe theme overrides
+F55 G4 Add --glob-* CSS variables, Classic theme
 F55 G5 Wire score submission form in globesweeper.html
 F55 G6 Add Globesweeper to nav mega-menu and sitemap
+
+// Phase 2
+F55 G1 Extend goldberg.js — Class I and Class III subdivision, full test suite
+F55 G2 Add T-selector and dynamic board sizes to globesweeper.js
+F55 G2 Add Earth skin — textured sphere, starfield background, face-hide on reveal
+F55 G4 Add Earth skin CSS variables and data-glob-skin block
+F55 G6 Add remaining Globesweeper sitemap URLs
 F55 Add earth.jpg and milkyway.jpg texture assets
 ```
 
@@ -708,13 +888,13 @@ F55 Add earth.jpg and milkyway.jpg texture assets
 
 ## Open questions / risks
 
-| Item | Note |
-|---|---|
-| Class III (a≠b, b≠0) subdivision | Most complex math — Class I and II should work first; validate with T=7 (GP(2,1)) |
-| OrbitControls bundling | three.min.js r165 does not include OrbitControls; implement manual quaternion drag instead |
-| Mobile touch performance | 252 meshes (expert) may be slow on low-end phones; defer BufferGeometry merge to future |
-| Score submission auth | Guests submit with `display_name`; logged-in users use session email — match pattern in cylinder/toroid |
-| No-guess mode | Explicitly deferred per spec; do not implement in this feature |
-| Earth texture UV alignment | SphereGeometry UV is automatic but the poles may distort; verify visually and rotate texture offset if needed |
-| Texture asset licensing | NASA Blue Marble and ESA Milky Way are public domain — confirm before committing; do not use copyrighted textures |
-| Earth skin + border lines | Border lines at radius 1.001 should still appear over revealed (invisible) faces — verify raycasting still works when face mesh is `visible = false` (it does; raycaster ignores invisible meshes, so clicking a revealed face in Earth skin won't register — handle by checking game state directly on pointer position) |
+| Item | Phase | Note |
+|---|---|---|
+| Class III (a≠b, b≠0) subdivision | 2 | Deferred from Phase 1; validate with GP(2,1) → T=7 first |
+| OrbitControls bundling | 1 | three.min.js r165 has no OrbitControls; use manual quaternion drag |
+| Mobile touch performance | 1 | 32 faces is fine; 252 (Phase 2 expert) may need BufferGeometry merge |
+| Score submission auth | 1 | Guests use `display_name`; logged-in users use session email — match cylinder/toroid pattern |
+| No-guess mode | both | Explicitly deferred; do not implement in this feature |
+| Earth texture UV alignment | 2 | SphereGeometry UV is automatic; verify poles visually, adjust offset if needed |
+| Texture asset licensing | 2 | NASA Blue Marble + ESA Milky Way are public domain — confirm before committing |
+| Earth skin raycasting on hidden face | 2 | `visible = false` makes raycaster skip the mesh; detect clicks via board state + pointer position instead |
