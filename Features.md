@@ -1,5 +1,59 @@
 List of active features
 
+F61 No-Guess Nonosweeper POTD
+
+  Guarantee that every Puzzle of the Day (POTD) can be solved from
+  the nonogram clues alone — no cell requires a blind guess.
+
+  The current POTD generator places mines with a seeded RNG and has no
+  solvability check. Some boards are ambiguous, requiring the player to
+  guess a cell and risk an instant loss. This feature eliminates that.
+
+  Approach
+  ──────────────────────────────────────────────────────────────────────
+  Add `isNonosweeperSolvable(rows, cols, mineSet)` to nonosweeper.js.
+  The solver runs entirely in JavaScript, client-side, with no API
+  changes required.
+
+  The solver works in two stages:
+
+  Stage 1 — Iterative line-solving (fast):
+    Apply the "overlap" technique to every row and column.
+    For each line, find the leftmost and rightmost valid placements of
+    all runs given currently-known cells, then mark cells as definitely
+    mine or definitely safe where the placements agree.
+    Repeat until no progress. This resolves most well-designed puzzles.
+
+  Stage 2 — Backtracking (completeness):
+    If unknown cells remain after Stage 1, pick the first unknown cell.
+    Branch: try it as a mine, then try it as safe.
+    Recurse in each branch with full Stage 1 propagation.
+    Count consistent solutions. Return true iff exactly one solution
+    exists. Cap recursion depth at 30 to bound worst-case time.
+
+  POTD generation
+  ──────────────────────────────────────────────────────────────────────
+  `generatePuzzle(seedStr, difficulty)` currently uses seedStr directly.
+  Modify it to try seeds `seedStr + ':' + difficulty + ':0'` through
+  `':49'` (50 candidates), returning the first board that passes
+  `isNonosweeperSolvable`. If none pass (extremely rare), fall back to
+  `':0'` (no change to observable puzzle for players who already played
+  it before the feature launched, since that was the previous seed).
+
+  The seed suffix approach ensures:
+  - All existing solves remain valid (archive puzzle hashes don't change)
+  - The fallback still produces a deterministic daily puzzle
+
+  Random puzzles (non-POTD) do not require the guarantee — keep as-is.
+
+  Performance target
+  ──────────────────────────────────────────────────────────────────────
+  Stage 1 only: < 5 ms per board on modern hardware
+  With backtracking: < 50 ms per board (capped at depth 30)
+  50 candidates × 50 ms = 2.5 s worst case (run async via setTimeout)
+
+  See docs/NonosweeperNoGuessSolverSpec.md for the full algorithm spec.
+
 F60 Android App
 
   Build the Minesweeper.org Android app using the existing React Native + Expo
