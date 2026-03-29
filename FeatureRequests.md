@@ -30,7 +30,8 @@ The feature spec lives in Features.md under F55.
 | `templates/globesweeper.html` | — | ✓ Done (HTML shell, data attrs, canvas, custom form) |
 | `templates/globesweeper_leaderboard.html` | — | ✓ Done |
 | `static/js/vendor/three.min.js` | — | ✓ Done |
-| `static/js/goldberg.js` (G1a: icosahedron + Class II subdivision) | 1 | ✗ Not started |
+| `static/js/goldberg.js` (G1a-alpha: icosahedron base + Class I → dodecahedron) | 1 | ✗ Not started |
+| `static/js/goldberg.js` (G1a-beta: Class II subdivision → soccer ball GP(1,1)) | 1 | ✗ Not started |
 | `static/js/goldberg.js` (G1b: dual + adjacency) | 1 | ✗ Not started |
 | `static/js/goldberg.js` (G1c: export + GP(1,1) tests) | 1 | ✗ Not started |
 | `static/js/globesweeper.js` (G2: Classic skin, hardcoded GP(1,1)) | 1 | ✗ Not started |
@@ -90,33 +91,39 @@ Review the concept — feel, performance, visual polish — before generalising.
 
 ## Phase 1 — Subtask G1a — goldberg.js: Icosahedron base + geodesic subdivision
 
-**File:** `static/js/goldberg.js` (partial — scaffold + first two steps)
-**Depends on:** nothing
-**Output contract:** a module-level function `subdivide(a, b)` that returns
-an array of triangular faces `{ v0, v1, v2 }` where each vertex is a
-unit-sphere `{x, y, z}`. No exports yet — G1b consumes this internally.
+G1a is split into three incremental sub-tasks so each can be reviewed independently:
 
-### What to implement
+| Sub-task | Class | GP | F | Status |
+|---|---|---|---|---|
+| G1a-alpha | I (b=0) | GP(1,0) | 12 (dodecahedron) | ✗ Not started |
+| G1a-beta  | II (a=b) | GP(1,1) | 32 (soccer ball) | ✗ Not started |
+| G1a-gamma | III (general) | GP(a,b) | any | Deferred to Phase 2 |
+
+---
+
+### G1a-alpha — Class I subdivision → dodecahedron (GP(1,0), F=12)
+
+**File:** `static/js/goldberg.js` (create file; scaffold + Class I only)
+**Depends on:** nothing
+**Goal:** Produce the dual of the un-subdivided icosahedron — a dodecahedron with
+12 pentagonal faces — as a smoke-test that the base icosahedron and dual-building
+pipeline are correct before subdivision is added.
 
 **Icosahedron base**
 Define the 12 vertices of a unit icosahedron using the golden-ratio formula
-and the 20 triangular faces as index triples. (These are constants at the
-top of the file.)
+and the 20 triangular faces as index triples. These are constants at the top
+of the file and are shared by all sub-tasks.
 
-**Step 1 — Subdivide each icosahedron triangle**
-For each of the 20 triangular faces with vertices `[P0, P1, P2]`, place
-subdivision vertices using the Goldberg-Coxeter `(a, b)` lattice:
-- Class I (`b = 0`): simple grid subdivision, `T = a²`
-- Class II (`a = b`): rotated grid, `T = 3a²`  ← **Phase 1 implements this class only**
-- Class III (general): skewed grid, `T = a² + ab + b²`  ← deferred to Phase 2
-
-Phase 1 only needs GP(1,1) to work. Implement the general barycentric
-interpolation loop so that Class II falls out naturally; Class I and III can be
-verified later. Do not block on getting all three classes correct at once.
-
-For each sub-triangle, compute barycentric coordinates `(u, v, w)` with
-`u + v + w = 1` and interpolate: `P = u*P0 + v*P1 + w*P2`. Project each
-resulting vertex onto the unit sphere (normalise to length 1).
+**Step 1 — Class I subdivision (b=0)**
+For `a=1, b=0` (T=1) no sub-division is needed — each icosahedron triangle maps
+directly to itself. Implement the general Class I loop anyway so `a=2` works too:
+subdivide each face into `a²` sub-triangles using a barycentric grid on `(u, v)`:
+```
+for i in 0..a, j in 0..a-i:
+    u = i/a, v = j/a, w = 1 - u - v
+    P = u*P0 + v*P1 + w*P2  →  normalise to unit sphere
+```
+Emit two triangles per grid cell where both fit inside the face.
 
 **Step 2 — Merge duplicate vertices**
 Shared icosahedron edges produce duplicate vertices. Merge any two vertices
@@ -124,7 +131,7 @@ within `ε = 1e-9` of each other using a string-keyed map
 (`"${x.toFixed(9)},${y.toFixed(9)},${z.toFixed(9)}"` → canonical index).
 Re-map each triangle's vertex indices to canonical indices.
 
-Return value of `subdivide(a, b)`:
+Return value of internal `subdivide(a, b)`:
 ```js
 {
     verts: [{x, y, z}, ...],   // unique unit-sphere vertices
@@ -132,19 +139,76 @@ Return value of `subdivide(a, b)`:
 }
 ```
 
-### Acceptance criteria (Phase 1 — GP(1,1) only)
-- `subdivide(1, 1)` → T=3, so 20×3=60 tris, 32 verts  ← **must pass in Phase 1**
+**Step 3 — Build dual (dodecahedron faces)**
+For each unique vertex `V` in `verts`, collect all triangles containing it (the
+fan), sort the fan triangles in cyclic angular order around `V`, compute each
+triangle's centroid projected to unit sphere, and emit those ordered centroids
+as the vertices of one Goldberg face. Valence 5 → pentagon (all faces for GP(1,0)).
+
+**Acceptance criteria (G1a-alpha)**
+- `subdivide(1, 0)` → 12 verts, 20 tris (no subdivision)
+- `buildDual(...)` on GP(1,0) output → 12 faces, all pentagons, each with 5 neighbours
 - Every vertex has unit length (≤ 1e-9 error from 1.0)
 - No duplicate vertices (all pairwise distances > 1e-9)
+- Adjacency symmetric: `j ∈ adj[i]` iff `i ∈ adj[j]`
+
+**Console test:**
+```js
+const {verts,tris} = subdivide(1,0);
+console.assert(verts.length === 12 && tris.length === 20);
+const {faces,adj} = buildDual(verts,tris);
+console.assert(faces.length === 12 && faces.every(f => f.isPentagon));
+```
+
+---
+
+### G1a-beta — Class II subdivision → soccer ball (GP(1,1), F=32)
+
+**File:** `static/js/goldberg.js` (extends G1a-alpha)
+**Depends on:** G1a-alpha (same file)
+**Goal:** Extend `subdivide` to handle Class II (`a = b`) and verify the full
+32-face truncated icosahedron used by the game.
+
+**Step 1 — Class II subdivision (a=b)**
+For `a=b=1` (T=3) each icosahedron triangle is split into 3 sub-triangles.
+The general Class II pattern for parameter `n = a`:
+- Divide each edge into `2n` segments using the hexagonal lattice rotated 30°.
+- The canonical approach: generate barycentric coordinates for the `T = 3n²`
+  sub-triangles using the skewed `(s, t)` lattice with `s + t ≤ 2n`:
+  ```
+  for s in 0..2n, t in 0..2n-s (step by 1):
+      emit sub-triangles at (s,t), (s+1,t), (s,t+1) mapped through:
+      u = (2s - t) / (3n),  v = (2t - s) / (3n),  w = 1 - u - v
+      (only emit when u,v,w ≥ 0)
+  ```
+  Project each vertex to the unit sphere. Merge duplicates as in G1a-alpha.
+
+**Acceptance criteria (G1a-beta)**
+- `subdivide(1, 1)` → T=3, so 20×3=60 tris, 32 verts
+- `buildDual(...)` on GP(1,1) output → 32 faces: 12 pentagons + 20 hexagons
+- Pentagon faces have 5 neighbours, hexagons have 6
+- All adjacency symmetric
+
+**Console test:**
+```js
+const {verts,tris} = subdivide(1,1);
+console.assert(verts.length === 32 && tris.length === 60);
+const {faces,adj} = buildDual(verts,tris);
+console.assert(faces.length === 32);
+console.assert(faces.filter(f => f.isPentagon).length === 12);
+```
+
+---
+
+### G1a-gamma — Class III (general) — Deferred to Phase 2
+
+Class III handles the skewed case where `a ≠ b` and `b ≠ 0`. Deferred until
+Phase 2 after the GP(1,1) game is reviewed.
 
 Phase 2 will add:
-- `subdivide(1, 0)` → 12 verts, 20 tris (Class I)
-- `subdivide(2, 0)` → 80 tris, 42 verts (Class I)
 - `subdivide(2, 1)` → T=7, 140 tris (Class III)
-
-### Testing
-No test file yet — verify in browser console:
-`subdivide(1,1).tris.length === 60 && subdivide(1,1).verts.length === 32`
+- `subdivide(2, 0)` → T=4, 80 tris, 42 verts (Class I, larger board)
+- Full test suite in `src/__tests__/goldberg.test.js`
 
 ---
 

@@ -1,0 +1,300 @@
+/**
+ * goldberg.js — Goldberg polyhedron geometry for Globesweeper
+ *
+ * Build status:
+ *   G1a-alpha  Class I (b=0)  → dodecahedron GP(1,0), F=12   ✓
+ *   G1a-beta   Class II (a=b) → soccer ball  GP(1,1), F=32   pending
+ *   G1a-gamma  Class III      → general GP(a,b)               deferred Phase 2
+ */
+
+// ---------------------------------------------------------------------------
+// Icosahedron base geometry (shared by all subdivision classes)
+// ---------------------------------------------------------------------------
+
+const PHI = (1 + Math.sqrt(5)) / 2;   // golden ratio ≈ 1.618
+
+// 12 vertices of a unit icosahedron.  Each row is [x, y, z] before normalisation.
+const _RAW_VERTS = [
+    [ 0,  1,  PHI], [ 0, -1,  PHI], [ 0,  1, -PHI], [ 0, -1, -PHI],
+    [ 1,  PHI,  0], [-1,  PHI,  0], [ 1, -PHI,  0], [-1, -PHI,  0],
+    [ PHI,  0,  1], [-PHI,  0,  1], [ PHI,  0, -1], [-PHI,  0, -1],
+];
+
+function _normalise(x, y, z) {
+    const len = Math.sqrt(x * x + y * y + z * z);
+    return { x: x / len, y: y / len, z: z / len };
+}
+
+// Icosahedron vertices projected onto the unit sphere.
+const ICO_VERTS = _RAW_VERTS.map(([x, y, z]) => _normalise(x, y, z));
+
+// 20 triangular faces as index triples (outward-consistent winding).
+const ICO_TRIS = [
+    [0,  1,  8], [0,  8,  4], [0,  4,  5], [0,  5,  9], [0,  9,  1],
+    [1,  6,  8], [8,  6, 10], [8, 10,  4], [4, 10,  2], [4,  2,  5],
+    [5,  2, 11], [5, 11,  9], [9, 11,  7], [9,  7,  1], [1,  7,  6],
+    [3,  6,  7], [3,  7, 11], [3, 11,  2], [3,  2, 10], [3, 10,  6],
+];
+
+// ---------------------------------------------------------------------------
+// Vertex deduplication helpers
+// ---------------------------------------------------------------------------
+
+function _vertKey(v) {
+    return `${v.x.toFixed(9)},${v.y.toFixed(9)},${v.z.toFixed(9)}`;
+}
+
+/**
+ * Given a flat array of {x,y,z} vertices (possibly with duplicates) and a
+ * parallel array of index triples, return deduplicated {verts, tris}.
+ */
+function _merge(rawVerts, rawTris) {
+    const keyToIdx = new Map();
+    const verts = [];
+
+    function canonical(v) {
+        const k = _vertKey(v);
+        if (!keyToIdx.has(k)) {
+            keyToIdx.set(k, verts.length);
+            verts.push(v);
+        }
+        return keyToIdx.get(k);
+    }
+
+    const tris = rawTris.map(([a, b, c]) => ({
+        i0: canonical(rawVerts[a]),
+        i1: canonical(rawVerts[b]),
+        i2: canonical(rawVerts[c]),
+    }));
+
+    return { verts, tris };
+}
+
+// ---------------------------------------------------------------------------
+// G1a-alpha — Class I subdivision  (b = 0,  T = a²)
+// ---------------------------------------------------------------------------
+
+/**
+ * Subdivide a single icosahedron triangle [P0, P1, P2] into a² sub-triangles
+ * using a uniform barycentric grid (Class I, b=0).
+ *
+ * Returns arrays of raw vertices and index triples local to this triangle.
+ */
+function _subdivideTriClassI(P0, P1, P2, a) {
+    // Build an (a+1)×(a+1) grid of barycentric vertices where u+v+w = 1,
+    // u = i/a,  v = j/a,  w = 1 - u - v,   0 ≤ j ≤ i ≤ a  is wrong —
+    // we need the triangular grid: i ≥ 0, j ≥ 0, i+j ≤ a.
+    const pts = [];
+    const idx = [];   // idx[i][j] = index into pts
+
+    for (let i = 0; i <= a; i++) {
+        idx.push([]);
+        for (let j = 0; j <= a - i; j++) {
+            const u = i / a;
+            const v = j / a;
+            const w = 1 - u - v;
+            const raw = {
+                x: u * P0.x + v * P1.x + w * P2.x,
+                y: u * P0.y + v * P1.y + w * P2.y,
+                z: u * P0.z + v * P1.z + w * P2.z,
+            };
+            idx[i].push(pts.length);
+            pts.push(_normalise(raw.x, raw.y, raw.z));
+        }
+    }
+
+    const triIdxs = [];
+    for (let i = 0; i < a; i++) {
+        for (let j = 0; j < a - i; j++) {
+            // Upward triangle
+            triIdxs.push([idx[i][j], idx[i + 1][j], idx[i][j + 1]]);
+            // Downward triangle (only when it fits)
+            if (j + 1 <= a - i - 1) {
+                triIdxs.push([idx[i + 1][j], idx[i + 1][j + 1], idx[i][j + 1]]);
+            }
+        }
+    }
+
+    return { pts, triIdxs };
+}
+
+// ---------------------------------------------------------------------------
+// Public: subdivide(a, b) — entry point for G1b's buildDual
+// ---------------------------------------------------------------------------
+
+/**
+ * Geodesic subdivision of the icosahedron.
+ *
+ * Phase 1 supports:
+ *   Class I  (b=0):  subdivide(a, 0)   T = a²
+ *   Class II (a=b):  subdivide(n, n)   T = 3n²   — G1a-beta
+ *
+ * @param {number} a
+ * @param {number} b
+ * @returns {{ verts: {x,y,z}[], tris: {i0,i1,i2}[] }}
+ */
+function subdivide(a, b) {
+    if (b !== 0) {
+        throw new Error(`subdivide: Class II/III (b=${b}) not yet implemented — see G1a-beta`);
+    }
+    // Class I (b=0)
+    return _subdivideClassI(a);
+}
+
+function _subdivideClassI(a) {
+    const allPts = [];
+    const allTris = [];
+
+    for (const [vi0, vi1, vi2] of ICO_TRIS) {
+        const P0 = ICO_VERTS[vi0];
+        const P1 = ICO_VERTS[vi1];
+        const P2 = ICO_VERTS[vi2];
+
+        const { pts, triIdxs } = _subdivideTriClassI(P0, P1, P2, a);
+        const offset = allPts.length;
+        for (const p of pts) allPts.push(p);
+        for (const [ta, tb, tc] of triIdxs) {
+            allTris.push([offset + ta, offset + tb, offset + tc]);
+        }
+    }
+
+    return _merge(allPts, allTris);
+}
+
+// ---------------------------------------------------------------------------
+// G1a-alpha — Dual polyhedron (Goldberg faces from geodesic vertices)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build the dual of the geodesic sphere — the Goldberg polyhedron.
+ *
+ * For each unique vertex V in the geodesic sphere:
+ *   1. Collect all triangles containing V (the "fan").
+ *   2. Sort fan triangles in cyclic angular order around V.
+ *   3. Project each triangle's centroid to the unit sphere.
+ *   4. Those ordered projected centroids = vertices of one Goldberg face.
+ *
+ * @param {{ verts: {x,y,z}[], tris: {i0,i1,i2}[] }} geo
+ * @returns {{ faces: GoldbergFace[], adj: number[][] }}
+ *
+ * GoldbergFace = { verts: {x,y,z}[], centroid: {x,y,z}, isPentagon: boolean }
+ */
+function buildDual({ verts, tris }) {
+    const F = verts.length;   // number of Goldberg faces = number of geodesic vertices
+
+    // 1. For each geodesic vertex, collect its fan of triangles.
+    const fans = Array.from({ length: F }, () => []);
+    for (const tri of tris) {
+        fans[tri.i0].push(tri);
+        fans[tri.i1].push(tri);
+        fans[tri.i2].push(tri);
+    }
+
+    // 2. Sort each fan in cyclic angular order around its centre vertex.
+    function sortFan(vi, fan) {
+        if (fan.length === 0) return fan;
+        const V = verts[vi];
+
+        // Build a local 2-D tangent frame at V.
+        // Choose an arbitrary vector not parallel to V.
+        const ref = { x: 1, y: 0, z: 0 };
+        if (Math.abs(V.x) > 0.9) { ref.x = 0; ref.y = 1; }
+
+        // tangentX = normalise(ref - (ref·V)V)
+        const dot = ref.x * V.x + ref.y * V.y + ref.z * V.z;
+        const tx = _normalise(ref.x - dot * V.x, ref.y - dot * V.y, ref.z - dot * V.z);
+        // tangentY = V × tangentX
+        const ty = {
+            x: V.y * tx.z - V.z * tx.y,
+            y: V.z * tx.x - V.x * tx.z,
+            z: V.x * tx.y - V.y * tx.x,
+        };
+
+        function centroid(tri) {
+            const v0 = verts[tri.i0], v1 = verts[tri.i1], v2 = verts[tri.i2];
+            return {
+                x: (v0.x + v1.x + v2.x) / 3,
+                y: (v0.y + v1.y + v2.y) / 3,
+                z: (v0.z + v1.z + v2.z) / 3,
+            };
+        }
+
+        function angle(tri) {
+            const c = centroid(tri);
+            const dx = c.x - V.x, dy = c.y - V.y, dz = c.z - V.z;
+            return Math.atan2(
+                dx * ty.x + dy * ty.y + dz * ty.z,
+                dx * tx.x + dy * tx.y + dz * tx.z,
+            );
+        }
+
+        return [...fan].sort((a, b) => angle(a) - angle(b));
+    }
+
+    // 3. Build Goldberg faces.
+    const faces = [];
+    for (let vi = 0; vi < F; vi++) {
+        const sorted = sortFan(vi, fans[vi]);
+        const faceVerts = sorted.map(tri => {
+            const v0 = verts[tri.i0], v1 = verts[tri.i1], v2 = verts[tri.i2];
+            return _normalise(
+                (v0.x + v1.x + v2.x) / 3,
+                (v0.y + v1.y + v2.y) / 3,
+                (v0.z + v1.z + v2.z) / 3,
+            );
+        });
+
+        // Centroid of this Goldberg face.
+        let cx = 0, cy = 0, cz = 0;
+        for (const fv of faceVerts) { cx += fv.x; cy += fv.y; cz += fv.z; }
+        const n = faceVerts.length;
+        const centroid = _normalise(cx / n, cy / n, cz / n);
+
+        faces.push({
+            verts: faceVerts,
+            centroid,
+            isPentagon: faceVerts.length === 5,
+        });
+    }
+
+    // 4. Compute adjacency via shared Goldberg face vertices (ε = 1e-9).
+    // Two Goldberg faces are neighbours iff they share exactly 2 vertices.
+    const faceVertKeys = faces.map(f => new Set(f.verts.map(_vertKey)));
+
+    const adj = Array.from({ length: F }, () => []);
+    for (let i = 0; i < F; i++) {
+        for (let j = i + 1; j < F; j++) {
+            let shared = 0;
+            for (const k of faceVertKeys[i]) {
+                if (faceVertKeys[j].has(k)) shared++;
+            }
+            if (shared >= 2) {
+                adj[i].push(j);
+                adj[j].push(i);
+            }
+        }
+    }
+
+    return { faces, adj };
+}
+
+// ---------------------------------------------------------------------------
+// Exported public API (G1c will add canonical indexing + caching)
+// ---------------------------------------------------------------------------
+
+/**
+ * Return the Goldberg polyhedron GP(a, b).
+ * Phase 1 only: b must be 0 (Class I) until G1a-beta is merged.
+ *
+ * @returns {{ faces, adj, T, F, pentagons }}
+ */
+function goldberg(a, b) {
+    const geo = subdivide(a, b);
+    const { faces, adj } = buildDual(geo);
+    const T = a * a + a * b + b * b;
+    const F = 10 * T + 2;
+    const pentagons = new Set(
+        faces.map((f, i) => (f.isPentagon ? i : -1)).filter(i => i >= 0)
+    );
+    return { faces, adj, T, F: faces.length, pentagons };
+}
