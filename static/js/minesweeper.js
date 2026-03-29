@@ -12,9 +12,13 @@ document.addEventListener('DOMContentLoaded', function () {
   const loginHref = '/auth/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
   const banner = document.createElement('div');
   banner.id = 'guest-login-banner';
+  const T = window.T || {};
+  const pre  = T.guest_banner_pre  || '\u26a0\ufe0f You\u2019re not signed in \u2014';
+  const link = T.auth_sign_in      || 'Login with Google';
+  const post = T.guest_banner_post || 'or your scores will vanish at midnight UTC.';
   banner.innerHTML =
-    '⚠️ You\'re not signed in — <a href="' + loginHref + '">Login with Google</a> or your scores will vanish at midnight UTC.' +
-    '<button onclick="document.getElementById(\'guest-login-banner\').remove();sessionStorage.setItem(\'guest-banner-dismissed\',\'1\')" aria-label="Dismiss">×</button>';
+    pre + ' <a href="' + loginHref + '">' + link + '</a> ' + post +
+    '<button onclick="document.getElementById(\'guest-login-banner\').remove();sessionStorage.setItem(\'guest-banner-dismissed\',\'1\')" aria-label="Dismiss">\u00d7</button>';
   document.body.appendChild(banner);
 });
 

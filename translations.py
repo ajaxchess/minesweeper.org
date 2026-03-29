@@ -416,6 +416,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "htp_back_intermediate": "Play Intermediate",
         "htp_back_expert": "Play Expert",
         "htp_back_custom": "Play Custom",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f You\u2019re not signed in \u2014",
+        "guest_banner_post": "or your scores will vanish at midnight UTC.",
     },
 
     "eo": {
@@ -757,6 +760,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "Ĉi tiuj estas la plej bonaj tempoj afiŝitaj de registritaj ludantoj. Gastaj poentoj ne estas inkluditaj. Ĉiu ludanto aperas unufoje — ilia persona plej bona por la periodo.",
         "archive_standard":      "Norma",
         "archive_no_guess_lbl":  "Sen-divena",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f Vi ne estas ensalutinta \u2014",
+        "guest_banner_post": "a\u016d viaj poentoj malaperos je noktomezo UTC.",
     },
 
     "de": {
@@ -1174,6 +1180,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "htp_back_intermediate": "Mittel spielen",
         "htp_back_expert": "Experte spielen",
         "htp_back_custom": "Eigenes spielen",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f Du bist nicht angemeldet \u2014",
+        "guest_banner_post": "sonst verschwinden deine Punkte um Mitternacht UTC.",
     },
 
     "es": {
@@ -1515,6 +1524,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "Estas son las mejores marcas publicadas por jugadores registrados. Las puntuaciones de invitados no están incluidas. Cada jugador aparece una vez — su mejor marca personal del período.",
         "archive_standard":      "Estándar",
         "archive_no_guess_lbl":  "Sin adivinar",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f No has iniciado sesi\u00f3n \u2014",
+        "guest_banner_post": "o tus puntuaciones desaparecer\u00e1n a medianoche UTC.",
     },
 
     "th": {
@@ -1858,6 +1870,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "นี่คือเวลาที่ดีที่สุดของผู้เล่นที่ลงทะเบียน คะแนนของผู้เยี่ยมชมไม่รวมอยู่ด้วย แต่ละผู้เล่นปรากฏหนึ่งครั้ง — สถิติส่วนตัวที่ดีที่สุดในช่วงเวลานั้น",
         "archive_standard":      "มาตรฐาน",
         "archive_no_guess_lbl":  "ไม่เดา",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f \u0e04\u0e38\u0e13\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e40\u0e02\u0e49\u0e32\u0e2a\u0e39\u0e48\u0e23\u0e30\u0e1a\u0e1a \u2014",
+        "guest_banner_post": "\u0e21\u0e34\u0e09\u0e30\u0e19\u0e31\u0e49\u0e19\u0e04\u0e30\u0e41\u0e19\u0e19\u0e02\u0e2d\u0e07\u0e04\u0e38\u0e13\u0e08\u0e30\u0e2b\u0e32\u0e22\u0e44\u0e1b\u0e17\u0e35\u0e48\u0e40\u0e17\u0e35\u0e48\u0e22\u0e07\u0e04\u0e37\u0e19 UTC",
     },
 
     "pgl": {
@@ -2201,6 +2216,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "Esethay areway ethay estbay imestay ostedpay ybay egisteredray ayersplay. Uestgay orescay areway otnay includedway. Eachway ayerplay appearsbay onceway — eirthay ersonalpay estbay orfay ethay eriodpay.",
         "archive_standard":      "Andardstay",
         "archive_no_guess_lbl":  "Onay-Uessgay",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f Ouyay\u2019re-ay otnay ignedsay inway \u2014",
+        "guest_banner_post": "or-ay our-yay ores-scay ill-way anish-vay at-ay idnightmay UTC.",
     },
 
     "uk": {
@@ -2544,6 +2562,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "Це найкращі часи зареєстрованих гравців. Результати гостей не включені. Кожен гравець з'являється один раз — його особистий рекорд за цей період.",
         "archive_standard":      "Стандарт",
         "archive_no_guess_lbl":  "Без здогадок",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f \u0412\u0438 \u043d\u0435 \u0443\u0432\u0456\u0439\u0448\u043b\u0438 \u2014",
+        "guest_banner_post": "\u0456\u043d\u0430\u043a\u0448\u0435 \u0432\u0430\u0448\u0456 \u043e\u0447\u043a\u0438 \u0437\u043d\u0438\u043a\u043d\u0443\u0442\u044c \u043e\u043f\u0456\u0432\u043d\u043e\u0447\u0456 UTC.",
     },
 
     "fr": {
@@ -2885,6 +2906,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "Ce sont les meilleurs temps publiés par des joueurs enregistrés. Les scores des invités ne sont pas inclus. Chaque joueur apparaît une fois — son meilleur score personnel pour la période.",
         "archive_standard":      "Standard",
         "archive_no_guess_lbl":  "Sans devinette",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f Vous n\u2019\u00eates pas connect\u00e9 \u2014",
+        "guest_banner_post": "sinon vos scores dispara\u00eetront \u00e0 minuit UTC.",
     },
 
     "ko": {
@@ -3226,6 +3250,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "등록된 플레이어가 게시한 최고 기록입니다. 게스트 점수는 포함되지 않습니다. 각 플레이어는 한 번씩 등장합니다 — 해당 기간의 개인 최고 기록.",
         "archive_standard":      "표준",
         "archive_no_guess_lbl":  "노 게스",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f \ub85c\uadf8\uc778\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4 \u2014",
+        "guest_banner_post": "\uadf8\ub807\uc9c0 \uc54a\uc73c\uba74 \uc810\uc218\uac00 \uc790\uc815 UTC\uc5d0 \uc0ac\ub77c\uc9d1\ub2c8\ub2e4.",
     },
 
     "ja": {
@@ -3567,6 +3594,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "登録ユーザーが達成した最高タイムです。ゲストのスコアは含まれません。各プレイヤーは1回のみ表示されます — その期間の個人ベスト。",
         "archive_standard":      "スタンダード",
         "archive_no_guess_lbl":  "ノーゲス",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f \u30ed\u30b0\u30a4\u30f3\u3057\u3066\u3044\u307e\u305b\u3093 \u2014",
+        "guest_banner_post": "\u305d\u3046\u3057\u306a\u3044\u3068\u30b9\u30b3\u30a2\u304c\u771f\u591c\u4e2d\uff08UTC\uff09\u306b\u6d88\u3048\u307e\u3059\u3002",
     },
     "zh": {
         # Nav
@@ -3907,6 +3937,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "这些是注册玩家发布的最佳成绩。访客分数不包括在内。每位玩家出现一次 — 该时间段内的个人最佳成绩。",
         "archive_standard":      "标准",
         "archive_no_guess_lbl":  "无猜测",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f \u60a8\u5c1a\u672a\u767b\u5f55 \u2014",
+        "guest_banner_post": "\u5426\u5219\u60a8\u7684\u5206\u6570\u5c06\u5728UTC\u5348\u591c\u6d88\u5931\u3002",
     },
     "zh-hant": {
         # Nav
@@ -4247,6 +4280,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "這些是註冊玩家發布的最佳成績。訪客分數不包括在內。每位玩家出現一次 — 該時間段內的個人最佳成績。",
         "archive_standard":      "標準",
         "archive_no_guess_lbl":  "無猜測",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f \u60a8\u5c1a\u672a\u767b\u5165 \u2014",
+        "guest_banner_post": "\u5426\u5247\u60a8\u7684\u5206\u6578\u5c07\u5728UTC\u5348\u591c\u6d88\u5931\u3002",
     },
     "pl": {
         # Nav
@@ -4587,6 +4623,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "To są najlepsze czasy zarejestrowanych graczy. Wyniki gości nie są uwzględnione. Każdy gracz pojawia się raz — jego osobisty rekord w danym okresie.",
         "archive_standard":      "Standardowy",
         "archive_no_guess_lbl":  "Bez zgadywania",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f Nie jeste\u015b zalogowany \u2014",
+        "guest_banner_post": "lub Twoje wyniki znikn\u0105 o p\u00f3\u0142nocy UTC.",
     },
 
     "tl": {
@@ -4928,6 +4967,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "Ito ang pinakamahusay na oras ng mga nakarehistrong manlalaro. Hindi kasama ang mga marka ng panauhin. Isang beses lamang lumalabas ang bawat manlalaro — ang kanilang personal na pinakamahusay para sa panahon.",
         "archive_standard":      "Pamantayan",
         "archive_no_guess_lbl":  "Walang-Hulaan",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f Hindi ka naka-sign in \u2014",
+        "guest_banner_post": "o mawawala ang iyong mga puntos sa hatinggabi UTC.",
     },
 
     "ru": {
@@ -5269,6 +5311,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "Это лучшие результаты зарегистрированных игроков. Результаты гостей не включены. Каждый игрок появляется один раз — его личный рекорд за период.",
         "archive_standard":      "Стандарт",
         "archive_no_guess_lbl":  "Без угадывания",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f \u0412\u044b \u043d\u0435 \u0432\u043e\u0448\u043b\u0438 \u0432 \u0430\u043a\u043a\u0430\u0443\u043d\u0442 \u2014",
+        "guest_banner_post": "\u0438\u043d\u0430\u0447\u0435 \u0432\u0430\u0448\u0438 \u043e\u0447\u043a\u0438 \u0438\u0441\u0447\u0435\u0437\u043d\u0443\u0442 \u0432 \u043f\u043e\u043b\u043d\u043e\u0447\u044c UTC.",
     },
 
     "pt": {
@@ -5610,6 +5655,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "Estes são os melhores tempos publicados por jogadores registrados. Pontuações de convidados não estão incluídas. Cada jogador aparece uma vez — seu melhor desempenho pessoal no período.",
         "archive_standard":      "Padrão",
         "archive_no_guess_lbl":  "Sem adivinhar",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f Voc\u00ea n\u00e3o est\u00e1 conectado \u2014",
+        "guest_banner_post": "ou suas pontua\u00e7\u00f5es desaparecer\u00e3o \u00e0 meia-noite UTC.",
     },
 
     "it": {
@@ -5951,6 +5999,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "archive_explanation":   "Questi sono i migliori tempi pubblicati dai giocatori registrati. I punteggi degli ospiti non sono inclusi. Ogni giocatore appare una volta — il suo miglior risultato personale per il periodo.",
         "archive_standard":      "Standard",
         "archive_no_guess_lbl":  "Senza indovinare",
+        # Guest login banner
+        "guest_banner_pre":  "\u26a0\ufe0f Non sei connesso \u2014",
+        "guest_banner_post": "o i tuoi punteggi spariranno a mezzanotte UTC.",
     },
 }
 
