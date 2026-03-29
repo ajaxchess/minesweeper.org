@@ -17,9 +17,34 @@ The feature spec lives in Features.md under F55.
 | `static/js/goldberg.js` (G1c: canonical index + export + tests) | ✗ Not started |
 | `static/js/globesweeper.js` | ✗ Not started |
 | CSS `--glob-*` skin variables | ✗ Not started |
+| Globe skin system (Classic + Earth themes) | ✗ Not started |
+| World map equirectangular texture (`static/img/earth.jpg`) | ✗ Not started |
+| Milky Way background texture (`static/img/milkyway.jpg`) | ✗ Not started |
 | Score submission form (post-win) | ✗ Not started |
 | Globesweeper in nav mega-menu (`base.html`) | ✗ Not started |
 | Sitemap entries | ✗ Not started |
+
+---
+
+## Visual themes (concept art reference)
+
+Two concept art screenshots live in `screenshots/`:
+
+| File | Theme name | Hidden tiles | Revealed tiles | Background |
+|---|---|---|---|---|
+| `GlobesweeperWithWhiteReveal.png` | **Classic** | Dark metallic gray, orange-gold border | Plain white | Warm orange radial gradient |
+| `GlobesweeperWithGlobeReveal.png` | **Earth** | Warm orange, darker border | Earth map texture shows through | Milky Way / deep space starfield |
+
+The active theme is controlled by a `data-glob-skin` attribute on the canvas wrapper
+(`"classic"` or `"earth"`). The default is `"classic"`. A skin picker can be added to
+the custom board form later.
+
+### Required texture assets (source before G2 ships)
+
+| File | Spec | Source suggestion |
+|---|---|---|
+| `static/img/earth.jpg` | Equirectangular, ≥ 4096×2048, RGB | NASA Blue Marble (public domain) |
+| `static/img/milkyway.jpg` | Any aspect ratio, ≥ 2048 wide | NASA/ESA Milky Way panorama (public domain) |
 
 ---
 
@@ -207,13 +232,41 @@ Read CSS variables at init time via `getComputedStyle(document.documentElement)`
 --glob-mine, --glob-detonated
 ```
 
+Read `data-glob-skin` from the canvas wrapper element to determine the active theme
+(`"classic"` or `"earth"`). Store as `const skin`.
+
+**Scene background (skin-dependent)**
+
+- Classic skin: set CSS `background` on the canvas container to a warm orange radial
+  gradient (`radial-gradient(ellipse at center, #c87941 0%, #7a3d10 100%)`). Leave
+  `renderer.setClearColor(0x000000, 0)` (transparent) so the CSS shows through.
+- Earth skin: load `static/img/milkyway.jpg` via `THREE.TextureLoader` and assign to
+  `scene.background`. No CSS gradient needed.
+
 ### Globe mesh construction
+
+**Earth skin only — inner textured sphere**
+
+Before building face meshes, add a base sphere that the revealed tiles expose:
+```js
+if (skin === 'earth') {
+    const earthTex = new THREE.TextureLoader().load('/static/img/earth.jpg')
+    const earthGeo = new THREE.SphereGeometry(0.97, 64, 32)
+    const earthMat = new THREE.MeshLambertMaterial({ map: earthTex })
+    globeGroup.add(new THREE.Mesh(earthGeo, earthMat))
+}
+```
+Radius 0.97 sits just inside the tile layer at 0.98. UV mapping is automatic
+on `SphereGeometry`.
+
+**Face tile meshes (both skins)**
 
 For each Goldberg face `i`:
 1. Project verts to unit sphere, scale to 0.98.
 2. Fan-triangulate: `[centroid_at_0.98, verts[j], verts[j+1]]` for each edge.
 3. Build `THREE.BufferGeometry` from the triangles.
-4. Create `THREE.MeshLambertMaterial({ color: HIDDEN_COLOR, side: THREE.FrontSide })`.
+4. Create `THREE.MeshPhongMaterial({ color: HIDDEN_COLOR, shininess: 60, side: THREE.FrontSide })`.
+   (Phong instead of Lambert gives the beveled highlight visible in concept art.)
 5. Create `THREE.Mesh(geometry, material)`.
 6. Add to `globeGroup`. Store in `faceMeshes[i]`.
 
@@ -258,8 +311,20 @@ Flag emoji: `getFlagEmoji()` from `minesweeper.js`.
 
 ### updateFaceVisual(idx)
 
-Called whenever face state changes:
-- Set `faceMeshes[idx].material.color` based on state.
+Called whenever face state changes.
+
+**Classic skin:**
+- Set `faceMeshes[idx].material.color` based on state (HIDDEN → `--glob-hidden`,
+  REVEALED → `--glob-rev`, MINE → `--glob-mine`, DETONATED → `--glob-detonated`).
+- `faceMeshes[idx].visible = true` always.
+
+**Earth skin:**
+- If state is REVEALED (and not a mine): set `faceMeshes[idx].visible = false`
+  so the inner Earth sphere shows through. Do not recolor.
+- All other states (HIDDEN, FLAGGED, QUESTION, MINE, DETONATED): keep
+  `faceMeshes[idx].visible = true` and set material color normally.
+
+**Both skins:**
 - Remove existing sprite for `idx` if any.
 - If REVEALED and `adjCount[idx] > 0`: add number sprite.
 - If FLAGGED: add flag sprite.
@@ -457,28 +522,58 @@ mine generation setup (keeping geometry).
 
 ---
 
-## Subtask G4 — CSS skin variables
+## Subtask G4 — CSS skin variables and globe themes
 
 **File:** `static/css/style.css`
 **Depends on:** nothing
-**Scope:** add `--glob-*` CSS variables to each skin block
+**Scope:** add `--glob-*` CSS variables to each site skin block, and define the
+two globe-specific visual themes (Classic and Earth) driven by `data-glob-skin`.
 
-### Default (dark skin) — add to `:root` or `.skin-dark`
+### Site skin CSS variables — add to each existing skin block
+
+These drive face colors for the Classic globe theme. Add to `:root` / `.skin-dark`
+and override in each other skin:
 
 ```css
 --glob-hidden:         #2a3a5c;
 --glob-hidden-border:  #3a5278;
---glob-rev:            #111b2a;
+--glob-rev:            #e8e8e8;   /* white-ish for Classic reveal */
 --glob-mine:           #7a0000;
 --glob-detonated:      #c00000;
 ```
 
-### Each additional skin
+Add `--glob-*` override blocks in each existing skin (light, etc.).
+At minimum ensure `--glob-hidden` and `--glob-rev` have sufficient contrast
+for the number sprites.
 
-Add a `--glob-*` override block inside each existing skin's CSS rule.
-Match the visual language of that skin (light skin → lighter background,
-etc.). At minimum ensure `--glob-hidden` and `--glob-rev` have sufficient
-contrast for the number sprites.
+### Globe theme overrides — driven by `data-glob-skin` on the canvas wrapper
+
+These override the face colors for the Earth theme and set the canvas background
+for Classic. Add after the site skin blocks:
+
+```css
+/* Classic theme — warm orange background applied via JS (radial gradient) */
+[data-glob-skin="classic"] {
+    --glob-hidden:        #4a4a4a;   /* dark metallic gray */
+    --glob-hidden-border: #c8892a;   /* orange-gold border (concept art) */
+    --glob-rev:           #e8e8e8;   /* plain white reveal */
+    --glob-mine:          #7a0000;
+    --glob-detonated:     #c00000;
+}
+
+/* Earth theme — Milky Way background set via scene.background in JS */
+[data-glob-skin="earth"] {
+    --glob-hidden:        #c87020;   /* warm orange tiles (concept art) */
+    --glob-hidden-border: #7a4010;   /* darker orange border */
+    /* --glob-rev not used in Earth skin — face mesh is hidden on reveal */
+    --glob-mine:          #7a0000;
+    --glob-detonated:     #c00000;
+}
+```
+
+The `globesweeper.html` template sets `data-glob-skin` on the canvas wrapper.
+Default is `"classic"`. A skin toggle (button or select) can be added to the
+custom board form in a later pass.
 
 ---
 
@@ -575,18 +670,20 @@ Add the five Globesweeper URLs with weekly changefreq and priority 0.7:
 ## Recommended implementation order
 
 ```
-G1a goldberg.js — icosahedron base + geodesic subdivision   ← start here
-G1b goldberg.js — dual polyhedron + adjacency               ← same file, next step
-G1c goldberg.js — canonical indexing + export + tests       ← completes the module
-G2  scene & rendering    ← stub game logic to verify mesh looks right
+[asset]  Source earth.jpg + milkyway.jpg → static/img/   ← can be done immediately, blocks G2 Earth skin
+G1a goldberg.js — icosahedron base + geodesic subdivision ← start here
+G1b goldberg.js — dual polyhedron + adjacency             ← same file, next step
+G1c goldberg.js — canonical indexing + export + tests     ← completes the module
+G2  scene & rendering (Classic skin first, Earth skin after assets land)
 G3  game logic           ← complete the JS; full playable game
-G4  CSS variables        ← can be done anytime, needed before G2 ships
+G4  CSS variables + globe theme overrides ← can be done anytime, needed before G2 ships
 G5  score submission     ← add after G3; needs game to be complete
 G6  nav + sitemap        ← final step before launch
 ```
 
 G4 and G6 are independent of the JS work and can be parallelised with G1/G2/G3.
 G1a → G1b → G1c must be sequential (each builds on the previous in the same file).
+Earth skin in G2 can be skipped on first pass and added once texture assets are committed.
 
 ---
 
@@ -598,11 +695,13 @@ Use `F55` prefix on all commits:
 F55 G1a Add goldberg.js — icosahedron base and geodesic subdivision
 F55 G1b Add goldberg.js — dual polyhedron construction and adjacency
 F55 G1c Add goldberg.js — canonical indexing, export, cache, and tests
-F55 G2 Add globesweeper.js — Three.js scene and rendering
+F55 G2 Add globesweeper.js — Three.js scene and rendering (Classic skin)
+F55 G2 Add globesweeper.js — Earth skin (textured sphere + starfield background)
 F55 G3 Add globesweeper.js — game logic (state, mines, flood-fill, hash)
-F55 G4 Add --glob-* CSS variables for all skins
+F55 G4 Add --glob-* CSS variables and Classic/Earth globe theme overrides
 F55 G5 Wire score submission form in globesweeper.html
 F55 G6 Add Globesweeper to nav mega-menu and sitemap
+F55 Add earth.jpg and milkyway.jpg texture assets
 ```
 
 ---
@@ -616,3 +715,6 @@ F55 G6 Add Globesweeper to nav mega-menu and sitemap
 | Mobile touch performance | 252 meshes (expert) may be slow on low-end phones; defer BufferGeometry merge to future |
 | Score submission auth | Guests submit with `display_name`; logged-in users use session email — match pattern in cylinder/toroid |
 | No-guess mode | Explicitly deferred per spec; do not implement in this feature |
+| Earth texture UV alignment | SphereGeometry UV is automatic but the poles may distort; verify visually and rotate texture offset if needed |
+| Texture asset licensing | NASA Blue Marble and ESA Milky Way are public domain — confirm before committing; do not use copyrighted textures |
+| Earth skin + border lines | Border lines at radius 1.001 should still appear over revealed (invisible) faces — verify raycasting still works when face mesh is `visible = false` (it does; raycaster ignores invisible meshes, so clicking a revealed face in Earth skin won't register — handle by checking game state directly on pointer position) |
