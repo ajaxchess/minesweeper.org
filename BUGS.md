@@ -1,5 +1,29 @@
 -- Fixed below --
 
+B20 Nonosweeper leaderboard always 404
+   The GET /api/nonosweeper-scores/{puzzle_date} route was registered after the
+   3-segment catch-all /{mode}/{date_str}/{guess_mode} (the archive route).
+   FastAPI matched /api/nonosweeper-scores/2026-03-29 as mode=api before
+   reaching the correct handler, raising HTTPException(404) because "api" is
+   not in ARCHIVE_MODES.
+   Fixed by: moving the nonosweeper scores section above the archive catch-all
+   block in main.py (which is explicitly commented "must be last").
+
+B18 PvP boards misaligned at /pvpbeta
+   Player board #board had padding: 8px; opponent board #opp-board had 4px.
+   Also .duel-board-col-label had no min-height so the opponent label (with
+   "3s delay" badge) was taller, shifting the board down.
+   Fixed by: overriding #board padding to 4px in duel context and adding
+   min-height: 2.2em + flex centering to .duel-board-col-label.
+
+B19 Nonosweeper "Could not load scores" after submitting score
+   _apply_migrations() was missing user_email and guest_token for
+   nonosweeper_scores — servers where the table predated those columns had
+   unknown-column errors on SELECT. Also archive_guest_scores() omitted
+   NonosweeperScore, so guest scores accumulated indefinitely.
+   Fixed by: adding migrations to database_template.py, adding NonosweeperScore
+   to the archive list, and improving JS error display to show HTTP status code.
+
 B17 Season and All Time leaderboards only show today's scores
    reset_scores() at midnight deleted all web scores including registered users,
    leaving only ios_app/android_app scores in the table. Season and all-time
