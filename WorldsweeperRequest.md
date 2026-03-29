@@ -1,6 +1,6 @@
-# F55 Globesweeper — Implementation Plan
+# F55 Worldsweeper — Implementation Plan
 
-This document breaks F55 (Globesweeper) into discrete implementation subtasks
+This document breaks F55 (Worldsweeper) into discrete implementation subtasks
 organised across two phases.
 
 **Phase 1** delivers a fully playable game on the 32-face GP(1,1) soccer-ball
@@ -20,26 +20,26 @@ The feature spec lives in Features.md under F55.
 |---|---|
 | Routes in `main.py` | ✓ Done |
 | `GlobesweeperScore` model in `database_template.py` | ✓ Done |
-| `templates/globesweeper.html` | ✓ Done (HTML shell, data attrs, canvas, custom form) |
-| `templates/globesweeper_leaderboard.html` | ✓ Done |
+| `templates/worldsweeper.html` | ✓ Done (HTML shell, data attrs, canvas, custom form) |
+| `templates/worldsweeper_leaderboard.html` | ✓ Done |
 | `static/js/vendor/three.min.js` | ✓ Done |
 | Asset | Phase | Status |
 |---|---|---|
 | Routes in `main.py` | — | ✓ Done |
 | `GlobesweeperScore` model in `database_template.py` | — | ✓ Done |
-| `templates/globesweeper.html` | — | ✓ Done (HTML shell, data attrs, canvas, custom form) |
-| `templates/globesweeper_leaderboard.html` | — | ✓ Done |
+| `templates/worldsweeper.html` | — | ✓ Done (HTML shell, data attrs, canvas, custom form) |
+| `templates/worldsweeper_leaderboard.html` | — | ✓ Done |
 | `static/js/vendor/three.min.js` | — | ✓ Done |
 | `static/js/goldberg.js` (G1a-alpha: icosahedron base + Class I → dodecahedron) | 1 | ✗ Not started |
 | `static/js/goldberg.js` (G1a-beta: Class II subdivision → soccer ball GP(1,1)) | 1 | ✗ Not started |
 | `static/js/goldberg.js` (G1b: dual + adjacency) | 1 | ✗ Not started |
 | `static/js/goldberg.js` (G1c: export + GP(1,1) tests) | 1 | ✗ Not started |
-| `static/js/globesweeper.js` (G2: Classic skin, hardcoded GP(1,0)) | 1 | ✓ Done |
-| `static/js/globesweeper.js` (G3: game logic) | 1 | ✓ Done |
+| `static/js/worldsweeper.js` (G2: Classic skin, hardcoded GP(1,0)) | 1 | ✓ Done |
+| `static/js/worldsweeper.js` (G3: game logic) | 1 | ✓ Done |
 | CSS `--glob-*` variables, Classic theme | 1 | ✓ Done |
 | Score submission form (post-win) | 1 | ✓ Done |
-| Globesweeper in nav mega-menu (`base.html`) | 1 | ✓ Done |
-| Sitemap entry (`/globesweeper`) | 1 | ✓ Done |
+| Worldsweeper in nav mega-menu (`base.html`) | 1 | ✓ Done |
+| Sitemap entry (`/worldsweeper`) | 1 | ✓ Done |
 | `static/js/goldberg.js` (Class I + III generalisation + full tests) | 2 | ✗ Not started |
 | T-selector UI + dynamic `goldberg(a,b)` | 2 | ✗ Not started |
 | Earth skin (textured sphere + starfield) | 2 | ✗ Not started |
@@ -76,16 +76,16 @@ the custom board form later.
 
 ## Phase 1 — GP(1,1) Proof of Concept (soccer ball, F=32)
 
-**Goal:** Ship a fully playable Globesweeper on the 32-face truncated icosahedron.
+**Goal:** Ship a fully playable Worldsweeper on the 32-face truncated icosahedron.
 Review the concept — feel, performance, visual polish — before generalising.
 
 | Restriction | Phase 1 decision |
 |---|---|
-| Board geometry | GP(1,1) only — `goldberg(1,1)` hardcoded in globesweeper.js |
+| Board geometry | GP(1,1) only — `goldberg(1,1)` hardcoded in worldsweeper.js |
 | Subdivision classes | Class II (a=b) only — sufficient for GP(1,1) |
 | Visual skin | Classic only — no Earth skin, no texture assets required |
 | Score modes | beginner / intermediate / expert by mine count on F=32 |
-| Nav / sitemap | `/globesweeper` route only; one sitemap URL |
+| Nav / sitemap | `/worldsweeper` route only; one sitemap URL |
 
 ---
 
@@ -314,9 +314,9 @@ Phase 2 expands this to all board sizes. Run with `npx jest`.
 
 ---
 
-## Phase 1 — Subtask G2 — globesweeper.js Part 1: Three.js scene and rendering
+## Phase 1 — Subtask G2 — worldsweeper.js Part 1: Three.js scene and rendering
 
-**File:** `static/js/globesweeper.js`
+**File:** `static/js/worldsweeper.js`
 **Depends on:** G1 (goldberg.js), Three.js vendor
 **Scope:** scene setup, face meshes, rotation, raycasting, sprite overlays
 **Phase 1 restriction:** Classic skin only. Hardcode `goldberg(1,1)` — no T-selector.
@@ -460,9 +460,9 @@ over 300 ms using linear interpolation in the render loop.
 
 ---
 
-## Phase 1 — Subtask G3 — globesweeper.js Part 2: game logic
+## Phase 1 — Subtask G3 — worldsweeper.js Part 2: game logic
 
-**File:** `static/js/globesweeper.js` (same file, continues from G2)
+**File:** `static/js/worldsweeper.js` (same file, continues from G2)
 **Depends on:** G1 (goldberg.js output)
 **Scope:** state machine, mine generation, reveal, hash, win/loss, timer
 
@@ -687,7 +687,7 @@ for Classic. Add after the site skin blocks:
 }
 ```
 
-The `globesweeper.html` template sets `data-glob-skin` on the canvas wrapper.
+The `worldsweeper.html` template sets `data-glob-skin` on the canvas wrapper.
 Default is `"classic"`. A skin toggle (button or select) can be added to the
 custom board form in a later pass.
 
@@ -695,7 +695,7 @@ custom board form in a later pass.
 
 ## Phase 1 — Subtask G5 — Score submission (post-win)
 
-**File:** `templates/globesweeper.html`
+**File:** `templates/worldsweeper.html`
 **Depends on:** G3 (game logic exposes `finalTimeMs`, `boardHash`)
 **Scope:** add a score submission form that appears in the win overlay
 
@@ -712,7 +712,7 @@ Add inside `#globe-overlay` (below the Play Again button):
 </div>
 ```
 
-### Submission JS (in globesweeper.js)
+### Submission JS (in worldsweeper.js)
 
 ```js
 async function submitScore(name) {
@@ -725,7 +725,7 @@ async function submitScore(name) {
         mines:      mineCount,
         board_hash: boardToHash(mineSet, F),
     }
-    const r = await fetch('/api/globesweeper-scores', {
+    const r = await fetch('/api/worldsweeper-scores', {
         method:  'POST',
         headers: {'Content-Type': 'application/json'},
         body:    JSON.stringify(payload),
@@ -744,22 +744,22 @@ On error: show error message, allow retry.
 
 **Files:** `templates/base.html`, `templates/sitemap.xml`
 **Depends on:** nothing
-**Scope:** surface Globesweeper in navigation and search indexing
-**Phase 1 restriction:** Add `/globesweeper` to the nav and one sitemap entry only.
+**Scope:** surface Worldsweeper in navigation and search indexing
+**Phase 1 restriction:** Add `/worldsweeper` to the nav and one sitemap entry only.
 The intermediate/expert/custom/leaderboard URLs are added in Phase 2 once those
 routes are driven by the T-selector.
 
 ### base.html
 
 Locate the Variants group in the mega-menu (look for Hexsweeper or
-Cylinder for the insertion point). Add a Globesweeper card:
+Cylinder for the insertion point). Add a Worldsweeper card:
 
 ```html
-<a class="mega-card" href="/globesweeper"
+<a class="mega-card" href="/worldsweeper"
    {% if mode == 'beginner' or mode == 'intermediate' or mode == 'expert' or mode == 'custom' %}
    aria-current="page"{% endif %}>
   <span class="mega-icon">🌍</span>
-  <span class="mega-title">Globesweeper</span>
+  <span class="mega-title">Worldsweeper</span>
   <span class="mega-desc">Minesweeper on a rotating 3D globe</span>
 </a>
 ```
@@ -769,18 +769,18 @@ or `'custom'` by the routes in `main.py` — use those values for `aria-current`
 
 ### sitemap.xml
 
-Add the five Globesweeper URLs with weekly changefreq and priority 0.7:
+Add the five Worldsweeper URLs with weekly changefreq and priority 0.7:
 
 ```xml
-<url><loc>https://minesweeper.org/globesweeper</loc>
+<url><loc>https://minesweeper.org/worldsweeper</loc>
      <changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://minesweeper.org/globesweeper/intermediate</loc>
+<url><loc>https://minesweeper.org/worldsweeper/intermediate</loc>
      <changefreq>weekly</changefreq><priority>0.6</priority></url>
-<url><loc>https://minesweeper.org/globesweeper/expert</loc>
+<url><loc>https://minesweeper.org/worldsweeper/expert</loc>
      <changefreq>weekly</changefreq><priority>0.6</priority></url>
-<url><loc>https://minesweeper.org/globesweeper/custom</loc>
+<url><loc>https://minesweeper.org/worldsweeper/custom</loc>
      <changefreq>weekly</changefreq><priority>0.5</priority></url>
-<url><loc>https://minesweeper.org/globesweeper/leaderboard</loc>
+<url><loc>https://minesweeper.org/worldsweeper/leaderboard</loc>
      <changefreq>daily</changefreq><priority>0.5</priority></url>
 ```
 
@@ -825,10 +825,10 @@ for each `(a, b)`. Verify Class III with GP(2,1) → T=7, F=72.
 
 ## Phase 2 — Extension G2 — T-selector UI + dynamic board sizes
 
-**Files:** `static/js/globesweeper.js`, `templates/globesweeper.html`
+**Files:** `static/js/worldsweeper.js`, `templates/worldsweeper.html`
 **Depends on:** Phase 2 G1
 
-### T-selector in globesweeper.html
+### T-selector in worldsweeper.html
 
 The custom board form already has a T-select dropdown (from the existing HTML
 shell). Wire the predefined options to named modes:
@@ -840,7 +840,7 @@ shell). Wire the predefined options to named modes:
 | Expert | GP(5,0) | 25 | 252 | 50 |
 | Custom | user-entered a,b | — | — | user-entered |
 
-### globesweeper.js changes
+### worldsweeper.js changes
 
 Replace the hardcoded `goldberg(1,1)` call with:
 ```js
@@ -880,13 +880,13 @@ Add the `[data-glob-skin="earth"]` CSS block documented in Phase 1 G4.
 
 Add the remaining sitemap URLs once the routes are live:
 ```xml
-<url><loc>https://minesweeper.org/globesweeper/intermediate</loc>
+<url><loc>https://minesweeper.org/worldsweeper/intermediate</loc>
      <changefreq>weekly</changefreq><priority>0.6</priority></url>
-<url><loc>https://minesweeper.org/globesweeper/expert</loc>
+<url><loc>https://minesweeper.org/worldsweeper/expert</loc>
      <changefreq>weekly</changefreq><priority>0.6</priority></url>
-<url><loc>https://minesweeper.org/globesweeper/custom</loc>
+<url><loc>https://minesweeper.org/worldsweeper/custom</loc>
      <changefreq>weekly</changefreq><priority>0.5</priority></url>
-<url><loc>https://minesweeper.org/globesweeper/leaderboard</loc>
+<url><loc>https://minesweeper.org/worldsweeper/leaderboard</loc>
      <changefreq>daily</changefreq><priority>0.5</priority></url>
 ```
 
@@ -901,8 +901,8 @@ G4  Classic CSS variables     ← independent; do first or in parallel
 G1a goldberg.js — icosahedron + Class II subdivision (GP(1,1) only)
 G1b goldberg.js — dual polyhedron + adjacency
 G1c goldberg.js — export, cache, GP(1,1) test
-G2  globesweeper.js — Three.js scene, Classic skin, hardcoded goldberg(1,1)
-G3  globesweeper.js — game logic
+G2  worldsweeper.js — Three.js scene, Classic skin, hardcoded goldberg(1,1)
+G3  worldsweeper.js — game logic
 G5  score submission form
 G6  nav (one entry) + one sitemap URL
 ```
@@ -933,18 +933,18 @@ Use `F55` prefix on all commits:
 F55 G1a Add goldberg.js — icosahedron base and Class II subdivision
 F55 G1b Add goldberg.js — dual polyhedron construction and adjacency
 F55 G1c Add goldberg.js — GP(1,1) canonical indexing, export, cache, and tests
-F55 G2 Add globesweeper.js — Three.js scene and rendering, Classic skin, GP(1,1)
-F55 G3 Add globesweeper.js — game logic (state, mines, flood-fill, hash)
+F55 G2 Add worldsweeper.js — Three.js scene and rendering, Classic skin, GP(1,1)
+F55 G3 Add worldsweeper.js — game logic (state, mines, flood-fill, hash)
 F55 G4 Add --glob-* CSS variables, Classic theme
-F55 G5 Wire score submission form in globesweeper.html
-F55 G6 Add Globesweeper to nav mega-menu and sitemap
+F55 G5 Wire score submission form in worldsweeper.html
+F55 G6 Add Worldsweeper to nav mega-menu and sitemap
 
 // Phase 2
 F55 G1 Extend goldberg.js — Class I and Class III subdivision, full test suite
-F55 G2 Add T-selector and dynamic board sizes to globesweeper.js
+F55 G2 Add T-selector and dynamic board sizes to worldsweeper.js
 F55 G2 Add Earth skin — textured sphere, starfield background, face-hide on reveal
 F55 G4 Add Earth skin CSS variables and data-glob-skin block
-F55 G6 Add remaining Globesweeper sitemap URLs
+F55 G6 Add remaining Worldsweeper sitemap URLs
 F55 Add earth.jpg and milkyway.jpg texture assets
 ```
 

@@ -1,5 +1,5 @@
 /**
- * globesweeper.js
+ * worldsweeper.js
  *
  * G2 — Three.js scene, face meshes, drag rotation, raycasting, sprite overlays.
  * G3 — Game logic: state machine, mine generation, BFS reveal, hash, win/loss, timer.
@@ -501,7 +501,7 @@ function _showScoreForm() {
     document.getElementById('score-msg').textContent = '';
 
     // Pre-fill name from localStorage
-    const saved = localStorage.getItem('globesweeper_name');
+    const saved = localStorage.getItem('worldsweeper_name');
     if (saved) document.getElementById('score-name').value = saved;
 
     document.getElementById('score-submit').onclick = async () => {
@@ -510,7 +510,7 @@ function _showScoreForm() {
             document.getElementById('score-msg').textContent = 'Please enter your name.';
             return;
         }
-        localStorage.setItem('globesweeper_name', name);
+        localStorage.setItem('worldsweeper_name', name);
         document.getElementById('score-submit').disabled = true;
         document.getElementById('score-msg').textContent = 'Saving…';
 
@@ -519,7 +519,7 @@ function _showScoreForm() {
         if (ok) {
             document.getElementById('score-form').innerHTML =
                 '<p style="color:#6fcf97;">Score saved! ' +
-                '<a href="/globesweeper/leaderboard" style="color:#53d8fb;">View leaderboard →</a></p>';
+                '<a href="/worldsweeper/leaderboard" style="color:#53d8fb;">View leaderboard →</a></p>';
         } else {
             document.getElementById('score-msg').textContent = 'Error saving score — please try again.';
         }
@@ -532,7 +532,7 @@ async function _submitScore(name) {
     const F       = _globeData.faces.length;
     const T       = _globeData.T;
     try {
-        const r = await fetch('/api/globesweeper-scores', {
+        const r = await fetch('/api/worldsweeper-scores', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify({

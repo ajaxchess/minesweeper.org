@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% set _title = "Globesweeper Leaderboard | minesweeper.org" %}
-{% set _desc  = "Top times for Globesweeper — minesweeper on a rotating 3D Goldberg polyhedron globe." %}
-{% set _canon = "https://minesweeper.org/globesweeper/leaderboard" %}
+{% set _title = "Worldsweeper Leaderboard | minesweeper.org" %}
+{% set _desc  = "Top times for Worldsweeper — minesweeper on a rotating 3D Goldberg polyhedron globe." %}
+{% set _canon = "https://minesweeper.org/worldsweeper/leaderboard" %}
 
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}
@@ -13,13 +13,13 @@
 
 {% block content %}
 <div class="lb-wrap">
-  <h1 class="tz-page-h1">Globesweeper Leaderboard</h1>
+  <h1 class="tz-page-h1">Worldsweeper Leaderboard</h1>
 
   <div style="text-align:center;margin-bottom:1.5rem;">
-    <a href="/globesweeper" class="btn" style="margin:0.25rem;">Beginner</a>
-    <a href="/globesweeper/intermediate" class="btn" style="margin:0.25rem;">Intermediate</a>
-    <a href="/globesweeper/expert" class="btn" style="margin:0.25rem;">Expert</a>
-    <a href="/globesweeper/custom" class="btn" style="margin:0.25rem;">Custom</a>
+    <a href="/worldsweeper" class="btn" style="margin:0.25rem;">Beginner</a>
+    <a href="/worldsweeper/intermediate" class="btn" style="margin:0.25rem;">Intermediate</a>
+    <a href="/worldsweeper/expert" class="btn" style="margin:0.25rem;">Expert</a>
+    <a href="/worldsweeper/custom" class="btn" style="margin:0.25rem;">Custom</a>
   </div>
 
   {% for mode_key, mode_label, t_val, f_val in [
@@ -43,7 +43,7 @@
 async function loadBoard(mode) {
   const tbody = document.getElementById('lb-body-' + mode);
   try {
-    const r = await fetch('/api/globesweeper-scores/' + mode);
+    const r = await fetch('/api/worldsweeper-scores/' + mode);
     const scores = await r.json();
     if (!scores.length) {
       tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);">No scores yet.</td></tr>';

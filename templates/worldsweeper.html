@@ -1,24 +1,24 @@
 {% extends "base.html" %}
 
 {% if mode == 'beginner' %}
-  {% set _title = "Globesweeper — Beginner | minesweeper.org" %}
-  {% set _desc  = "Play Globesweeper — minesweeper on a rotating 3D globe. Beginner: 32 faces, 4 mines. Free to play, no download required." %}
-  {% set _canon = "https://minesweeper.org/globesweeper" %}
+  {% set _title = "Worldsweeper — Beginner | minesweeper.org" %}
+  {% set _desc  = "Play Worldsweeper — minesweeper on a rotating 3D globe. Beginner: 32 faces, 4 mines. Free to play, no download required." %}
+  {% set _canon = "https://minesweeper.org/worldsweeper" %}
 {% elif mode == 'intermediate' %}
-  {% set _title = "Globesweeper — Intermediate | minesweeper.org" %}
-  {% set _desc  = "Play Globesweeper — minesweeper on a rotating 3D globe. Intermediate: 72 faces, 8 mines." %}
-  {% set _canon = "https://minesweeper.org/globesweeper/intermediate" %}
+  {% set _title = "Worldsweeper — Intermediate | minesweeper.org" %}
+  {% set _desc  = "Play Worldsweeper — minesweeper on a rotating 3D globe. Intermediate: 72 faces, 8 mines." %}
+  {% set _canon = "https://minesweeper.org/worldsweeper/intermediate" %}
 {% elif mode == 'expert' %}
-  {% set _title = "Globesweeper — Expert | minesweeper.org" %}
-  {% set _desc  = "Play Globesweeper — minesweeper on a rotating 3D globe. Expert: 252 faces, 50 mines." %}
-  {% set _canon = "https://minesweeper.org/globesweeper/expert" %}
+  {% set _title = "Worldsweeper — Expert | minesweeper.org" %}
+  {% set _desc  = "Play Worldsweeper — minesweeper on a rotating 3D globe. Expert: 252 faces, 50 mines." %}
+  {% set _canon = "https://minesweeper.org/worldsweeper/expert" %}
 {% else %}
-  {% set _title = "Globesweeper — Custom | minesweeper.org" %}
-  {% set _desc  = "Play Globesweeper with a custom Goldberg polyhedron — minesweeper on a 3D rotating globe." %}
-  {% set _canon = "https://minesweeper.org/globesweeper/custom" %}
+  {% set _title = "Worldsweeper — Custom | minesweeper.org" %}
+  {% set _desc  = "Play Worldsweeper with a custom Goldberg polyhedron — minesweeper on a 3D rotating globe." %}
+  {% set _canon = "https://minesweeper.org/worldsweeper/custom" %}
 {% endif %}
 
-{% block keywords %}<meta name="keywords" content="globesweeper, globe minesweeper, 3D minesweeper, minesweeper, minesweeper online, play minesweeper, free minesweeper">{% endblock %}
+{% block keywords %}<meta name="keywords" content="worldsweeper, world sweeper, globesweeper, globe minesweeper, 3D minesweeper, minesweeper, minesweeper online, play minesweeper, free minesweeper">{% endblock %}
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}
 {% block canonical %}{{ _canon }}{% endblock %}
@@ -26,7 +26,7 @@
 {% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
 {% block og_description %}{{ _desc }}{% endblock %}
 {% block tw_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
-{% block tw_description %}Play Globesweeper — minesweeper on a rotating 3D Goldberg polyhedron globe. Drag to rotate, click to reveal. Free, no download.{% endblock %}
+{% block tw_description %}Play Worldsweeper — minesweeper on a rotating 3D Goldberg polyhedron globe. Drag to rotate, click to reveal. Free, no download.{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">
 {
@@ -54,10 +54,10 @@
      data-mines="{{ mines }}">
 
   <h1 class="tz-page-h1">
-    {% if mode == 'beginner' %}Globesweeper — Beginner
-    {% elif mode == 'intermediate' %}Globesweeper — Intermediate
-    {% elif mode == 'expert' %}Globesweeper — Expert
-    {% else %}Globesweeper — Custom
+    {% if mode == 'beginner' %}Worldsweeper — Beginner
+    {% elif mode == 'intermediate' %}Worldsweeper — Intermediate
+    {% elif mode == 'expert' %}Worldsweeper — Expert
+    {% else %}Worldsweeper — Custom
     {% endif %}
   </h1>
 
@@ -124,12 +124,12 @@
   {% endif %}
 
   <div style="text-align:center;margin-top:1rem;">
-    <a href="/globesweeper/leaderboard" style="color:var(--accent2);font-size:0.9rem;">View Leaderboard</a>
+    <a href="/worldsweeper/leaderboard" style="color:var(--accent2);font-size:0.9rem;">View Leaderboard</a>
     &nbsp;|&nbsp;
-    {% if mode != 'beginner' %}<a href="/globesweeper" style="color:var(--text-dim);font-size:0.9rem;">Beginner</a> &nbsp;|&nbsp;{% endif %}
-    {% if mode != 'intermediate' %}<a href="/globesweeper/intermediate" style="color:var(--text-dim);font-size:0.9rem;">Intermediate</a> &nbsp;|&nbsp;{% endif %}
-    {% if mode != 'expert' %}<a href="/globesweeper/expert" style="color:var(--text-dim);font-size:0.9rem;">Expert</a> &nbsp;|&nbsp;{% endif %}
-    {% if mode != 'custom' %}<a href="/globesweeper/custom" style="color:var(--text-dim);font-size:0.9rem;">Custom</a>{% endif %}
+    {% if mode != 'beginner' %}<a href="/worldsweeper" style="color:var(--text-dim);font-size:0.9rem;">Beginner</a> &nbsp;|&nbsp;{% endif %}
+    {% if mode != 'intermediate' %}<a href="/worldsweeper/intermediate" style="color:var(--text-dim);font-size:0.9rem;">Intermediate</a> &nbsp;|&nbsp;{% endif %}
+    {% if mode != 'expert' %}<a href="/worldsweeper/expert" style="color:var(--text-dim);font-size:0.9rem;">Expert</a> &nbsp;|&nbsp;{% endif %}
+    {% if mode != 'custom' %}<a href="/worldsweeper/custom" style="color:var(--text-dim);font-size:0.9rem;">Custom</a>{% endif %}
   </div>
 </div>
 {% endblock %}
@@ -137,6 +137,6 @@
 {% block scripts %}
 <script src="/static/js/vendor/three.min.js"></script>
 <script src="/static/js/goldberg.js"></script>
-<script src="/static/js/globesweeper.js"></script>
+<script src="/static/js/worldsweeper.js"></script>
 <script>initGlobe();</script>
 {% endblock %}

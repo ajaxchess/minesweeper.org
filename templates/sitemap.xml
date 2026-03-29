@@ -281,37 +281,37 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- ── Globesweeper ────────────────────────────────────────────────────────── -->
+  <!-- ── Worldsweeper ────────────────────────────────────────────────────────── -->
   <url>
-    <loc>https://minesweeper.org/globesweeper</loc>
+    <loc>https://minesweeper.org/worldsweeper</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://minesweeper.org/globesweeper/intermediate</loc>
+    <loc>https://minesweeper.org/worldsweeper/intermediate</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://minesweeper.org/globesweeper/expert</loc>
+    <loc>https://minesweeper.org/worldsweeper/expert</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://minesweeper.org/globesweeper/custom</loc>
+    <loc>https://minesweeper.org/worldsweeper/custom</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
-    <loc>https://minesweeper.org/globesweeper/leaderboard</loc>
+    <loc>https://minesweeper.org/worldsweeper/leaderboard</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.5</priority>

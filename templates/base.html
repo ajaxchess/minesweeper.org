@@ -275,12 +275,12 @@
 
         <!-- Variants -->
         <div class="mega-group" id="mg-variants">
-          <button class="mega-trigger {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/globesweeper') %}active{% endif %}" onclick="toggleMega(event,'mg-variants')">🔄 {{ t.nav_variants }} ▾</button>
+          <button class="mega-trigger {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') %}active{% endif %}" onclick="toggleMega(event,'mg-variants')">🔄 {{ t.nav_variants }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
-              <a href="/globesweeper" class="mega-card {% if request.url.path.startswith('/globesweeper') %}active{% endif %}">
+              <a href="/worldsweeper" class="mega-card {% if request.url.path.startswith('/worldsweeper') %}active{% endif %}">
                 <span class="mega-icon">🌍</span>
-                <span class="mega-card-text"><strong>Globesweeper</strong><span>Minesweeper on a rotating 3D globe</span></span>
+                <span class="mega-card-text"><strong>Worldsweeper</strong><span>Minesweeper on a rotating 3D globe</span></span>
               </a>
               <a href="/cylinder" class="mega-card {% if 'cylinder' in mode %}active{% endif %}">
                 <span class="mega-icon">🔄</span>

@@ -315,7 +315,7 @@ F56 Nonosweeper — Minesweeper meets Nonogram
   Add a Nonosweeper mega-card to the Puzzles mega-menu in base.html, after
   the existing Mosaic cards.  Icon: 🔢.  Active state: mode=='nonosweeper'.
 
-F55 Globesweeper — Minesweeper on a Goldberg Polyhedron
+F55 Worldsweeper — Minesweeper on a Goldberg Polyhedron
 
   Overview
   ──────────────────────────────────────────────────────────────────────────────
@@ -425,7 +425,7 @@ F55 Globesweeper — Minesweeper on a Goldberg Polyhedron
       F         — face count (= 10T+2)
       pentagons — Set of 12 face indices that are pentagons
 
-  Rendering — globesweeper.js + Three.js
+  Rendering — worldsweeper.js + Three.js
   ──────────────────────────────────────────────────────────────────────────────
   Library: Three.js r165 (loaded from CDN or bundled in static/js/vendor/).
 
@@ -480,7 +480,7 @@ F55 Globesweeper — Minesweeper on a Goldberg Polyhedron
     requestAnimationFrame loop calls renderer.render(); OrbitControls.update().
     On first win/loss: brief camera "pulse" scale 1→1.05→1 over 0.3 s.
 
-  Game logic — globesweeper.js
+  Game logic — worldsweeper.js
   ──────────────────────────────────────────────────────────────────────────────
   State per face: HIDDEN | REVEALED | FLAGGED | QUESTION | MINE | DETONATED
   mineSet: Set of face indices containing mines.
@@ -512,21 +512,21 @@ F55 Globesweeper — Minesweeper on a Goldberg Polyhedron
 
   Routes
   ──────────────────────────────────────────────────────────────────────────────
-    GET /globesweeper               → beginner (T=3, 32 faces, 4 mines)
-    GET /globesweeper/intermediate  → intermediate (T=7, 72 faces, 8 mines)
-    GET /globesweeper/expert        → expert (T=25, 252 faces, 50 mines)
-    GET /globesweeper/custom        → custom (select T + mine count)
-    GET /globesweeper/leaderboard   → best times per mode
+    GET /worldsweeper               → beginner (T=3, 32 faces, 4 mines)
+    GET /worldsweeper/intermediate  → intermediate (T=7, 72 faces, 8 mines)
+    GET /worldsweeper/expert        → expert (T=25, 252 faces, 50 mines)
+    GET /worldsweeper/custom        → custom (select T + mine count)
+    GET /worldsweeper/leaderboard   → best times per mode
 
   Templates
   ──────────────────────────────────────────────────────────────────────────────
-    templates/globesweeper.html              — shared base template (parameterised)
-    templates/globesweeper_intermediate.html
-    templates/globesweeper_expert.html
-    templates/globesweeper_custom.html
-    templates/globesweeper_leaderboard.html
+    templates/worldsweeper.html              — shared base template (parameterised)
+    templates/worldsweeper_intermediate.html
+    templates/worldsweeper_expert.html
+    templates/worldsweeper_custom.html
+    templates/worldsweeper_leaderboard.html
 
-  Template structure (globesweeper.html):
+  Template structure (worldsweeper.html):
     - data-a="{{ a }}" data-b="{{ b }}" data-mines="{{ mines }}" on <body>
       (or passed as JS constants in a <script> block)
     - <div id="globe-wrap"> containing <canvas id="globe-canvas">
@@ -547,14 +547,14 @@ F55 Globesweeper — Minesweeper on a Goldberg Polyhedron
       F-12 hexagons)."
     - Mine count <input type="number"> min=1 max=F-1; default = floor(F*0.15).
     - "Play" button generates new game and renders globe.
-    - URL after starting: /globesweeper/custom?t=7&mines=12 (pushState, no reload)
+    - URL after starting: /worldsweeper/custom?t=7&mines=12 (pushState, no reload)
 
   JavaScript files
   ──────────────────────────────────────────────────────────────────────────────
   static/js/vendor/three.min.js      — Three.js r165 (copy to avoid CDN dependency)
   static/js/goldberg.js              — Goldberg polyhedron geometry generator
                                         exports: goldberg(a, b)
-  static/js/globesweeper.js          — game logic + Three.js scene
+  static/js/worldsweeper.js          — game logic + Three.js scene
                                         depends on: three.min.js, minesweeper.js
                                           (for getMineEmoji/getFlagEmoji/getNumColors)
 
@@ -573,23 +573,23 @@ F55 Globesweeper — Minesweeper on a Goldberg Polyhedron
 
   API
   ──────────────────────────────────────────────────────────────────────────────
-    POST /api/globesweeper-scores
+    POST /api/worldsweeper-scores
          Body: { time_ms, mode, t_param, face_count, board_hash, display_name }
          Auth: logged-in user (email from session); guests submit with display_name
-    GET  /api/globesweeper-scores/{mode}
+    GET  /api/worldsweeper-scores/{mode}
          Returns top 20 for that mode (today + all-time), ordered by time_ms ASC
 
   Nav / sitemap
   ──────────────────────────────────────────────────────────────────────────────
-  Add Globesweeper to the Variants group in the mega menu:
-    icon 🌍, title "Globesweeper", desc "Minesweeper on a rotating 3D globe"
+  Add Worldsweeper to the Variants group in the mega menu:
+    icon 🌍, title "Worldsweeper", desc "Minesweeper on a rotating 3D globe"
   Add to sitemap.xml:
-    /globesweeper, /globesweeper/intermediate, /globesweeper/expert,
-    /globesweeper/custom, /globesweeper/leaderboard
+    /worldsweeper, /worldsweeper/intermediate, /worldsweeper/expert,
+    /worldsweeper/custom, /worldsweeper/leaderboard
 
   Skin support
   ──────────────────────────────────────────────────────────────────────────────
-  CSS variables for Three.js colours (read by globesweeper.js at scene init via
+  CSS variables for Three.js colours (read by worldsweeper.js at scene init via
   getComputedStyle(document.documentElement)):
     --glob-hidden         hidden face fill colour
     --glob-hidden-border  edge line colour

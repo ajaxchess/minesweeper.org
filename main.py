@@ -2046,7 +2046,28 @@ def get_hex_scores(hex_mode: str, period: str = "alltime",
     return _enrich_with_profiles(top, db)
 
 
-# ── Globesweeper (F55) ────────────────────────────────────────────────────────
+# ── Worldsweeper (F55) ───────────────────────────────────────────────────────
+# Legacy /globesweeper/* redirects — 301 to canonical /worldsweeper/* URLs
+
+@app.get("/globesweeper")
+async def redirect_globesweeper_beginner():
+    return RedirectResponse(url="/worldsweeper", status_code=301)
+
+@app.get("/globesweeper/intermediate")
+async def redirect_globesweeper_intermediate():
+    return RedirectResponse(url="/worldsweeper/intermediate", status_code=301)
+
+@app.get("/globesweeper/expert")
+async def redirect_globesweeper_expert():
+    return RedirectResponse(url="/worldsweeper/expert", status_code=301)
+
+@app.get("/globesweeper/custom")
+async def redirect_globesweeper_custom():
+    return RedirectResponse(url="/worldsweeper/custom", status_code=301)
+
+@app.get("/globesweeper/leaderboard")
+async def redirect_globesweeper_leaderboard():
+    return RedirectResponse(url="/worldsweeper/leaderboard", status_code=301)
 
 GLOBESWEEPER_MODES = {
     "beginner":     {"a": 1, "b": 1, "t_param": 3,  "face_count": 32,  "mines": 4},
@@ -2056,10 +2077,10 @@ GLOBESWEEPER_MODES = {
 GLOBE_MODES_VALID = {"beginner", "intermediate", "expert", "custom"}
 
 
-@app.get("/globesweeper", response_class=HTMLResponse)
-async def globesweeper_beginner(request: Request):
+@app.get("/worldsweeper", response_class=HTMLResponse)
+async def worldsweeper_beginner(request: Request):
     m = GLOBESWEEPER_MODES["beginner"]
-    return templates.TemplateResponse("globesweeper.html", {
+    return templates.TemplateResponse("worldsweeper.html", {
         "request": request, "mode": "beginner",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
@@ -2067,10 +2088,10 @@ async def globesweeper_beginner(request: Request):
     })
 
 
-@app.get("/globesweeper/intermediate", response_class=HTMLResponse)
-async def globesweeper_intermediate(request: Request):
+@app.get("/worldsweeper/intermediate", response_class=HTMLResponse)
+async def worldsweeper_intermediate(request: Request):
     m = GLOBESWEEPER_MODES["intermediate"]
-    return templates.TemplateResponse("globesweeper.html", {
+    return templates.TemplateResponse("worldsweeper.html", {
         "request": request, "mode": "intermediate",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
@@ -2078,10 +2099,10 @@ async def globesweeper_intermediate(request: Request):
     })
 
 
-@app.get("/globesweeper/expert", response_class=HTMLResponse)
-async def globesweeper_expert(request: Request):
+@app.get("/worldsweeper/expert", response_class=HTMLResponse)
+async def worldsweeper_expert(request: Request):
     m = GLOBESWEEPER_MODES["expert"]
-    return templates.TemplateResponse("globesweeper.html", {
+    return templates.TemplateResponse("worldsweeper.html", {
         "request": request, "mode": "expert",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
@@ -2089,9 +2110,9 @@ async def globesweeper_expert(request: Request):
     })
 
 
-@app.get("/globesweeper/custom", response_class=HTMLResponse)
-async def globesweeper_custom(request: Request):
-    return templates.TemplateResponse("globesweeper.html", {
+@app.get("/worldsweeper/custom", response_class=HTMLResponse)
+async def worldsweeper_custom(request: Request):
+    return templates.TemplateResponse("worldsweeper.html", {
         "request": request, "mode": "custom",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
@@ -2099,16 +2120,16 @@ async def globesweeper_custom(request: Request):
     })
 
 
-@app.get("/globesweeper/leaderboard", response_class=HTMLResponse)
-async def globesweeper_leaderboard(request: Request):
-    return templates.TemplateResponse("globesweeper_leaderboard.html", {
+@app.get("/worldsweeper/leaderboard", response_class=HTMLResponse)
+async def worldsweeper_leaderboard(request: Request):
+    return templates.TemplateResponse("worldsweeper_leaderboard.html", {
         "request": request,
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
 
 
-class GlobesweeperScoreSubmit(BaseModel):
+class WorldsweeperScoreSubmit(BaseModel):
     name:       str           = Field(..., min_length=1, max_length=32)
     glob_mode:  str           = Field(..., pattern="^(beginner|intermediate|expert|custom)$")
     time_ms:    int           = Field(..., ge=1, le=3_600_000)
@@ -2135,9 +2156,9 @@ class GlobesweeperScoreSubmit(BaseModel):
         return v
 
 
-@app.post("/api/globesweeper-scores", status_code=201)
+@app.post("/api/worldsweeper-scores", status_code=201)
 @limiter.limit("10/minute")
-def submit_globe_score(payload: GlobesweeperScoreSubmit, request: Request, db: Session = Depends(get_db)):
+def submit_world_score(payload: WorldsweeperScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
     if not user:
         if "guest_token" not in request.session:
@@ -2163,8 +2184,8 @@ def submit_globe_score(payload: GlobesweeperScoreSubmit, request: Request, db: S
     return {"ok": True, "id": entry.id}
 
 
-@app.get("/api/globesweeper-scores/{glob_mode}")
-def get_globe_scores(glob_mode: str, period: str = "alltime",
+@app.get("/api/worldsweeper-scores/{glob_mode}")
+def get_world_scores(glob_mode: str, period: str = "alltime",
                      score_date: Optional[str] = Query(None, alias="date"),
                      db: Session = Depends(get_db)):
     if glob_mode not in GLOBE_MODES_VALID:

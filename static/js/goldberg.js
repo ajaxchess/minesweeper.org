@@ -1,5 +1,5 @@
 /**
- * goldberg.js — Goldberg polyhedron geometry for Globesweeper
+ * goldberg.js — Goldberg polyhedron geometry for Worldsweeper
  *
  * Build status:
  *   G1a-alpha  Class I (b=0)  → dodecahedron GP(1,0), F=12   ✓
