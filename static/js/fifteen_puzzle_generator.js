@@ -210,13 +210,35 @@
         return res.json();
       })
       .then(function (data) {
-        if (msgEl) {
-          msgEl.innerHTML = 'Puzzle saved! <a href="' + data.url + '">Play it here</a> · <a href="/other/15puzzle/generator">Back to generator</a>';
-          msgEl.style.color = 'var(--accent2)';
-        }
         if (submitBtn) submitBtn.disabled = false;
-        // reload saved list
-        window.location.reload();
+
+        var fullUrl = window.location.origin + data.url;
+
+        var linkBox = document.getElementById('gen-link-box');
+        var linkUrlEl = document.getElementById('gen-link-url');
+        var copyBtn = document.getElementById('gen-copy-btn');
+
+        if (linkBox && linkUrlEl) {
+          linkUrlEl.textContent = fullUrl;
+          linkBox.style.display = 'flex';
+          // scroll link box into view
+          linkBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        if (copyBtn) {
+          copyBtn.onclick = function () {
+            navigator.clipboard.writeText(fullUrl).then(function () {
+              copyBtn.textContent = 'Copied!';
+              copyBtn.classList.add('copied');
+              setTimeout(function () {
+                copyBtn.textContent = 'Copy';
+                copyBtn.classList.remove('copied');
+              }, 2000);
+            });
+          };
+        }
+
+        if (msgEl) { msgEl.textContent = ''; }
       })
       .catch(function (err) {
         if (msgEl) { msgEl.textContent = err.message; msgEl.style.color = 'var(--danger, #e55)'; }

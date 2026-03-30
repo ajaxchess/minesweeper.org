@@ -110,6 +110,50 @@
 
 #gen-msg { font-size: 0.9rem; min-height: 1.2rem; }
 
+#gen-link-box {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--accent2);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+}
+#gen-link-box strong { font-size: 0.9rem; color: var(--accent2); }
+.gen-link-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+#gen-link-url {
+  flex: 1;
+  padding: 0.35rem 0.55rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: monospace;
+  overflow-x: auto;
+  white-space: nowrap;
+  box-sizing: border-box;
+  cursor: text;
+  user-select: all;
+}
+#gen-copy-btn {
+  padding: 0.35rem 0.75rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+#gen-copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+#gen-copy-btn.copied { border-color: var(--accent2); color: var(--accent2); }
+
 .gen-saved-list { display:flex; flex-direction:column; gap:0.65rem; }
 .gen-saved-item {
   background: var(--surface2);
@@ -209,6 +253,16 @@
     </div>
   </form>
 
+  <!-- Link box (shown after successful upload) -->
+  <div id="gen-link-box">
+    <strong>Puzzle saved! Share this link:</strong>
+    <div class="gen-link-row">
+      <div id="gen-link-url"></div>
+      <button id="gen-copy-btn" type="button">Copy</button>
+    </div>
+    <small style="color:var(--text-dim);font-size:0.8rem;"><a href="/other/15puzzle/generator" style="color:var(--accent2);">Refresh</a> to see it in your saved list below.</small>
+  </div>
+
   <!-- Saved puzzles -->
   {% if photos %}
   <div class="gen-section">
@@ -237,5 +291,5 @@
   {% endif %}
 </div>
 
-<script src="/static/js/fifteen_puzzle_generator.js?v=1"></script>
+<script src="/static/js/fifteen_puzzle_generator.js?v=2"></script>
 {% endblock %}
