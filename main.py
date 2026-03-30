@@ -3,7 +3,7 @@ import uuid
 import subprocess
 import os
 from typing import Optional
-from fastapi import FastAPI, Request, Depends, HTTPException, Query, Response, Form
+from fastapi import FastAPI, Request, Depends, HTTPException, Query, Response, Form, File, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -1154,6 +1154,172 @@ def get_fifteen_puzzle_scores(puzzle_date: str, db: Session = Depends(get_db)):
         .all()
     )
     return _enrich_with_profiles(top, db)
+
+
+@app.get("/other/15puzzle/generator", response_class=HTMLResponse)
+def fifteen_puzzle_generator_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse("/login?next=/other/15puzzle/generator", status_code=302)
+    photos = (
+        db.query(FifteenPuzzlePhoto)
+        .filter_by(user_email=user["email"])
+        .order_by(FifteenPuzzlePhoto.created_at.desc())
+        .all()
+    )
+    profile = db.query(UserProfile).filter_by(email=user["email"]).first()
+    limit = getattr(profile, "puzzle_storage_limit", 32) if profile else 32
+    return templates.TemplateResponse("fifteen_puzzle_generator.html", {
+        "request": request, "mode": "other",
+        "user": user,
+        "lang": get_lang(request), "t": get_t(request),
+        "photos": photos,
+        "limit": limit,
+    })
+
+
+@app.get("/other/15puzzle/photo/{board_hash}", response_class=HTMLResponse)
+def fifteen_puzzle_photo_play(request: Request, board_hash: str, mode: str = Query("tiles"), db: Session = Depends(get_db)):
+    import re
+    if not re.match(r'^[A-Za-z0-9_\-]{10,128}$', board_hash):
+        raise HTTPException(status_code=404, detail="Not found")
+    photo = db.query(FifteenPuzzlePhoto).filter_by(board_hash=board_hash).first()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Puzzle not found")
+    if mode not in ("tiles", "reveal"):
+        mode = photo.photo_mode
+    return templates.TemplateResponse("fifteen_puzzle_daily.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": date.today().isoformat(),
+        "photo_url": f"/static/uploads/15puzzle/{photo.filename}",
+        "photo_mode": mode,
+        "board_hash": board_hash,
+        "display_name": photo.display_name or "",
+    })
+
+
+@app.post("/api/fifteen-puzzle/upload-photo", status_code=201)
+@limiter.limit("20/minute")
+async def upload_fifteen_puzzle_photo(
+    request: Request,
+    db: Session = Depends(get_db),
+    file: UploadFile = File(...),
+    display_name: str = Form(""),
+    photo_mode: str = Form("tiles"),
+    board_hash: str = Form(...),
+):
+    import re, shutil
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Login required")
+
+    # Validate mode
+    if photo_mode not in ("tiles", "reveal"):
+        photo_mode = "tiles"
+
+    # Validate board_hash format
+    if not re.match(r'^[A-Za-z0-9_\-]{10,128}$', board_hash):
+        raise HTTPException(status_code=400, detail="Invalid board hash")
+
+    # Check duplicate hash
+    if db.query(FifteenPuzzlePhoto).filter_by(board_hash=board_hash).first():
+        raise HTTPException(status_code=409, detail="A puzzle with this board already exists")
+
+    # Check per-user limit
+    profile = db.query(UserProfile).filter_by(email=user["email"]).first()
+    limit = getattr(profile, "puzzle_storage_limit", 32) if profile else 32
+    count = db.query(FifteenPuzzlePhoto).filter_by(user_email=user["email"]).count()
+    if count >= limit:
+        raise HTTPException(status_code=400, detail=f"Puzzle limit reached ({limit})")
+
+    # Validate file type and size
+    content_type = file.content_type or ""
+    if content_type not in ("image/jpeg", "image/png"):
+        raise HTTPException(status_code=400, detail="Only JPG and PNG files are accepted")
+    data = await file.read()
+    if len(data) > 2 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large (max 2MB)")
+
+    # Save file
+    upload_dir = os.path.join("static", "uploads", "15puzzle")
+    os.makedirs(upload_dir, exist_ok=True)
+    ext = ".jpg" if content_type == "image/jpeg" else ".png"
+    safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
+    filename = f"{safe_hash}{ext}"
+    filepath = os.path.join(upload_dir, filename)
+    with open(filepath, "wb") as f:
+        f.write(data)
+
+    entry = FifteenPuzzlePhoto(
+        user_email   = user["email"],
+        filename     = filename,
+        display_name = display_name.strip()[:128] or None,
+        photo_mode   = photo_mode,
+        board_hash   = board_hash,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {
+        "ok": True,
+        "url": f"/other/15puzzle/photo/{board_hash}?mode={photo_mode}",
+    }
+
+
+@app.post("/api/fifteen-puzzle/delete-photo/{board_hash}")
+def delete_fifteen_puzzle_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Login required")
+    photo = db.query(FifteenPuzzlePhoto).filter_by(board_hash=board_hash).first()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Not found")
+    if photo.user_email != user["email"] and user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    # Delete file from disk
+    filepath = os.path.join("static", "uploads", "15puzzle", photo.filename)
+    if os.path.exists(filepath):
+        os.remove(filepath)
+    db.delete(photo)
+    db.commit()
+    return {"ok": True}
+
+
+# ── Admin: 15-Puzzle photo moderation ─────────────────────────────────────────
+
+@app.get("/admin/15puzzle-photos", response_class=HTMLResponse)
+def admin_15puzzle_photos(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    photos = (
+        db.query(FifteenPuzzlePhoto)
+        .order_by(FifteenPuzzlePhoto.created_at.desc())
+        .all()
+    )
+    return templates.TemplateResponse("admin_15puzzle_photos.html", {
+        "request": request, "user": user,
+        "lang": get_lang(request), "t": get_t(request),
+        "photos": photos,
+    })
+
+
+@app.post("/admin/15puzzle-photos/{board_hash}/delete")
+def admin_delete_15puzzle_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    photo = db.query(FifteenPuzzlePhoto).filter_by(board_hash=board_hash).first()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Not found")
+    filepath = os.path.join("static", "uploads", "15puzzle", photo.filename)
+    if os.path.exists(filepath):
+        os.remove(filepath)
+    db.delete(photo)
+    db.commit()
+    return RedirectResponse("/admin/15puzzle-photos", status_code=303)
 
 
 @app.get("/history", response_class=HTMLResponse)

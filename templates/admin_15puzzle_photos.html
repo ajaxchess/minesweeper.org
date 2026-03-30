@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Admin — 15-Puzzle Photos — minesweeper.org{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">15-Puzzle Photo Moderation</h1>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">{{ t.admin_signed_in_as }} {{ user.email }}</p>
+  <p style="text-align:center;margin-bottom:1.5rem;">
+    <a href="/admin">⬅ {{ t.admin_dashboard }}</a> &nbsp;|&nbsp;
+    <a href="/admin/blog">💬 {{ t.admin_blog_comments }}</a> &nbsp;|&nbsp;
+    <a href="/admin/contact">✉ Contact</a> &nbsp;|&nbsp;
+    <a href="/admin/analysis">📊 {{ t.admin_analysis }}</a>
+  </p>
+
+  <section class="admin-section">
+    <h2 class="admin-section-title">All Uploaded Photos ({{ photos | length }})</h2>
+    {% if photos %}
+    <table class="lb-table admin-comments-table">
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>Uploader</th>
+          <th>Title</th>
+          <th>Mode</th>
+          <th>Puzzle URL</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in photos %}
+        <tr>
+          <td>
+            <a href="/static/uploads/15puzzle/{{ p.filename }}" target="_blank" rel="noopener">
+              <img src="/static/uploads/15puzzle/{{ p.filename }}"
+                   alt="{{ p.display_name or 'photo' }}"
+                   style="width:64px;height:64px;object-fit:cover;border-radius:4px;display:block;">
+            </a>
+          </td>
+          <td style="font-size:0.85rem;">{{ p.user_email }}</td>
+          <td>{{ p.display_name or '—' }}</td>
+          <td>{{ p.photo_mode }}</td>
+          <td style="font-size:0.82rem;">
+            <a href="/other/15puzzle/photo/{{ p.board_hash }}?mode={{ p.photo_mode }}" target="_blank">
+              /other/15puzzle/photo/{{ p.board_hash[:12] }}…
+            </a>
+          </td>
+          <td style="white-space:nowrap">{{ p.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td style="white-space:nowrap">
+            <form method="post"
+                  action="/admin/15puzzle-photos/{{ p.board_hash }}/delete"
+                  style="display:inline"
+                  onsubmit="return confirm('Permanently delete this photo and puzzle?')">
+              <button class="admin-btn admin-btn-delete" type="submit">🗑 Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--text-dim);padding:1rem 0">No uploaded photos yet.</p>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}

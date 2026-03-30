@@ -100,6 +100,23 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Board hash decode (for photo puzzles)
+  // ---------------------------------------------------------------------------
+  function hashToTiles(hash) {
+    try {
+      var b64 = hash.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      var bin = atob(b64);
+      // bytes[0]=cols, bytes[1]=rows, bytes[2..] = tiles
+      var tiles = [];
+      for (var i = 2; i < bin.length; i++) tiles.push(bin.charCodeAt(i));
+      return tiles;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Game state
   // ---------------------------------------------------------------------------
   var tiles = [];
@@ -109,6 +126,9 @@
   var elapsedMs = 0;
   var gameWon = false;
   var dailyDate = '';
+  var photoUrl = '';
+  var photoMode = '';   // 'tiles' | 'reveal'
+  var isPhotoPuzzle = false;
 
   // ---------------------------------------------------------------------------
   // DOM helpers
@@ -131,18 +151,52 @@
     board.style.display = 'grid';
     board.style.gridTemplateColumns = 'repeat(4, 1fr)';
 
+    var COLS = 4;
+
     for (var i = 0; i < 16; i++) {
       var tile = document.createElement('div');
       tile.classList.add('fp-tile');
+
       if (tiles[i] === 0) {
         tile.classList.add('fp-blank');
         tile.dataset.index = i;
       } else {
-        tile.textContent = tiles[i];
         tile.dataset.index = i;
         tile.addEventListener('click', onTileClick);
+
+        if (isPhotoPuzzle && photoUrl && photoMode === 'tiles') {
+          // Slice the image: each tile shows the portion from its solved position
+          var solvedPos = tiles[i] - 1;             // 0-based solved index
+          var solvedCol = solvedPos % COLS;
+          var solvedRow = Math.floor(solvedPos / COLS);
+          tile.style.backgroundImage    = 'url(' + photoUrl + ')';
+          tile.style.backgroundSize     = (COLS * 100) + '% ' + (COLS * 100) + '%';
+          tile.style.backgroundPosition =
+            (solvedCol / (COLS - 1) * 100) + '% ' + (solvedRow / (COLS - 1) * 100) + '%';
+          tile.style.backgroundRepeat   = 'no-repeat';
+          tile.style.border             = '2px solid rgba(255,255,255,0.25)';
+          // small number label
+          var lbl = document.createElement('span');
+          lbl.textContent = tiles[i];
+          lbl.style.cssText = 'position:absolute;bottom:3px;right:5px;font-size:0.6rem;' +
+            'color:#fff;text-shadow:0 1px 2px #000;pointer-events:none;';
+          tile.style.position = 'relative';
+          tile.appendChild(lbl);
+        } else {
+          // Plain numbered tile (also used for reveal mode — photo hidden until win)
+          tile.textContent = tiles[i];
+        }
       }
       board.appendChild(tile);
+    }
+
+    // In reveal mode: show dimmed background image behind board when solved
+    if (isPhotoPuzzle && photoUrl && photoMode === 'reveal' && gameWon) {
+      board.style.backgroundImage    = 'url(' + photoUrl + ')';
+      board.style.backgroundSize     = 'cover';
+      board.style.backgroundPosition = 'center';
+    } else {
+      board.style.backgroundImage = '';
     }
   }
 
@@ -191,6 +245,7 @@
     // Won!
     gameWon = true;
     stopTimer();
+    render(); // re-render so reveal-mode shows the background photo
     var winMsg = document.getElementById('fp-win-msg');
     if (winMsg) winMsg.style.display = 'block';
     showScoreForm();
@@ -335,7 +390,13 @@
   // ---------------------------------------------------------------------------
   function resetGame() {
     gameWon = false;
-    tiles = generateDailyBoard(dailyDate);
+    var boardHash = (window.FP_BOARD_HASH || '');
+    if (isPhotoPuzzle && boardHash) {
+      var decoded = hashToTiles(boardHash);
+      tiles = (decoded && decoded.length === 16) ? decoded : generateDailyBoard(dailyDate);
+    } else {
+      tiles = generateDailyBoard(dailyDate);
+    }
     resetTimer();
     resetMoves();
     hideScoreForm();
@@ -353,7 +414,20 @@
   // Init
   // ---------------------------------------------------------------------------
   function initFifteenPuzzle() {
-    dailyDate = (window.FP_DATE || new Date().toISOString().slice(0, 10));
+    dailyDate    = (window.FP_DATE       || new Date().toISOString().slice(0, 10));
+    photoUrl     = (window.FP_PHOTO_URL  || '');
+    photoMode    = (window.FP_PHOTO_MODE || '');
+    isPhotoPuzzle = !!(photoUrl && photoMode);
+
+    // For photo puzzles, decode the fixed board from the hash rather than
+    // re-seeding by date so the scramble always matches the uploaded layout.
+    var boardHash = (window.FP_BOARD_HASH || '');
+    if (isPhotoPuzzle && boardHash) {
+      var decoded = hashToTiles(boardHash);
+      if (decoded && decoded.length === 16) {
+        tiles = decoded;
+      }
+    }
 
     // Hide score form initially
     hideScoreForm();

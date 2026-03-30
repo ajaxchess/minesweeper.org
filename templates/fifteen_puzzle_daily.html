@@ -124,8 +124,13 @@
 
 <div class="fp-wrap">
   <div class="fp-header">
+    {% if display_name %}
+    <h1>{{ display_name }}</h1>
+    <p>Photo puzzle · <a href="/other/15puzzle/daily">Play daily puzzle</a></p>
+    {% else %}
     <h1>15-Puzzle — Daily</h1>
     <p>{{ today }} · Same puzzle for everyone · Resets at midnight UTC</p>
+    {% endif %}
   </div>
 
   <div class="fp-subnav">
@@ -162,6 +167,11 @@
   <div id="fp-score-msg" style="display:none;color:var(--accent2);font-size:0.9rem;"></div>
 </div>
 
-<script>window.FP_DATE = "{{ today }}";</script>
-<script src="/static/js/fifteen_puzzle.js?v=1"></script>
+<script>
+window.FP_DATE      = "{{ today }}";
+window.FP_PHOTO_URL = "{{ photo_url or '' }}";
+window.FP_PHOTO_MODE = "{{ photo_mode or '' }}";
+window.FP_BOARD_HASH = "{{ board_hash or '' }}";
+</script>
+<script src="/static/js/fifteen_puzzle.js?v=2"></script>
 {% endblock %}

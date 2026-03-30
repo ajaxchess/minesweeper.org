@@ -746,6 +746,19 @@ class FifteenPuzzleScore(Base):
         }
 
 
+# ── 15-Puzzle Photo model ─────────────────────────────────────────────────────
+class FifteenPuzzlePhoto(Base):
+    __tablename__ = "fifteen_puzzle_photos"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    user_email   = Column(String(256), nullable=False, index=True)
+    filename     = Column(String(256), nullable=False)   # stored filename on disk
+    display_name = Column(String(128), nullable=True)    # user-supplied title
+    photo_mode   = Column(String(8),   nullable=False)   # 'tiles' or 'reveal'
+    board_hash   = Column(String(128), nullable=False, unique=True, index=True)
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 # ── Contact Message model ─────────────────────────────────────────────────────
 class ContactMessage(Base):
     __tablename__ = "contact_messages"
@@ -821,6 +834,8 @@ def _apply_migrations():
         # nonosweeper user/guest tracking — missing from initial deploy
         ("nonosweeper_scores",    "user_email",   "VARCHAR(256) NULL"),
         ("nonosweeper_scores",    "guest_token",  "VARCHAR(36) NULL"),
+        # 15-puzzle generator: per-user saved puzzle limit (added 2026-03-30)
+        ("user_profiles",         "puzzle_storage_limit", "INT NOT NULL DEFAULT 32"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:

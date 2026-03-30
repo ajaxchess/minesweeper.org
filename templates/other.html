@@ -29,6 +29,9 @@
       <div class="variant-card-links">
         <a href="/other/15puzzle/daily"       class="variant-play-btn">Daily Puzzle</a>
         <a href="/other/15puzzle/leaderboard" class="variant-play-btn variant-play-btn-outline">Leaderboard</a>
+        {% if user %}
+        <a href="/other/15puzzle/generator"   class="variant-play-btn variant-play-btn-outline">Generator</a>
+        {% endif %}
       </div>
     </div>
 
