@@ -46,7 +46,7 @@
     var inv = countInversions(tiles);
     var blankRow = Math.floor(tiles.indexOf(0) / cols);
     var rowFromBottom = cols - blankRow; // cols == rows for square
-    return (inv + rowFromBottom) % 2 === 0;
+    return (inv + rowFromBottom) % 2 === 1;
   }
 
   function generateScramble(cols, rows) {

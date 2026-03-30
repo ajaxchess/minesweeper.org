@@ -65,7 +65,7 @@
     var blankIndex = tiles.indexOf(0);
     // row from bottom, 1-indexed (grid is 4 wide)
     var rowFromBottom = 4 - Math.floor(blankIndex / 4);
-    return (inversions + rowFromBottom) % 2 === 0;
+    return (inversions + rowFromBottom) % 2 === 1;
   }
 
   // ---------------------------------------------------------------------------
