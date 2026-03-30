@@ -221,6 +221,43 @@
     </div>
   </div>
 
+  <!-- ── 15-Puzzle Saved Puzzles ── -->
+  <div class="profile-recent">
+    <h2 class="section-title">🔢 15-Puzzle Saved Puzzles
+      <span style="font-size:0.8rem;font-weight:400;color:var(--text-dim);margin-left:0.5rem;">
+        {{ fp_photos|length }}/{{ fp_limit }}
+        · <a href="/other/15puzzle/generator" style="color:var(--accent2);">Generator</a>
+      </span>
+    </h2>
+    {% if fp_photos %}
+    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:0.5rem;">
+      {% for p in fp_photos %}
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.6rem;display:flex;flex-direction:column;gap:0.4rem;width:140px;">
+        <a href="/other/15puzzle/photo/{{ p.board_hash }}?mode={{ p.photo_mode }}">
+          <img src="/static/uploads/15puzzle/{{ p.filename }}"
+               alt="{{ p.display_name or 'Puzzle' }}"
+               style="width:100%;height:90px;object-fit:cover;border-radius:4px;display:block;">
+        </a>
+        <div style="font-size:0.78rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">
+          {{ p.display_name or 'Untitled' }}
+        </div>
+        <div style="font-size:0.72rem;color:var(--text-dim);">{{ p.photo_mode }} · {{ p.created_at.strftime("%Y-%m-%d") }}</div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+          <a href="/other/15puzzle/photo/{{ p.board_hash }}?mode={{ p.photo_mode }}"
+             style="font-size:0.75rem;color:var(--accent2);">Play</a>
+          <button onclick="fpDeletePhoto('{{ p.board_hash }}')"
+                  style="font-size:0.75rem;background:none;border:none;color:var(--text-dim);cursor:pointer;padding:0;">Delete</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--text-dim);font-size:0.9rem;margin-top:0.5rem;">
+      No saved puzzles yet. <a href="/other/15puzzle/generator" style="color:var(--accent2);">Create one →</a>
+    </p>
+    {% endif %}
+  </div>
+
   <!-- ── Recent games tabs ── -->
   <div class="profile-recent">
     <h2 class="section-title">{{ t.profile_recent_games }}</h2>
@@ -258,6 +295,17 @@
 
 {% block scripts %}
 <script>
+function fpDeletePhoto(boardHash) {
+  if (!confirm('Delete this puzzle permanently?')) return;
+  fetch('/api/fifteen-puzzle/delete-photo/' + boardHash, {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+  }).then(function(res) {
+    if (!res.ok) throw new Error('Delete failed');
+    window.location.reload();
+  }).catch(function(err) { alert(err.message); });
+}
+
 let allStats = null;
 
 async function loadStats() {

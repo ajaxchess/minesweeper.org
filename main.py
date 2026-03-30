@@ -1555,6 +1555,8 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "pref_chording": profile.pref_chording if profile else True,
         "pref_skin":     profile.pref_skin     if profile else site_settings.active_skin(),
         "about_text":    profile.about_text    if profile else "",
+        "fp_photos":     db.query(FifteenPuzzlePhoto).filter_by(user_email=user["email"]).order_by(FifteenPuzzlePhoto.created_at.desc()).all(),
+        "fp_limit":      getattr(profile, "puzzle_storage_limit", 32) if profile else 32,
         "lang": get_lang(request), "t": get_t(request),
     })
 
