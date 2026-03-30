@@ -153,11 +153,21 @@
 
     var COLS = 4;
 
+    var revealWon = isPhotoPuzzle && photoUrl && photoMode === 'reveal' && gameWon;
+
+    // On reveal-win: collapse gaps so the photo fills edge-to-edge
+    board.style.gap     = revealWon ? '0' : '';
+    board.style.padding = revealWon ? '0' : '';
+    board.style.border  = revealWon ? 'none' : '';
+
     for (var i = 0; i < 16; i++) {
       var tile = document.createElement('div');
       tile.classList.add('fp-tile');
 
-      if (tiles[i] === 0) {
+      if (revealWon) {
+        // All tiles become fully transparent — photo behind board is fully visible
+        tile.style.cssText = 'background:transparent;border:none;';
+      } else if (tiles[i] === 0) {
         tile.classList.add('fp-blank');
         tile.dataset.index = i;
       } else {
@@ -165,8 +175,7 @@
         tile.addEventListener('click', onTileClick);
 
         if (isPhotoPuzzle && photoUrl && photoMode === 'tiles') {
-          // Slice the image: each tile shows the portion from its solved position
-          var solvedPos = tiles[i] - 1;             // 0-based solved index
+          var solvedPos = tiles[i] - 1;
           var solvedCol = solvedPos % COLS;
           var solvedRow = Math.floor(solvedPos / COLS);
           tile.style.backgroundImage    = 'url(' + photoUrl + ')';
@@ -175,7 +184,6 @@
             (solvedCol / (COLS - 1) * 100) + '% ' + (solvedRow / (COLS - 1) * 100) + '%';
           tile.style.backgroundRepeat   = 'no-repeat';
           tile.style.border             = '2px solid rgba(255,255,255,0.25)';
-          // small number label
           var lbl = document.createElement('span');
           lbl.textContent = tiles[i];
           lbl.style.cssText = 'position:absolute;bottom:3px;right:5px;font-size:0.6rem;' +
@@ -183,14 +191,13 @@
           tile.style.position = 'relative';
           tile.appendChild(lbl);
         } else {
-          // Plain numbered tile (also used for reveal mode — photo hidden until win)
           tile.textContent = tiles[i];
         }
       }
       board.appendChild(tile);
     }
 
-    // In reveal mode: show dimmed background image behind board when solved
+    // Reveal mode: set full-bleed background on board when solved
     if (isPhotoPuzzle && photoUrl && photoMode === 'reveal' && gameWon) {
       board.style.backgroundImage    = 'url(' + photoUrl + ')';
       board.style.backgroundSize     = 'cover';
