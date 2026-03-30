@@ -1,5 +1,72 @@
 List of active features
 
+F64 S3 Image Storage for 15-Puzzle Photo Uploads
+  Migrate uploaded 15-puzzle photos from local EC2 disk storage to AWS S3.
+  Requires infrastructure setup: S3 bucket, IAM role/policy, and CDN configuration.
+  Photo URLs served from S3 (or CloudFront) rather than the EC2 instance.
+  This feature is deferred until F63 is live and infrastructure is provisioned.
+
+F63 15-Puzzle Game (/other/15puzzle)
+  Sliding tile puzzle game under the Other Puzzles section. See business/15puzzle.md.
+
+  Routes
+  ──────────────────────────────────────────────────────────────────────
+  /other/15puzzle            — landing page / daily game
+  /other/15puzzle/daily      — daily 4×4 puzzle, same for all users, resets midnight UTC
+  /other/15puzzle/custom     — custom board by size (2×2 to 32×32) and hash
+  /other/15puzzle/replay     — replay any board by hash (URL param or manual entry)
+  /other/15puzzle/generator  — registered users only; create and save puzzles with optional photo
+  /other/15puzzle/leaderboard — leaderboard for daily and custom boards
+
+  Board & Hash
+  ──────────────────────────────────────────────────────────────────────
+  Hash encodes grid width, height, and full tile sequence (including blank position)
+  as a base64url string. Any board of any size can be reconstructed from the hash alone.
+  All boards are guaranteed solvable (parity check on generation).
+
+  Daily Puzzle
+  ──────────────────────────────────────────────────────────────────────
+  4×4 grid, 15 numbered tiles + 1 blank. Seeded by YYYY-MM-DD UTC so every
+  user gets the same board. Resets midnight UTC. Each date's leaderboard is
+  permanently saved and keyed by date.
+
+  Custom Boards
+  ──────────────────────────────────────────────────────────────────────
+  Width and height set independently, 2–32 tiles each (rectangular boards allowed).
+  Each board has a hash-specific leaderboard.
+
+  Leaderboard
+  ──────────────────────────────────────────────────────────────────────
+  Records time (ms) and move count. Sorted primarily by time; move count displayed
+  as an efficiency indicator. Timer starts on first tile move.
+  Guests may submit scores; guest scores are purged at midnight UTC daily.
+  Registered user scores are retained permanently.
+
+  Photo Upload (registered users only)
+  ──────────────────────────────────────────────────────────────────────
+  JPG and PNG, 2MB maximum. Stored on EC2 (see F64 for S3 migration).
+  Display mode is a URL parameter (?mode=tiles or ?mode=reveal) and configurable
+  in the UI. On solve, full photo is always revealed.
+  Photos are live immediately on upload. Admin can review and delete at
+  /admin/15puzzle-photos (styled like /admin/hscleaning).
+
+  Generator
+  ──────────────────────────────────────────────────────────────────────
+  Registered users can save up to 32 puzzles (limit stored per-user in the
+  user table for future per-user overrides). Saved puzzles are publicly
+  accessible immediately. Users can delete their own puzzles permanently.
+
+  Database
+  ──────────────────────────────────────────────────────────────────────
+  New tables: fifteen_puzzle_scores, fifteen_puzzle_photos.
+  Add puzzle_storage_limit (INT, default 32) column to user_profiles.
+
+F62 Other Puzzles Hub (/other)
+  Landing page at /other displaying a card grid of all games in the Other Puzzles
+  section (styled like /variants). Displayed as "Other Puzzles" throughout the site.
+  Link added to the More menu in the main navigation.
+  Initially contains one card: 15-Puzzle (F63). Sudoku and others added as built.
+
 F61 No-Guess Nonosweeper POTD
 
   Guarantee that every Puzzle of the Day (POTD) can be solved from
