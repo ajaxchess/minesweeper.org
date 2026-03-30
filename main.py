@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -447,7 +447,8 @@ def archive_guest_scores():
             (ToroidScore,       "toroid_scores",       "tor_mode"),
             (TentaizuScore,     "tentaizu_scores",     "puzzle_date"),
             (ReplayScore,       "replay_scores",       "variant"),
-            (NonosweeperScore,  "nonosweeper_scores",  "puzzle_date"),
+            (NonosweeperScore,    "nonosweeper_scores",    "puzzle_date"),
+            (FifteenPuzzleScore,  "fifteen_puzzle_scores", "puzzle_date"),
         ]
         total = 0
         for model, table_name, mode_attr in tables:
@@ -1055,6 +1056,104 @@ async def contact_submit(
         db.add(ContactMessage(name=name, email=email, message=message))
         db.commit()
     return RedirectResponse("/contact?submitted=true", status_code=303)
+
+
+# ── Other Puzzles ──────────────────────────────────────────────────────────────
+
+@app.get("/other", response_class=HTMLResponse)
+def other_hub(request: Request):
+    return templates.TemplateResponse("other.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+@app.get("/other/15puzzle", response_class=HTMLResponse)
+def fifteen_puzzle_landing(request: Request):
+    return RedirectResponse("/other/15puzzle/daily", status_code=302)
+
+
+@app.get("/other/15puzzle/daily", response_class=HTMLResponse)
+def fifteen_puzzle_daily(request: Request):
+    today = date.today().isoformat()
+    return templates.TemplateResponse("fifteen_puzzle_daily.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": today,
+    })
+
+
+@app.get("/other/15puzzle/leaderboard", response_class=HTMLResponse)
+def fifteen_puzzle_leaderboard_page(request: Request):
+    today = date.today().isoformat()
+    return templates.TemplateResponse("fifteen_puzzle_leaderboard.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": today,
+    })
+
+
+# ── 15-Puzzle API ──────────────────────────────────────────────────────────────
+
+class FifteenPuzzleScoreSubmit(BaseModel):
+    name:        str = Field(..., min_length=1, max_length=32)
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    time_ms:     int = Field(..., ge=0, le=9999999)
+    moves:       int = Field(..., ge=1, le=99999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+
+@app.post("/api/fifteen-puzzle-scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_fifteen_puzzle_score(payload: FifteenPuzzleScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = FifteenPuzzleScore(
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        puzzle_date = payload.puzzle_date,
+        time_ms     = payload.time_ms,
+        moves       = payload.moves,
+        guest_token = guest_token,
+        client_type = get_client_type(request),
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    record_score_submit("fifteen_puzzle", payload.puzzle_date)
+    record_game_complete("fifteen_puzzle", mode="daily", duration_ms=payload.time_ms)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/fifteen-puzzle-scores/{puzzle_date}")
+def get_fifteen_puzzle_scores(puzzle_date: str, db: Session = Depends(get_db)):
+    import re
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
+        raise HTTPException(status_code=400, detail="Invalid date format")
+    top = (
+        db.query(FifteenPuzzleScore)
+        .filter(FifteenPuzzleScore.puzzle_date == puzzle_date)
+        .order_by(FifteenPuzzleScore.time_ms.asc(), FifteenPuzzleScore.created_at.asc())
+        .limit(20)
+        .all()
+    )
+    return _enrich_with_profiles(top, db)
 
 
 @app.get("/history", response_class=HTMLResponse)

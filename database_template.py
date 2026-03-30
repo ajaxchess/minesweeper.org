@@ -717,6 +717,35 @@ class NonosweeperScore(Base):
         }
 
 
+# ── 15-Puzzle Score model ─────────────────────────────────────────────────────
+class FifteenPuzzleScore(Base):
+    __tablename__ = "fifteen_puzzle_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD UTC
+    time_ms     = Column(Integer, nullable=False)
+    moves       = Column(Integer, nullable=False)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_fifteen_puzzle_scores_date_time", "puzzle_date", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "time_ms":     self.time_ms,
+            "moves":       self.moves,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
 # ── Contact Message model ─────────────────────────────────────────────────────
 class ContactMessage(Base):
     __tablename__ = "contact_messages"

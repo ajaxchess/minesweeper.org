@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% set _title = "15-Puzzle Leaderboard | minesweeper.org" %}
+{% set _desc  = "Daily 15-Puzzle leaderboard — top times and move counts for today's sliding tile puzzle." %}
+{% set _canon = "https://minesweeper.org/other/15puzzle/leaderboard" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<div class="lb-wrap">
+  <h1 class="tz-page-h1">15-Puzzle Leaderboard</h1>
+
+  <div style="text-align:center;margin-bottom:1.5rem;">
+    <a href="/other/15puzzle/daily" class="btn" style="margin:0.25rem;">Play Today</a>
+    <a href="/other" class="btn" style="margin:0.25rem;">Other Puzzles</a>
+  </div>
+
+  <h2 style="font-size:1rem;color:var(--accent2);margin-top:1rem;">Today — {{ today }}</h2>
+  <div class="wt-table-wrap">
+    <table class="lb-table">
+      <thead>
+        <tr><th>#</th><th>Name</th><th>Time</th><th>Moves</th><th>Date</th></tr>
+      </thead>
+      <tbody id="lb-body-today">
+        <tr><td colspan="5" style="color:var(--text-dim);">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+(async function() {
+  const tbody = document.getElementById('lb-body-today');
+  const today = "{{ today }}";
+  try {
+    const r = await fetch('/api/fifteen-puzzle-scores/' + today);
+    const scores = await r.json();
+    if (!scores.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-dim);">No scores yet — be the first!</td></tr>';
+      return;
+    }
+    tbody.innerHTML = scores.map((s, i) => {
+      const name = s.profile_url
+        ? `<a href="${s.profile_url}">${s.name}</a>`
+        : s.name;
+      const secs = (s.time_ms / 1000).toFixed(1);
+      return `<tr>
+        <td>${i + 1}</td>
+        <td>${name}</td>
+        <td>${secs}s</td>
+        <td>${s.moves}</td>
+        <td>${s.created_at}</td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-dim);">Failed to load scores.</td></tr>';
+  }
+})();
+</script>
+{% endblock %}

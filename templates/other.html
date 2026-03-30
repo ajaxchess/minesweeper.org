@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% set _title = "Other Puzzles | minesweeper.org" %}
+{% set _desc  = "Other puzzle games on minesweeper.org — sliding puzzles, sudoku, and more. Free to play, no download required." %}
+{% set _canon = "https://minesweeper.org/other" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}Other Puzzles | minesweeper.org{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<div class="variants-page">
+  <h1 class="variants-title">Other Puzzles</h1>
+  <p class="variants-subtitle">Classic puzzle games — free to play, no download required.</p>
+
+  <div class="variants-grid">
+
+    <div class="variant-card">
+      <div class="variant-card-icon">🔢</div>
+      <h2 class="variant-card-title">15-Puzzle</h2>
+      <p class="variant-card-desc">
+        The classic sliding tile puzzle — also known as the Gem Puzzle or Game of Fifteen.
+        Slide 15 numbered tiles into order using the one empty space.
+        A new daily puzzle is generated each day, the same for every player.
+      </p>
+      <div class="variant-card-links">
+        <a href="/other/15puzzle/daily"       class="variant-play-btn">Daily Puzzle</a>
+        <a href="/other/15puzzle/leaderboard" class="variant-play-btn variant-play-btn-outline">Leaderboard</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

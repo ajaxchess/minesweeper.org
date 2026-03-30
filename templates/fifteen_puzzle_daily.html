@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% set _title = "15-Puzzle — Daily | minesweeper.org" %}
+{% set _desc  = "Play today's daily 15-puzzle on minesweeper.org. Slide 15 numbered tiles into order. Same puzzle for every player, resets at midnight UTC." %}
+{% set _canon = "https://minesweeper.org/other/15puzzle/daily" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}15-Puzzle — Daily | minesweeper.org{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<style>
+.fp-wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+.fp-header { text-align: center; }
+.fp-header h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+.fp-header p  { color: var(--text-dim); font-size: 0.85rem; margin: 0; }
+.fp-subnav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.fp-subnav a { color: var(--accent2); font-size: 0.85rem; text-decoration: none; }
+.fp-subnav a:hover { text-decoration: underline; }
+.fp-subnav span { color: var(--text-dim); }
+
+.fp-stats {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 1rem;
+  color: var(--text);
+}
+.fp-stats span { color: var(--accent2); font-weight: 700; }
+
+#fp-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
+  width: 100%;
+  max-width: 360px;
+  box-sizing: border-box;
+}
+.fp-tile {
+  aspect-ratio: 1;
+  background: var(--surface);
+  border: 2px solid var(--accent2);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s, transform 0.08s;
+  color: var(--text);
+}
+.fp-tile:hover { background: var(--surface2); transform: scale(0.96); }
+.fp-blank {
+  background: transparent;
+  border-color: transparent;
+  cursor: default;
+}
+.fp-blank:hover { background: transparent; transform: none; }
+
+.fp-controls { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+.fp-btn {
+  padding: 0.45rem 1.1rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.fp-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+#fp-win-msg {
+  display: none;
+  color: var(--accent2);
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+#fp-score-form {
+  display: none;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+#fp-score-form label span { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.2rem; }
+#fp-score-form input[type="text"] {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  box-sizing: border-box;
+}
+#fp-score-msg { font-size: 0.9rem; color: var(--accent2); }
+</style>
+
+<div class="fp-wrap">
+  <div class="fp-header">
+    <h1>15-Puzzle — Daily</h1>
+    <p>{{ today }} · Same puzzle for everyone · Resets at midnight UTC</p>
+  </div>
+
+  <div class="fp-subnav">
+    <a href="/other">Other Puzzles</a>
+    <span>›</span>
+    <a href="/other/15puzzle/leaderboard">Leaderboard</a>
+  </div>
+
+  <div class="fp-stats">
+    <div>Time: <span id="fp-time">0.0</span>s</div>
+    <div>Moves: <span id="fp-moves">0</span></div>
+  </div>
+
+  <div id="fp-board"></div>
+
+  <div class="fp-controls">
+    <button class="fp-btn" id="fp-reset">↺ New Game</button>
+    <a href="/other/15puzzle/leaderboard" class="fp-btn" style="text-decoration:none;">🏆 Leaderboard</a>
+  </div>
+
+  <div id="fp-win-msg">🎉 Solved!</div>
+
+  <div id="fp-score-form">
+    <strong style="font-size:0.95rem;">Submit your score</strong>
+    <label>
+      <span>Name</span>
+      <input type="text" id="fp-name" maxlength="32" placeholder="Your name"
+             value="{{ user.name if user else '' }}">
+    </label>
+    <input type="hidden" id="fp-time-val" value="0">
+    <input type="hidden" id="fp-moves-val" value="0">
+    <button class="fp-btn" id="fp-submit" style="align-self:flex-start;">Submit Score</button>
+  </div>
+  <div id="fp-score-msg" style="display:none;color:var(--accent2);font-size:0.9rem;"></div>
+</div>
+
+<script>window.FP_DATE = "{{ today }}";</script>
+<script src="/static/js/fifteen_puzzle.js?v=1"></script>
+{% endblock %}

@@ -281,6 +281,28 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- ── Other Puzzles ────────────────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/other</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/other/15puzzle/daily</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/other/15puzzle/leaderboard</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+
   <!-- ── Worldsweeper ────────────────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/worldsweeper/dodecahedron</loc>
