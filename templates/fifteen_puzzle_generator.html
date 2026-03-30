@@ -213,25 +213,33 @@
     </div>
   </div>
 
+  {% if not user %}
+  <div style="background:var(--surface);border:1px solid var(--accent2);border-radius:8px;padding:0.85rem 1rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+    <span style="font-size:1.1rem;">🔒</span>
+    <span style="font-size:0.9rem;flex:1;">You must <a href="/login?next=/other/15puzzle/generator" style="color:var(--accent2);font-weight:700;">sign in with Google</a> to upload photos and save puzzles.</span>
+    <a href="/login?next=/other/15puzzle/generator" style="padding:0.4rem 1rem;background:var(--accent2);color:#fff;border-radius:5px;text-decoration:none;font-size:0.85rem;font-weight:700;white-space:nowrap;">Sign in</a>
+  </div>
+  {% endif %}
+
   <!-- Upload form -->
   <form id="gen-form" enctype="multipart/form-data">
     <div class="gen-section">
       <h2>1. Upload a Photo</h2>
       <div>
         <label class="gen-label" for="gen-file">JPG or PNG, max 2MB</label>
-        <input class="gen-input" type="file" id="gen-file" name="file" accept="image/jpeg,image/png">
+        <input class="gen-input" type="file" id="gen-file" name="file" accept="image/jpeg,image/png" {% if not user %}disabled{% endif %}>
       </div>
       <div>
         <label class="gen-label" for="gen-display-name">Puzzle title (optional)</label>
-        <input class="gen-input" type="text" id="gen-display-name" name="display_name" maxlength="128" placeholder="My awesome puzzle">
+        <input class="gen-input" type="text" id="gen-display-name" name="display_name" maxlength="128" placeholder="My awesome puzzle" {% if not user %}disabled{% endif %}>
       </div>
     </div>
 
     <div class="gen-section" style="margin-top:1rem;">
       <h2>2. Choose Photo Mode</h2>
       <div class="gen-mode-btns">
-        <button type="button" class="gen-mode-btn" data-mode="tiles">Tiles</button>
-        <button type="button" class="gen-mode-btn" data-mode="reveal">Reveal on win</button>
+        <button type="button" class="gen-mode-btn" data-mode="tiles" {% if not user %}disabled{% endif %}>Tiles</button>
+        <button type="button" class="gen-mode-btn" data-mode="reveal" {% if not user %}disabled{% endif %}>Reveal on win</button>
       </div>
       <p class="gen-mode-hint" id="gen-mode-hint">
         <strong>Tiles:</strong> the photo is sliced across the tiles and scrambled with them.<br>
@@ -243,10 +251,11 @@
 
     <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.5rem;">
       <button type="submit" class="gen-btn gen-btn-primary" id="gen-submit"
-              {% if photos|length >= limit %}disabled title="Puzzle limit reached ({{ limit }})"{% endif %}>
+              {% if not user %}disabled title="Sign in to save puzzles"
+              {% elif photos|length >= limit %}disabled title="Puzzle limit reached ({{ limit }})"{% endif %}>
         Save &amp; Get Link
       </button>
-      {% if photos|length >= limit %}
+      {% if user and photos|length >= limit %}
       <p style="font-size:0.82rem;color:var(--text-dim);">You've reached your {{ limit }}-puzzle limit. Delete a saved puzzle to make room.</p>
       {% endif %}
       <div id="gen-msg"></div>
@@ -286,7 +295,7 @@
       {% endfor %}
     </div>
   </div>
-  {% else %}
+  {% elif user %}
   <p style="color:var(--text-dim);font-size:0.9rem;">No saved puzzles yet. Create one above!</p>
   {% endif %}
 </div>

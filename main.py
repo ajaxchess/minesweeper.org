@@ -1159,16 +1159,17 @@ def get_fifteen_puzzle_scores(puzzle_date: str, db: Session = Depends(get_db)):
 @app.get("/other/15puzzle/generator", response_class=HTMLResponse)
 def fifteen_puzzle_generator_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        return RedirectResponse("/login?next=/other/15puzzle/generator", status_code=302)
-    photos = (
-        db.query(FifteenPuzzlePhoto)
-        .filter_by(user_email=user["email"])
-        .order_by(FifteenPuzzlePhoto.created_at.desc())
-        .all()
-    )
-    profile = db.query(UserProfile).filter_by(email=user["email"]).first()
-    limit = getattr(profile, "puzzle_storage_limit", 32) if profile else 32
+    photos = []
+    limit = 32
+    if user:
+        photos = (
+            db.query(FifteenPuzzlePhoto)
+            .filter_by(user_email=user["email"])
+            .order_by(FifteenPuzzlePhoto.created_at.desc())
+            .all()
+        )
+        profile = db.query(UserProfile).filter_by(email=user["email"]).first()
+        limit = getattr(profile, "puzzle_storage_limit", 32) if profile else 32
     return templates.TemplateResponse("fifteen_puzzle_generator.html", {
         "request": request, "mode": "other",
         "user": user,
