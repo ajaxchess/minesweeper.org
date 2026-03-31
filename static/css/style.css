@@ -2984,13 +2984,17 @@ html[data-skin="classic"] .bot-play-btn:visited { color: #fff; }
 }
 .blog-author-link:hover { text-decoration: underline; }
 
-.blog-article-image {
+.blog-article-picture {
+  display: block;
   width: 100%;
   max-width: 520px;
+  margin: 0 auto 1.5rem;
+}
+.blog-article-image {
+  width: 100%;
   height: auto;
   border-radius: 6px;
   display: block;
-  margin: 0 auto 1.5rem;
 }
 
 /* Article body — rendered markdown */
