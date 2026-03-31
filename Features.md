@@ -1,5 +1,7 @@
 List of active features
 
+F65 Implement click and drag to move more than one tile at once in 15-Puzzle mode
+
 F64 S3 Image Storage for 15-Puzzle Photo Uploads
   Migrate uploaded 15-puzzle photos from local EC2 disk storage to AWS S3.
   Requires infrastructure setup: S3 bucket, IAM role/policy, and CDN configuration.
