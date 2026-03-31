@@ -1439,6 +1439,8 @@ def _parse_front_matter(raw: str) -> tuple[dict, str]:
     raw = raw.lstrip("\ufeff")
     # Normalise line endings
     raw = raw.replace("\r\n", "\n").replace("\r", "\n")
+    # Strip leading blank lines so front matter is found even if file starts with whitespace
+    raw = raw.lstrip("\n")
     m = re.match(r"^---\n(.*?\n)---\n", raw, re.DOTALL)
     if m:
         for line in m.group(1).splitlines():
