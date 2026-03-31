@@ -1,6 +1,10 @@
 List of active features
 
-F65 Implement click and drag to move more than one tile at once in 15-Puzzle mode
+F65 Click and drag to move multiple tiles in the 15-Puzzle
+  On the daily puzzle and photo puzzle pages, a player can click and drag
+  a tile to slide it (and any tiles between it and the blank) into the
+  empty space in one gesture. Supports horizontal and vertical drags
+  along valid rows/columns. Implemented and live.
 
 F64 S3 Image Storage for 15-Puzzle Photo Uploads
   Migrate uploaded 15-puzzle photos from local EC2 disk storage to AWS S3.
@@ -15,10 +19,10 @@ F63 15-Puzzle Game (/other/15puzzle)
   ──────────────────────────────────────────────────────────────────────
   /other/15puzzle            — landing page / daily game
   /other/15puzzle/daily      — daily 4×4 puzzle, same for all users, resets midnight UTC
-  /other/15puzzle/custom     — custom board by size (2×2 to 32×32) and hash
-  /other/15puzzle/replay     — replay any board by hash (URL param or manual entry)
-  /other/15puzzle/generator  — registered users only; create and save puzzles with optional photo
-  /other/15puzzle/leaderboard — leaderboard for daily and custom boards
+  /other/15puzzle/custom     — custom board by size (2×2 to 32×32) and hash  [pending]
+  /other/15puzzle/replay     — replay any board by hash (URL param or manual entry)  [pending]
+  /other/15puzzle/generator  — upload photo and save puzzle; guests see page with sign-in notice
+  /other/15puzzle/leaderboard — leaderboard for the daily puzzle
 
   Board & Hash
   ──────────────────────────────────────────────────────────────────────
@@ -35,7 +39,7 @@ F63 15-Puzzle Game (/other/15puzzle)
   Custom Boards
   ──────────────────────────────────────────────────────────────────────
   Width and height set independently, 2–32 tiles each (rectangular boards allowed).
-  Each board has a hash-specific leaderboard.
+  Each board has a hash-specific leaderboard.  [pending]
 
   Leaderboard
   ──────────────────────────────────────────────────────────────────────
@@ -57,11 +61,27 @@ F63 15-Puzzle Game (/other/15puzzle)
   Registered users can save up to 32 puzzles (limit stored per-user in the
   user table for future per-user overrides). Saved puzzles are publicly
   accessible immediately. Users can delete their own puzzles permanently.
+  After saving, the shareable URL is displayed with a one-click copy button.
+  Generator is currently 4×4 only; arbitrary sizes are pending.
+
+  Profile Page
+  ──────────────────────────────────────────────────────────────────────
+  Logged-in users see a "15-Puzzle Saved Puzzles" section on /profile with
+  thumbnail cards, play/delete links, and a link to the generator.
+  This is a second path to the saved puzzle list alongside /other/15puzzle/generator.
 
   Database
   ──────────────────────────────────────────────────────────────────────
   New tables: fifteen_puzzle_scores, fifteen_puzzle_photos.
   Add puzzle_storage_limit (INT, default 32) column to user_profiles.
+
+  Implementation Status
+  ──────────────────────────────────────────────────────────────────────
+  Live: daily puzzle, leaderboard, photo generator (4×4), tiles mode, reveal mode,
+        admin photo moderation (/admin/15puzzle-photos), profile saved puzzles section,
+        guest-visible generator page with sign-in notice, shareable link + copy button,
+        click and drag (F65).
+  Pending: custom board page, replay page, arbitrary generator board sizes.
 
 F62 Other Puzzles Hub (/other)
   Landing page at /other displaying a card grid of all games in the Other Puzzles
