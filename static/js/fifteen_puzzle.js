@@ -153,7 +153,7 @@
 
     var COLS = 4;
 
-    var revealWon = isPhotoPuzzle && photoUrl && photoMode === 'reveal' && gameWon;
+    var revealWon = isPhotoPuzzle && photoUrl && gameWon;
 
     // On reveal-win: collapse gaps so the photo fills edge-to-edge
     board.style.gap          = revealWon ? '0' : '';
@@ -198,8 +198,8 @@
       board.appendChild(tile);
     }
 
-    // Reveal mode: set full-bleed background on board when solved
-    if (isPhotoPuzzle && photoUrl && photoMode === 'reveal' && gameWon) {
+    // On win: set full-bleed background on board to show original photo
+    if (isPhotoPuzzle && photoUrl && gameWon) {
       board.style.backgroundImage    = 'url(' + photoUrl + ')';
       board.style.backgroundSize     = 'cover';
       board.style.backgroundPosition = 'center';
