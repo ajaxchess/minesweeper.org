@@ -1,4 +1,3 @@
-
 ---
 title: "The new 15-puzzle!"
 publisher: "Lady Di's Mines"
