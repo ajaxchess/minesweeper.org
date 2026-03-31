@@ -215,9 +215,40 @@
     if (gameWon) return;
 
     var clickedIndex = parseInt(e.currentTarget.dataset.index, 10);
-    var blankIndex = tiles.indexOf(0);
+    var blankIndex   = tiles.indexOf(0);
 
-    if (!isAdjacent(clickedIndex, blankIndex)) return;
+    var clickedRow = Math.floor(clickedIndex / 4);
+    var clickedCol = clickedIndex % 4;
+    var blankRow   = Math.floor(blankIndex / 4);
+    var blankCol   = blankIndex % 4;
+
+    var steps = 0;
+
+    if (clickedRow === blankRow && clickedCol !== blankCol) {
+      // Slide all tiles between clicked and blank along the row
+      var dir = clickedCol < blankCol ? -1 : 1; // direction each tile moves
+      var col = blankCol;
+      while (col !== clickedCol) {
+        var nextCol = col + dir;
+        tiles[blankRow * 4 + col] = tiles[blankRow * 4 + nextCol];
+        col = nextCol;
+        steps++;
+      }
+      tiles[blankRow * 4 + clickedCol] = 0;
+    } else if (clickedCol === blankCol && clickedRow !== blankRow) {
+      // Slide all tiles between clicked and blank along the column
+      var dir = clickedRow < blankRow ? -1 : 1;
+      var row = blankRow;
+      while (row !== clickedRow) {
+        var nextRow = row + dir;
+        tiles[row * 4 + blankCol] = tiles[nextRow * 4 + blankCol];
+        row = nextRow;
+        steps++;
+      }
+      tiles[clickedRow * 4 + blankCol] = 0;
+    } else {
+      return; // not in the same row or column as the blank
+    }
 
     // Start timer on first move
     if (moveCount === 0 && startTime === null) {
@@ -225,11 +256,7 @@
       timerInterval = setInterval(updateTimer, 100);
     }
 
-    // Swap
-    tiles[blankIndex] = tiles[clickedIndex];
-    tiles[clickedIndex] = 0;
-    moveCount++;
-
+    moveCount += steps;
     updateMoves();
     render();
     checkWin();
