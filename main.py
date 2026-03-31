@@ -1349,6 +1349,15 @@ async def about_page(request: Request):
 # excerpt: one-sentence summary shown on the index page
 BLOG_POSTS = [
     {
+        "slug":          "fifteen-puzzle",
+        "file":          "blog/15puzzle_article.md",
+        "title":         "The new 15-puzzle!",
+        "date":          "2026-03-31",
+        "datePublished": "2026-03-31T00:00:00Z",
+        "excerpt": "Minesweeper.org has a new sliding tile puzzle: the 15-Puzzle. "
+                   "Play the daily challenge, upload your own photo, and slide whole rows in one move.",
+    },
+    {
         "slug":          "tentaizu-theme",
         "file":          "blog/tentaizu-theme.md",
         "title":         "The new Tentaizu Theme",
