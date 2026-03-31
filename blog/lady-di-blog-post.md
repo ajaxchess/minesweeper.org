@@ -19,6 +19,7 @@ In January 1997, Diana walked through an active minefield in Huambo, Angola, wea
 
 Here was a game called "minesweeper" that millions of people played every day. If even a few of the people who came to my site paused to think about real mines, or clicked through to learn about the HALO Trust, it was worth doing.
 
+
 ## The Return
 
 Today, Lady Di's Mines is back — rebuilt from scratch with Python, FastAPI, and modern web technologies. It works on desktop and mobile, no plugins required, and there is a mode where every puzzle is logically solvable — no 50/50 guesses.
