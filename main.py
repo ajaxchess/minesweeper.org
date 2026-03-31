@@ -1363,6 +1363,7 @@ BLOG_POSTS = [
         "title":         "The new Tentaizu Theme",
         "date":          "2026-03-20",
         "datePublished": "2026-03-20T00:00:00Z",
+        "image":         "https://minesweeper.org/static/img/og-tentaizu.png",
         "excerpt": "Lady Di's Mines now switches to the Tentaizu theme on solstices and equinoxes. "
                    "Here's what the theme is and a little about the Tentaizu puzzle.",
     },
@@ -1439,8 +1440,6 @@ def _parse_front_matter(raw: str) -> tuple[dict, str]:
     raw = raw.lstrip("\ufeff")
     # Normalise line endings
     raw = raw.replace("\r\n", "\n").replace("\r", "\n")
-    # Strip leading blank lines so front matter is found even if file starts with whitespace
-    raw = raw.lstrip("\n")
     m = re.match(r"^---\n(.*?\n)---\n", raw, re.DOTALL)
     if m:
         for line in m.group(1).splitlines():
@@ -1488,7 +1487,7 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
         "author":        front_matter.get("author", ""),
         "authorurl":     front_matter.get("authorurl", "") if front_matter.get("authorurl", "").startswith(("https://", "http://")) else "",
         "publisher":     front_matter.get("publisher", ""),
-        "og_image":      front_matter.get("image", ""),
+        "og_image":      post.get("image") or front_matter.get("image", ""),
         "date_published": date_published,
         "comments":      comments,
     })
