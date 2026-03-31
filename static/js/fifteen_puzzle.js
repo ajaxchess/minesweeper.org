@@ -156,9 +156,10 @@
     var revealWon = isPhotoPuzzle && photoUrl && photoMode === 'reveal' && gameWon;
 
     // On reveal-win: collapse gaps so the photo fills edge-to-edge
-    board.style.gap     = revealWon ? '0' : '';
-    board.style.padding = revealWon ? '0' : '';
-    board.style.border  = revealWon ? 'none' : '';
+    board.style.gap          = revealWon ? '0' : '';
+    board.style.padding      = revealWon ? '0' : '';
+    board.style.border       = revealWon ? 'none' : '';
+    board.style.borderRadius = revealWon ? '0' : '';
 
     for (var i = 0; i < 16; i++) {
       var tile = document.createElement('div');
@@ -166,7 +167,7 @@
 
       if (revealWon) {
         // All tiles become fully transparent — photo behind board is fully visible
-        tile.style.cssText = 'background:transparent;border:none;';
+        tile.style.cssText = 'background:transparent;border:none;border-radius:0;';
       } else if (tiles[i] === 0) {
         tile.classList.add('fp-blank');
         tile.dataset.index = i;
