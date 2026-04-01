@@ -58,17 +58,17 @@
      data-mines="{{ mines }}">
 
   <h1 class="tz-page-h1">
-    {% if mode == 'dodecahedron' %}Worldsweeper — Dodecahedron
-    {% elif mode == 'beginner' %}Worldsweeper — Beginner
-    {% elif mode == 'intermediate' %}Worldsweeper — Intermediate
-    {% elif mode == 'expert' %}Worldsweeper — Expert
-    {% else %}Worldsweeper — Custom
+    {% if mode == 'dodecahedron' %}Worldsweeper — {{ t['ws_dodecahedron'] }}
+    {% elif mode == 'beginner' %}Worldsweeper — {{ t['nav_beginner'] }}
+    {% elif mode == 'intermediate' %}Worldsweeper — {{ t['nav_intermediate'] }}
+    {% elif mode == 'expert' %}Worldsweeper — {{ t['nav_expert'] }}
+    {% else %}Worldsweeper — {{ t['nav_custom'] }}
     {% endif %}
   </h1>
 
   <div class="stat-row">
     <span class="stat" id="mine-count">🌍 <span id="mines-remaining">{{ mines }}</span></span>
-    <button id="reset-btn" class="btn-reset" title="New game">↺</button>
+    <button id="reset-btn" class="btn-reset" title="{{ t['game_new_game'] }}">↺</button>
     <span class="stat" id="timer-display">⏱ <span id="elapsed">0.00</span>s</span>
   </div>
 
@@ -76,27 +76,27 @@
     <canvas id="globe-canvas" style="width:100%;height:100%;display:block;"></canvas>
     <div id="globe-overlay" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,0.55);border-radius:8px;">
       <p id="overlay-msg" style="font-size:1.4rem;font-weight:bold;color:#fff;margin-bottom:1rem;"></p>
-      <button id="overlay-reset" class="btn-reset">Play Again</button>
+      <button id="overlay-reset" class="btn-reset">{{ t['ws_play_again'] }}</button>
     </div>
   </div>
 
   <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;margin-top:0.5rem;">
-    Drag to rotate &middot; Left-click to reveal &middot; Right-click to flag
+    {{ t['ws_instructions'] }}
   </p>
 
   <div id="score-form" style="display:none;margin:1rem auto;max-width:420px;text-align:center;padding:1rem;border:1px solid var(--border);border-radius:8px;background:var(--surface);">
-    <p style="font-weight:bold;margin-bottom:0.5rem;color:var(--text);">Submit your score</p>
-    <input id="score-name" type="text" maxlength="32" placeholder="Your name"
+    <p style="font-weight:bold;margin-bottom:0.5rem;color:var(--text);">{{ t['ws_submit_score'] }}</p>
+    <input id="score-name" type="text" maxlength="32" placeholder="{{ t['tz_name_placeholder'] }}"
            style="padding:0.4rem;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--text);">
-    <button id="score-submit" class="btn" style="margin-left:0.5rem;">Submit</button>
+    <button id="score-submit" class="btn" style="margin-left:0.5rem;">{{ t['ws_submit_btn'] }}</button>
     <p id="score-msg" style="font-size:0.85rem;margin-top:0.5rem;color:var(--text-dim);"></p>
   </div>
 
   {% if mode == 'custom' %}
   <div style="margin:1.5rem auto;max-width:420px;text-align:center;">
-    <h2 style="font-size:1rem;color:var(--accent2);margin-bottom:0.75rem;">Custom Board</h2>
+    <h2 style="font-size:1rem;color:var(--accent2);margin-bottom:0.75rem;">{{ t['ws_custom_board'] }}</h2>
     <label style="display:block;margin-bottom:0.5rem;">
-      Goldberg T parameter:
+      {{ t['ws_t_param'] }}
       <select id="t-select" style="margin-left:0.5rem;">
         <option value="1">T=1 — 12 faces (dodecahedron)</option>
         <option value="3" selected>T=3 — 32 faces (truncated icosahedron)</option>
@@ -123,21 +123,21 @@
       This board has 32 faces (12 pentagons, 20 hexagons).
     </p>
     <label style="display:block;margin-bottom:0.75rem;">
-      Mines: <input id="mine-input" type="number" min="1" max="31" value="4"
+      {{ t['custom_mines'] }}: <input id="mine-input" type="number" min="1" max="31" value="4"
                     style="width:60px;margin-left:0.5rem;">
     </label>
-    <button id="custom-play-btn" class="btn" style="padding:0.4rem 1.2rem;">Play</button>
+    <button id="custom-play-btn" class="btn" style="padding:0.4rem 1.2rem;">{{ t['ws_play'] }}</button>
   </div>
   {% endif %}
 
   <div style="text-align:center;margin-top:1rem;">
-    <a href="/worldsweeper/leaderboard" style="color:var(--accent2);font-size:0.9rem;">View Leaderboard</a>
+    <a href="/worldsweeper/leaderboard" style="color:var(--accent2);font-size:0.9rem;">{{ t['ws_view_lb'] }}</a>
     &nbsp;|&nbsp;
-    {% if mode != 'dodecahedron' %}<a href="/worldsweeper/dodecahedron" style="color:var(--text-dim);font-size:0.9rem;">Dodecahedron</a> &nbsp;|&nbsp;{% endif %}
-    {% if mode != 'beginner' %}<a href="/worldsweeper" style="color:var(--text-dim);font-size:0.9rem;">Beginner</a> &nbsp;|&nbsp;{% endif %}
-    {% if mode != 'intermediate' %}<a href="/worldsweeper/intermediate" style="color:var(--text-dim);font-size:0.9rem;">Intermediate</a> &nbsp;|&nbsp;{% endif %}
-    {% if mode != 'expert' %}<a href="/worldsweeper/expert" style="color:var(--text-dim);font-size:0.9rem;">Expert</a> &nbsp;|&nbsp;{% endif %}
-    {% if mode != 'custom' %}<a href="/worldsweeper/custom" style="color:var(--text-dim);font-size:0.9rem;">Custom</a>{% endif %}
+    {% if mode != 'dodecahedron' %}<a href="/worldsweeper/dodecahedron" style="color:var(--text-dim);font-size:0.9rem;">{{ t['ws_dodecahedron'] }}</a> &nbsp;|&nbsp;{% endif %}
+    {% if mode != 'beginner' %}<a href="/worldsweeper" style="color:var(--text-dim);font-size:0.9rem;">{{ t['nav_beginner'] }}</a> &nbsp;|&nbsp;{% endif %}
+    {% if mode != 'intermediate' %}<a href="/worldsweeper/intermediate" style="color:var(--text-dim);font-size:0.9rem;">{{ t['nav_intermediate'] }}</a> &nbsp;|&nbsp;{% endif %}
+    {% if mode != 'expert' %}<a href="/worldsweeper/expert" style="color:var(--text-dim);font-size:0.9rem;">{{ t['nav_expert'] }}</a> &nbsp;|&nbsp;{% endif %}
+    {% if mode != 'custom' %}<a href="/worldsweeper/custom" style="color:var(--text-dim);font-size:0.9rem;">{{ t['nav_custom'] }}</a>{% endif %}
   </div>
 </div>
 {% endblock %}

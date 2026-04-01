@@ -162,7 +162,7 @@
 </style>
 
 <h1 class="nn-page-h1">Nonosweeper</h1>
-<p class="nn-bridge">Minesweeper meets Nonogram — use row &amp; column clues to find the mines.</p>
+<p class="nn-bridge">{{ t['nn_bridge'] }}</p>
 
 <div class="nn-wrapper">
 
@@ -178,16 +178,16 @@
 
     <div class="nn-info">
       <div class="nn-mode-row">
-        <span id="nn-mode-label" class="mode-badge">📅 Puzzle of the Day</span>
+        <span id="nn-mode-label" class="mode-badge">{{ t['nn_label_potd'] }}</span>
         <div class="nn-mode-btns">
-          <button id="nn-potd-btn" class="nn-mode-btn">📅 Daily</button>
-          <button id="nn-random-btn" class="nn-mode-btn">🎲 Random</button>
+          <button id="nn-potd-btn" class="nn-mode-btn">{{ t['nn_btn_daily'] }}</button>
+          <button id="nn-random-btn" class="nn-mode-btn">{{ t['nn_btn_random'] }}</button>
         </div>
       </div>
       <div class="nn-diff-row">
-        <button class="nn-diff-btn active" data-diff="beginner">Beginner (8×8)</button>
-        <button class="nn-diff-btn"        data-diff="intermediate">Intermediate (10×10)</button>
-        <button class="nn-diff-btn"        data-diff="expert">Expert (15×15)</button>
+        <button class="nn-diff-btn active" data-diff="beginner">{{ t['nn_diff_beginner'] }}</button>
+        <button class="nn-diff-btn"        data-diff="intermediate">{{ t['nn_diff_intermediate'] }}</button>
+        <button class="nn-diff-btn"        data-diff="expert">{{ t['nn_diff_expert'] }}</button>
       </div>
       <div class="nn-stat-row">
         <div class="nn-stat" title="Mines remaining">
@@ -211,29 +211,25 @@
 
       <!-- Win / Lose overlay -->
       <div id="nn-overlay">
-        <div class="nn-overlay-title" id="nn-overlay-title">🎉 Solved!</div>
+        <div class="nn-overlay-title" id="nn-overlay-title">{{ t['nn_overlay_solved'] }}</div>
         <div class="nn-overlay-time"  id="nn-overlay-time-row">
-          Time: <strong id="nn-win-time">0:00</strong>
+          {{ t['tz_overlay_time'] }} <strong id="nn-win-time">0:00</strong>
         </div>
         <div id="nn-score-form" class="overlay-score-form" style="display:none">
           <input id="nn-name-input" type="text" maxlength="32"
-                 placeholder="Your name" autocomplete="nickname">
-          <button id="nn-save-btn" class="nn-mode-btn">Save Score</button>
+                 placeholder="{{ t['tz_name_placeholder'] }}" autocomplete="nickname">
+          <button id="nn-save-btn" class="nn-mode-btn">{{ t['nn_save_score'] }}</button>
         </div>
         <div id="nn-score-msg" style="display:none"></div>
         <div class="nn-overlay-btns">
-          <button id="nn-overlay-retry"  class="nn-mode-btn">🔄 Retry</button>
-          <button id="nn-overlay-potd"   class="nn-mode-btn">📅 Daily</button>
-          <button id="nn-overlay-random" class="nn-mode-btn">🎲 New Random</button>
+          <button id="nn-overlay-retry"  class="nn-mode-btn">{{ t['nn_btn_retry'] }}</button>
+          <button id="nn-overlay-potd"   class="nn-mode-btn">{{ t['nn_btn_daily'] }}</button>
+          <button id="nn-overlay-random" class="nn-mode-btn">{{ t['nn_btn_new_random'] }}</button>
         </div>
       </div>
     </div>
 
-    <p class="instructions">
-      <strong>Left-click</strong> to reveal — <em>clicking a mine ends the game!</em> &nbsp;|&nbsp;
-      <strong>Right-click</strong> to cycle: flag 💣 &rarr; uncertain ? &rarr; hidden. &nbsp;|&nbsp;
-      <strong>Win</strong> by revealing every safe cell.
-    </p>
+    <p class="instructions">{{ t['nn_instructions'] | safe }}</p>
 
     <div id="nn-permalink-row" class="nn-permalink-row" style="display:none">
       🔗 <a id="nn-permalink-link" href="#"></a>
@@ -241,8 +237,8 @@
 
     <!-- Leaderboard -->
     <div id="nn-lb-section" class="nn-lb-section">
-      <div id="nn-lb-title" class="nn-lb-title">🏆 Today's Best Times</div>
-      <div id="nn-lb-content"><div class="lb-loading">Loading…</div></div>
+      <div id="nn-lb-title" class="nn-lb-title">{{ t['nn_lb_today'] }}</div>
+      <div id="nn-lb-content"><div class="lb-loading">{{ t['lb_loading'] }}</div></div>
       <div id="nn-prev-days" class="nn-prev-days"></div>
     </div>
 
@@ -260,62 +256,37 @@
 
 <!-- SEO Landing Content -->
 <div class="tz-landing">
-  <h2>About Nonosweeper</h2>
+  <h2>{{ t['nn_about_h2'] }}</h2>
   <div class="tz-landing-grid">
 
     <section class="tz-section">
-      <h2>What is Nonosweeper?</h2>
-      <p>
-        Nonosweeper is a hybrid puzzle that fuses two beloved puzzle formats:
-        the mine-clearing tension of <strong>Minesweeper</strong> and the
-        grid-deduction logic of a <strong>Nonogram</strong> (also known as
-        Picross or Griddler). Unlike standard Minesweeper, you never click
-        blindly to reveal numbers — instead, the full set of row and column
-        clues is visible from the very start, just as in a nonogram. Your job
-        is to use those clues to work out exactly which cells hide mines,
-        then click the safe cells to reveal them.
-      </p>
-      <p>
-        The Minesweeper element keeps the stakes high: one wrong click on a
-        mine and the puzzle ends immediately. There is no safe first click
-        and no random guessing allowed — every move must be deduced from the
-        clues.
-      </p>
+      <h2>{{ t['nn_what_h2'] }}</h2>
+      <p>{{ t['nn_what_p1'] | safe }}</p>
+      <p>{{ t['nn_what_p2'] }}</p>
     </section>
 
     <section class="tz-section">
-      <h2>How to read the clues</h2>
-      <p>
-        Each row and column has a clue made up of one or more numbers. Each
-        number represents a <strong>consecutive run of mines</strong> in that
-        row or column. The runs appear in order (left-to-right for rows,
-        top-to-bottom for columns) and are separated by at least one safe
-        cell.
-      </p>
-      <p>
-        For example, a row clue of <strong>3 &nbsp;1 &nbsp;2</strong> means:
-        three mines in a row, a gap, one mine, a gap, then two mines in a row.
-        A clue of <strong>—</strong> means no mines at all in that row or
-        column.
-      </p>
+      <h2>{{ t['nn_clues_h2'] }}</h2>
+      <p>{{ t['nn_clues_p1'] | safe }}</p>
+      <p>{{ t['nn_clues_p2'] | safe }}</p>
     </section>
 
     <section class="tz-section">
-      <h2>Strategy tips</h2>
+      <h2>{{ t['nn_strat_h2'] }}</h2>
       <ol class="tz-list">
-        <li><strong>Start with zero-clue rows/columns.</strong> A "—" clue means every cell in that line is safe — reveal them all for free.</li>
-        <li><strong>Use overlap analysis.</strong> If a run is large enough that it must overlap itself in every valid placement, those overlapping cells are definitely mines.</li>
-        <li><strong>Cross-reference rows and columns.</strong> A cell's row clue and column clue together often narrow down its state completely.</li>
-        <li><strong>Flag mines before revealing.</strong> Once you are certain a cell is a mine, flag it before clicking adjacent safe cells — it keeps the mine counter accurate and the board readable.</li>
+        <li>{{ t['nn_strat_li1'] | safe }}</li>
+        <li>{{ t['nn_strat_li2'] | safe }}</li>
+        <li>{{ t['nn_strat_li3'] | safe }}</li>
+        <li>{{ t['nn_strat_li4'] | safe }}</li>
       </ol>
     </section>
 
     <section class="tz-section">
-      <h2>Difficulty levels</h2>
+      <h2>{{ t['nn_diff_h2'] }}</h2>
       <ul class="tz-list">
-        <li><strong>Beginner (8×8, 16 mines):</strong> A compact grid with short clues. Good for learning the mechanic.</li>
-        <li><strong>Intermediate (10×10, 35 mines):</strong> More cells and denser runs require careful cross-referencing.</li>
-        <li><strong>Expert (15×15, 75 mines):</strong> A large grid with complex multi-run clues — a serious nonogram challenge.</li>
+        <li>{{ t['nn_diff_li1'] | safe }}</li>
+        <li>{{ t['nn_diff_li2'] | safe }}</li>
+        <li>{{ t['nn_diff_li3'] | safe }}</li>
       </ul>
     </section>
 
