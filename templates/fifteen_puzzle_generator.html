@@ -195,11 +195,11 @@
 
 <div class="gen-wrap">
   <div>
-    <h1>15-Puzzle Generator</h1>
+    <h1>{{ t['fp_gen_h1'] }}</h1>
     <div class="gen-subnav">
-      <a href="/other">Other Puzzles</a>
+      <a href="/other">{{ t['other_h1'] }}</a>
       <span>›</span>
-      <a href="/other/15puzzle/daily">Daily Puzzle</a>
+      <a href="/other/15puzzle/daily">{{ t['other_daily_puzzle'] }}</a>
       <span>›</span>
       <span>Generator</span>
     </div>
@@ -209,42 +209,39 @@
   <div style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;">
     <div id="gen-board"></div>
     <div style="display:flex;gap:0.5rem;">
-      <button class="gen-btn" id="gen-scramble">↺ Scramble</button>
+      <button class="gen-btn" id="gen-scramble">{{ t['fp_gen_scramble'] }}</button>
     </div>
   </div>
 
   {% if not user %}
   <div style="background:var(--surface);border:1px solid var(--accent2);border-radius:8px;padding:0.85rem 1rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
     <span style="font-size:1.1rem;">🔒</span>
-    <span style="font-size:0.9rem;flex:1;">You must <a href="/login?next=/other/15puzzle/generator" style="color:var(--accent2);font-weight:700;">sign in with Google</a> to upload photos and save puzzles.</span>
-    <a href="/login?next=/other/15puzzle/generator" style="padding:0.4rem 1rem;background:var(--accent2);color:#fff;border-radius:5px;text-decoration:none;font-size:0.85rem;font-weight:700;white-space:nowrap;">Sign in</a>
+    <span style="font-size:0.9rem;flex:1;">{{ t['fp_gen_signin_msg'] | safe }}</span>
+    <a href="/login?next=/other/15puzzle/generator" style="padding:0.4rem 1rem;background:var(--accent2);color:#fff;border-radius:5px;text-decoration:none;font-size:0.85rem;font-weight:700;white-space:nowrap;">{{ t['fp_gen_signin_btn'] }}</a>
   </div>
   {% endif %}
 
   <!-- Upload form -->
   <form id="gen-form" enctype="multipart/form-data">
     <div class="gen-section">
-      <h2>1. Upload a Photo</h2>
+      <h2>{{ t['fp_gen_upload_h2'] }}</h2>
       <div>
-        <label class="gen-label" for="gen-file">JPG or PNG, max 2MB</label>
+        <label class="gen-label" for="gen-file">{{ t['fp_gen_file_label'] }}</label>
         <input class="gen-input" type="file" id="gen-file" name="file" accept="image/jpeg,image/png" {% if not user %}disabled{% endif %}>
       </div>
       <div>
-        <label class="gen-label" for="gen-display-name">Puzzle title (optional)</label>
-        <input class="gen-input" type="text" id="gen-display-name" name="display_name" maxlength="128" placeholder="My awesome puzzle" {% if not user %}disabled{% endif %}>
+        <label class="gen-label" for="gen-display-name">{{ t['fp_gen_title_label'] }}</label>
+        <input class="gen-input" type="text" id="gen-display-name" name="display_name" maxlength="128" placeholder="{{ t['fp_gen_title_ph'] }}" {% if not user %}disabled{% endif %}>
       </div>
     </div>
 
     <div class="gen-section" style="margin-top:1rem;">
-      <h2>2. Choose Photo Mode</h2>
+      <h2>{{ t['fp_gen_mode_h2'] }}</h2>
       <div class="gen-mode-btns">
-        <button type="button" class="gen-mode-btn" data-mode="tiles" {% if not user %}disabled{% endif %}>Tiles</button>
-        <button type="button" class="gen-mode-btn" data-mode="reveal" {% if not user %}disabled{% endif %}>Reveal on win</button>
+        <button type="button" class="gen-mode-btn" data-mode="tiles" {% if not user %}disabled{% endif %}>{{ t['fp_gen_mode_tiles'] }}</button>
+        <button type="button" class="gen-mode-btn" data-mode="reveal" {% if not user %}disabled{% endif %}>{{ t['fp_gen_mode_reveal'] }}</button>
       </div>
-      <p class="gen-mode-hint" id="gen-mode-hint">
-        <strong>Tiles:</strong> the photo is sliced across the tiles and scrambled with them.<br>
-        <strong>Reveal on win:</strong> tiles show numbers; solving reveals the photo underneath.
-      </p>
+      <p class="gen-mode-hint" id="gen-mode-hint">{{ t['fp_gen_mode_hint'] | safe }}</p>
       <input type="hidden" id="gen-photo-mode" name="photo_mode" value="tiles">
       <input type="hidden" id="gen-hash-hidden" name="board_hash" value="">
     </div>
@@ -252,11 +249,11 @@
     <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.5rem;">
       <button type="submit" class="gen-btn gen-btn-primary" id="gen-submit"
               {% if not user %}disabled title="Sign in to save puzzles"
-              {% elif photos|length >= limit %}disabled title="Puzzle limit reached ({{ limit }})"{% endif %}>
-        Save &amp; Get Link
+              {% elif photos|length >= limit %}disabled title="{{ t['fp_gen_limit_reached'] }} ({{ limit }})"{% endif %}>
+        {{ t['fp_gen_save_btn'] | safe }}
       </button>
       {% if user and photos|length >= limit %}
-      <p style="font-size:0.82rem;color:var(--text-dim);">You've reached your {{ limit }}-puzzle limit. Delete a saved puzzle to make room.</p>
+      <p style="font-size:0.82rem;color:var(--text-dim);">{{ t['fp_gen_limit_pre'] }}{{ limit }}{{ t['fp_gen_limit_post'] }}</p>
       {% endif %}
       <div id="gen-msg"></div>
     </div>
@@ -264,18 +261,18 @@
 
   <!-- Link box (shown after successful upload) -->
   <div id="gen-link-box">
-    <strong>Puzzle saved! Share this link:</strong>
+    <strong>{{ t['fp_gen_saved_title'] }}</strong>
     <div class="gen-link-row">
       <div id="gen-link-url"></div>
-      <button id="gen-copy-btn" type="button">Copy</button>
+      <button id="gen-copy-btn" type="button">{{ t['fp_gen_copy'] }}</button>
     </div>
-    <small style="color:var(--text-dim);font-size:0.8rem;"><a href="/other/15puzzle/generator" style="color:var(--accent2);">Refresh</a> to see it in your saved list below.</small>
+    <small style="color:var(--text-dim);font-size:0.8rem;"><a href="/other/15puzzle/generator" style="color:var(--accent2);">{{ t['fp_gen_refresh'] }}</a> {{ t['fp_gen_refresh_hint'] }}</small>
   </div>
 
   <!-- Saved puzzles -->
   {% if photos %}
   <div class="gen-section">
-    <h2>Your Saved Puzzles ({{ photos|length }}/{{ limit }})</h2>
+    <h2>{{ t['fp_gen_your_puzzles'] }} ({{ photos|length }}/{{ limit }})</h2>
     <div class="gen-saved-list">
       {% for p in photos %}
       <div class="gen-saved-item">
@@ -285,18 +282,18 @@
              loading="lazy">
         <div class="gen-saved-info">
           <div><a href="/other/15puzzle/photo/{{ p.board_hash }}?mode={{ p.photo_mode }}">
-            {{ p.display_name or 'Untitled puzzle' }}
+            {{ p.display_name or t['fp_gen_untitled'] }}
           </a></div>
           <small>{{ p.photo_mode }} · {{ p.created_at.strftime("%Y-%m-%d") }}</small>
         </div>
         <button class="gen-delete-btn"
-                onclick="fpDeletePhoto('{{ p.board_hash }}')">Delete</button>
+                onclick="fpDeletePhoto('{{ p.board_hash }}')">{{ t['fp_gen_delete'] }}</button>
       </div>
       {% endfor %}
     </div>
   </div>
   {% elif user %}
-  <p style="color:var(--text-dim);font-size:0.9rem;">No saved puzzles yet. Create one above!</p>
+  <p style="color:var(--text-dim);font-size:0.9rem;">{{ t['fp_gen_no_puzzles'] }}</p>
   {% endif %}
 </div>
 

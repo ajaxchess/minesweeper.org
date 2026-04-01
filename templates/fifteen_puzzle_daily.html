@@ -126,43 +126,43 @@
   <div class="fp-header">
     {% if display_name %}
     <h1>{{ display_name }}</h1>
-    <p>Photo puzzle · <a href="/other/15puzzle/daily">Play daily puzzle</a></p>
+    <p>{{ t['fp_photo_puzzle'] }} · <a href="/other/15puzzle/daily">{{ t['fp_play_daily'] }}</a></p>
     {% else %}
-    <h1>15-Puzzle — Daily</h1>
-    <p>{{ today }} · Same puzzle for everyone · Resets at midnight UTC</p>
+    <h1>{{ t['fp_daily_h1'] }}</h1>
+    <p>{{ today }} · {{ t['fp_same_for_all'] }}</p>
     {% endif %}
   </div>
 
   <div class="fp-subnav">
-    <a href="/other">Other Puzzles</a>
+    <a href="/other">{{ t['other_h1'] }}</a>
     <span>›</span>
-    <a href="/other/15puzzle/leaderboard">Leaderboard</a>
+    <a href="/other/15puzzle/leaderboard">{{ t['nav_leaderboard'] }}</a>
   </div>
 
   <div class="fp-stats">
-    <div>Time: <span id="fp-time">0.0</span>s</div>
-    <div>Moves: <span id="fp-moves">0</span></div>
+    <div>{{ t['fp_time'] }} <span id="fp-time">0.0</span>s</div>
+    <div>{{ t['fp_moves'] }} <span id="fp-moves">0</span></div>
   </div>
 
   <div id="fp-board"></div>
 
   <div class="fp-controls">
-    <button class="fp-btn" id="fp-reset">↺ New Game</button>
-    <a href="/other/15puzzle/leaderboard" class="fp-btn" style="text-decoration:none;">🏆 Leaderboard</a>
+    <button class="fp-btn" id="fp-reset">{{ t['fp_new_game'] }}</button>
+    <a href="/other/15puzzle/leaderboard" class="fp-btn" style="text-decoration:none;">🏆 {{ t['nav_leaderboard'] }}</a>
   </div>
 
-  <div id="fp-win-msg">🎉 Solved!</div>
+  <div id="fp-win-msg">{{ t['fp_solved'] }}</div>
 
   <div id="fp-score-form">
-    <strong style="font-size:0.95rem;">Submit your score</strong>
+    <strong style="font-size:0.95rem;">{{ t['fp_submit_score'] }}</strong>
     <label>
-      <span>Name</span>
+      <span>{{ t['fp_name_label'] }}</span>
       <input type="text" id="fp-name" maxlength="32" placeholder="Your name"
              value="{{ user.name if user else '' }}">
     </label>
     <input type="hidden" id="fp-time-val" value="0">
     <input type="hidden" id="fp-moves-val" value="0">
-    <button class="fp-btn" id="fp-submit" style="align-self:flex-start;">Submit Score</button>
+    <button class="fp-btn" id="fp-submit" style="align-self:flex-start;">{{ t['fp_submit_btn'] }}</button>
   </div>
   <div id="fp-score-msg" style="display:none;color:var(--accent2);font-size:0.9rem;"></div>
 </div>
