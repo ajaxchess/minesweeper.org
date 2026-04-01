@@ -55,7 +55,7 @@
 
     {% if og_image %}
     <picture class="blog-article-picture">
-      <source srcset="{{ og_image.replace('.png', '.webp') }}" type="image/webp">
+      {% if og_image_webp %}<source srcset="{{ og_image_webp }}" type="image/webp">{% endif %}
       <img src="{{ og_image }}" alt="{{ post.title }}" class="blog-article-image" loading="lazy">
     </picture>
     {% endif %}

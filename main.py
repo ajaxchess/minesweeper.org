@@ -1452,6 +1452,16 @@ def _parse_front_matter(raw: str) -> tuple[dict, str]:
     return meta, raw
 
 
+def _webp_if_exists(image_url: str) -> str:
+    """Return the .webp URL only if the file exists on disk, else empty string."""
+    import os
+    if not image_url.endswith(".png"):
+        return ""
+    webp_url = image_url.replace(".png", ".webp")
+    local_path = webp_url.replace("https://minesweeper.org/", "")
+    return webp_url if os.path.exists(local_path) else ""
+
+
 @app.get("/blog/{slug}", response_class=HTMLResponse)
 async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
     import markdown as md_lib
@@ -1490,6 +1500,7 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
         "authorurl":     front_matter.get("authorurl", "") if front_matter.get("authorurl", "").startswith(("https://", "http://")) else "",
         "publisher":     front_matter.get("publisher", ""),
         "og_image":      post.get("image") or front_matter.get("image", ""),
+        "og_image_webp": _webp_if_exists(post.get("image") or front_matter.get("image", "")),
         "date_published": date_published,
         "comments":      comments,
     })
