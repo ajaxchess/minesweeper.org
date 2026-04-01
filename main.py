@@ -1354,6 +1354,7 @@ BLOG_POSTS = [
         "title":         "The new 15-puzzle!",
         "date":          "2026-03-31",
         "datePublished": "2026-03-31T00:00:00Z",
+        "image":         "https://minesweeper.org/static/img/Diana15Puzzle.png",
         "excerpt": "Minesweeper.org has a new sliding tile puzzle: the 15-Puzzle. "
                    "Play the daily challenge, upload your own photo, and slide whole rows in one move.",
     },
@@ -1363,7 +1364,7 @@ BLOG_POSTS = [
         "title":         "The new Tentaizu Theme",
         "date":          "2026-03-20",
         "datePublished": "2026-03-20T00:00:00Z",
-        "image":         "https://minesweeper.org/static/img/og-tentaizu.png",
+        "image":         "https://minesweeper.org/static/img/TentaizuPuzzle20260320Equinox.png",
         "excerpt": "Lady Di's Mines now switches to the Tentaizu theme on solstices and equinoxes. "
                    "Here's what the theme is and a little about the Tentaizu puzzle.",
     },
@@ -1383,6 +1384,7 @@ BLOG_POSTS = [
         "title":         "We've added 3BV values to Lady Di's Mines",
         "date":          "2026-03-18",
         "datePublished": "2026-03-18T00:00:00Z",
+        "image":         "https://minesweeper.org/static/img/3BV_Example.png",
         "excerpt": "Lady Di's Mines now displays 3BV — Bechtel's Board Benchmark Value — "
                    "the minimum clicks needed to clear a board. Here's what it means and why it matters.",
     },
