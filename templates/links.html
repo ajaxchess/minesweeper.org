@@ -10,40 +10,37 @@
 {% block content %}
 <div class="info-page">
 
-  <h1 class="info-title">Links</h1>
+  <h1 class="info-title">{{ t['links_h1'] }}</h1>
 
   <div class="info-body">
 
     <!-- ── Landmines ─────────────────────────────────────────────────────────── -->
     <section class="info-section">
-      <h2>Landmines</h2>
-      <p>Organizations working to clear landmines and support survivors.</p>
+      <h2>{{ t['links_landmines_h2'] }}</h2>
+      <p>{{ t['links_landmines_p'] }}</p>
       <ul class="links-list">
         <li>
           <a href="https://www.halotrust.org/" target="_blank" rel="noopener noreferrer" class="info-link">
             The HALO Trust
           </a>
-          — the world's largest humanitarian landmine-clearance organization.
+          {{ t['links_halo_desc'] }}
         </li>
       </ul>
     </section>
 
     <!-- ── Princess Di ───────────────────────────────────────────────────────── -->
     <section class="info-section">
-      <h2>Princess Diana</h2>
-      <p>
-        Princess Diana famously walked through an active minefield in Angola in 1997
-        to spotlight the human cost of landmines and support the campaign to ban them.
-      </p>
+      <h2>{{ t['links_diana_h2'] }}</h2>
+      <p>{{ t['links_diana_p'] }}</p>
       <ul class="links-list">
         <li>
           <a href="https://en.wikipedia.org/wiki/Diana,_Princess_of_Wales" target="_blank" rel="noopener noreferrer" class="info-link">
-            Diana, Princess of Wales — Wikipedia
+            {{ t['links_diana_li1'] }}
           </a>
         </li>
         <li>
           <a href="https://en.wikipedia.org/wiki/Diana,_Princess_of_Wales#Campaign_against_landmines" target="_blank" rel="noopener noreferrer" class="info-link">
-            Diana's landmine campaign — Wikipedia
+            {{ t['links_diana_li2'] }}
           </a>
         </li>
       </ul>
@@ -51,78 +48,78 @@
 
     <!-- ── Minesweeper Theory ─────────────────────────────────────────────────── -->
     <section class="info-section">
-      <h2>Minesweeper Theory</h2>
+      <h2>{{ t['links_theory_h2'] }}</h2>
       <ul class="links-list">
         <li>
           <a href="https://minesweeper.fandom.com/wiki/3bv" target="_blank" rel="noopener noreferrer" class="info-link">
             3BV — Minesweeper Wiki
           </a>
-          — definition and background on Bechtel's Board Benchmark Value.
+          {{ t['links_theory_3bv_desc'] }}
         </li>
         <li>
           <a href="https://www.youtube.com/watch?v=ycPDDnQh2qE" target="_blank" rel="noopener noreferrer" class="info-link">
             Minesweeper Theory — YouTube
           </a>
-          — general strategy and theory video.
+          {{ t['links_theory_yt_desc'] }}
         </li>
         <li>
           <a href="/info/3bv" class="info-link">
             What is 3BV? — minesweeper.org
           </a>
-          — our own explanation with an interactive max-3BV calculator.
+          {{ t['links_theory_own_desc'] }}
         </li>
       </ul>
     </section>
 
     <!-- ── Play Minesweeper ───────────────────────────────────────────────────── -->
     <section class="info-section">
-      <h2>Play Minesweeper</h2>
+      <h2>{{ t['links_play_h2'] }}</h2>
       <ul class="links-list">
         <li>
           <a href="/" class="info-link">
             minesweeper.org
           </a>
-          — classic, no-guess, cylinder, toroid, and real-time PvP modes.
+          {{ t['links_play_org_desc'] }}
         </li>
         <li>
           <a href="https://www.google.com/fbx?fbx=minesweeper" target="_blank" rel="noopener noreferrer" class="info-link">
             Google Minesweeper
           </a>
-          — Google's built-in Minesweeper game.
+          {{ t['links_play_google_desc'] }}
         </li>
         <li>
           <a href="https://www.microsoftcasualgames.com/minesweeper" target="_blank" rel="noopener noreferrer" class="info-link">
             Microsoft Minesweeper
           </a>
-          — Microsoft's Casual Games version of Minesweeper.
+          {{ t['links_play_ms_desc'] }}
         </li>
       </ul>
     </section>
 
     <!-- ── Tentaizu ───────────────────────────────────────────────────────────── -->
     <section class="info-section">
-      <h2>Tentaizu</h2>
-      <p>Tentaizu is a logic puzzle: deduce the position of stars (mines) from the numbered clues given.</p>
+      <h2>{{ t['links_tentaizu_h2'] }}</h2>
+      <p>{{ t['links_tentaizu_p'] }}</p>
       <ul class="links-list">
         <li>
           <a href="/tentaizu" class="info-link">
             Tentaizu — minesweeper.org
           </a>
-          — puzzle of the day, 7×7 board, 10 mines.
+          {{ t['links_tentaizu_org_desc'] }}
         </li>
         <li>
           <a href="https://puzzle-minesweeper.com" target="_blank" rel="noopener noreferrer" class="info-link">
             puzzle-minesweeper.com
           </a>
-          — Tentaizu puzzles and more.
+          {{ t['links_tentaizu_ext_desc'] }}
         </li>
       </ul>
     </section>
 
     <!-- ── Mosaic ─────────────────────────────────────────────────────────────── -->
     <section class="info-section">
-      <h2>Mosaic</h2>
-      <p>Mosaic is a nonogram-style minesweeper variant solved by deduction from numbered clues.</p>
+      <h2>{{ t['links_mosaic_h2'] }}</h2>
+      <p>{{ t['links_mosaic_p'] }}</p>
       <ul class="links-list">
         <li>
           <a href="/mosaic" class="info-link">
@@ -133,89 +130,89 @@
           <a href="https://puzzle-minesweeper.com" target="_blank" rel="noopener noreferrer" class="info-link">
             puzzle-minesweeper.com
           </a>
-          — Mosaic puzzles and related games.
+          {{ t['links_mosaic_ext_desc'] }}
         </li>
         <li>
           <a href="https://www.youtube.com/watch?v=Nt3kV7WpjME" target="_blank" rel="noopener noreferrer" class="info-link">
-            How to Play Mosaic — YouTube
+            {{ t['links_mosaic_howto'] }}
           </a>
         </li>
         <li>
           <a href="https://www.conceptispuzzles.com/index.aspx?uri=puzzle/fill-a-pix" target="_blank" rel="noopener noreferrer" class="info-link">
             Fill-a-Pix — Conceptis Puzzles
           </a>
-          — a Mosaic-style puzzle from Conceptis.
+          {{ t['links_mosaic_conceptis_desc'] }}
         </li>
       </ul>
     </section>
 
     <!-- ── Minesweeper Rush ───────────────────────────────────────────────────── -->
     <section class="info-section">
-      <h2>Minesweeper Rush</h2>
+      <h2>{{ t['links_rush_h2'] }}</h2>
       <ul class="links-list">
         <li>
           <a href="https://store.steampowered.com/app/3665840/MineSweeper_Rush/" target="_blank" rel="noopener noreferrer" class="info-link">
             MineSweeper Rush — Steam
           </a>
-          — the Minesweeper Rush game on Steam.
+          {{ t['links_rush_steam_desc'] }}
         </li>
       </ul>
     </section>
 
     <!-- ── Minesweeper Variants ───────────────────────────────────────────────── -->
     <section class="info-section">
-      <h2>Minesweeper Variants</h2>
+      <h2>{{ t['links_variants_h2'] }}</h2>
       <ul class="links-list">
         <li>
           <a href="https://heptaveegesimal.com/2018/advent-calendar/" target="_blank" rel="noopener noreferrer" class="info-link">
             Minesweeper Variants Advent Calendar
           </a>
-          — a collection of creative minesweeper variant puzzles.
+          {{ t['links_variants_advent_desc'] }}
         </li>
         <li>
           <a href="/variants" class="info-link">
             Variants — minesweeper.org
           </a>
-          — cylinder and toroid topology variants.
+          {{ t['links_variants_org_desc'] }}
         </li>
       </ul>
     </section>
 
     <!-- ── Vibe Coding ────────────────────────────────────────────────────────── -->
     <section class="info-section">
-      <h2>Vibe Coding</h2>
-      <p>minesweeper.org is built with the help of AI-assisted ("vibe") coding.</p>
+      <h2>{{ t['links_vibe_h2'] }}</h2>
+      <p>{{ t['links_vibe_p'] }}</p>
       <ul class="links-list">
         <li>
           <a href="https://claude.com/product/claude-code" target="_blank" rel="noopener noreferrer" class="info-link">
             Claude Code
           </a>
-          — the AI coding tool used to build this site.
+          {{ t['links_vibe_claude_desc'] }}
         </li>
       </ul>
     </section>
 
     <!-- ── Git Repos ──────────────────────────────────────────────────────────── -->
     <section class="info-section">
-      <h2>Open Source &amp; Git Repos</h2>
+      <h2>{{ t['links_git_h2'] }}</h2>
       <ul class="links-list">
         <li>
           <a href="https://github.com/ajaxchess/minesweeper.org" target="_blank" rel="noopener noreferrer" class="info-link">
             minesweeper.org — GitHub
           </a>
-          — source code for this site.
+          {{ t['links_git_org_desc'] }}
         </li>
         <li>
           <a href="https://github.com/hellpig/minesweeper-puzzle-generator" target="_blank" rel="noopener noreferrer" class="info-link">
             minesweeper-puzzle-generator — GitHub
           </a>
-          — Tentaizu / minesweeper puzzle generator by hellpig.
+          {{ t['links_git_puzzlegen_desc'] }}
         </li>
         <li>
           <a href="https://github.com/mordechaim/Mosaic" target="_blank" rel="noopener noreferrer" class="info-link">
             Mosaic — GitHub
           </a>
-          — open-source Mosaic puzzle implementation by mordechaim.
+          {{ t['links_git_mosaic_desc'] }}
         </li>
       </ul>
     </section>
