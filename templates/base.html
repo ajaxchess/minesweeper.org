@@ -267,7 +267,7 @@
               </a>
               <a href="/nonosweeper" class="mega-card {% if mode=='nonosweeper' %}active{% endif %}">
                 <span class="mega-icon">🔢</span>
-                <span class="mega-card-text"><strong>Nonosweeper</strong><span>Minesweeper + Nonogram daily</span></span>
+                <span class="mega-card-text"><strong>{{ t.nav_nonosweeper }}</strong><span>{{ t.nav_sub_nonosweeper }}</span></span>
               </a>
             </div>
           </div>
@@ -280,7 +280,7 @@
             <div class="mega-col">
               <a href="/worldsweeper" class="mega-card {% if request.url.path.startswith('/worldsweeper') %}active{% endif %}">
                 <span class="mega-icon">🌍</span>
-                <span class="mega-card-text"><strong>Worldsweeper</strong><span>Minesweeper on a rotating 3D globe</span></span>
+                <span class="mega-card-text"><strong>{{ t.nav_worldsweeper }}</strong><span>{{ t.nav_sub_worldsweeper }}</span></span>
               </a>
               <a href="/cylinder" class="mega-card {% if 'cylinder' in mode %}active{% endif %}">
                 <span class="mega-icon">🔄</span>
@@ -323,7 +323,7 @@
               </a>
               <a href="/other" class="mega-card {% if mode=='other' %}active{% endif %}">
                 <span class="mega-icon">🧩</span>
-                <span class="mega-card-text"><strong>Other Puzzles</strong><span>15-Puzzle and more</span></span>
+                <span class="mega-card-text"><strong>{{ t.nav_other }}</strong><span>{{ t.nav_sub_other }}</span></span>
               </a>
             </div>
             <div class="mega-col">

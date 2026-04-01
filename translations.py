@@ -510,6 +510,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Guest login banner
         "guest_banner_pre":  "\u26a0\ufe0f You\u2019re not signed in \u2014",
         "guest_banner_post": "or your scores will vanish at midnight UTC.",
+        # Nav cards for Nonosweeper, Worldsweeper, Other Puzzles
+        "nav_nonosweeper":     "Nonosweeper",
+        "nav_sub_nonosweeper": "Minesweeper + Nonogram daily",
+        "nav_worldsweeper":    "Worldsweeper",
+        "nav_sub_worldsweeper":"Minesweeper on a rotating 3D globe",
+        "nav_other":           "Other Puzzles",
+        "nav_sub_other":       "15-Puzzle and more",
         # Other Puzzles page
         "other_h1":             "Other Puzzles",
         "other_subtitle":       "Classic puzzle games \u2014 free to play, no download required.",
@@ -1577,6 +1584,13 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Guest login banner
         "guest_banner_pre":  "\u26a0\ufe0f Du bist nicht angemeldet \u2014",
         "guest_banner_post": "sonst verschwinden deine Punkte um Mitternacht UTC.",
+        # Nav cards for Nonosweeper, Worldsweeper, Other Puzzles
+        "nav_nonosweeper":     "Nonosweeper",
+        "nav_sub_nonosweeper": "Minesweeper + Nonogramm t\u00e4glich",
+        "nav_worldsweeper":    "Worldsweeper",
+        "nav_sub_worldsweeper":"Minesweeper auf einem rotierenden 3D-Globus",
+        "nav_other":           "Andere R\u00e4tsel",
+        "nav_sub_other":       "15-Puzzle und mehr",
         # Other Puzzles page
         "other_h1":             "Andere R\u00e4tsel",
         "other_subtitle":       "Klassische R\u00e4tselspiele \u2014 kostenlos spielen, kein Download n\u00f6tig.",
