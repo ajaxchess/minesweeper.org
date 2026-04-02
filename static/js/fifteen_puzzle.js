@@ -154,12 +154,13 @@
     var COLS = 4;
 
     var revealWon = isPhotoPuzzle && photoUrl && gameWon;
+    var photoActive = isPhotoPuzzle && photoUrl && photoMode === 'tiles' && !gameWon;
 
-    // On reveal-win: collapse gaps so the photo fills edge-to-edge
-    board.style.gap          = revealWon ? '0' : '';
-    board.style.padding      = revealWon ? '0' : '';
-    board.style.border       = revealWon ? 'none' : '';
-    board.style.borderRadius = revealWon ? '0' : '';
+    // Collapse gaps for photo puzzles (both active play and reveal-win)
+    board.style.gap          = (revealWon || photoActive) ? '0' : '';
+    board.style.padding      = (revealWon || photoActive) ? '0' : '';
+    board.style.border       = (revealWon || photoActive) ? 'none' : '';
+    board.style.borderRadius = (revealWon || photoActive) ? '0' : '';
 
     for (var i = 0; i < 16; i++) {
       var tile = document.createElement('div');
