@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -449,6 +449,7 @@ def archive_guest_scores():
             (ReplayScore,       "replay_scores",       "variant"),
             (NonosweeperScore,    "nonosweeper_scores",    "puzzle_date"),
             (FifteenPuzzleScore,  "fifteen_puzzle_scores", "puzzle_date"),
+            (Game2048Score,       "game_2048_scores",      "puzzle_date"),
         ]
         total = 0
         for model, table_name, mode_attr in tables:
@@ -1321,6 +1322,95 @@ def admin_delete_15puzzle_photo(board_hash: str, request: Request, db: Session =
     db.delete(photo)
     db.commit()
     return RedirectResponse("/admin/15puzzle-photos", status_code=303)
+
+
+# ── 2048 ──────────────────────────────────────────────────────────────────────
+
+@app.get("/other/2048", response_class=HTMLResponse)
+def game_2048_landing(request: Request):
+    return RedirectResponse("/other/2048/daily", status_code=302)
+
+
+@app.get("/other/2048/daily", response_class=HTMLResponse)
+def game_2048_daily(request: Request):
+    today = date.today().isoformat()
+    return templates.TemplateResponse("2048_daily.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": today,
+    })
+
+
+@app.get("/other/2048/leaderboard", response_class=HTMLResponse)
+def game_2048_leaderboard_page(request: Request):
+    today = date.today().isoformat()
+    return templates.TemplateResponse("2048_leaderboard.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": today,
+    })
+
+
+class Game2048ScoreSubmit(BaseModel):
+    name:        str = Field(..., min_length=1, max_length=32)
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    score:       int = Field(..., ge=0, le=9999999)
+    time_ms:     int = Field(..., ge=0, le=9999999)
+    moves:       int = Field(..., ge=1, le=99999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+
+@app.post("/api/2048-scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_2048_score(payload: Game2048ScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = Game2048Score(
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        puzzle_date = payload.puzzle_date,
+        score       = payload.score,
+        time_ms     = payload.time_ms,
+        moves       = payload.moves,
+        guest_token = guest_token,
+        client_type = get_client_type(request),
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    record_score_submit("2048", payload.puzzle_date)
+    record_game_complete("2048", mode="daily", duration_ms=payload.time_ms)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/2048-scores/{puzzle_date}")
+def get_2048_scores(puzzle_date: str, db: Session = Depends(get_db)):
+    import re
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
+        raise HTTPException(status_code=400, detail="Invalid date format")
+    top = (
+        db.query(Game2048Score)
+        .filter(Game2048Score.puzzle_date == puzzle_date)
+        .order_by(Game2048Score.score.desc(), Game2048Score.time_ms.asc())
+        .limit(20)
+        .all()
+    )
+    return _enrich_with_profiles(top, db)
 
 
 @app.get("/history", response_class=HTMLResponse)

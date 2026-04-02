@@ -603,6 +603,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "other_15puzzle_desc":  "The classic sliding tile puzzle \u2014 also known as the Gem Puzzle or Game of Fifteen. Slide 15 numbered tiles into order using the one empty space. A new daily puzzle is generated each day, the same for every player.",
         "other_daily_puzzle":   "Daily Puzzle",
         "other_generator":      "Generator",
+        "other_2048_desc":      "The classic number-merging puzzle. Slide tiles on a 4\u00d74 grid to combine matching numbers and reach the 2048 tile. A new daily puzzle is seeded each day, the same for every player.",
+        # 2048 daily page
+        "t2k_daily_h1":   "2048 \u2014 Daily",
+        "t2k_score":      "Score:",
+        "t2k_solved":     "You reached 2048!",
+        "t2k_keep_going": "Keep Going",
+        "t2k_game_over":  "\U0001f625 Game Over",
+        # 2048 leaderboard
+        "t2k_lb_h1":      "2048 Leaderboard",
         # Worldsweeper page
         "ws_dodecahedron":   "Dodecahedron",
         "ws_play_again":     "Play Again",
@@ -1715,6 +1724,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "other_15puzzle_desc":  "Das klassische Schiebepuzzle \u2014 auch bekannt als Gem-Puzzle oder F\u00fcnfzehn-Spiel. Schiebe 15 nummerierte Steine in die richtige Reihenfolge, mithilfe des einen leeren Feldes. T\u00e4glich wird ein neues R\u00e4tsel erstellt, das f\u00fcr alle Spieler gleich ist.",
         "other_daily_puzzle":   "Tagesr\u00e4tsel",
         "other_generator":      "Generator",
+        "other_2048_desc":      "Das klassische Zahlen-Puzzle. Schiebe Kacheln auf einem 4\u00d74-Gitter, um gleiche Zahlen zu kombinieren und die 2048-Kachel zu erreichen. T\u00e4glich wird ein neues R\u00e4tsel f\u00fcr alle Spieler bereitgestellt.",
+        # 2048 daily page
+        "t2k_daily_h1":   "2048 \u2014 T\u00e4glich",
+        "t2k_score":      "Punkte:",
+        "t2k_solved":     "Du hast 2048 erreicht!",
+        "t2k_keep_going": "Weiterspielen",
+        "t2k_game_over":  "\U0001f625 Spiel vorbei",
+        # 2048 leaderboard
+        "t2k_lb_h1":      "2048 Bestenliste",
         # Worldsweeper page
         "ws_dodecahedron":   "Dodekaeder",
         "ws_play_again":     "Nochmal spielen",

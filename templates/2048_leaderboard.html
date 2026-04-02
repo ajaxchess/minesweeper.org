@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% set _title = "2048 Leaderboard | minesweeper.org" %}
+{% set _desc  = "Daily 2048 leaderboard — top scores for today's puzzle." %}
+{% set _canon = "https://minesweeper.org/other/2048/leaderboard" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<div class="lb-wrap">
+  <h1 class="tz-page-h1">{{ t['t2k_lb_h1'] }}</h1>
+
+  <div style="text-align:center;margin-bottom:1.5rem;">
+    <a href="/other/2048/daily" class="btn" style="margin:0.25rem;">{{ t['fp_play_today'] }}</a>
+    <a href="/other" class="btn" style="margin:0.25rem;">{{ t['other_h1'] }}</a>
+  </div>
+
+  <h2 style="font-size:1rem;color:var(--accent2);margin-top:1rem;">{{ t['fp_today_heading'] }}{{ today }}</h2>
+  <div class="wt-table-wrap">
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>{{ t['lb_col_rank'] }}</th>
+          <th>{{ t['lb_col_name'] }}</th>
+          <th>{{ t['t2k_score'] }}</th>
+          <th>{{ t['fp_moves'] }}</th>
+          <th>{{ t['lb_col_time'] }}</th>
+          <th>{{ t['lb_col_date'] }}</th>
+        </tr>
+      </thead>
+      <tbody id="lb-body-today">
+        <tr><td colspan="6" style="color:var(--text-dim);">{{ t['lb_loading'] }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+(async function () {
+  var tbody      = document.getElementById('lb-body-today');
+  var today      = "{{ today }}";
+  var msgNoScores = {{ t['lb_no_scores'] | tojson }};
+  var msgFailed   = {{ t['lb_error']     | tojson }};
+  try {
+    var r      = await fetch('/api/2048-scores/' + today);
+    var scores = await r.json();
+    if (!scores.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-dim);">' + msgNoScores + '</td></tr>';
+      return;
+    }
+    tbody.innerHTML = scores.map(function (s, i) {
+      var name = s.profile_url
+        ? '<a href="' + s.profile_url + '">' + s.name + '</a>'
+        : s.name;
+      var secs = (s.time_ms / 1000).toFixed(1);
+      return '<tr>'
+        + '<td>' + (i + 1)    + '</td>'
+        + '<td>' + name       + '</td>'
+        + '<td>' + s.score    + '</td>'
+        + '<td>' + s.moves    + '</td>'
+        + '<td>' + secs + 's' + '</td>'
+        + '<td>' + s.created_at + '</td>'
+        + '</tr>';
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-dim);">' + msgFailed + '</td></tr>';
+  }
+})();
+</script>
+{% endblock %}
