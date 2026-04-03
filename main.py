@@ -1208,6 +1208,7 @@ def fifteen_puzzle_photo_play(request: Request, board_hash: str, mode: str = Que
         "photo_mode": mode,
         "board_hash": board_hash,
         "display_name": photo.display_name or "",
+        "noindex": True,
     })
 
 
@@ -2877,6 +2878,7 @@ async def tentaizu_easy_permalink(request: Request, date_str: str):
         "lang": get_lang(request), "t": get_t(request),
         "today": date_str,
         "real_today": real_today,
+        "noindex": True,
     })
 
 
@@ -2915,6 +2917,7 @@ async def tentaizu_permalink(request: Request, date_str: str):
         "lang": get_lang(request), "t": get_t(request),
         "today": date_str,
         "real_today": real_today,
+        "noindex": True,
     })
 
 
@@ -4404,6 +4407,7 @@ async def archive_day(
         "_title":       _title,
         "_desc":        _desc,
         "_canon":       _canon,
+        "noindex":      True,
     })
 
 # ── Nonosweeper ───────────────────────────────────────────────────────────────
@@ -4436,4 +4440,5 @@ async def nonosweeper_permalink(request: Request, date_str: str):
         "lang": get_lang(request), "t": get_t(request),
         "today": date_str,
         "real_today": real_today,
+        "noindex": True,
     })
