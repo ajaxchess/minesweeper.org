@@ -4263,6 +4263,7 @@ html[data-skin="classic"] .mega-nav    { display: none; }
 /* All other skins: hide classic-nav, show mega-nav */
 html:not([data-skin="classic"]) .classic-nav { display: none; }
 html:not([data-skin="classic"]) .mega-nav    { display: flex; align-items: center; gap: 0.25rem; flex: 1; }
+@media (min-width: 861px) { html:not([data-skin="classic"]) .mega-nav { padding-left: 1rem; } }
 
 .mega-group {
   position: static;
