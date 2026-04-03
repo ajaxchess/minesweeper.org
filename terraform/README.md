@@ -11,8 +11,11 @@ Make note of the output IP.
 
 i.e. go into your domain registrar and update the A record for your hostname
 to set it to the IP in the output
+assume the IP output is 1.2.3.4 and the hostname is pgl.minsweeper.org
+set pgl.minesweeper.org A record to 1.2.3.4
+
 then ssh to the host
-gcloud compute ssh pgl-minesweeper-web --zone=us-central1-a
+gcloud compute ssh pgl.minesweeper.org --zone=us-central1-a
 
 What You Should Do After Logging In
 While Terraform can do everything, certain tasks—like SSL certificates—are often easier to handle manually or via a configuration management tool (like Ansible) because they require the DNS to be live.
