@@ -11,11 +11,13 @@ datePublished: 2026-04-03T00:00:00Z
 
 I wanted a nice photo of Diana, Princess of Wales, to use as a demo for our new 15-Puzzle Generator. Naturally. This is *Lady Di's Mines*, after all.
 
-It turns out that's harder than it sounds. Image copyright is notoriously difficult to verify. Even photos on Wikipedia carry licensing restrictions — the photographer holds the copyright regardless of where the image appears. A useful tool for checking is [Google Image Search with the Creative Commons filter](https://www.google.com/search?q=diana+spencer&udm=2) (Tools → Creative Commons licenses), but even then, you have to read the fine print on each result.
+It turns out that's harder than it sounds. Image copyright is notoriously difficult to verify, and most Diana photos are protected. A useful tool for checking is [Google Image Search with the Creative Commons filter](https://www.google.com/search?q=diana+spencer&udm=2) (Tools → Creative Commons licenses), but even then, you have to read the fine print on each result.
 
-After a good bit of searching, I gave up. And then it hit me.
+I eventually found one on [Wikipedia](https://en.wikipedia.org/wiki/Diana,_Princess_of_Wales#/media/File:Diana,_Princess_of_Wales_1997_(2).jpg) that carries no license restrictions — free to use. Problem solved.
 
-**Of course there are no royalty-free photos of Diana. She's a Princess. Nothing about her is royalty-free.**
+But the irony still hit me.
+
+**A royalty-free photo of Diana. She's a Princess. Nothing about her is royalty-free.**
 
 ## The feature that caused all this trouble
 
