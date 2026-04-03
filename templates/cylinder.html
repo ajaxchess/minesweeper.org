@@ -119,6 +119,58 @@
       </div>
     </div>
 
+    <!-- About / How to Play -->
+    <div class="info-body" style="width:100%;max-width:600px;margin-top:1.5rem">
+
+      <div class="info-section">
+        <h2>What is Cylinder Minesweeper?</h2>
+        <p>Cylinder Minesweeper is a twist on classic Minesweeper where the board is wrapped horizontally — the left edge connects directly to the right edge, forming a cylinder. Every cell still follows the standard rules: numbered clues count all adjacent mines, but cells on the left or right border treat the opposite edge as their neighbor.</p>
+        <p>The result is a seamless, edge-free playing field along the horizontal axis. There are no dead corners on the sides — the board curves around, opening up new logical chains that don't exist on a flat grid.</p>
+      </div>
+
+      <div class="info-section">
+        <h2>How to Play</h2>
+        <ul>
+          <li><strong>Left-click</strong> a cell to reveal it. If it's empty (0), all connected empty cells auto-expand.</li>
+          <li><strong>Right-click</strong> to place a flag (🚩) on a suspected mine. Right-click again for a question mark (❓), then once more to clear.</li>
+          <li><strong>Double-click</strong> a revealed number to chord — if the correct number of flags are placed around it, all remaining neighbors are revealed at once.</li>
+          <li>The 😊 button starts a fresh game. Your timer begins on your first click.</li>
+          <li>Remember: <strong>left and right edges connect.</strong> A cell in the leftmost column neighbors the rightmost column, and vice versa.</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h2>Difficulty Levels</h2>
+        <ul>
+          <li><strong>Easy —</strong> 9×9 board, 10 mines. Ideal for learning how the horizontal wrap affects adjacent cells.</li>
+          <li><strong>Medium —</strong> 16×16 board, 40 mines. The wrap becomes a meaningful factor in deduction chains.</li>
+          <li><strong>Hard —</strong> 16×30 board, 99 mines. High mine density with wrapping neighbors makes every number count.</li>
+          <li><strong>Custom —</strong> Set your own rows, columns, and mine count for a personalized challenge.</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h2>Strategy Tips</h2>
+        <ul>
+          <li><strong>Watch the edges.</strong> A number in column 0 or the last column has neighbors on both sides of the board. Don't treat edge cells as having fewer neighbors — they have the same eight as any interior cell.</li>
+          <li><strong>Use the wrap to your advantage.</strong> A constraint on the right edge and one on the left edge may share hidden cells through the wrap, enabling subset deductions you'd never see on a flat board.</li>
+          <li><strong>No Guess mode</strong> generates boards that are always logically solvable — no coin-flip situations. Enable it for a pure logic challenge.</li>
+          <li><strong>Chord efficiently.</strong> Once you've flagged all mines around a number, double-click to reveal the rest in one move and keep your 3BV/s high.</li>
+          <li><strong>Open in the middle.</strong> Your first click is always safe. Clicking near the center maximizes the chance of a large auto-expand cascade.</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h2>Cylinder vs. Other Variants</h2>
+        <ul>
+          <li><strong>Classic Minesweeper —</strong> flat grid, hard edges on all four sides.</li>
+          <li><strong>Cylinder —</strong> left and right edges connect; top and bottom remain fixed borders.</li>
+          <li><strong><a href="/toroid">Toroid Minesweeper</a> —</strong> all four edges connect (left↔right and top↔bottom), forming a donut shape with no borders at all.</li>
+        </ul>
+      </div>
+
+    </div>
+
   </section>
 
   <aside class="ad-sidebar ad-right">
