@@ -1353,6 +1353,15 @@ def game_2048_leaderboard_page(request: Request):
     })
 
 
+@app.get("/other/2048/how-to-play", response_class=HTMLResponse)
+def game_2048_howtoplay(request: Request):
+    return templates.TemplateResponse("2048_howtoplay.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 class Game2048ScoreSubmit(BaseModel):
     name:        str = Field(..., min_length=1, max_length=32)
     puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
