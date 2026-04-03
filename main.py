@@ -1097,6 +1097,15 @@ def fifteen_puzzle_leaderboard_page(request: Request):
     })
 
 
+@app.get("/other/15puzzle/how-to-play", response_class=HTMLResponse)
+def fifteen_puzzle_howtoplay(request: Request):
+    return templates.TemplateResponse("fifteen_puzzle_howtoplay.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 # ── 15-Puzzle API ──────────────────────────────────────────────────────────────
 
 class FifteenPuzzleScoreSubmit(BaseModel):

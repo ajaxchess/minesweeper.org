@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}{{ t['fp_htp_title'] }}{% endblock %}
+{% block description %}{{ t['fp_htp_desc'] }}{% endblock %}
+{% block canonical %}https://minesweeper.org/other/15puzzle/how-to-play{% endblock %}
+{% block og_url %}https://minesweeper.org/other/15puzzle/how-to-play{% endblock %}
+{% block og_title %}How to Play the 15-Puzzle{% endblock %}
+{% block og_description %}{{ t['fp_htp_desc'] }}{% endblock %}
+{% block og_image %}https://minesweeper.org/static/img/Diana15Puzzle.png{% endblock %}
+
+{% block content %}
+<script>if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||'ontouchstart'in window)document.documentElement.classList.add('is-mobile');</script>
+<style>
+.is-mobile .desktop-only{display:none!important}
+html:not(.is-mobile) .mobile-only{display:none!important}
+
+.fp-htp-examples {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+@media (max-width: 560px) {
+  .fp-htp-examples { grid-template-columns: 1fr; }
+}
+.fp-htp-example {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+.fp-htp-example img {
+  width: 100%;
+  max-width: 280px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.fp-htp-example p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin: 0;
+  max-width: 280px;
+}
+</style>
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">{{ t['fp_htp_h1'] }}</h1>
+
+  <div class="help-section">
+    <p>{{ t['fp_htp_intro'] }}</p>
+  </div>
+
+  <div class="help-section">
+    <h2>{{ t['fp_htp_goal_h2'] }}</h2>
+    <p>{{ t['fp_htp_goal_p1'] }}</p>
+    <p>{{ t['fp_htp_goal_p2'] }}</p>
+  </div>
+
+  <div class="help-section">
+    <h2>{{ t['fp_htp_controls_h2'] }}</h2>
+    <ul class="desktop-only">
+      <li>{{ t['fp_htp_controls_desktop_li1'] | safe }}</li>
+      <li>{{ t['fp_htp_controls_desktop_li2'] | safe }}</li>
+      <li>{{ t['fp_htp_controls_desktop_li3'] | safe }}</li>
+    </ul>
+    <ul class="mobile-only">
+      <li>{{ t['fp_htp_controls_mobile_li1'] | safe }}</li>
+      <li>{{ t['fp_htp_controls_mobile_li2'] | safe }}</li>
+    </ul>
+    <p>{{ t['fp_htp_controls_footer'] | safe }}</p>
+  </div>
+
+  <div class="help-section">
+    <h2>{{ t['fp_htp_example_h2'] }}</h2>
+    <p>{{ t['fp_htp_example_intro'] }}</p>
+    <div class="fp-htp-examples">
+      <div class="fp-htp-example">
+        <img src="/static/img/fp_htp_scrambled.png" alt="Scrambled 15-puzzle start" loading="lazy">
+        <p>{{ t['fp_htp_ex_scrambled'] }}</p>
+      </div>
+      <div class="fp-htp-example">
+        <img src="/static/img/fp_htp_midgame.png" alt="15-puzzle midway through" loading="lazy">
+        <p>{{ t['fp_htp_ex_midgame'] }}</p>
+      </div>
+      <div class="fp-htp-example">
+        <img src="/static/img/fp_htp_nearlydone.png" alt="15-puzzle nearly solved" loading="lazy">
+        <p>{{ t['fp_htp_ex_nearlydone'] }}</p>
+      </div>
+      <div class="fp-htp-example">
+        <img src="/static/img/fp_htp_solved.png" alt="15-puzzle solved" loading="lazy">
+        <p>{{ t['fp_htp_ex_solved'] }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="help-section">
+    <h2>{{ t['fp_htp_photo_h2'] }}</h2>
+    <p>{{ t['fp_htp_photo_p1'] }}</p>
+    <ul>
+      <li>{{ t['fp_htp_photo_tiles'] | safe }}</li>
+      <li>{{ t['fp_htp_photo_reveal'] | safe }}</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>{{ t['fp_htp_strategy_h2'] }}</h2>
+    <p>{{ t['fp_htp_strategy_p1'] | safe }}</p>
+    <p>{{ t['fp_htp_strategy_p2'] | safe }}</p>
+    <p>{{ t['fp_htp_strategy_p3'] | safe }}</p>
+    <p>{{ t['fp_htp_strategy_p4'] | safe }}</p>
+  </div>
+
+  <div class="help-section">
+    <h2>{{ t['fp_htp_daily_h2'] }}</h2>
+    <p>{{ t['fp_htp_daily_p1'] }}</p>
+    <p>{{ t['fp_htp_daily_p2'] | safe }}</p>
+  </div>
+
+  <div class="lb-back">
+    <a href="/other/15puzzle/daily">{{ t['fp_htp_back'] }}</a>
+    <a href="/other/15puzzle/leaderboard">🏆 {{ t['fp_lb_h1'] }}</a>
+    <a href="/other/15puzzle/generator">{{ t['fp_gen_h1'] }}</a>
+  </div>
+
+</div>
+{% endblock %}
