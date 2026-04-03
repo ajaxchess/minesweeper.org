@@ -1,7 +1,7 @@
 ---
 title: "Nothing About Her Is Royalty-Free"
 publisher: "Lady Di's Mines"
-image: "https://minesweeper.org/static/img/Diana15Puzzle.png"
+image: "https://minesweeper.org/static/img/Diana_Princess_of_Wales_1997.jpg"
 author: "Richard Cross"
 authorurl: "https://minesweeper.org/u/ajaxchess"
 datePublished: 2026-04-03T00:00:00Z
