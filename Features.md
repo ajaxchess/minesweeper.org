@@ -1,5 +1,7 @@
 List of active features
 
+F66 Blog post about Diana images
+
 F65 Click and drag to move multiple tiles in the 15-Puzzle
   On the daily puzzle and photo puzzle pages, a player can click and drag
   a tile to slide it (and any tiles between it and the blank) into the
