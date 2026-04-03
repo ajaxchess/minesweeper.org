@@ -275,7 +275,7 @@
 
         <!-- Puzzles -->
         <div class="mega-group" id="mg-puzzles">
-          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')">🧩 {{ t.nav_puzzles }} ▾</button>
+          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')">🧩 {{ t.nav_puzzles }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/tentaizu" class="mega-card {% if mode=='tentaizu' %}active{% endif %}">
@@ -304,13 +304,17 @@
                 <span class="mega-icon">📖</span>
                 <span class="mega-card-text"><strong>{{ t.nav_mosaic_howto }}</strong><span>{{ t.nav_sub_mosaic_howto }}</span></span>
               </a>
+              <a href="/other" class="mega-card {% if mode=='other' %}active{% endif %}">
+                <span class="mega-icon">🧩</span>
+                <span class="mega-card-text"><strong>{{ t.nav_other }}</strong><span>{{ t.nav_sub_other }}</span></span>
+              </a>
             </div>
           </div>
         </div>
 
         <!-- More -->
         <div class="mega-group" id="mg-more">
-          <button class="mega-trigger {% if mode in ['quests','how-to-play','rush-howto','blog','links','about','contact','other'] %}active{% endif %}" onclick="toggleMega(event,'mg-more')">{{ t.nav_more }} ▾</button>
+          <button class="mega-trigger {% if mode in ['quests','how-to-play','rush-howto','blog','links','about','contact'] %}active{% endif %}" onclick="toggleMega(event,'mg-more')">{{ t.nav_more }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/quests" class="mega-card {% if mode=='quests' %}active{% endif %}">
@@ -320,10 +324,6 @@
               <a href="/how-to-play" class="mega-card {% if mode in ['how-to-play','rush-howto'] %}active{% endif %}">
                 <span class="mega-icon">❓</span>
                 <span class="mega-card-text"><strong>{{ t.nav_how_to_play }}</strong><span>{{ t.nav_sub_how_to_play }}</span></span>
-              </a>
-              <a href="/other" class="mega-card {% if mode=='other' %}active{% endif %}">
-                <span class="mega-icon">🧩</span>
-                <span class="mega-card-text"><strong>{{ t.nav_other }}</strong><span>{{ t.nav_sub_other }}</span></span>
               </a>
             </div>
             <div class="mega-col">
