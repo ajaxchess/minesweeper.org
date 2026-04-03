@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ t['t2k_htp_title'] }}{% endblock %}
+{% block description %}{{ t['t2k_htp_desc'] }}{% endblock %}
+{% block canonical %}https://minesweeper.org/other/2048/how-to-play{% endblock %}
+{% block og_url %}https://minesweeper.org/other/2048/how-to-play{% endblock %}
+{% block og_title %}How to Play 2048{% endblock %}
+{% block og_description %}{{ t['t2k_htp_desc'] }}{% endblock %}
+
+{% block content %}
+<script>if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||'ontouchstart'in window)document.documentElement.classList.add('is-mobile');</script>
+<style>
+.is-mobile .desktop-only{display:none!important}
+html:not(.is-mobile) .mobile-only{display:none!important}
+</style>
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">{{ t['t2k_htp_h1'] }}</h1>
+
+  <div class="help-section">
+    <p>{{ t['t2k_htp_intro'] }}</p>
+  </div>
+
+  <div class="help-section">
+    <h2>{{ t['t2k_htp_goal_h2'] }}</h2>
+    <p>{{ t['t2k_htp_goal_p1'] | safe }}</p>
+    <p>{{ t['t2k_htp_goal_p2'] }}</p>
+  </div>
+
+  <div class="help-section">
+    <h2>{{ t['t2k_htp_controls_h2'] }}</h2>
+    <ul class="desktop-only">
+      <li>{{ t['t2k_htp_controls_desktop_li1'] | safe }}</li>
+      <li>{{ t['t2k_htp_controls_desktop_li2'] }}</li>
+    </ul>
+    <ul class="mobile-only">
+      <li>{{ t['t2k_htp_controls_mobile_li1'] | safe }}</li>
+      <li>{{ t['t2k_htp_controls_mobile_li2'] }}</li>
+    </ul>
+    <p>{{ t['t2k_htp_controls_footer'] | safe }}</p>
+  </div>
+
+  <div class="help-section">
+    <h2>{{ t['t2k_htp_scoring_h2'] }}</h2>
+    <p>{{ t['t2k_htp_scoring_p1'] }}</p>
+    <p>{{ t['t2k_htp_scoring_p2'] | safe }}</p>
+  </div>
+
+  <div class="help-section">
+    <h2>{{ t['t2k_htp_tiles_h2'] }}</h2>
+    <p>{{ t['t2k_htp_tiles_p1'] }}</p>
+    <p>{{ t['t2k_htp_tiles_p2'] }}</p>
+  </div>
+
+  <div class="help-section">
+    <h2>{{ t['t2k_htp_strategy_h2'] }}</h2>
+    <p>{{ t['t2k_htp_strategy_p1'] | safe }}</p>
+    <p>{{ t['t2k_htp_strategy_p2'] | safe }}</p>
+    <p>{{ t['t2k_htp_strategy_p3'] | safe }}</p>
+    <p>{{ t['t2k_htp_strategy_p4'] | safe }}</p>
+  </div>
+
+  <div class="help-section">
+    <h2>{{ t['t2k_htp_daily_h2'] }}</h2>
+    <p>{{ t['t2k_htp_daily_p1'] }}</p>
+    <p>{{ t['t2k_htp_daily_p2'] | safe }}</p>
+  </div>
+
+  <div class="lb-back">
+    <a href="/other/2048/daily">{{ t['t2k_htp_back'] }}</a>
+    <a href="/other/2048/leaderboard">🏆 {{ t['t2k_lb_h1'] }}</a>
+  </div>
+
+</div>
+{% endblock %}

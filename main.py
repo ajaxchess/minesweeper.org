@@ -1097,6 +1097,15 @@ def fifteen_puzzle_leaderboard_page(request: Request):
     })
 
 
+@app.get("/other/15puzzle/how-to-play", response_class=HTMLResponse)
+def fifteen_puzzle_howtoplay(request: Request):
+    return templates.TemplateResponse("fifteen_puzzle_howtoplay.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 # ── 15-Puzzle API ──────────────────────────────────────────────────────────────
 
 class FifteenPuzzleScoreSubmit(BaseModel):
@@ -1350,6 +1359,15 @@ def game_2048_leaderboard_page(request: Request):
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
+    })
+
+
+@app.get("/other/2048/how-to-play", response_class=HTMLResponse)
+def game_2048_howtoplay(request: Request):
+    return templates.TemplateResponse("2048_howtoplay.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
     })
 
 
