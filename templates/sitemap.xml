@@ -45,13 +45,6 @@
     <priority>0.8</priority>
   </url>
 
-  <url>
-    <loc>https://minesweeper.org/rush/leaderboard</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-
   <!-- ── Multiplayer ───────────────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/duel</loc>
@@ -74,20 +67,6 @@
     <priority>0.7</priority>
   </url>
 
-  <url>
-    <loc>https://minesweeper.org/pvp/leaderboard</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/pvp/rankings</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-
   <!-- ── Tentaizu ──────────────────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/tentaizu</loc>
@@ -107,13 +86,6 @@
     <loc>https://minesweeper.org/tentaizu/strategy</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/tentaizu/archive</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
 
@@ -161,26 +133,12 @@
     <priority>0.7</priority>
   </url>
 
-  <url>
-    <loc>https://minesweeper.org/mosaic/replay</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
   <!-- ── Variants ──────────────────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/variants</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/variants/replay/</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
 
   <url>
@@ -290,20 +248,6 @@
   </url>
 
   <url>
-    <loc>https://minesweeper.org/other/15puzzle/daily</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/other/15puzzle/leaderboard</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
     <loc>https://minesweeper.org/other/15puzzle/generator</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
@@ -344,28 +288,6 @@
     <lastmod>{{ today }}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/worldsweeper/leaderboard</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <!-- ── Leaderboards & social ─────────────────────────────────────────────── -->
-  <url>
-    <loc>https://minesweeper.org/leaderboard</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/quests</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
   </url>
 
   <!-- ── Guides & content ──────────────────────────────────────────────────── -->
