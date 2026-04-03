@@ -25,7 +25,7 @@ Like the site's other puzzles, the 15-Puzzle features a **daily mode** — one s
 
 ## Play With Your Own Photos
 
-One of the standout new features is the ability to **upload a custom image** to use as your puzzle. Instead of numbered tiles, your photo is sliced into a grid of fragments — transforming a personal picture into the puzzle itself. This opens up two distinct ways to play:
+One of the standout new features is the ability to **upload a custom image** to use as your puzzle: [minesweeper.org/other/15puzzle](https://minesweeper.org/other/15puzzle/generator). Instead of numbered tiles, your photo is sliced into a grid of fragments — transforming a personal picture into the puzzle itself. This opens up two distinct ways to play:
 
 - **Hidden image mode** — The tiles show no visual content while you're solving. The full photo is only revealed once the puzzle is complete, making the final reveal a satisfying surprise.
 - **Photo fragment mode** — Each tile displays its actual slice of the image, much like a jigsaw puzzle. Tile numbers are tastefully overlaid on each fragment, keeping the puzzle navigable without distracting from the photo. You can use the visual context of the picture to help guide your solving strategy.
