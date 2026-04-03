@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% set _title = "2048 — Daily | minesweeper.org" %}
+{% set _desc  = "Play today's daily 2048 puzzle on minesweeper.org. Slide and merge tiles to reach 2048. Same puzzle for every player, resets at midnight UTC." %}
+{% set _canon = "https://minesweeper.org/other/2048/daily" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}2048 — Daily | minesweeper.org{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<style>
+.t2k-wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+.t2k-header { text-align: center; }
+.t2k-header h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+.t2k-header p  { color: var(--text-dim); font-size: 0.85rem; margin: 0; }
+
+.t2k-subnav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.t2k-subnav a    { color: var(--accent2); font-size: 0.85rem; text-decoration: none; }
+.t2k-subnav a:hover { text-decoration: underline; }
+.t2k-subnav span { color: var(--text-dim); }
+
+.t2k-stats {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 1rem;
+  color: var(--text);
+}
+.t2k-stats span { color: var(--accent2); font-weight: 700; }
+
+#t2k-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  background: #bbada0;
+  border-radius: 8px;
+  padding: 8px;
+  width: 100%;
+  max-width: 360px;
+  box-sizing: border-box;
+}
+
+.t2k-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: #cdc1b4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: #776e65;
+  user-select: none;
+}
+
+/* Tile value colours — classic 2048 palette */
+.t2k-cell[data-val="2"]    { background: #eee4da; color: #776e65; }
+.t2k-cell[data-val="4"]    { background: #ede0c8; color: #776e65; }
+.t2k-cell[data-val="8"]    { background: #f2b179; color: #f9f6f2; }
+.t2k-cell[data-val="16"]   { background: #f59563; color: #f9f6f2; }
+.t2k-cell[data-val="32"]   { background: #f67c5f; color: #f9f6f2; }
+.t2k-cell[data-val="64"]   { background: #f65e3b; color: #f9f6f2; }
+.t2k-cell[data-val="128"]  { background: #edcf72; color: #f9f6f2; font-size: 1.2rem; }
+.t2k-cell[data-val="256"]  { background: #edcc61; color: #f9f6f2; font-size: 1.2rem; }
+.t2k-cell[data-val="512"]  { background: #edc850; color: #f9f6f2; font-size: 1.2rem; }
+.t2k-cell[data-val="1024"] { background: #edc53f; color: #f9f6f2; font-size: 1rem; }
+.t2k-cell[data-val="2048"] { background: #edc22e; color: #f9f6f2; font-size: 1rem; }
+
+.t2k-controls { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+.t2k-btn {
+  padding: 0.45rem 1.1rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.t2k-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+#t2k-win-msg {
+  display: none;
+  text-align: center;
+}
+#t2k-win-msg p {
+  color: var(--accent2);
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem;
+}
+
+#t2k-over-msg {
+  display: none;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+#t2k-score-form {
+  display: none;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+#t2k-score-form label span { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.2rem; }
+#t2k-score-form input[type="text"] {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  box-sizing: border-box;
+}
+#t2k-score-msg { font-size: 0.9rem; color: var(--accent2); }
+</style>
+
+<div class="t2k-wrap">
+  <div class="t2k-header">
+    <h1>{{ t['t2k_daily_h1'] }}</h1>
+    <p>{{ today }} · {{ t['fp_same_for_all'] }}</p>
+  </div>
+
+  <div class="t2k-subnav">
+    <a href="/other">{{ t['other_h1'] }}</a>
+    <span>›</span>
+    <a href="/other/2048/leaderboard">{{ t['nav_leaderboard'] }}</a>
+  </div>
+
+  <div class="t2k-stats">
+    <div>{{ t['t2k_score'] }} <span id="t2k-score">0</span></div>
+    <div>{{ t['fp_time'] }} <span id="t2k-time">0.0</span>s</div>
+    <div>{{ t['fp_moves'] }} <span id="t2k-moves">0</span></div>
+  </div>
+
+  <div id="t2k-board"></div>
+
+  <div class="t2k-controls">
+    <button class="t2k-btn" id="t2k-reset">{{ t['fp_new_game'] }}</button>
+    <a href="/other/2048/leaderboard" class="t2k-btn" style="text-decoration:none;">🏆 {{ t['nav_leaderboard'] }}</a>
+  </div>
+
+  <div id="t2k-win-msg">
+    <p>🎉 {{ t['t2k_solved'] }}</p>
+    <button class="t2k-btn" id="t2k-continue">{{ t['t2k_keep_going'] }}</button>
+  </div>
+  <div id="t2k-over-msg">{{ t['t2k_game_over'] }}</div>
+
+  <div id="t2k-score-form">
+    <strong style="font-size:0.95rem;">{{ t['fp_submit_score'] }}</strong>
+    <label>
+      <span>{{ t['fp_name_label'] }}</span>
+      <input type="text" id="t2k-name" maxlength="32" placeholder="Your name"
+             value="{{ user.name if user else '' }}">
+    </label>
+    <input type="hidden" id="t2k-time-val"  value="0">
+    <input type="hidden" id="t2k-moves-val" value="0">
+    <input type="hidden" id="t2k-score-val" value="0">
+    <button class="t2k-btn" id="t2k-submit" style="align-self:flex-start;">{{ t['fp_submit_btn'] }}</button>
+  </div>
+  <div id="t2k-score-msg" style="display:none;color:var(--accent2);font-size:0.9rem;"></div>
+</div>
+
+<script>
+window.T2K_DATE      = "{{ today }}";
+window.T2K_USER_NAME = {{ (user.name if user else '') | tojson }};
+</script>
+<script src="/static/js/2048.js?v=1"></script>
+{% endblock %}

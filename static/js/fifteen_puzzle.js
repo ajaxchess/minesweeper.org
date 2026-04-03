@@ -129,6 +129,7 @@
   var photoUrl = '';
   var photoMode = '';   // 'tiles' | 'reveal'
   var isPhotoPuzzle = false;
+  var userName = '';    // non-empty when a user is logged in
 
   // ---------------------------------------------------------------------------
   // DOM helpers
@@ -154,12 +155,13 @@
     var COLS = 4;
 
     var revealWon = isPhotoPuzzle && photoUrl && gameWon;
+    var photoActive = isPhotoPuzzle && photoUrl && photoMode === 'tiles' && !gameWon;
 
-    // On reveal-win: collapse gaps so the photo fills edge-to-edge
-    board.style.gap          = revealWon ? '0' : '';
-    board.style.padding      = revealWon ? '0' : '';
-    board.style.border       = revealWon ? 'none' : '';
-    board.style.borderRadius = revealWon ? '0' : '';
+    // Collapse gaps for photo puzzles (both active play and reveal-win)
+    board.style.gap          = (revealWon || photoActive) ? '0' : '';
+    board.style.padding      = (revealWon || photoActive) ? '0' : '';
+    board.style.border       = (revealWon || photoActive) ? 'none' : '';
+    board.style.borderRadius = (revealWon || photoActive) ? '0' : '';
 
     for (var i = 0; i < 16; i++) {
       var tile = document.createElement('div');
@@ -283,7 +285,11 @@
     render(); // re-render so reveal-mode shows the background photo
     var winMsg = document.getElementById('fp-win-msg');
     if (winMsg) winMsg.style.display = 'block';
-    showScoreForm();
+    if (userName) {
+      autoSubmitScore();
+    } else {
+      showScoreForm();
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -421,6 +427,42 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Auto-submit (logged-in users)
+  // ---------------------------------------------------------------------------
+  function autoSubmitScore() {
+    var msgEl = document.getElementById('fp-score-msg');
+    var payload = {
+      name: userName,
+      puzzle_date: dailyDate,
+      time_ms: Math.round(elapsedMs),
+      moves: moveCount
+    };
+
+    fetch('/api/fifteen-puzzle-scores', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify(payload)
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function () {
+        if (msgEl) {
+          msgEl.textContent = 'Score submitted!';
+          msgEl.style.display = '';
+        }
+      })
+      .catch(function () {
+        // Fall back to the manual form on error
+        showScoreForm();
+      });
+  }
+
+  // ---------------------------------------------------------------------------
   // Reset
   // ---------------------------------------------------------------------------
   function resetGame() {
@@ -453,6 +495,7 @@
     photoUrl     = (window.FP_PHOTO_URL  || '');
     photoMode    = (window.FP_PHOTO_MODE || '');
     isPhotoPuzzle = !!(photoUrl && photoMode);
+    userName     = (window.FP_USER_NAME  || '');
 
     // For photo puzzles, decode the fixed board from the hash rather than
     // re-seeding by date so the scramble always matches the uploaded layout.

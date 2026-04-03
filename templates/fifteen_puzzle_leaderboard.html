@@ -13,21 +13,21 @@
 
 {% block content %}
 <div class="lb-wrap">
-  <h1 class="tz-page-h1">15-Puzzle Leaderboard</h1>
+  <h1 class="tz-page-h1">{{ t['fp_lb_h1'] }}</h1>
 
   <div style="text-align:center;margin-bottom:1.5rem;">
-    <a href="/other/15puzzle/daily" class="btn" style="margin:0.25rem;">Play Today</a>
-    <a href="/other" class="btn" style="margin:0.25rem;">Other Puzzles</a>
+    <a href="/other/15puzzle/daily" class="btn" style="margin:0.25rem;">{{ t['fp_play_today'] }}</a>
+    <a href="/other" class="btn" style="margin:0.25rem;">{{ t['other_h1'] }}</a>
   </div>
 
-  <h2 style="font-size:1rem;color:var(--accent2);margin-top:1rem;">Today — {{ today }}</h2>
+  <h2 style="font-size:1rem;color:var(--accent2);margin-top:1rem;">{{ t['fp_today_heading'] }}{{ today }}</h2>
   <div class="wt-table-wrap">
     <table class="lb-table">
       <thead>
-        <tr><th>#</th><th>Name</th><th>Time</th><th>Moves</th><th>Date</th></tr>
+        <tr><th>{{ t['lb_col_rank'] }}</th><th>{{ t['lb_col_name'] }}</th><th>{{ t['lb_col_time'] }}</th><th>{{ t['fp_col_moves'] }}</th><th>{{ t['lb_col_date'] }}</th></tr>
       </thead>
       <tbody id="lb-body-today">
-        <tr><td colspan="5" style="color:var(--text-dim);">Loading…</td></tr>
+        <tr><td colspan="5" style="color:var(--text-dim);">{{ t['lb_loading'] }}</td></tr>
       </tbody>
     </table>
   </div>
@@ -37,11 +37,13 @@
 (async function() {
   const tbody = document.getElementById('lb-body-today');
   const today = "{{ today }}";
+  const msgNoScores = {{ t['lb_no_scores'] | tojson }};
+  const msgFailed   = {{ t['lb_error'] | tojson }};
   try {
     const r = await fetch('/api/fifteen-puzzle-scores/' + today);
     const scores = await r.json();
     if (!scores.length) {
-      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-dim);">No scores yet — be the first!</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="5" style="color:var(--text-dim);">${msgNoScores}</td></tr>`;
       return;
     }
     tbody.innerHTML = scores.map((s, i) => {
@@ -58,7 +60,7 @@
       </tr>`;
     }).join('');
   } catch (e) {
-    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-dim);">Failed to load scores.</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="5" style="color:var(--text-dim);">${msgFailed}</td></tr>`;
   }
 })();
 </script>

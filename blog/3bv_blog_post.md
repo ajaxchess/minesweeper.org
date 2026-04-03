@@ -10,7 +10,7 @@ datePublished: 2026-03-18T00:00:00Z
 
 We're excited to announce that **Lady Di's Mines** now displays the **Bechtel's Board Benchmark Value (3BV)** for every board you play!
 
-![3BV Example Board](https://minesweeper.org/static/img/3BV_Example.png)
+![3BV Example Board](/static/img/3BV_Example.png)
 
 ---
 
