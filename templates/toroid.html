@@ -119,6 +119,58 @@
       </div>
     </div>
 
+    <!-- About / How to Play -->
+    <div class="info-body" style="width:100%;max-width:600px;margin-top:1.5rem">
+
+      <div class="info-section">
+        <h2>What is Toroid Minesweeper?</h2>
+        <p>Toroid Minesweeper is a variant of classic Minesweeper played on a surface that wraps in every direction — the left edge connects to the right edge and the top edge connects to the bottom edge. Mathematically this forms a torus (donut shape), which is why it's called a toroid.</p>
+        <p>The consequence is that there are no borders anywhere on the board. Every single cell has exactly eight neighbors, including cells that appear to be in a corner or along an edge. This eliminates the easier deductions that border cells provide in classic Minesweeper, making the game consistently more demanding from start to finish.</p>
+      </div>
+
+      <div class="info-section">
+        <h2>How to Play</h2>
+        <ul>
+          <li><strong>Left-click</strong> a cell to reveal it. Empty cells (0) auto-expand through all connected empty neighbors, wrapping across edges as needed.</li>
+          <li><strong>Right-click</strong> to cycle a cell through flag (🚩), question mark (❓), and unmarked states.</li>
+          <li><strong>Double-click</strong> a revealed number to chord — if the right number of flags surround it, all remaining neighbors are revealed at once.</li>
+          <li>The 😊 button resets to a fresh board. Your timer starts on your first click.</li>
+          <li>Remember: <strong>all four edges connect.</strong> A cell in the top-left corner neighbors cells in the top-right, bottom-left, and bottom-right corners.</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h2>Difficulty Levels</h2>
+        <ul>
+          <li><strong>Easy —</strong> 9×9 board, 10 mines. A good starting point for getting used to full-wrap logic.</li>
+          <li><strong>Medium —</strong> 16×16 board, 40 mines. The uniform neighbor count starts to make deduction significantly harder than classic Medium.</li>
+          <li><strong>Hard —</strong> 16×30 board, 99 mines. Dense mine placement with no border relief — a serious challenge even for experienced players.</li>
+          <li><strong>Custom —</strong> Set your own rows, columns, and mine count for a fully tailored game.</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h2>Strategy Tips</h2>
+        <ul>
+          <li><strong>Forget the edges.</strong> Every cell has eight neighbors. Don't look for easy border deductions — they don't exist here. Treat every cell identically.</li>
+          <li><strong>Corner connections matter.</strong> A cell that appears to be in the top-right corner neighbors cells in the bottom-left region through the wrap. Track these cross-board constraints carefully.</li>
+          <li><strong>Cross-edge subsets.</strong> Two numbered cells on opposite sides of the board may share hidden neighbors through the wrap, enabling subset eliminations that are invisible on a flat grid.</li>
+          <li><strong>No Guess mode</strong> generates boards that are always logically solvable without any guessing. Use it to focus purely on deduction.</li>
+          <li><strong>Chord for speed.</strong> Once a number's mines are all flagged, double-click to reveal all remaining neighbors in one move and improve your 3BV/s.</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h2>Toroid vs. Other Variants</h2>
+        <ul>
+          <li><strong>Classic Minesweeper —</strong> flat grid with hard borders on all four sides; corner and edge cells have fewer neighbors.</li>
+          <li><strong><a href="/cylinder">Cylinder Minesweeper</a> —</strong> left and right edges connect, but top and bottom remain fixed borders.</li>
+          <li><strong>Toroid —</strong> all four edges connect (left↔right and top↔bottom); no borders, no corners, every cell has exactly eight neighbors.</li>
+        </ul>
+      </div>
+
+    </div>
+
   </section>
 
   <aside class="ad-sidebar ad-right">
