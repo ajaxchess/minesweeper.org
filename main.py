@@ -1457,6 +1457,16 @@ async def about_page(request: Request):
 # excerpt: one-sentence summary shown on the index page
 BLOG_POSTS = [
     {
+        "slug":          "royalty-free",
+        "file":          "blog/15puzzle-generator.md",
+        "title":         "Nothing About Her Is Royalty-Free",
+        "date":          "2026-04-03",
+        "datePublished": "2026-04-03T00:00:00Z",
+        "image":         "https://minesweeper.org/static/img/Diana_Princess_of_Wales_1997.jpg",
+        "excerpt": "Searching for a royalty-free photo of Diana, Princess of Wales, "
+                   "to demo our new 15-Puzzle Generator. It turns out that's complicated.",
+    },
+    {
         "slug":          "fifteen-puzzle",
         "file":          "blog/15puzzle_article.md",
         "title":         "The new 15-puzzle!",
