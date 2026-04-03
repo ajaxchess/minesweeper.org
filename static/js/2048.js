@@ -10,13 +10,18 @@
 
   // ---------------------------------------------------------------------------
   // LCG PRNG (same parameters as fifteen_puzzle.js)
+  // Exposed as object so undo can save/restore RNG state.
   // ---------------------------------------------------------------------------
   function makeLCG(seed) {
     var s = seed >>> 0;
-    return function () {
-      s = Math.imul(1664525, s) + 1013904223;
-      s = s >>> 0;
-      return s / 4294967296;
+    return {
+      next: function () {
+        s = Math.imul(1664525, s) + 1013904223;
+        s = s >>> 0;
+        return s / 4294967296;
+      },
+      getState:  function ()       { return s; },
+      setState:  function (state)  { s = state >>> 0; }
     };
   }
 
@@ -32,18 +37,27 @@
   // ---------------------------------------------------------------------------
   // Game state
   // ---------------------------------------------------------------------------
-  var grid      = [];   // flat array of 16 values (0 = empty)
-  var score     = 0;
-  var moveCount = 0;
-  var won       = false;
-  var over      = false;
-  var continued = false;   // true after player chooses to keep playing past 2048
+  var grid          = [];   // flat array of 16 values (0 = empty)
+  var score         = 0;
+  var moveCount     = 0;
+  var won           = false;
+  var over          = false;
+  var continued     = false;   // true after player chooses to keep playing past 2048
   var timerInterval = null;
   var startTime     = null;
   var elapsedMs     = 0;
   var dailyDate     = '';
   var userName      = '';
   var rng           = null;
+
+  // Undo
+  var undoStack    = [];   // array of saved states
+  var disqualified = false;
+
+  // Tile vanish
+  var vanishEnabled   = false;
+  var vanishThreshold = 512;
+  var removedTiles    = 0;
 
   // ---------------------------------------------------------------------------
   // Grid helpers
@@ -63,8 +77,8 @@
   function spawnTile(g) {
     var empties = getEmpties(g);
     if (!empties.length) return;
-    var idx = empties[Math.floor(rng() * empties.length)];
-    g[idx] = rng() < 0.9 ? 2 : 4;
+    var idx = empties[Math.floor(rng.next() * empties.length)];
+    g[idx] = rng.next() < 0.9 ? 2 : 4;
   }
 
   // ---------------------------------------------------------------------------
@@ -151,6 +165,103 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Undo state management
+  // ---------------------------------------------------------------------------
+  function saveState() {
+    undoStack.push({
+      grid:         grid.slice(),
+      score:        score,
+      moveCount:    moveCount,
+      rngState:     rng.getState(),
+      won:          won,
+      continued:    continued,
+      removedTiles: removedTiles,
+      elapsedMs:    elapsedMs
+    });
+  }
+
+  function undoMove() {
+    if (undoStack.length === 0) return;
+
+    // Hide end-game overlays and score form
+    ['t2k-win-msg', 't2k-over-msg'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    var form = document.getElementById('t2k-score-form');
+    if (form) form.style.display = 'none';
+    var msgEl = document.getElementById('t2k-score-msg');
+    if (msgEl) { msgEl.textContent = ''; msgEl.style.display = 'none'; }
+
+    // Stop timer before restoring
+    clearInterval(timerInterval);
+    timerInterval = null;
+
+    var state     = undoStack.pop();
+    grid          = state.grid;
+    score         = state.score;
+    moveCount     = state.moveCount;
+    rng.setState(state.rngState);
+    won           = state.won;
+    continued     = state.continued;
+    removedTiles  = state.removedTiles;
+    elapsedMs     = state.elapsedMs;
+    over          = false;   // undo always exits game-over
+
+    // Using undo disqualifies from the leaderboard
+    disqualified  = true;
+    updateDisqualifiedUI();
+    updateRemovedTilesUI();
+
+    // Resume timer if game is in progress
+    if (moveCount > 0) {
+      startTime    = Date.now() - elapsedMs;
+      timerInterval = setInterval(updateTimer, 100);
+    } else {
+      startTime = null;
+      var timeEl = document.getElementById('t2k-time');
+      if (timeEl) timeEl.textContent = '0.0';
+    }
+
+    render();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Tile vanish
+  // ---------------------------------------------------------------------------
+  function applyVanish() {
+    var vanished = false;
+    for (var i = 0; i < 16; i++) {
+      if (grid[i] > 0 && grid[i] >= vanishThreshold) {
+        // Score was already added by the merge; tile simply disappears
+        grid[i] = 0;
+        removedTiles++;
+        vanished = true;
+      }
+    }
+    if (vanished) {
+      disqualified = true;
+      updateDisqualifiedUI();
+      updateRemovedTilesUI();
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // UI helpers
+  // ---------------------------------------------------------------------------
+  function updateDisqualifiedUI() {
+    var el = document.getElementById('t2k-disqualified');
+    if (el) el.style.display = disqualified ? '' : 'none';
+  }
+
+  function updateRemovedTilesUI() {
+    var wrap = document.getElementById('t2k-removed-wrap');
+    if (wrap) wrap.style.display = removedTiles > 0 ? '' : 'none';
+    var cnt = document.getElementById('t2k-removed');
+    if (cnt) cnt.textContent = removedTiles;
+  }
+
+  // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
   function render() {
@@ -185,6 +296,9 @@
     var result = applyMove(grid, dir);
     if (!result.changed) return;
 
+    // Save state for undo BEFORE modifying anything
+    saveState();
+
     if (moveCount === 0 && startTime === null) {
       startTime = Date.now();
       timerInterval = setInterval(updateTimer, 100);
@@ -194,10 +308,16 @@
     score     += result.gained;
     moveCount++;
 
+    // Check win before vanish so reaching 2048 is still recognized
     if (!won && !continued) {
       for (var i = 0; i < 16; i++) {
         if (grid[i] >= 2048) { won = true; break; }
       }
+    }
+
+    // Apply tile vanish if enabled
+    if (vanishEnabled) {
+      applyVanish();
     }
 
     spawnTile(grid);
@@ -264,13 +384,17 @@
   function showWin() {
     var el = document.getElementById('t2k-win-msg');
     if (el) el.style.display = 'block';
-    if (userName) { autoSubmitScore(); } else { showScoreForm(); }
+    if (!disqualified) {
+      if (userName) { autoSubmitScore(); } else { showScoreForm(); }
+    }
   }
 
   function showOver() {
     var el = document.getElementById('t2k-over-msg');
     if (el) el.style.display = 'block';
-    if (userName) { autoSubmitScore(); } else { showScoreForm(); }
+    if (!disqualified) {
+      if (userName) { autoSubmitScore(); } else { showScoreForm(); }
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -349,20 +473,46 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Settings
+  // ---------------------------------------------------------------------------
+  function initSettings() {
+    var vanishToggle  = document.getElementById('t2k-vanish-toggle');
+    var vanishOptions = document.getElementById('t2k-vanish-options');
+    var vanishSelect  = document.getElementById('t2k-vanish-threshold');
+
+    if (vanishToggle) {
+      vanishToggle.addEventListener('change', function () {
+        vanishEnabled = this.checked;
+        if (vanishOptions) vanishOptions.style.display = vanishEnabled ? '' : 'none';
+      });
+    }
+
+    if (vanishSelect) {
+      vanishSelect.addEventListener('change', function () {
+        vanishThreshold = parseInt(this.value, 10);
+      });
+      vanishThreshold = parseInt(vanishSelect.value, 10);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Reset / init
   // ---------------------------------------------------------------------------
   function resetGame() {
-    rng = makeLCG(seedFromDateString(dailyDate));
-    grid      = emptyGrid();
-    score     = 0;
-    moveCount = 0;
-    won       = false;
-    over      = false;
-    continued = false;
+    rng           = makeLCG(seedFromDateString(dailyDate));
+    grid          = emptyGrid();
+    score         = 0;
+    moveCount     = 0;
+    won           = false;
+    over          = false;
+    continued     = false;
+    undoStack     = [];
+    disqualified  = false;
+    removedTiles  = 0;
     clearInterval(timerInterval);
     timerInterval = null;
-    startTime = null;
-    elapsedMs = 0;
+    startTime     = null;
+    elapsedMs     = 0;
 
     spawnTile(grid);
     spawnTile(grid);
@@ -379,6 +529,8 @@
     var timeEl = document.getElementById('t2k-time');
     if (timeEl) timeEl.textContent = '0.0';
 
+    updateDisqualifiedUI();
+    updateRemovedTilesUI();
     render();
   }
 
@@ -392,6 +544,10 @@
     var contBtn = document.getElementById('t2k-continue');
     if (contBtn) contBtn.addEventListener('click', continueGame);
 
+    var undoBtn = document.getElementById('t2k-undo');
+    if (undoBtn) undoBtn.addEventListener('click', undoMove);
+
+    initSettings();
     resetGame();
   }
 

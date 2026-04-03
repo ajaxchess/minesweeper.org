@@ -41,6 +41,8 @@
   gap: 1.5rem;
   font-size: 1rem;
   color: var(--text);
+  flex-wrap: wrap;
+  justify-content: center;
 }
 .t2k-stats span { color: var(--accent2); font-weight: 700; }
 
@@ -135,6 +137,52 @@
   box-sizing: border-box;
 }
 #t2k-score-msg { font-size: 0.9rem; color: var(--accent2); }
+
+/* Disqualified notice */
+#t2k-disqualified {
+  display: none;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.3rem 0.75rem;
+}
+
+/* Settings panel */
+.t2k-settings {
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+.t2k-settings summary {
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  user-select: none;
+}
+.t2k-settings summary:hover { color: var(--text); }
+.t2k-setting-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text);
+}
+.t2k-setting-row select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 0.2rem 0.4rem;
+  font-size: 0.85rem;
+}
 </style>
 
 <div class="t2k-wrap">
@@ -155,14 +203,18 @@
     <div>{{ t['t2k_score'] }} <span id="t2k-score">0</span></div>
     <div>{{ t['fp_time'] }} <span id="t2k-time">0.0</span>s</div>
     <div>{{ t['fp_moves'] }} <span id="t2k-moves">0</span></div>
+    <div id="t2k-removed-wrap" style="display:none;">Removed: <span id="t2k-removed">0</span></div>
   </div>
 
   <div id="t2k-board"></div>
 
   <div class="t2k-controls">
     <button class="t2k-btn" id="t2k-reset">{{ t['fp_new_game'] }}</button>
+    <button class="t2k-btn" id="t2k-undo">↩ Undo</button>
     <a href="/other/2048/leaderboard" class="t2k-btn" style="text-decoration:none;">🏆 {{ t['nav_leaderboard'] }}</a>
   </div>
+
+  <div id="t2k-disqualified">Not eligible for leaderboard (undo or tile vanish used)</div>
 
   <div id="t2k-win-msg">
     <p>🎉 {{ t['t2k_solved'] }}</p>
@@ -183,11 +235,31 @@
     <button class="t2k-btn" id="t2k-submit" style="align-self:flex-start;">{{ t['fp_submit_btn'] }}</button>
   </div>
   <div id="t2k-score-msg" style="display:none;color:var(--accent2);font-size:0.9rem;"></div>
+
+  <!-- Settings -->
+  <details class="t2k-settings">
+    <summary>Settings</summary>
+    <label class="t2k-setting-row">
+      <input type="checkbox" id="t2k-vanish-toggle">
+      <span>Tile Vanish Mode — tiles disappear when they reach a set value</span>
+    </label>
+    <div id="t2k-vanish-options" class="t2k-setting-row" style="display:none; padding-left:1.4rem;">
+      <span>Disappear at:</span>
+      <select id="t2k-vanish-threshold">
+        <option value="64">64</option>
+        <option value="128">128</option>
+        <option value="256">256</option>
+        <option value="512" selected>512</option>
+        <option value="1024">1024</option>
+        <option value="2048">2048</option>
+      </select>
+    </div>
+  </details>
 </div>
 
 <script>
 window.T2K_DATE      = "{{ today }}";
 window.T2K_USER_NAME = {{ (user.name if user else '') | tojson }};
 </script>
-<script src="/static/js/2048.js?v=1"></script>
+<script src="/static/js/2048.js?v=2"></script>
 {% endblock %}
