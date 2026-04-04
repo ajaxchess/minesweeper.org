@@ -156,27 +156,6 @@
   </url>
 
   <url>
-    <loc>https://minesweeper.org/cylinder/intermediate</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/cylinder/expert</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/cylinder/custom</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
     <loc>https://minesweeper.org/toroid</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
@@ -184,52 +163,10 @@
   </url>
 
   <url>
-    <loc>https://minesweeper.org/toroid/intermediate</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/toroid/expert</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/toroid/custom</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
     <loc>https://minesweeper.org/hexsweeper</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/hexsweeper/intermediate</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/hexsweeper/expert</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/hexsweeper/custom</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
   </url>
 
   <url>
@@ -267,27 +204,6 @@
     <lastmod>{{ today }}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/worldsweeper/intermediate</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/worldsweeper/expert</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://minesweeper.org/worldsweeper/custom</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
   </url>
 
   <!-- ── Guides & content ──────────────────────────────────────────────────── -->
