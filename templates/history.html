@@ -1,22 +1,107 @@
 {% extends "base.html" %}
 {% block title %}History — minesweeper.org{% endblock %}
-{% block description %}The history of minesweeper.org, launched in 2000.{% endblock %}
+{% block description %}The history of minesweeper.org — launched in 1999, built on a Java applet, and named after Princess Diana's landmine campaign. Rebuilt from scratch in 2025.{% endblock %}
 {% block canonical %}https://minesweeper.org/history{% endblock %}
 {% block og_url %}https://minesweeper.org/history{% endblock %}
 {% block og_title %}History — minesweeper.org{% endblock %}
-{% block og_description %}The history of minesweeper.org, launched in 2000.{% endblock %}
+{% block og_description %}The history of minesweeper.org — launched in 1999, named after Princess Diana's landmine campaign, and rebuilt from scratch in 2025.{% endblock %}
 
 {% block content %}
 <div class="lb-wrapper">
 
-  <h1 class="lb-title">History</h1>
+  <h1 class="lb-title">History of minesweeper.org</h1>
 
   <div class="help-section">
-    <p>minesweeper.org was launched in 2000.</p>
-    <p>The original site had some security issues, but you can see the original site here:<br>
+    <h2>1999 — The Original Site</h2>
+    <p>
+      minesweeper.org was launched in 1999 by Richard Cross, then a Physics PhD student
+      teaching himself web development. The technology was a <strong>Java 1.1.5 applet</strong>
+      — it required Netscape 4.0 or Internet Explorer 3.0, crashed browsers regularly, and
+      reset its high scores every day at 0 Swatch internet time. Richard's sister Becca helped
+      write the instructions.
+    </p>
+    <p>
+      From the very first version, the site was about more than a puzzle game. Right there on
+      the homepage was a photo of Princess Diana and a link to support her campaign to ban
+      landmines. A banner across the top urged visitors to support the HALO Trust. That's why
+      it was called <strong>Lady Di's Mines</strong>.
+    </p>
+    <p>
+      The Wayback Machine still has the original 2002 snapshot — treat it as a museum piece:
+      the Java applet, the daily scores, Diana's photo, and the HALO Trust banner are all there.<br>
       <a href="https://web.archive.org/web/20020408093155/http://www.minesweeper.org/" target="_blank" rel="noopener">
-        https://web.archive.org/web/20020408093155/http://www.minesweeper.org/
+        web.archive.org — minesweeper.org (April 2002)
       </a>
+    </p>
+  </div>
+
+  <div class="help-section">
+    <h2>Why Diana?</h2>
+    <p>
+      In January 1997, Diana walked through an active minefield in Huambo, Angola, wearing
+      HALO Trust body armor. She met children who had lost their limbs, spoke out despite
+      political criticism, and visited mine-clearance operations in Bosnia just weeks before
+      her death in August 1997. Her efforts helped build the momentum that led to the
+      <strong>Ottawa Mine Ban Treaty</strong>, signed by 122 nations in December 1997.
+      Diana didn't live to see it.
+    </p>
+    <p>
+      Minesweeper was one of the most-played games in the world, bundled with every copy of
+      Windows. If even a few of the people who visited the site paused to think about real
+      mines — or clicked through to learn about the HALO Trust — it was worth doing.
+    </p>
+  </div>
+
+  <div class="help-section">
+    <h2>2025 — The Return</h2>
+    <p>
+      Twenty-five years after the original launch, minesweeper.org was rebuilt from scratch
+      using <strong>Python, FastAPI, and modern web technologies</strong>. It works on desktop
+      and mobile without plugins. Every feature and every line of code is original work, built
+      by Richard Cross and the team at
+      <a href="https://regis.consulting" target="_blank" rel="noopener">Regis Consulting</a>
+      with contributions from Earl Gero and William Murray.
+    </p>
+    <p>The game has grown far beyond Easy, Medium, and Hard:</p>
+    <ul>
+      <li><a href="/rush">Rush</a> — clear as many boards as possible in 60 seconds</li>
+      <li><a href="/duel">Duel</a> and <a href="/pvp">PvP</a> — real-time 1v1 multiplayer</li>
+      <li><a href="/tentaizu">Tentaizu</a> — a Japanese star-chart logic puzzle, new daily</li>
+      <li><a href="/mosaic/standard">Mosaic</a> — Fill-a-Pix style daily puzzles</li>
+      <li><a href="/variants">Variants</a> — Cylinder, Toroid, Hexsweeper, Worldsweeper, and more</li>
+      <li>A global <a href="/leaderboard">leaderboard</a> that resets at midnight UTC</li>
+      <li>No Guess mode — every board is logically solvable, no 50/50 guesses</li>
+      <li>Available in ten languages</li>
+    </ul>
+    <p>
+      The Diana connection is still there. Activate the dedicated theme at
+      <a href="/?theme=diana">minesweeper.org/?theme=diana</a> — it wraps the classic grid in
+      a deep blue background with the Lady Di's Mines logo, and works across all game modes.
+    </p>
+  </div>
+
+  <div class="help-section">
+    <h2>The Cause Hasn't Gone Away</h2>
+    <p>
+      The <a href="https://halotrust.org/" target="_blank" rel="noopener">HALO Trust</a> has
+      destroyed over 14 million explosives across more than 30 countries since its founding in
+      1988. The minefield Diana walked through in Huambo is now a neighborhood with homes and
+      schools. But the conflict in Ukraine has brought a devastating resurgence of mine-laying,
+      and dozens of countries remain contaminated.
+    </p>
+    <p>
+      Diana's wish that all landmines be banned in her lifetime did not come true. If you'd
+      like to help, consider supporting the HALO Trust — the world's largest humanitarian mine
+      clearance organization and the charity Diana worked with directly in Angola.
+    </p>
+  </div>
+
+  <div class="help-section">
+    <h2>Read More</h2>
+    <p>
+      The full story — including Diana's walk through the Huambo minefield, the original Java
+      applet, and how the site came back — is in the blog post:
+      <a href="/blog/lady-di">She's Back: The Return of Lady Di's Mines</a>.
     </p>
   </div>
 
