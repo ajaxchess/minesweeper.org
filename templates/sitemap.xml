@@ -185,6 +185,13 @@
   </url>
 
   <url>
+    <loc>https://minesweeper.org/other/15puzzle/how-to-play</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
     <loc>https://minesweeper.org/other/15puzzle/generator</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
