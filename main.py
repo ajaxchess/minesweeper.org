@@ -3506,6 +3506,7 @@ async def public_profile_page(request: Request, slug: str, db: Session = Depends
         "public_id":     profile.public_id,
         "vanity_slug":   profile.vanity_slug or "",
         "about_text":    profile.about_text or "",
+        "noindex":       True,
         "lang": get_lang(request), "t": get_t(request),
     })
 
