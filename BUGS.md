@@ -1,5 +1,9 @@
 -- Fixed below --
 
+B21 Google Search Console not handling language canonical tag:
+   {% if lang and lang != 'en' %}?lang={{ lang }}{% endif %} added to base.html
+   By Claude Cowork
+
 B20 Nonosweeper leaderboard always 404
    The GET /api/nonosweeper-scores/{puzzle_date} route was registered after the
    3-segment catch-all /{mode}/{date_str}/{guess_mode} (the archive route).
