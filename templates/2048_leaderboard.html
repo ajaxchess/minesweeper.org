@@ -30,11 +30,13 @@
           <th>{{ t['t2k_score'] }}</th>
           <th>{{ t['fp_moves'] }}</th>
           <th>{{ t['lb_col_time'] }}</th>
+          <th>4s Spawned</th>
+          <th>Moves to 2048</th>
           <th>{{ t['lb_col_date'] }}</th>
         </tr>
       </thead>
       <tbody id="lb-body-today">
-        <tr><td colspan="6" style="color:var(--text-dim);">{{ t['lb_loading'] }}</td></tr>
+        <tr><td colspan="8" style="color:var(--text-dim);">{{ t['lb_loading'] }}</td></tr>
       </tbody>
     </table>
   </div>
@@ -50,7 +52,7 @@
     var r      = await fetch('/api/2048-scores/' + today);
     var scores = await r.json();
     if (!scores.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-dim);">' + msgNoScores + '</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="color:var(--text-dim);">' + msgNoScores + '</td></tr>';
       return;
     }
     tbody.innerHTML = scores.map(function (s, i) {
@@ -58,17 +60,21 @@
         ? '<a href="' + s.profile_url + '">' + s.name + '</a>'
         : s.name;
       var secs = (s.time_ms / 1000).toFixed(1);
+      var fours    = s.fours_spawned  != null ? s.fours_spawned  : '—';
+      var movesWin = s.moves_to_2048 != null ? s.moves_to_2048 : '—';
       return '<tr>'
         + '<td>' + (i + 1)    + '</td>'
         + '<td>' + name       + '</td>'
         + '<td>' + s.score    + '</td>'
         + '<td>' + s.moves    + '</td>'
         + '<td>' + secs + 's' + '</td>'
+        + '<td>' + fours      + '</td>'
+        + '<td>' + movesWin   + '</td>'
         + '<td>' + s.created_at + '</td>'
         + '</tr>';
     }).join('');
   } catch (e) {
-    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-dim);">' + msgFailed + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="color:var(--text-dim);">' + msgFailed + '</td></tr>';
   }
 })();
 </script>

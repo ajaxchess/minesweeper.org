@@ -1373,11 +1373,13 @@ def game_2048_howtoplay(request: Request):
 
 
 class Game2048ScoreSubmit(BaseModel):
-    name:        str = Field(..., min_length=1, max_length=32)
-    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
-    score:       int = Field(..., ge=0, le=9999999)
-    time_ms:     int = Field(..., ge=0, le=9999999)
-    moves:       int = Field(..., ge=1, le=99999)
+    name:          str            = Field(..., min_length=1, max_length=32)
+    puzzle_date:   str            = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    score:         int            = Field(..., ge=0, le=9999999)
+    time_ms:       int            = Field(..., ge=0, le=9999999)
+    moves:         int            = Field(..., ge=1, le=99999)
+    fours_spawned: Optional[int]  = Field(None, ge=0, le=99999)
+    moves_to_2048: Optional[int]  = Field(None, ge=1, le=99999)
 
     @field_validator("name")
     @classmethod
@@ -1400,14 +1402,16 @@ def submit_2048_score(payload: Game2048ScoreSubmit, request: Request, db: Sessio
     else:
         guest_token = None
     entry = Game2048Score(
-        name        = payload.name,
-        user_email  = user["email"] if user else None,
-        puzzle_date = payload.puzzle_date,
-        score       = payload.score,
-        time_ms     = payload.time_ms,
-        moves       = payload.moves,
-        guest_token = guest_token,
-        client_type = get_client_type(request),
+        name          = payload.name,
+        user_email    = user["email"] if user else None,
+        puzzle_date   = payload.puzzle_date,
+        score         = payload.score,
+        time_ms       = payload.time_ms,
+        moves         = payload.moves,
+        fours_spawned = payload.fours_spawned,
+        moves_to_2048 = payload.moves_to_2048,
+        guest_token   = guest_token,
+        client_type   = get_client_type(request),
     )
     db.add(entry)
     db.commit()

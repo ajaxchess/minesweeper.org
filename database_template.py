@@ -763,16 +763,18 @@ class FifteenPuzzlePhoto(Base):
 class Game2048Score(Base):
     __tablename__ = "game_2048_scores"
 
-    id          = Column(Integer, primary_key=True, index=True)
-    name        = Column(String(32), nullable=False)
-    user_email  = Column(String(256), nullable=True, index=True)
-    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD UTC
-    score       = Column(Integer, nullable=False)
-    time_ms     = Column(Integer, nullable=False)
-    moves       = Column(Integer, nullable=False)
-    guest_token = Column(String(36), nullable=True, index=True)
-    client_type = Column(String(32), nullable=False, server_default="na")
-    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    id             = Column(Integer, primary_key=True, index=True)
+    name           = Column(String(32), nullable=False)
+    user_email     = Column(String(256), nullable=True, index=True)
+    puzzle_date    = Column(String(10), nullable=False)   # YYYY-MM-DD UTC
+    score          = Column(Integer, nullable=False)
+    time_ms        = Column(Integer, nullable=False)
+    moves          = Column(Integer, nullable=False)
+    fours_spawned  = Column(Integer, nullable=True)   # number of 4-tiles spawned during the game
+    moves_to_2048  = Column(Integer, nullable=True)   # move number when 2048 was first reached; NULL if not reached
+    guest_token    = Column(String(36), nullable=True, index=True)
+    client_type    = Column(String(32), nullable=False, server_default="na")
+    created_at     = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
         Index("ix_game_2048_scores_date_score", "puzzle_date", "score"),
@@ -780,13 +782,15 @@ class Game2048Score(Base):
 
     def to_dict(self):
         return {
-            "id":          self.id,
-            "name":        self.name,
-            "puzzle_date": self.puzzle_date,
-            "score":       self.score,
-            "time_ms":     self.time_ms,
-            "moves":       self.moves,
-            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+            "id":            self.id,
+            "name":          self.name,
+            "puzzle_date":   self.puzzle_date,
+            "score":         self.score,
+            "time_ms":       self.time_ms,
+            "moves":         self.moves,
+            "fours_spawned": self.fours_spawned,
+            "moves_to_2048": self.moves_to_2048,
+            "created_at":    self.created_at.strftime("%Y-%m-%d"),
         }
 
 

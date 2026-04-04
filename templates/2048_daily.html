@@ -203,6 +203,7 @@
     <div>{{ t['t2k_score'] }} <span id="t2k-score">0</span></div>
     <div>{{ t['fp_time'] }} <span id="t2k-time">0.0</span>s</div>
     <div>{{ t['fp_moves'] }} <span id="t2k-moves">0</span></div>
+    <div>4s: <span id="t2k-fours">0</span></div>
     <div id="t2k-removed-wrap" style="display:none;">Removed: <span id="t2k-removed">0</span></div>
   </div>
 
@@ -229,9 +230,11 @@
       <input type="text" id="t2k-name" maxlength="32" placeholder="Your name"
              value="{{ user.name if user else '' }}">
     </label>
-    <input type="hidden" id="t2k-time-val"  value="0">
-    <input type="hidden" id="t2k-moves-val" value="0">
-    <input type="hidden" id="t2k-score-val" value="0">
+    <input type="hidden" id="t2k-time-val"        value="0">
+    <input type="hidden" id="t2k-moves-val"       value="0">
+    <input type="hidden" id="t2k-score-val"       value="0">
+    <input type="hidden" id="t2k-fours-val"       value="0">
+    <input type="hidden" id="t2k-moves-to-win-val" value="">
     <button class="t2k-btn" id="t2k-submit" style="align-self:flex-start;">{{ t['fp_submit_btn'] }}</button>
   </div>
   <div id="t2k-score-msg" style="display:none;color:var(--accent2);font-size:0.9rem;"></div>

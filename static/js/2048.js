@@ -50,6 +50,10 @@
   var userName      = '';
   var rng           = null;
 
+  // Stats
+  var foursSpawned = 0;          // number of 4-tiles spawned this game
+  var movesToWin   = null;       // moveCount when 2048 was first reached; null if not yet
+
   // Undo
   var undoStack    = [];   // array of saved states
   var disqualified = false;
@@ -78,7 +82,9 @@
     var empties = getEmpties(g);
     if (!empties.length) return;
     var idx = empties[Math.floor(rng.next() * empties.length)];
-    g[idx] = rng.next() < 0.9 ? 2 : 4;
+    var val = rng.next() < 0.9 ? 2 : 4;
+    g[idx] = val;
+    if (val === 4) foursSpawned++;
   }
 
   // ---------------------------------------------------------------------------
@@ -176,7 +182,9 @@
       won:          won,
       continued:    continued,
       removedTiles: removedTiles,
-      elapsedMs:    elapsedMs
+      elapsedMs:    elapsedMs,
+      foursSpawned: foursSpawned,
+      movesToWin:   movesToWin,
     });
   }
 
@@ -206,6 +214,8 @@
     continued     = state.continued;
     removedTiles  = state.removedTiles;
     elapsedMs     = state.elapsedMs;
+    foursSpawned  = state.foursSpawned;
+    movesToWin    = state.movesToWin;
     over          = false;   // undo always exits game-over
 
     // Using undo disqualifies from the leaderboard
@@ -284,6 +294,8 @@
     if (scoreEl) scoreEl.textContent = score;
     var movesEl = document.getElementById('t2k-moves');
     if (movesEl) movesEl.textContent = moveCount;
+    var foursEl = document.getElementById('t2k-fours');
+    if (foursEl) foursEl.textContent = foursSpawned;
   }
 
   // ---------------------------------------------------------------------------
@@ -311,7 +323,7 @@
     // Check win before vanish so reaching 2048 is still recognized
     if (!won && !continued) {
       for (var i = 0; i < 16; i++) {
-        if (grid[i] >= 2048) { won = true; break; }
+        if (grid[i] >= 2048) { won = true; movesToWin = moveCount; break; }
       }
     }
 
@@ -420,9 +432,13 @@
     var tv = document.getElementById('t2k-time-val');
     var mv = document.getElementById('t2k-moves-val');
     var sv = document.getElementById('t2k-score-val');
+    var fv = document.getElementById('t2k-fours-val');
+    var wv = document.getElementById('t2k-moves-to-win-val');
     if (tv) tv.value = Math.round(elapsedMs);
     if (mv) mv.value = moveCount;
     if (sv) sv.value = score;
+    if (fv) fv.value = foursSpawned;
+    if (wv) wv.value = movesToWin !== null ? movesToWin : '';
     form.style.display = 'flex';
 
     var btn = form.querySelector('#t2k-submit') || form.querySelector('button[type="submit"]');
@@ -451,11 +467,13 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       body: JSON.stringify({
-        name:        name,
-        puzzle_date: dailyDate,
-        score:       score,
-        time_ms:     Math.round(elapsedMs),
-        moves:       moveCount
+        name:          name,
+        puzzle_date:   dailyDate,
+        score:         score,
+        time_ms:       Math.round(elapsedMs),
+        moves:         moveCount,
+        fours_spawned: foursSpawned,
+        moves_to_2048: movesToWin
       })
     })
       .then(function (res) {
@@ -509,6 +527,8 @@
     undoStack     = [];
     disqualified  = false;
     removedTiles  = 0;
+    foursSpawned  = 0;
+    movesToWin    = null;
     clearInterval(timerInterval);
     timerInterval = null;
     startTime     = null;
