@@ -127,6 +127,82 @@
 
 </div>
 
+<!-- SEO Landing Content -->
+<div class="tz-landing">
+
+  <h2 class="tz-landing-h1">About Mosaic Easy</h2>
+
+  <div class="tz-landing-grid">
+
+    <section class="tz-section">
+      <h2>What is Mosaic Easy?</h2>
+      <p>
+        Mosaic Easy is a <strong>5×5 daily logic puzzle</strong> — the ideal starting point for
+        anyone new to Mosaic (also known as Fill-a-Pix). The board is small enough to hold in
+        your head entirely, but the constraint-satisfaction logic is the same as the full 9×9
+        standard puzzle. Every number tells you exactly how many cells in its <strong>3×3
+        neighborhood</strong> — including the cell itself — must be filled black. Your task:
+        determine which cells are black and which are white so all clues are satisfied at once.
+      </p>
+      <p>
+        The 5×5 format is deliberately small. A typical Easy puzzle takes 1–2 minutes even for a
+        first-time solver. The constraints are tight, the logic chains are short, and every clue
+        interacts with a manageable number of neighbors. It's a complete puzzle — not a stripped-down
+        tutorial — just compact enough to be a quick daily habit.
+      </p>
+    </section>
+
+    <section class="tz-section">
+      <h2>How Mosaic Relates to Minesweeper</h2>
+      <p>
+        Mosaic shares Minesweeper's core mechanic almost exactly: a numbered cell counts the
+        mines (black cells) in its surrounding neighborhood. In Minesweeper, you reveal safe cells
+        to uncover those numbers. In Mosaic, all numbers are given upfront and you decide
+        which cells to fill black.
+      </p>
+      <p>
+        The one meaningful difference is the neighborhood size. Minesweeper counts eight immediate
+        neighbors. Mosaic counts a full <strong>3×3 block</strong> — nine cells including the
+        clue cell itself. A clue of <em>9</em> means every cell in that 3×3 block is black.
+        A clue of <em>0</em> means every cell in that block is white. Those two cases are
+        the easiest place to start on any Mosaic board.
+      </p>
+    </section>
+
+    <section class="tz-section">
+      <h2>Strategy Tips for 5×5</h2>
+      <ol class="tz-list">
+        <li><strong>Resolve 0 and max clues first.</strong> A <em>0</em> means all neighbors are white — mark them clear. The maximum value for a corner cell is 4, edge cell 6, interior cell 9. Any cell at its maximum means fill every neighbor black.</li>
+        <li><strong>Work from the corners.</strong> Corner cells on a 5×5 board have only 4 neighbors. Their clues are the most constrained and easiest to resolve with limited possibilities.</li>
+        <li><strong>Watch the cell counter.</strong> The ⬛ counter shows black cells placed vs. total needed for the solution. If you've placed the right number but haven't won yet, you've misplaced one — look for swaps.</li>
+        <li><strong>Compare adjacent clues.</strong> Two neighboring clues share several cells. Subtracting their values can tell you exactly which shared cells must differ, narrowing the solution quickly.</li>
+        <li><strong>Use unknown marks.</strong> If you're unsure about a cell, cycle it to the <em>?</em> state rather than guessing black or white. Come back to it after resolving nearby constraints.</li>
+      </ol>
+    </section>
+
+    <section class="tz-section">
+      <h2>Ready for More?</h2>
+      <p>
+        Once the 5×5 Easy puzzle feels comfortable, the <strong><a href="/mosaic/standard">Mosaic
+        Standard</a></strong> puzzle steps things up to a 9×9 grid. The same rules apply — the
+        board is simply four times larger, with longer deduction chains and more complex overlapping
+        constraints. There's a new puzzle every day on both sizes.
+      </p>
+      <p>
+        The <strong><a href="/mosaic/how-to-play">How to Play</a></strong> guide covers every rule
+        and technique in detail, including subset deduction and constraint propagation strategies
+        that become essential on the 9×9 board.
+      </p>
+      <p>
+        For a completely different experience, the <strong><a href="/mosaic/custom/">Custom Board</a></strong>
+        tool lets you design and share your own Mosaic puzzles at any size.
+      </p>
+    </section>
+
+  </div>
+
+</div>
+
 <nav class="tz-subnav" aria-label="Mosaic pages">
   <a href="/mosaic/standard" class="tz-subnav-card">
     <span class="tz-subnav-icon">🟫</span>
