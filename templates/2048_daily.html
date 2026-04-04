@@ -246,11 +246,33 @@
   </div>
   <div id="t2k-score-msg" style="display:none;color:var(--accent2);font-size:0.9rem;"></div>
 
-  <!-- Article reference -->
-  <p style="font-size:0.8rem;color:var(--text-dim);text-align:center;max-width:360px;">
-    According to <a href="https://jdlm.info/articles/2017/08/05/markov-chain-2048.html" target="_blank" rel="noopener" style="color:var(--accent2);">this analysis using Markov chains</a>,
-    a standard game takes an average of at least 938.8 moves to reach 2048.
-  </p>
+  <!-- History & research section -->
+  <div style="width:100%;max-width:480px;border-top:1px solid var(--border);padding-top:1.25rem;display:flex;flex-direction:column;gap:0.6rem;">
+    <h2 style="font-size:1rem;color:var(--accent2);margin:0;">A Brief History of 2048</h2>
+    <p style="font-size:0.85rem;color:var(--text);margin:0;">
+      <a href="https://en.wikipedia.org/wiki/Threes" target="_blank" rel="noopener" style="color:var(--accent2);">Threes</a>
+      was released on iOS on February 6, 2014. Within a month, two clones — <em>1024</em> for iPhone and Android —
+      appeared with essentially the same mechanics. In March 2014, the first browser-based 2048 was released.
+    </p>
+    <p style="font-size:0.85rem;color:var(--text);margin:0;">
+      In 2017, John Lees-Miller published a series of papers analysing the mathematics of 2048:
+    </p>
+    <ul style="font-size:0.85rem;color:var(--text);margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:0.25rem;">
+      <li><a href="https://jdlm.info/articles/2017/08/05/markov-chain-2048.html" target="_blank" rel="noopener" style="color:var(--accent2);">Markov chains and 2048</a></li>
+      <li><a href="https://jdlm.info/articles/2017/09/17/counting-states-combinatorics-2048.html" target="_blank" rel="noopener" style="color:var(--accent2);">Counting states — combinatorics</a></li>
+      <li><a href="https://jdlm.info/articles/2017/12/10/counting-states-enumeration-2048.html" target="_blank" rel="noopener" style="color:var(--accent2);">Counting states — enumeration</a></li>
+      <li><a href="https://jdlm.info/articles/2018/03/18/markov-decision-process-2048.html" target="_blank" rel="noopener" style="color:var(--accent2);">Markov decision process and 2048</a></li>
+    </ul>
+    <p style="font-size:0.85rem;color:var(--text);margin:0;">
+      Among other things, Lees-Miller calculated a theoretical minimum average of <strong>938.8 moves</strong> to
+      reach 2048, with some gameplay constraints removed. At Lady Di's Mines we are very interested in
+      understanding the gap between that theoretical bound and real achievable scores.
+    </p>
+    <p style="font-size:0.85rem;color:var(--text-dim);margin:0;">
+      When you reach the 2048 tile, your move count and number of 4-tiles spawned are recorded in our
+      histogram. <em>Try to reach 2048 and help us gather data in the name of science!</em>
+    </p>
+  </div>
 
   <!-- Settings -->
   <details class="t2k-settings">
