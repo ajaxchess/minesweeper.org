@@ -1372,6 +1372,22 @@ def game_2048_howtoplay(request: Request):
     })
 
 
+# ── 2048 Hexagon ──────────────────────────────────────────────────────────────
+@app.get("/other/2048hex", response_class=HTMLResponse)
+def game_2048hex_landing(request: Request):
+    return RedirectResponse("/other/2048hex/play", status_code=302)
+
+@app.get("/other/2048hex/play", response_class=HTMLResponse)
+def game_2048hex_play(request: Request):
+    today = date.today().isoformat()
+    return templates.TemplateResponse("2048hex.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": today,
+    })
+
+
 class Game2048ScoreSubmit(BaseModel):
     name:          str            = Field(..., min_length=1, max_length=32)
     puzzle_date:   str            = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")

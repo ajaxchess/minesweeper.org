@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% set _title = "2048 Hexagon | minesweeper.org" %}
+{% set _desc  = "2048 on a hexagonal grid — 18 playable cells, a fixed stone in the center, and 6 directions to slide. A fresh twist on the classic tile-merging puzzle." %}
+{% set _canon = "https://minesweeper.org/other/2048hex/play" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}2048 Hexagon | minesweeper.org{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<script>if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||'ontouchstart'in window)document.documentElement.classList.add('is-mobile');</script>
+<style>
+/* ── Layout ─────────────────────────────────────────────────────────────────── */
+.h2k-wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+.h2k-header { text-align: center; }
+.h2k-header h1 { font-size: 1.5rem; margin: 0 0 0.2rem; }
+.h2k-header p  { color: var(--text-dim); font-size: 0.85rem; margin: 0; }
+
+.h2k-subnav {
+  display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
+}
+.h2k-subnav a    { color: var(--accent2); font-size: 0.85rem; text-decoration: none; }
+.h2k-subnav a:hover { text-decoration: underline; }
+.h2k-subnav span { color: var(--text-dim); }
+
+.h2k-stats {
+  display: flex; gap: 1.5rem; font-size: 1rem; color: var(--text);
+  flex-wrap: wrap; justify-content: center;
+}
+.h2k-stats span { color: var(--accent2); font-weight: 700; }
+
+/* ── Board container ─────────────────────────────────────────────────────────── */
+#hex2k-board { width: 100%; max-width: 420px; }
+
+/* ── Controls hint ───────────────────────────────────────────────────────────── */
+.h2k-hint {
+  font-size: 0.8rem; color: var(--text-dim); text-align: center;
+}
+
+/* ── Directional pad ─────────────────────────────────────────────────────────── */
+/*
+  4-column × 3-row CSS grid creates the hex pattern:
+  col:  1    2    3    4
+  row1:      NW   NE
+  row2: W              E
+  row3:      SW   SE
+*/
+.h2k-dpad {
+  display: grid;
+  grid-template-columns: repeat(4, 58px);
+  grid-template-rows: repeat(3, 46px);
+  gap: 6px;
+  justify-content: center;
+}
+.h2k-dir-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  line-height: 1.2;
+  gap: 1px;
+}
+.h2k-dir-btn:hover  { border-color: var(--accent2); color: var(--accent2); }
+.h2k-dir-btn:active { background: var(--accent2); color: #fff; border-color: var(--accent2); }
+.h2k-dir-key  { font-size: 0.7rem; font-weight: 700; }
+.h2k-dir-arr  { font-size: 1.1rem; line-height: 1; }
+/* Grid placement */
+.h2k-dir-NW { grid-column: 2; grid-row: 1; }
+.h2k-dir-NE { grid-column: 3; grid-row: 1; }
+.h2k-dir-W  { grid-column: 1; grid-row: 2; }
+.h2k-dir-E  { grid-column: 4; grid-row: 2; }
+.h2k-dir-SW { grid-column: 2; grid-row: 3; }
+.h2k-dir-SE { grid-column: 3; grid-row: 3; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────────────── */
+.h2k-btn {
+  padding: 0.45rem 1.1rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+.h2k-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.h2k-controls  { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+
+/* ── Win / over messages ──────────────────────────────────────────────────────── */
+#hex2k-win-msg {
+  display: none; text-align: center;
+}
+#hex2k-win-msg p { color: var(--accent2); font-weight: 700; font-size: 1.1rem; margin: 0 0 0.5rem; }
+#hex2k-over-msg {
+  display: none; color: var(--accent); font-weight: 700; font-size: 1.1rem; text-align: center;
+}
+
+/* ── How-to section ───────────────────────────────────────────────────────────── */
+.h2k-howto {
+  width: 100%;
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.h2k-howto h2  { font-size: 1rem; color: var(--accent2); margin: 0; }
+.h2k-howto p,
+.h2k-howto ul  { font-size: 0.85rem; color: var(--text); margin: 0; }
+.h2k-howto ul  { padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.25rem; }
+
+/* ── Mobile-only / desktop-only ───────────────────────────────────────────────── */
+.is-mobile  .desktop-only { display: none !important; }
+html:not(.is-mobile) .mobile-only  { display: none !important; }
+</style>
+
+<div class="h2k-wrap">
+
+  <div class="h2k-header">
+    <h1>2048 Hexagon</h1>
+    <p>{{ today }} · Tile-merging on a hex grid</p>
+  </div>
+
+  <div class="h2k-subnav">
+    <a href="/other">Other Puzzles</a>
+    <span>›</span>
+    <a href="/other/2048/daily">2048 Classic</a>
+  </div>
+
+  <div class="h2k-stats">
+    <div>Score <span id="hex2k-score">0</span></div>
+    <div>Moves <span id="hex2k-moves">0</span></div>
+  </div>
+
+  <div id="hex2k-board"></div>
+
+  <!-- Controls hint -->
+  <p class="h2k-hint desktop-only">
+    <strong>Q</strong>=↖&nbsp; <strong>E</strong>=↗&nbsp; <strong>A</strong>=←&nbsp;
+    <strong>D</strong>=→&nbsp; <strong>Z</strong>=↙&nbsp; <strong>X</strong>=↘
+    &nbsp;·&nbsp; Arrow keys also move left/right
+  </p>
+  <p class="h2k-hint mobile-only">
+    Swipe in any of 6 directions, or tap a button below
+  </p>
+
+  <!-- Hex directional pad -->
+  <div class="h2k-dpad">
+    <button class="h2k-dir-btn h2k-dir-NW" data-dir="NW" aria-label="Move upper-left">
+      <span class="h2k-dir-key desktop-only">Q</span>
+      <span class="h2k-dir-arr">↖</span>
+    </button>
+    <button class="h2k-dir-btn h2k-dir-NE" data-dir="NE" aria-label="Move upper-right">
+      <span class="h2k-dir-key desktop-only">E</span>
+      <span class="h2k-dir-arr">↗</span>
+    </button>
+    <button class="h2k-dir-btn h2k-dir-W" data-dir="W" aria-label="Move left">
+      <span class="h2k-dir-key desktop-only">A</span>
+      <span class="h2k-dir-arr">←</span>
+    </button>
+    <button class="h2k-dir-btn h2k-dir-E" data-dir="E" aria-label="Move right">
+      <span class="h2k-dir-key desktop-only">D</span>
+      <span class="h2k-dir-arr">→</span>
+    </button>
+    <button class="h2k-dir-btn h2k-dir-SW" data-dir="SW" aria-label="Move lower-left">
+      <span class="h2k-dir-key desktop-only">Z</span>
+      <span class="h2k-dir-arr">↙</span>
+    </button>
+    <button class="h2k-dir-btn h2k-dir-SE" data-dir="SE" aria-label="Move lower-right">
+      <span class="h2k-dir-key desktop-only">X</span>
+      <span class="h2k-dir-arr">↘</span>
+    </button>
+  </div>
+
+  <div class="h2k-controls">
+    <button class="h2k-btn" id="hex2k-reset">New Game</button>
+  </div>
+
+  <div id="hex2k-win-msg">
+    <p>🎉 You reached 2048!</p>
+    <button class="h2k-btn" id="hex2k-continue">Keep Going</button>
+  </div>
+  <div id="hex2k-over-msg">💥 No moves left — game over!</div>
+
+  <!-- How to play -->
+  <div class="h2k-howto">
+    <h2>How to Play</h2>
+    <p>
+      The board is a hexagonal grid of 19 circles — 18 playable tiles and one fixed
+      <strong>stone</strong> in the center. Tiles slide in <strong>6 directions</strong>
+      until they hit a wall or the stone. Two tiles with the same value merge into one
+      with double the value. Reach <strong>2048</strong> to win!
+    </p>
+    <ul>
+      <li><strong>Desktop:</strong> Q / E / A / D / Z / X — or use the buttons below the board</li>
+      <li><strong>Arrow keys:</strong> ← / → move left and right</li>
+      <li><strong>Mobile:</strong> swipe in any of the 6 hex directions</li>
+    </ul>
+    <p>
+      The stone blocks tiles — they cannot pass through or merge with it. This splits
+      each row and diagonal into two independent sections.
+    </p>
+  </div>
+
+</div>
+
+<script>window.H2K_DATE = "{{ today }}";</script>
+<script src="/static/js/2048hex.js?v=1"></script>
+{% endblock %}
