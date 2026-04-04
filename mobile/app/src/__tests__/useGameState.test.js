@@ -46,8 +46,8 @@ describe('useGameState — initial state', () => {
   test('starts with expert board size', () => {
     const { result } = renderHook(() => useGameState('expert', false));
     const { state } = result.current;
-    expect(state.rows).toBe(16);
-    expect(state.cols).toBe(30);
+    expect(state.rows).toBe(30);
+    expect(state.cols).toBe(16);
     expect(state.mines).toBe(99);
   });
 
@@ -79,8 +79,8 @@ describe('useGameState — NEW_GAME / SET_MODE', () => {
     const { result } = renderHook(() => useGameState('beginner', false));
     act(() => { result.current.setMode('expert'); });
     expect(result.current.state.mode).toBe('expert');
-    expect(result.current.state.rows).toBe(16);
-    expect(result.current.state.cols).toBe(30);
+    expect(result.current.state.rows).toBe(30);
+    expect(result.current.state.cols).toBe(16);
   });
 
   test('newGame resets state', () => {

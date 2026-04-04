@@ -25,8 +25,7 @@ import {
 } from 'react-native';
 import Cell from './Cell';
 
-const BASE_MIN  = 28;   // natural size floor
-const BASE_MAX  = 44;   // natural size ceiling
+const BASE_MAX  = 44;   // natural size ceiling (keeps small boards from being huge)
 const ZOOM_MIN  = 20;   // absolute floor after zoom-out
 const ZOOM_MAX  = 88;   // absolute ceiling after zoom-in (2× BASE_MAX)
 const BOARD_PADDING = 8;
@@ -51,10 +50,14 @@ export default function BoardView({
   const [isPinching, setIsPinching] = useState(false);
 
   // ── Cell size ──────────────────────────────────────────────────────────────
+  // baseCellSize fits the board horizontally within the screen at 1× zoom.
+  // We cap at BASE_MAX so small boards (Beginner 9×9) don't get oversized cells,
+  // but we do NOT apply a floor — that would cause wider boards to overflow.
+  // ZOOM_MIN (20px) is the absolute floor after the user zooms out.
   const baseCellSize = useMemo(() => {
     const available = screenWidth - BOARD_PADDING * 2;
     const natural   = Math.floor(available / cols);
-    return Math.max(BASE_MIN, Math.min(BASE_MAX, natural));
+    return Math.min(BASE_MAX, natural);
   }, [screenWidth, cols]);
 
   const cellSize = Math.max(

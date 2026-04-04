@@ -245,7 +245,7 @@ describe('BOARD_SIZES', () => {
     expect(BOARD_SIZES.intermediate).toEqual({ rows: 16, cols: 16, mines: 40 });
   });
 
-  test('expert is 16×30 with 99 mines', () => {
-    expect(BOARD_SIZES.expert).toEqual({ rows: 16, cols: 30, mines: 99 });
+  test('expert is 30×16 with 99 mines', () => {
+    expect(BOARD_SIZES.expert).toEqual({ rows: 30, cols: 16, mines: 99 });
   });
 });
