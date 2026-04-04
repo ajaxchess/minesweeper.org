@@ -1436,6 +1436,33 @@ def get_2048_scores(puzzle_date: str, db: Session = Depends(get_db)):
     return _enrich_with_profiles(top, db)
 
 
+@app.get("/api/2048-scores")
+def get_2048_scores_all_time(db: Session = Depends(get_db)):
+    top = (
+        db.query(Game2048Score)
+        .order_by(Game2048Score.score.desc(), Game2048Score.time_ms.asc())
+        .limit(20)
+        .all()
+    )
+    return _enrich_with_profiles(top, db)
+
+
+@app.get("/api/2048-histogram")
+def get_2048_histogram(puzzle_date: Optional[str] = None, db: Session = Depends(get_db)):
+    import re
+    q = db.query(Game2048Score.moves_to_2048).filter(Game2048Score.moves_to_2048.isnot(None))
+    if puzzle_date:
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
+            raise HTTPException(status_code=400, detail="Invalid date format")
+        q = q.filter(Game2048Score.puzzle_date == puzzle_date)
+    rows = q.all()
+    buckets: dict[int, int] = {}
+    for (m,) in rows:
+        b = (m // 100) * 100
+        buckets[b] = buckets.get(b, 0) + 1
+    return [{"bucket": k, "count": v} for k, v in sorted(buckets.items())]
+
+
 @app.get("/history", response_class=HTMLResponse)
 async def history_page(request: Request):
     return templates.TemplateResponse("history.html", {

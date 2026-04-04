@@ -185,6 +185,13 @@
   </url>
 
   <url>
+    <loc>https://minesweeper.org/other/2048/leaderboard</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
     <loc>https://minesweeper.org/other/2048/how-to-play</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
