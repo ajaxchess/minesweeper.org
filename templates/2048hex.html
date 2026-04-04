@@ -113,6 +113,30 @@
   display: none; color: var(--accent); font-weight: 700; font-size: 1.1rem; text-align: center;
 }
 
+/* ── Score form ───────────────────────────────────────────────────────────────── */
+#hex2k-score-form {
+  display: none;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+#hex2k-score-form label span { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.2rem; }
+#hex2k-score-form input[type="text"] {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  box-sizing: border-box;
+}
+#hex2k-score-msg { font-size: 0.9rem; color: var(--accent2); }
+
 /* ── How-to section ───────────────────────────────────────────────────────────── */
 .h2k-howto {
   width: 100%;
@@ -132,6 +156,9 @@
 html:not(.is-mobile) .mobile-only  { display: none !important; }
 </style>
 
+<!-- Hidden: logged-in user name for auto-submit -->
+<input type="hidden" id="hex2k-username" value="{{ user.name if user else '' }}">
+
 <div class="h2k-wrap">
 
   <div class="h2k-header">
@@ -142,12 +169,18 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
   <div class="h2k-subnav">
     <a href="/other">Other Puzzles</a>
     <span>›</span>
+    <a href="/other/2048hex/leaderboard">🏆 Leaderboard</a>
+    <span>·</span>
+    <a href="/other/2048hex/how-to-play">How to Play</a>
+    <span>·</span>
     <a href="/other/2048/daily">2048 Classic</a>
   </div>
 
   <div class="h2k-stats">
     <div>Score <span id="hex2k-score">0</span></div>
+    <div>Time <span id="hex2k-time">0.0</span>s</div>
     <div>Moves <span id="hex2k-moves">0</span></div>
+    <div>4s <span id="hex2k-fours">0</span></div>
   </div>
 
   <div id="hex2k-board"></div>
@@ -192,6 +225,7 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
 
   <div class="h2k-controls">
     <button class="h2k-btn" id="hex2k-reset">New Game</button>
+    <a href="/other/2048hex/leaderboard" class="h2k-btn" style="text-decoration:none;">🏆 Leaderboard</a>
   </div>
 
   <div id="hex2k-win-msg">
@@ -199,6 +233,22 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
     <button class="h2k-btn" id="hex2k-continue">Keep Going</button>
   </div>
   <div id="hex2k-over-msg">💥 No moves left — game over!</div>
+
+  <div id="hex2k-score-form">
+    <strong style="font-size:0.95rem;">Submit Your Score</strong>
+    <label>
+      <span>Your name</span>
+      <input type="text" id="hex2k-name" maxlength="32" placeholder="Your name"
+             value="{{ user.name if user else '' }}">
+    </label>
+    <input type="hidden" id="hex2k-time-val"         value="0">
+    <input type="hidden" id="hex2k-moves-val"        value="0">
+    <input type="hidden" id="hex2k-score-val"        value="0">
+    <input type="hidden" id="hex2k-fours-val"        value="0">
+    <input type="hidden" id="hex2k-moves-to-win-val" value="">
+    <button class="h2k-btn" id="hex2k-submit" style="align-self:flex-start;">Submit</button>
+  </div>
+  <div id="hex2k-score-msg" style="display:none;color:var(--accent2);font-size:0.9rem;"></div>
 
   <!-- How to play -->
   <div class="h2k-howto">
@@ -218,10 +268,13 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
       The stone blocks tiles — they cannot pass through or merge with it. This splits
       each row and diagonal into two independent sections.
     </p>
+    <p>
+      <a href="/other/2048hex/how-to-play" style="color:var(--accent2);">Full how-to-play guide →</a>
+    </p>
   </div>
 
 </div>
 
 <script>window.H2K_DATE = "{{ today }}";</script>
-<script src="/static/js/2048hex.js?v=1"></script>
+<script src="/static/js/2048hex.js?v=2"></script>
 {% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% set _title = "How to Play 2048 Hexagon | minesweeper.org" %}
+{% set _desc  = "Learn how to play 2048 Hexagon — a tile-merging puzzle on a hex grid with 18 cells, a fixed stone in the center, and 6 directions to slide." %}
+{% set _canon = "https://minesweeper.org/other/2048hex/how-to-play" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}How to Play 2048 Hexagon{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<script>if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||'ontouchstart'in window)document.documentElement.classList.add('is-mobile');</script>
+<style>
+.is-mobile .desktop-only{display:none!important}
+html:not(.is-mobile) .mobile-only{display:none!important}
+</style>
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">How to Play 2048 Hexagon</h1>
+
+  <div class="help-section">
+    <p>
+      2048 Hexagon is a tile-merging puzzle played on a hexagonal grid. Like the classic 2048,
+      you slide tiles to combine matching numbers — but here the board has 6 directions
+      and a fixed stone blocking the center.
+    </p>
+  </div>
+
+  <div class="help-section">
+    <h2>The Board</h2>
+    <p>
+      The board is a hex grid with <strong>19 circles</strong> arranged in a flower pattern
+      (3 cells per edge). The center cell is a permanent <strong>stone</strong> — it cannot
+      move, be merged into, or be passed through. That leaves <strong>18 playable tiles</strong>.
+    </p>
+    <p>
+      The stone splits each row and diagonal into two independent halves. Tiles in one half
+      cannot slide past the stone to reach the other half.
+    </p>
+  </div>
+
+  <div class="help-section">
+    <h2>Goal</h2>
+    <p>
+      Combine tiles until you create a tile with the value <strong>2048</strong>.
+      You can keep playing after reaching 2048 to chase a higher score.
+    </p>
+  </div>
+
+  <div class="help-section">
+    <h2>Controls</h2>
+    <ul class="desktop-only">
+      <li><strong>Q</strong> = upper-left (↖) &nbsp; <strong>E</strong> = upper-right (↗)</li>
+      <li><strong>A</strong> = left (←) &nbsp; <strong>D</strong> = right (→)</li>
+      <li><strong>Z</strong> = lower-left (↙) &nbsp; <strong>X</strong> = lower-right (↘)</li>
+      <li><strong>Arrow keys:</strong> ← / → also move left and right</li>
+      <li>Or click the <strong>directional buttons</strong> below the board</li>
+    </ul>
+    <ul class="mobile-only">
+      <li><strong>Swipe</strong> in any of the 6 hex directions</li>
+      <li>Or tap the <strong>directional buttons</strong> below the board</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>How Moves Work</h2>
+    <p>
+      When you slide in a direction, all tiles move as far as possible in that direction,
+      stopping when they hit the board edge or the stone. If two tiles with the <strong>same value</strong>
+      collide, they merge into one tile with double the value. Each tile can only merge once per move.
+    </p>
+    <p>
+      After every move, a new tile spawns on a random empty cell — either a
+      <strong>2</strong> (90% chance) or a <strong>4</strong> (10% chance).
+    </p>
+  </div>
+
+  <div class="help-section">
+    <h2>Scoring</h2>
+    <p>
+      Your score increases by the value of every merge. For example, merging two 64 tiles
+      gives you +128 points. Chaining multiple merges in a single move adds all of them together.
+    </p>
+  </div>
+
+  <div class="help-section">
+    <h2>Game Over</h2>
+    <p>
+      The game ends when the board is full and no move in any of the 6 directions
+      would change the board. At that point your score is final.
+    </p>
+  </div>
+
+  <div class="help-section">
+    <h2>Daily Puzzle</h2>
+    <p>
+      Each day's puzzle uses the same random seed for all players — so the starting
+      tiles and spawn sequence are identical for everyone playing on that day.
+      Compete with the global community on the leaderboard!
+    </p>
+  </div>
+
+  <div class="lb-back">
+    <a href="/other/2048hex/play">▶ Play 2048 Hexagon</a>
+    <a href="/other/2048hex/leaderboard">🏆 Leaderboard</a>
+    <a href="/other/2048/how-to-play">2048 Classic guide</a>
+  </div>
+
+</div>
+{% endblock %}

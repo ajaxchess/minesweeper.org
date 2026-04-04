@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% set _title = "2048 Hexagon Leaderboard | minesweeper.org" %}
+{% set _desc  = "Daily 2048 Hexagon leaderboard — top scores for today's puzzle." %}
+{% set _canon = "https://minesweeper.org/other/2048hex/leaderboard" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<style>
+.t2k-lb-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  justify-content: center;
+}
+.t2k-lb-tab {
+  padding: 0.4rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.t2k-lb-tab.active, .t2k-lb-tab:hover {
+  border-color: var(--accent2);
+  color: var(--accent2);
+}
+
+.t2k-histogram {
+  margin-top: 2rem;
+}
+.t2k-histogram h2 {
+  font-size: 1rem;
+  color: var(--accent2);
+  margin-bottom: 0.75rem;
+}
+.t2k-hist-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 520px;
+}
+.t2k-hist-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+.t2k-hist-label {
+  width: 80px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.t2k-hist-bar-wrap {
+  flex: 1;
+  background: var(--surface2);
+  border-radius: 3px;
+  height: 18px;
+  overflow: hidden;
+}
+.t2k-hist-bar {
+  height: 100%;
+  background: var(--accent2);
+  border-radius: 3px;
+  min-width: 2px;
+}
+.t2k-hist-count {
+  width: 30px;
+  flex-shrink: 0;
+}
+.t2k-hist-empty {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+</style>
+
+<div class="lb-wrap">
+  <h1 class="tz-page-h1">2048 Hexagon Leaderboard</h1>
+
+  <div style="text-align:center;margin-bottom:1.25rem;">
+    <a href="/other/2048hex/play" class="btn" style="margin:0.25rem;">Play Today</a>
+    <a href="/other/2048hex/how-to-play" class="btn" style="margin:0.25rem;">How to Play</a>
+    <a href="/other" class="btn" style="margin:0.25rem;">Other Puzzles</a>
+  </div>
+
+  <div class="t2k-lb-tabs">
+    <a href="/other/2048hex/leaderboard"            class="t2k-lb-tab" id="tab-today">📅 Today</a>
+    <a href="/other/2048hex/leaderboard?period=all" class="t2k-lb-tab" id="tab-all">🏅 All Time</a>
+  </div>
+
+  <h2 id="lb-heading" style="font-size:1rem;color:var(--accent2);margin-top:0.5rem;margin-bottom:1rem;"></h2>
+
+  <div class="wt-table-wrap">
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>{{ t['lb_col_rank'] }}</th>
+          <th>{{ t['lb_col_name'] }}</th>
+          <th>{{ t['t2k_score'] }}</th>
+          <th>{{ t['fp_moves'] }}</th>
+          <th>{{ t['lb_col_time'] }}</th>
+          <th>4s Spawned</th>
+          <th>Moves to 2048</th>
+          <th>{{ t['lb_col_date'] }}</th>
+        </tr>
+      </thead>
+      <tbody id="lb-body">
+        <tr><td colspan="8" style="color:var(--text-dim);">{{ t['lb_loading'] }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="t2k-histogram">
+    <h2 id="hist-heading">Moves to Reach 2048</h2>
+    <div id="hist-chart" class="t2k-hist-chart"></div>
+  </div>
+</div>
+
+<script>
+(async function () {
+  var today     = "{{ today }}";
+  var params    = new URLSearchParams(location.search);
+  var isAllTime = params.get('period') === 'all';
+
+  var msgNoScores = {{ t['lb_no_scores'] | tojson }};
+  var msgFailed   = {{ t['lb_error']     | tojson }};
+
+  // Activate the correct tab
+  document.getElementById(isAllTime ? 'tab-all' : 'tab-today').classList.add('active');
+
+  // Set heading text
+  var heading = document.getElementById('lb-heading');
+  heading.textContent = isAllTime ? 'All Time' : ('Today — ' + today);
+
+  // ── Leaderboard ──────────────────────────────────────────────────────────────
+  var tbody    = document.getElementById('lb-body');
+  var scoreUrl = isAllTime ? '/api/2048hex-scores' : '/api/2048hex-scores/' + today;
+  try {
+    var r      = await fetch(scoreUrl);
+    var scores = await r.json();
+    if (!scores.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="color:var(--text-dim);">' + msgNoScores + '</td></tr>';
+    } else {
+      tbody.innerHTML = scores.map(function (s, i) {
+        var name = s.profile_url
+          ? '<a href="' + s.profile_url + '">' + s.name + '</a>'
+          : s.name;
+        var secs     = (s.time_ms / 1000).toFixed(1);
+        var fours    = s.fours_spawned != null ? s.fours_spawned : '—';
+        var movesWin = s.moves_to_2048 != null ? s.moves_to_2048 : '—';
+        return '<tr>'
+          + '<td>' + (i + 1)    + '</td>'
+          + '<td>' + name       + '</td>'
+          + '<td>' + s.score    + '</td>'
+          + '<td>' + s.moves    + '</td>'
+          + '<td>' + secs + 's' + '</td>'
+          + '<td>' + fours      + '</td>'
+          + '<td>' + movesWin   + '</td>'
+          + '<td>' + s.created_at + '</td>'
+          + '</tr>';
+      }).join('');
+    }
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="8" style="color:var(--text-dim);">' + msgFailed + '</td></tr>';
+  }
+
+  // ── Histogram ─────────────────────────────────────────────────────────────────
+  var histUrl     = isAllTime ? '/api/2048hex-histogram' : '/api/2048hex-histogram?puzzle_date=' + today;
+  var histHeading = document.getElementById('hist-heading');
+  histHeading.textContent = 'Moves to Reach 2048 — ' + (isAllTime ? 'All Time' : today);
+  var chart = document.getElementById('hist-chart');
+  try {
+    var hr    = await fetch(histUrl);
+    var hdata = await hr.json();
+    if (!hdata.length) {
+      chart.innerHTML = '<span class="t2k-hist-empty">No data yet — play today\'s puzzle to contribute!</span>';
+    } else {
+      var maxCount = Math.max.apply(null, hdata.map(function (d) { return d.count; }));
+      chart.innerHTML = hdata.map(function (d) {
+        var pct   = Math.round((d.count / maxCount) * 100);
+        var label = d.bucket + '–' + (d.bucket + 99);
+        return '<div class="t2k-hist-row">'
+          + '<span class="t2k-hist-label">' + label + '</span>'
+          + '<div class="t2k-hist-bar-wrap">'
+          + '<div class="t2k-hist-bar" style="width:' + pct + '%"></div>'
+          + '</div>'
+          + '<span class="t2k-hist-count">' + d.count + '</span>'
+          + '</div>';
+      }).join('');
+    }
+  } catch (e) {
+    chart.innerHTML = '<span class="t2k-hist-empty">' + msgFailed + '</span>';
+  }
+})();
+</script>
+{% endblock %}

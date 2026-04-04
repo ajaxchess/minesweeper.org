@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, Game2048HexScore, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -1386,6 +1386,115 @@ def game_2048hex_play(request: Request):
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
     })
+
+@app.get("/other/2048hex/leaderboard", response_class=HTMLResponse)
+def game_2048hex_leaderboard(request: Request):
+    today = date.today().isoformat()
+    return templates.TemplateResponse("2048hex_leaderboard.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": today,
+    })
+
+@app.get("/other/2048hex/how-to-play", response_class=HTMLResponse)
+def game_2048hex_htp(request: Request):
+    return templates.TemplateResponse("2048hex_howtoplay.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+class Game2048HexScoreSubmit(BaseModel):
+    name:          str            = Field(..., min_length=1, max_length=32)
+    puzzle_date:   str            = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    score:         int            = Field(..., ge=0, le=9999999)
+    time_ms:       int            = Field(..., ge=0, le=9999999)
+    moves:         int            = Field(..., ge=1, le=99999)
+    fours_spawned: Optional[int]  = Field(None, ge=0, le=99999)
+    moves_to_2048: Optional[int]  = Field(None, ge=1, le=99999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+
+@app.post("/api/2048hex-scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_2048hex_score(payload: Game2048HexScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = Game2048HexScore(
+        name          = payload.name,
+        user_email    = user["email"] if user else None,
+        puzzle_date   = payload.puzzle_date,
+        score         = payload.score,
+        time_ms       = payload.time_ms,
+        moves         = payload.moves,
+        fours_spawned = payload.fours_spawned,
+        moves_to_2048 = payload.moves_to_2048,
+        guest_token   = guest_token,
+        client_type   = get_client_type(request),
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    record_score_submit("2048hex", payload.puzzle_date)
+    record_game_complete("2048hex", mode="daily", duration_ms=payload.time_ms)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/2048hex-scores/{puzzle_date}")
+def get_2048hex_scores(puzzle_date: str, db: Session = Depends(get_db)):
+    import re
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
+        raise HTTPException(status_code=400, detail="Invalid date format")
+    top = (
+        db.query(Game2048HexScore)
+        .filter(Game2048HexScore.puzzle_date == puzzle_date)
+        .order_by(Game2048HexScore.score.desc(), Game2048HexScore.time_ms.asc())
+        .limit(20)
+        .all()
+    )
+    return _enrich_with_profiles(top, db)
+
+
+@app.get("/api/2048hex-scores")
+def get_2048hex_scores_all_time(db: Session = Depends(get_db)):
+    top = (
+        db.query(Game2048HexScore)
+        .order_by(Game2048HexScore.score.desc(), Game2048HexScore.time_ms.asc())
+        .limit(20)
+        .all()
+    )
+    return _enrich_with_profiles(top, db)
+
+
+@app.get("/api/2048hex-histogram")
+def get_2048hex_histogram(puzzle_date: Optional[str] = None, db: Session = Depends(get_db)):
+    import re
+    q = db.query(Game2048HexScore.moves_to_2048).filter(Game2048HexScore.moves_to_2048.isnot(None))
+    if puzzle_date:
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
+            raise HTTPException(status_code=400, detail="Invalid date format")
+        q = q.filter(Game2048HexScore.puzzle_date == puzzle_date)
+    rows = q.all()
+    buckets: dict[int, int] = {}
+    for (m,) in rows:
+        b = (m // 100) * 100
+        buckets[b] = buckets.get(b, 0) + 1
+    return [{"bucket": k, "count": v} for k, v in sorted(buckets.items())]
 
 
 class Game2048ScoreSubmit(BaseModel):

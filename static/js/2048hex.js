@@ -105,13 +105,19 @@
   }
 
   // ── Game state ──────────────────────────────────────────────────────────────
-  var tiles     = {};   // key(q,r) -> tile value; absent / 0 = empty
-  var score     = 0;
-  var moveCount = 0;
-  var won       = false;
-  var over      = false;
-  var continued = false;
-  var rng       = null;
+  var tiles         = {};   // key(q,r) -> tile value; absent / 0 = empty
+  var score         = 0;
+  var moveCount     = 0;
+  var won           = false;
+  var over          = false;
+  var continued     = false;
+  var rng           = null;
+  var foursSpawned  = 0;    // number of 4-tiles spawned
+  var movesToWin    = null; // moveCount when 2048 first reached; null if not yet
+  var startTime     = null;
+  var elapsedMs     = 0;
+  var timerInterval = null;
+  var userName      = '';
 
   function getEmpties() {
     return PLAYABLE.filter(function (c) { return !tiles[key(c.q, c.r)]; });
@@ -121,7 +127,9 @@
     var pool = getEmpties();
     if (!pool.length) return;
     var c = pool[Math.floor(rng.next() * pool.length)];
-    tiles[key(c.q, c.r)] = rng.next() < 0.9 ? 2 : 4;
+    var val = rng.next() < 0.9 ? 2 : 4;
+    tiles[key(c.q, c.r)] = val;
+    if (val === 4) foursSpawned++;
   }
 
   // ── Slide logic ─────────────────────────────────────────────────────────────
@@ -207,6 +215,12 @@
     var result = computeMove(dirName);
     if (!result.anyChanged) return;
 
+    // Start timer on first move
+    if (moveCount === 0 && startTime === null) {
+      startTime = Date.now();
+      timerInterval = setInterval(updateTimer, 100);
+    }
+
     tiles      = result.newTiles;
     score     += result.totalGained;
     moveCount++;
@@ -215,7 +229,7 @@
     if (!won && !continued) {
       var vals = Object.values(tiles);
       for (var i = 0; i < vals.length; i++) {
-        if (vals[i] >= 2048) { won = true; break; }
+        if (vals[i] >= 2048) { won = true; movesToWin = moveCount; break; }
       }
     }
 
@@ -230,8 +244,8 @@
     }
 
     render();
-    if      (won && !continued) showWin();
-    else if (over)              showOver();
+    if      (won && !continued) { stopTimer(); showWin(); }
+    else if (over)              { stopTimer(); showOver(); }
   }
 
   // ── SVG board ───────────────────────────────────────────────────────────────
@@ -321,21 +335,101 @@
     if (scoreEl) scoreEl.textContent = score;
     var movesEl = document.getElementById('hex2k-moves');
     if (movesEl) movesEl.textContent = moveCount;
+    var foursEl = document.getElementById('hex2k-fours');
+    if (foursEl) foursEl.textContent = foursSpawned;
+  }
+
+  // ── Timer ───────────────────────────────────────────────────────────────────
+  function updateTimer() {
+    if (startTime === null) return;
+    elapsedMs = Date.now() - startTime;
+    var el = document.getElementById('hex2k-time');
+    if (el) el.textContent = (elapsedMs / 1000).toFixed(1);
+  }
+
+  function stopTimer() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    if (startTime !== null) elapsedMs = Date.now() - startTime;
+    var el = document.getElementById('hex2k-time');
+    if (el) el.textContent = (elapsedMs / 1000).toFixed(1);
   }
 
   // ── Win / game-over UI ──────────────────────────────────────────────────────
   function showWin() {
     var el = document.getElementById('hex2k-win-msg');
     if (el) el.style.display = 'block';
+    if (userName) { autoSubmitScore(); } else { showScoreForm(); }
   }
   function showOver() {
     var el = document.getElementById('hex2k-over-msg');
     if (el) el.style.display = 'block';
+    if (userName) { autoSubmitScore(); } else { showScoreForm(); }
   }
   function continueGame() {
     continued = true;
     var el = document.getElementById('hex2k-win-msg');
     if (el) el.style.display = 'none';
+    // Resume timer
+    startTime = Date.now() - elapsedMs;
+    timerInterval = setInterval(updateTimer, 100);
+  }
+
+  // ── Score submission ────────────────────────────────────────────────────────
+  function showScoreForm() {
+    var form = document.getElementById('hex2k-score-form');
+    if (!form) return;
+    var tv = document.getElementById('hex2k-time-val');
+    var mv = document.getElementById('hex2k-moves-val');
+    var sv = document.getElementById('hex2k-score-val');
+    var fv = document.getElementById('hex2k-fours-val');
+    var wv = document.getElementById('hex2k-moves-to-win-val');
+    if (tv) tv.value = Math.round(elapsedMs);
+    if (mv) mv.value = moveCount;
+    if (sv) sv.value = score;
+    if (fv) fv.value = foursSpawned;
+    if (wv) wv.value = movesToWin !== null ? movesToWin : '';
+    form.style.display = 'flex';
+  }
+
+  function submitScore() {
+    var nameEl = document.getElementById('hex2k-name');
+    doSubmit(nameEl ? nameEl.value.trim() : '');
+  }
+
+  function autoSubmitScore() {
+    doSubmit(userName);
+  }
+
+  function doSubmit(name) {
+    if (!name) { showScoreForm(); return; }
+    var msgEl = document.getElementById('hex2k-score-msg');
+    var dateStr = window.H2K_DATE || new Date().toISOString().slice(0, 10);
+    fetch('/api/2048hex-scores', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:          name,
+        puzzle_date:   dateStr,
+        score:         score,
+        time_ms:       Math.round(elapsedMs),
+        moves:         moveCount,
+        fours_spawned: foursSpawned,
+        moves_to_2048: movesToWin
+      })
+    })
+      .then(function (res) {
+        var form = document.getElementById('hex2k-score-form');
+        if (form) form.style.display = 'none';
+        if (res.ok) {
+          if (msgEl) { msgEl.textContent = 'Score submitted!'; msgEl.style.display = ''; }
+        } else {
+          if (msgEl) { msgEl.textContent = 'Could not submit score.'; msgEl.style.display = ''; }
+        }
+      })
+      .catch(function () {
+        if (userName) showScoreForm();
+      });
   }
 
   // ── Keyboard ────────────────────────────────────────────────────────────────
@@ -376,29 +470,47 @@
   // ── Reset / init ────────────────────────────────────────────────────────────
   function resetGame() {
     var dateStr = window.H2K_DATE || new Date().toISOString().slice(0, 10);
-    rng       = makeLCG(seedFromDate(dateStr));
-    tiles     = {};
-    score     = 0;
-    moveCount = 0;
-    won       = false;
-    over      = false;
-    continued = false;
+    rng          = makeLCG(seedFromDate(dateStr));
+    tiles        = {};
+    score        = 0;
+    moveCount    = 0;
+    won          = false;
+    over         = false;
+    continued    = false;
+    foursSpawned = 0;
+    movesToWin   = null;
+    clearInterval(timerInterval);
+    timerInterval = null;
+    startTime    = null;
+    elapsedMs    = 0;
     ['hex2k-win-msg', 'hex2k-over-msg'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
+    var form = document.getElementById('hex2k-score-form');
+    if (form) form.style.display = 'none';
+    var msgEl = document.getElementById('hex2k-score-msg');
+    if (msgEl) { msgEl.textContent = ''; msgEl.style.display = 'none'; }
+    var timeEl = document.getElementById('hex2k-time');
+    if (timeEl) timeEl.textContent = '0.0';
     spawnTile();
     spawnTile();
     render();
   }
 
   function init() {
+    // Read logged-in user name from the page (set by template)
+    var unEl = document.getElementById('hex2k-username');
+    if (unEl) userName = unEl.value || '';
+
     buildBoard();
 
     var resetBtn    = document.getElementById('hex2k-reset');
     var continueBtn = document.getElementById('hex2k-continue');
+    var submitBtn   = document.getElementById('hex2k-submit');
     if (resetBtn)    resetBtn.addEventListener('click', resetGame);
     if (continueBtn) continueBtn.addEventListener('click', continueGame);
+    if (submitBtn)   submitBtn.addEventListener('click', submitScore);
 
     document.querySelectorAll('[data-dir]').forEach(function (btn) {
       btn.addEventListener('click', function () { applyMove(this.dataset.dir); });
