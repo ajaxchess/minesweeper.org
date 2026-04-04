@@ -101,12 +101,16 @@ export default function GameScreen({ navigation }) {
     newGame(mode, noGuess);
   }, [mode, noGuess, newGame]);
 
-  // ── Status text ───────────────────────────────────────────────────────────
+  // ── Mine counter ──────────────────────────────────────────────────────────
+  const flagCount  = flagged ? flagged.reduce((sum, v) => sum + v, 0) : 0;
+  const minesLeft  = mines - flagCount;
+
+  // ── Status text (shown beneath mine counter) ──────────────────────────────
   let statusText;
   if (won)          statusText = '🎉 You win!';
   else if (over)    statusText = '💥 Game over';
   else if (started) statusText = formatTime(elapsedMs);
-  else              statusText = `${mines} mines`;
+  else              statusText = null;   // mine counter alone is enough pre-start
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.background }]}>
@@ -145,9 +149,17 @@ export default function GameScreen({ navigation }) {
           </Text>
         </TouchableOpacity>
 
-        <Text style={[styles.statusText, { color: theme.text }]}>
-          {statusText}
-        </Text>
+        {/* Mine counter + timer, stacked in center */}
+        <View style={styles.statusCenter}>
+          <Text style={[styles.mineCount, { color: theme.text }]}>
+            💣 {minesLeft}
+          </Text>
+          {statusText !== null && (
+            <Text style={[styles.statusText, { color: theme.textDim }]}>
+              {statusText}
+            </Text>
+          )}
+        </View>
 
         <TouchableOpacity style={styles.optionBtn} onPress={handleNewGame}>
           <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '600' }}>
@@ -259,9 +271,16 @@ const styles = StyleSheet.create({
     paddingVertical:   5,
     borderRadius:      6,
   },
+  statusCenter: {
+    alignItems: 'center',
+    gap:        2,
+  },
+  mineCount: {
+    fontSize:   15,
+    fontWeight: '700',
+  },
   statusText: {
-    fontSize:   14,
-    fontWeight: '600',
+    fontSize: 12,
   },
   toolRow: {
     flexDirection:     'row',
