@@ -2071,12 +2071,7 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   nav a { padding: 0.35rem 0.55rem; font-size: 0.8rem; }
 }
 
-/* ── Mobile touch phones: compact board + expert rotation ────────────────── *
- * (pointer: coarse) targets touch screens; max-width covers all iPhones.
- * Expert rotation formula: (W−H)/2 = 7×(cell-size + 1px)
- *   W = 30×cell + 29×1px gap + 8px pad + 4px border
- *   H = 16×cell + 15×1px gap + 8px pad + 4px border
- * ─────────────────────────────────────────────────────────────────────────── */
+/* ── Mobile touch phones: compact board ──────────────────────────────────── */
 @media (max-width: 500px) and (pointer: coarse) {
   :root { --cell-size: 22px; }
   main { padding-left: 2px; padding-right: 2px; }
@@ -2084,18 +2079,16 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   .cell { font-size: 0.6rem; border-radius: 2px; }
   .game-info { padding: 0.4rem 0.5rem; }
 
+  /* Expert is 30×16 — scale cells to fit both width and height in viewport.
+   * Width target : 16 cols + 15 gaps + 8px padding = 16*cell + 23px
+   * Height target: 30 cols + 29 gaps + 8px padding = 30*cell + 37px
+   * Subtract ~270px for nav + game-info + instructions + page chrome.      */
   #board[data-mode="expert"] {
-    transform: rotate(-90deg);
-    margin-top:    calc(7 * (var(--cell-size) + 1px));
-    margin-bottom: calc(7 * (var(--cell-size) + 1px));
-    margin-left:   calc(-7 * (var(--cell-size) + 1px));
-    margin-right:  calc(-7 * (var(--cell-size) + 1px));
+    --cell-size: min(
+      calc((100vw - 23px) / 16),
+      calc((100vh - 270px) / 30)
+    );
   }
-
-  #board[data-mode="expert"] .cell {
-    transform: rotate(90deg);
-  }
-
 }
 
 @media (max-width: 390px) and (pointer: coarse) {
