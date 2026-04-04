@@ -163,7 +163,7 @@ async def health(request: Request):
 async def sitemap(request: Request):
     return templates.TemplateResponse(
         "sitemap.xml",
-        {"request": request, "today": date.today().isoformat()},
+        {"request": request, "today": date.today().isoformat(), "blog_posts": BLOG_POSTS},
         media_type="application/xml",
     )
 
