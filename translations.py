@@ -630,7 +630,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "t2k_htp_scoring_p1":   "Each merge adds the value of the new combined tile to your score. Merging two 512 tiles into a 1024 tile adds 1024 points. Chaining several merges in one move adds all of them together.",
         "t2k_htp_scoring_p2":   "On the daily puzzle, your final score, move count, and time are recorded and submitted to the <a href=\"/other/2048/leaderboard\">leaderboard</a>. The leaderboard ranks first by score (higher is better), then by time (lower is better).",
         "t2k_htp_tiles_h2":     "Tile Values",
-        "t2k_htp_tiles_p1":     "Tiles always start as 2 or 4. New tiles appear randomly in an empty cell after every move. The sequence of values doubles with each merge: 2 → 4 → 8 → 16 → 32 → 64 → 128 → 256 → 512 → 1024 → 2048 and beyond.",
+        "t2k_htp_tiles_p1":     "Tiles always start as 2 or 4 — there is a 90% chance of a 2 and a 10% chance of a 4. New tiles appear randomly in an empty cell after every move. The sequence of values doubles with each merge: 2 → 4 → 8 → 16 → 32 → 64 → 128 → 256 → 512 → 1024 → 2048 and beyond.",
         "t2k_htp_tiles_p2":     "Only tiles with the same value can merge, and each tile can merge at most once per move.",
         "t2k_htp_strategy_h2":  "Basic Strategy",
         "t2k_htp_strategy_p1":  "<strong>Pick a corner and commit to it.</strong> Choose one corner — usually a bottom corner — and keep your highest-value tile there. Build a descending chain of tiles along the edge leading away from it so that every merge naturally feeds into the next.",
