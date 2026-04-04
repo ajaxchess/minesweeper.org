@@ -18,8 +18,12 @@
 
   <div class="bot-lobby">
     <p class="bot-lobby-intro">
-      Play against a computer opponent on the same board as a real PvP match.
-      The bot uses a constraint-based solver — it won't guess randomly unless forced to.
+      Play a real PvP-rules match against a computer opponent. Both you and the bot receive
+      the same board and start simultaneously — whoever scores higher wins.
+      The bot uses an <strong>iterative constraint solver</strong>: it reads every revealed
+      number, propagates deductions across the board, and only guesses when no safe move
+      can be proven. The difficulty setting controls how fast it clicks and how often it
+      plays a random move instead of solving.
     </p>
 
     <div class="bot-lobby-section">
@@ -35,20 +39,31 @@
       <div class="bot-lobby-btn-row">
         <button class="bot-difficulty-btn" data-d="easy"   onclick="setDifficulty('easy')">
           <span class="bot-diff-name">🟢 Easy</span>
-          <span class="bot-diff-desc">Clicks every 2 s, sometimes random</span>
+          <span class="bot-diff-desc">One click every 2 s &mdash; 40% chance of a random move instead of solving. Beatable with basic technique.</span>
         </button>
         <button class="bot-difficulty-btn active" data-d="medium" onclick="setDifficulty('medium')">
           <span class="bot-diff-name">🟡 Medium</span>
-          <span class="bot-diff-desc">Clicks every 0.7 s, full constraint solver</span>
+          <span class="bot-diff-desc">One click every 0.7 s &mdash; full constraint solver, no random moves. A solid test for intermediate players.</span>
         </button>
         <button class="bot-difficulty-btn" data-d="hard"   onclick="setDifficulty('hard')">
           <span class="bot-diff-name">🔴 Hard</span>
-          <span class="bot-diff-desc">Clicks every 0.2 s, full constraint solver</span>
+          <span class="bot-diff-desc">One click every 0.2 s &mdash; full constraint solver with smarter guessing under uncertainty. Very difficult to beat.</span>
         </button>
       </div>
     </div>
 
     <a id="play-btn" href="/pvp/bot/play?m=standard&d=medium" class="bot-play-btn">⚔️ Play vs Bot</a>
+
+    <div class="bot-lobby-tips">
+      <h2>Tips for beating the bot</h2>
+      <ul>
+        <li><strong>Start center, chord aggressively.</strong> A large opening cascade and fast chord-clicking produces more tile reveals per second than the bot's fixed click rate — even on Hard.</li>
+        <li><strong>Easy is a real warmup.</strong> With a 40% random-move rate, Easy will hit mines and stall. Use it to get comfortable with the PvP board size before stepping up.</li>
+        <li><strong>Hard is genuinely hard.</strong> At 5 clicks per second with a full solver, the Hard bot clears tiles quickly and consistently. To win you need sub-30s Beginner-level play and zero wasted clicks.</li>
+        <li><strong>Scoring is the same as live PvP.</strong> 5 points per tile revealed, plus a time bonus of <code>(300 − seconds) × percentRevealed</code>. Clearing more of the board fast matters as much as not hitting mines.</li>
+      </ul>
+    </div>
+
   </div>
 
 </div>
