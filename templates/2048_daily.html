@@ -209,6 +209,13 @@
 
   <div id="t2k-board"></div>
 
+  <p class="desktop-only" style="font-size:0.8rem;color:var(--text-dim);text-align:center;margin:0;">
+    Use the arrow keys to move all tiles in that direction.
+  </p>
+  <p class="mobile-only" style="font-size:0.8rem;color:var(--text-dim);text-align:center;margin:0;">
+    Swipe to move all tiles in that direction.
+  </p>
+
   <div class="t2k-controls">
     <button class="t2k-btn" id="t2k-reset">{{ t['fp_new_game'] }}</button>
     <button class="t2k-btn" id="t2k-undo">↩ Undo</button>
@@ -238,6 +245,12 @@
     <button class="t2k-btn" id="t2k-submit" style="align-self:flex-start;">{{ t['fp_submit_btn'] }}</button>
   </div>
   <div id="t2k-score-msg" style="display:none;color:var(--accent2);font-size:0.9rem;"></div>
+
+  <!-- Article reference -->
+  <p style="font-size:0.8rem;color:var(--text-dim);text-align:center;max-width:360px;">
+    According to <a href="https://jdlm.info/articles/2017/08/05/markov-chain-2048.html" target="_blank" rel="noopener" style="color:var(--accent2);">this analysis using Markov chains</a>,
+    a standard game takes an average of at least 938.8 moves to reach 2048.
+  </p>
 
   <!-- Settings -->
   <details class="t2k-settings">
