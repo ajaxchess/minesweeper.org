@@ -129,7 +129,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "index_guess": '🎲 Guess',
         "index_no_guess": '⚡ No-Guess',
         "index_welcome_title": "Welcome to Lady Di's Mines",
-        "index_welcome_body": 'Minesweeper.org has been serving the classic Minesweeper game since 2000. Play beginner, intermediate, expert, or custom boards — all free, no download required. Challenge yourself against the daily leaderboard or set a personal best.',
+        "index_welcome_body": 'Minesweeper.org has been serving the classic Minesweeper game since 1999. Play beginner, intermediate, expert, or custom boards — all free, no download required. Challenge yourself against the daily leaderboard or set a personal best.',
         "index_signin_msg": 'Sign in to save your scores and appear on the leaderboard.',
         "index_about": 'About this site',
         "index_strategy": 'Strategy & Tips',

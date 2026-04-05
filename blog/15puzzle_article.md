@@ -13,7 +13,7 @@ datePublished: 2026-03-31T00:00:00Z
 
 ---
 
-Minesweeper.org — home to the classic Minesweeper game since 2000 — has expanded its puzzle lineup with a brand-new feature: the **15-Puzzle**. Available now at [minesweeper.org/other/15puzzle](https://minesweeper.org/other/15puzzle/), this iconic sliding tile game joins Tentaizu, Mosaic, and Nonosweeper as part of the site's growing daily puzzle collection.
+Minesweeper.org — home to the classic Minesweeper game since 1999 — has expanded its puzzle lineup with a brand-new feature: the **15-Puzzle**. Available now at [minesweeper.org/other/15puzzle](https://minesweeper.org/other/15puzzle/), this iconic sliding tile game joins Tentaizu, Mosaic, and Nonosweeper as part of the site's growing daily puzzle collection.
 
 ## What Is the 15-Puzzle?
 
