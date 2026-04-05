@@ -63,8 +63,7 @@ F67 Mahjong Solitaire (/other/mahjong)
 
   Mobile
   ──────────────────────────────────────────────────────────────────────
-  [OPEN] Touch/mobile support not mentioned in the feature request. Recommend tap-to-select
-  interaction (tap first tile, tap matching tile to remove pair). Needs confirmation.
+  Mobile/touch: tap to select a tile, tap a matching free tile to remove the pair.
 
 F66 Blog post about Diana images
 
