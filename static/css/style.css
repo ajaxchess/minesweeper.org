@@ -5880,6 +5880,8 @@ html[data-skin="light"] nav a.active  { color: #fff; }
 /* Button-styled links must keep white text on the dark accent2 background */
 html[data-skin="light"] .tz-btn-potd,
 html[data-skin="light"] .tz-btn-potd:visited { color: #fff; }
+html[data-skin="light"] .variant-play-btn,
+html[data-skin="light"] .variant-play-btn:visited { color: #fff; }
 
 /* ══════════════════════════════════════════════════════════════════════════════
    F50  Flower Garden — Night theme  (data-skin="flower")
@@ -5952,6 +5954,8 @@ html[data-skin="flower"] nav a.active  { color: #fff; }
 
 html[data-skin="flower"] .tz-btn-potd,
 html[data-skin="flower"] .tz-btn-potd:visited { color: #fff; }
+html[data-skin="flower"] .variant-play-btn,
+html[data-skin="flower"] .variant-play-btn:visited { color: #fff; }
 
 html[data-skin="flower"] .solstice-banner,
 html[data-skin="flower"] .diana-birthday-banner {
@@ -6039,6 +6043,8 @@ html[data-skin="flower-light"] a:visited   { color: #7a3090; }
 html[data-skin="flower-light"] nav a,
 html[data-skin="flower-light"] nav a:visited { color: var(--text-dim); }
 html[data-skin="flower-light"] nav a.active  { color: #fff; }
+html[data-skin="flower-light"] .variant-play-btn,
+html[data-skin="flower-light"] .variant-play-btn:visited { color: #fff; }
 
 html[data-skin="flower-light"] #noguess-toggle.active,
 html[data-skin="flower-light"] #highlight-errors-toggle.active {
