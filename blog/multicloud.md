@@ -1,7 +1,7 @@
 ---
 title: "Minesweeper.org Goes Multicloud"
 publisher: "Lady Di's Mines"
-image: "https://minesweeper.org/static/blog/toby-learned-pig-c6c4ff-small.webp"
+image: "https://minesweeper.org/static/img/toby-learned-pig-c6c4ff-small.webp"
 author: "Richard Cross"
 authorurl: "https://minesweeper.org"
 datePublished: 2026-04-05T00:00:00Z
@@ -13,7 +13,7 @@ datePublished: 2026-04-05T00:00:00Z
 
 ---
 
-![Toby learned Pig Latin](/static/blog/toby-learned-pig-c6c4ff-small.webp)
+![Toby learned Pig Latin](/static/img/toby-learned-pig-c6c4ff-small.webp)
 
 The Lady Di's Mines team is proud to announce that minesweeper.org is now running on **two cloud providers simultaneously** — AWS and Google Cloud Platform.
 

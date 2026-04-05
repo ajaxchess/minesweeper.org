@@ -1622,6 +1622,16 @@ async def about_page(request: Request):
 # excerpt: one-sentence summary shown on the index page
 BLOG_POSTS = [
     {
+        "slug":          "multicloud",
+        "file":          "blog/multicloud.md",
+        "title":         "Minesweeper.org Goes Multicloud",
+        "date":          "2026-04-05",
+        "datePublished": "2026-04-05T00:00:00Z",
+        "image":         "https://minesweeper.org/static/img/toby-learned-pig-c6c4ff-small.webp",
+        "excerpt":       "The Lady Di's Mines team has spun up a GCP instance at pgl.minesweeper.org "
+                         "in support of the native Pig Latin speakers of Iowa.",
+    },
+    {
         "slug":          "royalty-free",
         "file":          "blog/15puzzle-generator.md",
         "title":         "Nothing About Her Is Royalty-Free",
