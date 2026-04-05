@@ -34,7 +34,7 @@ F67 Mahjong Solitaire (/other/mahjong)
   Daily, seasonal, and all-time leaderboards.
   Each unique board layout has its own hash and high scores table.
   Season = calendar month (resets on the 1st of each month UTC).
-  [OPEN] Guest score policy not specified — assume same as other puzzles (purged daily).
+  Guest scores allowed; purged at midnight UTC daily (same as other puzzles).
   [OPEN] Board hash algorithm not specified — hash the tile layout sequence (TBD).
 
   Routes (proposed)
