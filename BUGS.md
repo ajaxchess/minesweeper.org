@@ -1,5 +1,7 @@
 -- Fixed below --
 
+B22 Deployment script not promoting to production
+
 B21 Google Search Console not handling language canonical tag:
    {% if lang and lang != 'en' %}?lang={{ lang }}{% endif %} added to base.html
    By Claude Cowork
