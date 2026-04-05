@@ -407,7 +407,7 @@
     var dateStr = window.H2K_DATE || new Date().toISOString().slice(0, 10);
     fetch('/api/2048hex-scores', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       body: JSON.stringify({
         name:          name,
         puzzle_date:   dateStr,
