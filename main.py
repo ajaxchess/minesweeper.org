@@ -1627,7 +1627,7 @@ BLOG_POSTS = [
         "title":         "Minesweeper.org Goes Multicloud",
         "date":          "2026-04-05",
         "datePublished": "2026-04-05T00:00:00Z",
-        "image":         "https://minesweeper.org/static/img/toby-learned-pig-c6c4ff-small.webp",
+        "image":         "/static/img/toby-learned-pig-c6c4ff-small.webp",
         "excerpt":       "The Lady Di's Mines team has spun up a GCP instance at pgl.minesweeper.org "
                          "in support of the native Pig Latin speakers of Iowa.",
     },
@@ -1745,6 +1745,16 @@ def _parse_front_matter(raw: str) -> tuple[dict, str]:
     return meta, raw
 
 
+def _make_absolute_url(request: Request, url: str) -> str:
+    """Return an absolute URL, resolving relative paths against the request base URL."""
+    if not url:
+        return ""
+    if url.startswith("http://") or url.startswith("https://"):
+        return url
+    base = str(request.base_url).rstrip("/")
+    return base + ("" if url.startswith("/") else "/") + url
+
+
 def _webp_if_exists(image_url: str) -> str:
     """Return the .webp URL only if the file exists on disk, else empty string."""
     import os
@@ -1792,7 +1802,7 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
         "author":        front_matter.get("author", ""),
         "authorurl":     front_matter.get("authorurl", "") if front_matter.get("authorurl", "").startswith(("https://", "http://")) else "",
         "publisher":     front_matter.get("publisher", ""),
-        "og_image":      post.get("image") or front_matter.get("image", ""),
+        "og_image":      _make_absolute_url(request, post.get("image") or front_matter.get("image", "")),
         "og_image_webp": _webp_if_exists(post.get("image") or front_matter.get("image", "")),
         "date_published": date_published,
         "comments":      comments,
