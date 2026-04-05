@@ -2091,6 +2091,19 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   }
 }
 
+/* ── Desktop expert board: rotated to landscape (16 rows × 30 cols) ─────────── */
+/* Width target : 30 cols + 29 gaps + 8px padding = 30*cell + 37px              */
+/* Height target: 16 rows + 15 gaps + 8px padding = 16*cell + 23px              */
+/* Subtract ~200px for nav + game-info + instructions + chrome.                 */
+@media (min-width: 701px) and (pointer: fine) {
+  #board[data-mode="expert"][data-rotated="1"] {
+    --cell-size: min(
+      calc((100vw - 37px) / 30),
+      calc((100vh - 200px) / 16)
+    );
+  }
+}
+
 @media (max-width: 390px) and (pointer: coarse) {
   :root { --cell-size: 20px; }
 }

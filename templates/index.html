@@ -71,6 +71,22 @@
          data-mode="{{ mode }}"
          data-username="{{ user.display_name if user else '' }}">
     </div>
+    {% if mode == 'expert' %}
+    <script>
+    (function () {
+      // On desktop (non-touch, wide screen) rotate the expert board to landscape:
+      // default is 30 rows × 16 cols (portrait); swap to 16 rows × 30 cols (landscape).
+      var isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+      if (!isMobile && window.innerWidth > 700) {
+        var b = document.getElementById('board');
+        var r = b.dataset.rows, c = b.dataset.cols;
+        b.dataset.rows = c;
+        b.dataset.cols = r;
+        b.setAttribute('data-rotated', '1');
+      }
+    })();
+    </script>
+    {% endif %}
 
     <div id="game-result"></div>
 
