@@ -42,31 +42,38 @@ fi
 
 echo "Deploy candidate available: $LAST_GOOD. Checking staging..."
 
-# ── Staging health gate ───────────────────────────────────────────────────────
+# ── Staging health gate (3 attempts, 15s apart) ───────────────────────────────
 # Confirm staging is healthy and running the exact commit we are about to promote.
-STAGING_RESPONSE=$(curl -s --max-time 10 \
-    -w "\n__HTTP_STATUS__%{http_code}" \
-    http://127.0.0.1:8002/health)
-STAGING_HTTP=$(echo "$STAGING_RESPONSE" | grep '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//')
-STAGING_BODY=$(echo "$STAGING_RESPONSE" | grep -v '__HTTP_STATUS__')
+# Retries handle the case where staging is still coming up after a restart.
+STAGING_OK=0
+for attempt in 1 2 3; do
+    STAGING_RESPONSE=$(curl -s --max-time 10 \
+        -w "\n__HTTP_STATUS__%{http_code}" \
+        http://127.0.0.1:8002/health)
+    STAGING_HTTP=$(echo "$STAGING_RESPONSE" | grep '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//')
+    STAGING_BODY=$(echo "$STAGING_RESPONSE" | grep -v '__HTTP_STATUS__')
 
-if [ "$STAGING_HTTP" != "200" ]; then
-    echo "ERROR: Staging /health returned HTTP $STAGING_HTTP. Aborting prod deploy."
-    exit 1
-fi
+    STAGING_STATUS=$(echo "$STAGING_BODY" | python3 -c \
+        "import sys,json; print(json.load(sys.stdin).get('status',''))" 2>/dev/null)
+    STAGING_COMMIT=$(echo "$STAGING_BODY" | python3 -c \
+        "import sys,json; print(json.load(sys.stdin).get('commit',''))" 2>/dev/null)
 
-STAGING_STATUS=$(echo "$STAGING_BODY" | python3 -c \
-    "import sys,json; print(json.load(sys.stdin).get('status',''))" 2>/dev/null)
-if [ "$STAGING_STATUS" != "ok" ]; then
-    echo "ERROR: Staging health status is '$STAGING_STATUS' (expected 'ok'). Aborting prod deploy."
-    exit 1
-fi
+    if [ "$STAGING_HTTP" = "200" ] && [ "$STAGING_STATUS" = "ok" ] && [ "$STAGING_COMMIT" = "$LAST_GOOD" ]; then
+        STAGING_OK=1
+        break
+    fi
 
-STAGING_COMMIT=$(echo "$STAGING_BODY" | python3 -c \
-    "import sys,json; print(json.load(sys.stdin).get('commit',''))" 2>/dev/null)
-if [ "$STAGING_COMMIT" != "$LAST_GOOD" ]; then
-    echo "ERROR: Staging is on commit $STAGING_COMMIT, expected last good commit $LAST_GOOD."
-    echo "       Staging may still be reverting or restarting. Aborting prod deploy."
+    if [ $attempt -lt 3 ]; then
+        echo "Staging check attempt $attempt failed (HTTP=$STAGING_HTTP, status=$STAGING_STATUS, commit=$STAGING_COMMIT). Retrying in 15s..."
+        sleep 15
+    else
+        echo "ERROR: Staging health gate failed after 3 attempts."
+        echo "       Last response: HTTP=$STAGING_HTTP, status=$STAGING_STATUS, commit=$STAGING_COMMIT (expected $LAST_GOOD)."
+        echo "       Aborting prod deploy."
+    fi
+done
+
+if [ "$STAGING_OK" = "0" ]; then
     exit 1
 fi
 
@@ -80,8 +87,13 @@ fi
 
 git reset --hard "$LAST_GOOD"
 
-echo "Building static assets..."
-bash "$REPO_DIR/scripts/build_assets.sh" || echo "Warning: asset build failed (continuing)"
+# Only rebuild static assets if JS or CSS files changed between commits.
+if git diff --name-only "$LOCAL_COMMIT" "$LAST_GOOD" -- static/js/ static/css/ | grep -qE '\.(js|css)$'; then
+    echo "Static assets changed — building..."
+    bash "$REPO_DIR/scripts/build_assets.sh" || echo "Warning: asset build failed (continuing)"
+else
+    echo "Static assets unchanged — skipping build."
+fi
 
 echo "Installing/updating Python dependencies..."
 "$VENV_DIR/bin/pip" install -r "$REPO_DIR/requirements.txt" --quiet || echo "Warning: pip install failed"

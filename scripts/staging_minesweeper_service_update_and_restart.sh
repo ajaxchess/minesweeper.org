@@ -51,8 +51,13 @@ fi
 
 git reset --hard "$REMOTE_COMMIT"
 
-echo "Building static assets..."
-bash "$REPO_DIR/scripts/build_assets.sh" || echo "Warning: asset build failed (continuing)"
+# Only rebuild static assets if JS or CSS files changed between commits.
+if git diff --name-only "$LOCAL_COMMIT" "$REMOTE_COMMIT" -- static/js/ static/css/ | grep -qE '\.(js|css)$'; then
+    echo "Static assets changed — building..."
+    bash "$REPO_DIR/scripts/build_assets.sh" || echo "Warning: asset build failed (continuing)"
+else
+    echo "Static assets unchanged — skipping build."
+fi
 
 echo "Installing/updating Python dependencies..."
 "$VENV_DIR/bin/pip" install --require-hashes -r "$REPO_DIR/requirements.lock" \
