@@ -567,6 +567,10 @@
     var undoBtn = document.getElementById('t2k-undo');
     if (undoBtn) undoBtn.addEventListener('click', undoMove);
 
+    document.querySelectorAll('[data-dir]').forEach(function (btn) {
+      btn.addEventListener('click', function () { handleDir(this.dataset.dir); });
+    });
+
     initSettings();
     resetGame();
   }

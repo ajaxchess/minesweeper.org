@@ -149,6 +149,29 @@
   padding: 0.3rem 0.75rem;
 }
 
+/* Directional pad */
+.t2k-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 52px);
+  grid-template-rows: repeat(2, 44px);
+  gap: 6px;
+  justify-content: center;
+}
+.t2k-dir-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+}
+.t2k-dir-btn:hover  { border-color: var(--accent2); color: var(--accent2); }
+.t2k-dir-btn:active { background: var(--accent2); color: #fff; border-color: var(--accent2); }
+
 /* Settings panel */
 .t2k-settings {
   width: 100%;
@@ -215,6 +238,16 @@
   <p class="mobile-only" style="font-size:0.8rem;color:var(--text-dim);text-align:center;margin:0;">
     Swipe to move all tiles in that direction.
   </p>
+
+  <!-- Directional pad (shown on mobile; desktop can use arrow keys) -->
+  <div class="t2k-dpad">
+    <div></div>
+    <button class="t2k-dir-btn" data-dir="up"    aria-label="Move up">↑</button>
+    <div></div>
+    <button class="t2k-dir-btn" data-dir="left"  aria-label="Move left">←</button>
+    <button class="t2k-dir-btn" data-dir="down"  aria-label="Move down">↓</button>
+    <button class="t2k-dir-btn" data-dir="right" aria-label="Move right">→</button>
+  </div>
 
   <div class="t2k-controls">
     <button class="t2k-btn" id="t2k-reset">{{ t['fp_new_game'] }}</button>
@@ -299,5 +332,5 @@
 window.T2K_DATE      = "{{ today }}";
 window.T2K_USER_NAME = {{ (user.name if user else '') | tojson }};
 </script>
-<script src="/static/js/2048.js?v=2"></script>
+<script src="/static/js/2048.js?v=3"></script>
 {% endblock %}
