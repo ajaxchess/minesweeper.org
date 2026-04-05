@@ -1456,35 +1456,39 @@ def submit_2048hex_score(payload: Game2048HexScoreSubmit, request: Request, db: 
 
 
 @app.get("/api/2048hex-scores/{puzzle_date}")
-def get_2048hex_scores(puzzle_date: str, db: Session = Depends(get_db)):
+def get_2048hex_scores(puzzle_date: str, sort: str = "score", db: Session = Depends(get_db)):
     import re
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
-    top = (
-        db.query(Game2048HexScore)
-        .filter(Game2048HexScore.puzzle_date == puzzle_date)
-        .order_by(Game2048HexScore.score.desc(), Game2048HexScore.time_ms.asc())
-        .limit(20)
-        .all()
-    )
-    return _enrich_with_profiles(top, db)
+    q = db.query(Game2048HexScore).filter(Game2048HexScore.puzzle_date == puzzle_date)
+    if sort == "moves":
+        q = q.filter(Game2048HexScore.moves_to_2048.isnot(None)) \
+             .order_by(Game2048HexScore.moves_to_2048.asc(), Game2048HexScore.time_ms.asc())
+    else:
+        q = q.order_by(Game2048HexScore.score.desc(), Game2048HexScore.time_ms.asc())
+    return _enrich_with_profiles(q.limit(20).all(), db)
 
 
 @app.get("/api/2048hex-scores")
-def get_2048hex_scores_all_time(db: Session = Depends(get_db)):
-    top = (
-        db.query(Game2048HexScore)
-        .order_by(Game2048HexScore.score.desc(), Game2048HexScore.time_ms.asc())
-        .limit(20)
-        .all()
-    )
-    return _enrich_with_profiles(top, db)
+def get_2048hex_scores_all_time(sort: str = "score", db: Session = Depends(get_db)):
+    q = db.query(Game2048HexScore)
+    if sort == "moves":
+        q = q.filter(Game2048HexScore.moves_to_2048.isnot(None)) \
+             .order_by(Game2048HexScore.moves_to_2048.asc(), Game2048HexScore.time_ms.asc())
+    else:
+        q = q.order_by(Game2048HexScore.score.desc(), Game2048HexScore.time_ms.asc())
+    return _enrich_with_profiles(q.limit(20).all(), db)
 
 
 @app.get("/api/2048hex-histogram")
 def get_2048hex_histogram(puzzle_date: Optional[str] = None, db: Session = Depends(get_db)):
     import re
-    q = db.query(Game2048HexScore.moves_to_2048).filter(Game2048HexScore.moves_to_2048.isnot(None))
+    # Only count games where player stopped at 2048 (moves == moves_to_2048).
+    # Excludes games where the player hit Continue and kept playing.
+    q = db.query(Game2048HexScore.moves_to_2048).filter(
+        Game2048HexScore.moves_to_2048.isnot(None),
+        Game2048HexScore.moves == Game2048HexScore.moves_to_2048,
+    )
     if puzzle_date:
         if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
             raise HTTPException(status_code=400, detail="Invalid date format")
@@ -1547,35 +1551,39 @@ def submit_2048_score(payload: Game2048ScoreSubmit, request: Request, db: Sessio
 
 
 @app.get("/api/2048-scores/{puzzle_date}")
-def get_2048_scores(puzzle_date: str, db: Session = Depends(get_db)):
+def get_2048_scores(puzzle_date: str, sort: str = "score", db: Session = Depends(get_db)):
     import re
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
-    top = (
-        db.query(Game2048Score)
-        .filter(Game2048Score.puzzle_date == puzzle_date)
-        .order_by(Game2048Score.score.desc(), Game2048Score.time_ms.asc())
-        .limit(20)
-        .all()
-    )
-    return _enrich_with_profiles(top, db)
+    q = db.query(Game2048Score).filter(Game2048Score.puzzle_date == puzzle_date)
+    if sort == "moves":
+        q = q.filter(Game2048Score.moves_to_2048.isnot(None)) \
+             .order_by(Game2048Score.moves_to_2048.asc(), Game2048Score.time_ms.asc())
+    else:
+        q = q.order_by(Game2048Score.score.desc(), Game2048Score.time_ms.asc())
+    return _enrich_with_profiles(q.limit(20).all(), db)
 
 
 @app.get("/api/2048-scores")
-def get_2048_scores_all_time(db: Session = Depends(get_db)):
-    top = (
-        db.query(Game2048Score)
-        .order_by(Game2048Score.score.desc(), Game2048Score.time_ms.asc())
-        .limit(20)
-        .all()
-    )
-    return _enrich_with_profiles(top, db)
+def get_2048_scores_all_time(sort: str = "score", db: Session = Depends(get_db)):
+    q = db.query(Game2048Score)
+    if sort == "moves":
+        q = q.filter(Game2048Score.moves_to_2048.isnot(None)) \
+             .order_by(Game2048Score.moves_to_2048.asc(), Game2048Score.time_ms.asc())
+    else:
+        q = q.order_by(Game2048Score.score.desc(), Game2048Score.time_ms.asc())
+    return _enrich_with_profiles(q.limit(20).all(), db)
 
 
 @app.get("/api/2048-histogram")
 def get_2048_histogram(puzzle_date: Optional[str] = None, db: Session = Depends(get_db)):
     import re
-    q = db.query(Game2048Score.moves_to_2048).filter(Game2048Score.moves_to_2048.isnot(None))
+    # Only count games where player stopped at 2048 (moves == moves_to_2048).
+    # Excludes games where the player hit Continue and kept playing.
+    q = db.query(Game2048Score.moves_to_2048).filter(
+        Game2048Score.moves_to_2048.isnot(None),
+        Game2048Score.moves == Game2048Score.moves_to_2048,
+    )
     if puzzle_date:
         if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
             raise HTTPException(status_code=400, detail="Invalid date format")

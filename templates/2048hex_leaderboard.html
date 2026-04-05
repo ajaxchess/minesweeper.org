@@ -16,8 +16,9 @@
 .t2k-lb-tabs {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
   justify-content: center;
+  flex-wrap: wrap;
 }
 .t2k-lb-tab {
   padding: 0.4rem 1.1rem;
@@ -91,9 +92,16 @@
     <a href="/other" class="btn" style="margin:0.25rem;">Other Puzzles</a>
   </div>
 
+  <!-- Period tabs -->
   <div class="t2k-lb-tabs">
-    <a href="/other/2048hex/leaderboard"            class="t2k-lb-tab" id="tab-today">📅 Today</a>
-    <a href="/other/2048hex/leaderboard?period=all" class="t2k-lb-tab" id="tab-all">🏅 All Time</a>
+    <a class="t2k-lb-tab" id="tab-today">📅 Today</a>
+    <a class="t2k-lb-tab" id="tab-all">🏅 All Time</a>
+  </div>
+
+  <!-- Sort tabs -->
+  <div class="t2k-lb-tabs">
+    <a class="t2k-lb-tab" id="tab-score">🏆 Best Score</a>
+    <a class="t2k-lb-tab" id="tab-moves">🎯 Fewest Moves to 2048</a>
   </div>
 
   <h2 id="lb-heading" style="font-size:1rem;color:var(--accent2);margin-top:0.5rem;margin-bottom:1rem;"></h2>
@@ -129,20 +137,37 @@
   var today     = "{{ today }}";
   var params    = new URLSearchParams(location.search);
   var isAllTime = params.get('period') === 'all';
+  var isMoves   = params.get('sort') === 'moves';
 
   var msgNoScores = {{ t['lb_no_scores'] | tojson }};
   var msgFailed   = {{ t['lb_error']     | tojson }};
 
-  // Activate the correct tab
-  document.getElementById(isAllTime ? 'tab-all' : 'tab-today').classList.add('active');
+  // ── Tab links ──────────────────────────────────────────────────────────────
+  function tabUrl(period, sort) {
+    var p = new URLSearchParams();
+    if (period) p.set('period', period);
+    if (sort)   p.set('sort',   sort);
+    var qs = p.toString();
+    return '/other/2048hex/leaderboard' + (qs ? '?' + qs : '');
+  }
 
-  // Set heading text
-  var heading = document.getElementById('lb-heading');
-  heading.textContent = isAllTime ? 'All Time' : ('Today — ' + today);
+  document.getElementById('tab-today').href = tabUrl('',    isMoves ? 'moves' : '');
+  document.getElementById('tab-all'  ).href = tabUrl('all', isMoves ? 'moves' : '');
+  document.getElementById('tab-score').href = tabUrl(isAllTime ? 'all' : '', '');
+  document.getElementById('tab-moves').href = tabUrl(isAllTime ? 'all' : '', 'moves');
 
-  // ── Leaderboard ──────────────────────────────────────────────────────────────
+  document.getElementById(isAllTime ? 'tab-all'   : 'tab-today').classList.add('active');
+  document.getElementById(isMoves   ? 'tab-moves' : 'tab-score').classList.add('active');
+
+  // ── Heading ────────────────────────────────────────────────────────────────
+  var periodLabel = isAllTime ? 'All Time' : ('Today — ' + today);
+  var sortLabel   = isMoves   ? 'Fewest Moves to 2048' : 'Best Score';
+  document.getElementById('lb-heading').textContent = periodLabel + ' · ' + sortLabel;
+
+  // ── Leaderboard ────────────────────────────────────────────────────────────
   var tbody    = document.getElementById('lb-body');
-  var scoreUrl = isAllTime ? '/api/2048hex-scores' : '/api/2048hex-scores/' + today;
+  var baseUrl  = isAllTime ? '/api/2048hex-scores' : '/api/2048hex-scores/' + today;
+  var scoreUrl = baseUrl + (isMoves ? '?sort=moves' : '');
   try {
     var r      = await fetch(scoreUrl);
     var scores = await r.json();
@@ -172,7 +197,7 @@
     tbody.innerHTML = '<tr><td colspan="8" style="color:var(--text-dim);">' + msgFailed + '</td></tr>';
   }
 
-  // ── Histogram ─────────────────────────────────────────────────────────────────
+  // ── Histogram ──────────────────────────────────────────────────────────────
   var histUrl     = isAllTime ? '/api/2048hex-histogram' : '/api/2048hex-histogram?puzzle_date=' + today;
   var histHeading = document.getElementById('hist-heading');
   histHeading.textContent = 'Moves to Reach 2048 — ' + (isAllTime ? 'All Time' : today);
