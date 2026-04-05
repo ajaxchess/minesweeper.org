@@ -79,6 +79,14 @@ F67 Mahjong Solitaire (/other/mahjong)
   Only one saved game per board hash per user (resuming overwrites the previous save).
   Completed games are removed from the in-progress list automatically.
 
+  Database: requires a new table `mahjong_saved_games` with columns:
+  - user_email       (String, indexed)
+  - board_hash       (String — uniquely identifies layout + tile arrangement)
+  - elapsed_ms       (Integer — timer value at time of save)
+  - removed_pairs    (JSON array — ordered list of tile pairs removed, for board reconstruction)
+  - updated_at       (DateTime — timestamp of last save)
+  Unique constraint on (user_email, board_hash).
+
   Photo Background (logged-in users only)
   ──────────────────────────────────────────────────────────────────────
   Logged-in users can upload a photo to display beneath the tile layout.
