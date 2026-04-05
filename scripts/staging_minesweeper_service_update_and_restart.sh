@@ -72,9 +72,9 @@ echo "Regenerating database.py from template..."
 echo "Restarting staging service..."
 sudo systemctl restart "$SERVICE_NAME" || { echo "Error: Failed to restart staging service"; exit 1; }
 
-# Wait for Uvicorn to be ready before running smoke tests (up to 30s)
+# Wait for Uvicorn to be ready before running smoke tests (up to 60s)
 READY=0
-for i in $(seq 1 10); do
+for i in $(seq 1 20); do
     if curl -s --max-time 3 http://127.0.0.1:8002/health | grep -q '"status"'; then
         READY=1
         break
@@ -82,7 +82,7 @@ for i in $(seq 1 10); do
     sleep 3
 done
 if [ "$READY" = "0" ]; then
-    echo "ERROR: Staging did not become healthy within 30s after restart. Aborting smoke tests."
+    echo "ERROR: Staging did not become healthy within 60s after restart. Aborting smoke tests."
     exit 1
 fi
 echo "Staging service is up. Running smoke tests..."
