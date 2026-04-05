@@ -36,8 +36,7 @@ F67 Mahjong Solitaire (/other/mahjong)
 
   Tile Set
   ──────────────────────────────────────────────────────────────────────
-  [OPEN] Tile face art not specified in the feature request. Options: standard mahjong
-  symbols, simplified icons, or custom pixel art. Needs decision before implementation.
+  Standard mahjong symbols (Characters, Bamboo, Circles, Winds, Dragons, Seasons, Flowers).
 
   Daily Puzzle
   ──────────────────────────────────────────────────────────────────────
