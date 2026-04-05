@@ -67,6 +67,10 @@ F67 Mahjong Solitaire (/other/mahjong)
   The photo is visible from the start of the game, divided into a grid matching
   the Turtle formation. Each tile covers its corresponding section of the photo;
   as tiles are removed, that portion of the photo is revealed.
+  Photos are saved to the user's profile. Users can upload multiple photos and designate
+  one as their default — used automatically for every new game unless overridden.
+  A shareable URL encodes the board hash and photo reference so anyone can view
+  the same game with the same photo background (read-only for non-owners).
   Photo upload and storage follows the same model as the 15-puzzle generator (see F63/F64).
   Guests see only the standard tile faces with no photo background.
 
