@@ -1,5 +1,53 @@
 List of active features
 
+F67 Mahjong Solitaire (/other/mahjong)
+  Tile-matching solitaire game under the Other Puzzles section.
+  Reference: FeatureRequests/MahjongSolitaire.md
+
+  Board & Formation
+  ──────────────────────────────────────────────────────────────────────
+  Turtle formation (standard 144-tile layout).
+  All served boards are guaranteed solvable — generate by working backwards
+  from a fully matched state using a seeded PRNG (approach TBD; see open question).
+
+  Gameplay
+  ──────────────────────────────────────────────────────────────────────
+  Goal: match and remove all pairs of identical free tiles.
+  A tile is "free" if it has no tile on top of it and is open on its left or right side.
+  Matched/removed tiles are displayed below the playing field as pairs in removal order.
+  Undo move button — steps back one matched pair at a time.
+  [OPEN] Hint button to highlight movable tile pairs — visual treatment TBD (highlight colour?
+  pulsing border? separate list?). Needs design decision before implementation.
+
+  Tile Set
+  ──────────────────────────────────────────────────────────────────────
+  [OPEN] Tile face art not specified in the feature request. Options: standard mahjong
+  symbols, simplified icons, or custom pixel art. Needs decision before implementation.
+
+  Daily Puzzle
+  ──────────────────────────────────────────────────────────────────────
+  One shared board per day, seeded by YYYY-MM-DD UTC. Resets midnight UTC.
+  Games are timed (timer starts on first tile interaction).
+
+  Leaderboard
+  ──────────────────────────────────────────────────────────────────────
+  Daily, seasonal, and all-time leaderboards.
+  Each unique board layout has its own hash and high scores table.
+  [OPEN] Season definition not specified — calendar quarters assumed unless decided otherwise.
+  [OPEN] Guest score policy not specified — assume same as other puzzles (purged daily).
+  [OPEN] Board hash algorithm not specified — hash the tile layout sequence (TBD).
+
+  Routes (proposed)
+  ──────────────────────────────────────────────────────────────────────
+  /other/mahjong              — landing page / daily game
+  /other/mahjong/leaderboard  — leaderboard (daily / seasonal / all-time tabs)
+  /other/mahjong/how-to-play  — rules and controls
+
+  Mobile
+  ──────────────────────────────────────────────────────────────────────
+  [OPEN] Touch/mobile support not mentioned in the feature request. Recommend tap-to-select
+  interaction (tap first tile, tap matching tile to remove pair). Needs confirmation.
+
 F66 Blog post about Diana images
 
 F65 Click and drag to move multiple tiles in the 15-Puzzle
