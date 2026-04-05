@@ -123,6 +123,12 @@ async def forbidden_handler(request: Request, exc):
     )
 
 # ── SEO: robots.txt and sitemap ───────────────────────────────────────────────
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/static/favicon.svg", status_code=301)
+
+
 @app.get("/robots.txt", include_in_schema=False)
 async def robots():
     content = (
