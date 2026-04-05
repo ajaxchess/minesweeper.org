@@ -61,6 +61,24 @@ F67 Mahjong Solitaire (/other/mahjong)
   /other/mahjong/leaderboard  — leaderboard (daily / seasonal / all-time tabs)
   /other/mahjong/how-to-play  — rules and controls
 
+  Auto-Save & Resume (logged-in users only)
+  ──────────────────────────────────────────────────────────────────────
+  Game progress is automatically saved for logged-in users. The saved state captures:
+  - The board hash (identifies the layout and tile arrangement)
+  - Elapsed time (ms) at the point of saving
+  - The ordered list of tile pairs removed so far (to reconstruct board state)
+
+  A pause button on the game board stops the timer and triggers a save, signalling
+  to the player that it is safe to leave and return later.
+
+  In-progress games appear on the user's profile page under a "Mahjong Solitaire —
+  In Progress" section. Each entry shows the board date/hash, elapsed time, and a
+  "Resume" link that restores the board to the exact saved state with the timer continuing
+  from where it left off.
+
+  Only one saved game per board hash per user (resuming overwrites the previous save).
+  Completed games are removed from the in-progress list automatically.
+
   Photo Background (logged-in users only)
   ──────────────────────────────────────────────────────────────────────
   Logged-in users can upload a photo to display beneath the tile layout.
