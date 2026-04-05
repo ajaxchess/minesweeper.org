@@ -51,7 +51,9 @@ F67 Mahjong Solitaire (/other/mahjong)
   Each unique board layout has its own hash and high scores table.
   Season = calendar month (resets on the 1st of each month UTC).
   Guest scores allowed; purged at midnight UTC daily (same as other puzzles).
-  [OPEN] Board hash algorithm not specified — hash the tile layout sequence (TBD).
+  Board hash encodes two things: (1) the layout formation (e.g. Turtle) and (2) the
+  position/sequence of all 144 tiles. Any board can be fully reconstructed from its
+  hash alone. Encoded as a base64url string (consistent with 15-puzzle hash approach).
 
   Routes (proposed)
   ──────────────────────────────────────────────────────────────────────
