@@ -123,6 +123,22 @@ async def forbidden_handler(request: Request, exc):
     )
 
 # ── SEO: robots.txt and sitemap ───────────────────────────────────────────────
+@app.get("/.well-known/apple-app-site-association", include_in_schema=False)
+async def apple_app_site_association():
+    from fastapi.responses import JSONResponse
+    return JSONResponse(content={
+        "applinks": {
+            "details": [{
+                "appIDs": ["JGY24WS6U2.karching.Driver-Education"],
+                "components": [{
+                    "/": "/cpartners/*",
+                    "comment": "Matches any URL whose path starts with /stock/"
+                }]
+            }]
+        }
+    })
+
+
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     from fastapi.responses import RedirectResponse
