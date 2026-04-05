@@ -268,7 +268,7 @@
     <label>
       <span>{{ t['fp_name_label'] }}</span>
       <input type="text" id="t2k-name" maxlength="32" placeholder="Your name"
-             value="{{ user.name if user else '' }}">
+             value="{{ user.display_name or user.name if user else '' }}">
     </label>
     <input type="hidden" id="t2k-time-val"        value="0">
     <input type="hidden" id="t2k-moves-val"       value="0">
@@ -330,7 +330,7 @@
 
 <script>
 window.T2K_DATE      = "{{ today }}";
-window.T2K_USER_NAME = {{ (user.name if user else '') | tojson }};
+window.T2K_USER_NAME = {{ (user.display_name or user.name if user else '') | tojson }};
 </script>
 <script src="/static/js/2048.js?v=3"></script>
 {% endblock %}

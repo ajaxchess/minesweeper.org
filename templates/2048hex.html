@@ -157,7 +157,7 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
 </style>
 
 <!-- Hidden: logged-in user name for auto-submit -->
-<input type="hidden" id="hex2k-username" value="{{ user.name if user else '' }}">
+<input type="hidden" id="hex2k-username" value="{{ user.display_name or user.name if user else '' }}">
 
 <div class="h2k-wrap">
 
@@ -239,7 +239,7 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
     <label>
       <span>Your name</span>
       <input type="text" id="hex2k-name" maxlength="32" placeholder="Your name"
-             value="{{ user.name if user else '' }}">
+             value="{{ user.display_name or user.name if user else '' }}">
     </label>
     <input type="hidden" id="hex2k-time-val"         value="0">
     <input type="hidden" id="hex2k-moves-val"        value="0">
