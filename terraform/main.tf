@@ -1,6 +1,6 @@
 # Configure the GCP Provider
 provider "google" {
-  project = "YOUR_PROJECT_ID" # Replace with your GCP Project ID
+  project = "regisconsulting" # Replace with your GCP Project ID
   region  = "us-central1"
 }
 
@@ -36,6 +36,27 @@ resource "google_compute_firewall" "ssh_firewall" {
 
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["web-server"]
+}
+
+resource "google_storage_bucket" "terraform_state" {
+  name          = "pgl.minesweeper.org"
+  location      = "us-central1"
+  force_destroy = false
+
+  versioning {
+    enabled = true
+  }
+
+  public_access_prevention = "enforced"
+
+  lifecycle_rule {
+    condition {
+      num_newer_versions = 5
+    }
+    action {
+      type = "Delete"
+    }
+  }
 }
 
 # Compute Instance
@@ -109,6 +130,13 @@ resource "google_compute_instance" "web_server" {
 
   metadata = {
     enable-oslogin = "TRUE"
+  }
+}
+
+terraform {
+  backend "gcs" {
+    bucket  = "pgl.minesweeper.org"
+    prefix  = "terraform/state"
   }
 }
 
