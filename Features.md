@@ -61,6 +61,15 @@ F67 Mahjong Solitaire (/other/mahjong)
   /other/mahjong/leaderboard  — leaderboard (daily / seasonal / all-time tabs)
   /other/mahjong/how-to-play  — rules and controls
 
+  Photo Background (logged-in users only)
+  ──────────────────────────────────────────────────────────────────────
+  Logged-in users can upload a photo to display beneath the tile layout.
+  The photo is visible from the start of the game, divided into a grid matching
+  the Turtle formation. Each tile covers its corresponding section of the photo;
+  as tiles are removed, that portion of the photo is revealed.
+  Photo upload and storage follows the same model as the 15-puzzle generator (see F63/F64).
+  Guests see only the standard tile faces with no photo background.
+
   Mobile
   ──────────────────────────────────────────────────────────────────────
   Mobile/touch: tap to select a tile, tap a matching free tile to remove the pair.
