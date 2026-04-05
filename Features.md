@@ -1,5 +1,20 @@
 List of active features
 
+# Global Conventions
+
+  Season Definition
+  ──────────────────────────────────────────────────────────────────────
+  A "season" on minesweeper.org is a calendar month. Seasonal leaderboards
+  reset on the 1st of each month at midnight UTC. This applies to all games
+  on the site.
+
+  Guest Scores
+  ──────────────────────────────────────────────────────────────────────
+  Guest (not logged in) scores can be submitted to any leaderboard but are
+  purged at midnight UTC daily. Registered user scores are retained permanently.
+
+──────────────────────────────────────────────────────────────────────────────
+
 F67 Mahjong Solitaire (/other/mahjong)
   Tile-matching solitaire game under the Other Puzzles section.
   Reference: FeatureRequests/MahjongSolitaire.md
