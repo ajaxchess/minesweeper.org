@@ -31,8 +31,9 @@ F67 Mahjong Solitaire (/other/mahjong)
   A tile is "free" if it has no tile on top of it and is open on its left or right side.
   Matched/removed tiles are displayed below the playing field as pairs in removal order.
   Undo move button — steps back one matched pair at a time.
-  [OPEN] Hint button to highlight movable tile pairs — visual treatment TBD (highlight colour?
-  pulsing border? separate list?). Needs design decision before implementation.
+  Two hint buttons:
+  - "Show Free Tiles" — highlights all accessible (free) tiles in blue.
+  - "Show Matches" — highlights all free tiles that have a matching pair available.
 
   Tile Set
   ──────────────────────────────────────────────────────────────────────
