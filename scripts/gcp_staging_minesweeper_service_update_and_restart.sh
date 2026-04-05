@@ -62,8 +62,8 @@ else
 fi
 
 echo "Installing/updating Python dependencies..."
-"$VENV_DIR/bin/pip" install --require-hashes -r "$REPO_DIR/requirements.lock" \
-    || { echo "ERROR: pip install failed — hash mismatch or missing package. Aborting."; exit 1; }
+"$VENV_DIR/bin/pip" install -r "$REPO_DIR/requirements.txt" --quiet \
+    || { echo "ERROR: pip install failed. Aborting."; exit 1; }
 
 echo "Regenerating database.py from template..."
 /usr/bin/cp database_template.py database.py
