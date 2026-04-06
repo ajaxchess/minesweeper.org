@@ -15,7 +15,90 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
-F68 Jigsaw Puzzle
+F68 Jigsaw Puzzle (/other/jigsaw)
+  Traditional interlocking jigsaw puzzle game under the Other Puzzles section.
+  Reference: FeatureRequests/Jigsaw.md
+
+  Difficulty Levels
+  ──────────────────────────────────────────────────────────────────────
+  Beginner:     100 pieces
+  Intermediate: 500 pieces
+  Expert:       1000 pieces
+
+  Piece Shapes & Mechanics
+  ──────────────────────────────────────────────────────────────────────
+  Traditional interlocking jigsaw shapes (tabs and blanks on each edge).
+  Snap distance is a fixed threshold — not user-configurable (keeps UI simple for all ages).
+  When pieces snap together they form a group that can be dragged as a single unit.
+  Snapping plays a sound effect that respects a mute button on the game page.
+
+  Layout
+  ──────────────────────────────────────────────────────────────────────
+  Three areas on the game page:
+  - Main board (left/centre): where pieces are placed to assemble the puzzle.
+  - Stash (right): pieces randomly scattered and piled on top of each other,
+    as if tipped from a box. Pieces disappear from the stash when moved to the board.
+  - Thumbnail (below the board, left-aligned): small reference view of the complete image.
+
+  Controls
+  ──────────────────────────────────────────────────────────────────────
+  - Restart button
+  - Gallery button (links to the image gallery page)
+  - Mute button (toggles snap sound)
+  - Timer (starts on first piece interaction)
+  - Pause button — stops timer; authenticated users can close and resume later.
+
+  Mobile/Touch
+  ──────────────────────────────────────────────────────────────────────
+  Drag and touch supported for moving pieces and groups.
+
+  Daily Puzzle
+  ──────────────────────────────────────────────────────────────────────
+  One image per day shared by all players. Initially selected randomly from
+  static/img/puzzle/. Resets at midnight UTC.
+  Future: /admin/jigsaw allows admins to assign a specific image to each date
+  (puzzle queue). Random selection used as fallback when no image is assigned.
+
+  Leaderboard
+  ──────────────────────────────────────────────────────────────────────
+  Daily leaderboard per difficulty level (Beginner / Intermediate / Expert).
+  Keyed by date + difficulty. Records completion time.
+  Guest scores allowed; purged at midnight UTC daily (Global Convention).
+
+  Image Gallery (/other/jigsaw/gallery)
+  ──────────────────────────────────────────────────────────────────────
+  Page showing thumbnails of every image in static/img/puzzle/.
+  Clicking a thumbnail lets the player choose a difficulty and start a jigsaw.
+  New images are added to the gallery by dropping files into that directory.
+  Current image: diana-princess-705849.png (baseline).
+
+  Puzzle Generator (/other/jigsaw/generator)
+  ──────────────────────────────────────────────────────────────────────
+  Authenticated users can upload an image and share it with a friend via URL.
+  The URL encodes the image reference and chosen difficulty.
+  Guests can play shared puzzles but cannot upload images.
+  Storage follows the same model as the 15-puzzle generator (see F63/F64).
+
+  Auto-Save & Resume (logged-in users only)
+  ──────────────────────────────────────────────────────────────────────
+  Authenticated users can pause and resume puzzles. Saved state captures:
+  - Image reference and difficulty
+  - Elapsed time (ms)
+  - Position and group membership of every piece
+  In-progress puzzles appear on the user's profile page with a Resume link.
+
+  Admin
+  ──────────────────────────────────────────────────────────────────────
+  /admin/jigsaw — future puzzle queue management (assign image per date).
+
+  Routes (proposed)
+  ──────────────────────────────────────────────────────────────────────
+  /other/jigsaw                — daily puzzle (choose difficulty)
+  /other/jigsaw/gallery        — image gallery
+  /other/jigsaw/generator      — upload and share custom puzzle
+  /other/jigsaw/leaderboard    — leaderboard (difficulty tabs)
+  /other/jigsaw/how-to-play    — rules and controls
+  /admin/jigsaw                — admin puzzle queue (future)
 
 F67 Mahjong Solitaire (/other/mahjong)
   Tile-matching solitaire game under the Other Puzzles section.
