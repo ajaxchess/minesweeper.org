@@ -14,6 +14,7 @@ of each other, as if tipped out of a box), and a small
 version of the original picture below and left justified with the main puzzle space.
 
 All the puzzles are timed, but can be paused.
+There is a daily leaderboard for each difficulty level (Beginner, Intermediate, Expert).
 Authenticated users can pause the puzzle and come back to the puzzle
 later.
 There should be a restart button, a button that takes you to all
