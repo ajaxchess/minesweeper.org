@@ -6,6 +6,9 @@ Intermediate 500 pieces
 Expert 1000 pieces
 
 The daily jigsaw page will start with the day's jigsaw image.
+Initially, the daily image is selected randomly from static/img/puzzle/.
+Future: /admin/jigsaw allows admins to assign a specific image to each date (puzzle queue).
+Until an image is explicitly assigned for a date, the random selection is used as fallback.
 You then choose a number of pieces, the puzzle scrambles
 
 The jigsaw page should have a board where the pieces are placed,
