@@ -4745,16 +4745,16 @@ def submit_mahjong_score(payload: MahjongScoreSubmit, request: Request, db: Sess
 @app.get("/api/mahjong-scores")
 def get_mahjong_scores(
     request: Request,
-    date: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    puzzle_date: Optional[str] = Query(None, alias="date", pattern=r"^\d{4}-\d{2}-\d{2}$"),
     season: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}$"),
     all_time: Optional[bool] = Query(None, alias="all"),
     db: Session = Depends(get_db),
 ):
     LIMIT = 20
-    if date:
+    if puzzle_date:
         top = (
             db.query(MahjongScore)
-            .filter(MahjongScore.puzzle_date == date)
+            .filter(MahjongScore.puzzle_date == puzzle_date)
             .order_by(MahjongScore.time_ms.asc(), MahjongScore.created_at.asc())
             .limit(LIMIT).all()
         )

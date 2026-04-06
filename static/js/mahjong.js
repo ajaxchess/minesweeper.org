@@ -320,7 +320,7 @@
     removedPairs.forEach(function (pair) {
       var wrap = document.createElement('span');
       wrap.className = 'mj-removed-pair';
-      pair.forEach(function (face) {
+      pair.faces.forEach(function (face) {
         var s = document.createElement('span');
         s.className = 'mj-removed-tile ' + TILE_COLOR[face];
         s.textContent = TILE_LABELS[face];
@@ -457,7 +457,7 @@
   function removePair(a, b) {
     a.removed = true;
     b.removed = true;
-    removedPairs.push([a.face, b.face]);
+    removedPairs.push({ ids: [a.id, b.id], faces: [a.face, b.face] });
     selected = null;
 
     if (a.el) { a.el.classList.add('mj-removing'); setTimeout(function () { if (a.el) a.el.remove(); a.el = null; }, 250); }
@@ -473,20 +473,10 @@
   function undoMove() {
     if (removedPairs.length === 0) return;
     var pair = removedPairs.pop();
-
-    // Find the two most recently removed tiles whose faces match this pair
-    var foundA = null, foundB = null;
-    for (var i = tiles.length - 1; i >= 0; i--) {
-      var t = tiles[i];
-      if (!t.removed) continue;
-      if (!foundA && t.face === pair[0]) { foundA = t; continue; }
-      if (!foundB && t.face === pair[1]) { foundB = t; continue; }
-      if (foundA && foundB) break;
-    }
-    if (foundA) foundA.removed = false;
-    if (foundB) foundB.removed = false;
-    selected  = null;
-    hintMode  = '';
+    tiles[pair.ids[0]].removed = false;
+    tiles[pair.ids[1]].removed = false;
+    selected = null;
+    hintMode = '';
     renderBoard();
     renderRemovedPairs();
   }
