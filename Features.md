@@ -15,6 +15,8 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F68 Jigsaw Puzzle
+
 F67 Mahjong Solitaire (/other/mahjong)
   Tile-matching solitaire game under the Other Puzzles section.
   Reference: FeatureRequests/MahjongSolitaire.md
