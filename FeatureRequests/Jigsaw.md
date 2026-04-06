@@ -27,6 +27,7 @@ Pieces are traditional interlocking jigsaw shapes (tabs and blanks on each edge)
 
 Ideally, when two pieces that go together are brought close 
 to each other on the board, they should snap together.
+Snap distance is a fixed threshold (not user-configurable — keeps the UI simple for all ages).
 It would be great if we had a snapping sound when the pieces connect.
 
 Mobile/touch: drag and touch supported.
