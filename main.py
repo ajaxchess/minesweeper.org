@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, Game2048HexScore, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -472,6 +472,7 @@ def archive_guest_scores():
             (NonosweeperScore,    "nonosweeper_scores",    "puzzle_date"),
             (FifteenPuzzleScore,  "fifteen_puzzle_scores", "puzzle_date"),
             (Game2048Score,       "game_2048_scores",      "puzzle_date"),
+            (MahjongScore,        "mahjong_scores",        "puzzle_date"),
         ]
         total = 0
         for model, table_name, mode_attr in tables:
@@ -4649,3 +4650,127 @@ async def nonosweeper_permalink(request: Request, date_str: str):
         "real_today": real_today,
         "noindex": True,
     })
+
+
+# ── Mahjong Solitaire ──────────────────────────────────────────────────────────
+
+@app.get("/other/mahjong", response_class=HTMLResponse)
+def mahjong_landing(request: Request):
+    return RedirectResponse("/other/mahjong/daily", status_code=302)
+
+
+@app.get("/other/mahjong/daily", response_class=HTMLResponse)
+def mahjong_daily(request: Request):
+    today = date.today().isoformat()
+    return templates.TemplateResponse("mahjong_daily.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": today,
+    })
+
+
+@app.get("/other/mahjong/leaderboard", response_class=HTMLResponse)
+def mahjong_leaderboard_page(request: Request):
+    today = date.today().isoformat()
+    return templates.TemplateResponse("mahjong_leaderboard.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": today,
+    })
+
+
+@app.get("/other/mahjong/how-to-play", response_class=HTMLResponse)
+def mahjong_howtoplay(request: Request):
+    return templates.TemplateResponse("mahjong_howtoplay.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+class MahjongScoreSubmit(BaseModel):
+    name:        str = Field(..., min_length=1, max_length=32)
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    board_hash:  str = Field(..., min_length=4, max_length=200)
+    time_ms:     int = Field(..., ge=0, le=99999999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+    @field_validator("board_hash")
+    @classmethod
+    def sanitize_hash(cls, v: str) -> str:
+        import re
+        v = v.strip()
+        if not re.match(r'^[A-Za-z0-9_\-=+/]{4,200}$', v):
+            raise ValueError("Invalid board hash")
+        return v
+
+
+@app.post("/api/mahjong-scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_mahjong_score(payload: MahjongScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = MahjongScore(
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        puzzle_date = payload.puzzle_date,
+        board_hash  = payload.board_hash,
+        time_ms     = payload.time_ms,
+        guest_token = guest_token,
+        client_type = get_client_type(request),
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    record_score_submit("mahjong", payload.puzzle_date)
+    record_game_complete("mahjong", mode="daily", duration_ms=payload.time_ms)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/mahjong-scores")
+def get_mahjong_scores(
+    request: Request,
+    date: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    season: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}$"),
+    all_time: Optional[bool] = Query(None, alias="all"),
+    db: Session = Depends(get_db),
+):
+    LIMIT = 20
+    if date:
+        top = (
+            db.query(MahjongScore)
+            .filter(MahjongScore.puzzle_date == date)
+            .order_by(MahjongScore.time_ms.asc(), MahjongScore.created_at.asc())
+            .limit(LIMIT).all()
+        )
+    elif season:
+        year, month = season.split("-")
+        prefix = f"{year}-{month}"
+        top = (
+            db.query(MahjongScore)
+            .filter(MahjongScore.puzzle_date.like(f"{prefix}%"))
+            .order_by(MahjongScore.time_ms.asc(), MahjongScore.created_at.asc())
+            .limit(LIMIT).all()
+        )
+    else:
+        top = (
+            db.query(MahjongScore)
+            .order_by(MahjongScore.time_ms.asc(), MahjongScore.created_at.asc())
+            .limit(LIMIT).all()
+        )
+    return _enrich_with_profiles(top, db)

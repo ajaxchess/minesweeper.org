@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% set _title = "Mahjong Solitaire Leaderboard | minesweeper.org" %}
+{% set _desc  = "Daily, seasonal and all-time Mahjong Solitaire leaderboard — fastest completion times for today's daily puzzle." %}
+{% set _canon = "https://minesweeper.org/other/mahjong/leaderboard" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<style>
+.mj-lb-tabs {
+  display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.mj-lb-tab {
+  padding: 0.4rem 1rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.mj-lb-tab.active { border-color: var(--accent2); color: var(--accent2); }
+.mj-lb-tab:hover  { border-color: var(--accent2); }
+</style>
+
+<div class="lb-wrap">
+  <h1 class="tz-page-h1">{{ t['mj_lb_h1'] }}</h1>
+
+  <div style="text-align:center;margin-bottom:1rem;">
+    <a href="/other/mahjong/daily" class="btn" style="margin:0.25rem;">{{ t['mj_play_today'] }}</a>
+    <a href="/other" class="btn" style="margin:0.25rem;">{{ t['other_h1'] }}</a>
+  </div>
+
+  <div class="mj-lb-tabs">
+    <button class="mj-lb-tab active" data-range="daily">{{ t['mj_lb_tab_daily'] }}</button>
+    <button class="mj-lb-tab" data-range="season">{{ t['mj_lb_tab_season'] }}</button>
+    <button class="mj-lb-tab" data-range="all">{{ t['mj_lb_tab_all'] }}</button>
+  </div>
+
+  <h2 id="mj-lb-heading" style="font-size:1rem;color:var(--accent2);margin:0 0 0.75rem;text-align:center;">
+    {{ t['mj_today_heading'] }}{{ today }}
+  </h2>
+
+  <div class="wt-table-wrap">
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>{{ t['lb_col_rank'] }}</th>
+          <th>{{ t['lb_col_name'] }}</th>
+          <th>{{ t['lb_col_time'] }}</th>
+          <th>{{ t['lb_col_date'] }}</th>
+        </tr>
+      </thead>
+      <tbody id="mj-lb-body">
+        <tr><td colspan="4" style="color:var(--text-dim);">{{ t['lb_loading'] }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+(function () {
+  var today   = "{{ today }}";
+  var tbody   = document.getElementById('mj-lb-body');
+  var heading = document.getElementById('mj-lb-heading');
+
+  var labels = {
+    daily:  {{ t['mj_today_heading'] | tojson }} + today,
+    season: {{ t['mj_lb_season_heading'] | tojson }},
+    all:    {{ t['mj_lb_all_heading'] | tojson }}
+  };
+
+  var msgNoScores = {{ t['lb_no_scores'] | tojson }};
+  var msgFailed   = {{ t['lb_error'] | tojson }};
+
+  function buildUrl(range) {
+    if (range === 'daily')  return '/api/mahjong-scores?date=' + today;
+    if (range === 'season') {
+      var m = today.slice(0, 7);
+      return '/api/mahjong-scores?season=' + m;
+    }
+    return '/api/mahjong-scores?all=true';
+  }
+
+  function load(range) {
+    heading.textContent = labels[range] || '';
+    tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);">' + {{ t['lb_loading'] | tojson }} + '</td></tr>';
+    fetch(buildUrl(range))
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function (scores) {
+        if (!scores.length) {
+          tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);">' + msgNoScores + '</td></tr>';
+          return;
+        }
+        tbody.innerHTML = scores.map(function (s, i) {
+          var name = s.profile_url
+            ? '<a href="' + s.profile_url + '">' + s.name + '</a>'
+            : s.name;
+          var secs = (s.time_ms / 1000).toFixed(1);
+          return '<tr><td>' + (i + 1) + '</td><td>' + name + '</td><td>' + secs + 's</td><td>' + s.created_at + '</td></tr>';
+        }).join('');
+      })
+      .catch(function () {
+        tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);">' + msgFailed + '</td></tr>';
+      });
+  }
+
+  document.querySelectorAll('.mj-lb-tab').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.mj-lb-tab').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      load(btn.dataset.range);
+    });
+  });
+
+  load('daily');
+}());
+</script>
+{% endblock %}

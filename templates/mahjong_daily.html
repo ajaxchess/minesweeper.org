@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% set _title = "Mahjong Solitaire — Daily | minesweeper.org" %}
+{% set _desc  = "Play today's daily Mahjong Solitaire on minesweeper.org. Match free tile pairs in the classic Turtle formation. Guaranteed solvable — same board for every player." %}
+{% set _canon = "https://minesweeper.org/other/mahjong/daily" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}Mahjong Solitaire — Daily | minesweeper.org{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<style>
+/* ── Layout ─────────────────────────────────────────────── */
+.mj-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+.mj-header { text-align: center; }
+.mj-header h1 { font-size: 1.4rem; margin: 0 0 0.2rem; }
+.mj-header p  { color: var(--text-dim); font-size: 0.82rem; margin: 0; }
+.mj-subnav {
+  display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
+}
+.mj-subnav a { color: var(--accent2); font-size: 0.82rem; text-decoration: none; }
+.mj-subnav a:hover { text-decoration: underline; }
+.mj-subnav span { color: var(--text-dim); }
+
+/* ── Stats bar ──────────────────────────────────────────── */
+.mj-stats {
+  display: flex; gap: 1.5rem; font-size: 0.95rem; color: var(--text);
+}
+.mj-stats span { color: var(--accent2); font-weight: 700; }
+
+/* ── Controls ───────────────────────────────────────────── */
+.mj-controls {
+  display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
+}
+.mj-btn {
+  padding: 0.4rem 0.9rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.mj-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.mj-btn.active { border-color: var(--accent2); background: var(--accent2); color: #fff; }
+
+/* ── Board ──────────────────────────────────────────────── */
+#mj-board-wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+}
+#mj-board {
+  position: relative;
+  /* width/height set dynamically by JS */
+}
+
+/* ── Tiles ──────────────────────────────────────────────── */
+.mj-tile {
+  position: absolute;
+  width: 46px;
+  height: 62px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  transition: filter 0.12s, transform 0.08s, opacity 0.25s;
+  box-sizing: border-box;
+  border: 2px solid rgba(0,0,0,0.25);
+  box-shadow: 2px 3px 5px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+  background: var(--surface);
+  color: var(--text);
+  white-space: nowrap;
+}
+.mj-tile::before {
+  /* 3-D edge illusion */
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+}
+.mj-tile:hover { filter: brightness(1.12); transform: scale(1.06); z-index: 50000 !important; }
+.mj-tile.mj-selected { outline: 3px solid var(--accent2); outline-offset: 1px; filter: brightness(1.18); }
+.mj-tile.mj-hint-free { box-shadow: 0 0 0 3px #42a5f5, 2px 3px 5px rgba(0,0,0,0.35); }
+.mj-tile.mj-hint-match { box-shadow: 0 0 0 3px #66bb6a, 2px 3px 5px rgba(0,0,0,0.35); }
+.mj-tile.mj-removing { opacity: 0; transform: scale(0.7); transition: opacity 0.22s, transform 0.22s; }
+
+/* Tile colour variants */
+.mj-circle  { background: #e3f2fd; color: #1565c0; }
+.mj-bamboo  { background: #e8f5e9; color: #2e7d32; }
+.mj-char    { background: #fff3e0; color: #bf360c; }
+.mj-wind    { background: #eceff1; color: #37474f; }
+.mj-dragon-r { background: #ffebee; color: #c62828; font-size: 1.1rem; }
+.mj-dragon-g { background: #e8f5e9; color: #1b5e20; font-size: 1.1rem; }
+.mj-dragon-w { background: #fafafa; color: #424242; font-size: 1.1rem; }
+.mj-season  { background: #f3e5f5; color: #6a1b9a; }
+.mj-flower  { background: #fff8e1; color: #e65100; }
+
+/* ── Win / form ─────────────────────────────────────────── */
+#mj-win-msg {
+  display: none;
+  text-align: center;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 420px;
+}
+#mj-win-msg h2 { color: var(--accent2); margin: 0 0 0.25rem; font-size: 1.2rem; }
+#mj-win-msg p  { color: var(--text-dim); font-size: 0.9rem; margin: 0 0 0.75rem; }
+
+#mj-score-form {
+  display: none;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+#mj-score-form label span { display: block; font-size: 0.78rem; color: var(--text-dim); margin-bottom: 0.15rem; }
+#mj-score-form input[type="text"] {
+  width: 100%; padding: 0.4rem 0.6rem;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); box-sizing: border-box;
+}
+#mj-score-msg { font-size: 0.9rem; color: var(--accent2); }
+
+/* ── Removed pairs area ─────────────────────────────────── */
+#mj-removed-wrap {
+  width: 100%;
+  max-width: 880px;
+}
+#mj-removed-wrap h3 {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin: 0 0 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+#mj-removed {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.mj-removed-pair {
+  display: flex;
+  gap: 2px;
+  background: var(--surface2);
+  border-radius: 4px;
+  padding: 2px 3px;
+}
+.mj-removed-tile {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+</style>
+
+<div class="mj-wrap">
+  <div class="mj-header">
+    <h1>{{ t['mj_daily_h1'] }}</h1>
+    <p>{{ today }} · {{ t['mj_same_for_all'] }}</p>
+  </div>
+
+  <div class="mj-subnav">
+    <a href="/other">{{ t['other_h1'] }}</a>
+    <span>›</span>
+    <a href="/other/mahjong/leaderboard">{{ t['nav_leaderboard'] }}</a>
+    <span>·</span>
+    <a href="/other/mahjong/how-to-play">{{ t['nav_how_to_play'] }}</a>
+  </div>
+
+  <div id="mj-timer-wrap" class="mj-stats">
+    <div>{{ t['mj_time'] }} <span id="mj-time">0.0</span>s</div>
+  </div>
+
+  <div class="mj-controls">
+    <button class="mj-btn" id="mj-undo">↩ {{ t['mj_undo'] }}</button>
+    <button class="mj-btn" id="mj-hint-free">{{ t['mj_hint_free'] }}</button>
+    <button class="mj-btn" id="mj-hint-match">{{ t['mj_hint_match'] }}</button>
+    <button class="mj-btn" id="mj-reset">↺ {{ t['mj_new_game'] }}</button>
+    <a href="/other/mahjong/leaderboard" class="mj-btn" style="text-decoration:none;">🏆 {{ t['nav_leaderboard'] }}</a>
+  </div>
+
+  <div id="mj-board-wrap">
+    <div id="mj-board"></div>
+  </div>
+
+  <div id="mj-win-msg">
+    <h2>{{ t['mj_solved'] }}</h2>
+    <p>{{ t['mj_time'] }} <strong id="mj-final-time">—</strong></p>
+    <a href="/other/mahjong/leaderboard" class="mj-btn" style="display:inline-block;text-decoration:none;margin-top:0.25rem;">🏆 {{ t['nav_leaderboard'] }}</a>
+  </div>
+
+  <div id="mj-score-form">
+    <strong style="font-size:0.9rem;">{{ t['mj_submit_score'] }}</strong>
+    <label>
+      <span>{{ t['mj_name_label'] }}</span>
+      <input type="text" id="mj-name" maxlength="32" placeholder="Your name"
+             value="{{ user.name if user else '' }}">
+    </label>
+    <button class="mj-btn" id="mj-submit" style="align-self:flex-start;">{{ t['mj_submit_btn'] }}</button>
+  </div>
+  <div id="mj-score-msg" style="display:none;"></div>
+
+  <div id="mj-removed-wrap">
+    <h3>{{ t['mj_removed_pairs'] }}</h3>
+    <div id="mj-removed"></div>
+  </div>
+</div>
+
+<script>
+window.MAHJONG_DATE = "{{ today }}";
+window.MAHJONG_USER = {{ (user.name if user else '') | tojson }};
+</script>
+<script src="/static/js/mahjong.js?v=1"></script>
+{% endblock %}
