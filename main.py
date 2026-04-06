@@ -16,8 +16,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, Game2048HexScore, get_db, init_db, SessionLocal
-from database_mahjong import MahjongScore, MahjongSavedGame, create_mahjong_tables
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -518,7 +517,6 @@ scheduler.add_job(collect_web_traffic_stats,  CronTrigger(hour=1,  minute=0))   
 @app.on_event("startup")
 def startup():
     init_db()
-    create_mahjong_tables()
     scheduler.start()
     logger.info("Scheduler started — scores reset daily at midnight UTC.")
     threading.Thread(target=_backfill_web_traffic, daemon=True).start()
