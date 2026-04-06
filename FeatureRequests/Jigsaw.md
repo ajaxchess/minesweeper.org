@@ -17,8 +17,11 @@ All the puzzles are timed, but can be paused.
 There is a daily leaderboard for each difficulty level (Beginner, Intermediate, Expert).
 Authenticated users can pause the puzzle and come back to the puzzle
 later.
-There should be a restart button, a button that takes you to all
-the features images, and a timer.
+There should be a restart button, a button that takes you to the image gallery, and a timer.
+
+The image gallery page shows thumbnails of every image in static/img/puzzle/.
+Clicking a thumbnail lets you choose a difficulty and start a jigsaw of that image.
+New images are added to the gallery simply by dropping them into that directory.
 
 Pieces are traditional interlocking jigsaw shapes (tabs and blanks on each edge).
 
