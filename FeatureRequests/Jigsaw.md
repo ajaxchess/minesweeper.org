@@ -9,7 +9,8 @@ The daily jigsaw page will start with the day's jigsaw image.
 You then choose a number of pieces, the puzzle scrambles
 
 The jigsaw page should have a board where the pieces are placed,
-a space to the right where the pieces are stashed, and a small
+a space to the right where the pieces are stashed (randomly scattered and piled on top
+of each other, as if tipped out of a box), and a small
 version of the original picture below and left justified with the main puzzle space.
 
 All the puzzles are timed, but can be paused.
