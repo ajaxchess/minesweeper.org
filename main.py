@@ -2,7 +2,6 @@ from datetime import date, timedelta, datetime, timezone
 import uuid
 import subprocess
 import os
-import json
 from typing import Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, Query, Response, Form, File, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
@@ -4538,29 +4537,8 @@ _DATE_MONTHLY_RE = __import__("re").compile(r"^\d{4}-\d{2}$")
 
 # ── Mahjong Solitaire ─────────────────────────────────────────────────────────
 
-_MAH_BOARDS_PATH = os.path.join("static", "mah", "assets", "data", "boards.json")
-_MAH_INDEX_PATH  = os.path.join("static", "mah", "index.html")
-_mah_board_ids = []
-
-def _load_mah_boards():
-    global _mah_board_ids
-    try:
-        with open(_MAH_BOARDS_PATH, encoding="utf-8") as f:
-            boards = json.load(f)
-        _mah_board_ids = [b["id"] for b in boards if "id" in b]
-    except Exception as e:
-        print(f"[WARN] Could not load mah boards: {e}", flush=True)
-        _mah_board_ids = []
-
-_load_mah_boards()
-
-def _get_daily_mah_board_id():
-    if not _mah_board_ids:
-        return ""
-    today = date.today()
-    day_num = today.timetuple().tm_yday
-    idx = (day_num + today.year * 366) % len(_mah_board_ids)
-    return _mah_board_ids[idx]
+_MAH_INDEX_PATH     = os.path.join("static", "mah", "index.html")
+_MAH_TURTLE_BOARD   = "2175883231"  # Turtle layout — fixed daily board
 
 
 @app.get("/other/mahjong", response_class=HTMLResponse)
@@ -4570,9 +4548,7 @@ def mahjong_landing(request: Request):
 
 @app.get("/other/mahjong/daily")
 def mahjong_daily_page(request: Request):
-    board_id = _get_daily_mah_board_id()
-    url = f"/other/mahjong/?board={board_id}" if board_id else "/other/mahjong/"
-    return RedirectResponse(url, status_code=302)
+    return RedirectResponse(f"/other/mahjong/?board={_MAH_TURTLE_BOARD}", status_code=302)
 
 
 @app.get("/other/mahjong/")
