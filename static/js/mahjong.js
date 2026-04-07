@@ -97,6 +97,36 @@
     '梅','蘭','菊','竹'
   ];
 
+  var TILE_IMAGES = [
+    // Circles 1-9 (0-8)
+    'Wheel_1.png','Wheel_2.png','Wheel_3.png','Wheel_4.png','Wheel_5.png',
+    'Wheel_6.png','Wheel_7.png','Wheel_8.png','Wheel_9.png',
+    // Bamboo 1-9 (9-17)
+    'Bamboo_1.png','Bamboo_2.png','Bamboo_3.png','Bamboo_4.png','Bamboo_5.png',
+    'Bamboo_6.png','Bamboo_7.png','Bamboo_8.png','Bamboo_9.png',
+    // Characters 1-9 (18-26)
+    'Char_1.png','Char_2.png','Char_3.png','Char_4.png','Char_5.png',
+    'Char_6.png','Char_7.png','Char_8.png','Char_9.png',
+    // Winds (27-30)
+    'Wind_East.png','Wind_South.png','Wind_West.png','Wind_North.png',
+    // Dragons (31-33)
+    'Dragon_Red.png','Dragon_Green.png','Dragon_White.png',
+    // Seasons (34-37)
+    'Season_Spring.png','Season_Summer.png','Season_Fall.png','Season_Winter.png',
+    // Flowers (38-41)
+    'Flower_1.png','Flower_2.png','Flower_3.png','Flower_4.png'
+  ];
+
+  var TILE_IMG_BASE = '/static/img/mahjong-tiles/classic/';
+
+  function makeTileImg(face) {
+    var img = document.createElement('img');
+    img.src = TILE_IMG_BASE + TILE_IMAGES[face];
+    img.alt = TILE_LABELS[face];
+    img.style.cssText = 'width:100%;height:100%;object-fit:contain;pointer-events:none;';
+    return img;
+  }
+
   // CSS colour class per face group
   var TILE_COLOR = (function () {
     var c = [];
@@ -292,7 +322,7 @@
       el.style.left    = tileLeft(tile.x, tile.z) + 'px';
       el.style.top     = tileTop(tile.y, tile.z) + 'px';
       el.style.zIndex  = zIndex(tile.x, tile.y, tile.z);
-      el.textContent   = TILE_LABELS[tile.face];
+      el.appendChild(makeTileImg(tile.face));
       el.addEventListener('click', onTileClick);
       tile.el = el;
       boardEl.appendChild(el);
@@ -323,7 +353,7 @@
       pair.faces.forEach(function (face) {
         var s = document.createElement('span');
         s.className = 'mj-removed-tile ' + TILE_COLOR[face];
-        s.textContent = TILE_LABELS[face];
+        s.appendChild(makeTileImg(face));
         wrap.appendChild(s);
       });
       removedEl.appendChild(wrap);
