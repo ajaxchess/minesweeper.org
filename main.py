@@ -4756,31 +4756,47 @@ def get_mahjong_scores(
 
 @app.get("/nonosweeper", response_class=HTMLResponse)
 async def nonosweeper_page(request: Request, date_param: str = Query(None, alias="date")):
+    print(f"[DEBUG] nonosweeper_page hit: {request.url}", flush=True)
     import re
     real_today = date.today().isoformat()
     puzzle_date = real_today
     if date_param and re.match(r"^\d{4}-\d{2}-\d{2}$", date_param):
         puzzle_date = date_param
-    return templates.TemplateResponse("nonosweeper.html", {
-        "request": request, "mode": "nonosweeper",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": puzzle_date,
-        "real_today": real_today,
-    })
+    print(f"[DEBUG] nonosweeper_page puzzle_date={puzzle_date}", flush=True)
+    try:
+        response = templates.TemplateResponse("nonosweeper.html", {
+            "request": request, "mode": "nonosweeper",
+            "user": get_current_user(request),
+            "lang": get_lang(request), "t": get_t(request),
+            "today": puzzle_date,
+            "real_today": real_today,
+        })
+        print(f"[DEBUG] nonosweeper_page rendered successfully", flush=True)
+        return response
+    except Exception as e:
+        print(f"[DEBUG] nonosweeper_page ERROR: {type(e).__name__}: {e}", flush=True)
+        raise
 
 
 @app.get("/nonosweeper/{date_str}", response_class=HTMLResponse)
 async def nonosweeper_permalink(request: Request, date_str: str):
+    print(f"[DEBUG] nonosweeper_permalink hit: {request.url}, date_str={date_str}", flush=True)
     import re
     real_today = date.today().isoformat()
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
+        print(f"[DEBUG] nonosweeper_permalink invalid date_str, redirecting", flush=True)
         return RedirectResponse("/nonosweeper", status_code=302)
-    return templates.TemplateResponse("nonosweeper.html", {
-        "request": request, "mode": "nonosweeper",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": date_str,
-        "real_today": real_today,
-        "noindex": True,
-    })
+    try:
+        response = templates.TemplateResponse("nonosweeper.html", {
+            "request": request, "mode": "nonosweeper",
+            "user": get_current_user(request),
+            "lang": get_lang(request), "t": get_t(request),
+            "today": date_str,
+            "real_today": real_today,
+            "noindex": True,
+        })
+        print(f"[DEBUG] nonosweeper_permalink rendered successfully", flush=True)
+        return response
+    except Exception as e:
+        print(f"[DEBUG] nonosweeper_permalink ERROR: {type(e).__name__}: {e}", flush=True)
+        raise
