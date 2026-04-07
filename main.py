@@ -4656,18 +4656,29 @@ async def nonosweeper_permalink(request: Request, date_str: str):
 
 @app.get("/other/mahjong", response_class=HTMLResponse)
 def mahjong_landing(request: Request):
-    return RedirectResponse("/other/mahjong/daily", status_code=302)
+    print(f"[DEBUG] mahjong_landing hit: {request.url}", flush=True)
+    response = RedirectResponse("/other/mahjong/daily", status_code=302)
+    print(f"[DEBUG] mahjong_landing redirecting to /other/mahjong/daily", flush=True)
+    return response
 
 
 @app.get("/other/mahjong/daily", response_class=HTMLResponse)
 def mahjong_daily_page(request: Request):
+    print(f"[DEBUG] mahjong_daily_page hit: {request.url}", flush=True)
     today = date.today().isoformat()
-    return templates.TemplateResponse("mj_daily.html", {
-        "request": request, "mode": "other",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": today,
-    })
+    print(f"[DEBUG] mahjong_daily_page today={today}", flush=True)
+    try:
+        response = templates.TemplateResponse("mj_daily.html", {
+            "request": request, "mode": "other",
+            "user": get_current_user(request),
+            "lang": get_lang(request), "t": get_t(request),
+            "today": today,
+        })
+        print(f"[DEBUG] mahjong_daily_page rendered successfully", flush=True)
+        return response
+    except Exception as e:
+        print(f"[DEBUG] mahjong_daily_page ERROR: {type(e).__name__}: {e}", flush=True)
+        raise
 
 
 @app.get("/other/mahjong/leaderboard", response_class=HTMLResponse)
