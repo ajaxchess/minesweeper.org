@@ -119,12 +119,12 @@
 
   var TILE_IMG_BASE = '/static/img/mahjong-tiles/classic/';
 
-  function makeTileImg(face) {
-    var img = document.createElement('img');
-    img.src = TILE_IMG_BASE + TILE_IMAGES[face];
-    img.alt = TILE_LABELS[face];
-    img.style.cssText = 'width:100%;height:100%;object-fit:contain;pointer-events:none;';
-    return img;
+  function applyTileImage(el, face) {
+    el.style.backgroundImage  = "url('" + TILE_IMG_BASE + TILE_IMAGES[face] + "')";
+    el.style.backgroundSize   = 'contain';
+    el.style.backgroundRepeat = 'no-repeat';
+    el.style.backgroundPosition = 'center';
+    el.setAttribute('aria-label', TILE_LABELS[face]);
   }
 
   // CSS colour class per face group
@@ -322,7 +322,7 @@
       el.style.left    = tileLeft(tile.x, tile.z) + 'px';
       el.style.top     = tileTop(tile.y, tile.z) + 'px';
       el.style.zIndex  = zIndex(tile.x, tile.y, tile.z);
-      el.appendChild(makeTileImg(tile.face));
+      applyTileImage(el, tile.face);
       el.addEventListener('click', onTileClick);
       tile.el = el;
       boardEl.appendChild(el);
@@ -353,7 +353,7 @@
       pair.faces.forEach(function (face) {
         var s = document.createElement('span');
         s.className = 'mj-removed-tile ' + TILE_COLOR[face];
-        s.appendChild(makeTileImg(face));
+        applyTileImage(s, face);
         wrap.appendChild(s);
       });
       removedEl.appendChild(wrap);

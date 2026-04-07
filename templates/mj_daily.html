@@ -72,20 +72,12 @@
   width: 46px;
   height: 62px;
   border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  font-weight: 700;
   cursor: pointer;
   user-select: none;
   transition: filter 0.12s, transform 0.08s, opacity 0.25s;
   box-sizing: border-box;
   border: 2px solid rgba(0,0,0,0.25);
   box-shadow: 2px 3px 5px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
-  background: var(--surface);
-  color: var(--text);
-  white-space: nowrap;
 }
 .mj-tile::before {
   content: '';
@@ -100,15 +92,14 @@
 .mj-tile.mj-hint-match { box-shadow: 0 0 0 3px #66bb6a, 2px 3px 5px rgba(0,0,0,0.35); }
 .mj-tile.mj-removing { opacity: 0; transform: scale(0.7); transition: opacity 0.22s, transform 0.22s; }
 
-/* Tile colour variants — backgrounds kept subtle, images fill the tile */
-.mj-tile { padding: 2px; }
+/* Tile colour variants — background shows if image fails to load */
 .mj-circle   { background: #e3f2fd; }
 .mj-bamboo   { background: #e8f5e9; }
 .mj-char     { background: #fff3e0; }
 .mj-wind     { background: #eceff1; }
 .mj-dragon-r { background: #ffebee; }
 .mj-dragon-g { background: #e8f5e9; }
-.mj-dragon-w { background: #fafafa; }
+.mj-dragon-w { background: #dce3e8; }
 .mj-season   { background: #f3e5f5; }
 .mj-flower   { background: #fff8e1; }
 
@@ -170,11 +161,13 @@
   padding: 2px 3px;
 }
 .mj-removed-tile {
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 2px 4px;
+  display: inline-block;
+  width: 23px;
+  height: 31px;
   border-radius: 3px;
-  white-space: nowrap;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 </style>
 
@@ -235,5 +228,5 @@
 window.MAHJONG_DATE = "{{ today }}";
 window.MAHJONG_USER = {{ (user.name if user else '') | tojson }};
 </script>
-<script src="/static/js/mahjong.js?v=3"></script>
+<script src="/static/js/mahjong.js?v=4"></script>
 {% endblock %}
