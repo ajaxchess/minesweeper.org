@@ -2,6 +2,7 @@ from datetime import date, timedelta, datetime, timezone
 import uuid
 import subprocess
 import os
+import json
 from typing import Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, Query, Response, Form, File, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
@@ -4537,31 +4538,45 @@ _DATE_MONTHLY_RE = __import__("re").compile(r"^\d{4}-\d{2}$")
 
 # ── Mahjong Solitaire ─────────────────────────────────────────────────────────
 
+_MAH_BOARDS_PATH = os.path.join("static", "mah", "assets", "data", "boards.json")
+_mah_board_ids: list[str] = []
+
+def _load_mah_boards() -> None:
+    global _mah_board_ids
+    try:
+        with open(_MAH_BOARDS_PATH, encoding="utf-8") as f:
+            boards = json.load(f)
+        _mah_board_ids = [b["id"] for b in boards if "id" in b]
+    except Exception as e:
+        print(f"[WARN] Could not load mah boards: {e}", flush=True)
+        _mah_board_ids = []
+
+_load_mah_boards()
+
+def _get_daily_mah_board_id() -> str:
+    if not _mah_board_ids:
+        return ""
+    today = date.today()
+    day_num = today.timetuple().tm_yday
+    idx = (day_num + today.year * 366) % len(_mah_board_ids)
+    return _mah_board_ids[idx]
+
+
 @app.get("/other/mahjong", response_class=HTMLResponse)
 def mahjong_landing(request: Request):
-    print(f"[DEBUG] mahjong_landing hit: {request.url}", flush=True)
-    response = RedirectResponse("/other/mahjong/daily", status_code=302)
-    print(f"[DEBUG] mahjong_landing redirecting to /other/mahjong/daily", flush=True)
-    return response
+    return RedirectResponse("/other/mahjong/daily", status_code=302)
 
 
-@app.get("/other/mahjong/daily", response_class=HTMLResponse)
+@app.get("/other/mahjong/daily")
 def mahjong_daily_page(request: Request):
-    print(f"[DEBUG] mahjong_daily_page hit: {request.url}", flush=True)
-    today = date.today().isoformat()
-    print(f"[DEBUG] mahjong_daily_page today={today}", flush=True)
-    try:
-        response = templates.TemplateResponse("mj_daily.html", {
-            "request": request, "mode": "other",
-            "user": get_current_user(request),
-            "lang": get_lang(request), "t": get_t(request),
-            "today": today,
-        })
-        print(f"[DEBUG] mahjong_daily_page rendered successfully", flush=True)
-        return response
-    except Exception as e:
-        print(f"[DEBUG] mahjong_daily_page ERROR: {type(e).__name__}: {e}", flush=True)
-        raise
+    board_id = _get_daily_mah_board_id()
+    url = f"/other/mahjong/?board={board_id}" if board_id else "/other/mahjong/"
+    return RedirectResponse(url, status_code=302)
+
+
+@app.get("/other/mahjong/")
+def mahjong_game_root():
+    return FileResponse(os.path.join("static", "mah", "index.html"))
 
 
 @app.get("/other/mahjong/leaderboard", response_class=HTMLResponse)
@@ -4582,6 +4597,14 @@ def mahjong_howtoplay_page(request: Request):
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
+
+
+@app.get("/other/mahjong/{path:path}")
+def mahjong_game_static(path: str):
+    file_path = os.path.join("static", "mah", path)
+    if os.path.isfile(file_path):
+        return FileResponse(file_path)
+    return FileResponse(os.path.join("static", "mah", "index.html"))
 
 
 class MahjongScoreSubmit(BaseModel):
