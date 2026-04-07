@@ -1,4 +1,4 @@
-from datetime import date, timedelta, datetime, timezone
+.from datetime import date, timedelta, datetime, timezone
 import uuid
 import subprocess
 import os
@@ -4662,7 +4662,7 @@ def mahjong_landing(request: Request):
 @app.get("/other/mahjong/daily", response_class=HTMLResponse)
 def mahjong_daily_page(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("mahjong_daily.html", {
+    return templates.TemplateResponse("mahjong.html", {
         "request": request, "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
