@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t['mj_htp_title'] }}{% endblock %}
+{% block description %}{{ t['mj_htp_desc'] }}{% endblock %}
+{% block canonical %}https://minesweeper.org/other/mahjong/how-to-play{% endblock %}
+{% block og_url %}https://minesweeper.org/other/mahjong/how-to-play{% endblock %}
+{% block og_title %}{{ t['mj_htp_h1'] }}{% endblock %}
+{% block og_description %}{{ t['mj_htp_desc'] }}{% endblock %}
+
+{% block content %}
+<div class="htp-wrap" style="max-width:700px;margin:0 auto;padding:1rem 1rem 3rem;">
+  <h1>{{ t['mj_htp_h1'] }}</h1>
+  <p>{{ t['mj_htp_intro'] }}</p>
+
+  <h2>{{ t['mj_htp_goal_h2'] }}</h2>
+  <p>{{ t['mj_htp_goal_p'] }}</p>
+
+  <h2>{{ t['mj_htp_free_h2'] }}</h2>
+  <p>{{ t['mj_htp_free_p'] }}</p>
+
+  <h2>{{ t['mj_htp_tiles_h2'] }}</h2>
+  <p>{{ t['mj_htp_tiles_p'] }}</p>
+
+  <h2>{{ t['mj_htp_controls_h2'] }}</h2>
+  <ul>
+    <li>{{ t['mj_htp_controls_li1'] }}</li>
+    <li>{{ t['mj_htp_controls_li2'] }}</li>
+    <li>{{ t['mj_htp_controls_li3'] }}</li>
+    <li>{{ t['mj_htp_controls_li4'] }}</li>
+  </ul>
+
+  <h2>{{ t['mj_htp_hints_h2'] }}</h2>
+  <p>{{ t['mj_htp_hints_p'] }}</p>
+
+  <h2>{{ t['mj_htp_daily_h2'] }}</h2>
+  <p>{{ t['mj_htp_daily_p'] }}</p>
+
+  <div style="margin-top:1.5rem;">
+    <a href="/other/mahjong/daily" class="btn">← {{ t['mj_htp_back'] }}</a>
+  </div>
+</div>
+{% endblock %}

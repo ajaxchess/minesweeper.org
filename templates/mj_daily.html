@@ -2,7 +2,7 @@
 
 {% set _title = "Mahjong Solitaire — Daily | minesweeper.org" %}
 {% set _desc  = "Play today's daily Mahjong Solitaire on minesweeper.org. Match free tile pairs in the classic Turtle formation. Guaranteed solvable — same board for every player." %}
-{% set _canon = "https://minesweeper.org/other/mahjong" %}
+{% set _canon = "https://minesweeper.org/other/mahjong/daily" %}
 
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}
@@ -88,7 +88,6 @@
   white-space: nowrap;
 }
 .mj-tile::before {
-  /* 3-D edge illusion */
   content: '';
   position: absolute;
   inset: 0;
@@ -102,15 +101,15 @@
 .mj-tile.mj-removing { opacity: 0; transform: scale(0.7); transition: opacity 0.22s, transform 0.22s; }
 
 /* Tile colour variants */
-.mj-circle  { background: #e3f2fd; color: #1565c0; }
-.mj-bamboo  { background: #e8f5e9; color: #2e7d32; }
-.mj-char    { background: #fff3e0; color: #bf360c; }
-.mj-wind    { background: #eceff1; color: #37474f; }
+.mj-circle   { background: #e3f2fd; color: #1565c0; }
+.mj-bamboo   { background: #e8f5e9; color: #2e7d32; }
+.mj-char     { background: #fff3e0; color: #bf360c; }
+.mj-wind     { background: #eceff1; color: #37474f; }
 .mj-dragon-r { background: #ffebee; color: #c62828; font-size: 1.1rem; }
 .mj-dragon-g { background: #e8f5e9; color: #1b5e20; font-size: 1.1rem; }
 .mj-dragon-w { background: #fafafa; color: #424242; font-size: 1.1rem; }
-.mj-season  { background: #f3e5f5; color: #6a1b9a; }
-.mj-flower  { background: #fff8e1; color: #e65100; }
+.mj-season   { background: #f3e5f5; color: #6a1b9a; }
+.mj-flower   { background: #fff8e1; color: #e65100; }
 
 /* ── Win / form ─────────────────────────────────────────── */
 #mj-win-msg {
@@ -235,5 +234,5 @@
 window.MAHJONG_DATE = "{{ today }}";
 window.MAHJONG_USER = {{ (user.name if user else '') | tojson }};
 </script>
-<script src="/static/js/mahjong.js?v=1"></script>
+<script src="/static/js/mahjong.js?v=2"></script>
 {% endblock %}
