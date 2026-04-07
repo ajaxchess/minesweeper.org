@@ -4535,89 +4535,6 @@ def get_nonosweeper_scores(
 _DATE_DAILY_RE   = __import__("re").compile(r"^\d{4}-\d{2}-\d{2}$")
 _DATE_MONTHLY_RE = __import__("re").compile(r"^\d{4}-\d{2}$")
 
-
-@app.get("/{mode}/{date_str}/{guess_mode}", response_class=HTMLResponse)
-async def archive_day(
-    request: Request,
-    mode: str,
-    date_str: str,
-    guess_mode: str,
-    db: Session = Depends(get_db),
-):
-    if mode not in ARCHIVE_MODES or guess_mode not in ("guess", "no_guess"):
-        raise HTTPException(status_code=404)
-
-    is_daily   = bool(_DATE_DAILY_RE.match(date_str))
-    is_monthly = bool(_DATE_MONTHLY_RE.match(date_str)) and not is_daily
-
-    if not is_daily and not is_monthly:
-        raise HTTPException(status_code=404)
-
-    no_guess = guess_mode == "no_guess"
-
-    try:
-        if is_daily:
-            target = date.fromisoformat(date_str)
-            scores = _get_archive_scores_day(db, mode, target, no_guess)
-            # prev / next dates with any auth score for this mode
-            prev_row = (
-                db.query(func.max(cast(Score.created_at, SQLDate)))
-                .filter(Score.mode == mode, Score.user_email.isnot(None),
-                        cast(Score.created_at, SQLDate) < target)
-                .scalar()
-            )
-            next_row = (
-                db.query(func.min(cast(Score.created_at, SQLDate)))
-                .filter(Score.mode == mode, Score.user_email.isnot(None),
-                        cast(Score.created_at, SQLDate) > target,
-                        Score.created_at <= datetime.now(timezone.utc))
-                .scalar()
-            )
-            prev_date = str(prev_row) if prev_row else None
-            next_date = str(next_row) if next_row else None
-            period_label = date_str
-        else:
-            parts = date_str.split("-")
-            year, month = int(parts[0]), int(parts[1])
-            if not (1 <= month <= 12):
-                raise ValueError("bad month")
-            scores = _get_archive_scores_month(db, mode, year, month, no_guess)
-            prev_date = next_date = None
-            period_label = date_str
-    except (ValueError, IndexError):
-        raise HTTPException(status_code=404)
-
-    enriched = _enrich_archive(scores)
-    mode_cap = mode.capitalize()
-    ng_label = " No-Guess" if no_guess else ""
-    period_word = "Monthly" if is_monthly else "Daily"
-    _title = f"{mode_cap}{ng_label} {period_word} Scores — {date_str}"
-    _desc  = (f"Top {mode_cap} minesweeper times for {date_str}"
-              f"{' (No-Guess)' if no_guess else ''}. "
-              "Server-rendered leaderboard of registered players.")
-    _canon = f"https://minesweeper.org/{mode}/{date_str}/{guess_mode}"
-
-    return templates.TemplateResponse("archive_day.html", {
-        "request":      request,
-        "mode":         mode,
-        "date_str":     date_str,
-        "guess_mode":   guess_mode,
-        "no_guess":     no_guess,
-        "is_daily":     is_daily,
-        "is_monthly":   is_monthly,
-        "scores":       enriched,
-        "prev_date":    prev_date,
-        "next_date":    next_date,
-        "period_label": period_label,
-        "user":         get_current_user(request),
-        "lang":         get_lang(request),
-        "t":            get_t(request),
-        "_title":       _title,
-        "_desc":        _desc,
-        "_canon":       _canon,
-        "noindex":      True,
-    })
-
 # ── Mahjong Solitaire ─────────────────────────────────────────────────────────
 
 @app.get("/other/mahjong", response_class=HTMLResponse)
@@ -4751,6 +4668,88 @@ def get_mahjong_scores(
             .limit(LIMIT).all()
         )
     return _enrich_with_profiles(top, db)
+
+@app.get("/{mode}/{date_str}/{guess_mode}", response_class=HTMLResponse)
+async def archive_day(
+    request: Request,
+    mode: str,
+    date_str: str,
+    guess_mode: str,
+    db: Session = Depends(get_db),
+):
+    if mode not in ARCHIVE_MODES or guess_mode not in ("guess", "no_guess"):
+        raise HTTPException(status_code=404)
+
+    is_daily   = bool(_DATE_DAILY_RE.match(date_str))
+    is_monthly = bool(_DATE_MONTHLY_RE.match(date_str)) and not is_daily
+
+    if not is_daily and not is_monthly:
+        raise HTTPException(status_code=404)
+
+    no_guess = guess_mode == "no_guess"
+
+    try:
+        if is_daily:
+            target = date.fromisoformat(date_str)
+            scores = _get_archive_scores_day(db, mode, target, no_guess)
+            # prev / next dates with any auth score for this mode
+            prev_row = (
+                db.query(func.max(cast(Score.created_at, SQLDate)))
+                .filter(Score.mode == mode, Score.user_email.isnot(None),
+                        cast(Score.created_at, SQLDate) < target)
+                .scalar()
+            )
+            next_row = (
+                db.query(func.min(cast(Score.created_at, SQLDate)))
+                .filter(Score.mode == mode, Score.user_email.isnot(None),
+                        cast(Score.created_at, SQLDate) > target,
+                        Score.created_at <= datetime.now(timezone.utc))
+                .scalar()
+            )
+            prev_date = str(prev_row) if prev_row else None
+            next_date = str(next_row) if next_row else None
+            period_label = date_str
+        else:
+            parts = date_str.split("-")
+            year, month = int(parts[0]), int(parts[1])
+            if not (1 <= month <= 12):
+                raise ValueError("bad month")
+            scores = _get_archive_scores_month(db, mode, year, month, no_guess)
+            prev_date = next_date = None
+            period_label = date_str
+    except (ValueError, IndexError):
+        raise HTTPException(status_code=404)
+
+    enriched = _enrich_archive(scores)
+    mode_cap = mode.capitalize()
+    ng_label = " No-Guess" if no_guess else ""
+    period_word = "Monthly" if is_monthly else "Daily"
+    _title = f"{mode_cap}{ng_label} {period_word} Scores — {date_str}"
+    _desc  = (f"Top {mode_cap} minesweeper times for {date_str}"
+              f"{' (No-Guess)' if no_guess else ''}. "
+              "Server-rendered leaderboard of registered players.")
+    _canon = f"https://minesweeper.org/{mode}/{date_str}/{guess_mode}"
+
+    return templates.TemplateResponse("archive_day.html", {
+        "request":      request,
+        "mode":         mode,
+        "date_str":     date_str,
+        "guess_mode":   guess_mode,
+        "no_guess":     no_guess,
+        "is_daily":     is_daily,
+        "is_monthly":   is_monthly,
+        "scores":       enriched,
+        "prev_date":    prev_date,
+        "next_date":    next_date,
+        "period_label": period_label,
+        "user":         get_current_user(request),
+        "lang":         get_lang(request),
+        "t":            get_t(request),
+        "_title":       _title,
+        "_desc":        _desc,
+        "_canon":       _canon,
+        "noindex":      True,
+    })
 
 # ── Nonosweeper ───────────────────────────────────────────────────────────────
 
