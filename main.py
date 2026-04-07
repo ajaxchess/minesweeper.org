@@ -4684,7 +4684,6 @@ def mahjong_leaderboard_page(request: Request):
 @app.get("/other/mahjong/how-to-play", response_class=HTMLResponse)
 def mahjong_howtoplay_page(request: Request):
     return templates.TemplateResponse("mahjong_howtoplay.html", {
-        "request": request, "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
