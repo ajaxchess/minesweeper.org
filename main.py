@@ -4539,9 +4539,10 @@ _DATE_MONTHLY_RE = __import__("re").compile(r"^\d{4}-\d{2}$")
 # ── Mahjong Solitaire ─────────────────────────────────────────────────────────
 
 _MAH_BOARDS_PATH = os.path.join("static", "mah", "assets", "data", "boards.json")
-_mah_board_ids: list[str] = []
+_MAH_INDEX_PATH  = os.path.join("static", "mah", "index.html")
+_mah_board_ids = []
 
-def _load_mah_boards() -> None:
+def _load_mah_boards():
     global _mah_board_ids
     try:
         with open(_MAH_BOARDS_PATH, encoding="utf-8") as f:
@@ -4553,7 +4554,7 @@ def _load_mah_boards() -> None:
 
 _load_mah_boards()
 
-def _get_daily_mah_board_id() -> str:
+def _get_daily_mah_board_id():
     if not _mah_board_ids:
         return ""
     today = date.today()
@@ -4576,7 +4577,9 @@ def mahjong_daily_page(request: Request):
 
 @app.get("/other/mahjong/")
 def mahjong_game_root():
-    return FileResponse(os.path.join("static", "mah", "index.html"))
+    if not os.path.isfile(_MAH_INDEX_PATH):
+        raise HTTPException(status_code=503, detail="Game not yet deployed")
+    return FileResponse(_MAH_INDEX_PATH)
 
 
 @app.get("/other/mahjong/leaderboard", response_class=HTMLResponse)
@@ -4604,7 +4607,7 @@ def mahjong_game_static(path: str):
     file_path = os.path.join("static", "mah", path)
     if os.path.isfile(file_path):
         return FileResponse(file_path)
-    return FileResponse(os.path.join("static", "mah", "index.html"))
+    return FileResponse(_MAH_INDEX_PATH)
 
 
 class MahjongScoreSubmit(BaseModel):
