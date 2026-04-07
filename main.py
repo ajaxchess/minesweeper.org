@@ -4652,7 +4652,7 @@ async def nonosweeper_permalink(request: Request, date_str: str):
     })
 
 
-# ── Mahjong Solitaire ──────────────────────────────────────────────────────────
+# ── Mahjong Solitaire ─────────────────────────────────────────────────────────
 
 @app.get("/other/mahjong", response_class=HTMLResponse)
 def mahjong_landing(request: Request):
@@ -4660,7 +4660,7 @@ def mahjong_landing(request: Request):
 
 
 @app.get("/other/mahjong/daily", response_class=HTMLResponse)
-def mahjong_daily(request: Request):
+def mahjong_daily_page(request: Request):
     today = date.today().isoformat()
     return templates.TemplateResponse("mahjong_daily.html", {
         "request": request, "mode": "other",
@@ -4682,7 +4682,7 @@ def mahjong_leaderboard_page(request: Request):
 
 
 @app.get("/other/mahjong/how-to-play", response_class=HTMLResponse)
-def mahjong_howtoplay(request: Request):
+def mahjong_howtoplay_page(request: Request):
     return templates.TemplateResponse("mahjong_howtoplay.html", {
         "request": request, "mode": "other",
         "user": get_current_user(request),
@@ -4774,3 +4774,6 @@ def get_mahjong_scores(
             .limit(LIMIT).all()
         )
     return _enrich_with_profiles(top, db)
+
+
+
