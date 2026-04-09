@@ -84,19 +84,19 @@
   user-select: none;
 }
 
-/* Board */
+/* Board — JS sets exact width/height once puzzle dimensions are known */
 #jig-board {
-  flex: 1 1 65%;
+  flex: 0 0 auto;
   position: relative;
   overflow: hidden;
   background: var(--surface);
-  min-height: 400px;
   cursor: default;
+  min-width: 200px;
+  min-height: 200px;
 }
 #jig-board-canvas {
   display: block;
-  width: 100%;
-  height: 100%;
+  /* width/height set explicitly by JS — do not override with 100% */
 }
 
 /* Thumbnail */

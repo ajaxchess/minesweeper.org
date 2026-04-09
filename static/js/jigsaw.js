@@ -207,27 +207,33 @@
     winModal.classList.remove('show');
     scoreMsgEl.textContent = '';
 
-    // Board canvas sizing — fill the board element
-    var boardRect = boardEl.getBoundingClientRect();
-    var boardW    = Math.max(boardRect.width  || 600, 200);
-    var boardH    = Math.max(boardRect.height || 450, 200);
-    // Scale the assembled puzzle to fit in the board while preserving the image
-    // aspect ratio.  Cells are NOT forced square — cellW and cellH differ on
-    // non-square images so the completed puzzle looks exactly like the original.
-    var margin = 20;
-    var scale  = Math.min(
-      (boardW - margin * 2) / img.naturalWidth,
-      (boardH - margin * 2) / img.naturalHeight
+    // Compute available space from the game area, reserving room for the stash.
+    var STASH_W  = 260;
+    var margin   = 20;
+    var areaRect = gameAreaEl.getBoundingClientRect();
+    var availW   = Math.max(200, areaRect.width  - STASH_W - 4);
+    var availH   = Math.max(200, areaRect.height || 500);
+
+    // Scale puzzle to fit, preserving the image's natural aspect ratio.
+    // cellW and cellH can differ so non-square images aren't distorted.
+    var scale = Math.min(
+      (availW - margin * 2) / img.naturalWidth,
+      (availH - margin * 2) / img.naturalHeight
     );
     cellW = Math.max(8, scale * img.naturalWidth  / cols);
     cellH = Math.max(8, scale * img.naturalHeight / rows);
     tabSz = Math.min(cellW, cellH) * TAB_RATIO;
 
-    // Resize board canvas
+    // Size the board canvas to exactly the assembled puzzle + margin.
+    // The board element is flex: 0 0 auto so it shrinks to match the canvas.
+    var boardW = Math.round(cols * cellW) + margin * 2;
+    var boardH = Math.round(rows * cellH) + margin * 2;
     boardCanvas.width  = boardW;
     boardCanvas.height = boardH;
     boardCanvas.style.width  = boardW + 'px';
     boardCanvas.style.height = boardH + 'px';
+    boardEl.style.width  = boardW + 'px';
+    boardEl.style.height = boardH + 'px';
 
     // Seeded PRNG for tab assignments
     var prng = makePrng(seedFromString(DATE + diff));
