@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -4673,6 +4673,394 @@ def get_mahjong_scores(
             .limit(LIMIT).all()
         )
     return _enrich_with_profiles(top, db)
+
+
+# ── Jigsaw Puzzle ─────────────────────────────────────────────────────────────
+
+_JIGSAW_PUZZLE_DIR = os.path.join("static", "img", "puzzle")
+_JIGSAW_UPLOAD_DIR = os.path.join("static", "uploads", "jigsaw")
+_JIGSAW_DIFFICULTIES = ("beginner", "intermediate", "expert")
+
+
+def _jigsaw_daily_image(puzzle_date: str) -> str:
+    """Return the image filename for the given date (seeded random selection)."""
+    try:
+        images = sorted(
+            f for f in os.listdir(_JIGSAW_PUZZLE_DIR)
+            if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp"))
+        )
+    except OSError:
+        images = []
+    if not images:
+        return ""
+    import hashlib
+    seed = int(hashlib.md5(puzzle_date.encode()).hexdigest(), 16)
+    return images[seed % len(images)]
+
+
+@app.get("/other/jigsaw", response_class=HTMLResponse)
+def jigsaw_landing(request: Request):
+    return RedirectResponse("/other/jigsaw/daily", status_code=302)
+
+
+@app.get("/other/jigsaw/daily", response_class=HTMLResponse)
+def jigsaw_daily_page(request: Request,
+                      img: Optional[str] = Query(None),
+                      diff: Optional[str] = Query(None)):
+    import re
+    today = date.today().isoformat()
+    # Gallery can override image via ?img= query param
+    if img and re.match(r'^[A-Za-z0-9_\-\.]{1,256}$', img):
+        image_name = img
+    else:
+        image_name = _jigsaw_daily_image(today)
+    difficulty = diff if diff in _JIGSAW_DIFFICULTIES else ""
+    return templates.TemplateResponse("jigsaw_daily.html", {
+        "request":    request,
+        "mode":       "other",
+        "user":       get_current_user(request),
+        "lang":       get_lang(request),
+        "t":          get_t(request),
+        "today":      today,
+        "image_name": image_name,
+        "difficulty": difficulty,
+        "photo_url":  None,
+        "board_hash": None,
+        "display_name": None,
+    })
+
+
+@app.get("/other/jigsaw/gallery", response_class=HTMLResponse)
+def jigsaw_gallery_page(request: Request):
+    try:
+        images = sorted(
+            f for f in os.listdir(_JIGSAW_PUZZLE_DIR)
+            if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp"))
+        )
+    except OSError:
+        images = []
+    return templates.TemplateResponse("jigsaw_gallery.html", {
+        "request": request,
+        "mode":    "other",
+        "user":    get_current_user(request),
+        "lang":    get_lang(request),
+        "t":       get_t(request),
+        "images":  images,
+    })
+
+
+@app.get("/other/jigsaw/generator", response_class=HTMLResponse)
+def jigsaw_generator_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    photos = []
+    limit = 32
+    if user:
+        photos = db.query(JigsawPhoto).filter_by(user_email=user["email"]).order_by(
+            JigsawPhoto.created_at.desc()
+        ).all()
+        profile = db.query(UserProfile).filter_by(email=user["email"]).first()
+        limit = getattr(profile, "puzzle_storage_limit", 32) if profile else 32
+    return templates.TemplateResponse("jigsaw_generator.html", {
+        "request": request,
+        "mode":    "other",
+        "user":    user,
+        "lang":    get_lang(request),
+        "t":       get_t(request),
+        "photos":  photos,
+        "limit":   limit,
+    })
+
+
+@app.get("/other/jigsaw/leaderboard", response_class=HTMLResponse)
+def jigsaw_leaderboard_page(request: Request):
+    today = date.today().isoformat()
+    return templates.TemplateResponse("jigsaw_leaderboard.html", {
+        "request": request,
+        "mode":    "other",
+        "user":    get_current_user(request),
+        "lang":    get_lang(request),
+        "t":       get_t(request),
+        "today":   today,
+    })
+
+
+@app.get("/other/jigsaw/how-to-play", response_class=HTMLResponse)
+def jigsaw_howtoplay_page(request: Request):
+    return templates.TemplateResponse("jigsaw_howtoplay.html", {
+        "request": request,
+        "mode":    "other",
+        "user":    get_current_user(request),
+        "lang":    get_lang(request),
+        "t":       get_t(request),
+    })
+
+
+@app.get("/other/jigsaw/photo/{board_hash}", response_class=HTMLResponse)
+def jigsaw_photo_play(request: Request, board_hash: str, difficulty: str = Query("beginner"),
+                      db: Session = Depends(get_db)):
+    import re
+    if not re.match(r'^[A-Za-z0-9_\-]{10,128}$', board_hash):
+        raise HTTPException(status_code=400, detail="Invalid board hash")
+    if difficulty not in _JIGSAW_DIFFICULTIES:
+        difficulty = "beginner"
+    photo = db.query(JigsawPhoto).filter_by(board_hash=board_hash).first()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Puzzle not found")
+    return templates.TemplateResponse("jigsaw_daily.html", {
+        "request":      request,
+        "mode":         "other",
+        "user":         get_current_user(request),
+        "lang":         get_lang(request),
+        "t":            get_t(request),
+        "today":        date.today().isoformat(),
+        "image_name":   None,
+        "photo_url":    f"/static/uploads/jigsaw/{photo.filename}",
+        "board_hash":   board_hash,
+        "display_name": photo.display_name or "Custom Puzzle",
+        "difficulty":   difficulty,
+    })
+
+
+# ── Jigsaw API ────────────────────────────────────────────────────────────────
+
+@app.get("/api/jigsaw/daily-image")
+def jigsaw_daily_image_api(request: Request):
+    today = date.today().isoformat()
+    image_name = _jigsaw_daily_image(today)
+    return {"image_name": image_name, "image_url": f"/static/img/puzzle/{image_name}"}
+
+
+class JigsawScoreSubmit(BaseModel):
+    name:        str = Field(..., min_length=1, max_length=32)
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    difficulty:  str
+    image_name:  str = Field(..., min_length=1, max_length=256)
+    time_ms:     int = Field(..., ge=1, le=99999999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+    @field_validator("difficulty")
+    @classmethod
+    def validate_difficulty(cls, v: str) -> str:
+        if v not in ("beginner", "intermediate", "expert"):
+            raise ValueError("Invalid difficulty")
+        return v
+
+    @field_validator("image_name")
+    @classmethod
+    def sanitize_image_name(cls, v: str) -> str:
+        import re
+        v = v.strip()
+        if not re.match(r'^[A-Za-z0-9_\-\.]{1,256}$', v):
+            raise ValueError("Invalid image name")
+        return v
+
+
+@app.post("/api/jigsaw-scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_jigsaw_score(payload: JigsawScoreSubmit, request: Request,
+                        db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = JigsawScore(
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        puzzle_date = payload.puzzle_date,
+        difficulty  = payload.difficulty,
+        image_name  = payload.image_name,
+        time_ms     = payload.time_ms,
+        guest_token = guest_token,
+        client_type = get_client_type(request),
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    record_score_submit("jigsaw", payload.puzzle_date)
+    record_game_complete("jigsaw", mode=payload.difficulty, duration_ms=payload.time_ms)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/jigsaw-scores")
+def get_jigsaw_scores(
+    request: Request,
+    puzzle_date: Optional[str] = Query(None, alias="date",
+                                       pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    difficulty:  Optional[str] = Query("beginner"),
+    db: Session = Depends(get_db),
+):
+    import re
+    if difficulty not in _JIGSAW_DIFFICULTIES:
+        difficulty = "beginner"
+    LIMIT = 20
+    if puzzle_date:
+        top = (
+            db.query(JigsawScore)
+            .filter(JigsawScore.puzzle_date == puzzle_date,
+                    JigsawScore.difficulty == difficulty)
+            .order_by(JigsawScore.time_ms.asc(), JigsawScore.created_at.asc())
+            .limit(LIMIT).all()
+        )
+    else:
+        today = date.today().isoformat()
+        top = (
+            db.query(JigsawScore)
+            .filter(JigsawScore.puzzle_date == today,
+                    JigsawScore.difficulty == difficulty)
+            .order_by(JigsawScore.time_ms.asc(), JigsawScore.created_at.asc())
+            .limit(LIMIT).all()
+        )
+    return _enrich_with_profiles(top, db)
+
+
+class JigsawSavePayload(BaseModel):
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    difficulty:  str
+    image_name:  str = Field(..., min_length=1, max_length=256)
+    elapsed_ms:  int = Field(..., ge=0)
+    piece_state: list = Field(default_factory=list)
+
+    @field_validator("difficulty")
+    @classmethod
+    def validate_difficulty(cls, v: str) -> str:
+        if v not in ("beginner", "intermediate", "expert"):
+            raise ValueError("Invalid difficulty")
+        return v
+
+
+@app.post("/api/jigsaw/save", status_code=200)
+@limiter.limit("30/minute")
+def jigsaw_save_game(payload: JigsawSavePayload, request: Request,
+                     db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Login required")
+    import json as _json
+    piece_state_json = _json.dumps(payload.piece_state)
+    existing = (
+        db.query(JigsawSavedGame)
+        .filter_by(user_email=user["email"], puzzle_date=payload.puzzle_date,
+                   difficulty=payload.difficulty)
+        .first()
+    )
+    if existing:
+        existing.elapsed_ms  = payload.elapsed_ms
+        existing.piece_state = piece_state_json
+        existing.image_name  = payload.image_name
+    else:
+        db.add(JigsawSavedGame(
+            user_email  = user["email"],
+            puzzle_date = payload.puzzle_date,
+            difficulty  = payload.difficulty,
+            image_name  = payload.image_name,
+            elapsed_ms  = payload.elapsed_ms,
+            piece_state = piece_state_json,
+        ))
+    db.commit()
+    return {"ok": True}
+
+
+@app.get("/api/jigsaw/resume")
+def jigsaw_resume_game(request: Request,
+                       puzzle_date: str = Query(..., pattern=r"^\d{4}-\d{2}-\d{2}$"),
+                       difficulty: str = Query("beginner"),
+                       db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return {"saved": False}
+    if difficulty not in _JIGSAW_DIFFICULTIES:
+        return {"saved": False}
+    saved = (
+        db.query(JigsawSavedGame)
+        .filter_by(user_email=user["email"], puzzle_date=puzzle_date, difficulty=difficulty)
+        .first()
+    )
+    if not saved:
+        return {"saved": False}
+    import json as _json
+    return {
+        "saved":       True,
+        "elapsed_ms":  saved.elapsed_ms,
+        "image_name":  saved.image_name,
+        "piece_state": _json.loads(saved.piece_state),
+    }
+
+
+@app.post("/api/jigsaw/upload", status_code=201)
+@limiter.limit("20/minute")
+async def upload_jigsaw_photo(
+    request: Request,
+    db: Session = Depends(get_db),
+    file: UploadFile = File(...),
+    display_name: str = Form(""),
+    board_hash: str = Form(...),
+):
+    import re
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Login required")
+    if not re.match(r'^[A-Za-z0-9_\-]{10,128}$', board_hash):
+        raise HTTPException(status_code=400, detail="Invalid board hash")
+    if db.query(JigsawPhoto).filter_by(board_hash=board_hash).first():
+        raise HTTPException(status_code=409, detail="Puzzle already exists")
+    profile = db.query(UserProfile).filter_by(email=user["email"]).first()
+    limit = getattr(profile, "puzzle_storage_limit", 32) if profile else 32
+    count = db.query(JigsawPhoto).filter_by(user_email=user["email"]).count()
+    if count >= limit:
+        raise HTTPException(status_code=400, detail=f"Puzzle limit reached ({limit})")
+    content_type = file.content_type or ""
+    if content_type not in ("image/jpeg", "image/png"):
+        raise HTTPException(status_code=400, detail="Only JPG and PNG files are accepted")
+    data = await file.read()
+    if len(data) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+    os.makedirs(_JIGSAW_UPLOAD_DIR, exist_ok=True)
+    ext = ".jpg" if content_type == "image/jpeg" else ".png"
+    safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
+    filename = f"{safe_hash}{ext}"
+    filepath = os.path.join(_JIGSAW_UPLOAD_DIR, filename)
+    with open(filepath, "wb") as f:
+        f.write(data)
+    entry = JigsawPhoto(
+        user_email   = user["email"],
+        filename     = filename,
+        display_name = display_name.strip()[:128] or None,
+        board_hash   = board_hash,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"ok": True, "url": f"/other/jigsaw/photo/{board_hash}"}
+
+
+@app.post("/api/jigsaw/delete-photo/{board_hash}")
+def delete_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Login required")
+    photo = db.query(JigsawPhoto).filter_by(board_hash=board_hash).first()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Not found")
+    if photo.user_email != user["email"] and user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    filepath = os.path.join(_JIGSAW_UPLOAD_DIR, photo.filename)
+    if os.path.isfile(filepath):
+        os.remove(filepath)
+    db.delete(photo)
+    db.commit()
+    return {"ok": True}
+
 
 @app.get("/{mode}/{date_str}/{guess_mode}", response_class=HTMLResponse)
 async def archive_day(

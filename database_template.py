@@ -3,7 +3,7 @@ database.py — SQLAlchemy setup for MySQL via PyMySQL
 """
 from sqlalchemy import (
     create_engine, Column, Integer, BigInteger, String, Float,
-    DateTime, Date, Enum, Index, Boolean, text
+    DateTime, Date, Enum, Index, Boolean, text, Text
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from datetime import datetime, timezone
@@ -889,6 +889,68 @@ class MahjongSavedGame(Base):
     )
 
 
+# ── Jigsaw Score model ────────────────────────────────────────────────────────
+class JigsawScore(Base):
+    __tablename__ = "jigsaw_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD UTC
+    difficulty  = Column(String(16), nullable=False)   # beginner|intermediate|expert
+    image_name  = Column(String(256), nullable=False)
+    time_ms     = Column(Integer, nullable=False)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_jigsaw_scores_date_diff_time", "puzzle_date", "difficulty", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "difficulty":  self.difficulty,
+            "time_ms":     self.time_ms,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── Jigsaw Saved Game model ───────────────────────────────────────────────────
+class JigsawSavedGame(Base):
+    __tablename__ = "jigsaw_saved_games"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    user_email  = Column(String(256), nullable=False, index=True)
+    puzzle_date = Column(String(10), nullable=False)
+    difficulty  = Column(String(16), nullable=False)
+    image_name  = Column(String(256), nullable=False)
+    elapsed_ms  = Column(Integer, nullable=False, default=0)
+    piece_state = Column(Text, nullable=False, default="[]")  # JSON [{id,x,y,groupId}]
+    updated_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc),
+                         onupdate=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_jigsaw_saved_user_date_diff", "user_email", "puzzle_date", "difficulty",
+              unique=True),
+    )
+
+
+# ── Jigsaw Photo model (custom generator uploads) ─────────────────────────────
+class JigsawPhoto(Base):
+    __tablename__ = "jigsaw_photos"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    user_email   = Column(String(256), nullable=False, index=True)
+    filename     = Column(String(256), nullable=False)
+    display_name = Column(String(128), nullable=True)
+    board_hash   = Column(String(128), nullable=False, unique=True, index=True)
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
     Base.metadata.create_all(bind=engine)
@@ -954,6 +1016,7 @@ def _apply_migrations():
         ("nonosweeper_scores",    "guest_token",  "VARCHAR(36) NULL"),
         # 15-puzzle generator: per-user saved puzzle limit (added 2026-03-30)
         ("user_profiles",         "puzzle_storage_limit", "INT NOT NULL DEFAULT 32"),
+        # F68 Jigsaw: tables created via create_all; no column migrations needed yet
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:

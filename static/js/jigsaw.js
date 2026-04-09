@@ -1,0 +1,922 @@
+/* jigsaw.js — Jigsaw Puzzle engine for minesweeper.org
+ * Canvas-based drag-and-drop interlocking jigsaw puzzle.
+ * Config injected via window.JIG_* globals from the template.
+ */
+(function () {
+  'use strict';
+
+  // ── Config ──────────────────────────────────────────────────────────────────
+  var DATE       = window.JIG_DATE       || '';
+  var IMAGE_NAME = window.JIG_IMAGE_NAME || '';
+  var IMAGE_URL  = window.JIG_IMAGE_URL  || '';
+  var BOARD_HASH = window.JIG_BOARD_HASH || '';
+  var USER_NAME  = window.JIG_USER_NAME  || '';
+  var LOGGED_IN  = !!window.JIG_LOGGED_IN;
+
+  // Difficulty grids
+  var DIFFS = {
+    beginner:     { rows: 10, cols: 10 },
+    intermediate: { rows: 20, cols: 25 },
+    expert:       { rows: 25, cols: 40 },
+  };
+
+  var SNAP_DIST   = 20;   // px — fixed threshold
+  var TAB_RATIO   = 0.28; // tab protrusion as fraction of shorter cell dimension
+
+  // ── State ───────────────────────────────────────────────────────────────────
+  var img        = null;  // HTMLImageElement
+  var difficulty = '';
+  var rows = 0, cols = 0;
+  var cellW = 0, cellH = 0;
+  var tabSz = 0;          // tab protrusion in px
+  var pieces = [];        // array of piece objects
+  var groups = {};        // groupId -> [pieceIds]
+  var nextGroup = 0;
+
+  // Drag state
+  var drag = null; // { type:'piece'|'group', id, offX, offY, startX, startY }
+
+  // Timer
+  var timerInterval = null;
+  var elapsedMs     = 0;
+  var timerRunning  = false;
+  var gameStarted   = false;
+  var gameDone      = false;
+  var paused        = false;
+
+  // Sound
+  var muted     = false;
+  var audioCtx  = null;
+
+  // ── DOM refs ─────────────────────────────────────────────────────────────────
+  var boardEl       = document.getElementById('jig-board');
+  var boardCanvas   = document.getElementById('jig-board-canvas');
+  var ctx           = boardCanvas.getContext('2d');
+  var stashInner    = document.getElementById('jig-stash-inner');
+  var thumbEl       = document.getElementById('jig-thumb');
+  var timerEl       = document.getElementById('jig-timer');
+  var pauseBtn      = document.getElementById('jig-pause-btn');
+  var restartBtn    = document.getElementById('jig-restart-btn');
+  var muteBtn       = document.getElementById('jig-mute-btn');
+  var statusEl      = document.getElementById('jig-status');
+  var pauseOverlay  = document.getElementById('jig-pause-overlay');
+  var winModal      = document.getElementById('jig-win');
+  var winTimeEl     = document.getElementById('jig-win-time');
+  var winDiffEl     = document.getElementById('jig-win-diff');
+  var submitBtn     = document.getElementById('jig-submit-btn');
+  var nameInput     = document.getElementById('jig-name');
+  var scoreMsgEl    = document.getElementById('jig-score-msg');
+  var winRestartBtn = document.getElementById('jig-win-restart');
+
+  // ── LCG PRNG (seeded, for reproducible tab layout) ───────────────────────────
+  function makePrng(seed) {
+    var s = seed >>> 0;
+    return function () {
+      s = (Math.imul(1664525, s) + 1013904223) >>> 0;
+      return s / 4294967296;
+    };
+  }
+
+  function seedFromString(str) {
+    var h = 0x811c9dc5;
+    for (var i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h;
+  }
+
+  // ── Jigsaw edge path helper ───────────────────────────────────────────────────
+  // Draws a jigsaw edge from (ax,ay) to (bx,by).
+  // tab: +1 = bump toward "outside" (right-hand normal of A→B), -1 = indent, 0 = flat
+  function addEdge(ctx, ax, ay, bx, by, tab) {
+    if (tab === 0) { ctx.lineTo(bx, by); return; }
+    var dx = bx - ax, dy = by - ay;
+    // Right-hand normal (perpendicular, pointing outward)
+    var nx = -dy, ny = dx;
+    var len = Math.hypot(dx, dy);
+    nx /= len; ny /= len;
+    var bump = tabSz * tab;
+    // Key points along edge
+    var t0x = ax + dx * 0.35, t0y = ay + dy * 0.35;
+    var t1x = ax + dx * 0.65, t1y = ay + dy * 0.65;
+    var midx = ax + dx * 0.5  + nx * bump;
+    var midy = ay + dy * 0.5  + ny * bump;
+    var c0x = ax + dx * 0.3  + nx * bump * 0.5;
+    var c0y = ay + dy * 0.3  + ny * bump * 0.5;
+    var c1x = ax + dx * 0.4  + nx * bump * 1.1;
+    var c1y = ay + dy * 0.4  + ny * bump * 1.1;
+    var c2x = ax + dx * 0.6  + nx * bump * 1.1;
+    var c2y = ay + dy * 0.6  + ny * bump * 1.1;
+    var c3x = ax + dx * 0.7  + nx * bump * 0.5;
+    var c3y = ay + dy * 0.7  + ny * bump * 0.5;
+    ctx.lineTo(t0x, t0y);
+    ctx.bezierCurveTo(c0x, c0y, c1x, c1y, midx, midy);
+    ctx.bezierCurveTo(c2x, c2y, c3x, c3y, t1x, t1y);
+    ctx.lineTo(bx, by);
+  }
+
+  // Build clip path for piece (r,c) with given tabs [top,right,bottom,left]
+  // Origin is (ox, oy) on the canvas (piece top-left, excluding tab overhang)
+  function buildPiecePath(ctx, ox, oy, tabs) {
+    var t = tabs[0], r = tabs[1], b = tabs[2], l = tabs[3];
+    ctx.beginPath();
+    ctx.moveTo(ox, oy);
+    // Top: left→right, normal points UP (−y) = tab value inverted for outward
+    addEdge(ctx, ox,        oy,        ox + cellW, oy,        -t);
+    // Right: top→bottom, normal points RIGHT (+x)
+    addEdge(ctx, ox + cellW, oy,        ox + cellW, oy + cellH, r);
+    // Bottom: right→left, normal points DOWN (+y) = -b
+    addEdge(ctx, ox + cellW, oy + cellH, ox,        oy + cellH, -b);
+    // Left: bottom→top, normal points LEFT (−x) = -l  but right-hand is leftward = l
+    addEdge(ctx, ox,        oy + cellH, ox,        oy,        l);
+    ctx.closePath();
+  }
+
+  // ── Piece canvas rendering ────────────────────────────────────────────────────
+  // Returns a small offscreen canvas with the piece drawn (clip + image slice).
+  function renderPieceCanvas(p) {
+    var pad = tabSz + 2; // extra padding so bezier tips don't clip
+    var pw  = cellW + pad * 2;
+    var ph  = cellH + pad * 2;
+    var oc  = document.createElement('canvas');
+    oc.width  = pw;
+    oc.height = ph;
+    var oc_ = oc.getContext('2d');
+    // Clip to piece shape
+    buildPiecePath(oc_, pad, pad, p.tabs);
+    oc_.save();
+    oc_.clip();
+    // Draw image slice (source: col*cellW, row*cellH portion)
+    var srcX = p.col * cellW - pad;
+    var srcY = p.row * cellH - pad;
+    oc_.drawImage(img, srcX, srcY, pw, ph, 0, 0, pw, ph);
+    oc_.restore();
+    // Outline
+    buildPiecePath(oc_, pad, pad, p.tabs);
+    oc_.strokeStyle = 'rgba(0,0,0,0.35)';
+    oc_.lineWidth   = 1.5;
+    oc_.stroke();
+    return oc;
+  }
+
+  // ── Piece element (DOM canvas) ─────────────────────────────────────────────────
+  function createPieceEl(p) {
+    var pad = tabSz + 2;
+    var pw  = cellW + pad * 2;
+    var ph  = cellH + pad * 2;
+    var el  = document.createElement('canvas');
+    el.className = 'jig-piece';
+    el.width     = pw;
+    el.height    = ph;
+    el.style.cssText = (
+      'position:absolute;cursor:grab;touch-action:none;' +
+      'width:' + pw + 'px;height:' + ph + 'px;'
+    );
+    el.dataset.pid = p.id;
+    // Draw piece
+    var elCtx = el.getContext('2d');
+    var oc    = renderPieceCanvas(p);
+    elCtx.drawImage(oc, 0, 0);
+    return el;
+  }
+
+  // ── Initialize game ───────────────────────────────────────────────────────────
+  function initGame(diff) {
+    difficulty   = diff;
+    rows         = DIFFS[diff].rows;
+    cols         = DIFFS[diff].cols;
+    pieces       = [];
+    groups       = {};
+    nextGroup    = 0;
+    drag         = null;
+    gameDone     = false;
+    paused       = false;
+    elapsedMs    = 0;
+    gameStarted  = false;
+    timerRunning = false;
+    clearInterval(timerInterval);
+    timerInterval = null;
+    timerEl.textContent = '0:00';
+    pauseBtn.textContent = '⏸ Pause';
+    pauseOverlay.classList.remove('show');
+    winModal.classList.remove('show');
+    scoreMsgEl.textContent = '';
+
+    // Board canvas sizing — fill the board element
+    var boardRect = boardEl.getBoundingClientRect();
+    var boardW    = Math.max(boardRect.width  || 600, 200);
+    var boardH    = Math.max(boardRect.height || 450, 200);
+    // Compute cell size so the completed puzzle fits in the board area with margin
+    var margin    = 20;
+    var fitW      = (boardW - margin * 2) / cols;
+    var fitH      = (boardH - margin * 2) / rows;
+    var cellBase  = Math.min(fitW, fitH);
+    // Never let cells get too tiny
+    cellBase = Math.max(cellBase, 8);
+    cellW    = cellBase;
+    cellH    = cellBase;
+    tabSz    = Math.min(cellW, cellH) * TAB_RATIO;
+
+    // Resize board canvas
+    boardCanvas.width  = boardW;
+    boardCanvas.height = boardH;
+    boardCanvas.style.width  = boardW + 'px';
+    boardCanvas.style.height = boardH + 'px';
+
+    // Seeded PRNG for tab assignments
+    var prng = makePrng(seedFromString(DATE + diff));
+
+    // Horizontal internal edges: between row r and r+1, for each col c
+    // hEdge[r][c]: +1 or -1 (what piece at row r sees on its bottom edge)
+    var hEdge = [];
+    for (var r = 0; r < rows - 1; r++) {
+      hEdge[r] = [];
+      for (var c = 0; c < cols; c++) {
+        hEdge[r][c] = prng() > 0.5 ? 1 : -1;
+      }
+    }
+    // Vertical internal edges: between col c and c+1, for each row r
+    // vEdge[r][c]: +1 or -1 (what piece at col c sees on its right edge)
+    var vEdge = [];
+    for (var r = 0; r < rows; r++) {
+      vEdge[r] = [];
+      for (var c = 0; c < cols - 1; c++) {
+        vEdge[r][c] = prng() > 0.5 ? 1 : -1;
+      }
+    }
+
+    // Build pieces
+    for (var r = 0; r < rows; r++) {
+      for (var c = 0; c < cols; c++) {
+        var topTab    = r === 0           ? 0 :  hEdge[r-1][c];
+        var bottomTab = r === rows - 1    ? 0 :  hEdge[r][c];
+        var rightTab  = c === cols - 1    ? 0 :  vEdge[r][c];
+        var leftTab   = c === 0           ? 0 : -vEdge[r][c-1];
+        pieces.push({
+          id:      r * cols + c,
+          row:     r,
+          col:     c,
+          tabs:    [topTab, rightTab, bottomTab, leftTab],
+          x:       0,   // canvas x of piece origin (pad offset applied in draw)
+          y:       0,
+          groupId: -1,
+          onBoard: false,
+          el:      null,
+        });
+      }
+    }
+
+    // Render each piece element
+    var pad = tabSz + 2;
+    pieces.forEach(function (p) {
+      p.el = createPieceEl(p);
+    });
+
+    // Set thumbnail
+    thumbEl.src = IMAGE_URL;
+    thumbEl.style.display = 'block';
+
+    // Set stash inner height to hold all pieces scattered
+    var stashW   = 260;
+    var stashH   = Math.max(600, pieces.length * (cellH + tabSz * 2 + 4) / Math.floor(stashW / (cellW + tabSz * 2 + 8)));
+    stashInner.style.width  = stashW + 'px';
+    stashInner.style.height = stashH + 'px';
+
+    // Clear stash
+    stashInner.innerHTML = '';
+
+    // Scatter pieces in stash
+    var stashUsableW = stashW - (cellW + pad * 2);
+    var stashUsableH = stashH - (cellH + pad * 2);
+    pieces.forEach(function (p) {
+      p.x      = Math.random() * Math.max(stashUsableW, 1);
+      p.y      = Math.random() * Math.max(stashUsableH, 1);
+      p.onBoard = false;
+      p.groupId = -1;
+      p.el.style.left = p.x + 'px';
+      p.el.style.top  = p.y + 'px';
+      p.el.style.zIndex = '1';
+      stashInner.appendChild(p.el);
+      addPieceListeners(p);
+    });
+
+    // Clear board canvas
+    ctx.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+
+    statusEl.textContent = '';
+    updateDiffButtons(diff);
+
+    // Check for saved state (authenticated users)
+    if (LOGGED_IN) {
+      loadSavedState();
+    }
+  }
+
+  // ── Timer ────────────────────────────────────────────────────────────────────
+  function startTimer() {
+    if (timerRunning) return;
+    timerRunning = true;
+    var last = Date.now();
+    timerInterval = setInterval(function () {
+      var now = Date.now();
+      elapsedMs += now - last;
+      last = now;
+      updateTimerDisplay();
+    }, 100);
+  }
+
+  function stopTimer() {
+    timerRunning = false;
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  function updateTimerDisplay() {
+    var s = Math.floor(elapsedMs / 1000);
+    var m = Math.floor(s / 60);
+    timerEl.textContent = m + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  function fmtTime(ms) {
+    var s = Math.floor(ms / 1000);
+    var m = Math.floor(s / 60);
+    return m + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  // ── Snap sound (Web Audio) ────────────────────────────────────────────────────
+  function playSnap() {
+    if (muted) return;
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc  = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type            = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + 0.08);
+    } catch (e) { /* silently fail if audio is unavailable */ }
+  }
+
+  // ── Drag & Drop ──────────────────────────────────────────────────────────────
+
+  // Add pointer listeners to a piece element
+  function addPieceListeners(p) {
+    p.el.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      onPieceDown(e, p);
+    });
+  }
+
+  var dragLayer = null; // top-level container for piece during drag
+
+  function onPieceDown(e, p) {
+    if (paused || gameDone) return;
+    if (!gameStarted) {
+      gameStarted = true;
+      startTimer();
+    }
+
+    var pad     = tabSz + 2;
+    var pieceW  = cellW + pad * 2;
+    var pieceH  = cellH + pad * 2;
+
+    // Which container is the piece in?
+    var container = p.onBoard ? boardEl : stashInner.parentElement;
+    var contRect  = p.onBoard
+      ? boardEl.getBoundingClientRect()
+      : document.getElementById('jig-stash').getBoundingClientRect();
+
+    // Current piece position relative to page
+    var elRect  = p.el.getBoundingClientRect();
+    var offX    = e.clientX - elRect.left;
+    var offY    = e.clientY - elRect.top;
+
+    // Move piece (and group) to a top-level drag layer
+    if (!dragLayer) {
+      dragLayer = document.createElement('div');
+      dragLayer.style.cssText = 'position:fixed;inset:0;z-index:5000;pointer-events:none;';
+      document.body.appendChild(dragLayer);
+    }
+    dragLayer.style.pointerEvents = 'none';
+
+    var groupId  = p.groupId;
+    var movePids = groupId >= 0 ? groups[groupId].slice() : [p.id];
+
+    // Lift all pieces in the group to fixed positioning
+    movePids.forEach(function (pid) {
+      var mp   = pieces[pid];
+      var mRect = mp.el.getBoundingClientRect();
+      mp.el.style.position = 'fixed';
+      mp.el.style.left     = mRect.left + 'px';
+      mp.el.style.top      = mRect.top  + 'px';
+      mp.el.style.zIndex   = '6000';
+      document.body.appendChild(mp.el);
+    });
+
+    drag = {
+      pids:   movePids,
+      leadId: p.id,
+      offX:   offX,
+      offY:   offY,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      // store each piece's offset from the lead piece
+      relPos: movePids.reduce(function (acc, pid) {
+        var mp = pieces[pid];
+        var lp = pieces[p.id];
+        acc[pid] = { dx: mp.x - lp.x, dy: mp.y - lp.y };
+        return acc;
+      }, {}),
+    };
+
+    // Capture pointer
+    p.el.setPointerCapture(e.pointerId);
+
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup',   onPointerUp);
+  }
+
+  function onPointerMove(e) {
+    if (!drag) return;
+    var lp = pieces[drag.leadId];
+    var newLeft = e.clientX - drag.offX;
+    var newTop  = e.clientY - drag.offY;
+    lp.el.style.left = newLeft + 'px';
+    lp.el.style.top  = newTop  + 'px';
+    // Move group peers
+    drag.pids.forEach(function (pid) {
+      if (pid === drag.leadId) return;
+      var rel = drag.relPos[pid];
+      var mp  = pieces[pid];
+      var pad = tabSz + 2;
+      mp.el.style.left = (newLeft + rel.dx) + 'px';
+      mp.el.style.top  = (newTop  + rel.dy) + 'px';
+    });
+  }
+
+  function onPointerUp(e) {
+    if (!drag) return;
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup',   onPointerUp);
+
+    var pad     = tabSz + 2;
+    var boardRect = boardEl.getBoundingClientRect();
+    var stashEl   = document.getElementById('jig-stash');
+    var stashRect = stashEl.getBoundingClientRect();
+    var stashScroll = stashEl.scrollTop;
+
+    // Determine where drop occurred and reposition pieces
+    var lp = pieces[drag.leadId];
+    var lpRect = lp.el.getBoundingClientRect();
+    var midX   = lpRect.left + lpRect.width  / 2;
+    var midY   = lpRect.top  + lpRect.height / 2;
+    var onBoard = (midX >= boardRect.left && midX <= boardRect.right &&
+                   midY >= boardRect.top  && midY <= boardRect.bottom);
+
+    drag.pids.forEach(function (pid) {
+      var mp  = pieces[pid];
+      var rel = drag.relPos[pid];
+      var fixedRect = mp.el.getBoundingClientRect();
+
+      if (onBoard) {
+        // Convert fixed position to board-relative
+        mp.x = fixedRect.left - boardRect.left + rel.dx - drag.relPos[drag.leadId].dx;
+        mp.y = fixedRect.top  - boardRect.top  + rel.dy - drag.relPos[drag.leadId].dy;
+        if (!mp.onBoard) {
+          mp.onBoard = true;
+          boardEl.appendChild(mp.el);
+          mp.el.style.position = 'absolute';
+        } else {
+          mp.el.style.position = 'absolute';
+        }
+        mp.el.style.left = mp.x + 'px';
+        mp.el.style.top  = mp.y + 'px';
+        mp.el.style.zIndex = '2';
+      } else {
+        // Return to stash
+        mp.x = fixedRect.left - stashRect.left;
+        mp.y = fixedRect.top  - stashRect.top + stashScroll;
+        if (mp.onBoard) {
+          mp.onBoard = false;
+          stashInner.appendChild(mp.el);
+        } else {
+          stashInner.appendChild(mp.el);
+        }
+        mp.el.style.position = 'absolute';
+        mp.el.style.left = mp.x + 'px';
+        mp.el.style.top  = mp.y + 'px';
+        mp.el.style.zIndex = '1';
+      }
+    });
+
+    // Snap check (only for pieces on the board)
+    if (onBoard) {
+      checkSnap(drag.leadId, drag.pids);
+    }
+
+    drag = null;
+  }
+
+  // ── Snap logic ────────────────────────────────────────────────────────────────
+  // Correct board position for piece p: where its top-left should be
+  // so the assembled puzzle is centred on the board canvas.
+  function solvedPos(p) {
+    var pad   = tabSz + 2;
+    var totalW = cols * cellW;
+    var totalH = rows * cellH;
+    var offX  = (boardCanvas.width  - totalW) / 2 - pad;
+    var offY  = (boardCanvas.height - totalH) / 2 - pad;
+    return {
+      x: offX + p.col * cellW,
+      y: offY + p.row * cellH,
+    };
+  }
+
+  function checkSnap(leadId, movedPids) {
+    var lp  = pieces[leadId];
+    if (!lp.onBoard) return;
+
+    var pad  = tabSz + 2;
+    var snapped = false;
+
+    // Check against every other on-board piece not in the same group
+    for (var i = 0; i < pieces.length; i++) {
+      var op = pieces[i];
+      if (!op.onBoard) continue;
+      if (movedPids.indexOf(op.id) >= 0) continue; // same drag group
+
+      // Are lp and op neighbours in the grid?
+      var dr = op.row - lp.row;
+      var dc = op.col - lp.col;
+      if (Math.abs(dr) + Math.abs(dc) !== 1) continue; // not adjacent
+
+      // Expected relative position: if op is solved, where should lp be?
+      var opSolved = solvedPos(op);
+      var lpSolved = solvedPos(lp);
+      var expectedRelX = lpSolved.x - opSolved.x;
+      var expectedRelY = lpSolved.y - opSolved.y;
+      var actualRelX   = lp.x - op.x;
+      var actualRelY   = lp.y - op.y;
+      var distX = Math.abs(actualRelX - expectedRelX);
+      var distY = Math.abs(actualRelY - expectedRelY);
+
+      if (distX <= SNAP_DIST && distY <= SNAP_DIST) {
+        // Snap: move all movedPids so lp aligns with op's solved offset
+        var snapDX = (op.x + expectedRelX) - lp.x;
+        var snapDY = (op.y + expectedRelY) - lp.y;
+        movedPids.forEach(function (pid) {
+          var mp = pieces[pid];
+          mp.x += snapDX;
+          mp.y += snapDY;
+          mp.el.style.left = mp.x + 'px';
+          mp.el.style.top  = mp.y + 'px';
+        });
+        mergeGroups(movedPids, op.id);
+        playSnap();
+        snapped = true;
+        break;
+      }
+    }
+
+    // If not snapped to another piece, check if any moved piece is close to its solved position
+    if (!snapped) {
+      for (var j = 0; j < movedPids.length; j++) {
+        var mp  = pieces[movedPids[j]];
+        var sp  = solvedPos(mp);
+        var dx  = Math.abs(mp.x - sp.x);
+        var dy  = Math.abs(mp.y - sp.y);
+        if (dx <= SNAP_DIST && dy <= SNAP_DIST) {
+          // Snap whole group to solved grid
+          var snapDX = sp.x - mp.x;
+          var snapDY = sp.y - mp.y;
+          movedPids.forEach(function (pid) {
+            var pp = pieces[pid];
+            pp.x += snapDX;
+            pp.y += snapDY;
+            pp.el.style.left = pp.x + 'px';
+            pp.el.style.top  = pp.y + 'px';
+          });
+          playSnap();
+          break;
+        }
+      }
+      // Check if the newly repositioned pieces now connect with others
+      var gid = pieces[leadId].groupId;
+      var checkPids = gid >= 0 ? groups[gid].slice() : [leadId];
+      for (var k = 0; k < pieces.length; k++) {
+        var op2 = pieces[k];
+        if (!op2.onBoard) continue;
+        if (checkPids.indexOf(op2.id) >= 0) continue;
+        for (var l = 0; l < checkPids.length; l++) {
+          var mp2 = pieces[checkPids[l]];
+          var dr2 = op2.row - mp2.row;
+          var dc2 = op2.col - mp2.col;
+          if (Math.abs(dr2) + Math.abs(dc2) !== 1) continue;
+          var op2Solved  = solvedPos(op2);
+          var mp2Solved  = solvedPos(mp2);
+          var expRelX2   = mp2Solved.x - op2Solved.x;
+          var expRelY2   = mp2Solved.y - op2Solved.y;
+          var actRelX2   = mp2.x - op2.x;
+          var actRelY2   = mp2.y - op2.y;
+          if (Math.abs(actRelX2 - expRelX2) <= SNAP_DIST &&
+              Math.abs(actRelY2 - expRelY2) <= SNAP_DIST) {
+            mergeGroups(checkPids, op2.id);
+            playSnap();
+            break;
+          }
+        }
+      }
+    }
+
+    checkWin();
+  }
+
+  // ── Group management ──────────────────────────────────────────────────────────
+  function mergeGroups(pids, otherId) {
+    var otherGid = pieces[otherId].groupId;
+    var leadGid  = pieces[pids[0]].groupId;
+
+    var newGid = nextGroup++;
+    groups[newGid] = [];
+
+    // Collect all pieces that belong to the new group
+    var allPids = pids.slice();
+    if (otherGid >= 0) {
+      groups[otherGid].forEach(function (pid) {
+        if (allPids.indexOf(pid) < 0) allPids.push(pid);
+      });
+      delete groups[otherGid];
+    } else {
+      if (allPids.indexOf(otherId) < 0) allPids.push(otherId);
+    }
+    if (leadGid >= 0 && leadGid !== otherGid) {
+      groups[leadGid].forEach(function (pid) {
+        if (allPids.indexOf(pid) < 0) allPids.push(pid);
+      });
+      delete groups[leadGid];
+    }
+
+    allPids.forEach(function (pid) {
+      pieces[pid].groupId = newGid;
+    });
+    groups[newGid] = allPids;
+
+    // Bring group to front
+    allPids.forEach(function (pid) {
+      pieces[pid].el.style.zIndex = '3';
+    });
+  }
+
+  // ── Win detection ─────────────────────────────────────────────────────────────
+  function checkWin() {
+    if (gameDone) return;
+    // All pieces must be on board
+    for (var i = 0; i < pieces.length; i++) {
+      if (!pieces[i].onBoard) return;
+    }
+    // All pieces must be in the same group
+    var gid0 = pieces[0].groupId;
+    if (gid0 < 0) return;
+    for (var i = 1; i < pieces.length; i++) {
+      if (pieces[i].groupId !== gid0) return;
+    }
+    gameDone = true;
+    stopTimer();
+    showWin();
+    saveGameState(true);
+  }
+
+  function showWin() {
+    winTimeEl.textContent  = fmtTime(elapsedMs);
+    winDiffEl.textContent  = difficulty.charAt(0).toUpperCase() + difficulty.slice(1) +
+                             ' · ' + (rows * cols) + ' pieces';
+    winModal.classList.add('show');
+  }
+
+  // ── Save / Resume ─────────────────────────────────────────────────────────────
+  function buildPieceState() {
+    return pieces.map(function (p) {
+      return { id: p.id, x: p.x, y: p.y, groupId: p.groupId, onBoard: p.onBoard };
+    });
+  }
+
+  function saveGameState(final) {
+    if (!LOGGED_IN) return;
+    var payload = {
+      puzzle_date: DATE,
+      difficulty:  difficulty,
+      image_name:  IMAGE_NAME,
+      elapsed_ms:  elapsedMs,
+      piece_state: buildPieceState(),
+    };
+    fetch('/api/jigsaw/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify(payload),
+    }).catch(function () { /* silently ignore */ });
+  }
+
+  function loadSavedState() {
+    if (!LOGGED_IN || !difficulty) return;
+    fetch('/api/jigsaw/resume?puzzle_date=' + encodeURIComponent(DATE) +
+          '&difficulty=' + encodeURIComponent(difficulty))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.saved || !data.piece_state || !data.piece_state.length) return;
+        restoreState(data.piece_state, data.elapsed_ms);
+      })
+      .catch(function () { /* ignore */ });
+  }
+
+  function restoreState(pieceState, savedMs) {
+    elapsedMs    = savedMs || 0;
+    gameStarted  = true;
+    var pad      = tabSz + 2;
+    var boardRect = boardEl.getBoundingClientRect();
+    var stashEl   = document.getElementById('jig-stash');
+
+    // Rebuild groups from saved state
+    groups   = {};
+    nextGroup = 0;
+    var groupMap = {};
+
+    pieceState.forEach(function (ps) {
+      var p = pieces[ps.id];
+      if (!p) return;
+      p.x = ps.x; p.y = ps.y;
+      p.onBoard = !!ps.onBoard;
+      var gid = ps.groupId;
+      if (gid >= 0) {
+        if (!groupMap[gid]) { groupMap[gid] = nextGroup++; groups[groupMap[gid]] = []; }
+        var newGid = groupMap[gid];
+        p.groupId = newGid;
+        groups[newGid].push(p.id);
+      } else {
+        p.groupId = -1;
+      }
+      // Reposition element
+      if (p.onBoard) {
+        boardEl.appendChild(p.el);
+        p.el.style.position = 'absolute';
+      } else {
+        stashInner.appendChild(p.el);
+        p.el.style.position = 'absolute';
+      }
+      p.el.style.left = p.x + 'px';
+      p.el.style.top  = p.y + 'px';
+    });
+
+    updateTimerDisplay();
+    // Don't auto-start timer — user must interact
+  }
+
+  // ── Pause / Resume ────────────────────────────────────────────────────────────
+  function togglePause() {
+    if (gameDone || !gameStarted) return;
+    paused = !paused;
+    if (paused) {
+      stopTimer();
+      pauseBtn.textContent = '▶ Resume';
+      pauseOverlay.classList.add('show');
+      saveGameState(false);
+    } else {
+      startTimer();
+      pauseBtn.textContent = '⏸ Pause';
+      pauseOverlay.classList.remove('show');
+    }
+  }
+
+  // ── Controls ──────────────────────────────────────────────────────────────────
+  function updateDiffButtons(diff) {
+    document.querySelectorAll('.jig-diff-btn').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.diff === diff);
+    });
+  }
+
+  document.querySelectorAll('.jig-diff-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (!img) {
+        statusEl.textContent = 'Loading image…';
+        return;
+      }
+      if (gameStarted && !gameDone) {
+        if (!confirm('Start a new puzzle? Your current progress will be lost.')) return;
+      }
+      stopTimer();
+      initGame(btn.dataset.diff);
+    });
+  });
+
+  pauseBtn.addEventListener('click', togglePause);
+
+  restartBtn.addEventListener('click', function () {
+    if (!difficulty) return;
+    if (gameStarted && !gameDone) {
+      if (!confirm('Restart the puzzle? Your progress will be lost.')) return;
+    }
+    stopTimer();
+    initGame(difficulty);
+  });
+
+  muteBtn.addEventListener('click', function () {
+    muted = !muted;
+    muteBtn.textContent = muted ? '🔇' : '🔊';
+  });
+
+  // Score submission
+  submitBtn.addEventListener('click', function () {
+    var name = nameInput.value.trim();
+    if (!name) { scoreMsgEl.textContent = 'Please enter your name.'; return; }
+    submitBtn.disabled = true;
+    scoreMsgEl.textContent = 'Submitting…';
+    fetch('/api/jigsaw-scores', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({
+        name:        name,
+        puzzle_date: DATE,
+        difficulty:  difficulty,
+        image_name:  IMAGE_NAME || 'custom',
+        time_ms:     elapsedMs,
+      }),
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.ok) {
+        scoreMsgEl.textContent = 'Score submitted!';
+        document.getElementById('jig-score-form').style.display = 'none';
+      } else {
+        scoreMsgEl.textContent = 'Submission failed. Try again.';
+        submitBtn.disabled = false;
+      }
+    })
+    .catch(function () {
+      scoreMsgEl.textContent = 'Submission failed. Try again.';
+      submitBtn.disabled = false;
+    });
+  });
+
+  winRestartBtn.addEventListener('click', function () {
+    winModal.classList.remove('show');
+    initGame(difficulty);
+  });
+
+  // Auto-save on page unload
+  window.addEventListener('beforeunload', function () {
+    if (LOGGED_IN && gameStarted && !gameDone && difficulty) {
+      saveGameState(false);
+    }
+  });
+
+  // Auto-save every 60 seconds while playing
+  setInterval(function () {
+    if (LOGGED_IN && gameStarted && !gameDone && !paused && difficulty) {
+      saveGameState(false);
+    }
+  }, 60000);
+
+  // ── Gallery link passes ?img=... and ?diff=... ────────────────────────────────
+  function parseQueryParam(name) {
+    var params = new URLSearchParams(window.location.search);
+    return params.get(name) || '';
+  }
+
+  // ── Image loading & boot ─────────────────────────────────────────────────────
+  function boot() {
+    // Override image from gallery URL param
+    var imgParam  = parseQueryParam('img');
+    var diffParam = parseQueryParam('diff');
+
+    if (imgParam) {
+      IMAGE_NAME = imgParam;
+      IMAGE_URL  = '/static/img/puzzle/' + imgParam;
+    }
+    if (!IMAGE_URL) {
+      statusEl.textContent = 'No image available. Please check back tomorrow.';
+      return;
+    }
+
+    img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+      statusEl.textContent = '';
+      var startDiff = diffParam || window.JIG_DIFFICULTY || 'beginner';
+      if (!DIFFS[startDiff]) startDiff = 'beginner';
+      initGame(startDiff);
+    };
+    img.onerror = function () {
+      statusEl.textContent = 'Failed to load puzzle image.';
+    };
+    img.src = IMAGE_URL;
+    statusEl.textContent = 'Loading image…';
+  }
+
+  boot();
+
+})();

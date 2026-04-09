@@ -607,6 +607,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "other_generator":      "Generator",
         "other_2048_desc":      "The classic number-merging puzzle. Slide tiles on a 4\u00d74 grid to combine matching numbers and reach the 2048 tile. A new daily puzzle is seeded each day, the same for every player.",
         "other_mahjong_desc":   "The classic tile-matching solitaire. Match and remove pairs of free tiles from the Turtle formation — 144 tiles, 72 pairs. A guaranteed-solvable daily puzzle, the same for every player.",
+        "other_jigsaw_desc":    "The classic interlocking jigsaw puzzle. Drag and snap pieces together on the board. Choose Beginner (100 pieces), Intermediate (500), or Expert (1000). A new daily image each day, the same for every player.",
         # Mahjong Solitaire
         "mj_daily_h1":          "Mahjong Solitaire \u2014 Daily",
         "mj_same_for_all":      "Same board for everyone \u00b7 Resets at midnight UTC",

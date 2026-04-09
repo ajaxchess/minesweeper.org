@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% set _title = "Jigsaw Puzzle Leaderboard | minesweeper.org" %}
+{% set _desc  = "Daily leaderboard for the Jigsaw Puzzle on minesweeper.org." %}
+{% set _canon = "https://minesweeper.org/other/jigsaw/leaderboard" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+
+{% block content %}
+<style>
+.jlb-wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.jlb-header h1 { font-size: 1.4rem; margin: 0 0 0.25rem; }
+.jlb-subnav { display:flex; gap:0.5rem; flex-wrap:wrap; font-size:0.85rem; }
+.jlb-subnav a { color:var(--accent2); text-decoration:none; }
+.jlb-subnav a:hover { text-decoration:underline; }
+.jlb-subnav span { color:var(--text-dim); }
+
+.jlb-tabs { display:flex; gap:0.5rem; flex-wrap:wrap; }
+.jlb-tab {
+  padding: 0.35rem 0.9rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.88rem;
+}
+.jlb-tab.active { border-color:var(--accent2); color:var(--accent2); font-weight:700; }
+.jlb-tab:hover  { border-color:var(--accent2); }
+
+.jlb-date-row {
+  display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; color:var(--text-dim);
+}
+.jlb-date-row input[type="date"] {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:4px; padding:0.3rem 0.5rem; color:var(--text); font-size:0.85rem;
+}
+
+table.jlb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+table.jlb-table th {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  color: var(--text-dim);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+table.jlb-table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+table.jlb-table tr:last-child td { border-bottom: none; }
+table.jlb-table td:first-child { color:var(--text-dim); font-size:0.8rem; }
+table.jlb-table a { color:var(--accent2); text-decoration:none; }
+table.jlb-table a:hover { text-decoration:underline; }
+#jlb-empty { color:var(--text-dim); font-size:0.9rem; text-align:center; padding:1rem 0; }
+</style>
+
+<div class="jlb-wrap">
+  <div class="jlb-header">
+    <h1>🧩 Jigsaw Leaderboard</h1>
+    <div class="jlb-subnav">
+      <a href="/other">Other Puzzles</a>
+      <span>›</span>
+      <a href="/other/jigsaw/daily">Daily Puzzle</a>
+    </div>
+  </div>
+
+  <div class="jlb-tabs">
+    <button class="jlb-tab active" data-diff="beginner">Beginner</button>
+    <button class="jlb-tab" data-diff="intermediate">Intermediate</button>
+    <button class="jlb-tab" data-diff="expert">Expert</button>
+  </div>
+
+  <div class="jlb-date-row">
+    Date:
+    <input type="date" id="jlb-date" value="{{ today }}">
+  </div>
+
+  <table class="jlb-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Time</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="jlb-body">
+      <tr><td colspan="4" id="jlb-empty">Loading…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  let currentDiff = 'beginner';
+  let currentDate = '{{ today }}';
+
+  function fmt(ms) {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    return m + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  async function load() {
+    const tbody = document.getElementById('jlb-body');
+    tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);padding:1rem;text-align:center;">Loading…</td></tr>';
+    try {
+      const r = await fetch('/api/jigsaw-scores?date=' + encodeURIComponent(currentDate)
+                            + '&difficulty=' + encodeURIComponent(currentDiff));
+      const scores = await r.json();
+      if (!scores.length) {
+        tbody.innerHTML = '<tr><td colspan="4" id="jlb-empty" style="color:var(--text-dim);text-align:center;padding:1rem;">No scores yet for this day.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = scores.map((s, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${s.profile_url ? `<a href="${s.profile_url}">${s.name}</a>` : s.name}</td>
+          <td>${fmt(s.time_ms)}</td>
+          <td>${s.created_at}</td>
+        </tr>`).join('');
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);padding:1rem;text-align:center;">Failed to load scores.</td></tr>';
+    }
+  }
+
+  document.querySelectorAll('.jlb-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.jlb-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentDiff = btn.dataset.diff;
+      load();
+    });
+  });
+
+  document.getElementById('jlb-date').addEventListener('change', e => {
+    currentDate = e.target.value;
+    load();
+  });
+
+  load();
+})();
+</script>
+{% endblock %}

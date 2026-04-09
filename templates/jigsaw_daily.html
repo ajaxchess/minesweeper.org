@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% set _title = (display_name ~ " | minesweeper.org") if display_name else "Jigsaw Puzzle — Daily | minesweeper.org" %}
+{% set _desc  = "Play today's daily jigsaw puzzle on minesweeper.org. Drag and snap pieces together. Choose Beginner, Intermediate, or Expert. Same puzzle for every player, resets at midnight UTC." %}
+{% set _canon = "https://minesweeper.org/other/jigsaw/daily" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}Jigsaw Puzzle — Daily | minesweeper.org{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<style>
+.jig-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.jig-header { text-align: center; }
+.jig-header h1 { font-size: 1.4rem; margin: 0 0 0.2rem; }
+.jig-header p  { color: var(--text-dim); font-size: 0.85rem; margin: 0; }
+.jig-subnav {
+  display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
+  font-size: 0.85rem;
+}
+.jig-subnav a { color: var(--accent2); text-decoration: none; }
+.jig-subnav a:hover { text-decoration: underline; }
+.jig-subnav span { color: var(--text-dim); }
+
+/* Difficulty selector */
+.jig-diff-row {
+  display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;
+}
+.jig-diff-btn {
+  padding: 0.4rem 1rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.88rem;
+}
+.jig-diff-btn.active { border-color: var(--accent2); color: var(--accent2); font-weight: 700; }
+.jig-diff-btn:hover  { border-color: var(--accent2); }
+
+/* Controls bar */
+.jig-controls {
+  display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: center;
+}
+.jig-btn {
+  padding: 0.4rem 0.9rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.88rem;
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+}
+.jig-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.jig-btn.active { border-color: var(--accent2); color: var(--accent2); }
+
+.jig-timer {
+  font-size: 1rem; font-weight: 700; color: var(--accent2);
+  min-width: 5rem; text-align: center;
+}
+
+/* Main game area */
+.jig-game-area {
+  display: flex;
+  gap: 0;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface2);
+  position: relative;
+  min-height: 400px;
+}
+
+/* Board */
+#jig-board {
+  flex: 1 1 65%;
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  min-height: 400px;
+  cursor: default;
+}
+#jig-board-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Thumbnail */
+#jig-thumb {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  width: 100px;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Stash */
+#jig-stash {
+  flex: 0 0 260px;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--surface2);
+  border-left: 1px solid var(--border);
+  min-height: 400px;
+}
+#jig-stash-inner {
+  position: relative;
+  width: 100%;
+  min-height: 600px;
+}
+
+/* Win overlay */
+#jig-win {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 9000;
+  align-items: center;
+  justify-content: center;
+}
+#jig-win.show { display: flex; }
+.jig-win-box {
+  background: var(--surface);
+  border: 2px solid var(--accent2);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 380px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: center;
+}
+.jig-win-box h2 { font-size: 1.5rem; color: var(--accent2); margin: 0; }
+.jig-win-box p  { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
+.jig-win-time   { font-size: 2rem; font-weight: 800; color: var(--accent2); }
+#jig-score-form { display: flex; flex-direction: column; gap: 0.6rem; }
+#jig-score-form input[type="text"] {
+  padding: 0.4rem 0.6rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+#jig-score-msg { font-size: 0.85rem; color: var(--accent2); min-height: 1.2rem; }
+
+/* Paused overlay */
+#jig-pause-overlay {
+  display: none;
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: #fff;
+  font-weight: 700;
+  pointer-events: none;
+}
+#jig-pause-overlay.show { display: flex; }
+
+/* Mobile */
+@media (max-width: 700px) {
+  .jig-game-area { flex-direction: column; }
+  #jig-stash { flex: 0 0 auto; height: 220px; border-left: none; border-top: 1px solid var(--border); }
+  #jig-board { min-height: 300px; }
+}
+</style>
+
+<div class="jig-wrap">
+  <div class="jig-header">
+    {% if display_name %}
+    <h1>{{ display_name }}</h1>
+    <p>Custom puzzle · <a href="/other/jigsaw/daily" style="color:var(--accent2);">Daily puzzle</a></p>
+    {% else %}
+    <h1>🧩 Jigsaw Puzzle</h1>
+    <p>{{ today }} · Same image for every player · Resets at midnight UTC</p>
+    {% endif %}
+  </div>
+
+  <div class="jig-subnav">
+    <a href="/other">Other Puzzles</a>
+    <span>›</span>
+    <a href="/other/jigsaw/leaderboard">{{ t['nav_leaderboard'] }}</a>
+    <span>·</span>
+    <a href="/other/jigsaw/gallery">Gallery</a>
+    <span>·</span>
+    <a href="/other/jigsaw/generator">{{ t['other_generator'] }}</a>
+    <span>·</span>
+    <a href="/other/jigsaw/how-to-play">{{ t['nav_how_to_play'] }}</a>
+  </div>
+
+  <!-- Difficulty -->
+  <div class="jig-diff-row">
+    <button class="jig-diff-btn" data-diff="beginner">Beginner <small>(100)</small></button>
+    <button class="jig-diff-btn" data-diff="intermediate">Intermediate <small>(500)</small></button>
+    <button class="jig-diff-btn" data-diff="expert">Expert <small>(1000)</small></button>
+  </div>
+
+  <!-- Controls -->
+  <div class="jig-controls">
+    <span class="jig-timer" id="jig-timer">0:00</span>
+    <button class="jig-btn" id="jig-pause-btn">⏸ Pause</button>
+    <button class="jig-btn" id="jig-restart-btn">↺ Restart</button>
+    <a href="/other/jigsaw/gallery" class="jig-btn">🖼 Gallery</a>
+    <button class="jig-btn" id="jig-mute-btn" title="Toggle sound">🔊</button>
+    <a href="/other/jigsaw/leaderboard" class="jig-btn">🏆</a>
+  </div>
+
+  <!-- Game area -->
+  <div class="jig-game-area">
+    <div id="jig-board">
+      <canvas id="jig-board-canvas"></canvas>
+      <img id="jig-thumb" src="" alt="Reference" style="display:none;">
+      <div id="jig-pause-overlay">⏸ Paused</div>
+    </div>
+    <div id="jig-stash">
+      <div id="jig-stash-inner"></div>
+    </div>
+  </div>
+
+  <div id="jig-status" style="text-align:center;font-size:0.85rem;color:var(--text-dim);">
+    Select a difficulty to start.
+  </div>
+</div>
+
+<!-- Win modal -->
+<div id="jig-win">
+  <div class="jig-win-box">
+    <h2>🎉 Puzzle Complete!</h2>
+    <div class="jig-win-time" id="jig-win-time">0:00</div>
+    <p id="jig-win-diff"></p>
+    <div id="jig-score-form">
+      <strong style="font-size:0.9rem;">Submit your score</strong>
+      <input type="text" id="jig-name" maxlength="32" placeholder="Your name"
+             value="{{ user.name if user else '' }}">
+      <button class="jig-btn" id="jig-submit-btn">Submit Score</button>
+      <div id="jig-score-msg"></div>
+    </div>
+    <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;">
+      <button class="jig-btn" id="jig-win-restart">Play Again</button>
+      <a href="/other/jigsaw/leaderboard" class="jig-btn">🏆 Leaderboard</a>
+    </div>
+  </div>
+</div>
+
+<script>
+window.JIG_DATE        = "{{ today }}";
+window.JIG_IMAGE_NAME  = {{ (image_name if image_name else '') | tojson }};
+window.JIG_IMAGE_URL   = {{ (photo_url if photo_url else ('/static/img/puzzle/' ~ image_name if image_name else '')) | tojson }};
+window.JIG_BOARD_HASH  = {{ (board_hash if board_hash else '') | tojson }};
+window.JIG_DIFFICULTY  = {{ (difficulty if difficulty else '') | tojson }};
+window.JIG_USER_NAME   = {{ (user.name if user else '') | tojson }};
+window.JIG_LOGGED_IN   = {{ 'true' if user else 'false' }};
+</script>
+<script src="/static/js/jigsaw.js?v=1"></script>
+{% endblock %}

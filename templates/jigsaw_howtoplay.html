@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% set _title = "Jigsaw Puzzle — How to Play | minesweeper.org" %}
+{% set _desc  = "How to play the Jigsaw Puzzle on minesweeper.org." %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<style>
+.jhtp-wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.jhtp-wrap h1 { font-size: 1.4rem; margin: 0; }
+.jhtp-subnav { display:flex; gap:0.5rem; flex-wrap:wrap; font-size:0.85rem; }
+.jhtp-subnav a { color:var(--accent2); text-decoration:none; }
+.jhtp-subnav a:hover { text-decoration:underline; }
+.jhtp-subnav span { color:var(--text-dim); }
+
+.jhtp-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+.jhtp-section h2 { font-size: 1rem; color: var(--accent2); margin: 0 0 0.6rem; }
+.jhtp-section p, .jhtp-section li { font-size: 0.9rem; line-height: 1.6; color: var(--text); margin: 0 0 0.4rem; }
+.jhtp-section ul { padding-left: 1.2rem; margin: 0; }
+.jhtp-diff-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+.jhtp-diff-table th { text-align:left; padding:0.3rem 0.5rem; color:var(--text-dim); border-bottom:1px solid var(--border); }
+.jhtp-diff-table td { padding:0.35rem 0.5rem; border-bottom:1px solid var(--border); }
+.jhtp-diff-table tr:last-child td { border-bottom:none; }
+</style>
+
+<div class="jhtp-wrap">
+  <div>
+    <h1>🧩 How to Play Jigsaw</h1>
+    <div class="jhtp-subnav">
+      <a href="/other">Other Puzzles</a>
+      <span>›</span>
+      <a href="/other/jigsaw/daily">Daily Puzzle</a>
+    </div>
+  </div>
+
+  <div class="jhtp-section">
+    <h2>Goal</h2>
+    <p>Assemble all the pieces of the image on the board. The puzzle is complete when every piece is snapped into its correct position and connected into a single group.</p>
+  </div>
+
+  <div class="jhtp-section">
+    <h2>Difficulty Levels</h2>
+    <table class="jhtp-diff-table">
+      <thead><tr><th>Level</th><th>Pieces</th><th>Grid</th></tr></thead>
+      <tbody>
+        <tr><td>Beginner</td><td>100</td><td>10 × 10</td></tr>
+        <tr><td>Intermediate</td><td>500</td><td>20 × 25</td></tr>
+        <tr><td>Expert</td><td>1 000</td><td>25 × 40</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="jhtp-section">
+    <h2>Playing</h2>
+    <ul>
+      <li>Pieces start in the <strong>stash panel</strong> on the right, scattered as if tipped from a box.</li>
+      <li><strong>Drag</strong> a piece from the stash onto the board to place it.</li>
+      <li>When two pieces that fit together are brought within snapping distance, they <strong>snap together</strong> automatically with a click sound.</li>
+      <li>Snapped pieces form a <strong>group</strong> that can be dragged as a single unit.</li>
+      <li>Use the <strong>reference thumbnail</strong> (bottom-left of the board) to see the complete image.</li>
+    </ul>
+  </div>
+
+  <div class="jhtp-section">
+    <h2>Controls</h2>
+    <ul>
+      <li><strong>Timer</strong> — starts on your first piece interaction.</li>
+      <li><strong>Pause</strong> — stops the timer. Signed-in users can close the page and resume later.</li>
+      <li><strong>Restart</strong> — resets the puzzle with the same image and difficulty.</li>
+      <li><strong>Gallery</strong> — browse and start puzzles from other images.</li>
+      <li><strong>Mute</strong> — toggles the snap sound effect.</li>
+    </ul>
+  </div>
+
+  <div class="jhtp-section">
+    <h2>Daily Puzzle</h2>
+    <p>One image is selected each day, the same for every player. The puzzle resets at midnight UTC. Completion times are recorded on the daily leaderboard — separately for each difficulty level.</p>
+    <p>Guest scores are accepted but cleared at midnight UTC. Registered user scores are retained permanently.</p>
+  </div>
+
+  <div class="jhtp-section">
+    <h2>Custom Puzzles</h2>
+    <p>Use the <a href="/other/jigsaw/generator">Puzzle Generator</a> to upload your own image and share a link with friends. Guests can play shared links; uploading requires signing in.</p>
+  </div>
+
+  <div style="text-align:center;">
+    <a href="/other/jigsaw/daily" style="display:inline-block;padding:0.55rem 1.4rem;background:var(--accent2);color:#fff;border-radius:6px;text-decoration:none;font-weight:700;">Play Today's Puzzle</a>
+  </div>
+</div>
+{% endblock %}

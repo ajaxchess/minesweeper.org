@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% set _title = "Jigsaw Puzzle Gallery | minesweeper.org" %}
+{% set _desc  = "Browse all available jigsaw puzzle images on minesweeper.org. Click any image to start a puzzle." %}
+{% set _canon = "https://minesweeper.org/other/jigsaw/gallery" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+
+{% block content %}
+<style>
+.jgal-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.jgal-wrap h1 { font-size: 1.4rem; margin: 0; }
+.jgal-subnav { display:flex; gap:0.5rem; flex-wrap:wrap; font-size:0.85rem; }
+.jgal-subnav a { color:var(--accent2); text-decoration:none; }
+.jgal-subnav a:hover { text-decoration:underline; }
+.jgal-subnav span { color:var(--text-dim); }
+
+.jgal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+.jgal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.jgal-card:hover { border-color: var(--accent2); }
+.jgal-card img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  display: block;
+}
+.jgal-card-footer {
+  padding: 0.5rem 0.65rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Diff picker modal */
+#jgal-modal {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 9000;
+  align-items: center;
+  justify-content: center;
+}
+#jgal-modal.show { display: flex; }
+.jgal-modal-box {
+  background: var(--surface);
+  border: 2px solid var(--accent2);
+  border-radius: 10px;
+  padding: 1.5rem;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.jgal-modal-box h2 { font-size: 1.1rem; margin: 0; }
+.jgal-modal-thumb {
+  width: 100%; border-radius: 6px; object-fit: cover;
+  aspect-ratio: 4/3; display: block;
+}
+.jgal-diff-btns { display:flex; gap:0.5rem; flex-direction:column; }
+.jgal-diff-btn {
+  padding: 0.5rem 1rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-align: left;
+}
+.jgal-diff-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.jgal-cancel {
+  font-size: 0.85rem; color: var(--text-dim); cursor: pointer;
+  text-align: center; text-decoration: underline;
+}
+.jgal-cancel:hover { color: var(--text); }
+</style>
+
+<div class="jgal-wrap">
+  <div>
+    <h1>🖼 Jigsaw Gallery</h1>
+    <div class="jgal-subnav">
+      <a href="/other">Other Puzzles</a>
+      <span>›</span>
+      <a href="/other/jigsaw/daily">Daily Puzzle</a>
+      <span>·</span>
+      <a href="/other/jigsaw/generator">Upload Your Own</a>
+    </div>
+  </div>
+
+  {% if images %}
+  <div class="jgal-grid">
+    {% for img in images %}
+    <div class="jgal-card" data-img="{{ img }}" onclick="openPicker(this)">
+      <img src="/static/img/puzzle/{{ img }}" alt="{{ img }}" loading="lazy">
+      <div class="jgal-card-footer">{{ img }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p style="color:var(--text-dim);">No images found in the gallery yet.</p>
+  {% endif %}
+</div>
+
+<!-- Difficulty picker -->
+<div id="jgal-modal">
+  <div class="jgal-modal-box">
+    <h2>Choose Difficulty</h2>
+    <img id="jgal-modal-thumb" class="jgal-modal-thumb" src="" alt="">
+    <div class="jgal-diff-btns">
+      <button class="jgal-diff-btn" onclick="startPuzzle('beginner')">Beginner — 100 pieces</button>
+      <button class="jgal-diff-btn" onclick="startPuzzle('intermediate')">Intermediate — 500 pieces</button>
+      <button class="jgal-diff-btn" onclick="startPuzzle('expert')">Expert — 1000 pieces</button>
+    </div>
+    <div class="jgal-cancel" onclick="closeModal()">Cancel</div>
+  </div>
+</div>
+
+<script>
+var _selectedImg = '';
+
+function openPicker(card) {
+  _selectedImg = card.dataset.img;
+  document.getElementById('jgal-modal-thumb').src = '/static/img/puzzle/' + _selectedImg;
+  document.getElementById('jgal-modal').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('jgal-modal').classList.remove('show');
+}
+function startPuzzle(diff) {
+  window.location.href = '/other/jigsaw/daily?img=' + encodeURIComponent(_selectedImg) + '&diff=' + diff;
+}
+document.getElementById('jgal-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+{% endblock %}
