@@ -147,10 +147,14 @@
     buildPiecePath(oc_, pad, pad, p.tabs);
     oc_.save();
     oc_.clip();
-    // Draw image slice (source: col*cellW, row*cellH portion)
-    var srcX = p.col * cellW - pad;
-    var srcY = p.row * cellH - pad;
-    oc_.drawImage(img, srcX, srcY, pw, ph, 0, 0, pw, ph);
+    // Draw image slice scaled from the image's intrinsic size to the cell grid.
+    var scaleX  = img.naturalWidth  / (cols * cellW);
+    var scaleY  = img.naturalHeight / (rows * cellH);
+    var srcX    = (p.col * cellW - pad) * scaleX;
+    var srcY    = (p.row * cellH - pad) * scaleY;
+    var srcW    = pw * scaleX;
+    var srcH    = ph * scaleY;
+    oc_.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, pw, ph);
     oc_.restore();
     // Outline
     buildPiecePath(oc_, pad, pad, p.tabs);
