@@ -249,7 +249,7 @@
     // Build pieces
     for (var r = 0; r < rows; r++) {
       for (var c = 0; c < cols; c++) {
-        var topTab    = r === 0           ? 0 :  hEdge[r-1][c];
+        var topTab    = r === 0           ? 0 : -hEdge[r-1][c];
         var bottomTab = r === rows - 1    ? 0 :  hEdge[r][c];
         var rightTab  = c === cols - 1    ? 0 :  vEdge[r][c];
         var leftTab   = c === 0           ? 0 : -vEdge[r][c-1];
