@@ -288,22 +288,26 @@
     thumbEl.src = IMAGE_URL;
     thumbEl.style.display = 'block';
 
-    // Set stash inner height to hold all pieces scattered
-    var stashW    = 260;
-    var perRow    = Math.max(1, Math.floor(stashW / (cellW + tabSz * 2 + 8)));
-    var stashH    = Math.max(600, Math.ceil(pieces.length / perRow) * (cellH + tabSz * 2 + 4));
+    // Set stash inner height to hold all pieces scattered.
+    // Use the real stash element's client width so we don't exceed it.
+    var stashEl2  = document.getElementById('jig-stash');
+    var stashW    = stashEl2.clientWidth || 260;
+    var pieceW    = cellW + pad * 2;
+    var pieceH    = cellH + pad * 2;
+    var perRow    = Math.max(1, Math.floor(stashW / pieceW));
+    var stashH    = Math.max(600, Math.ceil(pieces.length / perRow) * pieceH);
     stashInner.style.width  = stashW + 'px';
     stashInner.style.height = stashH + 'px';
 
     // Clear stash
     stashInner.innerHTML = '';
 
-    // Scatter pieces in stash
-    var stashUsableW = stashW - (cellW + pad * 2);
-    var stashUsableH = stashH - (cellH + pad * 2);
+    // Scatter pieces in stash, clamped so nothing clips under overflow:hidden.
+    var stashUsableW = Math.max(0, stashW - pieceW);
+    var stashUsableH = Math.max(0, stashH - pieceH);
     pieces.forEach(function (p) {
-      p.x      = Math.random() * Math.max(stashUsableW, 1);
-      p.y      = Math.random() * Math.max(stashUsableH, 1);
+      p.x      = Math.random() * stashUsableW;
+      p.y      = Math.random() * stashUsableH;
       p.onBoard = false;
       p.groupId = -1;
       p.el.style.left = p.x + 'px';
@@ -511,8 +515,13 @@
         mp.el.style.top      = mp.y + 'px';
         mp.el.style.zIndex   = '2';
       } else {
-        mp.x = absLeft - stashRect.left;
-        mp.y = absTop  - stashRect.top + stashScroll;
+        var pad = tabSz + 2;
+        var pw  = cellW + pad * 2;
+        var ph  = cellH + pad * 2;
+        var rawX = absLeft - stashRect.left;
+        var rawY = absTop  - stashRect.top + stashScroll;
+        mp.x = Math.max(0, Math.min(rawX, stashRect.width  - pw));
+        mp.y = Math.max(0, rawY);  // allow scrolling down but not above top
         mp.onBoard = false;
         stashInner.appendChild(mp.el);
         mp.el.style.position = 'absolute';
