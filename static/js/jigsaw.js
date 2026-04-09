@@ -235,9 +235,6 @@
     boardEl.style.width  = boardW + 'px';
     boardEl.style.height = boardH + 'px';
 
-    // Fix the game area to board height so the stash overflow-y:auto activates.
-    gameAreaEl.style.height = boardH + 'px';
-
     // Seeded PRNG for tab assignments
     var prng = makePrng(seedFromString(DATE + diff));
 
