@@ -100,17 +100,29 @@
   /* width/height set explicitly by JS — do not override with 100% */
 }
 
-/* Thumbnail — full-height overlay anchored to bottom-left of board */
-#jig-thumb {
-  position: absolute;
-  bottom: 0;
-  left: 0;
+/* Top 3-column layout: pic | content | pic */
+.jig-top {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+.jig-top-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.jig-top-side {
+  flex: 0 0 auto;
+  display: flex;
+}
+.jig-top-img {
+  display: none;
   height: 100%;
   width: auto;
-  display: none;
-  pointer-events: none;
-  z-index: 10;
-  opacity: 0.85;
+  border-radius: 6px;
+  object-fit: cover;
 }
 
 /* Stash */
@@ -189,50 +201,61 @@
 </style>
 
 <div class="jig-wrap">
-  <div class="jig-header">
-    {% if display_name %}
-    <h1>{{ display_name }}</h1>
-    <p>Custom puzzle · <a href="/other/jigsaw/daily" style="color:var(--accent2);">Daily puzzle</a></p>
-    {% else %}
-    <h1>🧩 Jigsaw Puzzle</h1>
-    <p>{{ today }} · Same image for every player · Resets at midnight UTC</p>
-    {% endif %}
-  </div>
 
-  <div class="jig-subnav">
-    <a href="/other">Other Puzzles</a>
-    <span>›</span>
-    <a href="/other/jigsaw/leaderboard">{{ t['nav_leaderboard'] }}</a>
-    <span>·</span>
-    <a href="/other/jigsaw/gallery">Gallery</a>
-    <span>·</span>
-    <a href="/other/jigsaw/generator">{{ t['other_generator'] }}</a>
-    <span>·</span>
-    <a href="/other/jigsaw/how-to-play">{{ t['nav_how_to_play'] }}</a>
-  </div>
+  <!-- Top 3-column: reference pic | header+nav+controls | reference pic -->
+  <div class="jig-top">
+    <div class="jig-top-side">
+      <img id="jig-thumb-left" class="jig-top-img" src="" alt="Reference">
+    </div>
+    <div class="jig-top-center">
+      <div class="jig-header">
+        {% if display_name %}
+        <h1>{{ display_name }}</h1>
+        <p>Custom puzzle · <a href="/other/jigsaw/daily" style="color:var(--accent2);">Daily puzzle</a></p>
+        {% else %}
+        <h1>🧩 Jigsaw Puzzle</h1>
+        <p>{{ today }} · Same image for every player · Resets at midnight UTC</p>
+        {% endif %}
+      </div>
 
-  <!-- Difficulty -->
-  <div class="jig-diff-row">
-    <button class="jig-diff-btn" data-diff="beginner">Beginner <small>(100)</small></button>
-    <button class="jig-diff-btn" data-diff="intermediate">Intermediate <small>(500)</small></button>
-    <button class="jig-diff-btn" data-diff="expert">Expert <small>(1000)</small></button>
-  </div>
+      <div class="jig-subnav">
+        <a href="/other">Other Puzzles</a>
+        <span>›</span>
+        <a href="/other/jigsaw/leaderboard">{{ t['nav_leaderboard'] }}</a>
+        <span>·</span>
+        <a href="/other/jigsaw/gallery">Gallery</a>
+        <span>·</span>
+        <a href="/other/jigsaw/generator">{{ t['other_generator'] }}</a>
+        <span>·</span>
+        <a href="/other/jigsaw/how-to-play">{{ t['nav_how_to_play'] }}</a>
+      </div>
 
-  <!-- Controls -->
-  <div class="jig-controls">
-    <span class="jig-timer" id="jig-timer">0:00</span>
-    <button class="jig-btn" id="jig-pause-btn">⏸ Pause</button>
-    <button class="jig-btn" id="jig-restart-btn">↺ Restart</button>
-    <a href="/other/jigsaw/gallery" class="jig-btn">🖼 Gallery</a>
-    <button class="jig-btn" id="jig-mute-btn" title="Toggle sound">🔊</button>
-    <a href="/other/jigsaw/leaderboard" class="jig-btn">🏆</a>
-  </div>
+      <!-- Difficulty -->
+      <div class="jig-diff-row">
+        <button class="jig-diff-btn" data-diff="beginner">Beginner <small>(100)</small></button>
+        <button class="jig-diff-btn" data-diff="intermediate">Intermediate <small>(500)</small></button>
+        <button class="jig-diff-btn" data-diff="expert">Expert <small>(1000)</small></button>
+      </div>
+
+      <!-- Controls -->
+      <div class="jig-controls">
+        <span class="jig-timer" id="jig-timer">0:00</span>
+        <button class="jig-btn" id="jig-pause-btn">⏸ Pause</button>
+        <button class="jig-btn" id="jig-restart-btn">↺ Restart</button>
+        <a href="/other/jigsaw/gallery" class="jig-btn">🖼 Gallery</a>
+        <button class="jig-btn" id="jig-mute-btn" title="Toggle sound">🔊</button>
+        <a href="/other/jigsaw/leaderboard" class="jig-btn">🏆</a>
+      </div>
+    </div><!-- /.jig-top-center -->
+    <div class="jig-top-side">
+      <img id="jig-thumb-right" class="jig-top-img" src="" alt="Reference">
+    </div>
+  </div><!-- /.jig-top -->
 
   <!-- Game area -->
   <div class="jig-game-area">
     <div id="jig-board">
       <canvas id="jig-board-canvas"></canvas>
-      <img id="jig-thumb" src="" alt="Reference">
       <div id="jig-pause-overlay">⏸ Paused</div>
     </div>
     <div id="jig-stash">

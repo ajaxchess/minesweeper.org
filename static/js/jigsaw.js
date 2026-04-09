@@ -53,7 +53,7 @@
   var boardCanvas   = document.getElementById('jig-board-canvas');
   var ctx           = boardCanvas.getContext('2d');
   var stashInner    = document.getElementById('jig-stash-inner');
-  var thumbEl       = document.getElementById('jig-thumb');
+  var thumbEls      = document.querySelectorAll('.jig-top-img');
   var timerEl       = document.getElementById('jig-timer');
   var pauseBtn      = document.getElementById('jig-pause-btn');
   var restartBtn    = document.getElementById('jig-restart-btn');
@@ -284,9 +284,8 @@
       p.el = createPieceEl(p);
     });
 
-    // Set thumbnail
-    thumbEl.src = IMAGE_URL;
-    thumbEl.style.display = 'block';
+    // Set thumbnails
+    thumbEls.forEach(function(el) { el.src = IMAGE_URL; el.style.display = 'block'; });
 
     // Set stash inner height to hold all pieces scattered.
     // Use the real stash element's client width so we don't exceed it.
