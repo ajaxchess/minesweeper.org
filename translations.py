@@ -648,6 +648,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "mj_htp_daily_h2":      "Daily Puzzle",
         "mj_htp_daily_p":       "Each day a new board is generated from today\u2019s date — the same board for every player worldwide. The timer starts when you click your first tile. Complete the board to submit your time to the leaderboard.",
         "mj_htp_back":          "Play Today\u2019s Puzzle",
+        "mj_htp_refs_h2":       "References",
+        "mj_htp_refs_p":        'This implementation is based on the open-source <a href="https://github.com/ffalt/mah" target="_blank" rel="noopener noreferrer">mah</a> project by ffalt. Learn more about the game on <a href="https://en.wikipedia.org/wiki/Mahjong_solitaire" target="_blank" rel="noopener noreferrer">Wikipedia</a>.',
         # 2048 daily page
         "t2k_daily_h1":   "2048 \u2014 Daily",
         "t2k_score":      "Score:",
