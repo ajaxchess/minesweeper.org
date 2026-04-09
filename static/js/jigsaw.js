@@ -757,9 +757,11 @@
   function restoreState(pieceState, savedMs) {
     elapsedMs    = savedMs || 0;
     gameStarted  = true;
-    var pad      = tabSz + 2;
-    var boardRect = boardEl.getBoundingClientRect();
-    var stashEl   = document.getElementById('jig-stash');
+    var pad       = tabSz + 2;
+    var pw        = cellW + pad * 2;
+    var ph        = cellH + pad * 2;
+    var curStashW = parseInt(stashInner.style.width,  10) || 260;
+    var curStashH = parseInt(stashInner.style.height, 10) || 600;
 
     // Rebuild groups from saved state
     groups   = {};
@@ -771,6 +773,12 @@
       if (!p) return;
       p.x = ps.x; p.y = ps.y;
       p.onBoard = !!ps.onBoard;
+      // Clamp stash positions to current stash bounds (saved positions may be
+      // from a session with a different stash height).
+      if (!p.onBoard) {
+        p.x = Math.max(0, Math.min(p.x, Math.max(0, curStashW - pw)));
+        p.y = Math.max(0, Math.min(p.y, Math.max(0, curStashH - ph)));
+      }
       var gid = ps.groupId;
       if (gid >= 0) {
         if (groupMap[gid] === undefined) { groupMap[gid] = nextGroup++; groups[groupMap[gid]] = []; }
