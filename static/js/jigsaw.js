@@ -286,7 +286,7 @@
 
     // Set thumbnail
     thumbEl.src = IMAGE_URL;
-    thumbEl.style.display = 'inline-block';
+    thumbEl.style.display = 'block';
 
     // Set stash inner height to hold all pieces scattered.
     // Use the real stash element's client width so we don't exceed it.
