@@ -71,7 +71,7 @@
   min-width: 5rem; text-align: center;
 }
 
-/* Main game area */
+/* Main game area — must be position:relative so the drag layer is contained here */
 .jig-game-area {
   display: flex;
   gap: 0;
@@ -81,6 +81,7 @@
   background: var(--surface2);
   position: relative;
   min-height: 400px;
+  user-select: none;
 }
 
 /* Board */

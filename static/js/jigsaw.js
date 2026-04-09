@@ -373,7 +373,9 @@
     });
   }
 
-  var dragLayer = null; // top-level container for piece during drag
+  // The drag layer lives inside .jig-game-area so pieces can't escape it.
+  var gameAreaEl = document.querySelector('.jig-game-area');
+  var dragLayer  = null;
 
   function onPieceDown(e, p) {
     if (paused || gameDone) return;
@@ -382,41 +384,33 @@
       startTimer();
     }
 
-    var pad     = tabSz + 2;
-    var pieceW  = cellW + pad * 2;
-    var pieceH  = cellH + pad * 2;
-
-    // Which container is the piece in?
-    var container = p.onBoard ? boardEl : stashInner.parentElement;
-    var contRect  = p.onBoard
-      ? boardEl.getBoundingClientRect()
-      : document.getElementById('jig-stash').getBoundingClientRect();
-
     // Current piece position relative to page
-    var elRect  = p.el.getBoundingClientRect();
-    var offX    = e.clientX - elRect.left;
-    var offY    = e.clientY - elRect.top;
+    var elRect = p.el.getBoundingClientRect();
+    var offX   = e.clientX - elRect.left;
+    var offY   = e.clientY - elRect.top;
 
-    // Move piece (and group) to a top-level drag layer
+    // Drag layer: positioned to fill the game area, z-index above everything inside it.
     if (!dragLayer) {
       dragLayer = document.createElement('div');
-      dragLayer.style.cssText = 'position:fixed;inset:0;z-index:5000;pointer-events:none;';
-      document.body.appendChild(dragLayer);
+      dragLayer.style.cssText = (
+        'position:absolute;inset:0;z-index:5000;pointer-events:none;overflow:hidden;'
+      );
+      gameAreaEl.appendChild(dragLayer);
     }
-    dragLayer.style.pointerEvents = 'none';
 
     var groupId  = p.groupId;
     var movePids = groupId >= 0 ? groups[groupId].slice() : [p.id];
+    var areaRect = gameAreaEl.getBoundingClientRect();
 
-    // Lift all pieces in the group to fixed positioning
+    // Lift pieces into the drag layer with absolute coords relative to game area.
     movePids.forEach(function (pid) {
-      var mp   = pieces[pid];
+      var mp    = pieces[pid];
       var mRect = mp.el.getBoundingClientRect();
-      mp.el.style.position = 'fixed';
-      mp.el.style.left     = mRect.left + 'px';
-      mp.el.style.top      = mRect.top  + 'px';
+      mp.el.style.position = 'absolute';
+      mp.el.style.left     = (mRect.left - areaRect.left) + 'px';
+      mp.el.style.top      = (mRect.top  - areaRect.top)  + 'px';
       mp.el.style.zIndex   = '6000';
-      document.body.appendChild(mp.el);
+      dragLayer.appendChild(mp.el);
     });
 
     drag = {
@@ -424,9 +418,7 @@
       leadId: p.id,
       offX:   offX,
       offY:   offY,
-      startClientX: e.clientX,
-      startClientY: e.clientY,
-      // store each piece's offset from the lead piece
+      areaRect: areaRect,
       relPos: movePids.reduce(function (acc, pid) {
         var mp = pieces[pid];
         var lp = pieces[p.id];
@@ -435,26 +427,35 @@
       }, {}),
     };
 
-    // Capture pointer
-    p.el.setPointerCapture(e.pointerId);
+    // Capture pointer on the game area so moves outside still register.
+    gameAreaEl.setPointerCapture(e.pointerId);
 
-    document.addEventListener('pointermove', onPointerMove);
-    document.addEventListener('pointerup',   onPointerUp);
+    gameAreaEl.addEventListener('pointermove', onPointerMove);
+    gameAreaEl.addEventListener('pointerup',   onPointerUp);
   }
 
   function onPointerMove(e) {
     if (!drag) return;
-    var lp = pieces[drag.leadId];
-    var newLeft = e.clientX - drag.offX;
-    var newTop  = e.clientY - drag.offY;
+    var lp   = pieces[drag.leadId];
+    var pad  = tabSz + 2;
+    var pw   = cellW + pad * 2;
+    var ph   = cellH + pad * 2;
+    var area = drag.areaRect;
+
+    // Convert client coords to game-area-relative coords and clamp.
+    var rawLeft = e.clientX - drag.offX - area.left;
+    var rawTop  = e.clientY - drag.offY - area.top;
+    var newLeft = Math.max(0, Math.min(rawLeft, area.width  - pw));
+    var newTop  = Math.max(0, Math.min(rawTop,  area.height - ph));
+
     lp.el.style.left = newLeft + 'px';
     lp.el.style.top  = newTop  + 'px';
-    // Move group peers
+
+    // Move group peers (their relative offsets may extend outside — acceptable).
     drag.pids.forEach(function (pid) {
       if (pid === drag.leadId) return;
       var rel = drag.relPos[pid];
       var mp  = pieces[pid];
-      var pad = tabSz + 2;
       mp.el.style.left = (newLeft + rel.dx) + 'px';
       mp.el.style.top  = (newTop  + rel.dy) + 'px';
     });
@@ -462,56 +463,50 @@
 
   function onPointerUp(e) {
     if (!drag) return;
-    document.removeEventListener('pointermove', onPointerMove);
-    document.removeEventListener('pointerup',   onPointerUp);
+    gameAreaEl.removeEventListener('pointermove', onPointerMove);
+    gameAreaEl.removeEventListener('pointerup',   onPointerUp);
 
-    var pad     = tabSz + 2;
-    var boardRect = boardEl.getBoundingClientRect();
-    var stashEl   = document.getElementById('jig-stash');
-    var stashRect = stashEl.getBoundingClientRect();
+    var boardRect   = boardEl.getBoundingClientRect();
+    var stashEl     = document.getElementById('jig-stash');
+    var stashRect   = stashEl.getBoundingClientRect();
     var stashScroll = stashEl.scrollTop;
+    var areaRect    = drag.areaRect;
 
-    // Determine where drop occurred and reposition pieces
-    var lp = pieces[drag.leadId];
-    var lpRect = lp.el.getBoundingClientRect();
-    var midX   = lpRect.left + lpRect.width  / 2;
-    var midY   = lpRect.top  + lpRect.height / 2;
+    // Determine where the lead piece was dropped (client coords from its current abs position).
+    var lp    = pieces[drag.leadId];
+    var lpAbsLeft = parseFloat(lp.el.style.left) + areaRect.left;
+    var lpAbsTop  = parseFloat(lp.el.style.top)  + areaRect.top;
+    var pw    = cellW + (tabSz + 2) * 2;
+    var ph    = cellH + (tabSz + 2) * 2;
+    var midX  = lpAbsLeft + pw / 2;
+    var midY  = lpAbsTop  + ph / 2;
     var onBoard = (midX >= boardRect.left && midX <= boardRect.right &&
                    midY >= boardRect.top  && midY <= boardRect.bottom);
 
     drag.pids.forEach(function (pid) {
       var mp  = pieces[pid];
-      var rel = drag.relPos[pid];
-      var fixedRect = mp.el.getBoundingClientRect();
+      // Current absolute client position of this piece.
+      var absLeft = parseFloat(mp.el.style.left) + areaRect.left;
+      var absTop  = parseFloat(mp.el.style.top)  + areaRect.top;
 
       if (onBoard) {
-        // Convert fixed position to board-relative
-        mp.x = fixedRect.left - boardRect.left + rel.dx - drag.relPos[drag.leadId].dx;
-        mp.y = fixedRect.top  - boardRect.top  + rel.dy - drag.relPos[drag.leadId].dy;
-        if (!mp.onBoard) {
-          mp.onBoard = true;
-          boardEl.appendChild(mp.el);
-          mp.el.style.position = 'absolute';
-        } else {
-          mp.el.style.position = 'absolute';
-        }
-        mp.el.style.left = mp.x + 'px';
-        mp.el.style.top  = mp.y + 'px';
-        mp.el.style.zIndex = '2';
-      } else {
-        // Return to stash
-        mp.x = fixedRect.left - stashRect.left;
-        mp.y = fixedRect.top  - stashRect.top + stashScroll;
-        if (mp.onBoard) {
-          mp.onBoard = false;
-          stashInner.appendChild(mp.el);
-        } else {
-          stashInner.appendChild(mp.el);
-        }
+        mp.x = absLeft - boardRect.left;
+        mp.y = absTop  - boardRect.top;
+        mp.onBoard = true;
+        boardEl.appendChild(mp.el);
         mp.el.style.position = 'absolute';
-        mp.el.style.left = mp.x + 'px';
-        mp.el.style.top  = mp.y + 'px';
-        mp.el.style.zIndex = '1';
+        mp.el.style.left     = mp.x + 'px';
+        mp.el.style.top      = mp.y + 'px';
+        mp.el.style.zIndex   = '2';
+      } else {
+        mp.x = absLeft - stashRect.left;
+        mp.y = absTop  - stashRect.top + stashScroll;
+        mp.onBoard = false;
+        stashInner.appendChild(mp.el);
+        mp.el.style.position = 'absolute';
+        mp.el.style.left     = mp.x + 'px';
+        mp.el.style.top      = mp.y + 'px';
+        mp.el.style.zIndex   = '1';
       }
     });
 
