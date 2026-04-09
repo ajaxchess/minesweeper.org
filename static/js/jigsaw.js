@@ -220,9 +220,9 @@
       (availW - margin * 2) / img.naturalWidth,
       (availH - margin * 2) / img.naturalHeight
     );
-    cellW = Math.max(8, scale * img.naturalWidth  / cols);
-    cellH = Math.max(8, scale * img.naturalHeight / rows);
-    tabSz = Math.min(cellW, cellH) * TAB_RATIO;
+    cellW = Math.round(Math.max(8, scale * img.naturalWidth  / cols));
+    cellH = Math.round(Math.max(8, scale * img.naturalHeight / rows));
+    tabSz = Math.round(Math.min(cellW, cellH) * TAB_RATIO);
 
     // Size the board canvas to exactly the assembled puzzle + margin.
     // The board element is flex: 0 0 auto so it shrinks to match the canvas.
