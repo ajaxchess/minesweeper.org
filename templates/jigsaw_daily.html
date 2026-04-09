@@ -100,18 +100,14 @@
   /* width/height set explicitly by JS — do not override with 100% */
 }
 
-/* Thumbnail */
+/* Thumbnail — sits in the controls bar */
 #jig-thumb {
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  width: 100px;
-  height: auto;
+  height: 36px;
+  width: auto;
   border: 1px solid var(--border);
   border-radius: 4px;
-  opacity: 0.85;
-  pointer-events: none;
-  z-index: 10;
+  display: none;
+  cursor: default;
 }
 
 /* Stash */
@@ -227,13 +223,13 @@
     <a href="/other/jigsaw/gallery" class="jig-btn">🖼 Gallery</a>
     <button class="jig-btn" id="jig-mute-btn" title="Toggle sound">🔊</button>
     <a href="/other/jigsaw/leaderboard" class="jig-btn">🏆</a>
+    <img id="jig-thumb" src="" alt="Reference">
   </div>
 
   <!-- Game area -->
   <div class="jig-game-area">
     <div id="jig-board">
       <canvas id="jig-board-canvas"></canvas>
-      <img id="jig-thumb" src="" alt="Reference" style="display:none;">
       <div id="jig-pause-overlay">⏸ Paused</div>
     </div>
     <div id="jig-stash">

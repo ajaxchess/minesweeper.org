@@ -286,7 +286,7 @@
 
     // Set thumbnail
     thumbEl.src = IMAGE_URL;
-    thumbEl.style.display = 'block';
+    thumbEl.style.display = 'inline-block';
 
     // Set stash inner height to hold all pieces scattered.
     // Use the real stash element's client width so we don't exceed it.
@@ -500,6 +500,21 @@
     var onBoard = (midX >= boardRect.left && midX <= boardRect.right &&
                    midY >= boardRect.top  && midY <= boardRect.bottom);
 
+    // For stash drops: compute a single shift from the lead piece so the whole
+    // group moves together instead of each piece being clamped independently
+    // (independent clamping stacks all left-overhanging pieces at x=0).
+    var stashShiftX = 0, stashShiftY = 0;
+    if (!onBoard) {
+      var pad2  = tabSz + 2;
+      var pw2   = cellW + pad2 * 2;
+      var lpRawX = lpAbsLeft - stashRect.left;
+      var lpRawY = lpAbsTop  - stashRect.top + stashScroll;
+      var lpClampX = Math.max(0, Math.min(lpRawX, stashRect.width - pw2));
+      var lpClampY = Math.max(0, lpRawY);
+      stashShiftX = lpClampX - lpRawX;
+      stashShiftY = lpClampY - lpRawY;
+    }
+
     drag.pids.forEach(function (pid) {
       var mp  = pieces[pid];
       // Current absolute client position of this piece.
@@ -516,13 +531,10 @@
         mp.el.style.top      = mp.y + 'px';
         mp.el.style.zIndex   = '2';
       } else {
-        var pad = tabSz + 2;
-        var pw  = cellW + pad * 2;
-        var ph  = cellH + pad * 2;
-        var rawX = absLeft - stashRect.left;
-        var rawY = absTop  - stashRect.top + stashScroll;
-        mp.x = Math.max(0, Math.min(rawX, stashRect.width  - pw));
-        mp.y = Math.max(0, rawY);  // allow scrolling down but not above top
+        var rawX = absLeft - stashRect.left + stashShiftX;
+        var rawY = absTop  - stashRect.top + stashScroll + stashShiftY;
+        mp.x = rawX;
+        mp.y = Math.max(0, rawY);
         mp.onBoard = false;
         stashInner.appendChild(mp.el);
         mp.el.style.position = 'absolute';
