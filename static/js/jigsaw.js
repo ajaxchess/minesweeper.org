@@ -770,11 +770,16 @@
       if (!p) return;
       p.x = ps.x; p.y = ps.y;
       p.onBoard = !!ps.onBoard;
-      // Clamp stash positions to current stash bounds (saved positions may be
-      // from a session with a different stash height).
+      // If saved position is out of the current stash bounds (e.g. from a
+      // session with a larger stash), randomize rather than clamping — clamping
+      // stacks all out-of-bounds pieces at the same coordinate.
       if (!p.onBoard) {
-        p.x = Math.max(0, Math.min(p.x, Math.max(0, curStashW - pw)));
-        p.y = Math.max(0, Math.min(p.y, Math.max(0, curStashH - ph)));
+        var maxX = Math.max(0, curStashW - pw);
+        var maxY = Math.max(0, curStashH - ph);
+        if (p.x < 0 || p.x > maxX || p.y < 0 || p.y > maxY) {
+          p.x = Math.random() * maxX;
+          p.y = Math.random() * maxY;
+        }
       }
       var gid = ps.groupId;
       if (gid >= 0) {
