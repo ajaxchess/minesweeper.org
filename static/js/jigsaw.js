@@ -211,16 +211,17 @@
     var boardRect = boardEl.getBoundingClientRect();
     var boardW    = Math.max(boardRect.width  || 600, 200);
     var boardH    = Math.max(boardRect.height || 450, 200);
-    // Compute cell size so the completed puzzle fits in the board area with margin
-    var margin    = 20;
-    var fitW      = (boardW - margin * 2) / cols;
-    var fitH      = (boardH - margin * 2) / rows;
-    var cellBase  = Math.min(fitW, fitH);
-    // Never let cells get too tiny
-    cellBase = Math.max(cellBase, 8);
-    cellW    = cellBase;
-    cellH    = cellBase;
-    tabSz    = Math.min(cellW, cellH) * TAB_RATIO;
+    // Scale the assembled puzzle to fit in the board while preserving the image
+    // aspect ratio.  Cells are NOT forced square — cellW and cellH differ on
+    // non-square images so the completed puzzle looks exactly like the original.
+    var margin = 20;
+    var scale  = Math.min(
+      (boardW - margin * 2) / img.naturalWidth,
+      (boardH - margin * 2) / img.naturalHeight
+    );
+    cellW = Math.max(8, scale * img.naturalWidth  / cols);
+    cellH = Math.max(8, scale * img.naturalHeight / rows);
+    tabSz = Math.min(cellW, cellH) * TAB_RATIO;
 
     // Resize board canvas
     boardCanvas.width  = boardW;
@@ -282,8 +283,9 @@
     thumbEl.style.display = 'block';
 
     // Set stash inner height to hold all pieces scattered
-    var stashW   = 260;
-    var stashH   = Math.max(600, pieces.length * (cellH + tabSz * 2 + 4) / Math.floor(stashW / (cellW + tabSz * 2 + 8)));
+    var stashW    = 260;
+    var perRow    = Math.max(1, Math.floor(stashW / (cellW + tabSz * 2 + 8)));
+    var stashH    = Math.max(600, Math.ceil(pieces.length / perRow) * (cellH + tabSz * 2 + 4));
     stashInner.style.width  = stashW + 'px';
     stashInner.style.height = stashH + 'px';
 
@@ -538,48 +540,48 @@
   }
 
   function checkSnap(leadId, movedPids) {
-    var lp  = pieces[leadId];
-    if (!lp.onBoard) return;
+    if (!pieces[leadId].onBoard) return;
 
-    var pad  = tabSz + 2;
     var snapped = false;
 
-    // Check against every other on-board piece not in the same group
-    for (var i = 0; i < pieces.length; i++) {
-      var op = pieces[i];
-      if (!op.onBoard) continue;
-      if (movedPids.indexOf(op.id) >= 0) continue; // same drag group
+    // Check every moved piece against every on-board piece not in the drag group.
+    // Using a labelled break so we exit both loops as soon as the first snap fires.
+    snapSearch: for (var mi = 0; mi < movedPids.length; mi++) {
+      var mp = pieces[movedPids[mi]];
+      for (var i = 0; i < pieces.length; i++) {
+        var op = pieces[i];
+        if (!op.onBoard) continue;
+        if (movedPids.indexOf(op.id) >= 0) continue; // same drag group
 
-      // Are lp and op neighbours in the grid?
-      var dr = op.row - lp.row;
-      var dc = op.col - lp.col;
-      if (Math.abs(dr) + Math.abs(dc) !== 1) continue; // not adjacent
+        // Only adjacent grid neighbours can snap together.
+        var dr = op.row - mp.row;
+        var dc = op.col - mp.col;
+        if (Math.abs(dr) + Math.abs(dc) !== 1) continue;
 
-      // Expected relative position: if op is solved, where should lp be?
-      var opSolved = solvedPos(op);
-      var lpSolved = solvedPos(lp);
-      var expectedRelX = lpSolved.x - opSolved.x;
-      var expectedRelY = lpSolved.y - opSolved.y;
-      var actualRelX   = lp.x - op.x;
-      var actualRelY   = lp.y - op.y;
-      var distX = Math.abs(actualRelX - expectedRelX);
-      var distY = Math.abs(actualRelY - expectedRelY);
+        // Check whether mp is positioned where it belongs relative to op.
+        var opSolved = solvedPos(op);
+        var mpSolved = solvedPos(mp);
+        var expectedRelX = mpSolved.x - opSolved.x;
+        var expectedRelY = mpSolved.y - opSolved.y;
+        var distX = Math.abs((mp.x - op.x) - expectedRelX);
+        var distY = Math.abs((mp.y - op.y) - expectedRelY);
 
-      if (distX <= SNAP_DIST && distY <= SNAP_DIST) {
-        // Snap: move all movedPids so lp aligns with op's solved offset
-        var snapDX = (op.x + expectedRelX) - lp.x;
-        var snapDY = (op.y + expectedRelY) - lp.y;
-        movedPids.forEach(function (pid) {
-          var mp = pieces[pid];
-          mp.x += snapDX;
-          mp.y += snapDY;
-          mp.el.style.left = mp.x + 'px';
-          mp.el.style.top  = mp.y + 'px';
-        });
-        mergeGroups(movedPids, op.id);
-        playSnap();
-        snapped = true;
-        break;
+        if (distX <= SNAP_DIST && distY <= SNAP_DIST) {
+          // Move all movedPids so mp lands exactly where it belongs next to op.
+          var snapDX = (op.x + expectedRelX) - mp.x;
+          var snapDY = (op.y + expectedRelY) - mp.y;
+          movedPids.forEach(function (pid) {
+            var pp = pieces[pid];
+            pp.x += snapDX;
+            pp.y += snapDY;
+            pp.el.style.left = pp.x + 'px';
+            pp.el.style.top  = pp.y + 'px';
+          });
+          mergeGroups(movedPids, op.id);
+          playSnap();
+          snapped = true;
+          break snapSearch;
+        }
       }
     }
 
@@ -752,7 +754,7 @@
       p.onBoard = !!ps.onBoard;
       var gid = ps.groupId;
       if (gid >= 0) {
-        if (!groupMap[gid]) { groupMap[gid] = nextGroup++; groups[groupMap[gid]] = []; }
+        if (groupMap[gid] === undefined) { groupMap[gid] = nextGroup++; groups[groupMap[gid]] = []; }
         var newGid = groupMap[gid];
         p.groupId = newGid;
         groups[newGid].push(p.id);
