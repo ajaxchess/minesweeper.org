@@ -235,6 +235,9 @@
     boardEl.style.width  = boardW + 'px';
     boardEl.style.height = boardH + 'px';
 
+    // Fix the game area to board height so the stash overflow-y:auto activates.
+    gameAreaEl.style.height = boardH + 'px';
+
     // Seeded PRNG for tab assignments
     var prng = makePrng(seedFromString(DATE + diff));
 
@@ -295,7 +298,8 @@
     var pieceW    = cellW + pad * 2;
     var pieceH    = cellH + pad * 2;
     var perRow    = Math.max(1, Math.floor(stashW / pieceW));
-    var stashH    = Math.max(600, Math.ceil(pieces.length / perRow) * pieceH);
+    // Cap stash height so pieces don't scatter too far below the fold.
+    var stashH    = Math.max(600, Math.min(Math.ceil(pieces.length / perRow) * pieceH, boardH * 3));
     stashInner.style.width  = stashW + 'px';
     stashInner.style.height = stashH + 'px';
 
