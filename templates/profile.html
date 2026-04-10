@@ -258,6 +258,49 @@
     {% endif %}
   </div>
 
+  <!-- ── Jigsaw Saved Games ── -->
+  <div class="profile-recent">
+    <h2 class="section-title">🧩 Jigsaw Saved Games
+      <span style="font-size:0.8rem;font-weight:400;color:var(--text-dim);margin-left:0.5rem;">
+        {{ jigsaw_saves|length }} saved
+        · <a href="/other/jigsaw/daily" style="color:var(--accent2);">Play →</a>
+      </span>
+    </h2>
+    {% if jigsaw_saves %}
+    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:0.5rem;">
+      {% for s in jigsaw_saves %}
+      {% set mins = (s.elapsed_ms // 60000) %}
+      {% set secs = '%02d' % ((s.elapsed_ms // 1000) % 60) %}
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.6rem;display:flex;flex-direction:column;gap:0.4rem;width:150px;">
+        {% if s.image_name %}
+        <img src="/static/img/puzzle/{{ s.image_name }}"
+             alt="{{ s.difficulty }} puzzle"
+             style="width:100%;height:80px;object-fit:cover;border-radius:4px;display:block;">
+        {% else %}
+        <div style="width:100%;height:80px;background:var(--surface2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:2rem;">🧩</div>
+        {% endif %}
+        <div style="font-size:0.82rem;font-weight:600;">{{ s.difficulty | capitalize }}</div>
+        <div style="font-size:0.72rem;color:var(--text-dim);">{{ s.puzzle_date }} · {{ mins }}:{{ secs }}</div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
+          {% if s.puzzle_date == today %}
+          <a href="/other/jigsaw/daily?diff={{ s.difficulty }}"
+             style="font-size:0.75rem;color:var(--accent2);">Resume</a>
+          {% else %}
+          <span style="font-size:0.75rem;color:var(--text-dim);" title="Only today's puzzles can be resumed">Completed</span>
+          {% endif %}
+          <button onclick="jigsawDeleteSave('{{ s.puzzle_date }}', '{{ s.difficulty }}')"
+                  style="font-size:0.75rem;background:none;border:none;color:var(--text-dim);cursor:pointer;padding:0;margin-left:auto;">Delete</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--text-dim);font-size:0.9rem;margin-top:0.5rem;">
+      No saved games yet. <a href="/other/jigsaw/daily" style="color:var(--accent2);">Play a puzzle →</a>
+    </p>
+    {% endif %}
+  </div>
+
   <!-- ── Recent games tabs ── -->
   <div class="profile-recent">
     <h2 class="section-title">{{ t.profile_recent_games }}</h2>
@@ -300,6 +343,18 @@ function fpDeletePhoto(boardHash) {
   fetch('/api/fifteen-puzzle/delete-photo/' + boardHash, {
     method: 'POST',
     headers: { 'X-Requested-With': 'XMLHttpRequest' },
+  }).then(function(res) {
+    if (!res.ok) throw new Error('Delete failed');
+    window.location.reload();
+  }).catch(function(err) { alert(err.message); });
+}
+
+function jigsawDeleteSave(puzzleDate, difficulty) {
+  if (!confirm('Delete this saved jigsaw game?')) return;
+  fetch('/api/jigsaw/delete-save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    body: JSON.stringify({ puzzle_date: puzzleDate, difficulty: difficulty }),
   }).then(function(res) {
     if (!res.ok) throw new Error('Delete failed');
     window.location.reload();

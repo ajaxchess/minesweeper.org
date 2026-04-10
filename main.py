@@ -1910,6 +1910,8 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "about_text":    profile.about_text    if profile else "",
         "fp_photos":     db.query(FifteenPuzzlePhoto).filter_by(user_email=user["email"]).order_by(FifteenPuzzlePhoto.created_at.desc()).all(),
         "fp_limit":      getattr(profile, "puzzle_storage_limit", 32) if profile else 32,
+        "jigsaw_saves":  db.query(JigsawSavedGame).filter_by(user_email=user["email"]).order_by(JigsawSavedGame.updated_at.desc()).all(),
+        "today":         datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "lang": get_lang(request), "t": get_t(request),
     })
 
@@ -4931,6 +4933,10 @@ class JigsawSavePayload(BaseModel):
     elapsed_ms:  int = Field(..., ge=0)
     piece_state: list = Field(default_factory=list)
 
+class JigsawDeleteSavePayload(BaseModel):
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    difficulty:  str
+
     @field_validator("difficulty")
     @classmethod
     def validate_difficulty(cls, v: str) -> str:
@@ -4995,6 +5001,27 @@ def jigsaw_resume_game(request: Request,
         "image_name":  saved.image_name,
         "piece_state": _json.loads(saved.piece_state),
     }
+
+
+@app.post("/api/jigsaw/delete-save", status_code=200)
+def delete_jigsaw_save(payload: JigsawDeleteSavePayload, request: Request,
+                       db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Login required")
+    if payload.difficulty not in _JIGSAW_DIFFICULTIES:
+        raise HTTPException(status_code=400, detail="Invalid difficulty")
+    save = (
+        db.query(JigsawSavedGame)
+        .filter_by(user_email=user["email"], puzzle_date=payload.puzzle_date,
+                   difficulty=payload.difficulty)
+        .first()
+    )
+    if not save:
+        raise HTTPException(status_code=404, detail="Not found")
+    db.delete(save)
+    db.commit()
+    return {"ok": True}
 
 
 @app.post("/api/jigsaw/upload", status_code=201)
