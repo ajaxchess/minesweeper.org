@@ -3044,6 +3044,28 @@ def get_pvp_elo_rankings(db: Session = Depends(get_db), response: Response = Non
     ]
 
 
+@app.get("/api/pvp/player-card/{public_id}")
+def pvp_player_card(public_id: str, db: Session = Depends(get_db)):
+    """Lightweight stat card data for the PvP match header mouseover (F69)."""
+    profile = db.query(UserProfile).filter(UserProfile.public_id == public_id).first()
+    if not profile:
+        return {}
+    best_expert = (
+        db.query(func.min(GameHistory.time_secs))
+        .filter(GameHistory.user_email == profile.email, GameHistory.mode == "expert")
+        .scalar()
+    )
+    wins   = db.query(func.count(PvpResult.id)).filter(PvpResult.winner_email == profile.email).scalar() or 0
+    losses = db.query(func.count(PvpResult.id)).filter(PvpResult.loser_email  == profile.email).scalar() or 0
+    return {
+        "name":      profile.display_name,
+        "elo":       profile.pvp_elo,
+        "wins":      wins,
+        "losses":    losses,
+        "best_time": best_expert,
+    }
+
+
 @app.get("/tentaizu", response_class=HTMLResponse)
 async def tentaizu_page(request: Request, date_param: str = Query(None, alias="date")):
     import re

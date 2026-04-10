@@ -126,7 +126,8 @@
              data-opp-delay="{{ opp_delay }}"
              data-bot-difficulty="{{ bot_difficulty | default('') }}"
              data-username="{{ user.display_name if user else '' }}"
-             data-useremail="{{ user.email if user else '' }}"></div>
+             data-useremail="{{ user.email if user else '' }}"
+             data-user-public-id="{{ user.public_id if user else '' }}"></div>
         <div id="duel-overlay" class="duel-overlay" style="display:none"></div>
       </div>
     </div>
@@ -166,6 +167,12 @@
     {{ t.duel_scoring_body | safe }}
   </div>
 
+</div>
+
+<!-- ── PvP stat card (mouseover player names, F69) ── -->
+<div id="pvp-stat-card" class="pvp-stat-card" style="display:none">
+  <div class="pvp-stat-card-name"></div>
+  <div class="pvp-stat-card-rows"></div>
 </div>
 
 <!-- ── SEO Landing Content ── -->

@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const IS_CREATOR  = boardEl.dataset.isCreator === 'true';
   const SUBMODE     = boardEl.dataset.submode || 'standard';
   const BOT_DIFF    = boardEl.dataset.botDifficulty || 'medium';
-  const OPP_DELAY_MS = (parseInt(boardEl.dataset.oppDelay || '0')) * 1000;
+  const OPP_DELAY_MS   = (parseInt(boardEl.dataset.oppDelay || '0')) * 1000;
+  const MY_PUBLIC_ID   = boardEl.dataset.userPublicId || '';
 
   // ── Local state ───────────────────────────────────────────────────────────
   let revealed   = Array.from({length: ROWS}, () => Array(COLS).fill(false));
@@ -41,6 +42,65 @@ document.addEventListener('DOMContentLoaded', () => {
   let oppExploded   = false;
   // Queue: [{applyAt: ms timestamp, cells: [[r,c,val],...], exploded: bool, cleared: bool}]
   const pendingOppUpdates = [];
+
+  // ── Stat card (F69) ───────────────────────────────────────────────────────
+  let oppPublicId   = null;
+  const statCardEl  = document.getElementById('pvp-stat-card');
+  const statCache   = {};   // public_id → fetched data
+  let   statHideTimer = null;
+
+  function showStatCard(publicId, anchorEl) {
+    if (!IS_BETA || !publicId || !statCardEl) return;
+    const fetch_ = (id) => {
+      if (statCache[id]) { renderStatCard(statCache[id], anchorEl); return; }
+      fetch(`/api/pvp/player-card/${id}`)
+        .then(r => r.json())
+        .then(data => { if (data && data.name) { statCache[id] = data; renderStatCard(data, anchorEl); } })
+        .catch(() => {});
+    };
+    fetch_(publicId);
+  }
+
+  function renderStatCard(data, anchorEl) {
+    const nameEl = statCardEl.querySelector('.pvp-stat-card-name');
+    const rowsEl = statCardEl.querySelector('.pvp-stat-card-rows');
+    nameEl.textContent = data.name || '—';
+    const rows = [];
+    if (data.elo   != null) rows.push(['Elo',    data.elo]);
+    if (data.wins  != null) rows.push(['Wins',   data.wins]);
+    if (data.losses!= null) rows.push(['Losses', data.losses]);
+    if (data.best_time != null) rows.push(['Best time', data.best_time + 's']);
+    rowsEl.innerHTML = rows.map(([label, val]) =>
+      `<div class="pvp-stat-row"><span class="psr-label">${label}</span><span class="psr-value">${val}</span></div>`
+    ).join('');
+    positionStatCard(anchorEl);
+    statCardEl.style.display = 'block';
+  }
+
+  function positionStatCard(anchorEl) {
+    const rect = anchorEl.getBoundingClientRect();
+    const cardW = 180;
+    let left = rect.left + rect.width / 2 - cardW / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - cardW - 8));
+    statCardEl.style.left = left + 'px';
+    statCardEl.style.top  = (rect.bottom + 6) + 'px';
+  }
+
+  function hideStatCard() {
+    if (statCardEl) statCardEl.style.display = 'none';
+  }
+
+  function attachStatCard(el, getPublicId) {
+    if (!IS_BETA) return;
+    el.addEventListener('mouseenter', () => {
+      clearTimeout(statHideTimer);
+      const pid = getPublicId();
+      if (pid) { el.classList.add('has-card'); showStatCard(pid, el); }
+    });
+    el.addEventListener('mouseleave', () => {
+      statHideTimer = setTimeout(hideStatCard, 150);
+    });
+  }
 
   // ── Build player board DOM ────────────────────────────────────────────────
   function buildBoard() {
@@ -218,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('duel-status').textContent = msg;
   }
 
-  function setOppName(name) {
+  function setOppName(name, publicId) {
     const scoreLabel = document.getElementById('opp-score-label');
     if (scoreLabel) scoreLabel.textContent = name;
     const boardLabel = document.getElementById('opp-board-label');
@@ -227,6 +287,15 @@ document.addEventListener('DOMContentLoaded', () => {
       boardLabel.textContent = '👁 ' + name;
       if (badge) boardLabel.appendChild(badge);
     }
+    if (publicId) oppPublicId = publicId;
+  }
+
+  // Attach stat card hover to both score labels once (beta only)
+  if (IS_BETA) {
+    const myLabel  = document.querySelector('#my-score-box .score-label');
+    const oppLabel = document.getElementById('opp-score-label');
+    if (myLabel)  attachStatCard(myLabel,  () => MY_PUBLIC_ID);
+    if (oppLabel) attachStatCard(oppLabel, () => oppPublicId);
   }
 
   // ── Overlay ───────────────────────────────────────────────────────────────
@@ -500,7 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
 
       case 'opp_name':
-        setOppName(msg.name || 'Opponent');
+        setOppName(msg.name || 'Opponent', msg.public_id || null);
         break;
 
       case 'error':

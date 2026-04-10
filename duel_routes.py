@@ -703,7 +703,19 @@ async def _pvpbeta_wait_loop(ws: WebSocket, player_id: str):
                         p.email = msg.get("email", "")[:256]
                         opp = game.opponent(player_id)
                         if opp and opp.ws:
-                            await manager.send(opp.ws, {"type": "opp_name", "name": p.name or "Anonymous"})
+                            public_id = None
+                            if p.email:
+                                db = SessionLocal()
+                                try:
+                                    prof = db.query(UserProfile).filter(UserProfile.email == p.email).first()
+                                    public_id = prof.public_id if prof else None
+                                finally:
+                                    db.close()
+                            await manager.send(opp.ws, {
+                                "type": "opp_name",
+                                "name": p.name or "Anonymous",
+                                "public_id": public_id,
+                            })
     except WebSocketDisconnect:
         pvpbeta_dequeue(player_id)
 
@@ -754,7 +766,19 @@ async def _pvpbeta_quick_wait_loop(ws: WebSocket, player_id: str):
                         p.email = msg.get("email", "")[:256]
                         opp = game.opponent(player_id)
                         if opp and opp.ws:
-                            await manager.send(opp.ws, {"type": "opp_name", "name": p.name or "Anonymous"})
+                            public_id = None
+                            if p.email:
+                                db = SessionLocal()
+                                try:
+                                    prof = db.query(UserProfile).filter(UserProfile.email == p.email).first()
+                                    public_id = prof.public_id if prof else None
+                                finally:
+                                    db.close()
+                            await manager.send(opp.ws, {
+                                "type": "opp_name",
+                                "name": p.name or "Anonymous",
+                                "public_id": public_id,
+                            })
     except WebSocketDisconnect:
         pvpbeta_quick_dequeue(player_id)
 

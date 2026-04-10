@@ -1399,6 +1399,11 @@ kbd {
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--text-dim);
+  cursor: default;
+}
+.duel-player-score .score-label.has-card {
+  cursor: pointer;
+  text-decoration: underline dotted;
 }
 
 .duel-player-score .score-value {
@@ -1414,6 +1419,37 @@ kbd {
   font-size: 0.72rem;
   color: var(--text-dim);
 }
+
+/* ── PvP stat card tooltip (F69) ─────────────────────────────────────────── */
+.pvp-stat-card {
+  position: fixed;
+  z-index: 500;
+  min-width: 160px;
+  padding: 0.6rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.5);
+  font-size: 0.82rem;
+  pointer-events: none;
+}
+.pvp-stat-card-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+  color: var(--accent2);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3rem;
+}
+.pvp-stat-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.15rem 0;
+  color: var(--text);
+}
+.pvp-stat-row .psr-label { color: var(--text-dim); }
+.pvp-stat-row .psr-value { font-weight: 600; font-variant-numeric: tabular-nums; }
 
 .duel-vs {
   font-size: 1.2rem;
