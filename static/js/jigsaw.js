@@ -844,6 +844,15 @@
 
   function saveGameState(final) {
     if (!LOGGED_IN) return;
+    if (final) {
+      // Puzzle complete — delete the save so returning to the page starts fresh
+      fetch('/api/jigsaw/delete-save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ puzzle_date: DATE, difficulty: difficulty }),
+      }).catch(function () { /* ignore */ });
+      return;
+    }
     var payload = {
       puzzle_date: DATE,
       difficulty:  difficulty,
