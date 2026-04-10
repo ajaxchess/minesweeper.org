@@ -284,8 +284,14 @@
       p.el = createPieceEl(p);
     });
 
-    // Set thumbnails
-    thumbEls.forEach(function(el) { el.src = IMAGE_URL; el.style.display = 'block'; });
+    // Set thumbnails — height matches center column so images don't inflate the header
+    var topCenterEl = document.querySelector('.jig-top-center');
+    var topH = topCenterEl ? topCenterEl.offsetHeight : 0;
+    thumbEls.forEach(function(el) {
+      el.src = IMAGE_URL;
+      if (topH > 0) { el.style.height = topH + 'px'; el.style.width = 'auto'; }
+      el.style.display = 'block';
+    });
 
     // Set stash inner height to hold all pieces scattered.
     // Use the real stash element's client width so we don't exceed it.
