@@ -5783,6 +5783,7 @@ select.calc-input { width: 140px; }
 /* ── Duel Chat ─────────────────────────────────────────────────────────────── */
 .duel-chat {
   margin: 1rem auto 0;
+  width: 100%;
   max-width: 960px;
   border: 1px solid var(--border);
   border-radius: 8px;
