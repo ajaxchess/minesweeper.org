@@ -1665,6 +1665,17 @@ async def about_page(request: Request):
 # excerpt: one-sentence summary shown on the index page
 BLOG_POSTS = [
     {
+        "slug":          "rodential-heroics",
+        "file":          "blog/magawa-hero-rat-wnm.md",
+        "title":         "Rodential Heroics",
+        "date":          "2026-04-10",
+        "datePublished": "2026-04-10T15:00:00Z",
+        "image":         "/static/img/Magawa_in_2020.jpg",
+        "excerpt":       "There is a seven-foot stone statue in Siem Reap, Cambodia, depicting a rat "
+                         "wearing a gold medal. When you learn what Magawa did to earn it, "
+                         "it might be among the most deserved monuments in the world.",
+    },
+    {
         "slug":          "multicloud",
         "file":          "blog/multicloud.md",
         "title":         "Minesweeper.org Goes Multicloud",
