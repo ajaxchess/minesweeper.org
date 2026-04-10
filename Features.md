@@ -15,6 +15,58 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F71 PvP Mine Reallocation on Hit (/pvpbeta)
+  Instead of losing on mine click, the 3×3 area around the hit mine is scrambled.
+  Reference: FeatureRequests/PVPmodifications.md (Feature C)
+
+  Behaviour
+  ──────────────────────────────────────────────────────────────────────
+  - Mines within the 3×3 are randomly redistributed within those same 9 cells
+    (mine may land back on the clicked cell).
+  - All 9 cells reset to unrevealed; player loses any progress in that area.
+  - Numbers adjacent to the 3×3 are recalculated and flash briefly on the client.
+  - No score penalty — the lost tiles are the only consequence.
+  - Reallocation is per-player only; opponent's board is unaffected (boards diverge).
+  - A mine-hit counter (💥) is displayed in the match header for both players.
+
+  Animation
+  ──────────────────────────────────────────────────────────────────────
+  - Clicked cell flashes red.
+  - Red border ripples outward: 1×1 → 2×2 → 3×3 around the hit cell.
+  - 3×3 area resets to unknown.
+  - Both players see the animation on the hitter's board.
+
+──────────────────────────────────────────────────────────────────────────────
+
+F70 PvP Frontier / Playable Area (/pvpbeta)
+  Restricts clicks to cells within Chebyshev distance 2 of any revealed cell.
+  Reference: FeatureRequests/PVPmodifications.md (Feature B)
+
+  Rules
+  ──────────────────────────────────────────────────────────────────────
+  - Only the outermost ring (Chebyshev distance exactly 2) receives the light
+    grey frontier visual; distance-1 cells render as normal unrevealed tiles.
+  - Enforced both client-side (click rejection + visual) and server-side
+    (reveal() rejects out-of-frontier requests).
+  - Initial frontier wraps the shared pre-revealed center zone at game start.
+  - Frontier recomputes after every reveal and after every 3×3 mine-hit reset.
+  - Frontier is shown on both the player's own board and the opponent's board.
+
+──────────────────────────────────────────────────────────────────────────────
+
+F69 PvP Mouseover Player Stats (/pvpbeta)
+  Hovering a player's name in the match header shows a floating stat card.
+  Reference: FeatureRequests/PVPmodifications.md (Feature A)
+
+  Stats displayed
+  ──────────────────────────────────────────────────────────────────────
+  - Best time (for the active PvP board size)
+  - Elo rating (raw number; no named tiers)
+  - Wins / Losses
+  Guest/anonymous players with no data: card does not appear.
+
+──────────────────────────────────────────────────────────────────────────────
+
 F68 Jigsaw Puzzle (/other/jigsaw)
   Traditional interlocking jigsaw puzzle game under the Other Puzzles section.
   Reference: FeatureRequests/Jigsaw.md
