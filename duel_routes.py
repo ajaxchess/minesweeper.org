@@ -794,7 +794,7 @@ async def pvpbeta_bot_ws(ws: WebSocket, player_id: str,
 
     await ws.accept()
 
-    game = create_game(rows=rows, cols=cols, mines=mines, submode=submode, is_pvp=False)
+    game = create_game(rows=rows, cols=cols, mines=mines, submode=submode, is_pvp=False, use_frontier=True)
     game.add_player(player_id, ws)
 
     bot_id = "bot_" + uuid.uuid4().hex[:6]

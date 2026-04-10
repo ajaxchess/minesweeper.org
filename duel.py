@@ -69,6 +69,17 @@ def _bfs_reveal(board, revealed, rows, cols, r, c):
             )
     return newly
 
+def _expand_playable(rows: int, cols: int, cells) -> set:
+    """Return all board cells within Chebyshev distance 2 of any cell in `cells`."""
+    result = set()
+    for (r, c) in cells:
+        for dr in range(-2, 3):
+            for dc in range(-2, 3):
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < rows and 0 <= nc < cols:
+                    result.add((nr, nc))
+    return result
+
 # ── Player state ──────────────────────────────────────────────────────────────
 @dataclass
 class PlayerState:
@@ -86,6 +97,7 @@ class PlayerState:
     score:          int  = 0
     name:           str  = ""
     email:          str  = ""
+    playable_set:   set  = field(default_factory=set)  # F70: empty = no frontier enforcement
 
     def __post_init__(self):
         if not self.revealed:
@@ -107,13 +119,14 @@ class PlayerState:
 
 # ── Duel game ─────────────────────────────────────────────────────────────────
 class DuelGame:
-    def __init__(self, game_id: str, rows: int = ROWS, cols: int = COLS, mines: int = MINES, submode: str = "standard", is_pvp: bool = False):
-        self.game_id     = game_id
-        self.rows        = rows
-        self.cols        = cols
-        self.mines       = mines
-        self.submode     = submode
-        self.is_pvp      = is_pvp
+    def __init__(self, game_id: str, rows: int = ROWS, cols: int = COLS, mines: int = MINES, submode: str = "standard", is_pvp: bool = False, use_frontier: bool = False):
+        self.game_id      = game_id
+        self.rows         = rows
+        self.cols         = cols
+        self.mines        = mines
+        self.submode      = submode
+        self.is_pvp       = is_pvp
+        self.use_frontier = use_frontier  # F70
         self.players:    list[PlayerState] = []
         self.spectators: list              = []   # list[WebSocket]
         self.rematch_game_id: Optional[str] = None
@@ -211,6 +224,8 @@ class DuelGame:
             p.tiles_revealed = len(self.shared_prerev)
             p.score          = p.tiles_revealed * POINTS_PER_TILE
             p.started        = True
+            if self.use_frontier:  # F70
+                p.playable_set = _expand_playable(self.rows, self.cols, self.shared_prerev)
 
     def start_payload(self) -> dict:
         """Data to include in the 'start' broadcast so clients can render the opening."""
@@ -240,6 +255,10 @@ class DuelGame:
         if p.revealed[r][c]:
             return {}
 
+        # F70: reject clicks outside the playable frontier
+        if p.playable_set and (r, c) not in p.playable_set:
+            return {}
+
         # Hit a mine
         if p.board[r][c] == -1:
             p.exploded = True
@@ -259,6 +278,9 @@ class DuelGame:
         newly = _bfs_reveal(p.board, p.revealed, self.rows, self.cols, r, c)
         p.tiles_revealed += len(newly)
         p.score           = p.compute_score(self.elapsed())
+        # F70: expand playable frontier to include cells within Chebyshev 2 of newly revealed
+        if p.playable_set:
+            p.playable_set.update(_expand_playable(self.rows, self.cols, newly))
 
         result = {"newly_revealed": newly, "exploded": False, "score": p.score}
 
@@ -292,9 +314,9 @@ class DuelGame:
 # ── Global game store ─────────────────────────────────────────────────────────
 _games: dict[str, DuelGame] = {}
 
-def create_game(rows=ROWS, cols=COLS, mines=MINES, submode="standard", is_pvp=False) -> DuelGame:
+def create_game(rows=ROWS, cols=COLS, mines=MINES, submode="standard", is_pvp=False, use_frontier=False) -> DuelGame:
     gid  = uuid.uuid4().hex[:10]
-    game = DuelGame(gid, rows=rows, cols=cols, mines=mines, submode=submode, is_pvp=is_pvp)
+    game = DuelGame(gid, rows=rows, cols=cols, mines=mines, submode=submode, is_pvp=is_pvp, use_frontier=use_frontier)
     _games[gid] = game
     return game
 
@@ -385,7 +407,7 @@ async def pvpbeta_enqueue(player_id: str, ws) -> Optional[DuelGame]:
     _pvpbeta_queue = [e for e in _pvpbeta_queue if e["player_id"] != player_id]
     if _pvpbeta_queue:
         opponent = _pvpbeta_queue.pop(0)
-        game = create_game(rows=PVP_ROWS, cols=PVP_COLS, mines=PVP_MINES, is_pvp=False)
+        game = create_game(rows=PVP_ROWS, cols=PVP_COLS, mines=PVP_MINES, is_pvp=False, use_frontier=True)
         game.add_player(opponent["player_id"], opponent["ws"])
         game.add_player(player_id, ws)
         try:
@@ -416,7 +438,7 @@ async def pvpbeta_quick_enqueue(player_id: str, ws) -> Optional[DuelGame]:
     _pvpbeta_quick_queue = [e for e in _pvpbeta_quick_queue if e["player_id"] != player_id]
     if _pvpbeta_quick_queue:
         opponent = _pvpbeta_quick_queue.pop(0)
-        game = create_game(rows=QUICK_ROWS, cols=QUICK_COLS, mines=QUICK_MINES, submode="quick", is_pvp=False)
+        game = create_game(rows=QUICK_ROWS, cols=QUICK_COLS, mines=QUICK_MINES, submode="quick", is_pvp=False, use_frontier=True)
         game.add_player(opponent["player_id"], opponent["ws"])
         game.add_player(player_id, ws)
         try:

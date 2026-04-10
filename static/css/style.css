@@ -561,6 +561,20 @@ html[data-skin="classic"] .landing-seo-section a { color: #0033cc; }
 
 .cell.hidden:hover { background: var(--cell-hover); }
 
+/* F70: frontier ring (Chebyshev dist=2 from revealed) — lighter, still clickable */
+.cell.frontier {
+  background: #3d5c8a;
+  border: 1px solid #5070a0;
+}
+.cell.frontier:hover { background: #4a6fa0; }
+
+/* F70: locked cells (beyond frontier) — darker, not clickable */
+.cell.locked {
+  background: #1a2840;
+  border: 1px solid #253650;
+  cursor: not-allowed;
+}
+
 .cell.revealed {
   background: var(--cell-rev);
   border: 1px solid #0d1520;

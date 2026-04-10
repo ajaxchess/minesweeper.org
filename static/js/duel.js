@@ -43,6 +43,33 @@ document.addEventListener('DOMContentLoaded', () => {
   // Queue: [{applyAt: ms timestamp, cells: [[r,c,val],...], exploded: bool, cleared: bool}]
   const pendingOppUpdates = [];
 
+  // ── F70: Frontier distance matrices ──────────────────────────────────────
+  // minDist[r][c] = min Chebyshev distance to any revealed cell (Infinity = unreachable)
+  let minDist    = Array.from({length: ROWS}, () => Array(COLS).fill(Infinity));
+  let oppMinDist = Array.from({length: ROWS}, () => Array(COLS).fill(Infinity));
+
+  // Update a distance matrix given newly revealed cells; returns cells whose dist changed.
+  function updateMinDist(newlyCells, distMatrix) {
+    const changed = [];
+    newlyCells.forEach(cell => {
+      const r = cell[0], c = cell[1];
+      distMatrix[r][c] = 0;
+      for (let dr = -2; dr <= 2; dr++) {
+        for (let dc = -2; dc <= 2; dc++) {
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+            const d = Math.max(Math.abs(dr), Math.abs(dc));
+            if (d > 0 && d < distMatrix[nr][nc]) {
+              distMatrix[nr][nc] = d;
+              changed.push([nr, nc]);
+            }
+          }
+        }
+      }
+    });
+    return changed;
+  }
+
   // ── Stat card (F69) ───────────────────────────────────────────────────────
   let oppPublicId   = null;
   const statCardEl  = document.getElementById('pvp-stat-card');
@@ -157,8 +184,13 @@ document.addEventListener('DOMContentLoaded', () => {
         el.classList.add('question');
         el.textContent = '❓';
       } else {
-        el.classList.add('hidden');
         el.textContent = '';
+        if (IS_BETA) {
+          const d = minDist[r][c];
+          el.classList.add(d === 2 ? 'frontier' : (d > 2 ? 'locked' : 'hidden'));
+        } else {
+          el.classList.add('hidden');
+        }
       }
       return;
     }
@@ -181,8 +213,13 @@ document.addEventListener('DOMContentLoaded', () => {
     el.className = 'cell opp-cell';
 
     if (!oppRevealed[r][c]) {
-      el.classList.add('hidden');
       el.textContent = '';
+      if (IS_BETA) {
+        const d = oppMinDist[r][c];
+        el.classList.add(d === 2 ? 'frontier' : (d > 2 ? 'locked' : 'hidden'));
+      } else {
+        el.classList.add('hidden');
+      }
       return;
     }
     el.classList.add('revealed');
@@ -202,11 +239,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const now = Date.now();
     while (pendingOppUpdates.length && pendingOppUpdates[0].applyAt <= now) {
       const batch = pendingOppUpdates.shift();
+      // F70: update opponent frontier before rendering
+      let oppZoneChanged = [];
+      if (IS_BETA) oppZoneChanged = updateMinDist(batch.cells, oppMinDist);
+      const batchKeys = IS_BETA ? new Set(batch.cells.map(([r, c]) => `${r},${c}`)) : null;
       batch.cells.forEach(([r, c, val]) => {
         oppRevealed[r][c]  = true;
         oppBoardVals[r][c] = val;
         renderOppCell(r, c);
       });
+      if (IS_BETA) {
+        oppZoneChanged.forEach(([r, c]) => {
+          if (!batchKeys.has(`${r},${c}`) && !oppRevealed[r][c]) renderOppCell(r, c);
+        });
+      }
       if (batch.exploded) {
         oppExploded = true;
       }
@@ -246,6 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Actions ───────────────────────────────────────────────────────────────
   function onReveal(r, c) {
     if (!gameActive || revealed[r][c] || flagged[r][c] === 1 || exploded) return;
+    if (IS_BETA && minDist[r][c] > 2) return;  // F70: outside frontier
     ws.send(JSON.stringify({type: 'reveal', r, c}));
   }
 
@@ -439,16 +486,25 @@ document.addEventListener('DOMContentLoaded', () => {
         startTimer();
         // Render shared pre-revealed opening on both boards
         if (msg.prerev && msg.board_values) {
+          // Apply state first, then compute frontier, then render everything
           msg.prerev.forEach(([r, c]) => {
             const val = msg.board_values[`${r},${c}`];
-            revealed[r][c]    = true;
-            boardVals[r][c]   = val;
-            renderCell(r, c);
-            // Mirror same opening on opponent board (no delay — it's the starting state)
+            revealed[r][c]     = true;
+            boardVals[r][c]    = val;
             oppRevealed[r][c]  = true;
             oppBoardVals[r][c] = val;
-            renderOppCell(r, c);
           });
+          if (IS_BETA) {
+            updateMinDist(msg.prerev, minDist);
+            updateMinDist(msg.prerev, oppMinDist);
+          }
+          // Full board render so frontier/locked classes are applied from the start
+          for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+              renderCell(r, c);
+              renderOppCell(r, c);
+            }
+          }
         }
         if (msg.prerev_score != null) {
           updateScores(msg.prerev_score, msg.prerev ? msg.prerev.length : 0,
@@ -460,11 +516,21 @@ document.addEventListener('DOMContentLoaded', () => {
       case 'update': {
         const newCells   = msg.newly_revealed;
         const boardValsM = msg.board_values;
+        // F70: update frontier distances before rendering so zone classes are correct
+        let zoneChanged = [];
+        if (IS_BETA) zoneChanged = updateMinDist(newCells, minDist);
+        const newKeys = IS_BETA ? new Set(newCells.map(([r, c]) => `${r},${c}`)) : null;
         newCells.forEach(([r, c]) => {
           revealed[r][c]  = true;
           boardVals[r][c] = boardValsM[`${r},${c}`];
           renderCell(r, c);
         });
+        // Re-render unrevealed neighbour cells whose zone class changed
+        if (IS_BETA) {
+          zoneChanged.forEach(([r, c]) => {
+            if (!newKeys.has(`${r},${c}`) && !revealed[r][c]) renderCell(r, c);
+          });
+        }
         if (msg.exploded) {
           exploded = true;
           gameActive = false;
