@@ -83,6 +83,7 @@
   height: calc(100vh - 210px);
   min-height: 400px;
   user-select: none;
+  cursor: crosshair;
 }
 
 /* Board — JS sets exact width/height once puzzle dimensions are known */
@@ -91,7 +92,7 @@
   position: relative;
   overflow: hidden;
   background: var(--surface);
-  cursor: default;
+  cursor: crosshair;
   min-width: 200px;
   min-height: 200px;
 }
@@ -190,11 +191,23 @@
 }
 #jig-pause-overlay.show { display: flex; }
 
+/* Mobile thumbnail — hidden on desktop, shown below header on phones */
+#jig-thumb-mobile {
+  display: none;
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+#jig-thumb-mobile.jig-thumb-ready { display: none; } /* JS adds class; CSS reveals on mobile */
+
 /* Mobile */
 @media (max-width: 700px) {
   .jig-game-area { flex-direction: column; }
   #jig-stash { flex: 0 0 auto; height: 220px; border-left: none; border-top: 1px solid var(--border); }
   #jig-board { min-height: 300px; }
+  .jig-top-side { display: none; } /* hide side reference images */
+  #jig-thumb-mobile.jig-thumb-ready { display: block; } /* show single image below header */
 }
 </style>
 
@@ -249,6 +262,9 @@
       <img id="jig-thumb-right" class="jig-top-img" src="" alt="Reference">
     </div>
   </div><!-- /.jig-top -->
+
+  <!-- Mobile-only reference image shown below header on narrow screens -->
+  <img id="jig-thumb-mobile" src="" alt="Reference">
 
   <!-- Game area -->
   <div class="jig-game-area">

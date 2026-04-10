@@ -34,7 +34,11 @@
   var nextGroup = 0;
 
   // Drag state
-  var drag = null; // { type:'piece'|'group', id, offX, offY, startX, startY }
+  var drag = null; // { pids, leadId, offX, offY, areaRect, relPos }
+
+  // Rubber-band selection state
+  var selection = []; // pids currently highlighted by rubber-band
+  var selDrag   = null; // { startX, startY, curX, curY, rectEl, areaRect }
 
   // Timer
   var timerInterval = null;
@@ -187,6 +191,7 @@
 
   // ── Initialize game ───────────────────────────────────────────────────────────
   function initGame(diff) {
+    clearSelection();
     difficulty   = diff;
     rows         = DIFFS[diff].rows;
     cols         = DIFFS[diff].cols;
@@ -292,6 +297,9 @@
       if (topH > 0) { el.style.height = topH + 'px'; el.style.width = 'auto'; }
       el.style.display = 'block';
     });
+    // Mobile thumbnail (shown below header on narrow screens via CSS)
+    var thumbMobile = document.getElementById('jig-thumb-mobile');
+    if (thumbMobile) { thumbMobile.src = IMAGE_URL; thumbMobile.classList.add('jig-thumb-ready'); }
 
     // Set stash inner height to hold all pieces scattered.
     // Use the real stash element's client width so we don't exceed it.
@@ -406,7 +414,18 @@
       startTimer();
     }
 
-    // Current piece position relative to page
+    // If the clicked piece is part of the rubber-band selection, drag all selected
+    // pieces together. Otherwise clear the selection and drag normally.
+    var movePids;
+    if (selection.length > 0 && selection.indexOf(p.id) >= 0) {
+      movePids = selection.slice();
+      clearSelection();
+    } else {
+      clearSelection();
+      var groupId = p.groupId;
+      movePids = groupId >= 0 ? groups[groupId].slice() : [p.id];
+    }
+
     var elRect = p.el.getBoundingClientRect();
     var offX   = e.clientX - elRect.left;
     var offY   = e.clientY - elRect.top;
@@ -420,9 +439,14 @@
       gameAreaEl.appendChild(dragLayer);
     }
 
-    var groupId  = p.groupId;
-    var movePids = groupId >= 0 ? groups[groupId].slice() : [p.id];
     var areaRect = gameAreaEl.getBoundingClientRect();
+
+    // Compute relative offsets using client rects BEFORE lifting (works cross-container).
+    var relPos = movePids.reduce(function (acc, pid) {
+      var mRect = pieces[pid].el.getBoundingClientRect();
+      acc[pid] = { dx: mRect.left - elRect.left, dy: mRect.top - elRect.top };
+      return acc;
+    }, {});
 
     // Lift pieces into the drag layer with absolute coords relative to game area.
     movePids.forEach(function (pid) {
@@ -436,17 +460,12 @@
     });
 
     drag = {
-      pids:   movePids,
-      leadId: p.id,
-      offX:   offX,
-      offY:   offY,
+      pids:     movePids,
+      leadId:   p.id,
+      offX:     offX,
+      offY:     offY,
       areaRect: areaRect,
-      relPos: movePids.reduce(function (acc, pid) {
-        var mp = pieces[pid];
-        var lp = pieces[p.id];
-        acc[pid] = { dx: mp.x - lp.x, dy: mp.y - lp.y };
-        return acc;
-      }, {}),
+      relPos:   relPos,
     };
 
     // Capture pointer on the game area so moves outside still register.
@@ -556,6 +575,89 @@
 
     drag = null;
   }
+
+  // ── Rubber-band selection ────────────────────────────────────────────────────
+
+  function clearSelection() {
+    selection.forEach(function (pid) {
+      var p = pieces[pid];
+      if (p && p.el) { p.el.style.outline = ''; }
+    });
+    selection = [];
+  }
+
+  function onSelMove(e) {
+    if (!selDrag) return;
+    var a    = selDrag.areaRect;
+    var curX = Math.max(0, Math.min(e.clientX - a.left, a.width));
+    var curY = Math.max(0, Math.min(e.clientY - a.top,  a.height));
+    selDrag.curX = curX;
+    selDrag.curY = curY;
+    var x = Math.min(selDrag.startX, curX);
+    var y = Math.min(selDrag.startY, curY);
+    var w = Math.abs(curX - selDrag.startX);
+    var h = Math.abs(curY - selDrag.startY);
+    var r = selDrag.rectEl;
+    r.style.left   = x + 'px';
+    r.style.top    = y + 'px';
+    r.style.width  = w + 'px';
+    r.style.height = h + 'px';
+  }
+
+  function onSelUp() {
+    if (!selDrag) return;
+    gameAreaEl.removeEventListener('pointermove', onSelMove);
+    gameAreaEl.removeEventListener('pointerup',   onSelUp);
+    gameAreaEl.removeChild(selDrag.rectEl);
+    var a    = selDrag.areaRect;
+    var curX = selDrag.curX !== undefined ? selDrag.curX : selDrag.startX;
+    var curY = selDrag.curY !== undefined ? selDrag.curY : selDrag.startY;
+    var x1   = Math.min(selDrag.startX, curX);
+    var y1   = Math.min(selDrag.startY, curY);
+    var x2   = Math.max(selDrag.startX, curX);
+    var y2   = Math.max(selDrag.startY, curY);
+    selDrag  = null;
+    if (x2 - x1 < 8 || y2 - y1 < 8) return; // too small — treat as a click
+    // Highlight pieces whose center falls inside the selection rect
+    var newSel = [];
+    pieces.forEach(function (p) {
+      if (!p.el) return;
+      var r  = p.el.getBoundingClientRect();
+      var cx = r.left + r.width  / 2 - a.left;
+      var cy = r.top  + r.height / 2 - a.top;
+      if (cx >= x1 && cx <= x2 && cy >= y1 && cy <= y2) { newSel.push(p.id); }
+    });
+    if (newSel.length > 1) {
+      selection = newSel;
+      selection.forEach(function (pid) {
+        if (pieces[pid] && pieces[pid].el) {
+          pieces[pid].el.style.outline = '2px solid rgba(68,170,255,0.9)';
+        }
+      });
+    }
+  }
+
+  // Rubber-band starts when the user drags on empty game-area space.
+  // Pieces call stopPropagation so they won't trigger this listener.
+  gameAreaEl.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'touch') return; // touch scrolls stash; don't rubber-band
+    if (paused || gameDone || !pieces.length) return;
+    clearSelection();
+    var a      = gameAreaEl.getBoundingClientRect();
+    var startX = e.clientX - a.left;
+    var startY = e.clientY - a.top;
+    var rectEl = document.createElement('div');
+    rectEl.style.cssText = (
+      'position:absolute;left:' + startX + 'px;top:' + startY + 'px;' +
+      'width:0;height:0;border:2px dashed rgba(68,170,255,0.85);' +
+      'background:rgba(68,170,255,0.07);pointer-events:none;z-index:8000;'
+    );
+    gameAreaEl.appendChild(rectEl);
+    selDrag = { startX: startX, startY: startY, rectEl: rectEl, areaRect: a };
+    gameAreaEl.setPointerCapture(e.pointerId);
+    gameAreaEl.addEventListener('pointermove', onSelMove);
+    gameAreaEl.addEventListener('pointerup',   onSelUp);
+  });
 
   // ── Snap logic ────────────────────────────────────────────────────────────────
   // Correct board position for piece p: where its top-left should be
