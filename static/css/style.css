@@ -587,6 +587,29 @@ html[data-skin="classic"] .landing-seo-section a { color: #0033cc; }
 .cell.mine          { background: #6b1f1f; }
 .cell.mine-detonated { background: var(--accent); }
 
+/* F71: mine-hit explosion animation */
+.cell.mine-explode {
+  background: #c0392b !important;
+  animation: mineExplodeFlash 0.25s ease-in-out infinite alternate;
+}
+.cell.mine-ring {
+  box-shadow: inset 0 0 0 2px #e74c3c;
+}
+.cell.number-flash {
+  animation: numberFlash 0.5s ease-out;
+}
+@keyframes mineExplodeFlash {
+  from { background: #c0392b; }
+  to   { background: #ff6b6b; }
+}
+@keyframes numberFlash {
+  0%   { background: #7a3a10; }
+  100% { background: var(--cell-rev); }
+}
+
+/* Mine-hit counter badge in scoreboard */
+.mine-hits-badge { color: #e74c3c; font-weight: 600; }
+
 /* ── Overlay ─────────────────────────────────────────────────────────────── */
 .overlay {
   display: none;

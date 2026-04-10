@@ -48,6 +48,31 @@ document.addEventListener('DOMContentLoaded', () => {
   let minDist    = Array.from({length: ROWS}, () => Array(COLS).fill(Infinity));
   let oppMinDist = Array.from({length: ROWS}, () => Array(COLS).fill(Infinity));
 
+  // ── F71: Mine-hit counters ────────────────────────────────────────────────
+  let myMineHits  = 0;
+  let oppMineHits = 0;
+
+  // Rebuild a distance matrix from scratch based on current revealed state (F71: after reset).
+  function recomputeMinDist(distMatrix, revMatrix) {
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++)
+        distMatrix[r][c] = revMatrix[r][c] ? 0 : Infinity;
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        if (!revMatrix[r][c]) continue;
+        for (let dr = -2; dr <= 2; dr++) {
+          for (let dc = -2; dc <= 2; dc++) {
+            const nr = r + dr, nc = c + dc;
+            if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && !revMatrix[nr][nc]) {
+              const d = Math.max(Math.abs(dr), Math.abs(dc));
+              if (d < distMatrix[nr][nc]) distMatrix[nr][nc] = d;
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Update a distance matrix given newly revealed cells; returns cells whose dist changed.
   function updateMinDist(newlyCells, distMatrix) {
     const changed = [];
@@ -127,6 +152,93 @@ document.addEventListener('DOMContentLoaded', () => {
     el.addEventListener('mouseleave', () => {
       statHideTimer = setTimeout(hideStatCard, 150);
     });
+  }
+
+  // ── F71: Mine-hit helpers ─────────────────────────────────────────────────
+  function updateMineHits(count, isMe) {
+    const el = document.getElementById(isMe ? 'my-mine-hits' : 'opp-mine-hits');
+    if (!el) return;
+    el.textContent   = `💥 ${count}`;
+    el.style.display = 'inline';
+  }
+
+  // Animate a mine hit on either own board or opponent's board.
+  // t=0: red flash on hit cell; t=250ms: 3×3 ring; t=750ms: apply reset + rerender + number flash.
+  function animateMineHit(hr, hc, resetCells, updatedValues, isOpp) {
+    const getCellFn = isOpp ? oppCellEl : cellEl;
+    const rev       = isOpp ? oppRevealed  : revealed;
+    const vals      = isOpp ? oppBoardVals : boardVals;
+    const dist      = isOpp ? oppMinDist   : minDist;
+    const renderFn  = isOpp ? renderOppCell : renderCell;
+
+    // t=0: flash the hit cell red
+    const hitEl = getCellFn(hr, hc);
+    if (hitEl) hitEl.classList.add('mine-explode');
+
+    // t=250ms: expand ring around hit cell
+    setTimeout(() => {
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const nr = hr + dr, nc = hc + dc;
+          if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+            const el = getCellFn(nr, nc);
+            if (el) el.classList.add('mine-ring');
+          }
+        }
+      }
+    }, 250);
+
+    // t=750ms: apply reset, update values, recompute frontier, re-render
+    setTimeout(() => {
+      // Remove animation classes
+      if (hitEl) hitEl.classList.remove('mine-explode');
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const nr = hr + dr, nc = hc + dc;
+          if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+            const el = getCellFn(nr, nc);
+            if (el) el.classList.remove('mine-ring');
+          }
+        }
+      }
+
+      // Unrevealed the reset cells
+      resetCells.forEach(([r, c]) => {
+        rev[r][c]  = false;
+        vals[r][c] = null;
+      });
+
+      // Apply updated values (own board only — boards diverge intentionally)
+      const flashCells = new Set();
+      if (updatedValues) {
+        Object.entries(updatedValues).forEach(([key, val]) => {
+          const [r, c] = key.split(',').map(Number);
+          vals[r][c] = val;
+          if (rev[r][c] && val > 0) flashCells.add(key);
+        });
+      }
+
+      // Recompute frontier from scratch (cells were removed from revealed set)
+      if (IS_BETA) recomputeMinDist(dist, rev);
+
+      // Re-render the affected region (3×3 plus one extra ring for frontier)
+      for (let dr = -2; dr <= 2; dr++) {
+        for (let dc = -2; dc <= 2; dc++) {
+          const nr = hr + dr, nc = hc + dc;
+          if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;
+          renderFn(nr, nc);
+          if (flashCells.has(`${nr},${nc}`)) {
+            const el = getCellFn(nr, nc);
+            if (el) {
+              el.classList.add('number-flash');
+              setTimeout(() => el.classList.remove('number-flash'), 800);
+            }
+          }
+        }
+      }
+    }, 750);
   }
 
   // ── Build player board DOM ────────────────────────────────────────────────
@@ -239,6 +351,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const now = Date.now();
     while (pendingOppUpdates.length && pendingOppUpdates[0].applyAt <= now) {
       const batch = pendingOppUpdates.shift();
+
+      // F71: mine-hit batch on opponent board
+      if (batch.type === 'mine_hit') {
+        animateMineHit(batch.r, batch.c, batch.reset_cells, null, true);
+        continue;
+      }
+
       // F70: update opponent frontier before rendering
       let oppZoneChanged = [];
       if (IS_BETA) oppZoneChanged = updateMinDist(batch.cells, oppMinDist);
@@ -637,6 +756,30 @@ document.addEventListener('DOMContentLoaded', () => {
       case 'opp_name':
         setOppName(msg.name || 'Opponent', msg.public_id || null);
         break;
+
+      case 'mine_hit': {
+        // Own board: mine struck, 3×3 reset, no game-over
+        myMineHits = msg.mine_hits;
+        updateMineHits(myMineHits, true);
+        updateScores(msg.score, msg.tiles, msg.opp_score, null);
+        animateMineHit(msg.r, msg.c, msg.reset_cells, msg.updated_values, false);
+        break;
+      }
+
+      case 'opp_mine_hit': {
+        // Opponent hit a mine — queue delayed animation on their board
+        oppMineHits = msg.mine_hits;
+        updateMineHits(oppMineHits, false);
+        updateScores(null, null, msg.opp_score, msg.opp_tiles);
+        pendingOppUpdates.push({
+          applyAt:     Date.now() + OPP_DELAY_MS,
+          type:        'mine_hit',
+          r:           msg.r,
+          c:           msg.c,
+          reset_cells: msg.reset_cells,
+        });
+        break;
+      }
 
       case 'error':
         setStatus('❌ ' + msg.msg);

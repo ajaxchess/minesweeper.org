@@ -98,6 +98,7 @@ class PlayerState:
     name:           str  = ""
     email:          str  = ""
     playable_set:   set  = field(default_factory=set)  # F70: empty = no frontier enforcement
+    mine_hits:      int  = 0                           # F71: mine-hit counter
 
     def __post_init__(self):
         if not self.revealed:
@@ -261,6 +262,8 @@ class DuelGame:
 
         # Hit a mine
         if p.board[r][c] == -1:
+            if self.use_frontier:  # F71: realloc instead of instant loss
+                return self._mine_hit_realloc(p, r, c)
             p.exploded = True
             p.score    = p.tiles_revealed * POINTS_PER_TILE  # no time bonus on explosion
             result     = {"newly_revealed": [(r, c)], "exploded": True, "score": p.score}
@@ -298,6 +301,84 @@ class DuelGame:
                 result["opp_still_alive"] = True
 
         return result
+
+    def _mine_hit_realloc(self, p: 'PlayerState', r: int, c: int) -> dict:
+        """F71: Scramble the 3×3 around (r,c); no player loss."""
+        # 1. 3×3 cells clamped to board
+        cells_3x3 = [
+            (nr, nc)
+            for dr in range(-1, 2) for dc in range(-1, 2)
+            for nr, nc in [(r + dr, c + dc)]
+            if 0 <= nr < self.rows and 0 <= nc < self.cols
+        ]
+
+        # 2. Count mines in 3×3, then shuffle them within the same 9 cells
+        mine_count = sum(1 for (nr, nc) in cells_3x3 if p.board[nr][nc] == -1)
+        positions  = list(cells_3x3)
+        random.shuffle(positions)
+        new_mines  = set(positions[i] for i in range(mine_count))
+
+        # 3. Update mine_set
+        for cell in cells_3x3:
+            p.mine_set.discard(cell)
+        p.mine_set.update(new_mines)
+
+        # 4. Count tiles lost (previously revealed safe cells in 3×3)
+        tiles_lost = sum(
+            1 for (nr, nc) in cells_3x3
+            if p.revealed[nr][nc] and p.board[nr][nc] != -1
+        )
+
+        # 5. Reset all 3×3 cells to unrevealed
+        for (nr, nc) in cells_3x3:
+            p.revealed[nr][nc] = False
+
+        # 6. Recalculate board values for the 5×5 area (all cells neighbouring 3×3)
+        for ar in range(max(0, r - 2), min(self.rows, r + 3)):
+            for ac in range(max(0, c - 2), min(self.cols, c + 3)):
+                if (ar, ac) in p.mine_set:
+                    p.board[ar][ac] = -1
+                else:
+                    p.board[ar][ac] = sum(
+                        1 for (br, bc) in _neighbors(ar, ac, self.rows, self.cols)
+                        if (br, bc) in p.mine_set
+                    )
+
+        # 7. Update tiles/score
+        p.tiles_revealed -= tiles_lost
+        if p.tiles_revealed < 0:
+            p.tiles_revealed = 0
+        p.score     = p.compute_score(self.elapsed())
+        p.mine_hits += 1
+
+        # 8. Recompute frontier from current revealed state (F70 interaction)
+        if p.playable_set:
+            revealed_cells = [
+                (rr, cc)
+                for rr in range(self.rows)
+                for cc in range(self.cols)
+                if p.revealed[rr][cc]
+            ]
+            p.playable_set = _expand_playable(self.rows, self.cols, revealed_cells)
+
+        # 9. Build updated_values: new board vals for 3×3 + adjacent revealed cells
+        cells_to_send = set(cells_3x3)
+        for ar in range(max(0, r - 2), min(self.rows, r + 3)):
+            for ac in range(max(0, c - 2), min(self.cols, c + 3)):
+                if (ar, ac) not in cells_to_send and p.revealed[ar][ac]:
+                    cells_to_send.add((ar, ac))
+        updated_values = {f"{nr},{nc}": p.board[nr][nc] for (nr, nc) in cells_to_send}
+
+        return {
+            "mine_hit":       True,
+            "r":              r,
+            "c":              c,
+            "reset_cells":    cells_3x3,
+            "updated_values": updated_values,
+            "mine_hits":      p.mine_hits,
+            "score":          p.score,
+            "tiles":          p.tiles_revealed,
+        }
 
     def _determine_winner(self):
         """Pick winner by score. Returns player_id or None for a draw."""

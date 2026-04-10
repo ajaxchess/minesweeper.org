@@ -310,6 +310,31 @@ async def _handle_reveal(ws, game, player_id, msg):
     p   = game.get_player(player_id)
     opp = game.opponent(player_id)
 
+    # F71: mine hit realloc — different message type, no game-over
+    if result.get("mine_hit"):
+        await manager.send(ws, {
+            "type":           "mine_hit",
+            "r":              result["r"],
+            "c":              result["c"],
+            "reset_cells":    result["reset_cells"],
+            "updated_values": result["updated_values"],
+            "mine_hits":      result["mine_hits"],
+            "score":          result["score"],
+            "tiles":          result["tiles"],
+            "opp_score":      opp.score if opp else 0,
+        })
+        if opp and opp.ws:
+            await manager.send(opp.ws, {
+                "type":        "opp_mine_hit",
+                "r":           result["r"],
+                "c":           result["c"],
+                "reset_cells": result["reset_cells"],
+                "mine_hits":   result["mine_hits"],
+                "opp_score":   result["score"],
+                "opp_tiles":   result["tiles"],
+            })
+        return
+
     await manager.send(ws, {
         "type":           "update",
         "newly_revealed": result["newly_revealed"],
