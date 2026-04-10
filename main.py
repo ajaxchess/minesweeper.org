@@ -105,6 +105,23 @@ templates.env.globals["solstice_banner"]       = site_settings.solstice_banner
 templates.env.globals["equinox_banner"]        = site_settings.equinox_banner
 templates.env.globals["diana_birthday_banner"] = site_settings.diana_birthday_banner
 
+def _autolink(text):
+    """Jinja2 filter: HTML-escape text then wrap bare URLs in <a> tags."""
+    import re
+    from markupsafe import Markup, escape
+    if not text:
+        return Markup('')
+    safe = str(escape(text))
+    def _replace(m):
+        url = m.group(0)
+        # Strip trailing punctuation that's unlikely to be part of the URL
+        while url and url[-1] in '.,;:!?)\]\'\"':
+            url = url[:-1]
+        return '<a href="{u}" target="_blank" rel="noopener noreferrer">{u}</a>'.format(u=url)
+    return Markup(re.sub(r'https?://[^\s<>"\'\x00-\x1f]+', _replace, safe))
+
+templates.env.filters['autolink'] = _autolink
+
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
     return templates.TemplateResponse(

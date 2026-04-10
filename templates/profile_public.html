@@ -32,7 +32,7 @@
   {% if about_text %}
   <!-- ── About ── -->
   <div class="profile-about">
-    <p>{{ about_text }}</p>
+    <p style="white-space:pre-wrap;word-break:break-word;">{{ about_text | autolink }}</p>
   </div>
   {% endif %}
 
