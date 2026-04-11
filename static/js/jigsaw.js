@@ -213,11 +213,20 @@
     scoreMsgEl.textContent = '';
 
     // Compute available space from the game area, reserving room for the stash.
-    var STASH_W  = 260;
-    var margin   = 20;
-    var areaRect = gameAreaEl.getBoundingClientRect();
-    var availW   = Math.max(200, areaRect.width  - STASH_W - 4);
-    var availH   = Math.max(200, areaRect.height || 500);
+    // On mobile (column layout) the stash sits BELOW the board, not beside it.
+    var STASH_W       = 260;   // desktop: stash beside the board
+    var STASH_H_MOB   = 220;   // mobile: stash height (matches CSS)
+    var margin        = 20;
+    var isMobile      = window.innerWidth <= 700;
+    var areaRect      = gameAreaEl.getBoundingClientRect();
+    var availW, availH;
+    if (isMobile) {
+      availW = Math.max(200, areaRect.width  - 4);
+      availH = Math.max(200, areaRect.height - STASH_H_MOB - 4);
+    } else {
+      availW = Math.max(200, areaRect.width  - STASH_W - 4);
+      availH = Math.max(200, areaRect.height || 500);
+    }
 
     // Scale puzzle to fit, preserving the image's natural aspect ratio.
     // cellW and cellH can differ so non-square images aren't distorted.
@@ -303,13 +312,19 @@
 
     // Set stash inner height to hold all pieces scattered.
     // Use the real stash element's client width so we don't exceed it.
-    var stashEl2  = document.getElementById('jig-stash');
-    var stashW    = stashEl2.clientWidth || 260;
-    var pieceW    = cellW + pad * 2;
-    var pieceH    = cellH + pad * 2;
-    var perRow    = Math.max(1, Math.floor(stashW / pieceW));
-    // Cap stash height so pieces don't scatter too far below the fold.
-    var stashH    = Math.max(600, Math.min(Math.ceil(pieces.length / perRow) * pieceH, boardH * 3));
+    var stashEl2      = document.getElementById('jig-stash');
+    var stashW        = stashEl2.clientWidth  || 260;
+    var stashVisible  = stashEl2.clientHeight || (isMobile ? STASH_H_MOB : 500);
+    var pieceW        = cellW + pad * 2;
+    var pieceH        = cellH + pad * 2;
+    var perRow        = Math.max(1, Math.floor(stashW / pieceW));
+    // On mobile cap stash scroll depth so pieces stay reachable; desktop keep existing logic.
+    var stashH;
+    if (isMobile) {
+      stashH = Math.max(stashVisible, Math.min(Math.ceil(pieces.length / perRow) * pieceH, stashVisible * 3));
+    } else {
+      stashH = Math.max(600, Math.min(Math.ceil(pieces.length / perRow) * pieceH, boardH * 3));
+    }
     stashInner.style.width  = stashW + 'px';
     stashInner.style.height = stashH + 'px';
 
