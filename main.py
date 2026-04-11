@@ -1665,6 +1665,18 @@ async def about_page(request: Request):
 # excerpt: one-sentence summary shown on the index page
 BLOG_POSTS = [
     {
+        "slug":          "nononoguess",
+        "file":          "blog/nononoguess.md",
+        "title":         "Nonosweeper's No Guess Mode: Every Puzzle, Solvable by Logic Alone",
+        "date":          "2026-04-11",
+        "datePublished": "2026-04-11T00:00:00Z",
+        "image":         "/static/img/Nono_Guess_Required.png",
+        "excerpt":       "Not every randomly-generated nonogram plays fair — sometimes the clues "
+                         "leave a 50/50 guess at the end. No Guess mode runs a constraint-propagation "
+                         "solver on every candidate board and only presents puzzles that are fully "
+                         "solvable by logic alone.",
+    },
+    {
         "slug":          "traffic-growth",
         "file":          "blog/traffic-growth.md",
         "title":         "We're Growing — When Will We Hit 100,000 Daily Visitors?",
