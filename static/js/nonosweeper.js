@@ -44,57 +44,136 @@ let G = {
     difficulty: 'beginner',
 };
 
-// ── Puzzle generation ─────────────────────────────────────────────────────────
-function generatePuzzle(seedStr, difficulty) {
-    const { rows, cols, mines } = DIFFICULTIES[difficulty];
-    const rng = mulberry32(strSeed(seedStr + ':' + difficulty));
-
-    // Fisher-Yates shuffle
-    const idx = Array.from({ length: rows * cols }, (_, i) => i);
-    for (let i = idx.length - 1; i > 0; i--) {
-        const j = Math.floor(rng() * (i + 1));
-        [idx[i], idx[j]] = [idx[j], idx[i]];
+// ── Nonogram solver (no-guess mode) ──────────────────────────────────────────
+// Returns all valid arrangements of `clues` into a line of `lineLen` cells,
+// constrained by `known` ('unknown'|'mine'|'safe' per cell).
+function lineArrangements(clues, lineLen, known) {
+    if (clues.length === 1 && clues[0] === 0) {
+        return known.every(k => k !== 'mine') ? [new Array(lineLen).fill(false)] : [];
     }
-    const mineSet = new Set(idx.slice(0, mines));
-
-    const cells = Array.from({ length: rows * cols }, (_, i) => ({
-        isMine: mineSet.has(i),
-        state:  'hidden',
-    }));
-
-    // Row clues
-    const rowClues = [];
-    for (let r = 0; r < rows; r++) {
-        const groups = [];
-        let run = 0;
-        for (let c = 0; c < cols; c++) {
-            if (mineSet.has(r * cols + c)) {
-                run++;
-            } else {
-                if (run) { groups.push(run); run = 0; }
-            }
+    const results = [];
+    const arr = new Array(lineLen).fill(false);
+    function place(pos, ci) {
+        if (ci === clues.length) {
+            for (let i = pos; i < lineLen; i++) if (known[i] === 'mine') return;
+            results.push(arr.slice());
+            return;
         }
-        if (run) groups.push(run);
-        rowClues.push(groups.length ? groups : [0]);
+        const blen = clues[ci];
+        const minNeeded = clues.slice(ci + 1).reduce((acc, v) => acc + v, 0)
+            + Math.max(0, clues.length - ci - 1);
+        for (let s = pos; s <= lineLen - minNeeded - blen; s++) {
+            let gapOk = true;
+            for (let i = pos; i < s; i++) if (known[i] === 'mine') { gapOk = false; break; }
+            if (!gapOk) break;                           // forced mine in gap — no further shifts
+            let blockOk = true;
+            for (let i = s; i < s + blen; i++) if (known[i] === 'safe') { blockOk = false; break; }
+            if (!blockOk) continue;
+            if (s + blen < lineLen && known[s + blen] === 'mine') continue;
+            for (let i = s; i < s + blen; i++) arr[i] = true;
+            place(s + blen + 1, ci + 1);
+            for (let i = s; i < s + blen; i++) arr[i] = false;
+        }
     }
+    place(0, 0);
+    return results;
+}
 
-    // Column clues
-    const colClues = [];
-    for (let c = 0; c < cols; c++) {
-        const groups = [];
-        let run = 0;
+// Returns true iff the nonogram defined by rowClues/colClues can be fully
+// solved by line-by-line constraint propagation alone (no guessing needed).
+function canSolveWithoutGuessing(rows, cols, rowClues, colClues) {
+    // 'u'=unknown, 'm'=mine, 's'=safe
+    const st = new Array(rows * cols).fill('u');
+    const toKnown = v => v === 'u' ? 'unknown' : v === 'm' ? 'mine' : 'safe';
+    let changed = true;
+    while (changed) {
+        changed = false;
         for (let r = 0; r < rows; r++) {
-            if (mineSet.has(r * cols + c)) {
-                run++;
-            } else {
-                if (run) { groups.push(run); run = 0; }
+            const known = Array.from({ length: cols }, (_, c) => toKnown(st[r * cols + c]));
+            const arrs = lineArrangements(rowClues[r], cols, known);
+            if (!arrs.length) return false;
+            for (let c = 0; c < cols; c++) {
+                if (st[r * cols + c] !== 'u') continue;
+                if (arrs.every(a => a[c]))   { st[r * cols + c] = 'm'; changed = true; }
+                else if (arrs.every(a => !a[c])) { st[r * cols + c] = 's'; changed = true; }
             }
         }
-        if (run) groups.push(run);
-        colClues.push(groups.length ? groups : [0]);
+        for (let c = 0; c < cols; c++) {
+            const known = Array.from({ length: rows }, (_, r) => toKnown(st[r * cols + c]));
+            const arrs = lineArrangements(colClues[c], rows, known);
+            if (!arrs.length) return false;
+            for (let r = 0; r < rows; r++) {
+                if (st[r * cols + c] !== 'u') continue;
+                if (arrs.every(a => a[r]))   { st[r * cols + c] = 'm'; changed = true; }
+                else if (arrs.every(a => !a[r])) { st[r * cols + c] = 's'; changed = true; }
+            }
+        }
+    }
+    return st.every(v => v !== 'u');
+}
+
+// ── Puzzle generation ─────────────────────────────────────────────────────────
+// When noGuess=true, appends ':ng:N' to the seed and retries until the puzzle
+// is fully solvable by constraint propagation (no guessing required).
+function generatePuzzle(seedStr, difficulty, noGuess) {
+    const { rows, cols, mines } = DIFFICULTIES[difficulty];
+
+    for (let attempt = 0; attempt < 200; attempt++) {
+        const seed = noGuess ? seedStr + ':ng:' + attempt : seedStr;
+        const rng = mulberry32(strSeed(seed + ':' + difficulty));
+
+        // Fisher-Yates shuffle
+        const idx = Array.from({ length: rows * cols }, (_, i) => i);
+        for (let i = idx.length - 1; i > 0; i--) {
+            const j = Math.floor(rng() * (i + 1));
+            [idx[i], idx[j]] = [idx[j], idx[i]];
+        }
+        const mineSet = new Set(idx.slice(0, mines));
+
+        const cells = Array.from({ length: rows * cols }, (_, i) => ({
+            isMine: mineSet.has(i),
+            state:  'hidden',
+        }));
+
+        // Row clues
+        const rowClues = [];
+        for (let r = 0; r < rows; r++) {
+            const groups = [];
+            let run = 0;
+            for (let c = 0; c < cols; c++) {
+                if (mineSet.has(r * cols + c)) {
+                    run++;
+                } else {
+                    if (run) { groups.push(run); run = 0; }
+                }
+            }
+            if (run) groups.push(run);
+            rowClues.push(groups.length ? groups : [0]);
+        }
+
+        // Column clues
+        const colClues = [];
+        for (let c = 0; c < cols; c++) {
+            const groups = [];
+            let run = 0;
+            for (let r = 0; r < rows; r++) {
+                if (mineSet.has(r * cols + c)) {
+                    run++;
+                } else {
+                    if (run) { groups.push(run); run = 0; }
+                }
+            }
+            if (run) groups.push(run);
+            colClues.push(groups.length ? groups : [0]);
+        }
+
+        if (!noGuess || canSolveWithoutGuessing(rows, cols, rowClues, colClues)) {
+            return { rows, cols, mines, mineSet, cells, rowClues, colClues };
+        }
     }
 
-    return { rows, cols, mines, mineSet, cells, rowClues, colClues };
+    // Fallback: give up and return an unfiltered puzzle
+    return generatePuzzle(seedStr, difficulty, false);
 }
 
 // ── Timer ─────────────────────────────────────────────────────────────────────
@@ -312,7 +391,7 @@ function showWinOverlay() {
     const scoreMsg = document.getElementById('nn-score-msg');
     const username = document.getElementById('nn-grid').dataset.username || '';
 
-    if (G.isPOTD) {
+    if (G.isPOTD && !G.noGuess) {
         if (username) {
             form.style.display = 'none';
             scoreMsg.style.display = '';
@@ -461,10 +540,10 @@ function esc(s) {
 }
 
 // ── Game init ─────────────────────────────────────────────────────────────────
-function initGame(seedStr, isPOTD, difficulty) {
+function initGame(seedStr, isPOTD, difficulty, noGuess) {
     clearInterval(G.timer);
 
-    const puzzle = generatePuzzle(seedStr, difficulty);
+    const puzzle = generatePuzzle(seedStr, difficulty, noGuess);
     G = {
         ...puzzle,
         minesLeft:  puzzle.mines,
@@ -476,6 +555,7 @@ function initGame(seedStr, isPOTD, difficulty) {
         isPOTD,
         puzzleId:   seedStr,
         difficulty,
+        noGuess:    !!noGuess,
     };
 
     const ov = document.getElementById('nn-overlay');
@@ -506,15 +586,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const realToday = grid.dataset.realToday;
 
     let currentDiff = localStorage.getItem('nn_difficulty') || 'beginner';
+    let noGuess     = localStorage.getItem('nn_noguess') === 'true';
+
+    function updateNoGuessBtn() {
+        const btn = document.getElementById('nn-noguess-btn');
+        btn.classList.toggle('active', noGuess);
+        document.getElementById('nn-noguess-state').textContent = noGuess ? 'On' : 'Off';
+    }
 
     function playPOTD(diff) {
         currentDiff = diff || currentDiff;
         localStorage.setItem('nn_difficulty', currentDiff);
-        initGame(today, true, currentDiff);
+        initGame(today, true, currentDiff, noGuess);
     }
 
     function playRandom() {
-        initGame(Date.now().toString(36) + Math.random().toString(36).slice(2, 6), false, currentDiff);
+        initGame(Date.now().toString(36) + Math.random().toString(36).slice(2, 6), false, currentDiff, noGuess);
     }
 
     document.querySelectorAll('.nn-diff-btn').forEach(btn => {
@@ -522,15 +609,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('nn-potd-btn').addEventListener('click', () => {
-        initGame(realToday, true, currentDiff);
+        initGame(realToday, true, currentDiff, noGuess);
     });
     document.getElementById('nn-random-btn').addEventListener('click', playRandom);
     document.getElementById('nn-overlay-potd').addEventListener('click', () => {
-        initGame(realToday, true, currentDiff);
+        initGame(realToday, true, currentDiff, noGuess);
     });
     document.getElementById('nn-overlay-random').addEventListener('click', playRandom);
     document.getElementById('nn-overlay-retry').addEventListener('click', () => {
-        initGame(G.puzzleId, G.isPOTD, G.difficulty);
+        initGame(G.puzzleId, G.isPOTD, G.difficulty, noGuess);
+    });
+
+    document.getElementById('nn-noguess-btn').addEventListener('click', () => {
+        noGuess = !noGuess;
+        localStorage.setItem('nn_noguess', noGuess);
+        updateNoGuessBtn();
+        // Restart with the new setting
+        if (G.isPOTD) {
+            initGame(G.puzzleId, true, G.difficulty, noGuess);
+        } else {
+            playRandom();
+        }
     });
 
     document.getElementById('nn-save-btn').addEventListener('click', () => saveScore());
@@ -538,5 +637,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') saveScore();
     });
 
+    updateNoGuessBtn();
     playPOTD();
 });
