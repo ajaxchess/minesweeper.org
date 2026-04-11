@@ -733,7 +733,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "ws_play":           "Play",
         "ws_view_lb":        "View Leaderboard",
         # Nonosweeper page
-        "nn_bridge":            "Minesweeper meets Nonogram \u2014 use row &amp; column clues to find the mines.",
+        "nn_bridge":            "Minesweeper meets Nonogram \u2014 use row & column clues to find the mines.",
         "nn_label_potd":        "\U0001f4c5 Puzzle of the Day",
         "nn_btn_daily":         "\U0001f4c5 Daily",
         "nn_btn_random":        "\U0001f3b2 Random",
