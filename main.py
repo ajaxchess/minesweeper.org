@@ -1665,6 +1665,18 @@ async def about_page(request: Request):
 # excerpt: one-sentence summary shown on the index page
 BLOG_POSTS = [
     {
+        "slug":          "traffic-growth",
+        "file":          "blog/traffic-growth.md",
+        "title":         "We're Growing — When Will We Hit 100,000 Daily Visitors?",
+        "date":          "2026-04-11",
+        "datePublished": "2026-04-11T00:00:00Z",
+        "image":         "/static/img/minesweeper_org_Linear_Fit.png",
+        "excerpt":       "We fitted a linear + weekly-periodic model to 17 days of traffic data "
+                         "and asked: when does minesweeper.org reach 100,000 daily unique IPs? "
+                         "The answer ranges from October 2026 to November 2040, depending on which "
+                         "growth curve we're actually on.",
+    },
+    {
         "slug":          "rodential-heroics",
         "file":          "blog/magawa-hero-rat-wnm.md",
         "title":         "Rodential Heroics",
