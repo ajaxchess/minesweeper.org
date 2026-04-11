@@ -1,7 +1,12 @@
 'use strict';
 
+// ── Type aliases (TypeScript-compatible) ──────────────────────────────────────
+type CellState = 'hidden' | 'revealed' | 'flagged' | 'question' | 'exploded' | 'mine-revealed' | 'wrong-flag';
+type Cell = { isMine: boolean; state: CellState };
+type Difficulty = keyof typeof DIFFICULTIES;
+
 // ── Seeded RNG: mulberry32 ────────────────────────────────────────────────────
-function mulberry32(seed) {
+function mulberry32(seed: number): () => number {
     return function () {
         seed |= 0; seed = seed + 0x6D2B79F5 | 0;
         let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
@@ -10,7 +15,7 @@ function mulberry32(seed) {
     };
 }
 
-function strSeed(s) {
+function strSeed(s: string): number {
     let h = 0x811c9dc5;
     for (let i = 0; i < s.length; i++) {
         h ^= s.charCodeAt(i);
@@ -27,12 +32,27 @@ const DIFFICULTIES = {
 };
 
 // ── Game state ────────────────────────────────────────────────────────────────
-let G = {
+let G: {
+    rows: number; cols: number; mines: number;
+    mineSet:    Set<number>;
+    cells:      Cell[];
+    rowClues:   number[][];
+    colClues:   number[][];
+    minesLeft:  number;
+    startTime:  number | null;
+    elapsed:    number;
+    timer:      ReturnType<typeof setInterval> | null;
+    won:        boolean;
+    over:       boolean;
+    isPOTD:     boolean;
+    puzzleId:   string;
+    difficulty: string;
+} = {
     rows: 8, cols: 8, mines: 16,
-    mineSet:    new Set(),
-    cells:      [],   // { isMine: bool, state: 'hidden'|'revealed'|'flagged'|'question'|'exploded'|'mine-revealed'|'wrong-flag' }
-    rowClues:   [],   // rowClues[r] = [3, 1, 2]
-    colClues:   [],   // colClues[c] = [2, 1]
+    mineSet:    new Set<number>(),
+    cells:      [] as Cell[],
+    rowClues:   [] as number[][],
+    colClues:   [] as number[][],
     minesLeft:  0,
     startTime:  null,
     elapsed:    0,
@@ -45,8 +65,8 @@ let G = {
 };
 
 // ── Puzzle generation ─────────────────────────────────────────────────────────
-function generatePuzzle(seedStr, difficulty) {
-    const { rows, cols, mines } = DIFFICULTIES[difficulty];
+function generatePuzzle(seedStr: string, difficulty: string) {
+    const { rows, cols, mines } = DIFFICULTIES[difficulty as Difficulty];
     const rng = mulberry32(strSeed(seedStr + ':' + difficulty));
 
     // Fisher-Yates shuffle
@@ -55,17 +75,17 @@ function generatePuzzle(seedStr, difficulty) {
         const j = Math.floor(rng() * (i + 1));
         [idx[i], idx[j]] = [idx[j], idx[i]];
     }
-    const mineSet = new Set(idx.slice(0, mines));
+    const mineSet = new Set<number>(idx.slice(0, mines));
 
-    const cells = Array.from({ length: rows * cols }, (_, i) => ({
+    const cells: Cell[] = Array.from({ length: rows * cols }, (_, i) => ({
         isMine: mineSet.has(i),
-        state:  'hidden',
+        state:  'hidden' as CellState,
     }));
 
     // Row clues
-    const rowClues = [];
+    const rowClues: number[][] = [];
     for (let r = 0; r < rows; r++) {
-        const groups = [];
+        const groups: number[] = [];
         let run = 0;
         for (let c = 0; c < cols; c++) {
             if (mineSet.has(r * cols + c)) {
@@ -79,9 +99,9 @@ function generatePuzzle(seedStr, difficulty) {
     }
 
     // Column clues
-    const colClues = [];
+    const colClues: number[][] = [];
     for (let c = 0; c < cols; c++) {
-        const groups = [];
+        const groups: number[] = [];
         let run = 0;
         for (let r = 0; r < rows; r++) {
             if (mineSet.has(r * cols + c)) {
@@ -98,27 +118,27 @@ function generatePuzzle(seedStr, difficulty) {
 }
 
 // ── Timer ─────────────────────────────────────────────────────────────────────
-function startTimer() {
+function startTimer(): void {
     if (G.timer) return;
     G.startTime = Date.now() - G.elapsed * 1000;
     G.timer = setInterval(() => {
-        G.elapsed = Math.floor((Date.now() - G.startTime) / 1000);
-        document.getElementById('nn-timer').textContent = fmtTime(G.elapsed);
+        G.elapsed = Math.floor((Date.now() - G.startTime!) / 1000);
+        document.getElementById('nn-timer')!.textContent = fmtTime(G.elapsed);
     }, 500);
 }
 
-function stopTimer() {
-    clearInterval(G.timer);
+function stopTimer(): void {
+    clearInterval(G.timer ?? undefined);
     G.timer = null;
     if (G.startTime) G.elapsed = Math.floor((Date.now() - G.startTime) / 1000);
 }
 
-function fmtTime(s) {
+function fmtTime(s: number): string {
     return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
 // ── Mine emoji (skin-aware) ───────────────────────────────────────────────────
-function getMineEmoji() {
+function getMineEmoji(): string {
     const skin = document.documentElement.dataset.skin;
     if (skin === 'tentaizu')                          return '⭐';
     if (skin === 'flower' || skin === 'flower-light') return '🌸';
@@ -126,9 +146,9 @@ function getMineEmoji() {
 }
 
 // ── Rendering ─────────────────────────────────────────────────────────────────
-function renderBoard() {
-    const grid = document.getElementById('nn-grid');
-    grid.style.setProperty('--nn-cols', G.cols);
+function renderBoard(): void {
+    const grid = document.getElementById('nn-grid')!;
+    grid.style.setProperty('--nn-cols', String(G.cols));
     grid.innerHTML = '';
 
     // Top-left corner spacer
@@ -140,10 +160,10 @@ function renderBoard() {
     for (let c = 0; c < G.cols; c++) {
         const el = document.createElement('div');
         el.className = 'nn-col-clue';
-        el.dataset.col = c;
-        G.colClues[c].forEach(n => {
+        el.dataset.col = String(c);
+        G.colClues[c].forEach((n: number) => {
             const span = document.createElement('span');
-            span.textContent = n === 0 ? '—' : n;
+            span.textContent = n === 0 ? '—' : String(n);
             el.appendChild(span);
         });
         grid.appendChild(el);
@@ -154,10 +174,10 @@ function renderBoard() {
         // Row clue
         const rowClueEl = document.createElement('div');
         rowClueEl.className = 'nn-row-clue';
-        rowClueEl.dataset.row = r;
-        G.rowClues[r].forEach(n => {
+        rowClueEl.dataset.row = String(r);
+        G.rowClues[r].forEach((n: number) => {
             const span = document.createElement('span');
-            span.textContent = n === 0 ? '—' : n;
+            span.textContent = n === 0 ? '—' : String(n);
             rowClueEl.appendChild(span);
         });
         grid.appendChild(rowClueEl);
@@ -167,7 +187,7 @@ function renderBoard() {
             const idx = r * G.cols + c;
             const el = document.createElement('div');
             el.className = 'nn-cell';
-            el.dataset.idx = idx;
+            el.dataset.idx = String(idx);
             applyCell(el, G.cells[idx]);
             el.addEventListener('click', () => handleClick(idx));
             el.addEventListener('contextmenu', e => { e.preventDefault(); handleRightClick(idx); });
@@ -176,7 +196,7 @@ function renderBoard() {
     }
 }
 
-function applyCell(el, cell) {
+function applyCell(el: HTMLElement, cell: Cell): void {
     el.className = 'nn-cell';
     el.textContent = '';
     el.style.color = '';
@@ -212,13 +232,13 @@ function applyCell(el, cell) {
     }
 }
 
-function refreshCell(idx) {
-    const el = document.querySelector(`#nn-grid [data-idx="${idx}"]`);
+function refreshCell(idx: number): void {
+    const el = document.querySelector(`#nn-grid [data-idx="${idx}"]`) as HTMLElement | null;
     if (el) applyCell(el, G.cells[idx]);
 }
 
 // ── Interaction ───────────────────────────────────────────────────────────────
-function handleClick(idx) {
+function handleClick(idx: number): void {
     if (G.over || G.won) return;
     const cell = G.cells[idx];
     if (cell.state !== 'hidden' && cell.state !== 'question') return;
@@ -241,7 +261,7 @@ function handleClick(idx) {
     checkWin();
 }
 
-function handleRightClick(idx) {
+function handleRightClick(idx: number): void {
     if (G.over || G.won) return;
     const cell = G.cells[idx];
     if (cell.state === 'revealed') return;
@@ -257,7 +277,7 @@ function handleRightClick(idx) {
     checkWin();
 }
 
-function revealAllAfterLoss() {
+function revealAllAfterLoss(): void {
     G.cells.forEach((cell, idx) => {
         if (cell.state === 'exploded') return;
         if (cell.isMine && cell.state !== 'flagged') {
@@ -271,14 +291,14 @@ function revealAllAfterLoss() {
 }
 
 // ── Mine counter ──────────────────────────────────────────────────────────────
-function updateMineCounter() {
+function updateMineCounter(): void {
     const flagged = G.cells.filter(c => c.state === 'flagged').length;
     G.minesLeft = G.mines - flagged;
-    document.getElementById('nn-mines-left').textContent = G.minesLeft;
+    document.getElementById('nn-mines-left')!.textContent = String(G.minesLeft);
 }
 
 // ── Win check ─────────────────────────────────────────────────────────────────
-function checkWin() {
+function checkWin(): void {
     const allSafeRevealed = G.cells.every(c => c.isMine || c.state === 'revealed');
     if (!allSafeRevealed) return;
 
@@ -294,23 +314,23 @@ function checkWin() {
     });
     updateMineCounter();
 
-    if (G.isPOTD && typeof window.questsHook === 'function') window.questsHook('nonosweeper_solved');
+    if (G.isPOTD && typeof (window as any).questsHook === 'function') (window as any).questsHook('nonosweeper_solved');
     showWinOverlay();
 }
 
 // ── Overlays ──────────────────────────────────────────────────────────────────
-function showWinOverlay() {
-    const ov = document.getElementById('nn-overlay');
+function showWinOverlay(): void {
+    const ov = document.getElementById('nn-overlay')!;
     ov.className = 'win';
     ov.style.display = 'flex';
 
-    document.getElementById('nn-overlay-title').textContent = '🎉 Solved!';
-    document.getElementById('nn-overlay-time-row').style.display = '';
-    document.getElementById('nn-win-time').textContent = fmtTime(G.elapsed);
+    document.getElementById('nn-overlay-title')!.textContent = '🎉 Solved!';
+    document.getElementById('nn-overlay-time-row')!.style.display = '';
+    document.getElementById('nn-win-time')!.textContent = fmtTime(G.elapsed);
 
-    const form     = document.getElementById('nn-score-form');
-    const scoreMsg = document.getElementById('nn-score-msg');
-    const username = document.getElementById('nn-grid').dataset.username || '';
+    const form     = document.getElementById('nn-score-form')!;
+    const scoreMsg = document.getElementById('nn-score-msg')!;
+    const username = (document.getElementById('nn-grid') as HTMLElement).dataset.username || '';
 
     if (G.isPOTD) {
         if (username) {
@@ -321,8 +341,8 @@ function showWinOverlay() {
         } else {
             form.style.display = 'flex';
             scoreMsg.style.display = 'none';
-            document.getElementById('nn-name-input').value = localStorage.getItem('nn_name') || '';
-            const btn = document.getElementById('nn-save-btn');
+            (document.getElementById('nn-name-input') as HTMLInputElement).value = localStorage.getItem('nn_name') || '';
+            const btn = document.getElementById('nn-save-btn') as HTMLButtonElement;
             btn.disabled = false;
             btn.textContent = 'Save Score';
         }
@@ -332,22 +352,22 @@ function showWinOverlay() {
     }
 }
 
-function showLoseOverlay() {
-    const ov = document.getElementById('nn-overlay');
+function showLoseOverlay(): void {
+    const ov = document.getElementById('nn-overlay')!;
     ov.className = 'lose';
     ov.style.display = 'flex';
 
-    document.getElementById('nn-overlay-title').textContent = '💥 Mine hit!';
-    document.getElementById('nn-overlay-time-row').style.display = 'none';
-    document.getElementById('nn-score-form').style.display = 'none';
-    document.getElementById('nn-score-msg').style.display = 'none';
+    document.getElementById('nn-overlay-title')!.textContent = '💥 Mine hit!';
+    document.getElementById('nn-overlay-time-row')!.style.display = 'none';
+    document.getElementById('nn-score-form')!.style.display = 'none';
+    document.getElementById('nn-score-msg')!.style.display = 'none';
 }
 
 // ── Score submission ──────────────────────────────────────────────────────────
-async function saveScore(autoName = null) {
-    const inp      = document.getElementById('nn-name-input');
-    const btn      = document.getElementById('nn-save-btn');
-    const scoreMsg = document.getElementById('nn-score-msg');
+async function saveScore(autoName: string | null = null): Promise<void> {
+    const inp      = document.getElementById('nn-name-input') as HTMLInputElement | null;
+    const btn      = document.getElementById('nn-save-btn')   as HTMLButtonElement | null;
+    const scoreMsg = document.getElementById('nn-score-msg')!;
     const name     = autoName || inp?.value.trim();
     if (!name) { inp?.focus(); return; }
 
@@ -383,9 +403,9 @@ async function saveScore(autoName = null) {
 }
 
 // ── Leaderboard ───────────────────────────────────────────────────────────────
-async function loadLeaderboard() {
+async function loadLeaderboard(): Promise<void> {
     if (!G.isPOTD) return;
-    const el = document.getElementById('nn-lb-content');
+    const el = document.getElementById('nn-lb-content')!;
     el.innerHTML = '<div class="lb-loading">Loading…</div>';
 
     try {
@@ -402,7 +422,7 @@ async function loadLeaderboard() {
         }
 
         const medals = ['🥇', '🥈', '🥉'];
-        const rows = data.map((s, i) => `
+        const rows = data.map((s: any, i: number) => `
             <tr class="${i < 3 ? 'top-' + (i + 1) : ''}">
                 <td class="lb-rank">${medals[i] || i + 1}</td>
                 <td class="lb-name">${s.profile_url
@@ -425,7 +445,7 @@ async function loadLeaderboard() {
     // Previous days links
     const prevEl = document.getElementById('nn-prev-days');
     if (prevEl) {
-        const links = [];
+        const links: string[] = [];
         for (let i = 1; i <= 7; i++) {
             const d   = new Date(Date.now() - i * 86400000);
             const iso = d.toISOString().slice(0, 10);
@@ -436,11 +456,11 @@ async function loadLeaderboard() {
     }
 }
 
-function updatePermalinkAndTitle(seedStr, isPOTD) {
-    const realToday = document.getElementById('nn-grid').dataset.realToday;
+function updatePermalinkAndTitle(seedStr: string, isPOTD: boolean): void {
+    const realToday = (document.getElementById('nn-grid') as HTMLElement).dataset.realToday;
     const lbTitle   = document.getElementById('nn-lb-title');
     const permRow   = document.getElementById('nn-permalink-row');
-    const permLink  = document.getElementById('nn-permalink-link');
+    const permLink  = document.getElementById('nn-permalink-link') as HTMLAnchorElement | null;
 
     if (isPOTD) {
         if (lbTitle) lbTitle.textContent = seedStr === realToday
@@ -456,13 +476,14 @@ function updatePermalinkAndTitle(seedStr, isPOTD) {
     }
 }
 
-function esc(s) {
-    return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function esc(s: string): string {
+    const map: Record<string, string> = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'};
+    return String(s).replace(/[&<>"]/g, c => map[c] ?? c);
 }
 
 // ── Game init ─────────────────────────────────────────────────────────────────
-function initGame(seedStr, isPOTD, difficulty) {
-    clearInterval(G.timer);
+function initGame(seedStr: string, isPOTD: boolean, difficulty: string): void {
+    clearInterval(G.timer ?? undefined);
 
     const puzzle = generatePuzzle(seedStr, difficulty);
     G = {
@@ -478,20 +499,20 @@ function initGame(seedStr, isPOTD, difficulty) {
         difficulty,
     };
 
-    const ov = document.getElementById('nn-overlay');
+    const ov = document.getElementById('nn-overlay')!;
     ov.style.display = 'none';
     ov.className     = '';
 
-    document.getElementById('nn-timer').textContent      = '0:00';
-    document.getElementById('nn-mines-left').textContent = G.mines;
-    document.getElementById('nn-mode-label').textContent =
+    document.getElementById('nn-timer')!.textContent      = '0:00';
+    document.getElementById('nn-mines-left')!.textContent = String(G.mines);
+    document.getElementById('nn-mode-label')!.textContent =
         isPOTD ? '📅 Puzzle of the Day' : '🎲 Random Puzzle';
 
     document.querySelectorAll('.nn-diff-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.diff === difficulty);
+        (btn as HTMLElement).classList.toggle('active', (btn as HTMLElement).dataset.diff === difficulty);
     });
 
-    const lb = document.getElementById('nn-lb-section');
+    const lb = document.getElementById('nn-lb-section')!;
     lb.style.display = isPOTD ? 'block' : 'none';
 
     updatePermalinkAndTitle(seedStr, isPOTD);
@@ -501,40 +522,40 @@ function initGame(seedStr, isPOTD, difficulty) {
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    const grid      = document.getElementById('nn-grid');
-    const today     = grid.dataset.today;
-    const realToday = grid.dataset.realToday;
+    const grid      = document.getElementById('nn-grid') as HTMLElement;
+    const today     = grid.dataset.today!;
+    const realToday = grid.dataset.realToday!;
 
     let currentDiff = localStorage.getItem('nn_difficulty') || 'beginner';
 
-    function playPOTD(diff) {
+    function playPOTD(diff?: string): void {
         currentDiff = diff || currentDiff;
         localStorage.setItem('nn_difficulty', currentDiff);
         initGame(today, true, currentDiff);
     }
 
-    function playRandom() {
+    function playRandom(): void {
         initGame(Date.now().toString(36) + Math.random().toString(36).slice(2, 6), false, currentDiff);
     }
 
     document.querySelectorAll('.nn-diff-btn').forEach(btn => {
-        btn.addEventListener('click', () => playPOTD(btn.dataset.diff));
+        btn.addEventListener('click', () => playPOTD((btn as HTMLElement).dataset.diff));
     });
 
-    document.getElementById('nn-potd-btn').addEventListener('click', () => {
+    document.getElementById('nn-potd-btn')!.addEventListener('click', () => {
         initGame(realToday, true, currentDiff);
     });
-    document.getElementById('nn-random-btn').addEventListener('click', playRandom);
-    document.getElementById('nn-overlay-potd').addEventListener('click', () => {
+    document.getElementById('nn-random-btn')!.addEventListener('click', playRandom);
+    document.getElementById('nn-overlay-potd')!.addEventListener('click', () => {
         initGame(realToday, true, currentDiff);
     });
-    document.getElementById('nn-overlay-random').addEventListener('click', playRandom);
-    document.getElementById('nn-overlay-retry').addEventListener('click', () => {
+    document.getElementById('nn-overlay-random')!.addEventListener('click', playRandom);
+    document.getElementById('nn-overlay-retry')!.addEventListener('click', () => {
         initGame(G.puzzleId, G.isPOTD, G.difficulty);
     });
 
-    document.getElementById('nn-save-btn').addEventListener('click', () => saveScore());
-    document.getElementById('nn-name-input').addEventListener('keydown', e => {
+    document.getElementById('nn-save-btn')!.addEventListener('click', () => saveScore());
+    document.getElementById('nn-name-input')!.addEventListener('keydown', (e: KeyboardEvent) => {
         if (e.key === 'Enter') saveScore();
     });
 
