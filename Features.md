@@ -15,6 +15,8 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F72 Analyze typescript compatiblity
+
 F71 Traffic analysis
 
 F71 PvP Mine Reallocation on Hit (/pvpbeta)
