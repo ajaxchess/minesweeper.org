@@ -15,6 +15,8 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F71 Traffic analysis
+
 F71 PvP Mine Reallocation on Hit (/pvpbeta)
   Instead of losing on mine click, the 3×3 area around the hit mine is scrambled.
   Reference: FeatureRequests/PVPmodifications.md (Feature C)
