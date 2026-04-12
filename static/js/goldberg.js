@@ -250,6 +250,24 @@ function buildDual({ verts, tris }) {
         const n = faceVerts.length;
         const centroid = _normalise(cx / n, cy / n, cz / n);
 
+        // Ensure CCW winding when viewed from outside.
+        // sortFan produces CW order for ~half the icosahedron vertices (those
+        // whose tangent frame ty = V × tx ends up pointing "right" in screen
+        // space rather than "up"), causing Three.js FrontSide to cull those
+        // faces as back-facing — visible as rectangular holes at the poles.
+        if (faceVerts.length >= 3) {
+            const v0 = faceVerts[0], v1 = faceVerts[1], v2 = faceVerts[2];
+            const e1x = v1.x-v0.x, e1y = v1.y-v0.y, e1z = v1.z-v0.z;
+            const e2x = v2.x-v0.x, e2y = v2.y-v0.y, e2z = v2.z-v0.z;
+            const nx = e1y*e2z - e1z*e2y;
+            const ny = e1z*e2x - e1x*e2z;
+            const nz = e1x*e2y - e1y*e2x;
+            // If the face normal (cross product) points inward, reverse.
+            if (nx*centroid.x + ny*centroid.y + nz*centroid.z < 0) {
+                faceVerts.reverse();
+            }
+        }
+
         faces.push({
             verts: faceVerts,
             centroid,
