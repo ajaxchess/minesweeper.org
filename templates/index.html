@@ -48,6 +48,7 @@
     <div class="game-info">
       <div class="mode-row">
         <div class="mode-badge">{{ t['nav_' + mode] }}</div>
+        <button id="reset-btn" title="{{ t.game_new_game }}">🙂</button>
         <button id="noguess-toggle" onclick="toggleNoGuess()" title="{{ t.game_no_guess_title }}">{{ t.game_no_guess_btn }}</button>
       </div>
       <div class="stat-row">
@@ -55,7 +56,6 @@
           <span class="stat-icon">💣</span>
           <span class="stat-value" id="mines-left">{{ mines }}</span>
         </div>
-        <button id="reset-btn" title="{{ t.game_new_game }}">🙂</button>
         <div class="stat" id="timer-display">
           <span class="stat-icon">⏱</span>
           <span class="stat-value" id="timer">000</span>
