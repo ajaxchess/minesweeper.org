@@ -435,6 +435,8 @@ function _csInitGameState() {
     _csStopTimer();
     document.getElementById('cs-elapsed').textContent = '0.00';
     document.getElementById('cs-mines-remaining').textContent = String(_mineCount);
+    const pctEl = document.getElementById('cs-pct');
+    if (pctEl) pctEl.textContent = '0';
     document.getElementById('cube-overlay').style.display = 'none';
     document.getElementById('cs-score-form').style.display = 'none';
     for (let i = 0; i < TOTAL; i++) updateCellVisual(i);
@@ -566,6 +568,7 @@ function revealCell(id) {
             }
         }
     }
+    _csUpdatePctCleared();
     _csCheckWin();
 }
 
@@ -587,6 +590,23 @@ function cycleFlagCell(id) {
 function _csUpdateMineCounter() {
     const flagged = cellState.reduce((n, s) => n + (s === CS_FLAGGED ? 1 : 0), 0);
     document.getElementById('cs-mines-remaining').textContent = String(_mineCount - flagged);
+}
+
+// ---------------------------------------------------------------------------
+// Percentage cleared
+// ---------------------------------------------------------------------------
+
+function _csUpdatePctCleared() {
+    const TOTAL = 6 * _N * _N;
+    const safe = TOTAL - _mineCount;
+    if (safe <= 0) return;
+    let revealed = 0;
+    for (let i = 0; i < TOTAL; i++) {
+        if (cellState[i] === CS_REVEALED) revealed++;
+    }
+    const pct = Math.floor(revealed / safe * 100);
+    const el = document.getElementById('cs-pct');
+    if (el) el.textContent = pct;
 }
 
 // ---------------------------------------------------------------------------

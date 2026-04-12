@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Config ────────────────────────────────────────────────────────────────
   const ROWS        = parseInt(boardEl.dataset.rows);
   const COLS        = parseInt(boardEl.dataset.cols);
+  const MINES       = parseInt(boardEl.dataset.mines || '0');
+  const SAFE_CELLS  = ROWS * COLS - MINES;
   const GAME_ID     = boardEl.dataset.gameId;
   const PLAYER_ID   = boardEl.dataset.playerId;
   const MODE        = boardEl.dataset.mode;
@@ -406,6 +408,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (oppScore != null) document.getElementById('opp-score').textContent = oppScore;
     if (myTiles  != null) document.getElementById('my-tiles').textContent  = `${myTiles} tiles`;
     if (oppTiles != null) document.getElementById('opp-tiles').textContent = `${oppTiles} tiles`;
+    if (IS_BETA && SAFE_CELLS > 0) {
+      const myPctEl  = document.getElementById('my-pct');
+      const oppPctEl = document.getElementById('opp-pct');
+      if (myPctEl  && myTiles  != null) myPctEl.textContent  = Math.floor(myTiles  / SAFE_CELLS * 100) + '%';
+      if (oppPctEl && oppTiles != null) oppPctEl.textContent = Math.floor(oppTiles / SAFE_CELLS * 100) + '%';
+    }
   }
 
   // ── Actions ───────────────────────────────────────────────────────────────

@@ -94,6 +94,7 @@
       <span class="score-sub" id="my-tiles">0 tiles</span>
       {% if mode in ('pvp-beta', 'pvp-bot-beta') %}
       <span class="score-sub mine-hits-badge" id="my-mine-hits" style="display:none">💥 0</span>
+      <span class="score-sub" id="my-pct" style="color:var(--text-dim)">0%</span>
       {% endif %}
     </div>
     <div class="duel-vs">VS</div>
@@ -103,6 +104,7 @@
       <span class="score-sub" id="opp-tiles">0 tiles</span>
       {% if mode in ('pvp-beta', 'pvp-bot-beta') %}
       <span class="score-sub mine-hits-badge" id="opp-mine-hits" style="display:none">💥 0</span>
+      <span class="score-sub" id="opp-pct" style="color:var(--text-dim)">0%</span>
       {% endif %}
     </div>
   </div>
