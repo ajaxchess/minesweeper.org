@@ -73,8 +73,12 @@ const _drag = { active: false, lastX: 0, lastY: 0, travelSq: 0 };
 let _flagMode = false;
 
 // Far-side numbers — when true, number sprites on back-facing faces are hidden
-let _hideFarNumbers = false;
+// Default ON; user can turn off via the 🔢 Far button (stored as '0' to disable)
+let _hideFarNumbers = true;
 let _tmpVec = null;   // THREE.Vector3 reused each frame; initialised in initGlobe
+
+// Pole face indices — always mine-free on boards larger than the dodecahedron
+let _poleIndices = [];
 
 // Camera pulse
 let _pulse = null;
@@ -117,6 +121,22 @@ function _applyBackground(wrap) {
 }
 
 // ---------------------------------------------------------------------------
+// _findPoleFaces — returns [northIdx, southIdx] (highest/lowest centroid y)
+// ---------------------------------------------------------------------------
+
+function _findPoleFaces() {
+    const faces = _globeData.faces;
+    let northIdx = 0, southIdx = 0;
+    let northY = -Infinity, southY = Infinity;
+    for (let i = 0; i < faces.length; i++) {
+        const y = faces[i].centroid.y;
+        if (y > northY) { northY = y; northIdx = i; }
+        if (y < southY) { southY = y; southIdx = i; }
+    }
+    return [northIdx, southIdx];
+}
+
+// ---------------------------------------------------------------------------
 // initGlobe — called once by the page after DOM is ready
 // ---------------------------------------------------------------------------
 
@@ -138,6 +158,9 @@ function initGlobe() {
         _globeData = goldberg(1, 0);
     }
     const F = _globeData.faces.length;
+
+    // Mark the north and south pole faces mine-free (boards larger than dodecahedron)
+    _poleIndices = F > 12 ? _findPoleFaces() : [];
 
     _mineCount = wrapper ? (parseInt(wrapper.dataset.mines, 10) || 4) : 4;
 
@@ -187,9 +210,9 @@ function initGlobe() {
         _updateFlagModeBtn();
     });
 
-    // ── Far-side numbers toggle ──────────────────────────────────────────────
+    // ── Far-side numbers toggle (default ON — stored as '0' to disable) ────────
     _tmpVec = new THREE.Vector3();
-    _hideFarNumbers = localStorage.getItem('ws_farnums') === '1';
+    _hideFarNumbers = localStorage.getItem('ws_farnums') !== '0';
     _updateFarNumsBtn();
     document.getElementById('ws-farnums-btn')?.addEventListener('click', () => {
         _hideFarNumbers = !_hideFarNumbers;
@@ -481,7 +504,8 @@ function _initGameState() {
 // ── Mine generation — Fisher-Yates partial shuffle ──────────────────────────
 
 function _generateMines(F, count, safeIdx) {
-    const pool = Array.from({ length: F }, (_, i) => i).filter(i => i !== safeIdx);
+    const excluded = new Set([safeIdx, ..._poleIndices]);
+    const pool = Array.from({ length: F }, (_, i) => i).filter(i => !excluded.has(i));
     const mines = new Set();
     for (let i = 0; i < count; i++) {
         const j = i + Math.floor(Math.random() * (pool.length - i));
