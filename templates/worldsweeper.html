@@ -49,30 +49,55 @@
 {% endblock %}
 
 {% block content %}
+<style>
+.ws-topbar {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 0.75rem; padding: 0.25rem 0 0.5rem;
+}
+.ws-topbar .tz-page-h1 { margin: 0; flex-shrink: 0; }
+.ws-topbar .stat-row   { margin: 0; }
+.ws-nav-links {
+  margin-left: auto; display: flex; gap: 0.25rem;
+  flex-wrap: wrap; align-items: center; font-size: 0.85rem;
+}
+.ws-nav-links a          { color: var(--text-dim); white-space: nowrap; }
+.ws-nav-links a.ws-lb    { color: var(--accent2); }
+</style>
+
 <div class="game-wrapper"
      data-mode="{{ mode }}"
      data-a="{{ a }}"
      data-b="{{ b }}"
      data-t="{{ t_param }}"
      data-faces="{{ face_count }}"
-     data-mines="{{ mines }}">
+     data-mines="{{ mines }}"
+     style="flex-direction:column;max-width:none;width:100%;padding:0 1rem;box-sizing:border-box;align-items:stretch;">
 
-  <h1 class="tz-page-h1">
-    {% if mode == 'dodecahedron' %}Worldsweeper — {{ t['ws_dodecahedron'] }}
-    {% elif mode == 'beginner' %}Worldsweeper — {{ t['nav_beginner'] }}
-    {% elif mode == 'intermediate' %}Worldsweeper — {{ t['nav_intermediate'] }}
-    {% elif mode == 'expert' %}Worldsweeper — {{ t['nav_expert'] }}
-    {% else %}Worldsweeper — {{ t['nav_custom'] }}
-    {% endif %}
-  </h1>
-
-  <div class="stat-row">
-    <span class="stat" id="mine-count">🌍 <span id="mines-remaining">{{ mines }}</span></span>
-    <button id="reset-btn" class="btn-reset" title="{{ t['game_new_game'] }}">↺</button>
-    <span class="stat" id="timer-display">⏱ <span id="elapsed">0.00</span>s</span>
+  <div class="ws-topbar">
+    <h1 class="tz-page-h1">
+      {% if mode == 'dodecahedron' %}Worldsweeper — {{ t['ws_dodecahedron'] }}
+      {% elif mode == 'beginner' %}Worldsweeper — {{ t['nav_beginner'] }}
+      {% elif mode == 'intermediate' %}Worldsweeper — {{ t['nav_intermediate'] }}
+      {% elif mode == 'expert' %}Worldsweeper — {{ t['nav_expert'] }}
+      {% else %}Worldsweeper — {{ t['nav_custom'] }}
+      {% endif %}
+    </h1>
+    <div class="stat-row">
+      <span class="stat" id="mine-count">🌍 <span id="mines-remaining">{{ mines }}</span></span>
+      <button id="reset-btn" class="btn-reset" title="{{ t['game_new_game'] }}">↺</button>
+      <span class="stat" id="timer-display">⏱ <span id="elapsed">0.00</span>s</span>
+    </div>
+    <nav class="ws-nav-links">
+      <a href="/worldsweeper/leaderboard" class="ws-lb">{{ t['ws_view_lb'] }}</a>
+      {% if mode != 'dodecahedron' %}&nbsp;|&nbsp;<a href="/worldsweeper/dodecahedron">{{ t['ws_dodecahedron'] }}</a>{% endif %}
+      {% if mode != 'beginner' %}&nbsp;|&nbsp;<a href="/worldsweeper">{{ t['nav_beginner'] }}</a>{% endif %}
+      {% if mode != 'intermediate' %}&nbsp;|&nbsp;<a href="/worldsweeper/intermediate">{{ t['nav_intermediate'] }}</a>{% endif %}
+      {% if mode != 'expert' %}&nbsp;|&nbsp;<a href="/worldsweeper/expert">{{ t['nav_expert'] }}</a>{% endif %}
+      {% if mode != 'custom' %}&nbsp;|&nbsp;<a href="/worldsweeper/custom">{{ t['nav_custom'] }}</a>{% endif %}
+    </nav>
   </div>
 
-  <div id="globe-wrap" data-glob-skin="classic" style="width:100%;max-width:700px;height:500px;margin:0 auto;position:relative;">
+  <div id="globe-wrap" data-glob-skin="classic" style="width:100%;height:clamp(400px,70vh,900px);position:relative;">
     <canvas id="globe-canvas" style="width:100%;height:100%;display:block;"></canvas>
     <div id="globe-overlay" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,0.55);border-radius:8px;">
       <p id="overlay-msg" style="font-size:1.4rem;font-weight:bold;color:#fff;margin-bottom:1rem;"></p>
@@ -129,17 +154,6 @@
     <button id="custom-play-btn" class="btn" style="padding:0.4rem 1.2rem;">{{ t['ws_play'] }}</button>
   </div>
   {% endif %}
-
-  <div style="text-align:center;margin-top:1rem;">
-    <a href="/worldsweeper/leaderboard" style="color:var(--accent2);font-size:0.9rem;">{{ t['ws_view_lb'] }}</a>
-    &nbsp;|&nbsp;
-    {% if mode != 'dodecahedron' %}<a href="/worldsweeper/dodecahedron" style="color:var(--text-dim);font-size:0.9rem;">{{ t['ws_dodecahedron'] }}</a> &nbsp;|&nbsp;{% endif %}
-    {% if mode != 'beginner' %}<a href="/worldsweeper" style="color:var(--text-dim);font-size:0.9rem;">{{ t['nav_beginner'] }}</a> &nbsp;|&nbsp;{% endif %}
-    {% if mode != 'intermediate' %}<a href="/worldsweeper/intermediate" style="color:var(--text-dim);font-size:0.9rem;">{{ t['nav_intermediate'] }}</a> &nbsp;|&nbsp;{% endif %}
-    {% if mode != 'expert' %}<a href="/worldsweeper/expert" style="color:var(--text-dim);font-size:0.9rem;">{{ t['nav_expert'] }}</a> &nbsp;|&nbsp;{% endif %}
-    {% if mode != 'custom' %}<a href="/worldsweeper/custom" style="color:var(--text-dim);font-size:0.9rem;">{{ t['nav_custom'] }}</a>{% endif %}
-  </div>
-
 
 </div>
 
