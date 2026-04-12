@@ -13,8 +13,5 @@ Disallow: /logout
 Disallow: /register
 Disallow: /account/
 
-# Block static assets from being indexed (saves crawl budget)
-Disallow: /static/
-
 # Sitemap
 Sitemap: https://minesweeper.org/sitemap.xml
