@@ -73,6 +73,23 @@ const _drag = { active: false, lastX: 0, lastY: 0, travelSq: 0 };
 let _pulse = null;
 
 // ---------------------------------------------------------------------------
+// Background selector
+// ---------------------------------------------------------------------------
+
+const _BACKGROUNDS = {
+    orange: 'radial-gradient(ellipse at center, #c87941 0%, #7a3d10 100%)',
+    galaxy: 'url(/static/img/milkyway_bg.jpg) center/cover no-repeat',
+};
+
+function _applyBackground(wrap) {
+    const key = localStorage.getItem('ws_bg') || 'orange';
+    wrap.style.background = _BACKGROUNDS[key] || _BACKGROUNDS.orange;
+    document.querySelectorAll('.ws-bg-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.bg === key);
+    });
+}
+
+// ---------------------------------------------------------------------------
 // initGlobe — called once by the page after DOM is ready
 // ---------------------------------------------------------------------------
 
@@ -123,8 +140,16 @@ function initGlobe() {
     _scene.add(_globeGroup);
     _raycaster = new THREE.Raycaster();
 
-    // ── Classic skin background (CSS visible through transparent renderer) ──
-    wrap.style.background = 'radial-gradient(ellipse at center, #c87941 0%, #7a3d10 100%)';
+    // ── Background (CSS visible through transparent renderer) ──
+    _applyBackground(wrap);
+
+    // ── Background selector buttons ──────────────────────────────────────────
+    document.querySelectorAll('.ws-bg-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            localStorage.setItem('ws_bg', btn.dataset.bg);
+            _applyBackground(wrap);
+        });
+    });
 
     // ── Build face tile meshes + border lines ────────────────────────────────
     _buildFaceMeshes(_globeData.faces);
