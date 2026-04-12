@@ -106,6 +106,85 @@
   </section>
 
 </div>
+<!-- ── SEO Landing Content ── -->
+<div class="game-landing-seo">
+
+  <h2>Custom Minesweeper — Your Board, Your Rules</h2>
+  <p>
+    Custom mode lets you set the board dimensions and mine count to whatever you want.
+    A compact <strong>5×5 with 3 mines</strong> for a quick puzzle, a sprawling
+    <strong>30×50 with 200 mines</strong> for a marathon session — every combination
+    produces a different character of game. If the standard Beginner, Intermediate, and
+    Expert sizes feel too rigid, Custom is where you tune the difficulty to match your
+    skill level exactly.
+  </p>
+
+  <div class="landing-seo-grid">
+
+    <section class="landing-seo-section">
+      <h2>Understanding Mine Density</h2>
+      <p>
+        The feel of a board is driven more by mine density (mines ÷ total cells) than by
+        raw size. A few useful reference points:
+      </p>
+      <ul>
+        <li><strong>~12%</strong> — Beginner density. Lots of empty cascades, easy deduction. Good for warming up or learning.</li>
+        <li><strong>~16%</strong> — Intermediate density. Chains get longer, overlapping constraints appear more often.</li>
+        <li><strong>~21%</strong> — Expert density. Few zero-cells, nearly every reveal is a number. Logic-dense and unforgiving.</li>
+        <li><strong>&gt;25%</strong> — Brutal. Short deduction chains everywhere. Many boards require guessing even with No Guess off.</li>
+      </ul>
+      <p>
+        Setting mines to about 15–20% of total cells places you in the sweet spot between
+        "too easy" and "too chaotic." Go higher if you want to practice reading dense
+        clusters; go lower if you want to practice long cascade management and speed.
+      </p>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>Interesting Configurations</h2>
+      <ul>
+        <li><strong>10×10, 15 mines (~15%)</strong> — A compact intermediate-feel board. Finishes fast, good for repetition training.</li>
+        <li><strong>20×10, 30 mines (~15%)</strong> — Wide and shallow. Emphasises horizontal reading and edge constraints.</li>
+        <li><strong>16×16, 40 mines (~16%)</strong> — Classic Intermediate dimensions. Use this if you want to practice the standard size without the official leaderboard pressure.</li>
+        <li><strong>20×20, 80 mines (~20%)</strong> — A square Expert-density board. Bigger than Expert in area but still readable.</li>
+        <li><strong>30×30, 135 mines (~15%)</strong> — Large intermediate board; excellent for practicing cascade management across a wide area.</li>
+        <li><strong>5×5, 5 mines (~20%)</strong> — Tiny and brutal. Almost every solve involves a guess. Good for studying corner and edge constraint patterns in isolation.</li>
+      </ul>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>No Guess on Custom Boards</h2>
+      <p>
+        No Guess mode is available for custom boards, but its success rate depends heavily
+        on your configuration. The generator uses constraint propagation and retries up to
+        200 times to find a board solvable by logic alone.
+      </p>
+      <ul>
+        <li><strong>Low density (&lt;15%) on larger boards</strong> works well — the solver finds valid layouts quickly.</li>
+        <li><strong>High density (&gt;20%)</strong> makes No Guess harder to satisfy. The generator may exhaust its retries and fall back to a standard random board. You'll see no warning when this happens.</li>
+        <li><strong>Very small boards</strong> (under 6×6) have limited neighbor variance, so No Guess layouts are rare regardless of density.</li>
+      </ul>
+      <p>
+        For a reliable No Guess experience on custom dimensions, aim for 10–15% mine density
+        on boards of at least 8×8.
+      </p>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>Where to Go Next</h2>
+      <ul>
+        <li><strong><a href="/">Beginner</a> —</strong> 9×9, 10 mines. The classic starting point with a daily leaderboard.</li>
+        <li><strong><a href="/intermediate">Intermediate</a> —</strong> 16×16, 40 mines. The standard skill checkpoint.</li>
+        <li><strong><a href="/expert">Expert</a> —</strong> 30×16, 99 mines. The definitive benchmark.</li>
+        <li><strong><a href="/cylinder">Cylinder</a> —</strong> Custom-size boards where the left and right edges connect seamlessly.</li>
+        <li><strong><a href="/toroid">Toroid</a> —</strong> All four edges connect — no corners, no edges, every cell has eight neighbors.</li>
+        <li><strong><a href="/hexsweeper">Hexsweeper</a> —</strong> Minesweeper on a hexagonal grid; six neighbors per cell instead of eight.</li>
+      </ul>
+    </section>
+
+  </div>
+
+</div>
 {% endblock %}
 
 {% block scripts %}
