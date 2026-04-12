@@ -15,6 +15,181 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F73 CubeSweeper (/cubesweeper)
+  Minesweeper played on the six faces of a rotating 3D cube. Each face is an
+  N×N grid. Mines on one face count toward the adjacent-face numbers of cells
+  along the shared edges and vertices — full 8-connectivity extended across all
+  face boundaries. Same Three.js drag-to-rotate mechanics and backgrounds as
+  Worldsweeper. Separate leaderboards per difficulty; separate leaderboards for
+  Standard vs No-Guess play.
+  Reference: FeatureRequests/CubeSweeper.md
+
+  Board Sizes
+  ──────────────────────────────────────────────────────────────────────
+  Beginner:      9×9  per face,  6 faces,   486 total cells,    60 mines
+  Intermediate: 16×16 per face,  6 faces,  1536 total cells,   240 mines
+  Expert:       30×30 per face,  6 faces,  5400 total cells,  1050 mines  ← marathon board, intentionally large
+  Custom:       1–100 per face,  6 faces,  up to 90 % mine density; no leaderboard
+  Mines are distributed randomly across all 6 faces (not per-face quotas).
+
+  Adjacency Model
+  ──────────────────────────────────────────────────────────────────────
+  Full 8-connectivity is extended across face boundaries by mapping virtual
+  out-of-bounds neighbour coordinates to the corresponding cell on the adjacent
+  face using the crossing table below.
+
+  Cell types and neighbour counts:
+  - Interior cell:       8 neighbours, all on the same face.
+  - Non-corner edge cell: 8 neighbours — 5 on-face + 3 on the adjacent face
+                           (direct + 2 diagonal-along-edge).
+  - Corner cell (cube vertex): 7 unique neighbours — 3 on-face + 2 from the
+                           West-adjacent face + 2 from the North-adjacent face.
+                           The NW vertex diagonal resolves to the same cell as
+                           one direct crossing (deduplication reduces 8→7).
+  All three corner cells meeting at a cube vertex are mutually adjacent.
+
+  Cube Face Definitions  (N = grid size, cell indices 0..N-1, s = 2/(N-1))
+  ──────────────────────────────────────────────────────────────────────
+  Face 0  Front  (+Z)  row↓ = −Y  col→ = +X  origin (0,0) at 3D (−1, +1, +1)
+  Face 1  Back   (−Z)  row↓ = −Y  col→ = −X  origin (0,0) at 3D (+1, +1, −1)
+  Face 2  Right  (+X)  row↓ = −Y  col→ = −Z  origin (0,0) at 3D (+1, +1, +1)
+  Face 3  Left   (−X)  row↓ = −Y  col→ = +Z  origin (0,0) at 3D (−1, +1, −1)
+  Face 4  Top    (+Y)  row↓ = +Z  col→ = +X  origin (0,0) at 3D (−1, +1, −1)
+  Face 5  Bottom (−Y)  row↓ = −Z  col→ = +X  origin (0,0) at 3D (−1, −1, +1)
+
+  3D position of cell (r, c) on face f:
+    Front:   x = −1+c·s,  y = 1−r·s,  z = +1
+    Back:    x = +1−c·s,  y = 1−r·s,  z = −1
+    Right:   x = +1,      y = 1−r·s,  z = 1−c·s
+    Left:    x = −1,      y = 1−r·s,  z = −1+c·s
+    Top:     x = −1+c·s,  y = +1,     z = −1+r·s
+    Bottom:  x = −1+c·s,  y = −1,     z = 1−r·s
+
+  Edge-Crossing Table  (virtual neighbour off edge → target face, new (row, col))
+  ──────────────────────────────────────────────────────────────────────
+  Each entry reads: fromFace direction → toFace (newRow, newCol)
+  where r and c are the row/col of the virtual neighbour before clamping.
+
+  Face 0 (Front):   N → Top    (N−1, c)     S → Bottom (0,   c)
+                    E → Right  (r,   0)     W → Left   (r,   N−1)
+
+  Face 1 (Back):    N → Top    (0,   N−1−c) S → Bottom (N−1, N−1−c)
+                    E → Left   (r,   0)     W → Right  (r,   N−1)
+
+  Face 2 (Right):   N → Top    (N−1−c, N−1) S → Bottom (c,   N−1)
+                    E → Back   (r,   0)     W → Front  (r,   N−1)
+
+  Face 3 (Left):    N → Top    (c,   0)     S → Bottom (N−1−c, 0)
+                    E → Front  (r,   0)     W → Back   (r,   N−1)
+
+  Face 4 (Top):     N → Back   (0,   N−1−c) S → Front  (0,   c)
+                    E → Right  (0,   N−1−r) W → Left   (0,   r)
+
+  Face 5 (Bottom):  N → Front  (N−1, c)     S → Back   (N−1, N−1−c)
+                    E → Right  (N−1, r)     W → Left   (N−1, N−1−r)
+
+  For virtual cells off two edges simultaneously (corner diagonals), apply the
+  North crossing first, then the West/East crossing on the result. Deduplicate
+  the final neighbour list — this eliminates the one duplicate that arises at
+  each cube vertex.
+
+  8 Cube Vertices — mutually adjacent corner cells
+  ──────────────────────────────────────────────────────────────────────
+  Vertex  3D pos         Front  Back   Right  Left   Top         Bottom
+  1  (+1,+1,+1)   F(0,N−1)             R(0,0)         T(N−1,N−1)
+  2  (−1,+1,+1)   F(0,0)                      L(0,N−1) T(N−1,0)
+  3  (+1,−1,+1)   F(N−1,N−1)           R(N−1,0)               Bo(0,N−1)
+  4  (−1,−1,+1)   F(N−1,0)                     L(N−1,N−1)      Bo(0,0)
+  5  (+1,+1,−1)          B(0,0)   R(0,N−1)         T(0,N−1)
+  6  (−1,+1,−1)          B(0,N−1)         L(0,0)   T(0,0)
+  7  (+1,−1,−1)          B(N−1,0) R(N−1,N−1)               Bo(N−1,N−1)
+  8  (−1,−1,−1)          B(N−1,N−1)       L(N−1,0)           Bo(N−1,0)
+
+  Game Logic
+  ──────────────────────────────────────────────────────────────────────
+  - Mine placement: random Fisher-Yates over all 6·N² cells, excluding first-click cell.
+  - First click is always safe; mines placed after first click.
+  - BFS flood-fill on reveal: any cell with adjCount=0 expands to all hidden non-mine
+    neighbours recursively, respecting cross-face adjacency.
+  - Win condition: all non-mine cells revealed.
+  - Mine counter tracks total mines minus flags placed (global across all faces).
+  - Timer starts on first click; stops on win or detonation.
+  - Same win overlay, score form, and leaderboard flow as Worldsweeper.
+
+  No-Guess Mode
+  ──────────────────────────────────────────────────────────────────────
+  Available for Beginner and Intermediate only (Expert is standard-only due to
+  board size making no-guess boards rare and generation slow).
+  Algorithm: constraint propagation to fixed point across all faces simultaneously.
+    1. Mark first-click cell as safe; compute its revealed number.
+    2. For each numbered cell: if unrevealed_neighbours = number, flag all as mines.
+                               if flagged_neighbours = number, reveal remaining.
+    3. Repeat step 2 until no new deductions. If all non-mine cells reached: no-guess.
+  Retry up to 200 seeds; fall back to standard if cap exceeded.
+  No-guess boards use seed suffix ":ng:N" for determinism (same board for all players).
+  No-guess wins are submitted to a separate leaderboard; cannot mix with standard times.
+  🔒 No Guess toggle button; persists in localStorage ("cs_noguess").
+
+  Rendering  (Three.js — same vendor/three.min.js as Worldsweeper)
+  ──────────────────────────────────────────────────────────────────────
+  - Each face is rendered as one flat N×N grid of tile meshes in 3D space.
+  - Tile geometry: two triangles (quad) per cell, vertex-coloured by state.
+  - Border lines drawn between cells (thin LineSegments).
+  - Number sprites: per-cell Three.js Sprite, canvas-rendered text, depthTest:false.
+  - Globe group (cube group) rotated via quaternion drag, same as Worldsweeper.
+  - Same orange / Milky Way background selector.
+  - Same 🔢 Far toggle to hide numbers on back-facing faces (dot-product cull per frame).
+  - Flag Mode 🚩 toggle (same as Worldsweeper).
+  - Camera at z=4.5 looking toward origin; FOV 45°.
+
+  Routes
+  ──────────────────────────────────────────────────────────────────────
+  GET  /cubesweeper                → cubesweeper.html  mode=beginner
+  GET  /cubesweeper/intermediate   → cubesweeper.html  mode=intermediate
+  GET  /cubesweeper/expert         → cubesweeper.html  mode=expert
+  GET  /cubesweeper/custom         → cubesweeper.html  mode=custom
+  GET  /cubesweeper/leaderboard    → cubesweeper_leaderboard.html
+  POST /api/cubesweeper-scores     → submit score (rate-limited 10/min)
+  GET  /api/cubesweeper-scores/{mode}?period=daily|alltime&no_guess=0|1
+       Returns top-20 scores for mode + period + no_guess flag.
+
+  Pydantic Model  (CubesweeperScoreSubmit)
+  ──────────────────────────────────────────────────────────────────────
+  name        str        1–32 chars, printable ASCII
+  cube_mode   str        pattern: beginner|intermediate|expert|custom
+  grid_size   int        1–100  (N, cells per face edge)
+  time_ms     int        1–7 200 000  (2 hours max for expert marathon)
+  mines       int        1 ≤ mines < grid_size²·6
+  no_guess    bool       whether board was generated in no-guess mode
+  bbbv        int?       optional
+  left_clicks int?       optional
+  board_hash  str?       optional, max 256 chars
+
+  Database Model  (CubesweeperScore)
+  ──────────────────────────────────────────────────────────────────────
+  Table: cubesweeper_scores
+  id          Integer PK
+  name        String(32)     NOT NULL
+  user_email  String(256)    nullable, indexed
+  cube_mode   String(20)     NOT NULL   (beginner/intermediate/expert/custom)
+  grid_size   Integer        NOT NULL
+  time_ms     Integer        NOT NULL
+  mines       Integer        NOT NULL
+  no_guess    Boolean        NOT NULL   DEFAULT false
+  board_hash  String(256)    nullable
+  guest_token String(36)     nullable, indexed
+  created_at  DateTime       UTC, default now
+  Index: (cube_mode, no_guess, time_ms)
+
+  Navigation
+  ──────────────────────────────────────────────────────────────────────
+  Add CubeSweeper card to the Variants mega-menu in base.html, grouped with
+  Worldsweeper and Hexsweeper.
+  Translation keys: t.nav_cubesweeper, t.nav_sub_cubesweeper
+  Active state: request.url.path.startswith('/cubesweeper')
+
+──────────────────────────────────────────────────────────────────────────────
+
 F72 Analyze typescript compatiblity
 
 F71 Traffic analysis
