@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -2918,6 +2918,167 @@ def get_world_scores(glob_mode: str, period: str = "alltime",
                      GlobesweeperScore.created_at.asc()).limit(500).all()
     seen: set = set()
     top: list = []
+    for s in raw:
+        key = s.user_email or s.name
+        if key not in seen:
+            seen.add(key)
+            top.append(s.to_dict())
+            if len(top) >= 20:
+                break
+    return top
+
+
+# ── CubeSweeper ──────────────────────────────────────────────────────────────
+
+CUBESWEEPER_MODES = {
+    "beginner":     {"grid_size":  9, "mines":   60},
+    "intermediate": {"grid_size": 16, "mines":  240},
+    "expert":       {"grid_size": 30, "mines": 1050},
+}
+CUBE_MODES_VALID = {"beginner", "intermediate", "expert", "custom"}
+
+
+@app.get("/cubesweeper", response_class=HTMLResponse)
+async def cubesweeper_beginner(request: Request):
+    m = CUBESWEEPER_MODES["beginner"]
+    return templates.TemplateResponse("cubesweeper.html", {
+        "request": request, "mode": "beginner",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **m,
+    })
+
+
+@app.get("/cubesweeper/intermediate", response_class=HTMLResponse)
+async def cubesweeper_intermediate(request: Request):
+    m = CUBESWEEPER_MODES["intermediate"]
+    return templates.TemplateResponse("cubesweeper.html", {
+        "request": request, "mode": "intermediate",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **m,
+    })
+
+
+@app.get("/cubesweeper/expert", response_class=HTMLResponse)
+async def cubesweeper_expert(request: Request):
+    m = CUBESWEEPER_MODES["expert"]
+    return templates.TemplateResponse("cubesweeper.html", {
+        "request": request, "mode": "expert",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **m,
+    })
+
+
+@app.get("/cubesweeper/custom", response_class=HTMLResponse)
+async def cubesweeper_custom(request: Request):
+    return templates.TemplateResponse("cubesweeper.html", {
+        "request": request, "mode": "custom",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "grid_size": 9, "mines": 10,
+    })
+
+
+@app.get("/cubesweeper/leaderboard", response_class=HTMLResponse)
+async def cubesweeper_leaderboard(request: Request):
+    return templates.TemplateResponse("cubesweeper_leaderboard.html", {
+        "request": request,
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+class CubesweeperScoreSubmit(BaseModel):
+    name:        str           = Field(..., min_length=1, max_length=32)
+    cube_mode:   str           = Field(..., pattern="^(beginner|intermediate|expert|custom)$")
+    grid_size:   int           = Field(..., ge=1, le=100)
+    time_ms:     int           = Field(..., ge=1, le=7_200_000)
+    mines:       int           = Field(..., ge=1)
+    no_guess:    bool          = False
+    bbbv:        Optional[int] = Field(None, ge=1, le=999999)
+    left_clicks: Optional[int] = Field(None, ge=0, le=9999999)
+    board_hash:  Optional[str] = Field(None, max_length=512)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+    @field_validator("mines")
+    @classmethod
+    def mines_not_exceeding_board(cls, v, info):
+        grid_size = info.data.get("grid_size")
+        if grid_size and v >= grid_size * grid_size * 6:
+            raise ValueError("Too many mines for this board size")
+        return v
+
+
+@app.post("/api/cubesweeper-scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_cube_score(payload: CubesweeperScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = CubesweeperScore(
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        cube_mode   = payload.cube_mode,
+        grid_size   = payload.grid_size,
+        time_ms     = payload.time_ms,
+        mines       = payload.mines,
+        no_guess    = payload.no_guess,
+        bbbv        = payload.bbbv,
+        left_clicks = payload.left_clicks,
+        board_hash  = payload.board_hash,
+        guest_token = guest_token,
+        client_type = get_client_type(request),
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/cubesweeper-scores/{cube_mode}")
+def get_cube_scores(cube_mode: str, period: str = "alltime",
+                    no_guess: bool = False,
+                    score_date: Optional[str] = Query(None, alias="date"),
+                    db: Session = Depends(get_db)):
+    if cube_mode not in CUBE_MODES_VALID:
+        raise HTTPException(status_code=400, detail="Invalid mode")
+    if period not in ("daily", "alltime"):
+        period = "alltime"
+
+    q = db.query(CubesweeperScore).filter(
+        CubesweeperScore.cube_mode == cube_mode,
+        CubesweeperScore.no_guess  == no_guess,
+    )
+
+    if period == "daily":
+        try:
+            target = date.fromisoformat(score_date) if score_date else date.today()
+        except ValueError:
+            target = date.today()
+        q = q.filter(CubesweeperScore.created_at >= target,
+                     CubesweeperScore.created_at < target + timedelta(days=1))
+        top = q.order_by(CubesweeperScore.time_ms.asc(),
+                         CubesweeperScore.created_at.asc()).limit(20).all()
+        return [s.to_dict() for s in top]
+
+    raw = q.order_by(CubesweeperScore.time_ms.asc(),
+                     CubesweeperScore.created_at.asc()).limit(500).all()
+    seen: set = set()
+    top:  list = []
     for s in raw:
         key = s.user_email or s.name
         if key not in seen:

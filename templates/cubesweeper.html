@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% if mode == 'beginner' %}
+  {% set _title = "CubeSweeper — Beginner | minesweeper.org" %}
+  {% set _desc  = "Play CubeSweeper — minesweeper on a rotating 3D cube. Beginner: 9×9 per face, 486 cells, 60 mines. Free to play, no download required." %}
+  {% set _canon = "https://minesweeper.org/cubesweeper" %}
+{% elif mode == 'intermediate' %}
+  {% set _title = "CubeSweeper — Intermediate | minesweeper.org" %}
+  {% set _desc  = "Play CubeSweeper — minesweeper on a rotating 3D cube. Intermediate: 16×16 per face, 1536 cells, 240 mines. Free to play, no download required." %}
+  {% set _canon = "https://minesweeper.org/cubesweeper/intermediate" %}
+{% elif mode == 'expert' %}
+  {% set _title = "CubeSweeper — Expert | minesweeper.org" %}
+  {% set _desc  = "Play CubeSweeper — minesweeper on a rotating 3D cube. Expert: 30×30 per face, 5400 cells, 1050 mines. A marathon board. Free to play, no download required." %}
+  {% set _canon = "https://minesweeper.org/cubesweeper/expert" %}
+{% else %}
+  {% set _title = "CubeSweeper — Custom | minesweeper.org" %}
+  {% set _desc  = "Play CubeSweeper with a custom grid size — minesweeper on a rotating 3D cube." %}
+  {% set _canon = "https://minesweeper.org/cubesweeper/custom" %}
+{% endif %}
+
+{% block keywords %}<meta name="keywords" content="cubesweeper, cube minesweeper, 3D minesweeper, minesweeper on a cube, minesweeper online, play minesweeper, free minesweeper">{% endblock %}
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+{% block tw_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block tw_description %}Play CubeSweeper — minesweeper on a rotating 3D cube. Six faces, full edge and corner connectivity. Drag to rotate, click to reveal. Free, no download.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "{{ _title | replace(' | minesweeper.org', '') }}",
+  "url": "{{ _canon }}",
+  "description": "{{ _desc }}",
+  "genre": ["Puzzle", "Strategy", "Browser Game"],
+  "gamePlatform": "Web Browser",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<style>
+.ws-topbar {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 0.75rem; padding: 0.25rem 0 0.5rem;
+}
+.ws-topbar .tz-page-h1 { margin: 0; flex-shrink: 0; }
+.ws-topbar .stat-row   { margin: 0; }
+.ws-nav-links {
+  margin-left: auto; display: flex; gap: 0.25rem;
+  flex-wrap: wrap; align-items: center; font-size: 0.85rem;
+}
+.ws-nav-links a          { color: var(--text-dim); white-space: nowrap; }
+.ws-nav-links a.ws-lb    { color: var(--accent2); }
+.ws-flag-btn {
+    padding: 0.15rem 0.55rem; border-radius: 4px; cursor: pointer; font-size: 1rem;
+    border: 2px solid var(--border); background: transparent; color: var(--text);
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    white-space: nowrap;
+}
+.ws-flag-btn:hover  { border-color: #f44336; }
+.ws-flag-btn.active { border-color: #f44336; background: rgba(244,67,54,0.18); color: #f44336; }
+.ws-bg-btns { display: flex; gap: 0.35rem; align-items: center; margin-left: 0.5rem; }
+.ws-bg-btn {
+    width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; padding: 0; flex-shrink: 0;
+    transition: border-color 0.15s, transform 0.1s;
+}
+.ws-bg-btn:hover  { transform: scale(1.15); }
+.ws-bg-btn.active { border-color: #fff; box-shadow: 0 0 0 1px rgba(255,255,255,0.4); }
+.ws-bg-btn[data-bg="orange"] {
+    background: radial-gradient(ellipse at center, #c87941 0%, #7a3d10 100%);
+}
+.ws-bg-btn[data-bg="galaxy"] {
+    background: url(/static/img/milkyway_bg.jpg) center/cover;
+}
+.ws-galaxy-credit {
+    font-size: 0.72rem; color: var(--text-dim); white-space: nowrap;
+    margin-left: 0.3rem; align-self: center;
+}
+.ws-galaxy-credit a { color: inherit; text-decoration: underline; }
+</style>
+
+<div class="game-wrapper"
+     data-mode="{{ mode }}"
+     data-grid-size="{{ grid_size }}"
+     data-mines="{{ mines }}"
+     style="flex-direction:column;max-width:none;width:100%;padding:0 1rem;box-sizing:border-box;align-items:stretch;">
+
+  <div class="ws-topbar">
+    <h1 class="tz-page-h1">
+      {% if mode == 'beginner' %}CubeSweeper — {{ t['nav_beginner'] }}
+      {% elif mode == 'intermediate' %}CubeSweeper — {{ t['nav_intermediate'] }}
+      {% elif mode == 'expert' %}CubeSweeper — {{ t['nav_expert'] }}
+      {% else %}CubeSweeper — {{ t['nav_custom'] }}
+      {% endif %}
+    </h1>
+    <div class="stat-row">
+      <span class="stat" id="mine-count">💣 <span id="cs-mines-remaining">{{ mines }}</span></span>
+      <button id="cs-reset-btn" class="btn-reset" title="{{ t['game_new_game'] }}">↺</button>
+      <button id="cs-flag-btn" class="ws-flag-btn" title="Flag mode — click to place/cycle flags instead of revealing">🚩 Flag</button>
+      <button id="cs-farnums-btn" class="ws-flag-btn" title="Click to hide numbers on the back of the cube">🔢 Far</button>
+      {% if mode not in ('expert', 'custom') %}
+      <button id="cs-noguess-btn" class="ws-flag-btn" title="No-Guess mode — board is always solvable without guessing">🎯 No-Guess: <span id="cs-noguess-state">Off</span></button>
+      {% endif %}
+      <span class="stat" id="timer-display">⏱ <span id="cs-elapsed">0.00</span>s</span>
+    </div>
+    <div class="ws-bg-btns" title="Background">
+      <button class="ws-bg-btn" data-bg="orange" title="Orange"></button>
+      <button class="ws-bg-btn" data-bg="galaxy" title="Milky Way"></button>
+      <a id="ws-galaxy-credit" class="ws-galaxy-credit" style="display:none"
+         href="https://commons.wikimedia.org/wiki/File:The_Galaxy_%28Milky_way%29.jpg"
+         target="_blank" rel="noopener noreferrer">📷 Wikimedia Commons</a>
+    </div>
+    <nav class="ws-nav-links">
+      <a href="/cubesweeper/leaderboard" class="ws-lb">Leaderboard</a>
+      {% if mode != 'beginner' %}&nbsp;|&nbsp;<a href="/cubesweeper">{{ t['nav_beginner'] }}</a>{% endif %}
+      {% if mode != 'intermediate' %}&nbsp;|&nbsp;<a href="/cubesweeper/intermediate">{{ t['nav_intermediate'] }}</a>{% endif %}
+      {% if mode != 'expert' %}&nbsp;|&nbsp;<a href="/cubesweeper/expert">{{ t['nav_expert'] }}</a>{% endif %}
+      {% if mode != 'custom' %}&nbsp;|&nbsp;<a href="/cubesweeper/custom">{{ t['nav_custom'] }}</a>{% endif %}
+    </nav>
+  </div>
+
+  <div id="cube-wrap" style="width:100%;height:clamp(400px,70vh,900px);position:relative;">
+    <canvas id="cube-canvas" style="width:100%;height:100%;display:block;"></canvas>
+    <div id="cube-overlay" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,0.55);border-radius:8px;">
+      <p id="cs-overlay-msg" style="font-size:1.4rem;font-weight:bold;color:#fff;margin-bottom:1rem;"></p>
+      <button id="cs-overlay-reset" class="btn-reset">{{ t['ws_play_again'] }}</button>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;margin-top:0.5rem;">
+    Drag to rotate · Left-click to reveal · Right-click or Flag button to flag
+  </p>
+
+  <div id="cs-score-form" style="display:none;margin:1rem auto;max-width:420px;text-align:center;padding:1rem;border:1px solid var(--border);border-radius:8px;background:var(--surface);">
+    <p style="font-weight:bold;margin-bottom:0.5rem;color:var(--text);">{{ t['ws_submit_score'] }}</p>
+    <input id="cs-score-name" type="text" maxlength="32" placeholder="{{ t['tz_name_placeholder'] }}"
+           style="padding:0.4rem;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--text);">
+    <button id="cs-score-submit" class="btn" style="margin-left:0.5rem;">{{ t['ws_submit_btn'] }}</button>
+    <p id="cs-score-msg" style="font-size:0.85rem;margin-top:0.5rem;color:var(--text-dim);"></p>
+  </div>
+
+  {% if mode == 'custom' %}
+  <div style="margin:1.5rem auto;max-width:420px;text-align:center;">
+    <h2 style="font-size:1rem;color:var(--accent2);margin-bottom:0.75rem;">{{ t['ws_custom_board'] }}</h2>
+    <label style="display:block;margin-bottom:0.5rem;">
+      Grid size (N×N per face):
+      <input id="cs-size-input" type="number" min="2" max="100" value="9"
+             style="width:60px;margin-left:0.5rem;">
+    </label>
+    <p id="cs-face-info" style="color:var(--text-dim);font-size:0.85rem;margin-bottom:0.5rem;">
+      9×9 per face — 486 total cells, max 437 mines
+    </p>
+    <label style="display:block;margin-bottom:0.75rem;">
+      {{ t['custom_mines'] }}: <input id="cs-mine-input" type="number" min="1" max="437" value="10"
+                style="width:70px;margin-left:0.5rem;">
+    </label>
+    <button id="cs-custom-play-btn" class="btn" style="padding:0.4rem 1.2rem;">{{ t['ws_play'] }}</button>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- About / How to Play -->
+<div class="info-body" style="width:100%;max-width:700px;margin:2rem auto 0">
+
+  <div class="info-section">
+    <h2>What is CubeSweeper?</h2>
+    <p>CubeSweeper is Minesweeper played on a rotating 3D cube. The board is divided into six N×N faces. Cells connect across face boundaries with full 8-connectivity — edge-crossing and corner-crossing both work — so the cube surface is one continuous minesweeping space with no breaks or seams.</p>
+    <p>Each corner of the cube is shared by three faces. Corner cells there see 7 unique neighbours (3 on their own face, 2 each from the two adjacent faces, and the one shared corner cell from the third face). Every other cell sees exactly 8 neighbours regardless of which face it's on.</p>
+  </div>
+
+  <div class="info-section">
+    <h2>How to Play</h2>
+    <ul>
+      <li><strong>Drag</strong> the cube to rotate it and inspect any face.</li>
+      <li><strong>Left-click</strong> a cell to reveal it. Empty cells (0) auto-expand through all connected empty neighbours, including across face boundaries.</li>
+      <li><strong>Right-click</strong> a cell to place a flag (🚩). Right-click again for a question mark (?), and a third time to clear it.</li>
+      <li>The <strong>Flag button</strong> puts you in flag mode — left-clicks will cycle flags instead of revealing cells.</li>
+      <li>The ↺ button resets to a fresh board. Your timer starts on your first click.</li>
+      <li>Win by revealing every non-mine cell. All remaining mine cells are flagged automatically when you win.</li>
+    </ul>
+  </div>
+
+  <div class="info-section">
+    <h2>Board Sizes</h2>
+    <ul>
+      <li><strong>Beginner —</strong> 9×9 per face, 486 total cells, 60 mines (~12%). Numbers-only solving; no-guess mode available.</li>
+      <li><strong>Intermediate —</strong> 16×16 per face, 1536 total cells, 240 mines (~16%). Requires tracking constraints across multiple faces. No-guess mode available.</li>
+      <li><strong>Expert —</strong> 30×30 per face, 5400 total cells, 1050 mines (~19%). A marathon board designed for extended play. No no-guess mode.</li>
+      <li><strong>Custom —</strong> Set your own grid size (N×N per face) and mine count.</li>
+    </ul>
+  </div>
+
+  <div class="info-section">
+    <h2>No-Guess Mode</h2>
+    <p>When No-Guess is enabled (Beginner and Intermediate only), the board is generated so that it can always be solved using logic alone — no guessing required. The generator uses constraint propagation and retries up to 200 times to find a solvable layout. If no solvable board is found within the limit, it falls back to a standard random board.</p>
+  </div>
+
+  <div class="info-section">
+    <h2>Strategy Tips</h2>
+    <ul>
+      <li><strong>Rotate constantly.</strong> Information on the far side of the cube is just a drag away. A cell with a high number might be easily solvable once you see the face behind it.</li>
+      <li><strong>Use the Far button.</strong> Hiding numbers on the back face reduces visual noise while you work through the front.</li>
+      <li><strong>Track face crossings.</strong> A chain of empty cells can cross an edge and reveal cells on a different face. Follow auto-expand results to see the full picture.</li>
+      <li><strong>Corner cells are tighter.</strong> A corner cell has only 7 neighbours instead of 8. A high number on a corner cell is a stronger constraint than the same number on an interior cell.</li>
+      <li><strong>Expert is a marathon.</strong> Don't expect to finish in one sitting. Focus on local constraints and make steady progress across the cube surface.</li>
+    </ul>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/vendor/three.min.js"></script>
+<script src="/static/js/cubesweeper.js"></script>
+<script>initCube();</script>
+{% endblock %}
