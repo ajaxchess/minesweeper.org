@@ -13,21 +13,39 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://minesweeper.org/blog/{{ post.slug }}"
+  },
   "headline": {{ post.title | tojson }},
   "url": "https://minesweeper.org/blog/{{ post.slug }}",
   "datePublished": {{ date_published | tojson }},
-  "description": {{ post.excerpt | tojson }}{% if og_image %},
-  "image": {{ og_image | tojson }}{% endif %}{% if publisher %},
+  "dateModified": {{ date_modified | tojson }},
+  "description": {{ post.excerpt | tojson }},
+  "inLanguage": "en",{% if og_image %}
+  "image": {
+    "@type": "ImageObject",
+    "url": {{ og_image | tojson }}
+  },{% endif %}
   "publisher": {
     "@type": "Organization",
     "name": {{ publisher | tojson }},
-    "url": "https://minesweeper.org/"
-  }{% endif %}{% if author %},
+    "url": "https://minesweeper.org/",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://minesweeper.org/static/img/LadyDisMinesLogo.png"
+    }
+  },
   "author": {
     "@type": "Person",
     "name": {{ author | tojson }}{% if authorurl %},
     "url": {{ authorurl | tojson }}{% endif %}
-  }{% endif %}
+  },
+  "isPartOf": {
+    "@type": "Blog",
+    "name": "Lady Di's Mines",
+    "url": "https://minesweeper.org/blog"
+  }
 }
 </script>
 {% endblock %}

@@ -1918,6 +1918,11 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
         or post.get("datePublished")
         or post["date"]
     )
+    date_modified = (
+        front_matter.get("dateModified")
+        or post.get("dateModified")
+        or date_published
+    )
     comments = (
         db.query(BlogComment)
         .filter_by(post_slug=slug, approved=True)
@@ -1925,18 +1930,19 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
         .all()
     )
     return templates.TemplateResponse("blog_post.html", {
-        "request":       request, "mode": "blog",
-        "user":          get_current_user(request),
-        "lang":          get_lang(request), "t": get_t(request),
-        "post":          post,
-        "content":       html_content,
-        "author":        front_matter.get("author", ""),
-        "authorurl":     front_matter.get("authorurl", "") if front_matter.get("authorurl", "").startswith(("https://", "http://")) else "",
-        "publisher":     front_matter.get("publisher", ""),
-        "og_image":      _make_absolute_url(request, post.get("image") or front_matter.get("image", "")),
-        "og_image_webp": _webp_if_exists(post.get("image") or front_matter.get("image", "")),
+        "request":        request, "mode": "blog",
+        "user":           get_current_user(request),
+        "lang":           get_lang(request), "t": get_t(request),
+        "post":           post,
+        "content":        html_content,
+        "author":         front_matter.get("author", "") or "minesweeper.org",
+        "authorurl":      front_matter.get("authorurl", "") if front_matter.get("authorurl", "").startswith(("https://", "http://")) else "",
+        "publisher":      front_matter.get("publisher", "") or "minesweeper.org",
+        "og_image":       _make_absolute_url(request, post.get("image") or front_matter.get("image", "")),
+        "og_image_webp":  _webp_if_exists(post.get("image") or front_matter.get("image", "")),
         "date_published": date_published,
-        "comments":      comments,
+        "date_modified":  date_modified,
+        "comments":       comments,
     })
 
 
