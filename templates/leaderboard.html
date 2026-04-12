@@ -8,6 +8,17 @@
 {% block og_description %}{{ t.meta_desc_leaderboard }}{% endblock %}
 {% block tw_title %}{{ t.meta_title_leaderboard | replace(" | minesweeper.org", "") }}{% endblock %}
 {% block tw_description %}{{ t.meta_desc_leaderboard }}{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Minesweeper Leaderboard — Top Times",
+  "url": "https://minesweeper.org/leaderboard",
+  "description": "Today's fastest Minesweeper times across Beginner, Intermediate, and Expert. Scores reset daily at midnight UTC."
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="lb-wrapper">
