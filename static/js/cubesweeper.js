@@ -28,9 +28,9 @@ const CS_DETONATED = 5;
 // ---------------------------------------------------------------------------
 
 const _CS_COLOR_FALLBACK = {
-    '--glob-hidden':        '#0d1e38',   // very dark navy — high contrast against revealed
-    '--glob-hidden-border': '#060f1c',   // near-black for cell gaps
-    '--glob-rev':           '#e8eef7',   // near-white with blue tint — high contrast against hidden
+    '--glob-hidden':        '#06101e',   // near-black navy
+    '--glob-hidden-border': '#020609',   // near-black for cell gaps
+    '--glob-rev':           '#f5f8ff',   // near-white — maximum contrast against hidden
     '--glob-mine':          '#cc2222',
     '--glob-detonated':     '#ff0000',
 };
