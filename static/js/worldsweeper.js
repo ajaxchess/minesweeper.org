@@ -69,6 +69,9 @@ let _bbbv         = 0;   // 3BV of the current board (computed after mines place
 // Drag tracking
 const _drag = { active: false, lastX: 0, lastY: 0, travelSq: 0 };
 
+// Flag mode — when true, left-click cycles flags instead of revealing
+let _flagMode = false;
+
 // Camera pulse
 let _pulse = null;
 
@@ -80,6 +83,15 @@ const _BACKGROUNDS = {
     orange: 'radial-gradient(ellipse at center, #c87941 0%, #7a3d10 100%)',
     galaxy: 'url(/static/img/milkyway_bg.jpg) center/cover no-repeat',
 };
+
+function _updateFlagModeBtn() {
+    const btn = document.getElementById('ws-flag-btn');
+    if (!btn) return;
+    btn.classList.toggle('active', _flagMode);
+    btn.title = _flagMode
+        ? 'Flag mode ON — clicks place/cycle flags (click to switch to reveal mode)'
+        : 'Flag mode OFF — clicks reveal faces (click to switch to flag mode)';
+}
 
 function _applyBackground(wrap) {
     const key = localStorage.getItem('ws_bg') || 'orange';
@@ -151,6 +163,15 @@ function initGlobe() {
             localStorage.setItem('ws_bg', btn.dataset.bg);
             _applyBackground(wrap);
         });
+    });
+
+    // ── Flag mode toggle ─────────────────────────────────────────────────────
+    _flagMode = localStorage.getItem('ws_flagmode') === '1';
+    _updateFlagModeBtn();
+    document.getElementById('ws-flag-btn')?.addEventListener('click', () => {
+        _flagMode = !_flagMode;
+        localStorage.setItem('ws_flagmode', _flagMode ? '1' : '0');
+        _updateFlagModeBtn();
     });
 
     // ── Build face tile meshes + border lines ────────────────────────────────
@@ -639,7 +660,7 @@ function resetGame() {
 // ── Entry point for clicks ────────────────────────────────────────────────────
 
 function faceClicked(idx, button) {
-    if (button === 2) {
+    if (button === 2 || _flagMode) {
         cycleFlagFace(idx);
     } else {
         _leftClicks++;
