@@ -1912,6 +1912,16 @@ async def submit_blog_comment(slug: str, request: Request, db: Session = Depends
     return {"ok": True, "message": "Your comment has been submitted and is awaiting review."}
 
 
+@app.get("/privacy-policy")
+async def privacy_policy_redirect():
+    return RedirectResponse(url="/privacy", status_code=301)
+
+
+@app.get("/terms-of-service")
+async def terms_of_service_redirect():
+    return RedirectResponse(url="/terms", status_code=301)
+
+
 @app.get("/privacy", response_class=HTMLResponse)
 async def privacy_page(request: Request):
     return templates.TemplateResponse("privacy.html", {
