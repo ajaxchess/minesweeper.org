@@ -842,14 +842,13 @@ function _csAnimate() {
         }
     }
 
-    // Hide far-side number sprites
+    // Hide far-side sprites (numbers, flags, question marks)
     if (_csHideFarNums && _cubeGroup && _csTmpVec) {
         const q = _cubeGroup.quaternion;
         const TOTAL = 6 * _N * _N;
         for (let id = 0; id < TOTAL; id++) {
             const spr = _sprites[id];
             if (!spr) continue;
-            if (cellState[id] !== CS_REVEALED || adjCount[id] === 0) continue;
             const centre = _cellCentre(_face(id), _row(id), _col(id));
             _csTmpVec.set(centre.x, centre.y, centre.z).applyQuaternion(q);
             spr.visible = _csTmpVec.z > 0;

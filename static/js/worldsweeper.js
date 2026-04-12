@@ -781,13 +781,12 @@ function _animate() {
         }
     }
 
-    // Hide number sprites on back-facing faces when toggle is on
+    // Hide sprites (numbers, flags, question marks) on back-facing faces when toggle is on
     if (_hideFarNumbers && _globeData && _tmpVec) {
         const q = _globeGroup.quaternion;
         for (let i = 0; i < _sprites.length; i++) {
             const spr = _sprites[i];
             if (!spr) continue;
-            if (faceState[i] !== REVEALED || adjCount[i] === 0) continue;
             const c = _globeData.faces[i].centroid;
             _tmpVec.set(c.x, c.y, c.z).applyQuaternion(q);
             spr.visible = _tmpVec.z > 0;
