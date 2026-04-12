@@ -50,6 +50,20 @@
 </script>
 {% endblock %}
 
+{% block breadcrumb_jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home",  "item": "https://minesweeper.org/"},
+    {"@type": "ListItem", "position": 2, "name": "Blog",  "item": "https://minesweeper.org/blog"},
+    {"@type": "ListItem", "position": 3, "name": {{ post.title | tojson }}, "item": "https://minesweeper.org/blog/{{ post.slug }}"}
+  ]
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="blog-wrapper">
 

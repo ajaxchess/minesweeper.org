@@ -106,6 +106,23 @@
   </script>
   {% endblock %}
 
+  <!-- BreadcrumbList structured data -->
+  {%- set _bc = get_breadcrumbs(request.url.path) %}
+  {%- if _bc %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {%- for c in _bc %}
+      {"@type": "ListItem", "position": {{ loop.index }}, "name": {{ c.name | tojson }}, "item": {{ c.url | tojson }}}{% if not loop.last %},{% endif %}
+      {%- endfor %}
+    ]
+  }
+  </script>
+  {%- endif %}
+  {% block breadcrumb_jsonld %}{% endblock %}
+
   <!-- Quest reward: disable ads if earned -->
   <script>try{if(localStorage.getItem('quests_ads_disabled')==='true'){window.adsbygoogle={push:function(){}};document.head.insertAdjacentHTML('beforeend','<style>.ad-sidebar,.ad-left,.ad-right,.ad-container{display:none!important}<\/style>');}}catch(e){}</script>
 
@@ -421,7 +438,7 @@
   </div>
 
   <footer>
-    <p>© 2026 Minesweeper.org &mdash; {{ t.footer | safe }} &mdash; <a href="/about">{{ t.footer_about }}</a> &mdash; <a href="/contact">{{ t.footer_contact }}</a> &mdash; <a href="/privacy">{{ t.footer_privacy }}</a> &mdash; <a href="/terms">{{ t.footer_terms }}</a> &mdash; <a href="/blog">{{ t.nav_blog }}</a> &mdash; <a href="/links">{{ t.nav_links_label }}</a> &mdash; <a href="https://www.linkedin.com/company/minesweeper-org" target="_blank" rel="noopener">LinkedIn</a></p>
+    <p>© 2026 Minesweeper.org &mdash; {{ t.footer | safe }} &mdash; <a href="/about">{{ t.footer_about }}</a> &mdash; <a href="/history">History</a> &mdash; <a href="/contact">{{ t.footer_contact }}</a> &mdash; <a href="/privacy">{{ t.footer_privacy }}</a> &mdash; <a href="/terms">{{ t.footer_terms }}</a> &mdash; <a href="/blog">{{ t.nav_blog }}</a> &mdash; <a href="/links">{{ t.nav_links_label }}</a> &mdash; <a href="https://www.linkedin.com/company/minesweeper-org" target="_blank" rel="noopener">LinkedIn</a></p>
   </footer>
 
   <!-- Translations available to all page scripts -->
