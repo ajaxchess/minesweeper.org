@@ -98,40 +98,40 @@ function _crossEdge(face, vr, vc, N) {
     const last = N - 1;
     switch (face) {
         case 0: // Front (+Z)
-            if (vr <  0)  return [4, last,      vc];
-            if (vr >= N)  return [5, 0,          vc];
-            if (vc >= N)  return [2, vr,          0];
-            if (vc <  0)  return [3, vr,       last];
+            if (vr <  0)  return [4, 0,        vc];   // → Top    row 0    (z≈+1 edge)
+            if (vr >= N)  return [5, last,      vc];   // → Bottom row last (z≈+1 edge)
+            if (vc >= N)  return [2, vr,         0];   // → Right  col 0
+            if (vc <  0)  return [3, vr,      last];   // → Left   col last
             break;
         case 1: // Back (-Z)
-            if (vr <  0)  return [4, 0,     last-vc];
-            if (vr >= N)  return [5, last,  last-vc];
-            if (vc >= N)  return [3, vr,          0];
-            if (vc <  0)  return [2, vr,       last];
+            if (vr <  0)  return [4, last, last-vc];   // → Top    row last (z≈-1 edge)
+            if (vr >= N)  return [5, 0,    last-vc];   // → Bottom row 0    (z≈-1 edge)
+            if (vc >= N)  return [3, vr,         0];   // → Left   col 0
+            if (vc <  0)  return [2, vr,      last];   // → Right  col last
             break;
         case 2: // Right (+X)
-            if (vr <  0)  return [4, last-vc, last];
-            if (vr >= N)  return [5, vc,       last];
-            if (vc >= N)  return [1, vr,          0];
-            if (vc <  0)  return [0, vr,       last];
+            if (vr <  0)  return [4, vc,      last];   // → Top    col last (x≈+1 edge)
+            if (vr >= N)  return [5, last-vc, last];   // → Bottom col last (x≈+1 edge)
+            if (vc >= N)  return [1, vr,         0];   // → Back   col 0
+            if (vc <  0)  return [0, vr,      last];   // → Front  col last
             break;
         case 3: // Left (-X)
-            if (vr <  0)  return [4, vc,          0];
-            if (vr >= N)  return [5, last-vc,      0];
-            if (vc >= N)  return [0, vr,          0];
-            if (vc <  0)  return [1, vr,       last];
+            if (vr <  0)  return [4, last-vc,    0];   // → Top    col 0    (x≈-1 edge)
+            if (vr >= N)  return [5, vc,          0];  // → Bottom col 0    (x≈-1 edge)
+            if (vc >= N)  return [0, vr,          0];  // → Front  col 0
+            if (vc <  0)  return [1, vr,      last];   // → Back   col last
             break;
         case 4: // Top (+Y)
-            if (vr <  0)  return [1, 0,     last-vc];
-            if (vr >= N)  return [0, 0,          vc];
-            if (vc >= N)  return [2, 0,     last-vr];
-            if (vc <  0)  return [3, 0,          vr];
+            if (vr <  0)  return [0, 0,          vc];  // → Front  row 0 (z≈+1 edge)
+            if (vr >= N)  return [1, 0,     last-vc];  // → Back   row 0 (z≈-1 edge)
+            if (vc >= N)  return [2, 0,          vr];  // → Right  row 0 (x≈+1 edge)
+            if (vc <  0)  return [3, 0,     last-vr];  // → Left   row 0 (x≈-1 edge)
             break;
         case 5: // Bottom (-Y)
-            if (vr <  0)  return [0, last,       vc];
-            if (vr >= N)  return [1, last, last-vc];
-            if (vc >= N)  return [2, last,       vr];
-            if (vc <  0)  return [3, last, last-vr];
+            if (vr <  0)  return [1, last, last-vc];   // → Back   row last (z≈-1 edge)
+            if (vr >= N)  return [0, last,       vc];  // → Front  row last (z≈+1 edge)
+            if (vc >= N)  return [2, last, last-vr];   // → Right  row last (x≈+1 edge)
+            if (vc <  0)  return [3, last,       vr];  // → Left   row last (x≈-1 edge)
             break;
     }
     return null;
