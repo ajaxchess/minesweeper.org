@@ -349,6 +349,7 @@ function reveal(r, c) {
     }
   }
 
+  updatePctCleared();
   checkWin();
 }
 
@@ -373,6 +374,16 @@ function flag(r, c) {
   document.getElementById('mines-left').textContent =
     String(state.minesLeft).padStart(3, '0');
   renderCell(r, c);
+}
+
+// ── Percentage cleared ────────────────────────────────────────────────────────
+function updatePctCleared() {
+  const safe = state.rows * state.cols - state.mines;
+  if (safe <= 0) return;
+  const revealed = state.revealed.flat().filter(Boolean).length;
+  const pct = Math.floor(revealed / safe * 100);
+  const el = document.getElementById('pct-cleared');
+  if (el) el.textContent = pct + '%';
 }
 
 // ── Win / Loss ────────────────────────────────────────────────────────────────
@@ -624,6 +635,8 @@ function initGame(rows, cols, mines, noGuess = false, chording = true) {
   document.getElementById('timer').textContent      = '000';
   document.getElementById('mines-left').textContent = String(mines).padStart(3,'0');
   document.getElementById('reset-btn').textContent  = '🙂';
+  const pctEl = document.getElementById('pct-cleared');
+  if (pctEl) pctEl.textContent = '0%';
   const resultEl = document.getElementById('game-result');
   if (resultEl) resultEl.innerHTML = '';
   buildBoard(rows, cols);
