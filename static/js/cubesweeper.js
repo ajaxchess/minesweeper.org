@@ -28,9 +28,9 @@ const CS_DETONATED = 5;
 // ---------------------------------------------------------------------------
 
 const _CS_COLOR_FALLBACK = {
-    '--glob-hidden':        '#4a4a4a',
-    '--glob-hidden-border': '#c8892a',
-    '--glob-rev':           '#e8e8e8',
+    '--glob-hidden':        '#1d3461',   // dark steel blue
+    '--glob-hidden-border': '#0d1b2e',   // near-black navy for cell gaps
+    '--glob-rev':           '#cdd5e0',   // light silver-blue
     '--glob-mine':          '#cc2222',
     '--glob-detonated':     '#ff0000',
 };
@@ -281,7 +281,8 @@ function _buildCellMeshes() {
 
         const mat  = new THREE.MeshPhongMaterial({
             color:     _cssCube('--glob-hidden'),
-            shininess: 50,
+            specular:  new THREE.Color(0x4488cc),
+            shininess: 80,
             side:      THREE.FrontSide,
         });
         const mesh = new THREE.Mesh(geo, mat);
@@ -719,17 +720,18 @@ function _csTriggerPulse() {
 }
 
 // ---------------------------------------------------------------------------
-// Background selector — same as worldsweeper
+// Background selector — cubesweeper uses its own cs_bg key
 // ---------------------------------------------------------------------------
 
 const _CS_BACKGROUNDS = {
+    sky:    'linear-gradient(150deg, #96b8d8 0%, #4a6a90 100%)',
     orange: 'radial-gradient(ellipse at center, #c87941 0%, #7a3d10 100%)',
     galaxy: 'url(/static/img/milkyway_bg.jpg) center/cover no-repeat',
 };
 
 function _csApplyBackground(wrap) {
-    const key = localStorage.getItem('ws_bg') || 'orange';   // share pref with worldsweeper
-    wrap.style.background = _CS_BACKGROUNDS[key] || _CS_BACKGROUNDS.orange;
+    const key = localStorage.getItem('cs_bg') || 'sky';
+    wrap.style.background = _CS_BACKGROUNDS[key] || _CS_BACKGROUNDS.sky;
     document.querySelectorAll('.ws-bg-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.bg === key);
     });
@@ -890,11 +892,11 @@ function initCube() {
     _camera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
     _camera.position.set(0, 0, 4.5);
 
-    // Scene
+    // Scene — stronger directional light from upper-left gives clear 3-face shading
     _scene = new THREE.Scene();
-    _scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
-    dir.position.set(5, 5, 5);
+    _scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+    const dir = new THREE.DirectionalLight(0xffffff, 1.2);
+    dir.position.set(-4, 8, 5);
     _scene.add(dir);
 
     _cubeGroup = new THREE.Group();
@@ -910,7 +912,7 @@ function initCube() {
     _csApplyBackground(wrap);
     document.querySelectorAll('.ws-bg-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            localStorage.setItem('ws_bg', btn.dataset.bg);
+            localStorage.setItem('cs_bg', btn.dataset.bg);
             _csApplyBackground(wrap);
         });
     });

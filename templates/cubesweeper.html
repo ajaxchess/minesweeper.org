@@ -74,6 +74,9 @@
 }
 .ws-bg-btn:hover  { transform: scale(1.15); }
 .ws-bg-btn.active { border-color: #fff; box-shadow: 0 0 0 1px rgba(255,255,255,0.4); }
+.ws-bg-btn[data-bg="sky"] {
+    background: linear-gradient(150deg, #96b8d8 0%, #4a6a90 100%);
+}
 .ws-bg-btn[data-bg="orange"] {
     background: radial-gradient(ellipse at center, #c87941 0%, #7a3d10 100%);
 }
@@ -112,6 +115,7 @@
       <span class="stat" id="timer-display">⏱ <span id="cs-elapsed">0.00</span>s</span>
     </div>
     <div class="ws-bg-btns" title="Background">
+      <button class="ws-bg-btn" data-bg="sky" title="Sky"></button>
       <button class="ws-bg-btn" data-bg="orange" title="Orange"></button>
       <button class="ws-bg-btn" data-bg="galaxy" title="Milky Way"></button>
       <a id="ws-galaxy-credit" class="ws-galaxy-credit" style="display:none"
