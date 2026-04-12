@@ -72,6 +72,10 @@ const _drag = { active: false, lastX: 0, lastY: 0, travelSq: 0 };
 // Flag mode — when true, left-click cycles flags instead of revealing
 let _flagMode = false;
 
+// Far-side numbers — when true, number sprites on back-facing faces are hidden
+let _hideFarNumbers = false;
+let _tmpVec = null;   // THREE.Vector3 reused each frame; initialised in initGlobe
+
 // Camera pulse
 let _pulse = null;
 
@@ -91,6 +95,15 @@ function _updateFlagModeBtn() {
     btn.title = _flagMode
         ? 'Flag mode ON — clicks place/cycle flags (click to switch to reveal mode)'
         : 'Flag mode OFF — clicks reveal faces (click to switch to flag mode)';
+}
+
+function _updateFarNumsBtn() {
+    const btn = document.getElementById('ws-farnums-btn');
+    if (!btn) return;
+    btn.classList.toggle('active', _hideFarNumbers);
+    btn.title = _hideFarNumbers
+        ? 'Far-side numbers hidden — click to show all'
+        : 'Click to hide numbers on the back of the globe';
 }
 
 function _applyBackground(wrap) {
@@ -172,6 +185,22 @@ function initGlobe() {
         _flagMode = !_flagMode;
         localStorage.setItem('ws_flagmode', _flagMode ? '1' : '0');
         _updateFlagModeBtn();
+    });
+
+    // ── Far-side numbers toggle ──────────────────────────────────────────────
+    _tmpVec = new THREE.Vector3();
+    _hideFarNumbers = localStorage.getItem('ws_farnums') === '1';
+    _updateFarNumsBtn();
+    document.getElementById('ws-farnums-btn')?.addEventListener('click', () => {
+        _hideFarNumbers = !_hideFarNumbers;
+        localStorage.setItem('ws_farnums', _hideFarNumbers ? '1' : '0');
+        if (!_hideFarNumbers) {
+            // Restore visibility for any sprites that were hidden
+            for (let i = 0; i < _sprites.length; i++) {
+                if (_sprites[i]) _sprites[i].visible = true;
+            }
+        }
+        _updateFarNumsBtn();
     });
 
     // ── Build face tile meshes + border lines ────────────────────────────────
@@ -725,6 +754,19 @@ function _animate() {
         } else {
             const frac = t < 0.5 ? t * 2 : (1 - t) * 2;
             _camera.position.z = _pulse.baseZ + (_pulse.peakZ - _pulse.baseZ) * frac;
+        }
+    }
+
+    // Hide number sprites on back-facing faces when toggle is on
+    if (_hideFarNumbers && _globeData && _tmpVec) {
+        const q = _globeGroup.quaternion;
+        for (let i = 0; i < _sprites.length; i++) {
+            const spr = _sprites[i];
+            if (!spr) continue;
+            if (faceState[i] !== REVEALED || adjCount[i] === 0) continue;
+            const c = _globeData.faces[i].centroid;
+            _tmpVec.set(c.x, c.y, c.z).applyQuaternion(q);
+            spr.visible = _tmpVec.z > 0;
         }
     }
 
