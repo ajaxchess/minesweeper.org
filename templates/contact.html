@@ -6,6 +6,17 @@
 {% block og_url %}https://minesweeper.org/contact{% endblock %}
 {% block og_title %}Contact Us | minesweeper.org{% endblock %}
 {% block og_description %}Have a question, found a bug, or want to share feedback? Contact the minesweeper.org team. We read every message and aim to respond within a few days.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "name": "Contact Us — minesweeper.org",
+  "url": "https://minesweeper.org/contact",
+  "description": "Have a question, found a bug, or want to share feedback? Contact the minesweeper.org team."
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="tz-content-page">

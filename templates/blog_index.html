@@ -1,11 +1,30 @@
 {% extends "base.html" %}
 
-{% block title %}Blog — Lady Di's Mines | minesweeper.org{% endblock %}
+{% block title %}Minesweeper Blog — Strategy, News &amp; Updates | minesweeper.org{% endblock %}
 {% block description %}The minesweeper.org blog — thoughts on building a game site with AI, vibe coding, minesweeper strategy, and the changing landscape of software development.{% endblock %}
 {% block canonical %}https://minesweeper.org/blog{% endblock %}
 {% block og_url %}https://minesweeper.org/blog{% endblock %}
-{% block og_title %}Blog — Lady Di's Mines | minesweeper.org{% endblock %}
+{% block og_title %}Minesweeper Blog — Strategy, News &amp; Updates{% endblock %}
 {% block og_description %}The minesweeper.org blog — thoughts on building a game site with AI, vibe coding, minesweeper strategy, and the changing landscape of software development.{% endblock %}
+{% block tw_title %}Minesweeper Blog — Strategy, News &amp; Updates{% endblock %}
+{% block tw_description %}The minesweeper.org blog — thoughts on AI-assisted development, minesweeper strategy, site updates, and the changing landscape of software.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "Lady Di's Mines",
+  "url": "https://minesweeper.org/blog",
+  "description": "The minesweeper.org blog — thoughts on building a game site with AI, vibe coding, minesweeper strategy, and the changing landscape of software development.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "minesweeper.org",
+    "url": "https://minesweeper.org/",
+    "logo": { "@type": "ImageObject", "url": "https://minesweeper.org/static/img/LadyDisMinesLogo.png" }
+  }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="blog-wrapper">

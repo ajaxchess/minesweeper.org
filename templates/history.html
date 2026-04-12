@@ -5,6 +5,23 @@
 {% block og_url %}https://minesweeper.org/history{% endblock %}
 {% block og_title %}History — minesweeper.org{% endblock %}
 {% block og_description %}The history of minesweeper.org — launched in 1999, named after Princess Diana's landmine campaign, and rebuilt from scratch in 2025.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "History of minesweeper.org",
+  "url": "https://minesweeper.org/history",
+  "description": "The history of minesweeper.org — launched in 1999, built on a Java applet, named after Princess Diana's landmine campaign, and rebuilt from scratch in 2026.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "minesweeper.org",
+    "url": "https://minesweeper.org/",
+    "logo": { "@type": "ImageObject", "url": "https://minesweeper.org/static/img/LadyDisMinesLogo.png" }
+  }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="lb-wrapper">

@@ -8,6 +8,24 @@
 {% block og_description %}{{ t.meta_desc_howtoplay }}{% endblock %}
 {% block tw_title %}{{ t.meta_title_howtoplay | replace(" | minesweeper.org", "") }}{% endblock %}
 {% block tw_description %}{{ t.meta_desc_howtoplay }}{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Play Minesweeper",
+  "url": "https://minesweeper.org/how-to-play",
+  "description": "Learn to play Minesweeper: reveal cells with left-click, flag mines with right-click, and use numbered clues to deduce mine locations.",
+  "step": [
+    {"@type": "HowToStep", "position": 1, "name": "Make your first click", "text": "Left-click any cell to start. The first click is always safe and usually opens a cascade of empty cells."},
+    {"@type": "HowToStep", "position": 2, "name": "Read the numbers", "text": "Each revealed number tells you how many mines are hidden in its eight surrounding cells. Use these clues to work out where mines must be."},
+    {"@type": "HowToStep", "position": 3, "name": "Flag suspected mines", "text": "Right-click a cell to place a flag on a suspected mine. Flagged cells cannot be accidentally revealed."},
+    {"@type": "HowToStep", "position": 4, "name": "Apply logic to reveal safe cells", "text": "When a numbered cell has exactly as many unrevealed neighbours as its number, all those neighbours are mines. When all its mines are flagged, the remaining neighbours are safe to reveal."},
+    {"@type": "HowToStep", "position": 5, "name": "Win the game", "text": "Reveal every non-mine cell to win. All remaining mines are automatically flagged when you clear the board."}
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <script>if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||'ontouchstart'in window)document.documentElement.classList.add('is-mobile');</script>

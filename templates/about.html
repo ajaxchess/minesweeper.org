@@ -5,6 +5,23 @@
 {% block og_url %}https://minesweeper.org/about{% endblock %}
 {% block og_title %}About — minesweeper.org{% endblock %}
 {% block og_description %}About minesweeper.org — a free online minesweeper game with no-guess mode, multiplayer duels, daily quests, and a tribute to Diana, Princess of Wales.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "name": "About — minesweeper.org",
+  "url": "https://minesweeper.org/about",
+  "description": "About minesweeper.org — a free online minesweeper game with no-guess mode, multiplayer duels, daily quests, and a tribute to Diana, Princess of Wales.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "minesweeper.org",
+    "url": "https://minesweeper.org/",
+    "logo": { "@type": "ImageObject", "url": "https://minesweeper.org/static/img/LadyDisMinesLogo.png" }
+  }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="lb-wrapper">

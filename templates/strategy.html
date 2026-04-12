@@ -8,6 +8,23 @@
 {% block og_description %}{{ t.meta_desc_strategy }}{% endblock %}
 {% block tw_title %}{{ t.meta_title_strategy | replace(" | minesweeper.org", "") }}{% endblock %}
 {% block tw_description %}{{ t.meta_desc_strategy }}{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Minesweeper Strategy Guide",
+  "url": "https://minesweeper.org/strategy",
+  "description": "Advanced Minesweeper strategy: pattern recognition, constraint solving, chord clicking, and techniques to improve your speed and accuracy.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "minesweeper.org",
+    "url": "https://minesweeper.org/",
+    "logo": { "@type": "ImageObject", "url": "https://minesweeper.org/static/img/LadyDisMinesLogo.png" }
+  }
+}
+</script>
+{% endblock %}
 
 {% block jsonld %}
 <script type="application/ld+json">

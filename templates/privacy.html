@@ -5,6 +5,17 @@
 {% block og_url %}https://minesweeper.org/privacy{% endblock %}
 {% block og_title %}Privacy Policy — minesweeper.org{% endblock %}
 {% block og_description %}Privacy Policy for minesweeper.org — how we collect, use, and protect your information, including Google login data, scores, and leaderboard entries.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Privacy Policy — minesweeper.org",
+  "url": "https://minesweeper.org/privacy",
+  "description": "Privacy Policy for minesweeper.org — how we collect, use, and protect your information."
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="lb-wrapper">
