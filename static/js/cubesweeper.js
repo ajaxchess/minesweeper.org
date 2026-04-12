@@ -62,6 +62,7 @@ let mineSet    = null;  // Set<number>
 let gameOver   = false;
 let firstClick = true;
 let _leftClicks = 0;
+let _csBbbv       = 0;   // 3BV of the current board (computed after mines placed)
 let _timerHandle  = null;
 let _startTime    = 0;
 let _finalTimeMs  = 0;
@@ -432,6 +433,7 @@ function _csInitGameState() {
     gameOver   = false;
     firstClick = true;
     _leftClicks = 0;
+    _csBbbv     = 0;
     _csStopTimer();
     document.getElementById('cs-elapsed').textContent = '0.00';
     document.getElementById('cs-mines-remaining').textContent = String(_mineCount);
@@ -540,6 +542,7 @@ function revealCell(id) {
             mineSet = _csGenerateMines(TOTAL, _mineCount, id);
         }
         _csComputeAdj(mineSet);
+        _csBbbv = _csCompute3BV(TOTAL);
         _csStartTimer();
     }
 
@@ -593,8 +596,32 @@ function _csUpdateMineCounter() {
 }
 
 // ---------------------------------------------------------------------------
-// Percentage cleared
+// 3BV and percentage cleared
 // ---------------------------------------------------------------------------
+
+function _csCompute3BV(TOTAL) {
+    const visited = new Uint8Array(TOTAL);
+    let openings = 0;
+    for (let start = 0; start < TOTAL; start++) {
+        if (mineSet.has(start) || visited[start] || adjCount[start] !== 0) continue;
+        openings++;
+        const queue = [start];
+        visited[start] = 1;
+        while (queue.length) {
+            const cur = queue.shift();
+            for (const nb of _adj[cur]) {
+                if (mineSet.has(nb) || visited[nb]) continue;
+                visited[nb] = 1;
+                if (adjCount[nb] === 0) queue.push(nb);
+            }
+        }
+    }
+    let isolated = 0;
+    for (let i = 0; i < TOTAL; i++) {
+        if (!mineSet.has(i) && !visited[i]) isolated++;
+    }
+    return openings + isolated;
+}
 
 function _csUpdatePctCleared() {
     const TOTAL = 6 * _N * _N;
@@ -637,10 +664,26 @@ function _csTriggerGameOver(won) {
 // ---------------------------------------------------------------------------
 
 function _csShowScoreForm() {
-    const form = document.getElementById('cs-score-form');
+    const form    = document.getElementById('cs-score-form');
     if (!form) return;
+    const wrapper  = document.querySelector('.game-wrapper');
+    const username = wrapper ? (wrapper.dataset.username || '') : '';
+
     form.style.display = 'block';
     form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    if (username) {
+        // Logged-in via Google — auto-submit immediately
+        form.innerHTML = '<p style="color:var(--text-dim);">Saving score…</p>';
+        _csSubmitScore(username).then(ok => {
+            form.innerHTML = ok
+                ? '<p style="color:#6fcf97;">Score saved! ' +
+                  '<a href="/cubesweeper/leaderboard" style="color:#53d8fb;">View leaderboard →</a></p>'
+                : '<p style="color:#e57373;">Error saving score — please try again.</p>';
+        });
+        return;
+    }
+
     document.getElementById('cs-score-msg').textContent = '';
     const saved = localStorage.getItem('cubesweeper_name');
     if (saved) document.getElementById('cs-score-name').value = saved;
@@ -678,6 +721,7 @@ async function _csSubmitScore(name) {
                 time_ms:     _finalTimeMs,
                 mines:       _mineCount,
                 no_guess:    _noGuess,
+                bbbv:        _csBbbv || undefined,
                 left_clicks: _leftClicks || undefined,
                 board_hash:  _csBoardToHash(mineSet, TOTAL),
             }),
