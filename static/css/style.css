@@ -478,9 +478,8 @@ html[data-skin="classic"] .landing-seo-section a { color: #0033cc; }
 .stat-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 1.5rem;
-  width: 100%;
 }
 
 .stat {
