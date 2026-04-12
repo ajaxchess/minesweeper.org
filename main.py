@@ -78,6 +78,59 @@ async def count_requests(request: Request, call_next):
     return await call_next(request)
 
 @app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    # ── Content-Security-Policy ────────────────────────────────────────────────
+    # Note: 'unsafe-inline' is required for script-src and style-src because the
+    # codebase uses many inline <script> blocks (gtag, translations, nav handlers,
+    # per-page init calls) and dynamic style injection (ad-disable feature).
+    # Inline scripts mean injected <script>…</script> tags cannot be blocked by CSP
+    # alone; however, restricting script-src to known domains still blocks loading
+    # scripts from arbitrary external origins.  The correct long-term fix is to
+    # add per-request nonces to every inline <script> and remove 'unsafe-inline'.
+    csp = "; ".join([
+        "default-src 'self'",
+        (
+            "script-src 'self' 'unsafe-inline'"
+            " https://pagead2.googlesyndication.com"
+            " https://www.googletagmanager.com"
+            " https://cdn.jsdelivr.net"
+        ),
+        "style-src 'self' 'unsafe-inline'",
+        (
+            "img-src 'self' data: blob:"
+            " https://lh3.googleusercontent.com"
+            " https://*.googlesyndication.com"
+            " https://*.doubleclick.net"
+            " https://www.googletagmanager.com"
+            " https://www.google-analytics.com"
+        ),
+        # 'self' covers same-origin WebSockets (wss://minesweeper.org/ws/…)
+        "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com",
+        # AdSense renders ad creatives inside iframes from these domains
+        "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
+        # Block all plugin-based content (Flash, Java applets, etc.)
+        "object-src 'none'",
+        # Prevent <base> tag injection from redirecting relative URLs
+        "base-uri 'self'",
+        # Prevent forms from submitting to external sites
+        "form-action 'self'",
+        # Prevent this page from being embedded in external frames (clickjacking)
+        "frame-ancestors 'self'",
+    ])
+    response.headers["Content-Security-Policy"] = csp
+    # Prevent MIME-type sniffing (e.g. serving a JS file as text/html)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    # Legacy clickjacking protection for older browsers that ignore frame-ancestors
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    # Limit referrer information sent on cross-origin navigation
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    # Disable browser features this site doesn't use
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    return response
+
+
+@app.middleware("http")
 async def csrf_xhr_check(request: Request, call_next):
     """Require X-Requested-With: XMLHttpRequest OR Content-Type: application/json
     on all /api/ POST requests.  Cross-origin fetch() cannot set custom headers
