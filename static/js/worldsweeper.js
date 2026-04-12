@@ -87,6 +87,8 @@ function _applyBackground(wrap) {
     document.querySelectorAll('.ws-bg-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.bg === key);
     });
+    const credit = document.getElementById('ws-galaxy-credit');
+    if (credit) credit.style.display = key === 'galaxy' ? '' : 'none';
 }
 
 // ---------------------------------------------------------------------------

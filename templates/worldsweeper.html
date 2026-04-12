@@ -76,6 +76,11 @@
 .ws-bg-btn[data-bg="galaxy"] {
     background: url(/static/img/milkyway_bg.jpg) center/cover;
 }
+.ws-galaxy-credit {
+    font-size: 0.72rem; color: var(--text-dim); white-space: nowrap;
+    margin-left: 0.3rem; align-self: center;
+}
+.ws-galaxy-credit a { color: inherit; text-decoration: underline; }
 </style>
 
 <div class="game-wrapper"
@@ -104,6 +109,9 @@
     <div class="ws-bg-btns" title="Background">
       <button class="ws-bg-btn" data-bg="orange" title="Orange"></button>
       <button class="ws-bg-btn" data-bg="galaxy" title="Milky Way"></button>
+      <a id="ws-galaxy-credit" class="ws-galaxy-credit" style="display:none"
+         href="https://commons.wikimedia.org/wiki/File:The_Galaxy_%28Milky_way%29.jpg"
+         target="_blank" rel="noopener noreferrer">📷 Wikimedia Commons</a>
     </div>
     <nav class="ws-nav-links">
       <a href="/worldsweeper/leaderboard" class="ws-lb">{{ t['ws_view_lb'] }}</a>
