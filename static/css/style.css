@@ -5968,6 +5968,8 @@ html[data-skin="light"] nav a.active  { color: #fff; }
 /* Button-styled links must keep white text on the dark accent background */
 html[data-skin="light"] .tz-btn-potd,
 html[data-skin="light"] .tz-btn-potd:visited { color: #fff; }
+html[data-skin="light"] .tz-play-cta,
+html[data-skin="light"] .tz-play-cta:visited { color: #fff; }
 html[data-skin="light"] .variant-play-btn:not(.variant-play-btn-outline),
 html[data-skin="light"] .variant-play-btn:not(.variant-play-btn-outline):visited { color: #fff; }
 /* Outline buttons use accent color as text on light background */
