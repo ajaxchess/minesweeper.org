@@ -119,6 +119,82 @@
   </div>
 
 </div>
+<!-- ── SEO Landing Content ── -->
+<div class="game-landing-seo">
+
+  <h2>Minesweeper Board Generator — Design and Share Custom Boards</h2>
+  <p>
+    The Board Generator lets you place mines exactly where you want them on a custom grid,
+    then produces a <strong>board hash</strong> — a compact identifier that encodes the
+    complete mine layout. Anyone with that hash can replay the exact same board in
+    Standard, Cylinder, or Toroid mode. Use it to design challenges for friends, study
+    specific configurations, or create Mosaic puzzles from a hand-crafted mine pattern.
+  </p>
+
+  <div class="landing-seo-grid">
+
+    <section class="landing-seo-section">
+      <h2>What Is a Board Hash?</h2>
+      <p>
+        A board hash is a deterministic fingerprint of a mine layout. Given the same grid
+        dimensions and the same mine positions, the hash is always identical — which means
+        a hash plus dimensions is everything needed to reconstruct the board exactly.
+      </p>
+      <p>
+        The hash appears in replay URLs across the site. When you finish a game on any
+        standard, cylinder, or toroid board, your score record links to a replay URL built
+        from that hash. The Board Generator runs the same encoding in reverse: you build the
+        layout visually, and the hash is computed live as you click.
+      </p>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>3BV Across Topologies</h2>
+      <p>
+        3BV (Bechtel's Board Benchmark Value) is the minimum number of left-clicks needed
+        to clear a board without flagging. It measures board complexity — a higher 3BV means
+        more isolated numbered cells and fewer opening cascades.
+      </p>
+      <p>
+        The generator computes 3BV for all three topologies simultaneously:
+      </p>
+      <ul>
+        <li><strong>Standard —</strong> Flat grid. Border cells have fewer neighbours, so edge mines create more isolated numbered cells.</li>
+        <li><strong>Cylinder —</strong> Left and right edges connect. Edge cells now have a full 8 neighbours, which can merge cascades and lower 3BV.</li>
+        <li><strong>Toroid —</strong> All four edges connect. Every cell has exactly 8 neighbours. Typically the lowest 3BV of the three, since no cell is ever isolated by a border.</li>
+      </ul>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>Mosaic Puzzle Design</h2>
+      <p>
+        <a href="/mosaic">Mosaic</a> is a variant where every clue counts mines in a 3×3
+        area centred on the cell rather than in the 8 directly adjacent cells. Once you have
+        a mine layout, the Mosaic section of the generator shows the corresponding number for
+        every cell under Standard topology.
+      </p>
+      <p>
+        Click cells in the mask grid to hide their numbers — those cells appear blank to the
+        solver, making the puzzle harder. A masked Mosaic link encodes both the mine layout
+        and the hidden-cell pattern, so whoever opens the link gets the exact puzzle you
+        designed. Use this to craft puzzles with a clean logical path: hide only the cells
+        whose values can be deduced from their visible neighbours.
+      </p>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>Use Cases</h2>
+      <ul>
+        <li><strong>Challenges.</strong> Design a specific layout, share the replay link, and compare times with friends on an identical board.</li>
+        <li><strong>Analysis.</strong> Explore how changing mine positions affects 3BV across topologies. Moving a mine from a corner to an interior cell often drops 3BV noticeably.</li>
+        <li><strong>Puzzle creation.</strong> Build a Mosaic puzzle with a known solution path — place mines to produce a set of unambiguous clues, then mask any redundant numbers.</li>
+        <li><strong>Practice boards.</strong> Create a layout that isolates a specific pattern (1-2-1, corner trap, mine chain) and replay it until the recognition is automatic.</li>
+      </ul>
+    </section>
+
+  </div>
+
+</div>
 {% endblock %}
 
 {% block scripts %}
