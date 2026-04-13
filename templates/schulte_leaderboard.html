@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% set _title = "Schulte Grid Leaderboard | minesweeper.org" %}
+{% set _desc  = "Daily and all-time Schulte Grid leaderboards — fastest times across all six modes and eight board sizes." %}
+{% set _canon = "https://minesweeper.org/other/schulte/leaderboard" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}Schulte Grid Leaderboard{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<div class="lb-wrap">
+
+  <h1 class="tz-page-h1">Schulte Grid Leaderboard</h1>
+
+  <div style="text-align:center;margin-bottom:1.5rem;">
+    <a href="/other/schulte/play" class="btn" style="margin:0.25rem;">Play</a>
+    <a href="/other/schulte/how-to-play" class="btn" style="margin:0.25rem;">How to Play</a>
+    <a href="/other" class="btn" style="margin:0.25rem;">Other Games</a>
+  </div>
+
+  <!-- Mode selector -->
+  <div class="sg-lb-selectors">
+    <div class="sg-selector-group">
+      <div class="sg-selector-label">Mode</div>
+      <div class="sg-mode-btns" id="lb-mode-btns">
+        <button class="sg-mode-btn active" data-mode="normal">Normal</button>
+        <button class="sg-mode-btn" data-mode="easy">Easy</button>
+        <button class="sg-mode-btn" data-mode="blind_normal">Blind</button>
+        <button class="sg-mode-btn" data-mode="blind_easy">Blind + Easy</button>
+        <button class="sg-mode-btn" data-mode="easy_mix">Easy Mix</button>
+        <button class="sg-mode-btn" data-mode="mix">Mix</button>
+      </div>
+    </div>
+
+    <div class="sg-selector-group">
+      <div class="sg-selector-label">Board Size</div>
+      <div class="sg-size-btns" id="lb-size-btns">
+        {% for n in [3,4,5,6,7,8,9,10] %}
+        <button class="sg-size-btn{% if n == 5 %} active{% endif %}" data-size="{{ n }}">{{ n }}×{{ n }}</button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="sg-selector-group">
+      <div class="sg-selector-label">Period</div>
+      <div class="sg-period-btns" id="lb-period-btns">
+        <button class="sg-period-btn active" data-period="today">Today</button>
+        <button class="sg-period-btn" data-period="alltime">All Time</button>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sg-lb-heading" id="lb-heading" style="font-size:1rem;color:var(--accent2);margin-top:1rem;"></h2>
+
+  <div class="wt-table-wrap">
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>{{ t['lb_col_rank'] }}</th>
+          <th>{{ t['lb_col_name'] }}</th>
+          <th>{{ t['lb_col_time'] }}</th>
+          <th>{{ t['lb_col_date'] }}</th>
+        </tr>
+      </thead>
+      <tbody id="lb-body">
+        <tr><td colspan="4" style="color:var(--text-dim);">{{ t['lb_loading'] }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p id="lb-alltime-note" style="display:none;color:var(--text-dim);font-size:0.85rem;text-align:center;margin-top:0.5rem;">
+    All-time records show best score per signed-in player.
+  </p>
+
+</div>
+
+<script>
+(function () {
+  const tbody      = document.getElementById("lb-body");
+  const heading    = document.getElementById("lb-heading");
+  const alltimeNote = document.getElementById("lb-alltime-note");
+  const today      = "{{ today }}";
+
+  let curMode   = "normal";
+  let curSize   = 5;
+  let curPeriod = "today";
+
+  const modeLabels = {
+    normal: "Normal", easy: "Easy", blind_normal: "Blind",
+    blind_easy: "Blind + Easy", easy_mix: "Easy Mix", mix: "Mix",
+  };
+
+  async function loadScores() {
+    const params = new URLSearchParams({ mode: curMode, size: curSize, period: curPeriod });
+    if (curPeriod === "today") params.set("puzzle_date", today);
+
+    heading.textContent = `${modeLabels[curMode]} · ${curSize}×${curSize} · ` +
+      (curPeriod === "today" ? "Today (" + today + ")" : "All Time");
+    alltimeNote.style.display = curPeriod === "alltime" ? "block" : "none";
+    tbody.innerHTML = `<tr><td colspan="4" style="color:var(--text-dim);">Loading…</td></tr>`;
+
+    try {
+      const r = await fetch("/api/schulte-scores?" + params.toString());
+      const scores = await r.json();
+      if (!scores.length) {
+        tbody.innerHTML = `<tr><td colspan="4" style="color:var(--text-dim);">No scores yet — be the first!</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = scores.map((s, i) => {
+        const name = s.profile_url
+          ? `<a href="${s.profile_url}">${s.name}</a>`
+          : s.name;
+        const secs = (s.time_ms / 1000).toFixed(2);
+        return `<tr>
+          <td>${i + 1}</td>
+          <td>${name}</td>
+          <td>${secs}s</td>
+          <td>${s.created_at}</td>
+        </tr>`;
+      }).join("");
+    } catch {
+      tbody.innerHTML = `<tr><td colspan="4" style="color:var(--text-dim);">⚠️ Could not load scores.</td></tr>`;
+    }
+  }
+
+  document.getElementById("lb-mode-btns").addEventListener("click", function (e) {
+    const btn = e.target.closest(".sg-mode-btn");
+    if (!btn) return;
+    document.querySelectorAll("#lb-mode-btns .sg-mode-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    curMode = btn.dataset.mode;
+    loadScores();
+  });
+
+  document.getElementById("lb-size-btns").addEventListener("click", function (e) {
+    const btn = e.target.closest(".sg-size-btn");
+    if (!btn) return;
+    document.querySelectorAll("#lb-size-btns .sg-size-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    curSize = parseInt(btn.dataset.size, 10);
+    loadScores();
+  });
+
+  document.getElementById("lb-period-btns").addEventListener("click", function (e) {
+    const btn = e.target.closest(".sg-period-btn");
+    if (!btn) return;
+    document.querySelectorAll(".sg-period-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    curPeriod = btn.dataset.period;
+    loadScores();
+  });
+
+  loadScores();
+})();
+</script>
+{% endblock %}

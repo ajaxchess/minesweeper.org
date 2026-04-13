@@ -872,6 +872,38 @@ class Game2048HexScore(Base):
         }
 
 
+# ── Schulte Grid Score model ──────────────────────────────────────────────────
+class SchulteGridScore(Base):
+    __tablename__ = "schulte_grid_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    mode        = Column(String(16), nullable=False)   # normal|easy|blind_normal|blind_easy|easy_mix|mix
+    board_size  = Column(Integer, nullable=False)       # 3–10
+    time_ms     = Column(Integer, nullable=False)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD UTC (for daily reset)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_schulte_grid_scores_date_mode_size_time", "puzzle_date", "mode", "board_size", "time_ms"),
+        Index("ix_schulte_grid_scores_email_mode_size_time", "user_email", "mode", "board_size", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "mode":        self.mode,
+            "board_size":  self.board_size,
+            "time_ms":     self.time_ms,
+            "puzzle_date": self.puzzle_date,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
 # ── Contact Message model ─────────────────────────────────────────────────────
 class ContactMessage(Base):
     __tablename__ = "contact_messages"

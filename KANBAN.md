@@ -10,6 +10,7 @@
 - F51 Blog post announcing the Flower Garden theme @bill
 
 ## In Progress
+- F52 Schulte Grid — /other/schulte @richard
 - F23 PVP/Duel improvements @earl
 - F26 Mosaic game mode @richard
 - F27 Tentaizu game improvements @bill

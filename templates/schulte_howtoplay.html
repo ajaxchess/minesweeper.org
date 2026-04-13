@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}How to Play Schulte Grid | minesweeper.org{% endblock %}
+{% block description %}Learn how to play the Schulte Grid cognitive training game. Improve peripheral vision, processing speed, and focus. Instructions for all six game modes.{% endblock %}
+{% block canonical %}https://minesweeper.org/other/schulte/how-to-play{% endblock %}
+{% block og_url %}https://minesweeper.org/other/schulte/how-to-play{% endblock %}
+{% block og_title %}How to Play Schulte Grid{% endblock %}
+{% block og_description %}Learn the rules, modes, and science behind the Schulte Grid cognitive training exercise.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Play Schulte Grid",
+  "url": "https://minesweeper.org/other/schulte/how-to-play",
+  "description": "Instructions for the Schulte Grid cognitive training game — tap numbers 1 to N² in order using peripheral vision.",
+  "step": [
+    { "@type": "HowToStep", "position": 1, "name": "Choose mode and size",
+      "text": "Select one of six game modes and a board size from 3×3 to 10×10." },
+    { "@type": "HowToStep", "position": 2, "name": "Fix your gaze on the center",
+      "text": "Look at the center of the board. Do not move your eyes — use peripheral vision to find each number." },
+    { "@type": "HowToStep", "position": 3, "name": "Tap 1 to start the timer",
+      "text": "The timer starts when you tap the number 1." },
+    { "@type": "HowToStep", "position": 4, "name": "Tap numbers in order",
+      "text": "Continue tapping 2, 3, 4… until you reach N². Tapping the wrong number does nothing." },
+    { "@type": "HowToStep", "position": 5, "name": "Submit your score",
+      "text": "When all numbers are found, your time is shown. Enter your name and submit to the leaderboard." }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">How to Play Schulte Grid</h1>
+
+  <div style="text-align:center;margin-bottom:1.5rem;">
+    <a href="/other/schulte/play" class="btn" style="margin:0.25rem;">Play Now</a>
+    <a href="/other/schulte/leaderboard" class="btn" style="margin:0.25rem;">Leaderboard</a>
+    <a href="/other" class="btn" style="margin:0.25rem;">Other Games</a>
+  </div>
+
+  <div class="help-section">
+    <h2>The Rules</h2>
+    <ol>
+      <li>Choose a <strong>mode</strong> and a <strong>board size</strong> (3×3 to 10×10).</li>
+      <li>A grid of N×N randomly arranged numbers will appear.</li>
+      <li>
+        <strong>Fix your gaze on the center of the board.</strong> The goal is to find each
+        number using your peripheral vision — not by scanning your eyes around the grid.
+      </li>
+      <li>Tap <strong>1</strong> to start the timer, then tap 2, 3, 4… in order up to N².</li>
+      <li>Tapping the wrong number does nothing — no penalty, just keep looking.</li>
+      <li>When you tap the final number, the timer stops and you can submit your score.</li>
+    </ol>
+  </div>
+
+  <div class="help-section">
+    <h2>The Six Modes</h2>
+    <table class="lb-table" style="max-width:600px;">
+      <thead>
+        <tr><th>Mode</th><th>What changes on a correct tap</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Normal</strong></td><td>Nothing — tile and number stay visible.</td></tr>
+        <tr><td><strong>Easy</strong></td><td>Cell background disappears; the number floats in space.</td></tr>
+        <tr><td><strong>Blind</strong></td><td>The number disappears; an empty tile remains.</td></tr>
+        <tr><td><strong>Blind + Easy</strong></td><td>Both tile and number vanish — empty space left.</td></tr>
+        <tr><td><strong>Easy Mix</strong></td><td>Cell background disappears <em>and</em> remaining numbers shuffle positions.</td></tr>
+        <tr><td><strong>Mix</strong></td><td>Remaining numbers shuffle to new positions after each tap.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:0.75rem;color:var(--text-dim);font-size:0.9rem;">
+      Mix and Easy Mix are the most challenging modes — the target numbers keep moving,
+      forcing your peripheral processing system to constantly re-scan.
+    </p>
+  </div>
+
+  <div class="help-section">
+    <h2>Board Sizes</h2>
+    <p>
+      Boards range from <strong>3×3</strong> (9 numbers) to <strong>10×10</strong> (100 numbers).
+      Larger boards require more time and significantly more peripheral field. Start with 4×4 or
+      5×5 and work your way up.
+    </p>
+    <p>
+      <strong>Standard sizes used in training:</strong> 5×5 is the classic Schulte table and
+      the most widely researched size. Athletes often train on 7×7 and 8×8 to push their
+      visual field further.
+    </p>
+  </div>
+
+  <div class="help-section">
+    <h2>Tips for Improvement</h2>
+    <ul>
+      <li>
+        <strong>Don't move your eyes.</strong> This is the most common mistake. Looking directly
+        at each number defeats the purpose — peripheral vision only develops when you train it
+        under load.
+      </li>
+      <li>
+        <strong>Relax your focus.</strong> A soft, diffuse gaze rather than sharp focus lets
+        you perceive a wider field. Athletes call this "soft eyes."
+      </li>
+      <li>
+        <strong>Practice daily.</strong> Research suggests 5–10 minutes per day over several
+        weeks produces measurable improvements in reading speed and reaction time.
+      </li>
+      <li>
+        <strong>Increase board size gradually.</strong> Master 4×4 before moving to 5×5.
+        A new board size feels dramatically harder at first but adapts quickly.
+      </li>
+      <li>
+        <strong>Try Mix mode.</strong> Even a few sessions on Mix will make Normal feel easy —
+        the constant repositioning forces deeper peripheral adaptation.
+      </li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Who Uses Schulte Grids?</h2>
+    <ul>
+      <li>
+        <strong>Athletes</strong> — used in professional sports training to improve court vision,
+        field awareness, and split-second decision making. Standard selection test for fighter
+        pilots, racing drivers, and elite military roles.
+      </li>
+      <li>
+        <strong>Seniors</strong> — one of the most well-studied tools for cognitive maintenance.
+        Regular practice supports attention, processing speed, and working memory as we age.
+      </li>
+      <li>
+        <strong>Readers and students</strong> — daily practice of 5–10 minutes can improve
+        reading speed by 20–30% by widening the span of characters captured per fixation.
+      </li>
+      <li>
+        <strong>ADHD</strong> — the structured, immediately rewarding nature of the task helps
+        build sustained attention and reduce distractibility.
+      </li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>History</h2>
+    <p>
+      The Schulte table was developed by the German psychiatrist Walter Schulte in the mid-20th
+      century as a tool for measuring attentional and psychomotor speed. It became widely used
+      in the Soviet sports science program during the 1970s and 1980s — coaches used it to
+      screen and develop elite athletes. Today it is part of standard neuropsychological test
+      batteries and sports performance programs worldwide.
+    </p>
+  </div>
+
+  <div class="lb-back">
+    <a href="/other/schulte/play">← Play Schulte Grid</a>
+  </div>
+
+</div>
+{% endblock %}

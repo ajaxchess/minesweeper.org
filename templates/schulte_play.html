@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Schulte Grid — Cognitive Training Game | minesweeper.org{% endblock %}
+{% block description %}Train your peripheral vision and cognitive speed with the Schulte Grid. Tap numbers 1 to N² in order as fast as you can. Six modes, eight board sizes, daily leaderboard.{% endblock %}
+{% block canonical %}https://minesweeper.org/other/schulte/play{% endblock %}
+{% block og_url %}https://minesweeper.org/other/schulte/play{% endblock %}
+{% block og_title %}Schulte Grid — Cognitive Training Game{% endblock %}
+{% block og_description %}Tap numbers in order as fast as you can. Improves peripheral vision, processing speed, and focus. Six modes, eight board sizes.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Schulte Grid",
+  "url": "https://minesweeper.org/other/schulte/play",
+  "description": "Cognitive training game. Tap numbers 1 to N² in order as fast as possible. Improves peripheral vision, processing speed, and concentration.",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Any"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="sg-wrap">
+
+  <div class="sg-header">
+    <h1>Schulte Grid</h1>
+    <p>Tap <strong>1 → N²</strong> in order as fast as you can</p>
+    <nav class="sg-subnav">
+      <a href="/other/schulte/leaderboard">Leaderboard</a>
+      <span>·</span>
+      <a href="/other/schulte/how-to-play">How to Play</a>
+      <span>·</span>
+      <a href="/other">Other Games</a>
+    </nav>
+  </div>
+
+  <!-- Mode selector -->
+  <div class="sg-selector-group">
+    <div class="sg-selector-label">Mode</div>
+    <div class="sg-mode-btns" id="mode-btns">
+      <button class="sg-mode-btn active" data-mode="normal">Normal</button>
+      <button class="sg-mode-btn" data-mode="easy">Easy</button>
+      <button class="sg-mode-btn" data-mode="blind_normal">Blind</button>
+      <button class="sg-mode-btn" data-mode="blind_easy">Blind + Easy</button>
+      <button class="sg-mode-btn" data-mode="easy_mix">Easy Mix</button>
+      <button class="sg-mode-btn" data-mode="mix">Mix</button>
+    </div>
+  </div>
+
+  <!-- Size selector -->
+  <div class="sg-selector-group">
+    <div class="sg-selector-label">Board Size</div>
+    <div class="sg-size-btns" id="size-btns">
+      {% for n in [3,4,5,6,7,8,9,10] %}
+      <button class="sg-size-btn{% if n == 5 %} active{% endif %}" data-size="{{ n }}">{{ n }}×{{ n }}</button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Timer -->
+  <div class="sg-timer-wrap">
+    <div class="sg-timer" id="sg-timer">0.00</div>
+    <div class="sg-next-label" id="sg-next-label">Tap <strong>1</strong> to start</div>
+  </div>
+
+  <!-- Board -->
+  <div class="sg-board-wrap">
+    <div class="sg-board" id="sg-board"></div>
+  </div>
+
+  <!-- Result panel (hidden until complete) -->
+  <div class="sg-result" id="sg-result" style="display:none">
+    <div class="sg-result-time" id="sg-result-time"></div>
+    <div class="sg-result-sub">All {{ '{' }}{{ '{' }}size{{ '}' }}{{ '}' }} numbers found!</div>
+    <form class="sg-submit-form" id="sg-submit-form">
+      <input type="text" id="sg-name" class="sg-name-input" placeholder="Your name (optional)" maxlength="32" autocomplete="off">
+      <button type="submit" class="sg-submit-btn">Submit Score</button>
+    </form>
+    <div class="sg-submit-msg" id="sg-submit-msg"></div>
+    <button class="sg-play-again-btn" id="sg-play-again">Play Again</button>
+    <a class="sg-lb-link" href="/other/schulte/leaderboard">View Leaderboard →</a>
+  </div>
+
+  <!-- SEO prose -->
+  <div class="game-landing-seo">
+    <h2>What is a Schulte Grid?</h2>
+    <p>
+      A Schulte grid (or Schulte table) is a square grid filled with randomly arranged numbers.
+      Your task is simple: tap or click each number in ascending order — 1, 2, 3… — as quickly
+      as possible. The catch is that your eyes should stay fixed on the center of the board.
+      Finding each number using your <strong>peripheral vision</strong>, not by scanning, is
+      the whole point.
+    </p>
+    <p>
+      Originally developed as a psychological assessment tool for measuring attention and
+      processing speed, Schulte grids became widely used in sports science, pilot selection,
+      and cognitive rehabilitation. Today millions of people use them as a daily mental workout —
+      5 to 10 minutes a day can measurably improve reading speed, visual field, and focus.
+    </p>
+
+    <h2>Health &amp; Performance Benefits</h2>
+    <ul>
+      <li><strong>Peripheral vision</strong> — trains your brain to perceive information away from
+          the center of gaze, expanding your functional visual field.</li>
+      <li><strong>Processing speed</strong> — repeated practice reduces reaction time and the time
+          needed to scan and categorize visual information.</li>
+      <li><strong>Working memory &amp; attention</strong> — keeping track of the next target while
+          scanning strengthens attentional control and working memory.</li>
+      <li><strong>ADHD support</strong> — the structured, immediately rewarding nature of the task
+          helps build sustained attention and reduce distractibility.</li>
+      <li><strong>Cognitive maintenance for seniors</strong> — regular use supports neuroplasticity
+          and helps maintain processing speed as we age.</li>
+      <li><strong>Athletic training</strong> — used by professional teams to improve court vision,
+          situational awareness, and decision speed. Standard selection test for pilots and drivers.</li>
+    </ul>
+
+    <h2>Six Game Modes</h2>
+    <p>
+      We offer six difficulty modes to keep training fresh. <strong>Normal</strong> is the classic
+      experience — numbers stay visible after tapping. <strong>Easy</strong> removes the cell
+      background on each correct tap so the found numbers float in space. <strong>Blind</strong>
+      removes the number itself, leaving an empty cell. <strong>Blind + Easy</strong> removes
+      both — the found cells simply disappear. <strong>Mix</strong> and <strong>Easy Mix</strong>
+      shuffle the remaining numbers after every tap, forcing you to relocate targets constantly —
+      the hardest training for peripheral processing.
+    </p>
+  </div>
+
+</div>
+
+<script>
+  window.SG_TODAY = "{{ today }}";
+  window.SG_USER  = {{ user | tojson if user else 'null' }};
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/schulte.js?v=1"></script>
+{% endblock %}
