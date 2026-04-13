@@ -5190,12 +5190,20 @@ _JIGSAW_UPLOAD_DIR = os.path.join("static", "uploads", "jigsaw")
 _JIGSAW_DIFFICULTIES = ("beginner", "intermediate", "expert")
 
 
+_JIGSAW_APRIL_FOOLS = "CaptainHoneyStereogram.png"
+
 def _jigsaw_daily_image(puzzle_date: str) -> str:
-    """Return the image filename for the given date (seeded random selection)."""
+    """Return the image filename for the given date (seeded random selection).
+    April 1st always returns the April Fools image; that image is excluded from
+    the random pool on all other days.
+    """
+    if puzzle_date[5:] == "04-01":   # MM-DD portion
+        return _JIGSAW_APRIL_FOOLS
     try:
         images = sorted(
             f for f in os.listdir(_JIGSAW_PUZZLE_DIR)
             if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp"))
+            and f != _JIGSAW_APRIL_FOOLS
         )
     except OSError:
         images = []
