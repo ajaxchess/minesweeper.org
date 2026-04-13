@@ -72,7 +72,7 @@
   <!-- Result panel (hidden until complete) -->
   <div class="sg-result" id="sg-result" style="display:none">
     <div class="sg-result-time" id="sg-result-time"></div>
-    <div class="sg-result-sub">All {{ '{' }}{{ '{' }}size{{ '}' }}{{ '}' }} numbers found!</div>
+    <div class="sg-result-sub" id="sg-result-sub"></div>
     <form class="sg-submit-form" id="sg-submit-form">
       <input type="text" id="sg-name" class="sg-name-input" placeholder="Your name (optional)" maxlength="32" autocomplete="off">
       <button type="submit" class="sg-submit-btn">Submit Score</button>
@@ -136,5 +136,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/schulte.js?v=1"></script>
+<script src="/static/js/schulte.js?v=2"></script>
 {% endblock %}

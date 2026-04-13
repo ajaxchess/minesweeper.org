@@ -27,6 +27,7 @@
   const resultTime  = document.getElementById("sg-result-time");
   const submitForm  = document.getElementById("sg-submit-form");
   const nameInput   = document.getElementById("sg-name");
+  const resultSub   = document.getElementById("sg-result-sub");
   const submitMsg   = document.getElementById("sg-submit-msg");
   const playAgain   = document.getElementById("sg-play-again");
 
@@ -204,24 +205,29 @@
   }
 
   // ── Completion ───────────────────────────────────────────────────────────────
-  function onComplete() {
+  async function onComplete() {
     stopTimer();
     finished = true;
     nextLabel.textContent = "Complete!";
 
     const secs = (timerMs / 1000).toFixed(2);
     resultTime.textContent = secs + "s";
+    resultSub.textContent  = `All ${total} numbers found!`;
     resultPanel.style.display = "flex";
-    if (nameInput && savedName) nameInput.value = savedName;
+
+    // Auto-submit for logged-in users
+    if (window.SG_USER && window.SG_USER.email) {
+      const name = window.SG_USER.display_name || window.SG_USER.name || "Anonymous";
+      submitMsg.textContent = "Submitting…";
+      submitForm.style.display = "none";
+      await submitScore(name);
+    } else {
+      if (nameInput && savedName) nameInput.value = savedName;
+    }
   }
 
   // ── Score submission ──────────────────────────────────────────────────────────
-  submitForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const name = (nameInput.value || "").trim() || "Anonymous";
-    savedName = name;
-    localStorage.setItem("sg_name", name);
-
+  async function submitScore(name) {
     const payload = {
       name:        name,
       puzzle_date: window.SG_TODAY,
@@ -229,8 +235,6 @@
       board_size:  boardSize,
       time_ms:     Math.round(timerMs),
     };
-
-    submitMsg.textContent = "Submitting…";
     try {
       const res = await fetch("/api/schulte-scores", {
         method:  "POST",
@@ -242,10 +246,22 @@
         submitForm.style.display = "none";
       } else {
         submitMsg.textContent = "Could not submit score.";
+        submitForm.style.display = "flex";
       }
     } catch {
       submitMsg.textContent = "Network error — score not saved.";
+      submitForm.style.display = "flex";
     }
+  }
+
+  submitForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const name = (nameInput.value || "").trim() || "Anonymous";
+    savedName = name;
+    localStorage.setItem("sg_name", name);
+    submitMsg.textContent = "Submitting…";
+    submitForm.style.display = "none";
+    await submitScore(name);
   });
 
   // ── Play again ───────────────────────────────────────────────────────────────
