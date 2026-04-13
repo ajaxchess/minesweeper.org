@@ -333,7 +333,7 @@ function _buildCellMeshes() {
 // Sprite overlays — mirrors worldsweeper.js
 // ---------------------------------------------------------------------------
 
-function _csMakeSprite(text, color, size, bgColor) {
+function _csMakeSprite(text, color, size, bgColor, faceIndex) {
     const c   = document.createElement('canvas');
     c.width   = c.height = 128;
     const ctx = c.getContext('2d');
@@ -349,19 +349,29 @@ function _csMakeSprite(text, color, size, bgColor) {
     ctx.textBaseline = 'middle';
     ctx.fillStyle    = color;
     ctx.fillText(text, 64, 64);
-    const mat = new THREE.SpriteMaterial({
+    const mat = new THREE.MeshBasicMaterial({
         map:         new THREE.CanvasTexture(c),
         transparent: true,
         depthTest:   false,
+        side:        THREE.FrontSide,
     });
-    const spr = new THREE.Sprite(mat);
-    spr.scale.set(size, size, 1);
-    return spr;
+    const geo  = new THREE.PlaneGeometry(size, size);
+    const mesh = new THREE.Mesh(geo, mat);
+    // Orient the plane co-planar with its cube face using the face's
+    // right/up/normal basis vectors (PlaneGeometry default: +X=right, +Y=up, +Z=normal)
+    const rotMatrix = new THREE.Matrix4().makeBasis(
+        _FACE_RIGHT[faceIndex],
+        _FACE_UP[faceIndex],
+        _FACE_NORMALS[faceIndex]
+    );
+    mesh.quaternion.setFromRotationMatrix(rotMatrix);
+    return mesh;
 }
 
 function _csClearSprite(id) {
     if (!_sprites[id]) return;
     _cubeGroup.remove(_sprites[id]);
+    _sprites[id].geometry.dispose();
     _sprites[id].material.map.dispose();
     _sprites[id].material.dispose();
     _sprites[id] = null;
@@ -369,12 +379,14 @@ function _csClearSprite(id) {
 
 function _csPlaceSprite(id, text, color, bgColor) {
     _csClearSprite(id);
-    const centre = _cellCentre(_face(id), _row(id), _col(id));
+    const f      = _face(id);
+    const centre = _cellCentre(f, _row(id), _col(id));
     const size   = 2.2 / _N;
-    const spr    = _csMakeSprite(text, color, size, bgColor);
-    spr.position.copy(centre).multiplyScalar(1.02);
-    _cubeGroup.add(spr);
-    _sprites[id] = spr;
+    const mesh   = _csMakeSprite(text, color, size, bgColor, f);
+    // Offset slightly outward along the face normal so the plane clears the cell surface
+    mesh.position.copy(centre).addScaledVector(_FACE_NORMALS[f], 0.02);
+    _cubeGroup.add(mesh);
+    _sprites[id] = mesh;
 }
 
 // ---------------------------------------------------------------------------
