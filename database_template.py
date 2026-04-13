@@ -1026,6 +1026,23 @@ class JigsawPhoto(Base):
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
+# ── F74 Rewind replay log ─────────────────────────────────────────────────────
+class GameReplay(Base):
+    __tablename__ = "game_replays"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    user_email = Column(String(256), nullable=True, index=True)
+    mode       = Column(String(32),  nullable=True)          # beginner/intermediate/expert/custom/daily/…
+    rows       = Column(Integer,     nullable=False)
+    cols       = Column(Integer,     nullable=False)
+    mines      = Column(Integer,     nullable=False)
+    no_guess   = Column(Boolean,     default=False, nullable=False)
+    board_hash = Column(String(128), nullable=True)
+    time_ms    = Column(Integer,     nullable=True)
+    log_json   = Column(Text,        nullable=False)          # JSON array of [t_ms, type, r, c]
+    created_at = Column(DateTime,    default=lambda: datetime.now(timezone.utc))
+
+
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
     Base.metadata.create_all(bind=engine)

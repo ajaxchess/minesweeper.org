@@ -102,7 +102,39 @@ function freshState(rows, cols, mines, noGuess = false, chording = true) {
     chordClicks: 0,
     boardHash:   null,
     bbbv:        null,
+    rewindLog:   [],    // [[t_ms, type, r, c], …] — F74 Rewind
   };
+}
+
+// ── F74 Rewind — event recording ─────────────────────────────────────────────
+function rewindRecord(type, r, c) {
+  if (!state || state.over) return;
+  const t = state.startTime ? Math.round(performance.now() - state.startTime) : 0;
+  state.rewindLog.push([t, type, r, c]);
+}
+
+function rewindSave(won) {
+  if (!state.rewindLog || !state.rewindLog.length || !state.boardHash) return;
+  const mode  = document.getElementById('board')?.dataset.mode || '';
+  const entry = {
+    rows:      state.rows,
+    cols:      state.cols,
+    mines:     state.mines,
+    boardHash: state.boardHash,
+    noGuess:   state.noGuess,
+    mode,
+    timeMs:    state.timeMs || 0,
+    won,
+    log:       state.rewindLog,
+  };
+  try { sessionStorage.setItem('rewind-last', JSON.stringify(entry)); } catch (_) {}
+  if (won) {
+    fetch('/api/rewind', {
+      method:  'POST',
+      headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+      body:    JSON.stringify(entry),
+    }).catch(function () {});
+  }
 }
 
 // ── Mine Placement (safe first click) ────────────────────────────────────────
@@ -391,6 +423,7 @@ function boom(r, c) {
   state.over   = true;
   state.timeMs = state.startTime ? Math.round(performance.now() - state.startTime) : null;
   stopTimer();
+  rewindSave(false);
   // Reveal all mines
   for (const idx of state.mineSet) {
     const mr = Math.floor(idx / state.cols), mc = idx % state.cols;
@@ -409,6 +442,7 @@ function checkWin() {
     state.won    = true;
     state.timeMs = state.startTime ? Math.round(performance.now() - state.startTime) : null;
     stopTimer();
+    rewindSave(true);
     document.getElementById('reset-btn').textContent = '😎';
     // Auto-flag remaining mines
     for (const idx of state.mineSet) {
@@ -481,6 +515,21 @@ function showOverlay(msg, won) {
     <a class="overlay-lb-link" href="/leaderboard?mode=${mode}${ngParam}">${window.T.game_view_lb}</a>
   `;
   el.style.display = 'flex';
+
+  // F74 Rewind — show replay bar after game ends
+  if (typeof window.rewindInit === 'function' && state.rewindLog && state.rewindLog.length && state.boardHash) {
+    window.rewindInit({
+      rows:      state.rows,
+      cols:      state.cols,
+      mines:     state.mines,
+      boardHash: state.boardHash,
+      noGuess:   state.noGuess,
+      mode:      document.getElementById('board')?.dataset.mode || '',
+      timeMs:    state.timeMs || 0,
+      won,
+      log:       state.rewindLog,
+    });
+  }
 
   if (won && username) {
     submitScore(username);
@@ -614,12 +663,12 @@ function buildBoard(rows, cols) {
       cell.dataset.r = r;
       cell.dataset.c = c;
 
-      cell.addEventListener('click',       () => { if (flagMode) { state.rightClicks++; flag(r, c); } else { state.leftClicks++; reveal(r, c); } });
-      cell.addEventListener('contextmenu', e  => { e.preventDefault(); state.rightClicks++; flag(r, c); });
-      cell.addEventListener('dblclick',    () => { state.chordClicks++; chord(r, c); });
+      cell.addEventListener('click',       () => { if (flagMode) { state.rightClicks++; rewindRecord('r', r, c); flag(r, c); } else { state.leftClicks++; rewindRecord('l', r, c); reveal(r, c); } });
+      cell.addEventListener('contextmenu', e  => { e.preventDefault(); state.rightClicks++; rewindRecord('r', r, c); flag(r, c); });
+      cell.addEventListener('dblclick',    () => { state.chordClicks++; rewindRecord('c', r, c); chord(r, c); });
       addTouchHandlers(cell,
-        () => { if (flagMode) { state.rightClicks++; flag(r, c); } else { state.leftClicks++; reveal(r, c); } },
-        () => { state.rightClicks++; flag(r, c); }
+        () => { if (flagMode) { state.rightClicks++; rewindRecord('r', r, c); flag(r, c); } else { state.leftClicks++; rewindRecord('l', r, c); reveal(r, c); } },
+        () => { state.rightClicks++; rewindRecord('r', r, c); flag(r, c); }
       );
 
       boardEl.appendChild(cell);
@@ -639,6 +688,7 @@ function initGame(rows, cols, mines, noGuess = false, chording = true) {
   if (pctEl) pctEl.textContent = '0%';
   const resultEl = document.getElementById('game-result');
   if (resultEl) resultEl.innerHTML = '';
+  if (typeof window.rewindReset === 'function') window.rewindReset();
   buildBoard(rows, cols);
   updateNoGuessUI(noGuess);
 }

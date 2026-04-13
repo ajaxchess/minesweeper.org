@@ -16,7 +16,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, GameReplay, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -952,6 +952,49 @@ def _enrich_archive(scores: list) -> list:
             "board_url": board_url,
         })
     return enriched
+
+
+# ── F74 Rewind — store win replay log server-side ─────────────────────────────
+
+class RewindSubmit(BaseModel):
+    rows:       int            = Field(..., ge=5, le=50)
+    cols:       int            = Field(..., ge=5, le=50)
+    mines:      int            = Field(..., ge=1, le=999)
+    board_hash: Optional[str]  = Field(None, max_length=128)
+    no_guess:   bool           = False
+    mode:       Optional[str]  = Field(None, max_length=32)
+    time_ms:    Optional[int]  = Field(None, ge=0, le=3_600_000)
+    won:        bool           = False
+    log:        list           = Field(...)  # [[t_ms, type, r, c], …]
+
+    @field_validator("log")
+    @classmethod
+    def validate_log(cls, v):
+        if len(v) > 10_000:
+            raise ValueError("Log too large")
+        return v
+
+
+@app.post("/api/rewind", status_code=201)
+@limiter.limit("30/minute")
+def submit_rewind(payload: RewindSubmit, request: Request, db: Session = Depends(get_db)):
+    import json as _json
+    user = get_current_user(request)
+    replay = GameReplay(
+        user_email = user["email"] if user else None,
+        mode       = payload.mode,
+        rows       = payload.rows,
+        cols       = payload.cols,
+        mines      = payload.mines,
+        no_guess   = payload.no_guess,
+        board_hash = payload.board_hash,
+        time_ms    = payload.time_ms,
+        log_json   = _json.dumps(payload.log, separators=(',', ':')),
+    )
+    db.add(replay)
+    db.commit()
+    db.refresh(replay)
+    return {"id": replay.id}
 
 
 @app.get("/api/scores/{mode}")
