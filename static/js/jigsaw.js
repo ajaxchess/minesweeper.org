@@ -328,8 +328,9 @@
     stashInner.style.width  = stashW + 'px';
     stashInner.style.height = stashH + 'px';
 
-    // Clear stash
+    // Clear stash and any pieces that were snapped onto the board
     stashInner.innerHTML = '';
+    boardEl.querySelectorAll('.jig-piece').forEach(function (el) { el.remove(); });
 
     // Scatter pieces in stash, clamped so nothing clips under overflow:hidden.
     var stashUsableW = Math.max(0, stashW - pieceW);
