@@ -20,6 +20,7 @@ from duel import (
 from database import PvpResult, UserProfile, SessionLocal
 
 import settings as site_settings
+from breadcrumbs import get_breadcrumbs as _get_breadcrumbs
 
 duel_router = APIRouter()
 
@@ -41,6 +42,7 @@ templates.env.globals["solstice_banner"]      = site_settings.solstice_banner
 templates.env.globals["equinox_banner"]       = site_settings.equinox_banner
 templates.env.globals["diana_birthday_banner"] = site_settings.diana_birthday_banner
 templates.env.globals["ga_tag"]               = ""  # not needed in duel routes
+templates.env.globals["get_breadcrumbs"]      = _get_breadcrumbs
 
 # ── Page: create a new duel ───────────────────────────────────────────────────
 @duel_router.get("/duel", response_class=HTMLResponse)
