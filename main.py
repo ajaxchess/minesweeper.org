@@ -4592,6 +4592,7 @@ def admin_operations(request: Request, db: Session = Depends(get_db)):
 @app.get("/admin/web_traffic", response_class=HTMLResponse)
 def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
     import json as _json
+    import csv as _csv
     user = get_current_user(request)
     if not user or user.get("email") not in ADMIN_EMAILS:
         raise HTTPException(status_code=403, detail="Forbidden")
@@ -4645,6 +4646,40 @@ def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
         text("SELECT SUM(data_length + index_length) "
              "FROM information_schema.tables WHERE table_schema = DATABASE()")
     ).scalar() or 0
+
+    # ── AdSense earnings from analysis/report.csv ────────────────────────────
+    _report_path = os.path.join(os.path.dirname(__file__), "analysis", "report.csv")
+    earnings_rows = []
+    try:
+        with open(_report_path, newline="", encoding="utf-8") as _f:
+            for r in _csv.DictReader(_f):
+                earnings_rows.append({
+                    "date":           r.get("Date", ""),
+                    "earnings":       r.get("Estimated earnings (USD)", ""),
+                    "page_views":     r.get("Page views", ""),
+                    "page_rpm":       r.get("Page RPM (USD)", ""),
+                    "impressions":    r.get("Impressions", ""),
+                    "imp_rpm":        r.get("Impression RPM (USD)", ""),
+                    "viewable":       r.get("Active View Viewable", ""),
+                    "clicks":         r.get("Clicks", ""),
+                })
+        earnings_rows.sort(key=lambda x: x["date"])
+    except OSError:
+        pass
+
+    earn_totals = {
+        "earnings":    sum(float(r["earnings"])   for r in earnings_rows if r["earnings"]),
+        "page_views":  sum(int(r["page_views"])   for r in earnings_rows if r["page_views"]),
+        "impressions": sum(int(r["impressions"])  for r in earnings_rows if r["impressions"]),
+        "clicks":      sum(int(r["clicks"])       for r in earnings_rows if r["clicks"]),
+    }
+
+    earn_labels   = _json.dumps([r["date"]       for r in earnings_rows])
+    earn_earnings = _json.dumps([float(r["earnings"])  if r["earnings"]  else None for r in earnings_rows])
+    earn_page_rpm = _json.dumps([float(r["page_rpm"])  if r["page_rpm"]  else None for r in earnings_rows])
+    earn_imp_rpm  = _json.dumps([float(r["imp_rpm"])   if r["imp_rpm"]   else None for r in earnings_rows])
+    earn_clicks   = _json.dumps([int(r["clicks"])      if r["clicks"]    else None for r in earnings_rows])
+    earn_views    = _json.dumps([int(r["page_views"])  if r["page_views"] else None for r in earnings_rows])
 
     yesterday = date.today() - timedelta(days=1)
     url_traffic = get_url_traffic_stats(yesterday)
@@ -4714,6 +4749,15 @@ def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
         "db_size":            _fmt_bytes(db_size_bytes),
         "url_traffic":        url_traffic,
         "url_traffic_date":   str(yesterday),
+        # AdSense earnings
+        "earnings_rows":      earnings_rows,
+        "earn_totals":        earn_totals,
+        "earn_labels":        earn_labels,
+        "earn_earnings":      earn_earnings,
+        "earn_page_rpm":      earn_page_rpm,
+        "earn_imp_rpm":       earn_imp_rpm,
+        "earn_clicks":        earn_clicks,
+        "earn_views":         earn_views,
     })
 
 

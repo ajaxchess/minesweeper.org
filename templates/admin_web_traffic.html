@@ -21,6 +21,14 @@ const H422     = {{ http_422     | safe }};
 const H500     = {{ http_500     | safe }};
 const H503     = {{ http_503     | safe }};
 
+// AdSense earnings data
+const EARN_LABELS   = {{ earn_labels   | safe }};
+const EARN_EARNINGS = {{ earn_earnings | safe }};
+const EARN_PAGE_RPM = {{ earn_page_rpm | safe }};
+const EARN_IMP_RPM  = {{ earn_imp_rpm  | safe }};
+const EARN_CLICKS   = {{ earn_clicks   | safe }};
+const EARN_VIEWS    = {{ earn_views    | safe }};
+
 // Hourly ops data
 const HR_LABELS   = {{ hr_labels   | safe }};
 const HR_CPU      = {{ hr_cpu      | safe }};
@@ -74,6 +82,107 @@ function makeStackedBar(id, datasets) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Earnings chart — dual Y axis (earnings left, RPM right)
+  if (EARN_LABELS.length) {
+    new Chart(document.getElementById('chartEarnings'), {
+      type: 'bar',
+      data: {
+        labels: EARN_LABELS,
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Earnings (USD)',
+            data: EARN_EARNINGS,
+            backgroundColor: 'rgba(80,200,120,0.6)',
+            borderColor:     'rgba(80,200,120,0.9)',
+            borderWidth: 1,
+            yAxisID: 'yEarn',
+            order: 2,
+          },
+          {
+            type: 'line',
+            label: 'Page RPM (USD)',
+            data: EARN_PAGE_RPM,
+            borderColor: 'rgba(74,158,255,0.9)',
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            tension: 0.3,
+            pointRadius: 3,
+            yAxisID: 'yRpm',
+            order: 1,
+          },
+          {
+            type: 'line',
+            label: 'Impression RPM (USD)',
+            data: EARN_IMP_RPM,
+            borderColor: 'rgba(255,160,60,0.9)',
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            tension: 0.3,
+            pointRadius: 3,
+            yAxisID: 'yRpm',
+            order: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { labels: { color: '#aaa', boxWidth: 12 } } },
+        scales: {
+          x:     { ticks: { color: '#888', maxTicksLimit: 20, maxRotation: 45 }, grid: { color: '#333' } },
+          yEarn: { position: 'left',  ticks: { color: '#888', callback: v => '$' + v.toFixed(2) }, grid: { color: '#333' }, min: 0,
+                   title: { display: true, text: 'Earnings (USD)', color: '#888' } },
+          yRpm:  { position: 'right', ticks: { color: '#888', callback: v => '$' + v.toFixed(2) }, grid: { drawOnChartArea: false }, min: 0,
+                   title: { display: true, text: 'RPM (USD)', color: '#888' } },
+        },
+      },
+    });
+
+    new Chart(document.getElementById('chartEarnClicks'), {
+      type: 'bar',
+      data: {
+        labels: EARN_LABELS,
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Clicks',
+            data: EARN_CLICKS,
+            backgroundColor: 'rgba(255,160,60,0.65)',
+            yAxisID: 'yClicks',
+            order: 2,
+          },
+          {
+            type: 'line',
+            label: 'Page Views',
+            data: EARN_VIEWS,
+            borderColor: 'rgba(74,158,255,0.9)',
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            tension: 0.3,
+            pointRadius: 3,
+            yAxisID: 'yViews',
+            order: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { labels: { color: '#aaa', boxWidth: 12 } } },
+        scales: {
+          x:       { ticks: { color: '#888', maxTicksLimit: 20, maxRotation: 45 }, grid: { color: '#333' } },
+          yClicks: { position: 'left',  ticks: { color: '#888' }, grid: { color: '#333' }, min: 0,
+                     title: { display: true, text: 'Clicks', color: '#888' } },
+          yViews:  { position: 'right', ticks: { color: '#888' }, grid: { drawOnChartArea: false }, min: 0,
+                     title: { display: true, text: 'Page Views', color: '#888' } },
+        },
+      },
+    });
+  }
+
   // Chart 1 — total requests & unique visitors
   makeLineChart('chartTraffic', [
     { label: 'Total Requests', data: TOTAL,
@@ -207,6 +316,61 @@ document.addEventListener('DOMContentLoaded', () => {
   <h1 class="lb-title">🌐 Web Traffic</h1>
   <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">{{ t.admin_signed_in_as }} {{ user.email }}</p>
   <p style="text-align:center;margin-bottom:1.5rem;"><a href="/admin">← {{ t.admin_dashboard }}</a></p>
+
+  {% if earnings_rows %}
+  <h2 style="font-size:1rem;margin-top:1.5rem;color:var(--accent2);">AdSense Earnings</h2>
+  <div class="wt-charts">
+    <div class="wt-chart-card" style="grid-column: 1 / -1;">
+      <h3>Estimated Earnings &amp; RPM</h3>
+      <div class="wt-chart-wrap" style="height:240px;"><canvas id="chartEarnings"></canvas></div>
+    </div>
+    <div class="wt-chart-card" style="grid-column: 1 / -1;">
+      <h3>Clicks &amp; Page Views</h3>
+      <div class="wt-chart-wrap" style="height:220px;"><canvas id="chartEarnClicks"></canvas></div>
+    </div>
+  </div>
+
+  <div class="wt-table-wrap" style="margin-bottom:2rem;">
+    <table class="wt-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Earnings (USD)</th>
+          <th>Page Views</th>
+          <th>Page RPM</th>
+          <th>Impressions</th>
+          <th>Imp RPM</th>
+          <th>Viewable %</th>
+          <th>Clicks</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in earnings_rows | reverse %}
+        <tr>
+          <td>{{ r.date }}</td>
+          <td>${{ "%.2f"|format(r.earnings|float) if r.earnings else '—' }}</td>
+          <td>{{ "{:,}".format(r.page_views|int) if r.page_views else '—' }}</td>
+          <td>{{ "$%.2f"|format(r.page_rpm|float) if r.page_rpm else '—' }}</td>
+          <td>{{ "{:,}".format(r.impressions|int) if r.impressions else '—' }}</td>
+          <td>{{ "$%.2f"|format(r.imp_rpm|float) if r.imp_rpm else '—' }}</td>
+          <td>{{ "%.1f%%"|format(r.viewable|float * 100) if r.viewable else '—' }}</td>
+          <td>{{ r.clicks if r.clicks else '—' }}</td>
+        </tr>
+        {% endfor %}
+        <tr style="font-weight:600;border-top:2px solid var(--border);">
+          <td>Total</td>
+          <td>${{ "%.2f"|format(earn_totals.earnings) }}</td>
+          <td>{{ "{:,}".format(earn_totals.page_views) }}</td>
+          <td>—</td>
+          <td>{{ "{:,}".format(earn_totals.impressions) }}</td>
+          <td>—</td>
+          <td>—</td>
+          <td>{{ earn_totals.clicks }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
 
   {% if rows %}
   <div class="wt-charts">
