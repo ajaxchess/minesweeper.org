@@ -38,6 +38,15 @@
         "projectId": "3b8c5077-08fd-400d-8604-48305d7adb1e"
       }
     },
-    "owner": "ajaxchess"
+    "owner": "ajaxchess",
+    "plugins": [
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId":     "ca-app-pub-3940256099942544~1458002511"
+        }
+      ]
+    ]
   }
 }

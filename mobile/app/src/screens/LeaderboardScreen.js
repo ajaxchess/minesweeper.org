@@ -26,6 +26,7 @@ import {
 } from 'react-native';
 import { useTheme }       from '../context/ThemeContext';
 import useLeaderboard, { PERIODS } from '../hooks/useLeaderboard';
+import AdBanner            from '../components/AdBanner';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -201,6 +202,9 @@ export default function LeaderboardScreen({ route }) {
         />
       )}
 
+      {/* ── AdMob banner ──────────────────────────────────────────────── */}
+      <AdBanner />
+
     </SafeAreaView>
   );
 }
@@ -247,7 +251,7 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   listContent: {
-    paddingBottom: 24,
+    paddingBottom: 8,
   },
   emptyText: {
     textAlign:  'center',

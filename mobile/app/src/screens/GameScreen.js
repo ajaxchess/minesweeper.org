@@ -26,6 +26,7 @@ import useGameState  from '../hooks/useGameState';
 import useTimer      from '../hooks/useTimer';
 import BoardView     from '../components/BoardView';
 import WinModal      from '../components/WinModal';
+import AdBanner      from '../components/AdBanner';
 
 function formatTime(ms) {
   const totalSec = Math.floor(ms / 1000);
@@ -231,6 +232,9 @@ export default function GameScreen({ navigation }) {
         theme={theme}
         onNewGame={handleNewGame}
       />
+
+      {/* ── AdMob banner — beginner and intermediate only ──────────────── */}
+      {(mode === 'beginner' || mode === 'intermediate') && <AdBanner />}
 
     </SafeAreaView>
   );
