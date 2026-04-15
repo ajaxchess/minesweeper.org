@@ -113,6 +113,14 @@ _BREADCRUMB_MAP: dict[str, list[tuple[str, str]]] = {
     "/other/schulte/play":        [("Other Games", "/other"), ("Schulte Grid", "/other/schulte/play")],
     "/other/schulte/leaderboard": [("Other Games", "/other"), ("Schulte Grid", "/other/schulte/play"), ("Leaderboard", "/other/schulte/leaderboard")],
     "/other/schulte/how-to-play": [("Other Games", "/other"), ("Schulte Grid", "/other/schulte/play"), ("How to Play", "/other/schulte/how-to-play")],
+    # ── Sudoku ────────────────────────────────────────────────────────────────
+    "/other/sudoku":         [("Other Games", "/other"), ("Sudoku", "/other/sudoku/daily")],
+    "/other/sudoku/daily":   [("Other Games", "/other"), ("Sudoku", "/other/sudoku/daily")],
+    "/other/sudoku/easy":    [("Other Games", "/other"), ("Sudoku", "/other/sudoku/daily"), ("Easy", "/other/sudoku/easy")],
+    "/other/sudoku/medium":  [("Other Games", "/other"), ("Sudoku", "/other/sudoku/daily"), ("Medium", "/other/sudoku/medium")],
+    "/other/sudoku/hard":    [("Other Games", "/other"), ("Sudoku", "/other/sudoku/daily"), ("Hard", "/other/sudoku/hard")],
+    "/other/sudoku/expert":  [("Other Games", "/other"), ("Sudoku", "/other/sudoku/daily"), ("Expert", "/other/sudoku/expert")],
+    "/other/sudoku/scores":  [("Other Games", "/other"), ("Sudoku", "/other/sudoku/daily"), ("Scores", "/other/sudoku/scores")],
 }
 
 

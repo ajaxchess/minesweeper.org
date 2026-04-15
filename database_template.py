@@ -904,6 +904,43 @@ class SchulteGridScore(Base):
         }
 
 
+# ── Sudoku Score model ────────────────────────────────────────────────────────
+class SudokuScore(Base):
+    __tablename__ = "sudoku_scores"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    name         = Column(String(32), nullable=False)
+    user_email   = Column(String(256), nullable=True, index=True)
+    difficulty   = Column(String(16), nullable=False)    # daily|easy|medium|hard|expert
+    variant      = Column(String(32), nullable=False, server_default="standard")  # future-proofing
+    board_hash   = Column(String(64), nullable=False, index=True)
+    board_givens = Column(String(81), nullable=False)    # 81-char givens string for replay
+    time_ms      = Column(Integer, nullable=False)
+    hints_used   = Column(Integer, nullable=False, default=0)
+    puzzle_date  = Column(String(10), nullable=False)    # YYYY-MM-DD UTC
+    guest_token  = Column(String(36), nullable=True, index=True)
+    client_type  = Column(String(32), nullable=False, server_default="web")
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_sudoku_scores_hash_email",    "board_hash", "user_email"),
+        Index("ix_sudoku_scores_diff_date_time","difficulty", "puzzle_date", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "difficulty":  self.difficulty,
+            "board_hash":  self.board_hash[:8],
+            "full_hash":   self.board_hash,
+            "time_ms":     self.time_ms,
+            "hints_used":  self.hints_used,
+            "puzzle_date": self.puzzle_date,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
 # ── Contact Message model ─────────────────────────────────────────────────────
 class ContactMessage(Base):
     __tablename__ = "contact_messages"

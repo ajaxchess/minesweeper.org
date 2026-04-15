@@ -228,6 +228,44 @@
     <priority>0.6</priority>
   </url>
 
+  <!-- ── Sudoku ───────────────────────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/other/sudoku/daily</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://minesweeper.org/other/sudoku/easy</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://minesweeper.org/other/sudoku/medium</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://minesweeper.org/other/sudoku/hard</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://minesweeper.org/other/sudoku/expert</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://minesweeper.org/other/sudoku/scores</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+
   <!-- ── Worldsweeper ────────────────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/worldsweeper/dodecahedron</loc>

@@ -611,6 +611,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "other_mahjong_desc":   "The classic tile-matching solitaire. Match and remove pairs of free tiles from the Turtle formation — 144 tiles, 72 pairs. A guaranteed-solvable daily puzzle, the same for every player.",
         "other_jigsaw_desc":    "The classic interlocking jigsaw puzzle. Drag and snap pieces together on the board. Choose Beginner (100 pieces), Intermediate (500), or Expert (1000). A new daily image each day, the same for every player.",
         "other_schulte_desc":   "The classic cognitive training exercise. Tap numbers 1\u2013N\u00b2 in order as fast as you can using peripheral vision. Six modes, eight board sizes. Improves focus, processing speed, and visual field.",
+        "other_sudoku_desc":    "Classic 9\u00d79 Sudoku. Fill every row, column, and box with digits 1\u20139. Daily puzzle plus Easy, Medium, Hard, and Expert random boards. Timed with hints and global leaderboards.",
         # Mahjong Solitaire
         "mj_daily_h1":          "Mahjong Solitaire \u2014 Daily",
         "mj_same_for_all":      "Same board for everyone \u00b7 Resets at midnight UTC",

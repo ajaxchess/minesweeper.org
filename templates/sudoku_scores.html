@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Sudoku Scores — minesweeper.org{% endblock %}
+{% block description %}Sudoku leaderboard — daily, easy, medium, hard, and expert high scores.{% endblock %}
+{% block canonical %}https://minesweeper.org/other/sudoku/scores{% endblock %}
+
+{% block scripts %}
+<script>
+const SUDOKU_TODAY = {{ today | tojson }};
+const DIFF_LABELS  = { daily:"Daily", easy:"Easy", medium:"Medium", hard:"Hard", expert:"Expert" };
+
+async function loadScores() {
+  const difficulty = document.querySelector('.su-diff-btn.active')?.dataset.diff || 'daily';
+  const period     = document.querySelector('.su-period-btn.active')?.dataset.period || 'today';
+  const heading    = document.getElementById('lb-heading');
+  const tbody      = document.getElementById('lb-body');
+  const noteEl     = document.getElementById('lb-note');
+
+  if (heading) heading.textContent =
+    `${DIFF_LABELS[difficulty]} — ${period === 'today' ? 'Today' : 'All Time'}`;
+  if (tbody)  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1rem;">Loading…</td></tr>';
+  if (noteEl) noteEl.style.display = period === 'alltime' ? '' : 'none';
+
+  const params = new URLSearchParams({ difficulty, period });
+  if (period === 'today') params.set('puzzle_date', SUDOKU_TODAY);
+
+  try {
+    const res  = await fetch('/api/sudoku-scores?' + params);
+    const rows = await res.json();
+
+    if (!tbody) return;
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--text-dim);">No scores yet — be the first!</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = rows.map((r, i) => {
+      const rank     = i < 3 ? ['🥇','🥈','🥉'][i] : i + 1;
+      const name     = r.profile_url
+        ? `<a href="${r.profile_url}" style="color:var(--accent2);">${escHtml(r.name)}</a>`
+        : escHtml(r.name);
+      const time     = fmtTime(r.time_ms);
+      const hints    = r.hints_used > 0 ? r.hints_used : '—';
+      const boardLink= `<a href="/other/sudoku/board/${r.full_hash}" title="Replay this board"
+                           style="color:var(--text-dim);font-family:monospace;font-size:0.8rem;">${r.board_hash}</a>`;
+      const date     = r.created_at || '';
+      return `<tr>
+        <td style="text-align:center;">${rank}</td>
+        <td>${name}</td>
+        <td style="text-align:right;">${time}</td>
+        <td style="text-align:right;">${hints}</td>
+        <td style="text-align:right;">${boardLink}</td>
+        <td style="text-align:right;color:var(--text-dim);font-size:0.8rem;">${date}</td>
+      </tr>`;
+    }).join('');
+  } catch {
+    if (tbody) tbody.innerHTML =
+      '<tr><td colspan="6" style="text-align:center;color:var(--accent-red);padding:1rem;">⚠️ Could not load scores.</td></tr>';
+  }
+}
+
+function fmtTime(ms) {
+  const s = Math.floor(ms / 1000), m = Math.floor(s / 60);
+  return m > 0 ? `${m}:${String(s % 60).padStart(2,'0')}` : `${s}s`;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.su-diff-btn').forEach(btn =>
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.su-diff-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loadScores();
+    })
+  );
+  document.querySelectorAll('.su-period-btn').forEach(btn =>
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.su-period-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loadScores();
+    })
+  );
+  loadScores();
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">🔢 Sudoku — Scores</h1>
+  <p style="text-align:center;margin-bottom:1rem;">
+    <a href="/other/sudoku/daily">← Play Sudoku</a>
+  </p>
+
+  <!-- Difficulty selector -->
+  <div class="su-sel-row">
+    <button class="su-diff-btn active" data-diff="daily">Daily</button>
+    <button class="su-diff-btn"        data-diff="easy">Easy</button>
+    <button class="su-diff-btn"        data-diff="medium">Medium</button>
+    <button class="su-diff-btn"        data-diff="hard">Hard</button>
+    <button class="su-diff-btn"        data-diff="expert">Expert</button>
+  </div>
+
+  <!-- Period selector -->
+  <div class="su-sel-row" style="margin-top:0.5rem;">
+    <button class="su-period-btn active" data-period="today">Today</button>
+    <button class="su-period-btn"        data-period="alltime">All Time</button>
+  </div>
+
+  <h2 id="lb-heading" class="su-lb-heading">Daily — Today</h2>
+
+  <p id="lb-note" class="su-lb-note" style="display:none;">
+    All-time shows each player's personal best.
+  </p>
+
+  <div class="wt-table-wrap">
+    <table class="lb-table" style="max-width:700px;margin:0 auto;">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th style="text-align:left;">Name</th>
+          <th>Time</th>
+          <th>Hints</th>
+          <th>Board</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="lb-body">
+        <tr><td colspan="6" style="text-align:center;padding:1rem;">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

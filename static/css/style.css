@@ -6524,3 +6524,225 @@ html[data-skin="flower-light"] .diana-birthday-banner {
   .sg-size-btn { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
 }
 
+
+/* ── Sudoku (F53) ──────────────────────────────────────────────────────────── */
+.su-wrap {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 1rem 0.75rem 2rem;
+}
+.su-title {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+.su-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+.su-nav-link {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  color: var(--text-dim);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.su-nav-link:hover, .su-nav-link.active {
+  background: var(--accent2);
+  color: var(--bg);
+  border-color: var(--accent2);
+}
+.su-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+.su-timer {
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 3rem;
+  text-align: center;
+}
+.su-btn {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.su-btn:hover       { background: var(--surface2); color: var(--text); }
+.su-btn--on         { background: var(--accent2); color: var(--bg); border-color: var(--accent2); }
+.su-btn--primary    { background: var(--accent2); color: var(--bg); border-color: var(--accent2); font-weight: 600; }
+.su-btn--primary:hover { opacity: 0.88; }
+
+/* Board */
+.su-board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  border: 2px solid var(--text);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 auto 0.75rem;
+  max-width: 450px;
+  aspect-ratio: 1;
+  touch-action: manipulation;
+}
+.su-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  font-size: clamp(0.85rem, 3.5vw, 1.2rem);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s;
+  aspect-ratio: 1;
+  box-sizing: border-box;
+}
+/* 3×3 box dividers */
+.su-cell--bl { border-left:   2px solid var(--text); }
+.su-cell--bt { border-top:    2px solid var(--text); }
+
+.su-cell--given      { font-weight: 700; color: var(--text); }
+.su-cell--selected   { background: var(--accent2) !important; color: var(--bg) !important; }
+.su-cell--peer       { background: color-mix(in srgb, var(--accent2) 18%, transparent); }
+.su-cell--same-digit { background: color-mix(in srgb, var(--accent2) 32%, transparent); }
+.su-cell--error      { color: #e55; }
+
+/* Numpad */
+.su-numpad {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.35rem;
+  max-width: 340px;
+  margin: 0 auto 0.75rem;
+}
+.su-numpad-btn, .su-numpad-erase {
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0.5rem 0;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.su-numpad-btn:hover, .su-numpad-erase:hover { background: var(--surface2); }
+.su-numpad-erase { color: var(--text-dim); }
+
+/* Result panel */
+.su-result {
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem 1rem;
+  margin: 0.5rem auto;
+  max-width: 380px;
+}
+.su-result-time {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--accent2);
+  margin: 0 0 0.25rem;
+}
+.su-result-hints {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  margin: 0 0 0.75rem;
+}
+.su-name-input {
+  font-size: 0.9rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  width: 70%;
+  margin-right: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+.su-feedback {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin: 0.4rem 0 0;
+}
+
+/* Loading state */
+.su-loading { text-align: center; color: var(--text-dim); padding: 2rem 0; }
+
+/* Scores page selectors */
+.su-sel-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0.25rem 0;
+}
+.su-diff-btn, .su-period-btn {
+  font-size: 0.82rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.su-diff-btn.active, .su-period-btn.active,
+.su-diff-btn:hover,  .su-period-btn:hover {
+  background: var(--accent2);
+  color: var(--bg);
+  border-color: var(--accent2);
+}
+.su-lb-heading {
+  text-align: center;
+  font-size: 1rem;
+  color: var(--accent2);
+  margin: 1rem 0 0.25rem;
+}
+.su-lb-note {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+}
+
+/* SEO prose */
+.su-prose {
+  margin-top: 2rem;
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  line-height: 1.65;
+}
+.su-prose h2 { font-size: 1rem; color: var(--text); margin-bottom: 0.4rem; }
+.su-prose h3 { font-size: 0.9rem; color: var(--text); margin: 0.75rem 0 0.25rem; }
+.su-prose ul  { padding-left: 1.4rem; }
+.su-prose kbd {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.05rem 0.3rem;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 480px) {
+  .su-board { max-width: 100%; }
+  .su-numpad { max-width: 100%; }
+  .su-result-time { font-size: 2rem; }
+}

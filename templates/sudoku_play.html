@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Sudoku — minesweeper.org{% endblock %}
+{% block description %}Play free Sudoku online with daily puzzles, Easy, Medium, Hard, and Expert difficulty. Timed, hints available, mistake highlighting. Global leaderboard.{% endblock %}
+{% block canonical %}https://minesweeper.org/other/sudoku/{{ difficulty }}{% endblock %}
+{% block og_url %}https://minesweeper.org/other/sudoku/{{ difficulty }}{% endblock %}
+{% block og_title %}Sudoku — Free Daily Puzzles{% endblock %}
+{% block og_description %}Daily Sudoku puzzles with Easy, Medium, Hard, and Expert modes. Timed with hints and leaderboards. No download needed.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"WebApplication",
+  "name":"Sudoku",
+  "url":"https://minesweeper.org/other/sudoku/daily",
+  "applicationCategory":"Game",
+  "description":"Timed Sudoku with daily puzzles, multiple difficulty levels, and global leaderboards.",
+  "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
+}
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.SUDOKU_CFG = {
+  today:      {{ today | tojson }},
+  difficulty: {{ difficulty | tojson }},
+  seed:       {{ seed if seed is not none else 'null' }},
+  givens:     {{ givens | tojson if givens else 'null' }},
+  user:       {{ user | tojson if user else 'null' }},
+};
+</script>
+<script src="/static/js/sudoku.js?v=1" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="su-wrap">
+
+  <h1 class="su-title">🔢 Sudoku</h1>
+
+  <!-- Subnav -->
+  <nav class="su-subnav">
+    <a href="/other/sudoku/daily"  class="su-nav-link{% if difficulty == 'daily'  %} active{% endif %}">Daily</a>
+    <a href="/other/sudoku/easy"   class="su-nav-link{% if difficulty == 'easy'   %} active{% endif %}">Easy</a>
+    <a href="/other/sudoku/medium" class="su-nav-link{% if difficulty == 'medium' %} active{% endif %}">Medium</a>
+    <a href="/other/sudoku/hard"   class="su-nav-link{% if difficulty == 'hard'   %} active{% endif %}">Hard</a>
+    <a href="/other/sudoku/expert" class="su-nav-link{% if difficulty == 'expert' %} active{% endif %}">Expert</a>
+    <a href="/other/sudoku/scores" class="su-nav-link">Scores</a>
+  </nav>
+
+  <!-- Toolbar -->
+  <div class="su-toolbar">
+    <button id="su-new-game"      class="su-btn">New Game</button>
+    <button id="su-hint"          class="su-btn">Hint (<span id="su-hints-used">0</span>)</button>
+    <button id="su-toggle-errors" class="su-btn su-btn--on">Mistakes</button>
+    <span   id="su-timer"         class="su-timer">0s</span>
+  </div>
+
+  <!-- Loading message (hidden after init) -->
+  <p id="su-loading" class="su-loading" style="display:none;">Generating puzzle…</p>
+
+  <!-- Board -->
+  <div id="su-board" class="su-board"></div>
+
+  <!-- Numpad -->
+  <div class="su-numpad">
+    {% for n in range(1, 10) %}
+    <button class="su-numpad-btn" data-num="{{ n }}">{{ n }}</button>
+    {% endfor %}
+    <button id="su-erase" class="su-numpad-erase">⌫</button>
+  </div>
+
+  <!-- Result panel (hidden until win) -->
+  <div id="su-result" class="su-result" style="display:none;">
+    <p class="su-result-time"  id="su-result-time">—</p>
+    <p class="su-result-hints" id="su-result-hints">—</p>
+
+    <!-- Logged-in auto-submit -->
+    <p id="su-result-authed-name" style="color:var(--text-dim);font-size:0.9rem;"></p>
+
+    <!-- Guest form -->
+    <div id="su-form">
+      <input id="su-name" type="text" maxlength="32" placeholder="Your name (optional)"
+             class="su-name-input" autocomplete="off" />
+      <button id="su-submit" class="su-btn su-btn--primary">Submit Score</button>
+    </div>
+    <p id="su-feedback" class="su-feedback"></p>
+    <button id="su-play-again" class="su-btn" style="margin-top:0.5rem;">Play Again</button>
+  </div>
+
+  <!-- SEO prose -->
+  <section class="su-prose">
+    <h2>Free Daily Sudoku</h2>
+    <p>
+      Sudoku is the world's most popular number puzzle. Fill the 9×9 grid so that every
+      row, column, and 3×3 box contains each digit from 1 to 9 exactly once. No maths
+      required — only logic.
+    </p>
+    <p>
+      A fresh <strong>Daily</strong> puzzle is available every day. Or jump into
+      <strong>Easy</strong>, <strong>Medium</strong>, <strong>Hard</strong>, or
+      <strong>Expert</strong> for a random board at your chosen difficulty.
+      Your time and hints are recorded on the leaderboard — fewer hints and a faster
+      time put you higher.
+    </p>
+    <h3>How to play</h3>
+    <ul>
+      <li>Click a cell to select it, then press a digit key, tap a numpad button, or
+          click the cell again to cycle through 1–9.</li>
+      <li>Press <kbd>⌫</kbd> or <kbd>Delete</kbd> to clear a cell.</li>
+      <li>Use the arrow keys to move the selection.</li>
+      <li>Toggle <strong>Mistakes</strong> off to hide error highlighting.</li>
+      <li>Click <strong>Hint</strong> to reveal the correct digit for the selected cell
+          (counted on the leaderboard).</li>
+    </ul>
+  </section>
+
+</div>
+{% endblock %}
