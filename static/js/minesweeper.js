@@ -28,12 +28,16 @@ document.addEventListener('DOMContentLoaded', function () {
 // suppresses the browser's text-selection callout AND the synthetic click event
 // that would otherwise fire after the touch, so mouse listeners still work on
 // desktop while touch devices get their own path.
-const LONG_PRESS_MS = 500;
+// Double-tap (two taps within DOUBLE_TAP_MS) triggers chording, mirroring the
+// dblclick handler used on desktop.
+const LONG_PRESS_MS  = 500;
+const DOUBLE_TAP_MS  = 300;
 
-function addTouchHandlers(el, onTap, onLongPress) {
-  let timer = null;
-  let moved = false;
+function addTouchHandlers(el, onTap, onLongPress, onDoubleTap) {
+  let timer      = null;
+  let moved      = false;
   let startX, startY;
+  let lastTapAt  = 0;
 
   el.addEventListener('touchstart', e => {
     if (e.touches.length > 1) { clearTimeout(timer); timer = null; return; } // pinch-to-zoom
@@ -56,7 +60,19 @@ function addTouchHandlers(el, onTap, onLongPress) {
   el.addEventListener('touchend', e => {
     if (e.touches.length > 0) { clearTimeout(timer); timer = null; return; } // other finger still down
     e.preventDefault();
-    if (timer) { clearTimeout(timer); timer = null; if (!moved) onTap(); }
+    if (timer) {
+      clearTimeout(timer); timer = null;
+      if (!moved) {
+        const now = Date.now();
+        if (onDoubleTap && now - lastTapAt < DOUBLE_TAP_MS) {
+          lastTapAt = 0;
+          onDoubleTap();
+        } else {
+          lastTapAt = now;
+          onTap();
+        }
+      }
+    }
   }, { passive: false });
 
   el.addEventListener('touchcancel', () => { clearTimeout(timer); timer = null; });
@@ -668,7 +684,8 @@ function buildBoard(rows, cols) {
       cell.addEventListener('dblclick',    () => { state.chordClicks++; rewindRecord('c', r, c); chord(r, c); });
       addTouchHandlers(cell,
         () => { if (flagMode) { state.rightClicks++; rewindRecord('r', r, c); flag(r, c); } else { state.leftClicks++; rewindRecord('l', r, c); reveal(r, c); } },
-        () => { state.rightClicks++; rewindRecord('r', r, c); flag(r, c); }
+        () => { state.rightClicks++; rewindRecord('r', r, c); flag(r, c); },
+        () => { state.chordClicks++; rewindRecord('c', r, c); chord(r, c); }
       );
 
       boardEl.appendChild(cell);
