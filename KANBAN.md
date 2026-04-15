@@ -8,6 +8,7 @@
 - F38 Light theme
 - F39 Use light theme during daylight hours based on client browser local time, defaulting to dark otherwise
 - F51 Blog post announcing the Flower Garden theme @bill
+- F53 Sudoku — /sudoku
 
 ## In Progress
 - F52 Schulte Grid — /other/schulte @richard
