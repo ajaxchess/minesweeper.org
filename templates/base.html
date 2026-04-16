@@ -516,7 +516,7 @@
       menu.style.left = rect.left + 'px';
     }
   }
-  document.addEventListener('click', function() {
+  function closeAllMenus() {
     document.querySelectorAll('.nav-pvp-group.open').forEach(function(g) {
       if (document.documentElement.dataset.skin !== 'classic') {
         g.classList.remove('open');
@@ -525,13 +525,22 @@
     document.querySelectorAll('.mega-group.open').forEach(function(g) {
       g.classList.remove('open');
     });
-  });
+  }
+  document.addEventListener('click',      closeAllMenus);
+  document.addEventListener('touchstart', closeAllMenus, { passive: true });
   function toggleMega(e, groupId) {
     e.stopPropagation();
     var grp = document.getElementById(groupId);
     var isOpen = grp.classList.contains('open');
     document.querySelectorAll('.mega-group.open').forEach(function(g) { g.classList.remove('open'); });
-    if (!isOpen) grp.classList.add('open');
+    if (!isOpen) {
+      grp.classList.add('open');
+      var header = document.querySelector('header');
+      var panel  = grp.querySelector('.mega-panel');
+      if (header && panel) {
+        panel.style.top = header.getBoundingClientRect().bottom + 'px';
+      }
+    }
   }
   function setTheme(skin) {
     localStorage.setItem('skin', skin);

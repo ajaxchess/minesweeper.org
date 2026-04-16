@@ -201,13 +201,17 @@
 }
 #jig-thumb-mobile.jig-thumb-ready { display: none; } /* JS adds class; CSS reveals on mobile */
 
-/* Mobile */
+/* Tablet: hide side reference images so the center column has room */
+@media (max-width: 860px) {
+  .jig-top-side { display: none; }
+  #jig-thumb-mobile.jig-thumb-ready { display: block; }
+}
+
+/* Mobile: stack board above stash */
 @media (max-width: 700px) {
   .jig-game-area { flex-direction: column; }
   #jig-stash { flex: 0 0 auto; height: 220px; border-left: none; border-top: 1px solid var(--border); }
   #jig-board { min-height: 300px; }
-  .jig-top-side { display: none; } /* hide side reference images */
-  #jig-thumb-mobile.jig-thumb-ready { display: block; } /* show single image below header */
 }
 </style>
 
