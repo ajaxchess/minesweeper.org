@@ -487,8 +487,9 @@
     // Capture pointer on the game area so moves outside still register.
     gameAreaEl.setPointerCapture(e.pointerId);
 
-    gameAreaEl.addEventListener('pointermove', onPointerMove);
-    gameAreaEl.addEventListener('pointerup',   onPointerUp);
+    gameAreaEl.addEventListener('pointermove',   onPointerMove);
+    gameAreaEl.addEventListener('pointerup',     onPointerUp);
+    gameAreaEl.addEventListener('pointercancel', onPointerUp);
   }
 
   function onPointerMove(e) {
@@ -520,8 +521,9 @@
 
   function onPointerUp(e) {
     if (!drag) return;
-    gameAreaEl.removeEventListener('pointermove', onPointerMove);
-    gameAreaEl.removeEventListener('pointerup',   onPointerUp);
+    gameAreaEl.removeEventListener('pointermove',   onPointerMove);
+    gameAreaEl.removeEventListener('pointerup',     onPointerUp);
+    gameAreaEl.removeEventListener('pointercancel', onPointerUp);
 
     var boardRect   = boardEl.getBoundingClientRect();
     var stashEl     = document.getElementById('jig-stash');
