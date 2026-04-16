@@ -528,6 +528,12 @@
   }
   document.addEventListener('click',      closeAllMenus);
   document.addEventListener('touchstart', closeAllMenus, { passive: true });
+  // Prevent touchstart inside any open menu from triggering the dismiss handler above.
+  // Without this, tapping a menu link causes closeAllMenus to run (hiding the panel via
+  // display:none) before the click fires, so the link navigation never happens on iOS.
+  document.querySelectorAll('.mega-group, .nav-pvp-group').forEach(function(g) {
+    g.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: true });
+  });
   function toggleMega(e, groupId) {
     e.stopPropagation();
     var grp = document.getElementById(groupId);
