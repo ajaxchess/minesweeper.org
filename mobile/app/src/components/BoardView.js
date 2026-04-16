@@ -49,6 +49,25 @@ export default function BoardView({
   const { width: screenWidth } = useWindowDimensions();
   const [isPinching, setIsPinching] = useState(false);
 
+  // ── Stable press handlers ─────────────────────────────────────────────────
+  // Keep refs so per-cell stable callbacks always invoke the latest handler
+  // without needing to be recreated — this lets Cell's memo comparison remain
+  // effective even when GameScreen recreates handlePressCell (e.g. flagMode).
+  const onPressCellRef     = useRef(onPressCell);
+  const onLongPressCellRef = useRef(onLongPressCell);
+  onPressCellRef.current     = onPressCell;
+  onLongPressCellRef.current = onLongPressCell;
+
+  // One stable {press, longPress} object per cell index, recreated only when
+  // the board dimensions change (mode switch).
+  const stableHandlers = useMemo(() => {
+    const n = rows * cols;
+    return Array.from({ length: n }, (_, idx) => ({
+      press:     () => onPressCellRef.current?.(idx),
+      longPress: () => onLongPressCellRef.current?.(idx),
+    }));
+  }, [rows, cols]);
+
   // ── Cell size ──────────────────────────────────────────────────────────────
   // baseCellSize fits the board horizontally within the screen at 1× zoom.
   // We cap at BASE_MAX so small boards (Beginner 9×9) don't get oversized cells,
@@ -141,8 +160,8 @@ export default function BoardView({
             gameWon={gameWon}
             cellSize={cellSize}
             theme={theme}
-            onPress={onPressCell      ? () => onPressCell(idx)      : undefined}
-            onLongPress={onLongPressCell ? () => onLongPressCell(idx) : undefined}
+            onPress={stableHandlers[idx].press}
+            onLongPress={stableHandlers[idx].longPress}
           />
         );
       }
@@ -155,7 +174,7 @@ export default function BoardView({
     return rowArr;
   }, [
     rows, cols, board, revealed, flagged, explodedIdx,
-    gameOver, gameWon, cellSize, theme, onPressCell, onLongPressCell,
+    gameOver, gameWon, cellSize, theme, stableHandlers,
   ]);
 
   return (
