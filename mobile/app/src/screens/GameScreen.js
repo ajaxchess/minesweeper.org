@@ -64,7 +64,7 @@ export default function GameScreen({ navigation }) {
   const elapsedMs = useTimer(started, over);
 
   // ── Sound effects ─────────────────────────────────────────────────────────
-  const play = useSounds();
+  const { play, muted, toggleMute } = useSounds();
 
   const prevOver    = useRef(false);
   const prevWon     = useRef(false);
@@ -209,6 +209,15 @@ export default function GameScreen({ navigation }) {
           accessibilityRole="button"
         >
           <Text style={{ fontSize: 18 }}>🚩</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.toolBtn}
+          onPress={toggleMute}
+          accessibilityLabel={muted ? 'Unmute sounds' : 'Mute sounds'}
+          accessibilityRole="button"
+        >
+          <Text style={{ fontSize: 18 }}>{muted ? '🔇' : '🔊'}</Text>
         </TouchableOpacity>
 
         {zoomScale !== 1.0 && (
