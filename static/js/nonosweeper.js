@@ -391,7 +391,7 @@ function showWinOverlay() {
     const scoreMsg = document.getElementById('nn-score-msg');
     const username = document.getElementById('nn-grid').dataset.username || '';
 
-    if (G.isPOTD && !G.noGuess) {
+    if (G.isPOTD) {
         if (username) {
             form.style.display = 'none';
             scoreMsg.style.display = '';
