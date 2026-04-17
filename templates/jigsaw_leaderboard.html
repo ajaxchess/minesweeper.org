@@ -66,6 +66,17 @@ table.jlb-table td:first-child { color:var(--text-dim); font-size:0.8rem; }
 table.jlb-table a { color:var(--accent2); text-decoration:none; }
 table.jlb-table a:hover { text-decoration:underline; }
 #jlb-empty { color:var(--text-dim); font-size:0.9rem; text-align:center; padding:1rem 0; }
+
+.jlb-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+  border: 1px solid var(--border);
+}
+.jlb-thumb-link { display:inline-block; line-height:0; }
+.jlb-thumb-link:hover .jlb-thumb { opacity:0.8; }
 </style>
 
 <div class="jlb-wrap">
@@ -96,10 +107,11 @@ table.jlb-table a:hover { text-decoration:underline; }
         <th>Name</th>
         <th>Time</th>
         <th>Date</th>
+        <th>Puzzle</th>
       </tr>
     </thead>
     <tbody id="jlb-body">
-      <tr><td colspan="4" id="jlb-empty">Loading…</td></tr>
+      <tr><td colspan="5" id="jlb-empty">Loading…</td></tr>
     </tbody>
   </table>
 </div>
@@ -118,24 +130,31 @@ table.jlb-table a:hover { text-decoration:underline; }
 
   async function load() {
     const tbody = document.getElementById('jlb-body');
-    tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);padding:1rem;text-align:center;">Loading…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-dim);padding:1rem;text-align:center;">Loading…</td></tr>';
     try {
       const r = await fetch('/api/jigsaw-scores?date=' + encodeURIComponent(currentDate)
                             + '&difficulty=' + encodeURIComponent(currentDiff));
       const scores = await r.json();
       if (!scores.length) {
-        tbody.innerHTML = '<tr><td colspan="4" id="jlb-empty" style="color:var(--text-dim);text-align:center;padding:1rem;">No scores yet for this day.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" id="jlb-empty" style="color:var(--text-dim);text-align:center;padding:1rem;">No scores yet for this day.</td></tr>';
         return;
       }
-      tbody.innerHTML = scores.map((s, i) => `
-        <tr>
+      tbody.innerHTML = scores.map((s, i) => {
+        const imgSrc  = s.image_name ? '/static/img/puzzle/' + encodeURIComponent(s.image_name) : '';
+        const puzzleUrl = s.image_name ? '/other/jigsaw/daily?img=' + encodeURIComponent(s.image_name) : '/other/jigsaw/daily';
+        const thumb   = imgSrc
+          ? `<a href="${puzzleUrl}" class="jlb-thumb-link" title="Play this puzzle"><img src="${imgSrc}" class="jlb-thumb" alt="puzzle" loading="lazy"></a>`
+          : '—';
+        return `<tr>
           <td>${i + 1}</td>
           <td>${s.profile_url ? `<a href="${s.profile_url}">${s.name}</a>` : s.name}</td>
           <td>${fmt(s.time_ms)}</td>
           <td>${s.created_at}</td>
-        </tr>`).join('');
+          <td>${thumb}</td>
+        </tr>`;
+      }).join('');
     } catch (e) {
-      tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);padding:1rem;text-align:center;">Failed to load scores.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-dim);padding:1rem;text-align:center;">Failed to load scores.</td></tr>';
     }
   }
 

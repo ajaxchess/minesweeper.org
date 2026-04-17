@@ -1026,6 +1026,7 @@ class JigsawScore(Base):
             "name":        self.name,
             "puzzle_date": self.puzzle_date,
             "difficulty":  self.difficulty,
+            "image_name":  self.image_name,
             "time_ms":     self.time_ms,
             "created_at":  self.created_at.strftime("%Y-%m-%d"),
         }
