@@ -5195,17 +5195,22 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
             fpath = os.path.join(active_dir, fname)
             if not os.path.isfile(fpath):
                 continue
-            if fname.endswith(".md"):
-                docs.append(fname[:-3])
+            if fname.endswith(".md") or fname.endswith(".html"):
+                docs.append(fname.rsplit(".", 1)[0])
             elif any(fname.endswith(ext) for ext in download_exts):
                 downloads.append(fname)
 
     content_html = None
     current_doc = None
     if doc and doc in docs:
-        path = os.path.join(active_dir, doc + ".md")
-        with open(path, encoding="utf-8") as f:
-            content_html = md_lib.markdown(f.read(), extensions=["extra", "sane_lists"])
+        md_path   = os.path.join(active_dir, doc + ".md")
+        html_path = os.path.join(active_dir, doc + ".html")
+        if os.path.isfile(md_path):
+            with open(md_path, encoding="utf-8") as f:
+                content_html = md_lib.markdown(f.read(), extensions=["extra", "sane_lists"])
+        elif os.path.isfile(html_path):
+            with open(html_path, encoding="utf-8") as f:
+                content_html = f.read()
         current_doc = doc
 
     return templates.TemplateResponse("admin_analysis.html", {
@@ -5244,6 +5249,15 @@ def admin_analysis_download(request: Request, file: str):
         raise HTTPException(status_code=404, detail="File not found")
 
     return FileResponse(path, filename=os.path.basename(file))
+
+
+@app.get("/admin/analysis/{filename}")
+def admin_analysis_by_path(filename: str, folder: Optional[str] = None):
+    doc = filename.rsplit(".", 1)[0] if "." in filename else filename
+    url = f"/admin/analysis?doc={doc}"
+    if folder:
+        url += f"&folder={folder}"
+    return RedirectResponse(url, status_code=302)
 
 
 # ── Nonosweeper scores ────────────────────────────────────────────────────────
@@ -6011,3 +6025,23 @@ async def nonosweeper_permalink(request: Request, date_str: str):
     except Exception as e:
         print(f"[DEBUG] nonosweeper_permalink ERROR: {type(e).__name__}: {e}", flush=True)
         raise
+
+
+# ── MVS static pages ──────────────────────────────────────────────────────────
+
+_MVS_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), "static", "mvs"))
+
+
+@app.get("/mvs")
+def mvs_root():
+    return RedirectResponse("/mvs/index.html", status_code=302)
+
+
+@app.get("/mvs/{path:path}")
+def mvs_static(path: str):
+    resolved = os.path.realpath(os.path.join(_MVS_DIR, path))
+    if not resolved.startswith(_MVS_DIR + os.sep):
+        raise HTTPException(status_code=400, detail="Invalid path")
+    if not os.path.isfile(resolved):
+        raise HTTPException(status_code=404, detail="Not found")
+    return FileResponse(resolved)
