@@ -12,7 +12,7 @@
  * Phase 4  adds: win modal, score submission.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -21,8 +21,9 @@ import {
   SafeAreaView,
 } from 'react-native';
 
-import { useTheme } from '../context/ThemeContext';
-import useGameState  from '../hooks/useGameState';
+import { useTheme }   from '../context/ThemeContext';
+import useGameState   from '../hooks/useGameState';
+import { useSounds }  from '../hooks/useSounds';
 import useTimer      from '../hooks/useTimer';
 import BoardView     from '../components/BoardView';
 import WinModal      from '../components/WinModal';
@@ -61,6 +62,36 @@ export default function GameScreen({ navigation }) {
 
   // ── Timer (Phase 3c) ──────────────────────────────────────────────────────
   const elapsedMs = useTimer(started, over);
+
+  // ── Sound effects ─────────────────────────────────────────────────────────
+  const play = useSounds();
+
+  const prevOver    = useRef(false);
+  const prevWon     = useRef(false);
+  const prevRevealed = useRef(0);
+  const prevFlagged  = useRef(0);
+
+  useEffect(() => {
+    const revCount  = revealed ? revealed.reduce((a, v) => a + v, 0) : 0;
+    const flagCount = flagged  ? flagged.reduce((a, v) => a + v, 0)  : 0;
+
+    if (won && !prevWon.current) {
+      play('win');
+    } else if (over && !prevOver.current) {
+      play('explode');
+    } else if (revCount > prevRevealed.current) {
+      play('reveal');
+    }
+
+    if (!over && !won && flagCount > prevFlagged.current) {
+      play('flag');
+    }
+
+    prevOver.current     = over;
+    prevWon.current      = won;
+    prevRevealed.current = revCount;
+    prevFlagged.current  = flagCount;
+  }, [over, won, revealed, flagged, play]);
 
   // ── Press routing ─────────────────────────────────────────────────────────
   //
