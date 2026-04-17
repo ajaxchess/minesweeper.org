@@ -164,67 +164,48 @@
 {% if mode == 'beginner' %}
 <div class="game-landing-seo">
 
-  <h2>Play Minesweeper Online — Free</h2>
-  <p>
-    This is the Beginner board: a <strong>9×9 grid with 10 hidden mines</strong>. It's the classic
-    starting point — small enough to finish in under a minute once you know the rules, large enough
-    to teach every core technique in the game. Left-click to reveal a cell. Right-click to plant a
-    flag on a suspected mine. When all mines are flagged and all safe cells are open, you win.
-  </p>
-  <p>
-    Every number on the board tells you how many mines are hidden in the eight cells surrounding it.
-    A <em>1</em> next to a corner cell with only two unrevealed neighbors? One of those two is a mine.
-    A <em>0</em>? No mines nearby at all — the board auto-expands through all adjacent empty cells.
-    The entire game is built on reading those numbers and narrowing down where mines must be.
-  </p>
+  <h2>{{ t['seo_beg_h2'] }}</h2>
+  <p>{{ t['seo_beg_p1'] | safe }}</p>
+  <p>{{ t['seo_beg_p2'] | safe }}</p>
 
   <div class="landing-seo-grid">
 
     <section class="landing-seo-section">
-      <h2>About This Site</h2>
-      <p>
-        minesweeper.org — nicknamed <strong>Lady Di's Mines</strong> — is a free, browser-based
-        Minesweeper platform. No download, no install, no account required to play. It's built by a
-        small team of developers who wanted a fast, clean implementation that respects classic rules
-        while adding modern conveniences: daily leaderboards, No Guess mode, timed scores with 3BV
-        statistics, and a growing collection of variants.
-      </p>
-      <p>
-        The Diana connection is a long-running in-joke turned brand: <em>Lady Di's Mines</em>.
-        Somewhere between a tribute and a terrible pun. We lean into it.
-      </p>
+      <h2>{{ t['seo_about_h2'] }}</h2>
+      <p>{{ t['seo_about_p1'] | safe }}</p>
+      <p>{{ t['seo_about_p2'] | safe }}</p>
     </section>
 
     <section class="landing-seo-section">
-      <h2>Difficulty Levels</h2>
+      <h2>{{ t['seo_diff_h2'] }}</h2>
       <ul>
-        <li><strong>Beginner (this page) —</strong> 9×9 grid, 10 mines. ~12.3% mine density. Learn the rules, build muscle memory, chase sub-10s times.</li>
-        <li><strong><a href="/intermediate">Intermediate</a> —</strong> 16×16 grid, 40 mines. ~15.6% mine density. Longer chains, more complex deductions, where most players get stuck.</li>
-        <li><strong><a href="/expert">Expert</a> —</strong> 30×16 grid, 99 mines. ~20.6% density. The benchmark. World records live here. Dangerous at every turn.</li>
-        <li><strong><a href="/custom">Custom</a> —</strong> Set your own board dimensions and mine count for a personalized challenge.</li>
+        <li>{{ t['seo_diff_li1'] | safe }}</li>
+        <li>{{ t['seo_diff_li2'] | safe }}</li>
+        <li>{{ t['seo_diff_li3'] | safe }}</li>
+        <li>{{ t['seo_diff_li4'] | safe }}</li>
       </ul>
     </section>
 
     <section class="landing-seo-section">
-      <h2>Quick-Start Tips</h2>
+      <h2>{{ t['seo_tips_h2'] }}</h2>
       <ol>
-        <li><strong>Click near the center first.</strong> The first click is always safe and tends to open a larger cascade from a central starting position.</li>
-        <li><strong>Find the zeros.</strong> An auto-expanding empty region gives you free information and reveals lots of numbered edges to work from.</li>
-        <li><strong>Flag or just remember?</strong> You don't have to flag every mine — flags are just markers. Many fast players skip flagging and use memory instead to keep their click count low.</li>
-        <li><strong>Use No Guess mode</strong> if you hate losing to 50/50 situations. It generates boards that are always logically solvable.</li>
-        <li><strong>Chord to go faster.</strong> Double-clicking a revealed number auto-reveals all its neighbors if the right number of flags are placed. It's the fastest way to clear a board once you're confident.</li>
+        <li>{{ t['seo_tips_li1'] | safe }}</li>
+        <li>{{ t['seo_tips_li2'] | safe }}</li>
+        <li>{{ t['seo_tips_li3'] | safe }}</li>
+        <li>{{ t['seo_tips_li4'] | safe }}</li>
+        <li>{{ t['seo_tips_li5'] | safe }}</li>
       </ol>
     </section>
 
     <section class="landing-seo-section">
-      <h2>Beyond the Classic Board</h2>
-      <p>Once beginner feels easy, there's a lot more to explore here:</p>
+      <h2>{{ t['seo_beyond_h2'] }}</h2>
+      <p>{{ t['seo_beyond_p'] }}</p>
       <ul>
-        <li><strong><a href="/tentaizu">Tentaizu</a> —</strong> A Japanese star-chart puzzle. All clues are pre-placed, no clicking to reveal — pure logic from the first move. A new puzzle every day.</li>
-        <li><strong><a href="/rush">Rush</a> —</strong> 60-second competitive Minesweeper. Clear as many boards as possible before time runs out.</li>
-        <li><strong><a href="/cylinder">Cylinder</a> —</strong> The classic board but the left and right edges connect, creating a seamless wraparound field.</li>
-        <li><strong><a href="/hexsweeper">Hexsweeper</a> —</strong> Minesweeper on a hexagonal grid. Every cell has six neighbors instead of eight.</li>
-        <li><strong><a href="/mosaic">Mosaic</a> —</strong> A nonogram-style variant where clues count a 3×3 area rather than direct adjacency.</li>
+        <li>{{ t['seo_beyond_li1'] | safe }}</li>
+        <li>{{ t['seo_beyond_li2'] | safe }}</li>
+        <li>{{ t['seo_beyond_li3'] | safe }}</li>
+        <li>{{ t['seo_beyond_li4'] | safe }}</li>
+        <li>{{ t['seo_beyond_li5'] | safe }}</li>
       </ul>
     </section>
 
@@ -235,54 +216,48 @@
 {% elif mode == 'intermediate' %}
 <div class="game-landing-seo">
 
-  <h2>Intermediate Minesweeper — 16×16, 40 Mines</h2>
-  <p>
-    Intermediate is where Minesweeper stops being a tutorial and starts being a game. The board
-    grows to <strong>16×16 with 40 mines</strong> — more than four times the area of Beginner,
-    with a mine density that climbs to roughly 15.6%. Deduction chains stretch across multiple
-    rows. Patterns that worked in isolation on a 9×9 grid now overlap and interact. The difficulty
-    jump is real, and it's where most players plateau.
-  </p>
+  <h2>{{ t['seo_int_h2'] }}</h2>
+  <p>{{ t['seo_int_p1'] | safe }}</p>
 
   <div class="landing-seo-grid">
 
     <section class="landing-seo-section">
-      <h2>What Changes at Intermediate</h2>
+      <h2>{{ t['seo_int_changes_h2'] }}</h2>
       <ul>
-        <li><strong>Longer deduction chains.</strong> A constraint at one edge of the board can propagate across five or six cells before resolving. You need to hold more state in your head simultaneously.</li>
-        <li><strong>More dense number walls.</strong> With more mines per area, you'll see more 2s, 3s, and 4s packed together. Reading overlapping clues — figuring out which mines are shared between two constraints — is the core skill here.</li>
-        <li><strong>50/50 situations appear more often.</strong> At higher density, isolated two-cell ambiguities arise more frequently. No Guess mode eliminates these if you want a pure logic challenge.</li>
-        <li><strong>Opening cascades are smaller.</strong> The higher mine density means the safe open region is smaller on average. You'll spend more time on constrained deduction rather than free exploration.</li>
+        <li>{{ t['seo_int_changes_li1'] | safe }}</li>
+        <li>{{ t['seo_int_changes_li2'] | safe }}</li>
+        <li>{{ t['seo_int_changes_li3'] | safe }}</li>
+        <li>{{ t['seo_int_changes_li4'] | safe }}</li>
       </ul>
     </section>
 
     <section class="landing-seo-section">
-      <h2>Strategy for Intermediate</h2>
+      <h2>{{ t['seo_int_strat_h2'] }}</h2>
       <ol>
-        <li><strong>Master the 1-2 pattern.</strong> A <em>1</em> adjacent to a <em>2</em> sharing one unknown neighbor means the <em>2</em>'s other unique neighbor is a mine. This pattern appears constantly at intermediate density.</li>
-        <li><strong>Work the edges early.</strong> Edge cells have fewer neighbors, making their constraints tighter and easier to resolve. Clearing the borders first opens safe interior territory.</li>
-        <li><strong>Track mine counts globally.</strong> Forty mines is a lot to track, but if you've flagged 35, only 5 remain. That global constraint can resolve ambiguous clusters that local reasoning can't crack.</li>
-        <li><strong>Use chord clicks aggressively.</strong> Speed matters. Once a number is satisfied, double-click to auto-reveal neighbors instead of manually clicking each one.</li>
-        <li><strong>Don't over-flag.</strong> Every flag is a right-click and potentially a wasted left-click. Fast players at this level flag only when they need the visual marker to complete a deduction chain.</li>
+        <li>{{ t['seo_int_strat_li1'] | safe }}</li>
+        <li>{{ t['seo_int_strat_li2'] | safe }}</li>
+        <li>{{ t['seo_int_strat_li3'] | safe }}</li>
+        <li>{{ t['seo_int_strat_li4'] | safe }}</li>
+        <li>{{ t['seo_int_strat_li5'] | safe }}</li>
       </ol>
     </section>
 
     <section class="landing-seo-section">
-      <h2>Beginner vs. Intermediate vs. Expert</h2>
+      <h2>{{ t['seo_int_compare_h2'] }}</h2>
       <ul>
-        <li><strong><a href="/">Beginner</a> —</strong> 9×9, 10 mines (~12.3% density). Learn fundamentals, chase sub-10s personal bests.</li>
-        <li><strong>Intermediate (this page) —</strong> 16×16, 40 mines (~15.6%). The standard skill checkpoint. Sub-60s is respectable; sub-30s is strong.</li>
-        <li><strong><a href="/expert">Expert</a> —</strong> 30×16, 99 mines (~20.6%). The definitive benchmark. World-record territory is under 40 seconds.</li>
+        <li>{{ t['seo_int_compare_li1'] | safe }}</li>
+        <li>{{ t['seo_int_compare_li2'] | safe }}</li>
+        <li>{{ t['seo_int_compare_li3'] | safe }}</li>
       </ul>
     </section>
 
     <section class="landing-seo-section">
-      <h2>Related Modes</h2>
+      <h2>{{ t['seo_int_related_h2'] }}</h2>
       <ul>
-        <li><strong><a href="/cylinder/intermediate">Cylinder Intermediate</a> —</strong> 16×16, 40 mines, but left and right edges connect. Same density, different topology.</li>
-        <li><strong><a href="/toroid/intermediate">Toroid Intermediate</a> —</strong> All four edges connect. No borders at all.</li>
-        <li><strong><a href="/hexsweeper/intermediate">Hexsweeper Intermediate</a> —</strong> The intermediate board on a hexagonal grid.</li>
-        <li><strong><a href="/tentaizu">Tentaizu</a> —</strong> A Japanese deduction puzzle with all clues pre-placed. No guessing, ever. New puzzle daily.</li>
+        <li>{{ t['seo_int_related_li1'] | safe }}</li>
+        <li>{{ t['seo_int_related_li2'] | safe }}</li>
+        <li>{{ t['seo_int_related_li3'] | safe }}</li>
+        <li>{{ t['seo_int_related_li4'] | safe }}</li>
       </ul>
     </section>
 
@@ -293,68 +268,47 @@
 {% elif mode == 'expert' %}
 <div class="game-landing-seo">
 
-  <h2>Expert Minesweeper — 30×16, 99 Mines</h2>
-  <p>
-    Expert is the definitive Minesweeper benchmark. The board is <strong>30×16 with 99 mines</strong> —
-    a mine density of roughly 20.6%, nearly double that of Beginner. There are no easy opening
-    cascades, no forgiving empty regions to explore. Every area of the board is constrained,
-    every number is a clue that requires immediate attention. This is where the game gets
-    serious.
-  </p>
-  <p>
-    World-class players finish Expert in under 40 seconds. Sub-100 seconds is a common
-    intermediate milestone. If you're new to Expert, expect your first clears to take
-    several minutes — and expect to lose often. Learning to read the board at expert density
-    takes time, but the pattern recognition that develops is what separates casual players
-    from serious ones.
-  </p>
+  <h2>{{ t['seo_exp_h2'] }}</h2>
+  <p>{{ t['seo_exp_p1'] | safe }}</p>
+  <p>{{ t['seo_exp_p2'] | safe }}</p>
 
   <div class="landing-seo-grid">
 
     <section class="landing-seo-section">
-      <h2>What Makes Expert Hard</h2>
+      <h2>{{ t['seo_exp_hard_h2'] }}</h2>
       <ul>
-        <li><strong>High mine density everywhere.</strong> At 20.6%, there are few zero-cells. Almost every reveal produces a number. The board never opens up the way it does at lower difficulties.</li>
-        <li><strong>Simultaneous constraint solving.</strong> Expert boards regularly present configurations where three, four, or five numbered cells share unknown neighbors. Reading these patterns quickly — and correctly — is the core skill.</li>
-        <li><strong>Speed pressure.</strong> Expert rewards efficient clicking patterns. Players who score sub-60s have internalized the common patterns so thoroughly they process them in fractions of a second.</li>
-        <li><strong>More frequent guesses.</strong> Even on No Guess boards, expert-density layouts produce more constrained chains. Without No Guess, some boards contain unavoidable 50/50s — the only variable is when they appear and whether they're fatal.</li>
+        <li>{{ t['seo_exp_hard_li1'] | safe }}</li>
+        <li>{{ t['seo_exp_hard_li2'] | safe }}</li>
+        <li>{{ t['seo_exp_hard_li3'] | safe }}</li>
+        <li>{{ t['seo_exp_hard_li4'] | safe }}</li>
       </ul>
     </section>
 
     <section class="landing-seo-section">
-      <h2>Expert Strategy</h2>
+      <h2>{{ t['seo_exp_strat_h2'] }}</h2>
       <ol>
-        <li><strong>Start with any opening.</strong> Your first click is safe anywhere. Many Expert players click a corner — smaller initial cascade, but immediately into constrained territory where you can start reading.</li>
-        <li><strong>Recognize patterns instantly.</strong> The 1-2 pattern, 1-2-1, 1-2-2-1, isolated corners, completed constraints — at Expert speed, pattern recognition must be automatic. Study them explicitly.</li>
-        <li><strong>Minimize flags, maximize chords.</strong> Top Expert players often use a "flag as you go" or even "no flag" approach, chording through revealed constraints without stopping to right-click every mine.</li>
-        <li><strong>Scan, don't read.</strong> Don't analyze one cell at a time. Train your eyes to scan a region for completed constraints (number equals flagged neighbors) so you can chord through multiple cells in one sweep.</li>
-        <li><strong>Accept the guesses.</strong> On non-No-Guess boards, unavoidable 50/50s are part of Expert. A good time with a bad guess is not a failure — it's variance. Chase consistent deduction across the board and let the odds work over time.</li>
+        <li>{{ t['seo_exp_strat_li1'] | safe }}</li>
+        <li>{{ t['seo_exp_strat_li2'] | safe }}</li>
+        <li>{{ t['seo_exp_strat_li3'] | safe }}</li>
+        <li>{{ t['seo_exp_strat_li4'] | safe }}</li>
+        <li>{{ t['seo_exp_strat_li5'] | safe }}</li>
       </ol>
     </section>
 
     <section class="landing-seo-section">
-      <h2>Expert 3BV and Statistics</h2>
-      <p>
-        Expert boards typically have a 3BV (minimum click count) between 100 and 200. Your 3BV/s
-        (3BV per second) and efficiency (3BV divided by actual clicks) appear in the leaderboard —
-        they measure the quality of your play beyond raw time. A fast time with low efficiency
-        means lots of wasted clicks. High efficiency with a slow time means clean technique, not
-        yet at peak speed.
-      </p>
-      <p>
-        The leaderboard above shows today's best Expert scores. Scores include both standard and
-        No Guess modes — check the toggle above the board to switch.
-      </p>
-      <p><a href="/info/3bv">Learn more about 3BV →</a></p>
+      <h2>{{ t['seo_exp_stats_h2'] }}</h2>
+      <p>{{ t['seo_exp_stats_p1'] | safe }}</p>
+      <p>{{ t['seo_exp_stats_p2'] | safe }}</p>
+      <p>{{ t['seo_exp_stats_p3'] | safe }}</p>
     </section>
 
     <section class="landing-seo-section">
-      <h2>Expert Variants</h2>
+      <h2>{{ t['seo_exp_variants_h2'] }}</h2>
       <ul>
-        <li><strong><a href="/cylinder/expert">Cylinder Expert</a> —</strong> 30×16, 99 mines, with left and right edges connected. The wrap creates deduction chains that span the full width of the board.</li>
-        <li><strong><a href="/toroid/expert">Toroid Expert</a> —</strong> All four edges connect. No corners, no edges — every cell has exactly eight neighbors.</li>
-        <li><strong><a href="/hexsweeper/expert">Hexsweeper Expert</a> —</strong> Expert-density play on a hexagonal grid. Six neighbors per cell instead of eight changes the math fundamentally.</li>
-        <li><strong><a href="/worldsweeper/expert">Worldsweeper Expert</a> —</strong> Minesweeper on a 3D globe. Expert density distributed across the surface of a sphere.</li>
+        <li>{{ t['seo_exp_variants_li1'] | safe }}</li>
+        <li>{{ t['seo_exp_variants_li2'] | safe }}</li>
+        <li>{{ t['seo_exp_variants_li3'] | safe }}</li>
+        <li>{{ t['seo_exp_variants_li4'] | safe }}</li>
       </ul>
     </section>
 
