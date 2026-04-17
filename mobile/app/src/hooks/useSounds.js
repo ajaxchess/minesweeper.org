@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { Audio } from 'expo-av';
+import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = 'sound_muted';
@@ -12,47 +12,41 @@ const SOURCES = {
 };
 
 export function useSounds() {
-  const soundRefs = useRef({});
-  const [muted, setMuted] = useState(false); // on by default
+  const playerRefs = useRef({});
+  const [muted, setMuted] = useState(false);
 
-  // Load saved mute preference
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then(val => {
       if (val === 'true') setMuted(true);
     }).catch(() => {});
   }, []);
 
-  // Load audio files
   useEffect(() => {
-    let mounted = true;
-
-    Audio.setAudioModeAsync({ playsInSilentModeIOS: false }).catch(() => {});
-
-    (async () => {
-      for (const [key, source] of Object.entries(SOURCES)) {
-        try {
-          const { sound } = await Audio.Sound.createAsync(source, { shouldPlay: false });
-          if (mounted) soundRefs.current[key] = sound;
-        } catch {}
-      }
-    })();
-
+    setAudioModeAsync({ playsInSilentModeIOS: false }).catch(() => {});
+    for (const [key, source] of Object.entries(SOURCES)) {
+      try {
+        playerRefs.current[key] = createAudioPlayer(source);
+      } catch {}
+    }
     return () => {
-      mounted = false;
-      for (const sound of Object.values(soundRefs.current)) {
-        sound?.unloadAsync().catch(() => {});
+      for (const player of Object.values(playerRefs.current)) {
+        try { player?.remove(); } catch {}
       }
-      soundRefs.current = {};
+      playerRefs.current = {};
     };
   }, []);
 
   const mutedRef = useRef(muted);
   mutedRef.current = muted;
 
-  const play = useCallback(async (name) => {
+  const play = useCallback((name) => {
     if (mutedRef.current) return;
     try {
-      await soundRefs.current[name]?.replayAsync();
+      const player = playerRefs.current[name];
+      if (player) {
+        player.seekTo(0);
+        player.play();
+      }
     } catch {}
   }, []);
 
