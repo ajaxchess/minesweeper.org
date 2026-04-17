@@ -508,8 +508,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "strat_practice_p3":    "Ready to practice? <a href=\"/\">Play Beginner</a> | <a href=\"/intermediate\">Play Intermediate</a> | <a href=\"/expert\">Play Expert</a> | <a href=\"/duel\">Challenge a Friend to a Duel</a>",
 
         # Guest login banner
-        "guest_banner_pre":  "\u26a0\ufe0f You\u2019re not signed in \u2014",
-        "guest_banner_post": "or your scores will vanish at midnight UTC.",
+        "guest_banner_pre":  "\U0001f44b Playing as a guest \u2014",
+        "guest_banner_post": "to save your scores to the leaderboard.",
         # Nav cards for Nonosweeper, Worldsweeper, Other Puzzles
         "nav_nonosweeper":     "Nonosweeper",
         "nav_sub_nonosweeper": "Minesweeper + Nonogram daily",
