@@ -226,7 +226,8 @@
       <div id="nn-grid"
            data-today="{{ today }}"
            data-real-today="{{ real_today }}"
-           data-username="{{ user.display_name if user else '' }}">
+           data-username="{{ user.display_name if user else '' }}"
+           data-default-no-guess="{{ 'true' if default_no_guess else 'false' }}">
       </div>
 
       <!-- Win / Lose overlay -->

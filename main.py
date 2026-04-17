@@ -5979,6 +5979,7 @@ async def nonosweeper_page(request: Request, date_param: str = Query(None, alias
             "lang": get_lang(request), "t": get_t(request),
             "today": puzzle_date,
             "real_today": real_today,
+            "default_no_guess": get_lang(request) == "de",
         })
         print(f"[DEBUG] nonosweeper_page rendered successfully", flush=True)
         return response
@@ -6003,6 +6004,7 @@ async def nonosweeper_permalink(request: Request, date_str: str):
             "today": date_str,
             "real_today": real_today,
             "noindex": True,
+            "default_no_guess": get_lang(request) == "de",
         })
         print(f"[DEBUG] nonosweeper_permalink rendered successfully", flush=True)
         return response

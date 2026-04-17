@@ -586,7 +586,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const realToday = grid.dataset.realToday;
 
     let currentDiff = localStorage.getItem('nn_difficulty') || 'beginner';
-    let noGuess     = localStorage.getItem('nn_noguess') === 'true';
+    const storedNoGuess = localStorage.getItem('nn_noguess');
+    const defaultNoGuess = grid.dataset.defaultNoGuess === 'true';
+    let noGuess = storedNoGuess !== null ? storedNoGuess === 'true' : defaultNoGuess;
 
     function updateNoGuessBtn() {
         const btn = document.getElementById('nn-noguess-btn');
