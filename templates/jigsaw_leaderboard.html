@@ -97,7 +97,7 @@ table.jlb-table a:hover { text-decoration:underline; }
 
   <div class="jlb-date-row">
     Date:
-    <input type="date" id="jlb-date" value="{{ today }}">
+    <input type="date" id="jlb-date">
   </div>
 
   <table class="jlb-table">
@@ -120,7 +120,11 @@ table.jlb-table a:hover { text-decoration:underline; }
 (function () {
   'use strict';
   let currentDiff = 'beginner';
-  let currentDate = '{{ today }}';
+  // Use the browser's local date so US evening players don't see tomorrow's UTC date.
+  const _d = new Date();
+  const _pad = n => String(n).padStart(2, '0');
+  let currentDate = _d.getFullYear() + '-' + _pad(_d.getMonth() + 1) + '-' + _pad(_d.getDate());
+  document.getElementById('jlb-date').value = currentDate;
 
   function fmt(ms) {
     const s = Math.floor(ms / 1000);
