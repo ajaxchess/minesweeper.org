@@ -107,7 +107,7 @@ async def add_security_headers(request: Request, call_next):
             " https://www.google-analytics.com"
         ),
         # 'self' covers same-origin WebSockets (wss://minesweeper.org/ws/…)
-        "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com",
+        "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://pagead2.googlesyndication.com",
         # AdSense renders ad creatives inside iframes from these domains
         "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
         # Block all plugin-based content (Flash, Java applets, etc.)
@@ -127,7 +127,10 @@ async def add_security_headers(request: Request, call_next):
     # Limit referrer information sent on cross-origin navigation
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     # Disable browser features this site doesn't use
-    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    response.headers["Permissions-Policy"] = (
+        "geolocation=(), microphone=(), camera=(), "
+        "accelerometer=*, gyroscope=*"
+    )
     return response
 
 
