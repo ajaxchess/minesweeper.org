@@ -95,8 +95,9 @@ async def add_security_headers(request: Request, call_next):
             " https://pagead2.googlesyndication.com"
             " https://www.googletagmanager.com"
             " https://cdn.jsdelivr.net"
+            " https://fundingchoicesmessages.google.com"
         ),
-        "style-src 'self' 'unsafe-inline'",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         (
             "img-src 'self' data: blob:"
             " https://lh3.googleusercontent.com"
