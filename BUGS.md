@@ -1,5 +1,17 @@
 -- Fixed below --
 
+B23 AdSense scripts, fonts, and sensor events blocked by CSP / Permissions-Policy
+   Multiple CSP and Permissions-Policy headers were too restrictive for AdSense:
+   - fundingchoicesmessages.google.com blocked by script-src (consent dialog)
+   - fonts.googleapis.com blocked by style-src (Roboto font in consent UI)
+   - pagead2.googlesyndication.com/pagead/ping blocked by connect-src
+   - deviceorientation/devicemotion events blocked by Permissions-Policy
+     (AdSense iframes require accelerometer and gyroscope delegation)
+   Fixed by: adding fundingchoicesmessages.google.com to script-src,
+   fonts.googleapis.com to style-src, pagead2.googlesyndication.com to
+   connect-src, and accelerometer=*/gyroscope=* to Permissions-Policy in
+   the add_security_headers middleware (main.py).
+
 B22 Deployment script not promoting to production
 
 B21 Google Search Console not handling language canonical tag:
