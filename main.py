@@ -108,13 +108,16 @@ async def add_security_headers(request: Request, call_next):
             " https://www.google-analytics.com"
         ),
         # 'self' covers same-origin WebSockets (wss://minesweeper.org/ws/…)
+        # Broad Google/AdSense domains — bidding partners use many subdomains
         (
             "connect-src 'self'"
             " https://www.google-analytics.com"
             " https://region1.google-analytics.com"
-            " https://pagead2.googlesyndication.com"
             " https://*.googlesyndication.com"
             " https://*.doubleclick.net"
+            " https://*.google.com"
+            " https://*.googleadservices.com"
+            " https://*.googlevideo.com"
         ),
         # AdSense renders ad creatives inside iframes from these domains
         "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
