@@ -38,6 +38,7 @@
     },
     "owner": "ajaxchess",
     "plugins": [
+      "./plugins/withAdiRegistration",
       [
         "react-native-google-mobile-ads",
         {
