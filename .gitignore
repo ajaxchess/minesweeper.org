@@ -3,7 +3,7 @@ database.py
 .env
 *.pem
 *_credentials
-mobile/app/
+mobile/app/credentials/
 
 #Runtime environment
 venv/
