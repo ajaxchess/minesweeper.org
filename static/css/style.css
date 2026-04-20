@@ -5770,6 +5770,9 @@ select.calc-input { width: 140px; }
   text-align: center;
   padding: 1rem 0;
 }
+.analysis-download-bar { margin-bottom: 0.75rem; }
+.analysis-download-btn { display: inline-block; padding: 0.35rem 0.85rem; background: var(--accent, #2563eb); color: #fff; border-radius: 6px; font-size: 0.85rem; font-weight: 600; text-decoration: none; }
+.analysis-download-btn:hover { opacity: 0.85; }
 
 @media (max-width: 600px) {
   .analysis-layout {

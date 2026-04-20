@@ -5228,18 +5228,27 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
                 content_html = f.read()
         current_doc = doc
 
+    # Resolve the actual filename (with extension) for the download link
+    current_doc_file = None
+    if current_doc:
+        for ext in (".md", ".html"):
+            if os.path.isfile(os.path.join(active_dir, current_doc + ext)):
+                current_doc_file = current_doc + ext
+                break
+
     return templates.TemplateResponse("admin_analysis.html", {
-        "request":        request,
-        "user":           user,
-        "lang":           get_lang(request),
-        "t":              get_t(request),
-        "mode":           "admin",
-        "folders":        folders,
-        "current_folder": current_folder,
-        "docs":           docs,
-        "downloads":      downloads,
-        "content_html":   content_html,
-        "current_doc":    current_doc,
+        "request":          request,
+        "user":             user,
+        "lang":             get_lang(request),
+        "t":                get_t(request),
+        "mode":             "admin",
+        "folders":          folders,
+        "current_folder":   current_folder,
+        "docs":             docs,
+        "downloads":        downloads,
+        "content_html":     content_html,
+        "current_doc":      current_doc,
+        "current_doc_file": current_doc_file,
     })
 
 

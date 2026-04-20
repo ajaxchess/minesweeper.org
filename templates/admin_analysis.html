@@ -55,6 +55,11 @@
     </div>
 
     <div class="analysis-content">
+      {% if current_doc_file %}
+        <div class="analysis-download-bar">
+          <a href="/admin/analysis/download?file={% if current_folder %}{{ current_folder }}/{% endif %}{{ current_doc_file }}" download class="analysis-download-btn">⬇ Download {{ current_doc_file }}</a>
+        </div>
+      {% endif %}
       {% if content_html %}
         <div class="blog-article-body">{{ content_html | safe }}</div>
       {% elif current_doc %}
