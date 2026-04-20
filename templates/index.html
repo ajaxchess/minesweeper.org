@@ -145,12 +145,6 @@
   <section class="game-landing-welcome">
     <h2 class="game-landing-title">{{ t.index_welcome_title }}</h2>
     <p>{{ t.index_welcome_body }}</p>
-    {% if not user %}
-    <div class="game-landing-signin">
-      <p class="game-landing-signin-msg">{{ t.index_signin_msg }}</p>
-      <a href="/auth/login" class="game-landing-signin-btn">{{ t.auth_sign_in }}</a>
-    </div>
-    {% endif %}
     <nav class="game-landing-links">
       <a href="/about">{{ t.index_about }}</a>
       <a href="/how-to-play">{{ t.nav_how_to_play }}</a>
