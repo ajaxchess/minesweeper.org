@@ -8,6 +8,41 @@
   <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">{{ users|length }} users · ranked by total games</p>
   <p style="text-align:center;margin-bottom:1.5rem;"><a href="/admin">← {{ t.admin_dashboard }}</a></p>
 
+  <div style="max-width:800px;margin:0 auto 2rem;">
+    <canvas id="growth-chart" height="120"></canvas>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script>
+  (function(){
+    var data = {{ chart_data | safe }};
+    var labels = data.map(function(d){ return d.date; });
+    var totals = data.map(function(d){ return d.total; });
+    new Chart(document.getElementById('growth-chart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Total Users',
+          data: totals,
+          borderColor: '#4a9eff',
+          backgroundColor: 'rgba(74,158,255,0.1)',
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { maxTicksLimit: 10 } },
+          y: { beginAtZero: true, ticks: { precision: 0 } }
+        }
+      }
+    });
+  })();
+  </script>
+
   <div class="lb-table-wrap">
     <table class="lb-table">
       <thead>

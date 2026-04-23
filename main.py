@@ -4648,7 +4648,23 @@ def admin_users(request: Request, db: Session = Depends(get_db)):
     if not user or user.get("email") not in ADMIN_EMAILS:
         raise HTTPException(status_code=403, detail="Forbidden")
 
+    import json as _json
     from sqlalchemy import text
+
+    # Signups per day for cumulative growth chart
+    signup_rows = db.execute(text("""
+        SELECT DATE(created_at) AS d, COUNT(*) AS cnt
+        FROM user_profiles
+        WHERE created_at IS NOT NULL
+        GROUP BY DATE(created_at)
+        ORDER BY d ASC
+    """)).fetchall()
+    cumulative, running = [], 0
+    for r in signup_rows:
+        running += r.cnt
+        cumulative.append({"date": str(r.d), "total": running})
+    chart_data = _json.dumps(cumulative)
+
     rows = db.execute(text("""
         SELECT
             u.email, u.display_name, u.public_id, u.vanity_slug, u.created_at,
@@ -4679,6 +4695,7 @@ def admin_users(request: Request, db: Session = Depends(get_db)):
         "lang": get_lang(request),
         "t": get_t(request),
         "users": rows,
+        "chart_data": chart_data,
     })
 
 
