@@ -13,8 +13,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "org.minesweeper.app",
-      "buildNumber": "2",
+      "bundleIdentifier": "org.minesweeper",
+      "buildNumber": "4",
       "config": {
         "usesNonExemptEncryption": false
       },
