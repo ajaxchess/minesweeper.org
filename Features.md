@@ -87,101 +87,50 @@ F74 MobiusSweeper (/mobiussweeper)
   Implementation Tasks
   ──────────────────────────────────────────────────────────────────────
 
-  Task 1 — Database model (database_template.py)
-    Add MobiussweeperScore table:
-      id, name, user_email, mobius_mode (beginner|intermediate|expert|custom),
-      width, length, time_ms, mines, no_guess, bbbv, left_clicks,
-      board_hash, guest_token, client_type, created_at.
-    Index on (mobius_mode, no_guess, time_ms).
-    Add to_dict() with bbbv_s and eff derived fields.
+  Task 1 — Database model (database_template.py) ✓ DONE (efa4741)
+    MobiussweeperScore table added with all fields.
+    Index ix_mobiussweeper_scores_mode_ng_time on (mobius_mode, no_guess, time_ms).
+    to_dict() with bbbv_s and eff derived fields.
 
-  Task 2 — Routes (main.py)
-    Mode config dict:
-      beginner:     {width:  4, length:  40, mines:  16}
-      intermediate: {width:  8, length:  80, mines:  64}
-      expert:       {width: 16, length: 160, mines: 256}
-    GET  /mobiussweeper               → mobiussweeper.html, mode=beginner
-    GET  /mobiussweeper/intermediate  → mobiussweeper.html, mode=intermediate
-    GET  /mobiussweeper/expert        → mobiussweeper.html, mode=expert
-    GET  /mobiussweeper/leaderboard   → mobiussweeper_leaderboard.html
-    POST /api/mobiussweeper-scores    → submit score (rate limited 10/min)
-    GET  /api/mobiussweeper-scores/{mode} → top 20, params: period, no_guess, date
-    Template context: request, user, lang, t, mode, width, length, mines.
+  Task 2 — Routes (main.py) ✓ DONE (18f09e9)
+    MOBIUSSWEEPER_MODES dict, MOBIUS_MODES_VALID set.
+    GET /mobiussweeper, /intermediate, /expert, /leaderboard.
+    POST /api/mobiussweeper-scores (rate limited 10/min).
+    GET /api/mobiussweeper-scores/{mode} (dedup best-per-player, daily/alltime).
 
-  Task 3 — Cell encoding & adjacency (mobiussweeper.js)
-    Constants: _W (width), _L (length).
-    _mid(r, c) = r * _L + c
-    _mrow(id)  = (id / _L) | 0
-    _mcol(id)  = id % _L
-    _mobiusNeighbour(r, c, dr, dc):
-      Apply Möbius twist formula above; return null if off edge.
-    _buildMobiusNeighbours(W, L):
-      For each cell, collect valid (nr, nc) for all 8 (dr, dc); return Uint32Array[].
+  Task 3 — Cell encoding & adjacency (mobiussweeper.js) ✓ DONE (592e7fa)
+    _mid, _mrow, _mcol, _mobiusNeighbour, _buildMobiusNeighbours implemented.
 
-  Task 4 — 3D mesh construction (mobiussweeper.js)
-    _mobiusPoint(r, c, W, L, R, H):
-      Map (r, c) to (t, s); return THREE.Vector3 from parametric formula.
-    _mobiusNormal(r, c, W, L, R, H):
-      Compute ∂P/∂t and ∂P/∂s via finite difference; return normalised cross product.
-    _buildMobiusCellMeshes():
-      For each cell (r, c):
-        4 corners = _mobiusPoint at (r, c), (r+1, c), (r+1, c+1), (r, c+1).
-        Build BufferGeometry (2 triangles), set position + normal attributes.
-        MeshPhongMaterial with initial hidden colour.
-        Store userData.cellId; push to _cellMeshes[].
-      Build grid lines between tiles (thin LineSegments geometry).
+  Task 4 — 3D mesh construction (mobiussweeper.js) ✓ DONE (592e7fa)
+    _mobiusPoint, _mobiusPointRaw, _mobiusNormal, _buildMobiusCellMeshes.
+    Inset quads (INSET=0.93), DoubleSide material, grid lines.
+    Cell normals cached in _cellNormals[] for sprite orientation and far-culling.
 
-  Task 5 — Sprite overlays (mobiussweeper.js)
-    _mobiusMakeSprite(text, color, size, bgColor, id):
-      Same canvas-texture approach as cubesweeper.js _csMakeSprite().
-      Orient PlaneGeometry using right/up/normal basis at tile centre.
-      Position at cell centre + normal * 0.02 (just above surface).
+  Task 5 — Sprite overlays (mobiussweeper.js) ✓ DONE (592e7fa)
+    _msMakeSprite orients plane using ∂P/∂t × ∂P/∂s tangent basis.
+    _msPlaceSprite positions at cell centre + normal * 0.04.
 
-  Task 6 — Game logic (mobiussweeper.js)
-    Port from cubesweeper.js with Möbius adjacency substituted:
-      cellState Uint8Array[W*L], adjCount Uint8Array[W*L], mineSet Set.
-      _mobiusGenerateMines(total, count, safeId) — Fisher-Yates.
-      _mobiusComputeAdj(mines).
-      revealCell(id): first-click mine gen → BFS flood fill → win check.
-      cycleFlagCell(id): hidden→flagged→question→hidden.
-      updateCellVisual(id): colours and sprites per state.
-      _mobiusCompute3BV(): openings (BFS) + isolated non-mine cells.
+  Task 6 — Game logic (mobiussweeper.js) ✓ DONE (592e7fa)
+    revealCell, cycleFlagCell, updateCellVisual, _msCompute3BV, _msCheckWin.
 
-  Task 7 — No-Guess solver (mobiussweeper.js)
-    _mobiusIsSolvable(mines, adjCounts, safeId, total):
-      Same constraint propagation BFS as cubesweeper.js _csIsSolvable().
-      Uses Möbius _adj arrays; up to 200 retries; fallback to random.
+  Task 7 — No-Guess solver (mobiussweeper.js) ✓ DONE (592e7fa)
+    _msIsSolvable, _msGenerateMinesNoGuess (200 retries, fallback to random).
 
-  Task 8 — Interaction & render loop (mobiussweeper.js)
-    Drag rotation (quaternion, same as CubeSweeper).
-    Pointer down/move/up — drag vs click threshold 6 px.
-    _mobiusDoRaycast(e, button) → intersectObjects(_cellMeshes).
-    Far-side culling: hide sprites whose cell normal (after rotation) faces away
-    from camera — prevents number clutter on the back of the strip.
-    _mobiusAnimate() requestAnimationFrame loop: far-cull + _renderer.render().
-    Score submission: POST /api/mobiussweeper-scores (same pattern as cube).
+  Task 8 — Interaction & render loop (mobiussweeper.js) ✓ DONE (592e7fa)
+    Quaternion drag, pointer events, _msDoRaycast, far-cull per-cell normals,
+    _msAnimate RAF loop, score submission to /api/mobiussweeper-scores.
 
-  Task 9 — Template (templates/mobiussweeper.html)
-    Port cubesweeper.html:
-      Topbar: mine counter, reset, flag mode, far-nums toggle, no-guess toggle,
-              progress %, timer, background selector.
-      Canvas: id="mobius-canvas", height clamp(400px, 70vh, 900px).
-      Win overlay with score form.
-      Info sections: What is MobiusSweeper?, How to Play, Board Sizes,
-                     The Möbius Twist (explain seam adjacency), No-Guess Mode.
-    Pass data- attributes: data-mode, data-width, data-length, data-mines.
-    Load static/js/mobiussweeper.js.
+  Task 9 — Template (templates/mobiussweeper.html) ✓ DONE (07a5f28)
+    Full topbar, canvas, overlay, score form, info sections.
+    data-width/length attributes drive JS config.
 
-  Task 10 — Leaderboard template (templates/mobiussweeper_leaderboard.html)
-    Port cubesweeper_leaderboard.html.
-    Sections: beginner, beginner no-guess, intermediate, intermediate no-guess,
-              expert, expert no-guess.
+  Task 10 — Leaderboard template (templates/mobiussweeper_leaderboard.html) ✓ DONE (eeeef9d)
+    6 sections (beginner/intermediate/expert × standard/no-guess).
     Client-side fetch from /api/mobiussweeper-scores/{mode}.
 
-  Task 11 — Translations (translations.py)
-    Add to all language blocks (English + fallback):
-      nav_mobiussweeper: "MobiusSweeper"
-    Add nav link in templates/base.html under the 3D games section.
+  Task 11 — Translations (translations.py) ✓ DONE (6053695)
+    nav_mobiussweeper and nav_sub_mobiussweeper added to English and German.
+    Nav link (∞ icon) added to base.html variants mega-menu after CubeSweeper.
 
   Task 12 — Tuning & playtesting
     After first playable build, adjust:
