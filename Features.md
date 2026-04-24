@@ -15,6 +15,196 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F74 MobiusSweeper (/mobiussweeper)
+  Minesweeper played on a rotating 3D Möbius strip rendered with Three.js.
+  Tiles cover the surface of the strip. The Möbius topology creates a single
+  edge and a single side — going around the full length of the strip returns
+  you to the starting row, but with the row index flipped. This topological
+  twist affects the adjacency of tiles at the seam and is the defining
+  strategic challenge of the variant.
+  Reference: FeatureRequests/MobiusSweeper.md
+
+  Board Sizes
+  ──────────────────────────────────────────────────────────────────────
+  Beginner:       4 wide ×  40 long =   160 total cells,  16 mines
+  Intermediate:   8 wide ×  80 long =   640 total cells,  64 mines
+  Expert:        16 wide × 160 long =  2560 total cells, 256 mines
+  (Width = across the strip; Length = around the loop. Values may be tuned
+  after playtesting — the feature request notes these are initial estimates.)
+
+  Möbius Topology & Adjacency Model
+  ──────────────────────────────────────────────────────────────────────
+  Tiles are addressed as (row r, col c) where r ∈ [0, W-1] and c ∈ [0, L-1].
+  W = strip width, L = strip length (number of tiles around the loop).
+
+  Wrapping rule — when col c steps past the end of the strip:
+    Crossing col = -1   →  neighbour is (W-1-r,  L-1)   [row flips, col wraps]
+    Crossing col = L    →  neighbour is (W-1-r,  0)      [row flips, col wraps]
+
+  Row boundaries (r < 0 or r ≥ W) are the physical edges of the strip —
+  those neighbours do not exist (no wrap).
+
+  Cell types and neighbour counts:
+  - Interior cell:         8 neighbours, all on the same strip segment.
+  - Non-corner edge cell (row edge):   5 neighbours (row edge is a real boundary).
+  - Seam cell (col = 0 or col = L-1):  8 neighbours — 5 on the local segment
+                                       + 3 across the Möbius seam (row-flipped).
+  - Corner cell (row edge + seam):     3 neighbours — 2 on-strip + 1 across seam.
+
+  Adjacency function _mobiusNeighbour(r, c, dr, dc, W, L):
+    nr = r + dr
+    nc = c + dc
+    if nc < 0:   nc = L-1; nr = W-1-nr   # Möbius twist
+    if nc >= L:  nc = 0;   nr = W-1-nr   # Möbius twist
+    if nr < 0 or nr >= W: return null     # strip edge — no cell
+    return (nr, nc)
+
+  Cell ID encoding:  id = r * L + c       (row-major, total = W * L)
+  Decode:            r = floor(id / L),   c = id % L
+
+  3D Geometry (Möbius Parametric Surface)
+  ──────────────────────────────────────────────────────────────────────
+  Standard Möbius strip parametrisation (radius R = 2.5, half-width H = 0.8):
+
+    t  = c / L * 2π          (angle around the loop, 0..2π)
+    s  = -H + (2r + 1) / W * 2H    (position across width, -H..+H)
+
+    x  = (R + s · cos(t/2)) · cos(t)
+    y  = (R + s · cos(t/2)) · sin(t)
+    z  =  s · sin(t/2)
+
+  The half-angle (t/2) is what produces the half-twist.
+
+  Per-tile quad corners use t,s at the tile's four corners in the parameter
+  space. Normal at tile centre = normalise(∂P/∂t × ∂P/∂s) computed analytically
+  or via finite differences.
+
+  Tangent basis per tile (for sprite orientation):
+    right  = normalise(∂P/∂c)   (along-strip direction)
+    up     = normalise(∂P/∂r)   (across-strip direction)
+    normal = right × up
+
+  Implementation Tasks
+  ──────────────────────────────────────────────────────────────────────
+
+  Task 1 — Database model (database_template.py)
+    Add MobiussweeperScore table:
+      id, name, user_email, mobius_mode (beginner|intermediate|expert|custom),
+      width, length, time_ms, mines, no_guess, bbbv, left_clicks,
+      board_hash, guest_token, client_type, created_at.
+    Index on (mobius_mode, no_guess, time_ms).
+    Add to_dict() with bbbv_s and eff derived fields.
+
+  Task 2 — Routes (main.py)
+    Mode config dict:
+      beginner:     {width:  4, length:  40, mines:  16}
+      intermediate: {width:  8, length:  80, mines:  64}
+      expert:       {width: 16, length: 160, mines: 256}
+    GET  /mobiussweeper               → mobiussweeper.html, mode=beginner
+    GET  /mobiussweeper/intermediate  → mobiussweeper.html, mode=intermediate
+    GET  /mobiussweeper/expert        → mobiussweeper.html, mode=expert
+    GET  /mobiussweeper/leaderboard   → mobiussweeper_leaderboard.html
+    POST /api/mobiussweeper-scores    → submit score (rate limited 10/min)
+    GET  /api/mobiussweeper-scores/{mode} → top 20, params: period, no_guess, date
+    Template context: request, user, lang, t, mode, width, length, mines.
+
+  Task 3 — Cell encoding & adjacency (mobiussweeper.js)
+    Constants: _W (width), _L (length).
+    _mid(r, c) = r * _L + c
+    _mrow(id)  = (id / _L) | 0
+    _mcol(id)  = id % _L
+    _mobiusNeighbour(r, c, dr, dc):
+      Apply Möbius twist formula above; return null if off edge.
+    _buildMobiusNeighbours(W, L):
+      For each cell, collect valid (nr, nc) for all 8 (dr, dc); return Uint32Array[].
+
+  Task 4 — 3D mesh construction (mobiussweeper.js)
+    _mobiusPoint(r, c, W, L, R, H):
+      Map (r, c) to (t, s); return THREE.Vector3 from parametric formula.
+    _mobiusNormal(r, c, W, L, R, H):
+      Compute ∂P/∂t and ∂P/∂s via finite difference; return normalised cross product.
+    _buildMobiusCellMeshes():
+      For each cell (r, c):
+        4 corners = _mobiusPoint at (r, c), (r+1, c), (r+1, c+1), (r, c+1).
+        Build BufferGeometry (2 triangles), set position + normal attributes.
+        MeshPhongMaterial with initial hidden colour.
+        Store userData.cellId; push to _cellMeshes[].
+      Build grid lines between tiles (thin LineSegments geometry).
+
+  Task 5 — Sprite overlays (mobiussweeper.js)
+    _mobiusMakeSprite(text, color, size, bgColor, id):
+      Same canvas-texture approach as cubesweeper.js _csMakeSprite().
+      Orient PlaneGeometry using right/up/normal basis at tile centre.
+      Position at cell centre + normal * 0.02 (just above surface).
+
+  Task 6 — Game logic (mobiussweeper.js)
+    Port from cubesweeper.js with Möbius adjacency substituted:
+      cellState Uint8Array[W*L], adjCount Uint8Array[W*L], mineSet Set.
+      _mobiusGenerateMines(total, count, safeId) — Fisher-Yates.
+      _mobiusComputeAdj(mines).
+      revealCell(id): first-click mine gen → BFS flood fill → win check.
+      cycleFlagCell(id): hidden→flagged→question→hidden.
+      updateCellVisual(id): colours and sprites per state.
+      _mobiusCompute3BV(): openings (BFS) + isolated non-mine cells.
+
+  Task 7 — No-Guess solver (mobiussweeper.js)
+    _mobiusIsSolvable(mines, adjCounts, safeId, total):
+      Same constraint propagation BFS as cubesweeper.js _csIsSolvable().
+      Uses Möbius _adj arrays; up to 200 retries; fallback to random.
+
+  Task 8 — Interaction & render loop (mobiussweeper.js)
+    Drag rotation (quaternion, same as CubeSweeper).
+    Pointer down/move/up — drag vs click threshold 6 px.
+    _mobiusDoRaycast(e, button) → intersectObjects(_cellMeshes).
+    Far-side culling: hide sprites whose cell normal (after rotation) faces away
+    from camera — prevents number clutter on the back of the strip.
+    _mobiusAnimate() requestAnimationFrame loop: far-cull + _renderer.render().
+    Score submission: POST /api/mobiussweeper-scores (same pattern as cube).
+
+  Task 9 — Template (templates/mobiussweeper.html)
+    Port cubesweeper.html:
+      Topbar: mine counter, reset, flag mode, far-nums toggle, no-guess toggle,
+              progress %, timer, background selector.
+      Canvas: id="mobius-canvas", height clamp(400px, 70vh, 900px).
+      Win overlay with score form.
+      Info sections: What is MobiusSweeper?, How to Play, Board Sizes,
+                     The Möbius Twist (explain seam adjacency), No-Guess Mode.
+    Pass data- attributes: data-mode, data-width, data-length, data-mines.
+    Load static/js/mobiussweeper.js.
+
+  Task 10 — Leaderboard template (templates/mobiussweeper_leaderboard.html)
+    Port cubesweeper_leaderboard.html.
+    Sections: beginner, beginner no-guess, intermediate, intermediate no-guess,
+              expert, expert no-guess.
+    Client-side fetch from /api/mobiussweeper-scores/{mode}.
+
+  Task 11 — Translations (translations.py)
+    Add to all language blocks (English + fallback):
+      nav_mobiussweeper: "MobiusSweeper"
+    Add nav link in templates/base.html under the 3D games section.
+
+  Task 12 — Tuning & playtesting
+    After first playable build, adjust:
+      - R (strip radius) and H (half-width) for visual appeal.
+      - Board dimensions if beginner feels too easy/hard.
+      - No-Guess retry limit (200 may be insufficient for strip topology).
+      - Camera starting position and initial rotation.
+
+  Open Questions / Design Notes
+  ──────────────────────────────────────────────────────────────────────
+  - The Möbius seam is where gameplay gets interesting: at col=0/L-1 the
+    player must mentally account for the row flip. Consider a visual cue
+    on the seam tiles (e.g. slightly different border colour).
+  - The strip has two "sides" visually but topologically one — the camera
+    can orbit to see what appears to be the underside. Far-side culling
+    should hide tile numbers on the back of the strip but keep the tile
+    colours visible (otherwise the strip looks hollow).
+  - Custom mode: width 1–32, length 8–256, no leaderboard.
+  - 3BV on a strip: same formula as cube — count openings + isolated cells.
+    The Möbius seam creates interesting opening shapes that cross the twist.
+
+──────────────────────────────────────────────────────────────────────────────
+
 F73 CubeSweeper (/cubesweeper)
   Minesweeper played on the six faces of a rotating 3D cube. Each face is an
   N×N grid. Mines on one face count toward the adjacent-face numbers of cells
