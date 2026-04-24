@@ -573,6 +573,51 @@ class CubesweeperScore(Base):
         }
 
 
+# ── MobiusSweeper Score model ─────────────────────────────────────────────────
+class MobiussweeperScore(Base):
+    __tablename__ = "mobiussweeper_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    mobius_mode = Column(String(20), nullable=False)   # beginner/intermediate/expert
+    width       = Column(Integer, nullable=False)      # strip width (rows)
+    length      = Column(Integer, nullable=False)      # strip length (cols around loop)
+    time_ms     = Column(Integer, nullable=False)
+    mines       = Column(Integer, nullable=False)
+    no_guess    = Column(Boolean, default=False, nullable=False)
+    bbbv        = Column(Integer, nullable=True)
+    left_clicks = Column(Integer, nullable=True)
+    board_hash  = Column(String(512), nullable=True)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_mobiussweeper_scores_mode_ng_time", "mobius_mode", "no_guess", "time_ms"),
+    )
+
+    def to_dict(self):
+        bbbv_s = f"{self.bbbv / (self.time_ms / 1000):.2f}" if self.bbbv and self.time_ms else "—"
+        eff    = f"{round(self.bbbv / self.left_clicks * 100)}%" if (self.bbbv and self.left_clicks) else "—"
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "mobius_mode": self.mobius_mode,
+            "width":       self.width,
+            "length":      self.length,
+            "time_ms":     self.time_ms,
+            "mines":       self.mines,
+            "no_guess":    self.no_guess,
+            "bbbv":        self.bbbv if self.bbbv else "—",
+            "bbbv_s":      bbbv_s,
+            "eff":         eff,
+            "left_clicks": self.left_clicks if self.left_clicks else "—",
+            "board_hash":  self.board_hash,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
 # ── Guest Score Archive (scores from unregistered players archived at midnight) ─
 class GuestScoreArchive(Base):
     __tablename__ = "guest_score_archive"
