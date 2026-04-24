@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Meet the Team — minesweeper.org{% endblock %}
+{% block description %}Meet the team behind minesweeper.org — Richard Cross and Honey the mascot.{% endblock %}
+{% block canonical %}https://minesweeper.org/team{% endblock %}
+{% block og_url %}https://minesweeper.org/team{% endblock %}
+{% block og_title %}Meet the Team — minesweeper.org{% endblock %}
+{% block og_description %}Meet the team behind minesweeper.org — Richard Cross and Honey the mascot.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "name": "Meet the Team — minesweeper.org",
+  "url": "https://minesweeper.org/team",
+  "description": "Meet the team behind minesweeper.org."
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">Meet the Team</h1>
+
+  <div class="help-section">
+    <h2>Richard Cross &mdash; Founder</h2>
+    <p>Richard Cross is the co-founder and CFO of <a href="https://regis.consulting" target="_blank" rel="noopener">Regis Consulting</a>. He holds an MBA with Honors from the University of Chicago Booth School of Business (concentrations in Entrepreneurship and Economics), a Ph.D. in Physics from the University of Wisconsin-Madison, and undergraduate degrees in Physics and Economics from Louisiana State University.</p>
+    <p>His finance career spans quantitative trading support at Bank of America, energy and infrastructure finance at AEP Energy, and a decade as Head Teaching Assistant for Entrepreneurial Finance and Private Equity at the University of Chicago. His technical career runs in parallel: site reliability engineering, DevOps, and cloud architecture at Bank of America, HERE Technologies, and Truepill, with certifications in AWS SysOps, Cisco CCST Networking, and Six Sigma.</p>
+    <p>Richard is also a co-author on 72 publications with the ZEUS Collaboration at DESY in Hamburg. He first launched Minesweeper.org in 1999 and <a href="https://ajaxchess.com" target="_blank" rel="noopener">AjaxChess.com</a> in 2007, and is now bringing the Vibe Coding approach to web development.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Honey &mdash; Mascot</h2>
+    <img src="/static/img/puzzle/HoneyBridal.jpg"
+         alt="Honey, the minesweeper.org mascot dog"
+         style="display:block;margin:0.75rem 0 1rem;max-width:280px;border-radius:8px;">
+    <p>Honey is the official mascot of minesweeper.org. She reviews every feature before it ships and has yet to detonate a single mine — natural talent, or maybe she just avoids clicking anything.</p>
+    <p><a href="/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner" target="_blank" rel="noopener">Play the Honey jigsaw puzzle →</a></p>
+  </div>
+
+  <div class="lb-back">
+    <a href="/about">← About</a>
+  </div>
+
+</div>
+{% endblock %}

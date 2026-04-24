@@ -2159,6 +2159,15 @@ async def about_page(request: Request):
     })
 
 
+@app.get("/team", response_class=HTMLResponse)
+async def team_page(request: Request):
+    return templates.TemplateResponse("team.html", {
+        "request": request, "mode": "team",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 # ── Blog ──────────────────────────────────────────────────────────────────────
 
 # Post registry — add a new entry here for each new post.
