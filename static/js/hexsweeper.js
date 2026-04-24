@@ -226,9 +226,11 @@
 
       g.addEventListener('click',       e => handleClick(e, q, r));
       g.addEventListener('contextmenu', e => handleRightClick(e, q, r));
+      g.addEventListener('dblclick',    e => { e.preventDefault(); chordCell(q, r); });
 
-      // Touch: long-press = flag
+      // Touch: long-press = flag, double-tap = chord
       let touchTimer = null;
+      let lastTapAt  = 0;
       g.addEventListener('touchstart', e => {
         touchTimer = setTimeout(() => {
           touchTimer = null;
@@ -239,7 +241,14 @@
         if (touchTimer) {
           clearTimeout(touchTimer);
           touchTimer = null;
-          handleClick(e, q, r);
+          const now = Date.now();
+          if (now - lastTapAt < 300) {
+            lastTapAt = 0;
+            chordCell(q, r);
+          } else {
+            lastTapAt = now;
+            handleClick(e, q, r);
+          }
         }
       });
       g.addEventListener('touchmove', () => { clearTimeout(touchTimer); touchTimer = null; });
@@ -425,9 +434,7 @@
     e.preventDefault();
     if (state.over) return;
     const k = key(q, r);
-    if (state.revealed.has(k)) {
-      chordCell(q, r);
-    } else if (!state.flagged.has(k) && !state.qflagged.has(k)) {
+    if (!state.revealed.has(k) && !state.flagged.has(k) && !state.qflagged.has(k)) {
       state.leftClicks++;
       revealCell(q, r);
     }
