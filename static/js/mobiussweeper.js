@@ -138,7 +138,7 @@ function _mobiusPoint(r, c, W, L, R, H) {
     // t: angle around the loop (0..2π)
     // s: position across width (-H..+H), cell centre at midpoint of row band
     const t = (c / L) * 2 * Math.PI;
-    const s = -H + (2 * r + 1) / W * 2 * H;
+    const s = -H + (2 * r + 1) / W * H;
     const x = (R + s * Math.cos(t / 2)) * Math.cos(t);
     const y = (R + s * Math.cos(t / 2)) * Math.sin(t);
     const z =  s * Math.sin(t / 2);
@@ -155,7 +155,7 @@ function _mobiusPointRaw(t, s, R, H) {
 function _mobiusNormal(r, c, W, L, R, H) {
     const EPS = 1e-4;
     const t   = (c / L) * 2 * Math.PI;
-    const s   = -H + (2 * r + 1) / W * 2 * H;
+    const s   = -H + (2 * r + 1) / W * H;
     const dt  = EPS;
     const ds  = EPS;
     const p   = _mobiusPointRaw(t,    s,    R, H);
@@ -186,8 +186,8 @@ function _buildMobiusCellMeshes() {
             // (r, c), (r+1, c), (r+1, c+1), (r, c+1)
             const t0 = (c     / _L) * 2 * Math.PI;
             const t1 = ((c+1) / _L) * 2 * Math.PI;
-            const s0 = -_MS_H + (2 * r     / _W) * 2 * _MS_H;
-            const s1 = -_MS_H + (2 * (r+1) / _W) * 2 * _MS_H;
+            const s0 = -_MS_H + (r     / _W) * 2 * _MS_H;
+            const s1 = -_MS_H + ((r+1) / _W) * 2 * _MS_H;
 
             // Compute inset corners using INSET factor around cell centre
             const tMid = (t0 + t1) / 2;
@@ -241,7 +241,7 @@ function _buildMobiusCellMeshes() {
         for (let c = 0; c < _L; c++) {
             const t0 = (c     / _L) * 2 * Math.PI;
             const t1 = ((c+1) / _L) * 2 * Math.PI;
-            const s  = -_MS_H + (2 * r / _W) * 2 * _MS_H;
+            const s  = -_MS_H + (r / _W) * 2 * _MS_H;
             const p0 = _mobiusPointRaw(t0, s, _MS_R, _MS_H);
             const p1 = _mobiusPointRaw(t1, s, _MS_R, _MS_H);
             lineVerts.push(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z);
@@ -250,8 +250,8 @@ function _buildMobiusCellMeshes() {
     for (let c = 0; c <= _L; c++) {
         const t = (c / _L) * 2 * Math.PI;
         for (let r = 0; r < _W; r++) {
-            const s0 = -_MS_H + (2 * r     / _W) * 2 * _MS_H;
-            const s1 = -_MS_H + (2 * (r+1) / _W) * 2 * _MS_H;
+            const s0 = -_MS_H + (r     / _W) * 2 * _MS_H;
+            const s1 = -_MS_H + ((r+1) / _W) * 2 * _MS_H;
             const p0 = _mobiusPointRaw(t, s0, _MS_R, _MS_H);
             const p1 = _mobiusPointRaw(t, s1, _MS_R, _MS_H);
             lineVerts.push(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z);
@@ -299,7 +299,7 @@ function _msMakeSprite(text, color, size, bgColor, cellId) {
     const r = _mrow(cellId), c2 = _mcol(cellId);
     const EPS = 1e-4;
     const t  = (c2 / _L) * 2 * Math.PI;
-    const s  = -_MS_H + (2 * r + 1) / _W * 2 * _MS_H;
+    const s  = -_MS_H + (2 * r + 1) / _W * _MS_H;
     const p  = _mobiusPointRaw(t,     s,     _MS_R, _MS_H);
     const pt = _mobiusPointRaw(t+EPS, s,     _MS_R, _MS_H);
     const ps = _mobiusPointRaw(t,     s+EPS, _MS_R, _MS_H);
