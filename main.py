@@ -3616,6 +3616,160 @@ def get_cube_scores(cube_mode: str, period: str = "alltime",
     return top
 
 
+# ── MobiusSweeper ─────────────────────────────────────────────────────────────
+
+MOBIUSSWEEPER_MODES = {
+    "beginner":     {"width":  4, "length":  40, "mines":  16},
+    "intermediate": {"width":  8, "length":  80, "mines":  64},
+    "expert":       {"width": 16, "length": 160, "mines": 256},
+}
+MOBIUS_MODES_VALID = {"beginner", "intermediate", "expert"}
+
+
+@app.get("/mobiussweeper", response_class=HTMLResponse)
+async def mobiussweeper_beginner(request: Request):
+    m = MOBIUSSWEEPER_MODES["beginner"]
+    return templates.TemplateResponse("mobiussweeper.html", {
+        "request": request, "mode": "beginner",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **m,
+    })
+
+
+@app.get("/mobiussweeper/intermediate", response_class=HTMLResponse)
+async def mobiussweeper_intermediate(request: Request):
+    m = MOBIUSSWEEPER_MODES["intermediate"]
+    return templates.TemplateResponse("mobiussweeper.html", {
+        "request": request, "mode": "intermediate",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **m,
+    })
+
+
+@app.get("/mobiussweeper/expert", response_class=HTMLResponse)
+async def mobiussweeper_expert(request: Request):
+    m = MOBIUSSWEEPER_MODES["expert"]
+    return templates.TemplateResponse("mobiussweeper.html", {
+        "request": request, "mode": "expert",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **m,
+    })
+
+
+@app.get("/mobiussweeper/leaderboard", response_class=HTMLResponse)
+async def mobiussweeper_leaderboard(request: Request):
+    return templates.TemplateResponse("mobiussweeper_leaderboard.html", {
+        "request": request,
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+class MobiussweeperScoreSubmit(BaseModel):
+    name:        str           = Field(..., min_length=1, max_length=32)
+    mobius_mode: str           = Field(..., pattern="^(beginner|intermediate|expert)$")
+    width:       int           = Field(..., ge=1, le=64)
+    length:      int           = Field(..., ge=4, le=512)
+    time_ms:     int           = Field(..., ge=1, le=7_200_000)
+    mines:       int           = Field(..., ge=1)
+    no_guess:    bool          = False
+    bbbv:        Optional[int] = Field(None, ge=1, le=999999)
+    left_clicks: Optional[int] = Field(None, ge=0, le=9999999)
+    board_hash:  Optional[str] = Field(None, max_length=512)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+    @field_validator("mines")
+    @classmethod
+    def mines_not_exceeding_board(cls, v, info):
+        width  = info.data.get("width")
+        length = info.data.get("length")
+        if width and length and v >= width * length:
+            raise ValueError("Too many mines for this board size")
+        return v
+
+
+@app.post("/api/mobiussweeper-scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_mobius_score(payload: MobiussweeperScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = MobiussweeperScore(
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        mobius_mode = payload.mobius_mode,
+        width       = payload.width,
+        length      = payload.length,
+        time_ms     = payload.time_ms,
+        mines       = payload.mines,
+        no_guess    = payload.no_guess,
+        bbbv        = payload.bbbv,
+        left_clicks = payload.left_clicks,
+        board_hash  = payload.board_hash,
+        guest_token = guest_token,
+        client_type = get_client_type(request),
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/mobiussweeper-scores/{mobius_mode}")
+def get_mobius_scores(mobius_mode: str, period: str = "alltime",
+                      no_guess: bool = False,
+                      score_date: Optional[str] = Query(None, alias="date"),
+                      db: Session = Depends(get_db)):
+    if mobius_mode not in MOBIUS_MODES_VALID:
+        raise HTTPException(status_code=400, detail="Invalid mode")
+    if period not in ("daily", "alltime"):
+        period = "alltime"
+
+    q = db.query(MobiussweeperScore).filter(
+        MobiussweeperScore.mobius_mode == mobius_mode,
+        MobiussweeperScore.no_guess    == no_guess,
+    )
+
+    if period == "daily":
+        try:
+            target = date.fromisoformat(score_date) if score_date else date.today()
+        except ValueError:
+            target = date.today()
+        q = q.filter(MobiussweeperScore.created_at >= target,
+                     MobiussweeperScore.created_at < target + timedelta(days=1))
+        top = q.order_by(MobiussweeperScore.time_ms.asc(),
+                         MobiussweeperScore.created_at.asc()).limit(20).all()
+        return [s.to_dict() for s in top]
+
+    raw = q.order_by(MobiussweeperScore.time_ms.asc(),
+                     MobiussweeperScore.created_at.asc()).limit(500).all()
+    seen: set = set()
+    top:  list = []
+    for s in raw:
+        key = s.user_email or s.name
+        if key not in seen:
+            seen.add(key)
+            top.append(s.to_dict())
+            if len(top) >= 20:
+                break
+    return top
+
+
 # ── PvP Leaderboard & Rankings API ───────────────────────────────────────────
 
 @app.get("/api/pvp/leaderboard")
