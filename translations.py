@@ -589,6 +589,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_worldsweeper": "Minesweeper on a rotating 3D globe",
         "nav_cubesweeper":      "CubeSweeper",
         "nav_sub_cubesweeper":  "Minesweeper on a rotating 3D cube",
+        "nav_mobiussweeper":    "MobiusSweeper",
+        "nav_sub_mobiussweeper": "Minesweeper on a rotating 3D Möbius strip",
         "nav_other":            "Other Puzzles",
         "nav_sub_other":       "15-Puzzle and more",
         # 15-Puzzle daily page
@@ -1978,6 +1980,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_worldsweeper": "Minesweeper auf einem rotierenden 3D-Globus",
         "nav_cubesweeper":      "CubeSweeper",
         "nav_sub_cubesweeper":  "Minesweeper auf einem rotierenden 3D-W\u00fcrfel",
+        "nav_mobiussweeper":    "MobiusSweeper",
+        "nav_sub_mobiussweeper": "Minesweeper auf einem rotierenden 3D-M\u00f6biusstreifen",
         "nav_other":            "Andere R\u00e4tsel",
         "nav_sub_other":       "15-Puzzle und mehr",
         # Other Puzzles page
