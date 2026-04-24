@@ -137,7 +137,7 @@ function _buildMobiusNeighbours(W, L) {
 function _mobiusPoint(r, c, W, L, R, H) {
     // t: angle around the loop (0..2π)
     // s: position across width (-H..+H), cell centre at midpoint of row band
-    const t = (c / L) * 2 * Math.PI;
+    const t = ((c + 0.5) / L) * 2 * Math.PI;
     const s = -H + (2 * r + 1) / W * H;
     const x = (R + s * Math.cos(t / 2)) * Math.cos(t);
     const y = (R + s * Math.cos(t / 2)) * Math.sin(t);
@@ -154,7 +154,7 @@ function _mobiusPointRaw(t, s, R, H) {
 
 function _mobiusNormal(r, c, W, L, R, H) {
     const EPS = 1e-4;
-    const t   = (c / L) * 2 * Math.PI;
+    const t   = ((c + 0.5) / L) * 2 * Math.PI;
     const s   = -H + (2 * r + 1) / W * H;
     const dt  = EPS;
     const ds  = EPS;
@@ -298,7 +298,7 @@ function _msMakeSprite(text, color, size, bgColor, cellId) {
     // right = ∂P/∂t direction, up = ∂P/∂s direction
     const r = _mrow(cellId), c2 = _mcol(cellId);
     const EPS = 1e-4;
-    const t  = (c2 / _L) * 2 * Math.PI;
+    const t  = ((c2 + 0.5) / _L) * 2 * Math.PI;
     const s  = -_MS_H + (2 * r + 1) / _W * _MS_H;
     const p  = _mobiusPointRaw(t,     s,     _MS_R, _MS_H);
     const pt = _mobiusPointRaw(t+EPS, s,     _MS_R, _MS_H);
