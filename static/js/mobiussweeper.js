@@ -81,7 +81,7 @@ const _msDrag = { active: false, lastX: 0, lastY: 0, travelSq: 0 };
 
 // Flag mode & far-numbers
 let _msFlagMode    = false;
-let _msHideFarNums = true;
+let _msHideFarNums = false;
 let _msTmpVec      = null;
 
 // Camera pulse
@@ -776,8 +776,8 @@ function _msUpdateFarNumsBtn() {
     if (!btn) return;
     btn.classList.toggle('active', _msHideFarNums);
     btn.title = _msHideFarNums
-        ? 'Far-side numbers hidden — click to show all'
-        : 'Click to hide numbers on the back of the strip';
+        ? 'Far-side numbers hidden — click to show all (both sides are one surface)'
+        : 'Click to hide numbers whose tile normal faces away from camera';
 }
 
 function _msUpdateNoGuessBtn() {
@@ -939,7 +939,7 @@ function initMobius() {
 
     // Far-nums toggle
     _msTmpVec      = new THREE.Vector3();
-    _msHideFarNums = localStorage.getItem('ms_farnums') !== '0';
+    _msHideFarNums = localStorage.getItem('ms_farnums') === '1';
     _msUpdateFarNumsBtn();
     document.getElementById('ms-farnums-btn')?.addEventListener('click', () => {
         _msHideFarNums = !_msHideFarNums;
