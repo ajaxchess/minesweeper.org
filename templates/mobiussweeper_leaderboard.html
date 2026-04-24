@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% set _title = "MobiusSweeper Leaderboard | minesweeper.org" %}
+{% set _desc  = "Top times for MobiusSweeper — minesweeper on a rotating 3D Möbius strip. Separate leaderboards for each difficulty and no-guess mode." %}
+{% set _canon = "https://minesweeper.org/mobiussweeper/leaderboard" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<div class="lb-wrap">
+  <h1 class="tz-page-h1">MobiusSweeper Leaderboard</h1>
+
+  <div style="text-align:center;margin-bottom:1.5rem;">
+    <a href="/mobiussweeper" class="btn" style="margin:0.25rem;">Beginner</a>
+    <a href="/mobiussweeper/intermediate" class="btn" style="margin:0.25rem;">Intermediate</a>
+    <a href="/mobiussweeper/expert" class="btn" style="margin:0.25rem;">Expert</a>
+  </div>
+
+  <!-- Beginner Standard -->
+  <h2 style="font-size:1rem;color:var(--accent2);margin-top:2rem;">Beginner (4×40, 16 mines)</h2>
+  <div id="lb-beginner" class="wt-table-wrap">
+    <table class="lb-table">
+      <thead><tr><th>#</th><th>Name</th><th>Time</th><th>3BV</th><th>3BV/s</th><th>Eff</th><th>Date</th></tr></thead>
+      <tbody id="lb-body-beginner">
+        <tr><td colspan="7" style="color:var(--text-dim);">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Beginner No-Guess -->
+  <h2 style="font-size:1rem;color:var(--accent2);margin-top:1.5rem;">Beginner — No-Guess (4×40, 16 mines)</h2>
+  <div id="lb-beginner-ng" class="wt-table-wrap">
+    <table class="lb-table">
+      <thead><tr><th>#</th><th>Name</th><th>Time</th><th>3BV</th><th>3BV/s</th><th>Eff</th><th>Date</th></tr></thead>
+      <tbody id="lb-body-beginner-ng">
+        <tr><td colspan="7" style="color:var(--text-dim);">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Intermediate Standard -->
+  <h2 style="font-size:1rem;color:var(--accent2);margin-top:2rem;">Intermediate (8×80, 64 mines)</h2>
+  <div id="lb-intermediate" class="wt-table-wrap">
+    <table class="lb-table">
+      <thead><tr><th>#</th><th>Name</th><th>Time</th><th>3BV</th><th>3BV/s</th><th>Eff</th><th>Date</th></tr></thead>
+      <tbody id="lb-body-intermediate">
+        <tr><td colspan="7" style="color:var(--text-dim);">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Intermediate No-Guess -->
+  <h2 style="font-size:1rem;color:var(--accent2);margin-top:1.5rem;">Intermediate — No-Guess (8×80, 64 mines)</h2>
+  <div id="lb-intermediate-ng" class="wt-table-wrap">
+    <table class="lb-table">
+      <thead><tr><th>#</th><th>Name</th><th>Time</th><th>3BV</th><th>3BV/s</th><th>Eff</th><th>Date</th></tr></thead>
+      <tbody id="lb-body-intermediate-ng">
+        <tr><td colspan="7" style="color:var(--text-dim);">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Expert -->
+  <h2 style="font-size:1rem;color:var(--accent2);margin-top:2rem;">Expert (16×160, 256 mines)</h2>
+  <div id="lb-expert" class="wt-table-wrap">
+    <table class="lb-table">
+      <thead><tr><th>#</th><th>Name</th><th>Time</th><th>3BV</th><th>3BV/s</th><th>Eff</th><th>Date</th></tr></thead>
+      <tbody id="lb-body-expert">
+        <tr><td colspan="7" style="color:var(--text-dim);">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+async function loadBoard(mode, noGuess) {
+  const bodyId = 'lb-body-' + mode + (noGuess ? '-ng' : '');
+  const tbody  = document.getElementById(bodyId);
+  if (!tbody) return;
+  try {
+    const r      = await fetch('/api/mobiussweeper-scores/' + mode + '?no_guess=' + (noGuess ? 'true' : 'false'));
+    const scores = await r.json();
+    if (!scores.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="color:var(--text-dim);">No scores yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = scores.map((s, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${s.name}</td>
+        <td>${(s.time_ms / 1000).toFixed(2)}s</td>
+        <td>${s.bbbv ?? '—'}</td>
+        <td>${s.bbbv_s ?? '—'}</td>
+        <td>${s.eff ?? '—'}</td>
+        <td>${s.created_at}</td>
+      </tr>`).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--text-dim);">Failed to load.</td></tr>';
+  }
+}
+
+loadBoard('beginner',     false);
+loadBoard('beginner',     true);
+loadBoard('intermediate', false);
+loadBoard('intermediate', true);
+loadBoard('expert',       false);
+</script>
+{% endblock %}
