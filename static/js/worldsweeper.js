@@ -64,6 +64,9 @@ let _timerHandle  = null;
 let _startTime    = 0;
 let _finalTimeMs  = 0;   // captured at game-over so submitScore uses the stopped value
 let _leftClicks   = 0;   // non-rotation left clicks (excludes drags)
+let _chordClicks   = 0;
+let _lastClickIdx  = -1;
+let _lastClickTime = 0;
 let _bbbv         = 0;   // 3BV of the current board (computed after mines placed)
 
 // Drag tracking
@@ -374,7 +377,20 @@ function _doRaycast(e, button) {
     );
     _raycaster.setFromCamera(mouse, _camera);
     const hits = _raycaster.intersectObjects(_faceMeshes);
-    if (hits.length) faceClicked(hits[0].object.userData.faceIdx, button);
+    if (!hits.length) return;
+    const idx = hits[0].object.userData.faceIdx;
+    if (button === 0 && !_flagMode) {
+        const now = Date.now();
+        if (idx === _lastClickIdx && now - _lastClickTime < 300) {
+            _lastClickIdx  = -1;
+            _lastClickTime = 0;
+            chordFace(idx);
+            return;
+        }
+        _lastClickIdx  = idx;
+        _lastClickTime = now;
+    }
+    faceClicked(idx, button);
 }
 
 // ---------------------------------------------------------------------------
@@ -491,8 +507,11 @@ function _initGameState() {
     mineSet     = new Set();
     gameOver    = false;
     firstClick  = true;
-    _leftClicks = 0;
-    _bbbv       = 0;
+    _leftClicks   = 0;
+    _chordClicks   = 0;
+    _lastClickIdx  = -1;
+    _lastClickTime = 0;
+    _bbbv          = 0;
     _stopTimer();
     document.getElementById('elapsed').textContent = '0.00';
     document.getElementById('mines-remaining').textContent = String(_mineCount);
@@ -615,6 +634,16 @@ function cycleFlagFace(idx) {
     _updateMineCounter();
 }
 
+function chordFace(idx) {
+    if (gameOver || faceState[idx] !== REVEALED || adjCount[idx] <= 0) return;
+    const adj   = _globeData.adj;
+    const flags = adj[idx].filter(nb => faceState[nb] === FLAGGED).length;
+    if (flags === adjCount[idx]) {
+        _chordClicks++;
+        adj[idx].forEach(nb => revealFace(nb));
+    }
+}
+
 function _updateMineCounter() {
     const flagged = faceState.reduce((n, s) => n + (s === FLAGGED ? 1 : 0), 0);
     document.getElementById('mines-remaining').textContent = String(_mineCount - flagged);
@@ -694,8 +723,9 @@ async function _submitScore(name) {
                 face_count:  F,
                 mines:       _mineCount,
                 bbbv:        _bbbv || undefined,
-                left_clicks: _leftClicks || undefined,
-                board_hash:  boardToHash(mineSet, F),
+                left_clicks:  _leftClicks || undefined,
+                chord_clicks: _chordClicks || undefined,
+                board_hash:   boardToHash(mineSet, F),
             }),
         });
         return r.ok;

@@ -61,7 +61,10 @@ let adjCount   = null;  // Uint8Array[6*N*N]
 let mineSet    = null;  // Set<number>
 let gameOver   = false;
 let firstClick = true;
-let _leftClicks = 0;
+let _leftClicks    = 0;
+let _csChordClicks  = 0;
+let _csLastClickId  = -1;
+let _csLastClickTime = 0;
 let _csBbbv       = 0;   // 3BV of the current board (computed after mines placed)
 let _timerHandle  = null;
 let _startTime    = 0;
@@ -444,8 +447,11 @@ function _csInitGameState() {
     mineSet    = new Set();
     gameOver   = false;
     firstClick = true;
-    _leftClicks = 0;
-    _csBbbv     = 0;
+    _leftClicks     = 0;
+    _csChordClicks  = 0;
+    _csLastClickId  = -1;
+    _csLastClickTime = 0;
+    _csBbbv         = 0;
     _csStopTimer();
     document.getElementById('cs-elapsed').textContent = '0.00';
     document.getElementById('cs-mines-remaining').textContent = String(_mineCount);
@@ -602,6 +608,15 @@ function cycleFlagCell(id) {
     _csUpdateMineCounter();
 }
 
+function chordCsCell(id) {
+    if (gameOver || cellState[id] !== CS_REVEALED || adjCount[id] <= 0) return;
+    const flags = _adj[id].filter(nb => cellState[nb] === CS_FLAGGED).length;
+    if (flags === adjCount[id]) {
+        _csChordClicks++;
+        _adj[id].forEach(nb => revealCell(nb));
+    }
+}
+
 function _csUpdateMineCounter() {
     const flagged = cellState.reduce((n, s) => n + (s === CS_FLAGGED ? 1 : 0), 0);
     document.getElementById('cs-mines-remaining').textContent = String(_mineCount - flagged);
@@ -734,8 +749,9 @@ async function _csSubmitScore(name) {
                 mines:       _mineCount,
                 no_guess:    _noGuess,
                 bbbv:        _csBbbv || undefined,
-                left_clicks: _leftClicks || undefined,
-                board_hash:  _csBoardToHash(mineSet, TOTAL),
+                left_clicks:  _leftClicks || undefined,
+                chord_clicks: _csChordClicks || undefined,
+                board_hash:   _csBoardToHash(mineSet, TOTAL),
             }),
         });
         return r.ok;
@@ -897,7 +913,20 @@ function _csDoRaycast(e, button) {
     );
     _raycaster.setFromCamera(mouse, _camera);
     const hits = _raycaster.intersectObjects(_cellMeshes);
-    if (hits.length) cellClicked(hits[0].object.userData.cellId, button);
+    if (!hits.length) return;
+    const id = hits[0].object.userData.cellId;
+    if (button === 0 && !_csFlagMode) {
+        const now = Date.now();
+        if (id === _csLastClickId && now - _csLastClickTime < 300) {
+            _csLastClickId   = -1;
+            _csLastClickTime = 0;
+            chordCsCell(id);
+            return;
+        }
+        _csLastClickId   = id;
+        _csLastClickTime = now;
+    }
+    cellClicked(id, button);
 }
 
 // ---------------------------------------------------------------------------

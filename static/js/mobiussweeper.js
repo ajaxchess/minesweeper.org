@@ -69,8 +69,11 @@ let adjCount   = null;  // Uint8Array[W*L]
 let mineSet    = null;  // Set<number>
 let gameOver   = false;
 let firstClick = true;
-let _leftClicks = 0;
-let _msBbbv     = 0;
+let _leftClicks    = 0;
+let _msBbbv        = 0;
+let _msChordClicks  = 0;
+let _msLastClickId  = -1;
+let _msLastClickTime = 0;
 let _timerHandle  = null;
 let _startTime    = 0;
 let _finalTimeMs  = 0;
@@ -387,8 +390,11 @@ function _msInitGameState() {
     mineSet    = new Set();
     gameOver   = false;
     firstClick = true;
-    _leftClicks = 0;
-    _msBbbv     = 0;
+    _leftClicks     = 0;
+    _msChordClicks  = 0;
+    _msLastClickId  = -1;
+    _msLastClickTime = 0;
+    _msBbbv         = 0;
     _msStopTimer();
     document.getElementById('ms-elapsed').textContent = '0.00';
     document.getElementById('ms-mines-remaining').textContent = String(_mineCount);
@@ -545,6 +551,15 @@ function cycleFlagCell(id) {
     _msUpdateMineCounter();
 }
 
+function chordMsCell(id) {
+    if (gameOver || cellState[id] !== MS_REVEALED || adjCount[id] <= 0) return;
+    const flags = _adj[id].filter(nb => cellState[nb] === MS_FLAGGED).length;
+    if (flags === adjCount[id]) {
+        _msChordClicks++;
+        _adj[id].forEach(nb => revealCell(nb));
+    }
+}
+
 function _msUpdateMineCounter() {
     const flagged = cellState.reduce((n, s) => n + (s === MS_FLAGGED ? 1 : 0), 0);
     document.getElementById('ms-mines-remaining').textContent = String(_mineCount - flagged);
@@ -677,8 +692,9 @@ async function _msSubmitScore(name) {
                 mines:       _mineCount,
                 no_guess:    _noGuess,
                 bbbv:        _msBbbv || undefined,
-                left_clicks: _leftClicks || undefined,
-                board_hash:  _msBoardToHash(mineSet, TOTAL),
+                left_clicks:  _leftClicks || undefined,
+                chord_clicks: _msChordClicks || undefined,
+                board_hash:   _msBoardToHash(mineSet, TOTAL),
             }),
         });
         return r.ok;
@@ -840,7 +856,20 @@ function _msDoRaycast(e, button) {
     );
     _raycaster.setFromCamera(mouse, _camera);
     const hits = _raycaster.intersectObjects(_cellMeshes);
-    if (hits.length) cellClicked(hits[0].object.userData.cellId, button);
+    if (!hits.length) return;
+    const id = hits[0].object.userData.cellId;
+    if (button === 0 && !_msFlagMode) {
+        const now = Date.now();
+        if (id === _msLastClickId && now - _msLastClickTime < 300) {
+            _msLastClickId   = -1;
+            _msLastClickTime = 0;
+            chordMsCell(id);
+            return;
+        }
+        _msLastClickId   = id;
+        _msLastClickTime = now;
+    }
+    cellClicked(id, button);
 }
 
 // ---------------------------------------------------------------------------

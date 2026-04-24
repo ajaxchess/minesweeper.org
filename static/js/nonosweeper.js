@@ -44,6 +44,9 @@ let G = {
     difficulty: 'beginner',
 };
 
+let _nnLastTapIdx  = -1;
+let _nnLastTapTime = 0;
+
 // ── Nonogram solver (no-guess mode) ──────────────────────────────────────────
 // Returns all valid arrangements of `clues` into a line of `lineLen` cells,
 // constrained by `known` ('unknown'|'mine'|'safe' per cell).
@@ -250,6 +253,19 @@ function renderBoard() {
             applyCell(el, G.cells[idx]);
             el.addEventListener('click', () => handleClick(idx));
             el.addEventListener('contextmenu', e => { e.preventDefault(); handleRightClick(idx); });
+            el.addEventListener('dblclick',    e => { e.preventDefault(); chordNonoCell(idx); });
+            el.addEventListener('touchend',    e => {
+                const now = Date.now();
+                if (idx === _nnLastTapIdx && now - _nnLastTapTime < 300) {
+                    e.preventDefault();
+                    _nnLastTapIdx  = -1;
+                    _nnLastTapTime = 0;
+                    chordNonoCell(idx);
+                } else {
+                    _nnLastTapIdx  = idx;
+                    _nnLastTapTime = now;
+                }
+            });
             grid.appendChild(el);
         }
     }
@@ -297,6 +313,28 @@ function refreshCell(idx) {
 }
 
 // ── Interaction ───────────────────────────────────────────────────────────────
+function chordNonoCell(idx) {
+    if (G.over || G.won) return;
+    if (G.cells[idx].state !== 'revealed') return;
+    const r = Math.floor(idx / G.cols);
+    const c = idx % G.cols;
+    const neighbors = [];
+    for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < G.rows && nc >= 0 && nc < G.cols)
+            neighbors.push(nr * G.cols + nc);
+    }
+    const mineCount = neighbors.filter(i => G.cells[i].isMine).length;
+    if (mineCount === 0) return;
+    const flagged = neighbors.filter(i => G.cells[i].state === 'flagged').length;
+    if (flagged !== mineCount) return;
+    neighbors.forEach(i => {
+        if (G.cells[i].state === 'hidden' || G.cells[i].state === 'question')
+            handleClick(i);
+    });
+}
+
 function handleClick(idx) {
     if (G.over || G.won) return;
     const cell = G.cells[idx];
