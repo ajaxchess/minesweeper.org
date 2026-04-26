@@ -18,6 +18,10 @@ static/html/
 mvs/
 static/mvs/
 
+#External repos
+mobile/mjsmobile/
+mobile/leaguemobile/
+
 #Bots for playing pvp modes
 bots/
 
