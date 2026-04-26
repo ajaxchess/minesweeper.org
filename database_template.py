@@ -1010,6 +1010,8 @@ class MahjongScore(Base):
     time_ms     = Column(Integer, nullable=False)
     guest_token = Column(String(36), nullable=True, index=True)
     client_type = Column(String(32), nullable=False, server_default="na")
+    device_type = Column(String(20), nullable=True)         # "ios" | "android" | "web"
+    device_id   = Column(String(36), nullable=True, index=True)  # persistent device UUID
     created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (

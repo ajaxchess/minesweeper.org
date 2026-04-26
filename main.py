@@ -1,5 +1,6 @@
 from datetime import date, timedelta, datetime, timezone
 import uuid
+import re
 import subprocess
 import os
 from typing import Optional
@@ -5591,11 +5592,16 @@ def mahjong_game_static(path: str):
     return FileResponse(_MAH_INDEX_PATH)
 
 
+_UUID_RE = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', re.IGNORECASE)
+
 class MahjongScoreSubmit(BaseModel):
     name:        str = Field(..., min_length=1, max_length=32)
     puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
     board_hash:  str = Field(..., min_length=4, max_length=200)
     time_ms:     int = Field(..., ge=0, le=99999999)
+    guest_token: Optional[str] = Field(None, min_length=36, max_length=36)
+    device_type: Optional[str] = Field(None, pattern=r'^(ios|android|web)$')
+    device_id:   Optional[str] = Field(None, min_length=36, max_length=36)
 
     @field_validator("name")
     @classmethod
@@ -5615,15 +5621,25 @@ class MahjongScoreSubmit(BaseModel):
             raise ValueError("Invalid board hash")
         return v
 
+    @field_validator("guest_token", "device_id")
+    @classmethod
+    def validate_uuid(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not _UUID_RE.match(v):
+            raise ValueError("Must be a valid UUID v4")
+        return v
+
 
 @app.post("/api/mahjong-scores", status_code=201)
 @limiter.limit("10/minute")
 def submit_mahjong_score(payload: MahjongScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
     if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
+        if payload.guest_token:
+            guest_token = payload.guest_token
+        else:
+            if "guest_token" not in request.session:
+                request.session["guest_token"] = str(uuid.uuid4())
+            guest_token = request.session["guest_token"]
     else:
         guest_token = None
     entry = MahjongScore(
@@ -5634,6 +5650,8 @@ def submit_mahjong_score(payload: MahjongScoreSubmit, request: Request, db: Sess
         time_ms     = payload.time_ms,
         guest_token = guest_token,
         client_type = get_client_type(request),
+        device_type = payload.device_type,
+        device_id   = payload.device_id,
     )
     db.add(entry)
     db.commit()
