@@ -1464,6 +1464,21 @@ def delete_fifteen_puzzle_photo(board_hash: str, request: Request, db: Session =
     return {"ok": True}
 
 
+@app.post("/api/fifteen-puzzle/delete-all-photos")
+def delete_all_fifteen_puzzle_photos(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Login required")
+    photos = db.query(FifteenPuzzlePhoto).filter_by(user_email=user["email"]).all()
+    for photo in photos:
+        filepath = os.path.join("static", "uploads", "15puzzle", photo.filename)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+        db.delete(photo)
+    db.commit()
+    return {"ok": True, "deleted": len(photos)}
+
+
 # ── Admin: 15-Puzzle photo moderation ─────────────────────────────────────────
 
 @app.get("/admin/15puzzle-photos", response_class=HTMLResponse)
@@ -6057,6 +6072,16 @@ def delete_jigsaw_save(payload: JigsawDeleteSavePayload, request: Request,
     db.delete(save)
     db.commit()
     return {"ok": True}
+
+
+@app.post("/api/jigsaw/delete-all-saves", status_code=200)
+def delete_all_jigsaw_saves(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Login required")
+    deleted = db.query(JigsawSavedGame).filter_by(user_email=user["email"]).delete()
+    db.commit()
+    return {"ok": True, "deleted": deleted}
 
 
 @app.post("/api/jigsaw/upload", status_code=201)

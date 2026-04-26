@@ -227,6 +227,9 @@
       <span style="font-size:0.8rem;font-weight:400;color:var(--text-dim);margin-left:0.5rem;">
         {{ fp_photos|length }}/{{ fp_limit }}
         · <a href="/other/15puzzle/generator" style="color:var(--accent2);">Generator</a>
+        {% if fp_photos %}
+        · <button onclick="fpDeleteAllPhotos()" style="font-size:0.8rem;background:none;border:none;color:var(--text-dim);cursor:pointer;padding:0;text-decoration:underline;">Delete All</button>
+        {% endif %}
       </span>
     </h2>
     {% if fp_photos %}
@@ -264,6 +267,10 @@
       <span style="font-size:0.8rem;font-weight:400;color:var(--text-dim);margin-left:0.5rem;">
         {{ jigsaw_saves|length }} saved
         · <a href="/other/jigsaw/daily" style="color:var(--accent2);">Play →</a>
+        · <a href="/other/jigsaw/generator" style="color:var(--accent2);">Generator</a>
+        {% if jigsaw_saves %}
+        · <button onclick="jigsawDeleteAllSaves()" style="font-size:0.8rem;background:none;border:none;color:var(--text-dim);cursor:pointer;padding:0;text-decoration:underline;">Delete All</button>
+        {% endif %}
       </span>
     </h2>
     {% if jigsaw_saves %}
@@ -355,6 +362,28 @@ function jigsawDeleteSave(puzzleDate, difficulty) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
     body: JSON.stringify({ puzzle_date: puzzleDate, difficulty: difficulty }),
+  }).then(function(res) {
+    if (!res.ok) throw new Error('Delete failed');
+    window.location.reload();
+  }).catch(function(err) { alert(err.message); });
+}
+
+function fpDeleteAllPhotos() {
+  if (!confirm('Delete all saved 15-puzzles permanently? This cannot be undone.')) return;
+  fetch('/api/fifteen-puzzle/delete-all-photos', {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+  }).then(function(res) {
+    if (!res.ok) throw new Error('Delete failed');
+    window.location.reload();
+  }).catch(function(err) { alert(err.message); });
+}
+
+function jigsawDeleteAllSaves() {
+  if (!confirm('Delete all saved jigsaw games? This cannot be undone.')) return;
+  fetch('/api/jigsaw/delete-all-saves', {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
   }).then(function(res) {
     if (!res.ok) throw new Error('Delete failed');
     window.location.reload();
