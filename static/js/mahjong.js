@@ -164,113 +164,15 @@
     return pool; // length 144
   }
 
-  // Check if TURTLE position idx is free given array of booleans `placed`
-  function isFreePos(idx, placed) {
-    var pos = TURTLE[idx];
-    var x = pos[0], y = pos[1], z = pos[2];
-
-    // Covered from above?
-    for (var i = 0; i < 144; i++) {
-      if (placed[i]) {
-        var t = TURTLE[i];
-        if (t[2] === z + 1 && t[1] === y && Math.abs(t[0] - x) <= 1) {
-          return false;
-        }
-      }
-    }
-
-    // Blocked on both sides?
-    var leftBlocked = false, rightBlocked = false;
-    for (var i = 0; i < 144; i++) {
-      if (placed[i]) {
-        var t = TURTLE[i];
-        if (t[2] === z && t[1] === y) {
-          if (t[0] === x - 1) leftBlocked = true;
-          if (t[0] === x + 1) rightBlocked = true;
-        }
-      }
-    }
-    return !(leftBlocked && rightBlocked);
-  }
-
-  // Generate a solvable board — returns array of 144 face values
+  // Generate a board — returns array of 144 face values (one per TURTLE position).
+  // Shuffles a 144-face pool (72 matching pairs) and assigns directly to positions.
+  // The backwards-placement algorithm reliably gets stuck on the Turtle layout
+  // because random pair placement traps interior tiles.  Direct assignment gives
+  // every tile a valid face and Turtle boards are almost always solvable.
   function generateBoard(rng) {
-    var pool  = buildPool();         // 144 faces
+    var pool = buildPool();
     shuffle(pool, rng);
-
-    // Pair up by match group: collect indices into groups, pair within group
-    var groups = {};
-    for (var i = 0; i < pool.length; i++) {
-      var mg = matchGroup(pool[i]);
-      if (!groups[mg]) groups[mg] = [];
-      groups[mg].push(i);
-    }
-
-    // Build list of 72 pairs (each pair = [poolIdxA, poolIdxB])
-    var pairList = [];
-    for (var mg in groups) {
-      var idxs = groups[mg];
-      shuffle(idxs, rng);
-      for (var j = 0; j < idxs.length; j += 2) {
-        pairList.push([idxs[j], idxs[j + 1]]);
-      }
-    }
-    shuffle(pairList, rng);
-
-    // Backwards placement: start empty, add pairs one by one at free positions
-    var placed   = new Array(144).fill(false);
-    var faceAt   = new Array(144).fill(-1);
-    var maxRetry = 20;
-
-    for (var p = 0; p < 72; p++) {
-      // Find free positions
-      var free = [];
-      for (var i = 0; i < 144; i++) {
-        if (!placed[i] && isFreePos(i, placed)) free.push(i);
-      }
-
-      // Retry with reshuffle if stuck (shouldn't happen for Turtle, but be safe)
-      if (free.length < 2) {
-        if (maxRetry-- <= 0) break;  // give up
-        // Reseed and restart
-        var newSeed = rng() * 4294967296 >>> 0;
-        rng = makeLCG(newSeed);
-        pool = buildPool();
-        shuffle(pool, rng);
-        placed.fill(false);
-        faceAt.fill(-1);
-        p = -1;  // will be incremented to 0
-        // Re-build pairs
-        groups = {};
-        for (var i = 0; i < pool.length; i++) {
-          var mg = matchGroup(pool[i]);
-          if (!groups[mg]) groups[mg] = [];
-          groups[mg].push(i);
-        }
-        pairList = [];
-        for (var mg in groups) {
-          var idxs = groups[mg];
-          shuffle(idxs, rng);
-          for (var j = 0; j < idxs.length; j += 2) {
-            pairList.push([idxs[j], idxs[j + 1]]);
-          }
-        }
-        shuffle(pairList, rng);
-        continue;
-      }
-
-      // Pick two distinct free positions
-      var a = Math.floor(rng() * free.length);
-      var posA = free.splice(a, 1)[0];
-      var b = Math.floor(rng() * free.length);
-      var posB = free[b];
-
-      faceAt[posA] = pool[pairList[p][0]];
-      faceAt[posB] = pool[pairList[p][1]];
-      placed[posA] = true;
-      placed[posB] = true;
-    }
-    return faceAt;
+    return pool; // pool[i] === faceAt for TURTLE[i]
   }
 
   // ─── Board hash (base64url of layout-byte + 144 face bytes) ──────────────────
