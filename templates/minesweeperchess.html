@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% set _title = "Minesweeper Chess | minesweeper.org" %}
+{% set _desc  = "Play Minesweeper Chess — chess on an 8×10 board with a hidden minefield in the middle. Developed by our partner ajaxchess.com." %}
+{% set _canon = "https://minesweeper.org/minesweeperchess" %}
+
+{% block title %}{{ _title }}{% endblock %}
+{% block description %}{{ _desc }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
+{% block og_title %}{{ _title }}{% endblock %}
+{% block og_description %}{{ _desc }}{% endblock %}
+
+{% block content %}
+<div class="variants-page">
+  <h1 class="variants-title">Minesweeper Chess</h1>
+  <p class="variants-subtitle">
+    Chess on an 8×10 board with a hidden minefield. Clear the fog zone
+    in the middle — or lose a piece to an unseen mine.
+  </p>
+
+  <div class="variants-grid">
+
+    <div class="variant-card">
+      <div class="variant-card-icon">💣</div>
+      <h2 class="variant-card-title">Classic</h2>
+      <p class="variant-card-desc">
+        4 mines, rows 4–7 fogged. Pawns are sappers. Kings are immune.
+      </p>
+      <div class="variant-card-links">
+        <a href="https://ajaxchess.com/variants/minesweeper/classic"
+           class="variant-play-btn"
+           target="_blank" rel="noopener">Play on ajaxchess.com</a>
+      </div>
+    </div>
+
+  </div>
+
+  <p style="text-align:center;color:var(--text-dim);font-size:0.875rem;margin-top:2.5rem;">
+    Minesweeper Chess was developed by our partner
+    <a href="https://ajaxchess.com" target="_blank" rel="noopener">ajaxchess.com</a>.
+  </p>
+</div>
+{% endblock %}

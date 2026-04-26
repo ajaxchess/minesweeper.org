@@ -3627,6 +3627,15 @@ MOBIUSSWEEPER_MODES = {
 MOBIUS_MODES_VALID = {"beginner", "intermediate", "expert"}
 
 
+@app.get("/minesweeperchess", response_class=HTMLResponse)
+async def minesweeperchess(request: Request):
+    return templates.TemplateResponse("minesweeperchess.html", {
+        "request": request, "mode": "minesweeperchess",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
+
+
 @app.get("/mobiussweeper", response_class=HTMLResponse)
 async def mobiussweeper_beginner(request: Request):
     m = MOBIUSSWEEPER_MODES["beginner"]

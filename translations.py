@@ -591,6 +591,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_cubesweeper":  "Minesweeper on a rotating 3D cube",
         "nav_mobiussweeper":    "MobiusSweeper",
         "nav_sub_mobiussweeper": "Minesweeper on a rotating 3D Möbius strip",
+        "nav_minesweeperchess":     "Minesweeper Chess",
+        "nav_sub_minesweeperchess": "Chess with a hidden minefield",
         "nav_other":            "Other Puzzles",
         "nav_sub_other":       "15-Puzzle and more",
         # 15-Puzzle daily page

@@ -15,6 +15,34 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F75 Minesweeper Chess landing page (/minesweeperchess)
+  Cross-promotional landing page linking to Minesweeper Chess variants hosted
+  on partner site ajaxchess.com. The page serves as a discovery hub on
+  minesweeper.org; the canonical URL for each game resides on ajaxchess.com.
+  Each live variant is shown as a card with a direct "Play on ajaxchess.com"
+  link. Coming-soon variants are not shown until live. The page attributes
+  development to partner ajaxchess.com with a visible link.
+
+  Tasks:
+
+  F75.1  [x] Create GET /minesweeperchess route and template
+              - templates/minesweeperchess.html using existing variant-card CSS
+              - English-only content (i18n deferred until ajaxchess.com adds it)
+              - Canonical: https://minesweeper.org/minesweeperchess
+              - Initial cards: Classic → https://ajaxchess.com/variants/minesweeper/classic
+              - Partner attribution: "Developed by our partner ajaxchess.com"
+
+  F75.2  [x] Add Minesweeper Chess to Variants mega-menu in base.html
+              - Entry in second column alongside Toroid, Nonosweeper, Replay
+              - Icon: ♟️ — nav_minesweeperchess / nav_sub_minesweeperchess keys
+
+  F75.3  [ ] Add variant cards as games go live on ajaxchess.com
+              - Blitz:         https://ajaxchess.com/variants/minesweeper/blitz
+              - Expert:        https://ajaxchess.com/variants/minesweeper/expert
+              - Möbius Chess:  TBD
+
+──────────────────────────────────────────────────────────────────────────────
+
 F74 MobiusSweeper (/mobiussweeper)
   Minesweeper played on a rotating 3D Möbius strip rendered with Three.js.
   Tiles cover the surface of the strip. The Möbius topology creates a single
