@@ -43,7 +43,8 @@ F76 Arrow Puzzle (/other/arrows)
     Daily board (same board for all players each day; server-side random seed keyed to date).
     Easy / Medium / Hard tiers drawn from the existing 10 levels, categorised by
     number of arrows and board size as a difficulty proxy.
-    Leaderboard per tier: completion time only; zero-collision rule applies.
+    Leaderboard per tier: ranked by completion time (zero-collision runs only).
+    Leaderboard displays: rank, player, time, number of arrows, board size.
 
   Phase 3 — Level Editor
     Logged-in users can create and save custom levels.
