@@ -19,18 +19,29 @@ F76 Arrow Puzzle (/other/arrows)
   HTML5 game based on the Unity prototype at github.com/SERAP-KEREM/Arrows.
   Lines (polylines) are drawn on a canvas; the player clicks a line to animate
   it forward (head extends, tail erodes). A collision reverses the line and
-  costs 1 life (5 lives total). Clear all lines to win the level.
+  costs 1 life. Clear all lines to win the level.
+
+  Game modes
+    Casual — unlimited lives; game cannot be lost. Any life lost disqualifies
+             the run from leaderboard submission.
+    Classic — 5 lives; losing all 5 ends the game. Any life lost disqualifies
+              the run from leaderboard submission.
+
+  Leaderboard eligibility rule (both modes):
+    A run is only eligible for leaderboard submission if completed with zero
+    collisions (no lives lost).
 
   Phase 1 — Core game
     Level progression starting from the 10 levels in the Unity source repo.
-    Timer per level. Lives system. Win/Lose states.
+    Timer per level. Casual and Classic modes. Win/Lose states.
     Card on /other page; game at /other/arrows/play; how-to-play at /other/arrows/how-to-play.
-    Google login: progress (highest level reached) saved to user account.
+    Sign in with Google (web): progress (highest level reached) saved to user account.
+    Mobile app (Phase 4): runs without Google sign-in; progress stored locally.
 
   Phase 2 — Leaderboards + Difficulty Tiers
     Daily board (same board for all players each day).
     Easy / Medium / Hard level sets. Leaderboard per tier: completion time only.
-    Losing any life disqualifies from leaderboard.
+    Leaderboard eligibility rule applies (zero collisions required).
 
   Phase 3 — Level Editor
     Logged-in users can create and save custom levels.
