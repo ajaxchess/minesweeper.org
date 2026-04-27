@@ -15,6 +15,33 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F76 Arrow Puzzle (/other/arrows)
+  HTML5 game based on the Unity prototype at github.com/SERAP-KEREM/Arrows.
+  Lines (polylines) are drawn on a canvas; the player clicks a line to animate
+  it forward (head extends, tail erodes). A collision reverses the line and
+  costs 1 life (5 lives total). Clear all lines to win the level.
+
+  Phase 1 — Core game
+    Level progression starting from the 10 levels in the Unity source repo.
+    Timer per level. Lives system. Win/Lose states.
+    Card on /other page; game at /other/arrows/play; how-to-play at /other/arrows/how-to-play.
+    Google login: progress (highest level reached) saved to user account.
+
+  Phase 2 — Leaderboards + Difficulty Tiers
+    Daily board (same board for all players each day).
+    Easy / Medium / Hard level sets. Leaderboard per tier: completion time only.
+    Losing any life disqualifies from leaderboard.
+
+  Phase 3 — Level Editor
+    Logged-in users can create and save custom levels.
+
+  Phase 4 — Mobile App
+    Port to League of Minesweeper mobile app.
+
+  See business/ArrowPuzzle.md for full feasibility assessment and open questions.
+
+──────────────────────────────────────────────────────────────────────────────
+
 F75 Minesweeper Chess landing page (/minesweeperchess)
   Cross-promotional landing page linking to Minesweeper Chess variants hosted
   on partner site ajaxchess.com. The page serves as a discovery hub on
