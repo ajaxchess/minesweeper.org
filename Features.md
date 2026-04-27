@@ -40,8 +40,9 @@ F76 Arrow Puzzle (/other/arrows)
 
   Phase 2 — Leaderboards + Difficulty Tiers
     Daily board (same board for all players each day; server-side random seed keyed to date).
-    Easy / Medium / Hard level sets. Leaderboard per tier: completion time only.
-    Leaderboard eligibility rule applies (zero collisions required).
+    Easy / Medium / Hard tiers drawn from the existing 10 levels, categorised by
+    number of arrows and board size as a difficulty proxy.
+    Leaderboard per tier: completion time only; zero-collision rule applies.
 
   Phase 3 — Level Editor
     Logged-in users can create and save custom levels.
