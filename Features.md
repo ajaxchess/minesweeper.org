@@ -35,6 +35,7 @@ F76 Arrow Puzzle (/other/arrows)
     Level progression starting from the 10 levels in the Unity source repo.
     Timer per level. Casual and Classic modes. Win/Lose states.
     Card on /other page; game at /other/arrows/play; how-to-play at /other/arrows/how-to-play.
+    Desktop-first (mouse-primary); touch support deferred.
     Sign in with Google (web): progress (highest level reached) saved to user account.
     Mobile app (Phase 4): runs without Google sign-in; progress stored locally.
 
