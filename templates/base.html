@@ -7,7 +7,7 @@
   <title>{% block title %}Minesweeper — Play Free Online | minesweeper.org{% endblock %}</title>
   <meta name="description" content="{% block description %}Play free Minesweeper online — classic, no-guess, and real-time 1v1 duel modes. No download required.{% endblock %}">
   {% block keywords %}<meta name="keywords" content="minesweeper, minesweeper online, play minesweeper, free minesweeper, minesweeper game">{% endblock %}
-  <link rel="canonical" href="{% block canonical %}https://minesweeper.org/{% endblock %}{% if lang and lang != 'en' %}?lang={{ lang }}{% endif %}">
+  <link rel="canonical" href="{% block canonical %}https://minesweeper.org/{% endblock %}{% if page_localized and lang and lang != 'en' %}?lang={{ lang }}{% endif %}">
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />

@@ -112,8 +112,8 @@
     <div class="stat-row">
       <span class="stat" id="mine-count">🌍 <span id="mines-remaining">{{ mines }}</span></span>
       <button id="reset-btn" class="btn-reset" title="{{ t['game_new_game'] }}">↺</button>
-      <button id="ws-flag-btn" class="ws-flag-btn" title="Flag mode — click to place/cycle flags instead of revealing">🚩 Flag</button>
-      <button id="ws-farnums-btn" class="ws-flag-btn" title="Click to hide numbers on the back of the globe">🔢 Far</button>
+      <button id="ws-flag-btn" class="ws-flag-btn" title="{{ t['ws_flag_btn_title'] }}">🚩 Flag</button>
+      <button id="ws-farnums-btn" class="ws-flag-btn" title="{{ t['ws_farnums_btn_title'] }}">🔢 Far</button>
       <span class="stat" id="timer-display">⏱ <span id="elapsed">0.00</span>s</span>
     </div>
     <div class="ws-bg-btns" title="Background">
@@ -197,51 +197,51 @@
 <div class="info-body" style="width:100%;max-width:700px;margin:2rem auto 0">
 
   <div class="info-section">
-    <h2>What is Worldsweeper?</h2>
-    <p>Worldsweeper is Minesweeper played on a rotating 3D globe. The board is a <a href="https://en.wikipedia.org/wiki/Goldberg_polyhedron" target="_blank" rel="noopener">Goldberg polyhedron</a> — the same family of shapes used for soccer balls — made up of 12 pentagons and a variable number of hexagons. Every face is a cell, and each cell's number counts the mines hidden among its direct neighbors on the surface of the sphere.</p>
-    <p>Because the board is a closed 3D surface, there are no edges or corners at all. Every face is surrounded by other faces, and the globe can be rotated freely to inspect any part of it. It's the most spatially demanding Minesweeper variant on the site.</p>
+    <h2>{{ t['ws_info_what_h2'] }}</h2>
+    <p>{{ t['ws_info_what_p1'] | safe }}</p>
+    <p>{{ t['ws_info_what_p2'] }}</p>
   </div>
 
   <div class="info-section">
-    <h2>How to Play</h2>
+    <h2>{{ t['ws_info_howto_h2'] }}</h2>
     <ul>
-      <li><strong>Drag</strong> the globe to rotate it and inspect any face.</li>
-      <li><strong>Left-click</strong> a face to reveal it. Blank faces (0) auto-expand through all connected blank neighbors.</li>
-      <li><strong>Right-click</strong> a face to place or remove a flag (🚩) on a suspected mine.</li>
-      <li>The ↺ button resets to a fresh board. Your timer starts on your first click.</li>
-      <li>Win by revealing every non-mine face. All remaining mine faces are flagged automatically when you win.</li>
+      <li>{{ t['ws_info_howto_li1'] | safe }}</li>
+      <li>{{ t['ws_info_howto_li2'] | safe }}</li>
+      <li>{{ t['ws_info_howto_li3'] | safe }}</li>
+      <li>{{ t['ws_info_howto_li4'] }}</li>
+      <li>{{ t['ws_info_howto_li5'] }}</li>
     </ul>
   </div>
 
   <div class="info-section">
-    <h2>Board Sizes</h2>
+    <h2>{{ t['ws_info_sizes_h2'] }}</h2>
     <ul>
-      <li><strong>Dodecahedron —</strong> 12 pentagonal faces, 2 mines. The simplest possible Goldberg board — a pure dodecahedron with no hexagons.</li>
-      <li><strong>Beginner —</strong> 32 faces (12 pentagons + 20 hexagons), 4 mines. The classic truncated icosahedron — the soccer ball shape.</li>
-      <li><strong>Intermediate —</strong> 72 faces, 8 mines. Enough faces to require rotating the globe to find all the information you need.</li>
-      <li><strong>Expert —</strong> 252 faces, 50 mines. A large, dense board that demands careful tracking of constraints across the entire globe surface.</li>
-      <li><strong>Custom —</strong> Choose a T-parameter to generate any supported Goldberg polyhedron, then set your own mine count.</li>
+      <li>{{ t['ws_info_sizes_li1'] | safe }}</li>
+      <li>{{ t['ws_info_sizes_li2'] | safe }}</li>
+      <li>{{ t['ws_info_sizes_li3'] | safe }}</li>
+      <li>{{ t['ws_info_sizes_li4'] | safe }}</li>
+      <li>{{ t['ws_info_sizes_li5'] | safe }}</li>
     </ul>
   </div>
 
   <div class="info-section">
-    <h2>Strategy Tips</h2>
+    <h2>{{ t['ws_info_strategy_h2'] }}</h2>
     <ul>
-      <li><strong>Rotate constantly.</strong> Information on the far side of the globe is just a drag away. Don't assume a cell is unconstrained — spin the globe and check its neighbors before guessing.</li>
-      <li><strong>Pentagons have 5 neighbors, hexagons have 6.</strong> A number on a pentagon is a tighter constraint than the same number on a hexagon. Use this when prioritizing which cells to deduce first.</li>
-      <li><strong>Track the whole surface.</strong> Unlike a flat board, a chain of blank cells can wrap around the globe and reveal faces on the opposite side. Follow auto-expand results all the way around.</li>
-      <li><strong>Flag early.</strong> With cells distributed across a 3D surface, a flag on a confirmed mine helps you keep track of what's been solved as you rotate through different views.</li>
-      <li><strong>Start on Expert with a center click.</strong> A first click near a dense cluster of hexagons has the best chance of triggering a large auto-expand and giving you a solid opening position.</li>
+      <li>{{ t['ws_info_strategy_li1'] | safe }}</li>
+      <li>{{ t['ws_info_strategy_li2'] | safe }}</li>
+      <li>{{ t['ws_info_strategy_li3'] | safe }}</li>
+      <li>{{ t['ws_info_strategy_li4'] | safe }}</li>
+      <li>{{ t['ws_info_strategy_li5'] | safe }}</li>
     </ul>
   </div>
 
   <div class="info-section">
-    <h2>What is a Goldberg Polyhedron?</h2>
+    <h2>{{ t['ws_info_goldberg_h2'] }}</h2>
     <ul>
-      <li>A Goldberg polyhedron is a convex shape made entirely of pentagons and hexagons, always with exactly 12 pentagons regardless of size.</li>
-      <li>They are parameterized by a value T, which controls the number of hexagons and therefore the total face count: faces = 10T + 2.</li>
-      <li>T=1 gives the dodecahedron (12 faces, 0 hexagons). T=3 gives the truncated icosahedron (32 faces, 20 hexagons) — the shape of a standard soccer ball.</li>
-      <li>Larger T values produce progressively rounder, more globe-like shapes with hundreds of faces.</li>
+      <li>{{ t['ws_info_goldberg_li1'] }}</li>
+      <li>{{ t['ws_info_goldberg_li2'] }}</li>
+      <li>{{ t['ws_info_goldberg_li3'] }}</li>
+      <li>{{ t['ws_info_goldberg_li4'] }}</li>
     </ul>
   </div>
 

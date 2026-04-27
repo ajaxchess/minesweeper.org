@@ -10,11 +10,11 @@
     <div class="nf-cell nf-mine">🚫</div>
     <div class="nf-cell nf-revealed">3</div>
   </div>
-  <h1 class="notfound-title">Access Denied</h1>
-  <p class="notfound-sub">You don't have permission to view this page. This area is restricted to admins only.</p>
+  <h1 class="notfound-title">{{ t['err403_title'] }}</h1>
+  <p class="notfound-sub">{{ t['err403_sub'] }}</p>
   <div class="notfound-links">
-    <a href="/" class="notfound-btn">Play Minesweeper</a>
-    <a href="/leaderboard" class="notfound-btn notfound-btn--secondary">Leaderboard</a>
+    <a href="/" class="notfound-btn">{{ t['err404_play'] }}</a>
+    <a href="/leaderboard" class="notfound-btn notfound-btn--secondary">{{ t['err404_lb'] }}</a>
   </div>
 </div>
 {% endblock %}

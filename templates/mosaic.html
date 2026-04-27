@@ -49,26 +49,26 @@
 
     <!-- Mode nav -->
     <div class="tz-mode-nav">
-      <a href="/mosaic" class="tz-mode-nav-link">⭐ Easy 5×5</a>
-      <span class="tz-mode-nav-current">🟫 Standard 9×9</span>
-      <a href="/mosaic/custom/" class="tz-mode-nav-link">🎨 Custom</a>
+      <a href="/mosaic" class="tz-mode-nav-link">{{ t['ms_mode_easy'] }}</a>
+      <span class="tz-mode-nav-current">{{ t['ms_mode_standard'] }}</span>
+      <a href="/mosaic/custom/" class="tz-mode-nav-link">{{ t['ms_mode_custom'] }}</a>
     </div>
 
     <!-- Info panel -->
     <div class="game-info">
       <div class="mode-row">
-        <span id="ms-mode-label" class="mode-badge">📅 Puzzle of the Day</span>
+        <span id="ms-mode-label" class="mode-badge">{{ t['ms_label_potd'] }}</span>
         <div class="tz-mode-btns">
-          <button id="ms-potd-btn" class="tz-mode-btn">📅 Daily</button>
-          <button id="ms-random-btn" class="tz-mode-btn">🎲 Random</button>
+          <button id="ms-potd-btn" class="tz-mode-btn">{{ t['ms_btn_daily'] }}</button>
+          <button id="ms-random-btn" class="tz-mode-btn">{{ t['ms_btn_random'] }}</button>
         </div>
       </div>
       <div class="stat-row">
-        <div class="stat" title="Black cells placed / total in solution">
+        <div class="stat" title="{{ t['ms_stat_cells_title'] }}">
           <span class="stat-icon">⬛</span>
           <span class="stat-value" id="ms-mine-count">0/0</span>
         </div>
-        <div class="stat" title="Time elapsed">
+        <div class="stat" title="{{ t['ms_stat_time_title'] }}">
           <span class="stat-icon">⏱</span>
           <span class="stat-value" id="ms-timer">0:00</span>
         </div>
@@ -84,18 +84,18 @@
 
     <!-- Win section (shown below board after solving) -->
     <div id="ms-overlay" style="display:none">
-      <div class="tz-overlay-title">🎉 Solved!</div>
-      <div class="tz-overlay-time">Time: <strong id="ms-win-time">0:00</strong></div>
+      <div class="tz-overlay-title">{{ t['ms_overlay_solved'] }}</div>
+      <div class="tz-overlay-time">{{ t['ms_overlay_time'] }} <strong id="ms-win-time">0:00</strong></div>
       <div id="ms-score-msg" style="font-size:0.9rem"></div>
       <div id="ms-score-form" class="overlay-score-form" style="display:none">
-        <input id="ms-name-input" type="text" maxlength="32" placeholder="Your name" autocomplete="nickname">
-        <button id="ms-save-btn">Save Score</button>
+        <input id="ms-name-input" type="text" maxlength="32" placeholder="{{ t['ms_name_placeholder'] }}" autocomplete="nickname">
+        <button id="ms-save-btn">{{ t['ms_save_score'] }}</button>
       </div>
       <div class="tz-overlay-btns">
-        <button id="ms-overlay-potd" class="tz-btn-potd">📅 Replay Daily</button>
-        <button id="ms-overlay-random" class="tz-btn-random">🎲 New Random</button>
+        <button id="ms-overlay-potd" class="tz-btn-potd">{{ t['ms_btn_replay_daily'] }}</button>
+        <button id="ms-overlay-random" class="tz-btn-random">{{ t['ms_btn_new_random'] }}</button>
       </div>
-      <button id="ms-hide-numbers-btn" class="tz-mode-btn ms-hide-numbers-btn">🔢 Hide Numbers</button>
+      <button id="ms-hide-numbers-btn" class="tz-mode-btn ms-hide-numbers-btn">{{ t['ms_hide_numbers'] }}</button>
     </div>
 
     <!-- Permalink / hash -->
@@ -109,25 +109,19 @@
       <div id="ms-lb-content"><div class="lb-loading">Loading…</div></div>
     </div>
 
-    <p class="instructions">
-      <strong>Left click</strong>: white → black → unknown &nbsp;|&nbsp;
-      <strong>Right click</strong>: black → white → unknown &nbsp;|&nbsp;
-      Each number = black cells in its 3×3 neighborhood &nbsp;|&nbsp;
-      <span class="ms-legend-ok">green</span> = satisfied &nbsp;
-      <span class="ms-legend-over">red</span> = too many
-    </p>
+    <p class="instructions">{{ t['ms_instr'] | safe }}</p>
 
     <!-- How to play -->
     <details class="tz-howto">
-      <summary>How to play Mosaic</summary>
+      <summary>{{ t['ms_howto_summary'] }}</summary>
       <div class="tz-howto-body">
-        <p>Mosaic is a 9×9 logic puzzle. Each number tells you exactly how many of the cells in its 3×3 neighborhood (including itself) must be filled black.</p>
+        <p>{{ t['ms_howto_intro'] }}</p>
         <ul>
-          <li><strong>Left click</strong> cycles a cell: white → black → unknown. <strong>Right click</strong> cycles: black → white → unknown.</li>
-          <li>A <span class="ms-legend-ok">green</span> number means that clue is exactly satisfied.</li>
-          <li>A <span class="ms-legend-over">red</span> number means you have placed too many black cells nearby.</li>
-          <li>Satisfy all clues simultaneously to win.</li>
-          <li>Every puzzle has exactly one solution reachable by pure logic — no guessing needed.</li>
+          <li>{{ t['ms_howto_li1'] | safe }}</li>
+          <li>{{ t['ms_howto_li2'] | safe }}</li>
+          <li>{{ t['ms_howto_li3'] | safe }}</li>
+          <li>{{ t['ms_howto_li4'] }}</li>
+          <li>{{ t['ms_howto_li5'] }}</li>
         </ul>
       </div>
     </details>
@@ -149,45 +143,28 @@
 <!-- SEO Landing Content -->
 <div class="tz-landing">
 
-  <h2 class="tz-landing-h1">About Mosaic</h2>
+  <h2 class="tz-landing-h1">{{ t['ms_landing_h2'] }}</h2>
 
   <div class="tz-landing-grid">
 
     <section class="tz-section">
-      <h2>What is Mosaic?</h2>
-      <p>
-        Mosaic (also known as Fill-a-Pix) is a logic puzzle played on a grid. Each cell
-        is either <strong>black</strong> or <strong>white</strong>. Numbered cells provide
-        clues: the number tells you exactly how many cells in the 3×3 neighborhood centered
-        on that cell — including the cell itself — must be filled black. Your goal is to
-        determine which cells are black and which are white so that every numbered clue is
-        satisfied simultaneously.
-      </p>
-      <p>
-        Unlike Minesweeper, you never click to "reveal" — the entire constraint system is
-        visible from the start. Every puzzle on minesweeper.org is computer-verified to have
-        exactly one solution reachable by pure logical deduction.
-      </p>
+      <h2>{{ t['ms_what_h2'] }}</h2>
+      <p>{{ t['ms_what_p1'] | safe }}</p>
+      <p>{{ t['ms_what_p2'] | safe }}</p>
     </section>
 
     <section class="tz-section">
-      <h2>How Mosaic Relates to Minesweeper</h2>
-      <p>
-        Mosaic shares Minesweeper's core mechanic — a numbered cell counts mines (black cells)
-        in its neighborhood — but inverts the experience. In Minesweeper you reveal safe cells
-        to expose numbers; in Mosaic all numbers are given and you decide which cells are black.
-        The 3×3 neighborhood rule and constraint-satisfaction logic are identical. If you can
-        read a Minesweeper board, you already understand Mosaic.
-      </p>
+      <h2>{{ t['ms_rel_h2'] }}</h2>
+      <p>{{ t['ms_rel_p'] | safe }}</p>
     </section>
 
     <section class="tz-section">
-      <h2>Strategy Tips</h2>
+      <h2>{{ t['ms_strategy_h2'] }}</h2>
       <ol class="tz-list">
-        <li><strong>Start with corners and edges.</strong> Corner cells have only 4 neighbors; edge cells have 6. Their clues are the most constrained and easiest to resolve first.</li>
-        <li><strong>Use 0 and 9 clues immediately.</strong> A <em>0</em> means all neighbors are white — clear them. A <em>9</em> means all 9 neighbors are black — fill them all.</li>
-        <li><strong>Compare overlapping clues.</strong> Two adjacent cells share several neighbors. Subtracting their counts reveals exactly which shared cells must be black or white.</li>
-        <li><strong>Track satisfied clues.</strong> Once a clue turns green, its neighbors are fully determined — use that information to constrain adjacent clues.</li>
+        <li>{{ t['ms_strategy_li1'] | safe }}</li>
+        <li>{{ t['ms_strategy_li2'] | safe }}</li>
+        <li>{{ t['ms_strategy_li3'] | safe }}</li>
+        <li>{{ t['ms_strategy_li4'] | safe }}</li>
       </ol>
     </section>
 
@@ -196,18 +173,18 @@
   <nav class="tz-subnav" aria-label="Mosaic pages">
     <a href="/mosaic/how-to-play" class="tz-subnav-card">
       <span class="tz-subnav-icon">📖</span>
-      <strong>How to Play Mosaic</strong>
-      <span>Rules, controls &amp; strategy guide</span>
+      <strong>{{ t['ms_subnav_howto_title'] }}</strong>
+      <span>{{ t['ms_subnav_howto_desc'] | safe }}</span>
     </a>
     <a href="/mosaic" class="tz-subnav-card">
       <span class="tz-subnav-icon">⭐</span>
-      <strong>Mosaic Easy</strong>
-      <span>5×5 beginner daily puzzle</span>
+      <strong>{{ t['ms_subnav_easy_title'] }}</strong>
+      <span>{{ t['ms_subnav_easy_desc'] }}</span>
     </a>
     <a href="/mosaic/custom/" class="tz-subnav-card">
       <span class="tz-subnav-icon">🎨</span>
-      <strong>Custom Board</strong>
-      <span>Design your own Mosaic puzzle</span>
+      <strong>{{ t['ms_subnav_custom_title'] }}</strong>
+      <span>{{ t['ms_subnav_custom_desc'] }}</span>
     </a>
   </nav>
 

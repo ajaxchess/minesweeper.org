@@ -173,6 +173,7 @@ templates.env.globals["active_skin"]     = site_settings.active_skin
 templates.env.globals["solstice_banner"]       = site_settings.solstice_banner
 templates.env.globals["equinox_banner"]        = site_settings.equinox_banner
 templates.env.globals["diana_birthday_banner"] = site_settings.diana_birthday_banner
+templates.env.globals["page_localized"]        = True  # default; English-only routes override to False
 
 def _autolink(text):
     """Jinja2 filter: HTML-escape text then wrap bare URLs in <a> tags."""
@@ -3648,6 +3649,7 @@ async def minesweeperchess(request: Request):
         "request": request, "mode": "minesweeperchess",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
+        "page_localized": False,
     })
 
 

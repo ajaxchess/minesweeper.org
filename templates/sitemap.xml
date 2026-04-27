@@ -139,7 +139,7 @@
     <loc>https://minesweeper.org/variants/board-generator</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.4</priority>
   </url>
 
   <url>
@@ -210,7 +210,7 @@
     <loc>https://minesweeper.org/other/15puzzle/generator</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.4</priority>
   </url>
 
   <!-- ── Schulte Grid ──────────────────────────────────────────────────────────── -->
