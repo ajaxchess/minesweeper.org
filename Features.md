@@ -39,7 +39,7 @@ F76 Arrow Puzzle (/other/arrows)
     Mobile app (Phase 4): runs without Google sign-in; progress stored locally.
 
   Phase 2 — Leaderboards + Difficulty Tiers
-    Daily board (same board for all players each day).
+    Daily board (same board for all players each day; server-side random seed keyed to date).
     Easy / Medium / Hard level sets. Leaderboard per tier: completion time only.
     Leaderboard eligibility rule applies (zero collisions required).
 
