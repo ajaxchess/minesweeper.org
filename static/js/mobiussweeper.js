@@ -238,6 +238,38 @@ function _buildMobiusCellMeshes() {
         }
     }
 
+    // Backing surface — full-coverage mesh behind tiles so gaps are opaque
+    const backPos = [], backNorm = [];
+    for (let r = 0; r < _W; r++) {
+        for (let c = 0; c < _L; c++) {
+            const t0 = (c     / _L) * 2 * Math.PI;
+            const t1 = ((c+1) / _L) * 2 * Math.PI;
+            const s0 = -_MS_H + (r     / _W) * 2 * _MS_H;
+            const s1 = -_MS_H + ((r+1) / _W) * 2 * _MS_H;
+            const p00 = _mobiusPointRaw(t0, s0, _MS_R, _MS_H);
+            const p10 = _mobiusPointRaw(t1, s0, _MS_R, _MS_H);
+            const p11 = _mobiusPointRaw(t1, s1, _MS_R, _MS_H);
+            const p01 = _mobiusPointRaw(t0, s1, _MS_R, _MS_H);
+            backPos.push(
+                p00.x, p00.y, p00.z,  p10.x, p10.y, p10.z,  p11.x, p11.y, p11.z,
+                p00.x, p00.y, p00.z,  p11.x, p11.y, p11.z,  p01.x, p01.y, p01.z,
+            );
+            const n = _mobiusNormal(r, c, _W, _L, _MS_R, _MS_H);
+            for (let i = 0; i < 6; i++) backNorm.push(n.x, n.y, n.z);
+        }
+    }
+    const backGeo = new THREE.BufferGeometry();
+    backGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(backPos),  3));
+    backGeo.setAttribute('normal',   new THREE.BufferAttribute(new Float32Array(backNorm), 3));
+    const backMat = new THREE.MeshBasicMaterial({
+        color:               _cssMobius('--glob-hidden-border'),
+        side:                THREE.DoubleSide,
+        polygonOffset:       true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits:  1,
+    });
+    _mobiusGroup.add(new THREE.Mesh(backGeo, backMat));
+
     // Grid lines — draw thin line strips along the strip
     const lineVerts = [];
     for (let r = 0; r <= _W; r++) {
