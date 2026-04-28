@@ -9,6 +9,64 @@
     <a href="/admin">← Admin Dashboard</a>
   </p>
 
+  <!-- ── Section 0: Flagged scores ───────────────────────────────────────── -->
+  <section class="admin-section" id="flagged" style="margin-bottom:2rem;">
+    <h2 class="admin-section-title" style="display:flex;align-items:center;gap:0.75rem;">
+      🚩 Flagged Scores
+      <span style="font-size:0.85rem;font-weight:400;color:var(--text-dim);">({{ flagged_scores|length }})</span>
+    </h2>
+
+    {% if flagged_scores %}
+    <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.75rem;">
+      These scores are hidden from public leaderboards pending review.
+      <strong>Delete score</strong> removes the score permanently.
+      <strong>Unflag</strong> clears the flag and makes the score public.
+    </p>
+
+    <form method="post" action="/admin/hscleaning/flagged/delete-all"
+          style="margin-bottom:1rem;"
+          onsubmit="return confirm('Permanently delete ALL {{ flagged_scores|length }} flagged scores?')">
+      <button type="submit" class="admin-btn-danger">🗑 Delete All Flagged Scores ({{ flagged_scores|length }})</button>
+    </form>
+
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>Flag ID</th>
+          <th>Game / Table</th>
+          <th>Score ID</th>
+          <th>Name</th>
+          <th>Flagged At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in flagged_scores %}
+        <tr>
+          <td style="color:var(--text-dim);font-size:0.8rem;">{{ f.id }}</td>
+          <td style="font-size:0.85rem;">{{ f.table_name }}</td>
+          <td style="font-size:0.85rem;">{{ f.score_id }}</td>
+          <td><strong>{{ f.name }}</strong></td>
+          <td style="font-size:0.8rem;white-space:nowrap;">{{ f.flagged_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td style="white-space:nowrap;display:flex;gap:0.4rem;">
+            <form method="post" action="/admin/hscleaning/flagged/{{ f.id }}/delete"
+                  onsubmit="return confirm('Permanently delete score #{{ f.score_id }} by {{ f.name }}?')">
+              <button type="submit" class="admin-btn-danger">Delete score</button>
+            </form>
+            <form method="post" action="/admin/hscleaning/flagged/{{ f.id }}/unflag"
+                  onsubmit="return confirm('Unflag and make this score public?')">
+              <button type="submit" class="admin-btn admin-btn-outline">Unflag</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--text-dim);font-size:0.9rem;padding:0.5rem 0;">No flagged scores — all clear.</p>
+    {% endif %}
+  </section>
+
   <!-- ── Section 1: Daily scores ─────────────────────────────────────────── -->
   <section class="admin-section">
     <h2 class="admin-section-title">Daily Scores</h2>
@@ -192,5 +250,17 @@
   white-space: nowrap;
 }
 .admin-btn-danger:hover { background: #e74c3c; }
+.admin-btn-outline {
+  background: transparent;
+  color: var(--accent2);
+  border: 1px solid var(--accent2);
+  border-radius: 4px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.admin-btn-outline:hover { background: var(--accent2); color: #000; }
 </style>
 {% endblock %}

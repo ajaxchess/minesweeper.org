@@ -1142,6 +1142,22 @@ class GameReplay(Base):
     created_at = Column(DateTime,    default=lambda: datetime.now(timezone.utc))
 
 
+# ── Profanity flagging ───────────────────────────────────────────────────────
+class FlaggedScore(Base):
+    __tablename__ = "flagged_scores"
+
+    id         = Column(Integer,  primary_key=True, index=True)
+    table_name = Column(String(64),  nullable=False, index=True)
+    score_id   = Column(Integer,     nullable=False)
+    name       = Column(String(64),  nullable=False)
+    reason     = Column(String(128), nullable=False, server_default="profanity")
+    flagged_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_flagged_scores_table_score", "table_name", "score_id", unique=True),
+    )
+
+
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
     Base.metadata.create_all(bind=engine)

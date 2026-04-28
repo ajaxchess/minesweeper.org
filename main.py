@@ -18,7 +18,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -32,8 +32,54 @@ import threading
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from better_profanity import profanity as _profanity_checker
 
 logger = logging.getLogger(__name__)
+
+
+# ── Profanity helpers ─────────────────────────────────────────────────────────
+# Maps every score table name → its SQLAlchemy model, used to resolve the
+# actual score row when deleting a flagged entry.
+_SCORE_TABLE_MAP: dict = {}  # populated after all models are imported (below)
+
+def flag_if_profane(db, table_name: str, score_id: int, name: str) -> bool:
+    """Flag a score for admin review if the name contains profanity. Returns True if flagged."""
+    if not _profanity_checker.contains_profanity(name):
+        return False
+    existing = db.query(FlaggedScore).filter_by(table_name=table_name, score_id=score_id).first()
+    if not existing:
+        db.add(FlaggedScore(table_name=table_name, score_id=score_id, name=name, reason="profanity"))
+        db.commit()
+    return True
+
+
+def exclude_flagged(q, model, db):
+    """Filter a score query to exclude any scores currently flagged for review."""
+    flagged_ids = (
+        db.query(FlaggedScore.score_id)
+        .filter(FlaggedScore.table_name == model.__tablename__)
+        .subquery()
+    )
+    return q.filter(~model.id.in_(flagged_ids))
+
+
+def _build_score_table_map():
+    """Build the table-name → model mapping once all models are imported."""
+    global _SCORE_TABLE_MAP
+    _SCORE_TABLE_MAP = {
+        m.__tablename__: m for m in [
+            Score, RushScore, TentaizuScore, TentaizuEasyScore,
+            MosaicScore, MosaicEasyScore, MosaicCustomScore,
+            CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore,
+            CubesweeperScore, MobiussweeperScore, ReplayScore,
+            NonosweeperScore, FifteenPuzzleScore, Game2048Score,
+            Game2048HexScore, SchulteGridScore, SudokuScore,
+            MahjongScore, JigsawScore,
+        ]
+    }
+
+_build_score_table_map()
+
 
 # ── Season constants (Season 1 = March 2026, increments monthly) ──────────────
 SEASON_ORIGIN_YEAR  = 2026
@@ -855,6 +901,7 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
 
     db.commit()
     db.refresh(score)
+    flag_if_profane(db, score.__tablename__, score.id, score.name)
     record_score_submit("minesweeper", payload.mode.value)
     record_game_complete("minesweeper", mode=payload.mode.value,
                          duration_ms=payload.time_ms or (payload.time_secs or 0) * 1000)
@@ -1038,6 +1085,7 @@ def get_scores(mode: GameMode, no_guess: bool = False,
     else:
         ng_filter = (Score.no_guess == False) | Score.no_guess.is_(None)
     q = db.query(Score).filter(Score.mode == mode, ng_filter)
+    q = exclude_flagged(q, Score, db)
 
     if period == "daily":
         try:
@@ -1148,6 +1196,7 @@ def submit_rush_score(payload: RushScoreSubmit, request: Request, db: Session = 
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     record_score_submit("rush", payload.rush_mode)
     return {"ok": True, "id": entry.id}
 
@@ -1159,6 +1208,7 @@ def get_rush_scores(rush_mode: str, alltime: bool = False, db: Session = Depends
     q = db.query(RushScore).filter(RushScore.rush_mode == rush_mode)
     if not alltime:
         q = q.filter(RushScore.created_at >= date.today())
+    q = exclude_flagged(q, RushScore, db)
     top = q.order_by(RushScore.score.desc()).limit(15).all()
     return _enrich_with_profiles(top, db)
 
@@ -1330,6 +1380,7 @@ def submit_fifteen_puzzle_score(payload: FifteenPuzzleScoreSubmit, request: Requ
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     record_score_submit("fifteen_puzzle", payload.puzzle_date)
     record_game_complete("fifteen_puzzle", mode="daily", duration_ms=payload.time_ms)
     return {"ok": True, "id": entry.id}
@@ -1342,10 +1393,14 @@ def get_fifteen_puzzle_scores(puzzle_date: str, grid: str = Query(default="4x4")
         raise HTTPException(status_code=400, detail="Invalid date format")
     if grid not in _VALID_GRID_SIZES:
         grid = "4x4"
-    top = (
+    q = (
         db.query(FifteenPuzzleScore)
         .filter(FifteenPuzzleScore.puzzle_date == puzzle_date,
                 FifteenPuzzleScore.grid_size   == grid)
+    )
+    q = exclude_flagged(q, FifteenPuzzleScore, db)
+    top = (
+        q
         .order_by(FifteenPuzzleScore.time_ms.asc(), FifteenPuzzleScore.created_at.asc())
         .limit(20)
         .all()
@@ -1819,6 +1874,7 @@ def submit_2048hex_score(payload: Game2048HexScoreSubmit, request: Request, db: 
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     record_score_submit("2048hex", payload.puzzle_date)
     record_game_complete("2048hex", mode="daily", duration_ms=payload.time_ms)
     return {"ok": True, "id": entry.id}
@@ -1830,6 +1886,7 @@ def get_2048hex_scores(puzzle_date: str, sort: str = "score", db: Session = Depe
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
     q = db.query(Game2048HexScore).filter(Game2048HexScore.puzzle_date == puzzle_date)
+    q = exclude_flagged(q, Game2048HexScore, db)
     if sort == "moves":
         q = q.filter(Game2048HexScore.moves_to_2048.isnot(None)) \
              .order_by(Game2048HexScore.moves_to_2048.asc(), Game2048HexScore.time_ms.asc())
@@ -1841,6 +1898,7 @@ def get_2048hex_scores(puzzle_date: str, sort: str = "score", db: Session = Depe
 @app.get("/api/2048hex-scores")
 def get_2048hex_scores_all_time(sort: str = "score", db: Session = Depends(get_db)):
     q = db.query(Game2048HexScore)
+    q = exclude_flagged(q, Game2048HexScore, db)
     if sort == "moves":
         q = q.filter(Game2048HexScore.moves_to_2048.isnot(None)) \
              .order_by(Game2048HexScore.moves_to_2048.asc(), Game2048HexScore.time_ms.asc())
@@ -1955,6 +2013,7 @@ def submit_schulte_score(payload: SchulteScoreSubmit, request: Request, db: Sess
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     record_score_submit("schulte", payload.puzzle_date)
     record_game_complete("schulte", mode=payload.mode, duration_ms=payload.time_ms)
     return {"ok": True, "id": entry.id}
@@ -1980,6 +2039,7 @@ def get_schulte_scores(
         SchulteGridScore.mode == mode,
         SchulteGridScore.board_size == size,
     )
+    q = exclude_flagged(q, SchulteGridScore, db)
 
     if period == "today":
         today = puzzle_date or date.today().isoformat()
@@ -2194,6 +2254,7 @@ def submit_sudoku_score(payload: SudokuScoreSubmit, request: Request, db: Sessio
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     record_score_submit("sudoku", payload.puzzle_date)
     record_game_complete("sudoku", mode=payload.difficulty, duration_ms=payload.time_ms)
     return {"ok": True, "id": entry.id}
@@ -2213,6 +2274,7 @@ def get_sudoku_scores(
         raise HTTPException(status_code=400, detail="Invalid period")
 
     q = db.query(SudokuScore).filter(SudokuScore.difficulty == difficulty)
+    q = exclude_flagged(q, SudokuScore, db)
 
     if period == "today":
         today = puzzle_date or date.today().isoformat()
@@ -2295,6 +2357,7 @@ def submit_2048_score(payload: Game2048ScoreSubmit, request: Request, db: Sessio
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     record_score_submit("2048", payload.puzzle_date)
     record_game_complete("2048", mode="daily", duration_ms=payload.time_ms)
     return {"ok": True, "id": entry.id}
@@ -2306,6 +2369,7 @@ def get_2048_scores(puzzle_date: str, sort: str = "score", db: Session = Depends
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
     q = db.query(Game2048Score).filter(Game2048Score.puzzle_date == puzzle_date)
+    q = exclude_flagged(q, Game2048Score, db)
     if sort == "moves":
         q = q.filter(Game2048Score.moves_to_2048.isnot(None)) \
              .order_by(Game2048Score.moves_to_2048.asc(), Game2048Score.time_ms.asc())
@@ -2317,6 +2381,7 @@ def get_2048_scores(puzzle_date: str, sort: str = "score", db: Session = Depends
 @app.get("/api/2048-scores")
 def get_2048_scores_all_time(sort: str = "score", db: Session = Depends(get_db)):
     q = db.query(Game2048Score)
+    q = exclude_flagged(q, Game2048Score, db)
     if sort == "moves":
         q = q.filter(Game2048Score.moves_to_2048.isnot(None)) \
              .order_by(Game2048Score.moves_to_2048.asc(), Game2048Score.time_ms.asc())
@@ -2830,6 +2895,7 @@ def submit_replay_score(payload: ReplayScoreSubmit, request: Request, db: Sessio
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     return {"ok": True, "id": entry.id}
 
 
@@ -2844,8 +2910,10 @@ def get_replay_scores(board_hash: str, variant: str = "standard", db: Session = 
         else_=ReplayScore.time_secs * 1000
     )
     replay_rows = (
-        db.query(ReplayScore)
-        .filter(ReplayScore.board_hash == board_hash, ReplayScore.variant == variant)
+        exclude_flagged(
+            db.query(ReplayScore)
+            .filter(ReplayScore.board_hash == board_hash, ReplayScore.variant == variant),
+            ReplayScore, db)
         .order_by(sort_key.asc(), ReplayScore.created_at.asc())
         .limit(500)
         .all()
@@ -3079,6 +3147,7 @@ def submit_cylinder_score(payload: CylinderScoreSubmit, request: Request, db: Se
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     return {"ok": True, "id": entry.id}
 
 
@@ -3103,6 +3172,7 @@ def get_cylinder_scores(cyl_mode: str, no_guess: bool = False, period: str = "al
         ng_filter = (CylinderScore.no_guess == False) | CylinderScore.no_guess.is_(None)
 
     q = db.query(CylinderScore).filter(CylinderScore.cyl_mode == cyl_mode, ng_filter)
+    q = exclude_flagged(q, CylinderScore, db)
 
     if period == "daily":
         try:
@@ -3246,6 +3316,7 @@ def submit_toroid_score(payload: ToroidScoreSubmit, request: Request, db: Sessio
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     return {"ok": True, "id": entry.id}
 
 
@@ -3270,6 +3341,7 @@ def get_toroid_scores(tor_mode: str, no_guess: bool = False, period: str = "allt
         ng_filter = (ToroidScore.no_guess == False) | ToroidScore.no_guess.is_(None)
 
     q = db.query(ToroidScore).filter(ToroidScore.tor_mode == tor_mode, ng_filter)
+    q = exclude_flagged(q, ToroidScore, db)
 
     if period == "daily":
         try:
@@ -3419,6 +3491,7 @@ def submit_hex_score(payload: HexscoreSubmit, request: Request, db: Session = De
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     return {"ok": True, "id": entry.id}
 
 
@@ -3438,6 +3511,7 @@ def get_hex_scores(hex_mode: str, period: str = "alltime",
     )
 
     q = db.query(HexsweeperScore).filter(HexsweeperScore.hex_mode == hex_mode)
+    q = exclude_flagged(q, HexsweeperScore, db)
 
     if period == "daily":
         try:
@@ -3621,6 +3695,7 @@ def submit_world_score(payload: WorldsweeperScoreSubmit, request: Request, db: S
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     return {"ok": True, "id": entry.id}
 
 
@@ -3634,6 +3709,7 @@ def get_world_scores(glob_mode: str, period: str = "alltime",
         period = "alltime"
 
     q = db.query(GlobesweeperScore).filter(GlobesweeperScore.glob_mode == glob_mode)
+    q = exclude_flagged(q, GlobesweeperScore, db)
 
     if period == "daily":
         try:
@@ -3778,6 +3854,7 @@ def submit_cube_score(payload: CubesweeperScoreSubmit, request: Request, db: Ses
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     return {"ok": True, "id": entry.id}
 
 
@@ -3795,6 +3872,7 @@ def get_cube_scores(cube_mode: str, period: str = "alltime",
         CubesweeperScore.cube_mode == cube_mode,
         CubesweeperScore.no_guess  == no_guess,
     )
+    q = exclude_flagged(q, CubesweeperScore, db)
 
     if period == "daily":
         try:
@@ -3942,6 +4020,7 @@ def submit_mobius_score(payload: MobiussweeperScoreSubmit, request: Request, db:
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     return {"ok": True, "id": entry.id}
 
 
@@ -3959,6 +4038,7 @@ def get_mobius_scores(mobius_mode: str, period: str = "alltime",
         MobiussweeperScore.mobius_mode == mobius_mode,
         MobiussweeperScore.no_guess    == no_guess,
     )
+    q = exclude_flagged(q, MobiussweeperScore, db)
 
     if period == "daily":
         try:
@@ -4377,6 +4457,7 @@ def submit_mosaic_score(payload: MosaicScoreSubmit, request: Request, db: Sessio
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     return {"ok": True, "id": entry.id}
 
 
@@ -4385,9 +4466,10 @@ def get_mosaic_scores(puzzle_date: str, db: Session = Depends(get_db)):
     import re
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
+    q = db.query(MosaicScore).filter(MosaicScore.puzzle_date == puzzle_date)
+    q = exclude_flagged(q, MosaicScore, db)
     top = (
-        db.query(MosaicScore)
-        .filter(MosaicScore.puzzle_date == puzzle_date)
+        q
         .order_by(MosaicScore.time_secs.asc(), MosaicScore.created_at.asc())
         .limit(20)
         .all()
@@ -4433,6 +4515,7 @@ def submit_mosaic_easy_score(payload: MosaicEasyScoreSubmit, request: Request, d
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     return {"ok": True, "id": entry.id}
 
 
@@ -4441,9 +4524,10 @@ def get_mosaic_easy_scores(puzzle_date: str, db: Session = Depends(get_db)):
     import re
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
+    q = db.query(MosaicEasyScore).filter(MosaicEasyScore.puzzle_date == puzzle_date)
+    q = exclude_flagged(q, MosaicEasyScore, db)
     top = (
-        db.query(MosaicEasyScore)
-        .filter(MosaicEasyScore.puzzle_date == puzzle_date)
+        q
         .order_by(MosaicEasyScore.time_secs.asc(), MosaicEasyScore.created_at.asc())
         .limit(20)
         .all()
@@ -4499,6 +4583,7 @@ def submit_mosaic_custom_score(payload: MosaicCustomScoreSubmit, request: Reques
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     return {"ok": True, "id": entry.id, "board_id": board_id}
 
 
@@ -4507,9 +4592,10 @@ def get_mosaic_custom_scores(board_id: str, db: Session = Depends(get_db)):
     import re
     if not re.match(r"^[0-9a-f]{64}$", board_id):
         raise HTTPException(status_code=400, detail="Invalid board_id")
+    q = db.query(MosaicCustomScore).filter(MosaicCustomScore.board_id == board_id)
+    q = exclude_flagged(q, MosaicCustomScore, db)
     top = (
-        db.query(MosaicCustomScore)
-        .filter(MosaicCustomScore.board_id == board_id)
+        q
         .order_by(MosaicCustomScore.time_secs.asc(), MosaicCustomScore.created_at.asc())
         .limit(20)
         .all()
@@ -4555,6 +4641,7 @@ def submit_tentaizu_score(payload: TentaizuScoreSubmit, request: Request, db: Se
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     record_score_submit("tentaizu", str(payload.puzzle_date))
     record_game_complete("tentaizu", mode="daily",
                          duration_ms=(payload.time_secs or 0) * 1000)
@@ -4566,9 +4653,10 @@ def get_tentaizu_scores(puzzle_date: str, db: Session = Depends(get_db)):
     import re
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
+    q = db.query(TentaizuScore).filter(TentaizuScore.puzzle_date == puzzle_date)
+    q = exclude_flagged(q, TentaizuScore, db)
     top = (
-        db.query(TentaizuScore)
-        .filter(TentaizuScore.puzzle_date == puzzle_date)
+        q
         .order_by(TentaizuScore.time_secs.asc(), TentaizuScore.created_at.asc())
         .limit(20)
         .all()
@@ -4607,6 +4695,7 @@ def submit_tentaizu_easy_score(payload: TentaizuEasyScoreSubmit, request: Reques
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     return {"ok": True, "id": entry.id}
 
 
@@ -4615,9 +4704,10 @@ def get_tentaizu_easy_scores(puzzle_date: str, db: Session = Depends(get_db)):
     import re
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
+    q = db.query(TentaizuEasyScore).filter(TentaizuEasyScore.puzzle_date == puzzle_date)
+    q = exclude_flagged(q, TentaizuEasyScore, db)
     top = (
-        db.query(TentaizuEasyScore)
-        .filter(TentaizuEasyScore.puzzle_date == puzzle_date)
+        q
         .order_by(TentaizuEasyScore.time_secs.asc(), TentaizuEasyScore.created_at.asc())
         .limit(20)
         .all()
@@ -5535,6 +5625,12 @@ def admin_hscleaning(
             hq = hq.filter(Score.no_guess == False)
         hash_scores = hq.order_by(Score.time_ms.asc(), Score.time_secs.asc()).limit(100).all()
 
+    flagged_scores = (
+        db.query(FlaggedScore)
+        .order_by(FlaggedScore.flagged_at.desc())
+        .all()
+    )
+
     return templates.TemplateResponse("admin_hscleaning.html", {
         "request": request,
         "user": user,
@@ -5548,6 +5644,7 @@ def admin_hscleaning(
         "no_guess": no_guess,
         "hash_scores": hash_scores,
         "valid_modes": sorted(valid_modes),
+        "flagged_scores": flagged_scores,
     })
 
 
@@ -5566,6 +5663,52 @@ def admin_hscleaning_delete(
         db.delete(score)
         db.commit()
     return RedirectResponse(next_url, status_code=303)
+
+
+def _delete_flagged_and_score(flag: FlaggedScore, db) -> None:
+    """Remove the flag row and optionally the underlying score row."""
+    model = _SCORE_TABLE_MAP.get(flag.table_name)
+    if model:
+        score_row = db.query(model).filter_by(id=flag.score_id).first()
+        if score_row:
+            db.delete(score_row)
+    db.delete(flag)
+
+
+@app.post("/admin/hscleaning/flagged/{flag_id}/delete")
+def admin_flagged_delete(flag_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    flag = db.query(FlaggedScore).filter_by(id=flag_id).first()
+    if flag:
+        _delete_flagged_and_score(flag, db)
+        db.commit()
+    return RedirectResponse("/admin/hscleaning#flagged", status_code=303)
+
+
+@app.post("/admin/hscleaning/flagged/{flag_id}/unflag")
+def admin_flagged_unflag(flag_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    flag = db.query(FlaggedScore).filter_by(id=flag_id).first()
+    if flag:
+        db.delete(flag)
+        db.commit()
+    return RedirectResponse("/admin/hscleaning#flagged", status_code=303)
+
+
+@app.post("/admin/hscleaning/flagged/delete-all")
+def admin_flagged_delete_all(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    flags = db.query(FlaggedScore).all()
+    for flag in flags:
+        _delete_flagged_and_score(flag, db)
+    db.commit()
+    return RedirectResponse("/admin/hscleaning#flagged", status_code=303)
 
 
 @app.get("/admin/analysis", response_class=HTMLResponse)
@@ -5720,6 +5863,7 @@ def submit_nonosweeper_score(payload: NonosweeperScoreSubmit, request: Request, 
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     record_score_submit("nonosweeper", str(payload.puzzle_date))
     record_game_complete("nonosweeper", mode=payload.difficulty,
                          duration_ms=(payload.time_secs or 0) * 1000)
@@ -5737,12 +5881,13 @@ def get_nonosweeper_scores(
         raise HTTPException(status_code=400, detail="Invalid date format")
     if difficulty not in ("beginner", "intermediate", "expert"):
         difficulty = "beginner"
+    q = db.query(NonosweeperScore).filter(
+        NonosweeperScore.puzzle_date == puzzle_date,
+        NonosweeperScore.difficulty  == difficulty,
+    )
+    q = exclude_flagged(q, NonosweeperScore, db)
     top = (
-        db.query(NonosweeperScore)
-        .filter(
-            NonosweeperScore.puzzle_date == puzzle_date,
-            NonosweeperScore.difficulty  == difficulty,
-        )
+        q
         .order_by(NonosweeperScore.time_secs.asc(), NonosweeperScore.created_at.asc())
         .limit(20)
         .all()
@@ -5870,6 +6015,7 @@ def submit_mahjong_score(payload: MahjongScoreSubmit, request: Request, db: Sess
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     record_score_submit("mahjong", payload.puzzle_date)
     record_game_complete("mahjong", mode="daily", duration_ms=payload.time_ms)
     return {"ok": True, "id": entry.id}
@@ -5885,27 +6031,19 @@ def get_mahjong_scores(
 ):
     LIMIT = 20
     if puzzle_date:
-        top = (
-            db.query(MahjongScore)
-            .filter(MahjongScore.puzzle_date == puzzle_date)
-            .order_by(MahjongScore.time_ms.asc(), MahjongScore.created_at.asc())
-            .limit(LIMIT).all()
-        )
+        q = db.query(MahjongScore).filter(MahjongScore.puzzle_date == puzzle_date)
+        q = exclude_flagged(q, MahjongScore, db)
+        top = q.order_by(MahjongScore.time_ms.asc(), MahjongScore.created_at.asc()).limit(LIMIT).all()
     elif season:
         year, month = season.split("-")
         prefix = f"{year}-{month}"
-        top = (
-            db.query(MahjongScore)
-            .filter(MahjongScore.puzzle_date.like(f"{prefix}%"))
-            .order_by(MahjongScore.time_ms.asc(), MahjongScore.created_at.asc())
-            .limit(LIMIT).all()
-        )
+        q = db.query(MahjongScore).filter(MahjongScore.puzzle_date.like(f"{prefix}%"))
+        q = exclude_flagged(q, MahjongScore, db)
+        top = q.order_by(MahjongScore.time_ms.asc(), MahjongScore.created_at.asc()).limit(LIMIT).all()
     else:
-        top = (
-            db.query(MahjongScore)
-            .order_by(MahjongScore.time_ms.asc(), MahjongScore.created_at.asc())
-            .limit(LIMIT).all()
-        )
+        q = db.query(MahjongScore)
+        q = exclude_flagged(q, MahjongScore, db)
+        top = q.order_by(MahjongScore.time_ms.asc(), MahjongScore.created_at.asc()).limit(LIMIT).all()
     return _enrich_with_profiles(top, db)
 
 
@@ -6129,6 +6267,7 @@ def submit_jigsaw_score(payload: JigsawScoreSubmit, request: Request,
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     record_score_submit("jigsaw", payload.puzzle_date)
     record_game_complete("jigsaw", mode=payload.difficulty, duration_ms=payload.time_ms)
     return {"ok": True, "id": entry.id}
@@ -6147,22 +6286,16 @@ def get_jigsaw_scores(
         difficulty = "beginner"
     LIMIT = 20
     if puzzle_date:
-        top = (
-            db.query(JigsawScore)
-            .filter(JigsawScore.puzzle_date == puzzle_date,
-                    JigsawScore.difficulty == difficulty)
-            .order_by(JigsawScore.time_ms.asc(), JigsawScore.created_at.asc())
-            .limit(LIMIT).all()
-        )
+        q = db.query(JigsawScore).filter(JigsawScore.puzzle_date == puzzle_date,
+                                         JigsawScore.difficulty == difficulty)
+        q = exclude_flagged(q, JigsawScore, db)
+        top = q.order_by(JigsawScore.time_ms.asc(), JigsawScore.created_at.asc()).limit(LIMIT).all()
     else:
         today = date.today().isoformat()
-        top = (
-            db.query(JigsawScore)
-            .filter(JigsawScore.puzzle_date == today,
-                    JigsawScore.difficulty == difficulty)
-            .order_by(JigsawScore.time_ms.asc(), JigsawScore.created_at.asc())
-            .limit(LIMIT).all()
-        )
+        q = db.query(JigsawScore).filter(JigsawScore.puzzle_date == today,
+                                         JigsawScore.difficulty == difficulty)
+        q = exclude_flagged(q, JigsawScore, db)
+        top = q.order_by(JigsawScore.time_ms.asc(), JigsawScore.created_at.asc()).limit(LIMIT).all()
     return _enrich_with_profiles(top, db)
 
 
