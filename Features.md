@@ -15,6 +15,78 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F78 Image Upload Content Moderation
+  Offensive or inappropriate images uploaded by users (jigsaw generator,
+  15-puzzle generator) must be reviewed before they can appear in public
+  contexts such as daily puzzles or featured galleries.
+
+  Scope
+    Applies to JigsawPhoto uploads (/other/jigsaw/generator) and
+    FifteenPuzzlePhoto / MemberPuzzle uploads (/other/15puzzle/generator).
+
+  Admin review page (/admin/jigsaw-photos)
+    Two-section layout: "Pending Review" (default for all new uploads) and
+    "Approved" (cleared by admin).
+    Per-image actions: Approve, Unapprove, Delete (removes file + DB record).
+    Image thumbnail, uploader email, title, puzzle URL, and upload date shown.
+
+  Database
+    JigsawPhoto.approved  TINYINT(1) NOT NULL DEFAULT 0
+    FifteenPuzzlePhoto.approved  (Phase 2 — not yet implemented)
+
+  Phase 1 — Jigsaw moderation (implemented 2026-04-28)
+    /admin/jigsaw-photos page.
+    approved column on jigsaw_photos table.
+    Approve / Unapprove / Delete per image.
+
+  Phase 2 — 15-puzzle moderation
+    Extend same approved column + admin UI to FifteenPuzzlePhoto and MemberPuzzle.
+    Add approved filter to /admin/15puzzle-photos page.
+
+  Phase 3 — Automated pre-screening (future)
+    Integrate image classification API or on-device model to auto-flag
+    likely offensive images before they reach the admin queue.
+
+──────────────────────────────────────────────────────────────────────────────
+
+F77 High Score Name Content Filtering
+  Submitted player display names on leaderboards must be checked for profanity
+  and other offensive content. Flagged names are hidden from public leaderboards
+  pending admin review.
+
+  Scope
+    All leaderboard score submissions across minesweeper.org and ajaxchess.com.
+
+  Flagging
+    Uses better-profanity==0.7.0 library (wordlist-based, no ML dependency).
+    New scores are checked on submission via flag_if_profane().
+    A central FlaggedScore table stores (table_name, score_id, name, reason,
+    flagged_at) — works across all score tables without per-table schema changes.
+    Only new scores going forward are scanned; historical scores are not back-filled.
+
+  Leaderboard filtering
+    exclude_flagged() applied to every leaderboard query hides flagged rows
+    from public views until cleared by an admin.
+
+  Admin review page (/admin/hscleaning)
+    Lists all flagged scores across all games with uploader, table, flag date.
+    Per-row actions: Delete score (permanent), Unflag (restore to public).
+    Bulk action: Delete All Flagged Scores.
+
+  Phase 1 — minesweeper.org (implemented 2026-04-28)
+    Covers all 22 score submission endpoints and 24 leaderboard queries.
+    Admin review at /admin/hscleaning.
+
+  Phase 2 — ajaxchess.com (implemented 2026-04-28)
+    Covers Knight's Tour, Knight vs Pawns, Zugzwang, Custom Puzzle endpoints.
+    Admin review at /admin/hscleaning.
+
+  Phase 3 — Custom wordlist (future)
+    Allow admins to add site-specific terms to the profanity wordlist via
+    the admin UI without a code deploy.
+
+──────────────────────────────────────────────────────────────────────────────
+
 F76 Arrow Puzzle (/other/arrows)
   HTML5 game based on the Unity prototype at github.com/SERAP-KEREM/Arrows.
   Lines (polylines) are drawn on a canvas; the player clicks a line to animate
