@@ -1249,17 +1249,23 @@ def fifteen_puzzle_daily(request: Request):
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
+        "grid_size": "4x4", "grid_n": 4, "grid_label": "4×4",
+        "photo_url": "", "photo_mode": "", "reveal_url": "",
+        "board_hash": "", "display_name": "",
     })
 
 
 @app.get("/other/15puzzle/leaderboard", response_class=HTMLResponse)
-def fifteen_puzzle_leaderboard_page(request: Request):
+def fifteen_puzzle_leaderboard_page(request: Request, grid: str = Query(default="4x4")):
+    if grid not in _VALID_GRID_SIZES:
+        grid = "4x4"
     today = date.today().isoformat()
     return templates.TemplateResponse("fifteen_puzzle_leaderboard.html", {
         "request": request, "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
+        "grid_size": grid,
     })
 
 
@@ -1274,9 +1280,12 @@ def fifteen_puzzle_howtoplay(request: Request):
 
 # ── 15-Puzzle API ──────────────────────────────────────────────────────────────
 
+_VALID_GRID_SIZES = {"3x3", "4x4", "5x5", "6x6", "7x7", "8x8", "9x9", "10x10"}
+
 class FifteenPuzzleScoreSubmit(BaseModel):
     name:        str = Field(..., min_length=1, max_length=32)
     puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    grid_size:   str = Field(default="4x4")
     time_ms:     int = Field(..., ge=0, le=9999999)
     moves:       int = Field(..., ge=1, le=99999)
 
@@ -1288,6 +1297,13 @@ class FifteenPuzzleScoreSubmit(BaseModel):
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
+
+    @field_validator("grid_size")
+    @classmethod
+    def validate_grid_size(cls, v: str) -> str:
+        if v not in _VALID_GRID_SIZES:
+            return "4x4"
+        return v
 
 
 @app.post("/api/fifteen-puzzle-scores", status_code=201)
@@ -1304,6 +1320,7 @@ def submit_fifteen_puzzle_score(payload: FifteenPuzzleScoreSubmit, request: Requ
         name        = payload.name,
         user_email  = user["email"] if user else None,
         puzzle_date = payload.puzzle_date,
+        grid_size   = payload.grid_size,
         time_ms     = payload.time_ms,
         moves       = payload.moves,
         guest_token = guest_token,
@@ -1318,13 +1335,16 @@ def submit_fifteen_puzzle_score(payload: FifteenPuzzleScoreSubmit, request: Requ
 
 
 @app.get("/api/fifteen-puzzle-scores/{puzzle_date}")
-def get_fifteen_puzzle_scores(puzzle_date: str, db: Session = Depends(get_db)):
+def get_fifteen_puzzle_scores(puzzle_date: str, grid: str = Query(default="4x4"), db: Session = Depends(get_db)):
     import re
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
+    if grid not in _VALID_GRID_SIZES:
+        grid = "4x4"
     top = (
         db.query(FifteenPuzzleScore)
-        .filter(FifteenPuzzleScore.puzzle_date == puzzle_date)
+        .filter(FifteenPuzzleScore.puzzle_date == puzzle_date,
+                FifteenPuzzleScore.grid_size   == grid)
         .order_by(FifteenPuzzleScore.time_ms.asc(), FifteenPuzzleScore.created_at.asc())
         .limit(20)
         .all()
@@ -1370,8 +1390,10 @@ def fifteen_puzzle_photo_play(request: Request, board_hash: str, mode: str = Que
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
+        "grid_size": "4x4", "grid_n": 4, "grid_label": "4×4",
         "photo_url": f"/static/uploads/15puzzle/{photo.filename}",
         "photo_mode": mode,
+        "reveal_url": "",
         "board_hash": board_hash,
         "display_name": photo.display_name or "",
         "noindex": True,
@@ -1515,6 +1537,7 @@ def fifteen_puzzle_member_photo_play(request: Request, board_hash: str, db: Sess
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
+        "grid_size": "4x4", "grid_n": 4, "grid_label": "4×4",
         "photo_url": f"/static/uploads/15puzzle/{puzzle.tile_filename}",
         "photo_mode": "tiles",
         "reveal_url": f"/static/uploads/15puzzle/{puzzle.reveal_filename}",
@@ -1571,6 +1594,34 @@ async def upload_member_puzzle(
     db.add(entry)
     db.commit()
     return {"ok": True, "url": f"/other/15puzzle/memberphoto/{board_hash}"}
+
+
+# ── 15-Puzzle variable grid sizes (3x3, 5x5 … 10x10) ─────────────────────────
+# This route must be declared after all specific /other/15puzzle/* routes.
+
+_GRID_LABELS = {
+    "3x3": "3×3", "4x4": "4×4", "5x5": "5×5", "6x6": "6×6",
+    "7x7": "7×7", "8x8": "8×8", "9x9": "9×9", "10x10": "10×10",
+}
+_PUZZLE_GRID_SIZES = ["3x3", "5x5", "6x6", "7x7", "8x8", "9x9", "10x10"]  # 4x4 = /daily
+
+@app.get("/other/15puzzle/{grid}", response_class=HTMLResponse)
+def fifteen_puzzle_grid_page(request: Request, grid: str):
+    if grid not in _PUZZLE_GRID_SIZES:
+        raise HTTPException(status_code=404)
+    n = int(grid.split("x")[0])
+    label = _GRID_LABELS[grid]
+    return templates.TemplateResponse("fifteen_puzzle_daily.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": date.today().isoformat(),
+        "grid_size": grid,
+        "grid_n": n,
+        "grid_label": label,
+        "photo_url": "", "photo_mode": "", "reveal_url": "",
+        "board_hash": "", "display_name": "",
+    })
 
 
 # ── Admin: 15-Puzzle photo moderation ─────────────────────────────────────────

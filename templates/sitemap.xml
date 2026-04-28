@@ -213,6 +213,15 @@
     <priority>0.4</priority>
   </url>
 
+  {% for _gs in ['3x3', '5x5', '6x6', '7x7', '8x8', '9x9', '10x10'] %}
+  <url>
+    <loc>https://minesweeper.org/other/15puzzle/{{ _gs }}</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  {% endfor %}
+
   <!-- ── Schulte Grid ──────────────────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/other/schulte/play</loc>

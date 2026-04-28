@@ -813,6 +813,7 @@ class FifteenPuzzleScore(Base):
     name        = Column(String(32), nullable=False)
     user_email  = Column(String(256), nullable=True, index=True)
     puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD UTC
+    grid_size   = Column(String(8),  nullable=False, server_default="4x4")  # "3x3", "4x4", etc.
     time_ms     = Column(Integer, nullable=False)
     moves       = Column(Integer, nullable=False)
     guest_token = Column(String(36), nullable=True, index=True)
@@ -820,7 +821,7 @@ class FifteenPuzzleScore(Base):
     created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
-        Index("ix_fifteen_puzzle_scores_date_time", "puzzle_date", "time_ms"),
+        Index("ix_fifteen_puzzle_scores_date_grid_time", "puzzle_date", "grid_size", "time_ms"),
     )
 
     def to_dict(self):

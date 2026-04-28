@@ -45,8 +45,9 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Solvability check for 4x4 grid
-  // A configuration is solvable if (inversions + row_of_blank_from_bottom_1indexed) is even.
+  // Solvability — works for any NxN grid
+  //   Even N: solvable iff (inversions + rowFromBottom) is odd
+  //   Odd  N: solvable iff inversions is even
   // ---------------------------------------------------------------------------
   function countInversions(tiles) {
     var count = 0;
@@ -60,43 +61,43 @@
     return count;
   }
 
-  function isSolvable(tiles) {
-    var inversions = countInversions(tiles);
-    var blankIndex = tiles.indexOf(0);
-    // row from bottom, 1-indexed (grid is 4 wide)
-    var rowFromBottom = 4 - Math.floor(blankIndex / 4);
+  function isSolvable(tiles, n) {
+    var inversions  = countInversions(tiles);
+    var blankIndex  = tiles.indexOf(0);
+    if (n % 2 === 1) {
+      return inversions % 2 === 0;
+    }
+    var rowFromBottom = n - Math.floor(blankIndex / n);
     return (inversions + rowFromBottom) % 2 === 1;
   }
 
   // ---------------------------------------------------------------------------
-  // Generate daily board
+  // Generate daily board for any NxN
+  // Seeded by date string + grid size so each size gets a unique scramble
   // ---------------------------------------------------------------------------
-  function generateDailyBoard(dateStr) {
-    var seed = seedFromDateString(dateStr);
-    var rng = makeLCG(seed);
-    var base = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0];
+  function generateDailyBoard(dateStr, n) {
+    var seedStr = dateStr + ':' + n;
+    var seed = seedFromDateString(seedStr);
+    var rng  = makeLCG(seed);
+    var total = n * n;
+    var base = [];
+    for (var k = 1; k < total; k++) base.push(k);
+    base.push(0);
 
-    var tiles;
+    var t;
     var attempts = 0;
-
-    // Try up to 200 times to get a solvable shuffle
     do {
-      tiles = shuffle(base, rng);
+      t = shuffle(base, rng);
       attempts++;
-    } while (!isSolvable(tiles) && attempts < 200);
+    } while (!isSolvable(t, n) && attempts < 200);
 
-    // Force-fix parity if still not solvable: swap tiles[0] and tiles[1]
-    // provided neither is blank
-    if (!isSolvable(tiles)) {
+    if (!isSolvable(t, n)) {
       var a = 0, b = 1;
-      if (tiles[a] === 0) { a = 1; b = 2; }
-      if (tiles[b] === 0) { b = 2; }
-      var tmp = tiles[a];
-      tiles[a] = tiles[b];
-      tiles[b] = tmp;
+      if (t[a] === 0) { a = 1; b = 2; }
+      if (t[b] === 0) { b = 2; }
+      var tmp = t[a]; t[a] = t[b]; t[b] = tmp;
     }
-
-    return tiles;
+    return t;
   }
 
   // ---------------------------------------------------------------------------
@@ -126,6 +127,9 @@
   var elapsedMs = 0;
   var gameWon = false;
   var dailyDate = '';
+  var gridSize = '4x4';  // e.g. "5x5"
+  var COLS = 4;
+  var WIN_STATE = [];
   var photoUrl = '';
   var photoMode = '';   // 'tiles' | 'reveal'
   var revealUrl = '';   // member puzzles: separate image shown full-bleed on win
@@ -144,6 +148,23 @@
   function getResetBtn()    { return document.getElementById('fp-reset'); }
 
   // ---------------------------------------------------------------------------
+  // Font / gap helpers — scale gracefully for large grids
+  // ---------------------------------------------------------------------------
+  function tileFontSize(n) {
+    if (n <= 3)  return '2rem';
+    if (n <= 4)  return '1.5rem';
+    if (n <= 5)  return '1.2rem';
+    if (n <= 6)  return '1rem';
+    if (n <= 7)  return '0.85rem';
+    if (n <= 8)  return '0.72rem';
+    if (n <= 9)  return '0.62rem';
+    return '0.54rem';
+  }
+
+  function boardGap(n) { return n <= 6 ? '5px' : n <= 8 ? '3px' : '2px'; }
+  function boardPad(n) { return n <= 6 ? '7px' : n <= 8 ? '5px' : '3px'; }
+
+  // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
   function render() {
@@ -151,25 +172,32 @@
     if (!board) return;
     board.innerHTML = '';
     board.style.display = 'grid';
-    board.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    board.style.gridTemplateColumns = 'repeat(' + COLS + ', 1fr)';
 
-    var COLS = 4;
-
-    var revealWon = isPhotoPuzzle && photoUrl && gameWon;
+    var revealWon   = isPhotoPuzzle && photoUrl && gameWon;
     var photoActive = isPhotoPuzzle && photoUrl && photoMode === 'tiles' && !gameWon;
 
-    // Collapse gaps for photo puzzles (both active play and reveal-win)
-    board.style.gap          = (revealWon || photoActive) ? '0' : '';
-    board.style.padding      = (revealWon || photoActive) ? '0' : '';
-    board.style.border       = (revealWon || photoActive) ? 'none' : '';
-    board.style.borderRadius = (revealWon || photoActive) ? '0' : '';
+    if (revealWon || photoActive) {
+      board.style.gap          = '0';
+      board.style.padding      = '0';
+      board.style.border       = 'none';
+      board.style.borderRadius = '0';
+    } else {
+      board.style.gap          = boardGap(COLS);
+      board.style.padding      = boardPad(COLS);
+      board.style.border       = '';
+      board.style.borderRadius = '';
+    }
 
-    for (var i = 0; i < 16; i++) {
+    var fontSize = tileFontSize(COLS);
+    var total    = COLS * COLS;
+
+    for (var i = 0; i < total; i++) {
       var tile = document.createElement('div');
       tile.classList.add('fp-tile');
+      tile.style.fontSize = fontSize;
 
       if (revealWon) {
-        // All tiles become fully transparent — photo behind board is fully visible
         tile.style.cssText = 'background:transparent;border:none;border-radius:0;';
       } else if (tiles[i] === 0) {
         tile.classList.add('fp-blank');
@@ -190,9 +218,10 @@
           tile.style.border             = '2px solid rgba(255,255,255,0.25)';
           var lbl = document.createElement('span');
           lbl.textContent = tiles[i];
-          lbl.style.cssText = 'position:absolute;bottom:3px;right:5px;font-size:0.6rem;' +
+          lbl.style.cssText = 'position:absolute;bottom:2px;right:3px;font-size:0.55rem;' +
             'color:#fff;text-shadow:0 1px 2px #000;pointer-events:none;';
           tile.style.position = 'relative';
+          tile.style.fontSize = fontSize;
           tile.appendChild(lbl);
         } else {
           tile.textContent = tiles[i];
@@ -221,37 +250,35 @@
     var clickedIndex = parseInt(e.currentTarget.dataset.index, 10);
     var blankIndex   = tiles.indexOf(0);
 
-    var clickedRow = Math.floor(clickedIndex / 4);
-    var clickedCol = clickedIndex % 4;
-    var blankRow   = Math.floor(blankIndex / 4);
-    var blankCol   = blankIndex % 4;
+    var clickedRow = Math.floor(clickedIndex / COLS);
+    var clickedCol = clickedIndex % COLS;
+    var blankRow   = Math.floor(blankIndex / COLS);
+    var blankCol   = blankIndex % COLS;
 
     var steps = 0;
 
     if (clickedRow === blankRow && clickedCol !== blankCol) {
-      // Slide all tiles between clicked and blank along the row
-      var dir = clickedCol < blankCol ? -1 : 1; // direction each tile moves
+      var dir = clickedCol < blankCol ? -1 : 1;
       var col = blankCol;
       while (col !== clickedCol) {
         var nextCol = col + dir;
-        tiles[blankRow * 4 + col] = tiles[blankRow * 4 + nextCol];
+        tiles[blankRow * COLS + col] = tiles[blankRow * COLS + nextCol];
         col = nextCol;
         steps++;
       }
-      tiles[blankRow * 4 + clickedCol] = 0;
+      tiles[blankRow * COLS + clickedCol] = 0;
     } else if (clickedCol === blankCol && clickedRow !== blankRow) {
-      // Slide all tiles between clicked and blank along the column
       var dir = clickedRow < blankRow ? -1 : 1;
       var row = blankRow;
       while (row !== clickedRow) {
         var nextRow = row + dir;
-        tiles[row * 4 + blankCol] = tiles[nextRow * 4 + blankCol];
+        tiles[row * COLS + blankCol] = tiles[nextRow * COLS + blankCol];
         row = nextRow;
         steps++;
       }
-      tiles[clickedRow * 4 + blankCol] = 0;
+      tiles[clickedRow * COLS + blankCol] = 0;
     } else {
-      return; // not in the same row or column as the blank
+      return;
     }
 
     // Start timer on first move
@@ -267,18 +294,17 @@
   }
 
   function isAdjacent(a, b) {
-    var rowA = Math.floor(a / 4), colA = a % 4;
-    var rowB = Math.floor(b / 4), colB = b % 4;
+    var rowA = Math.floor(a / COLS), colA = a % COLS;
+    var rowB = Math.floor(b / COLS), colB = b % COLS;
     return (Math.abs(rowA - rowB) + Math.abs(colA - colB)) === 1;
   }
 
   // ---------------------------------------------------------------------------
   // Win detection
   // ---------------------------------------------------------------------------
-  var WIN_STATE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0];
-
   function checkWin() {
-    for (var i = 0; i < 16; i++) {
+    var total = COLS * COLS;
+    for (var i = 0; i < total; i++) {
       if (tiles[i] !== WIN_STATE[i]) return;
     }
     // Won!
@@ -397,6 +423,7 @@
     var payload = {
       name: name,
       puzzle_date: dailyDate,
+      grid_size: gridSize,
       time_ms: time_ms,
       moves: moves
     };
@@ -436,6 +463,7 @@
     var payload = {
       name: userName,
       puzzle_date: dailyDate,
+      grid_size: gridSize,
       time_ms: Math.round(elapsedMs),
       moves: moveCount
     };
@@ -469,12 +497,13 @@
   // ---------------------------------------------------------------------------
   function resetGame() {
     gameWon = false;
+    var total = COLS * COLS;
     var boardHash = (window.FP_BOARD_HASH || '');
     if (isPhotoPuzzle && boardHash) {
       var decoded = hashToTiles(boardHash);
-      tiles = (decoded && decoded.length === 16) ? decoded : generateDailyBoard(dailyDate);
+      tiles = (decoded && decoded.length === total) ? decoded : generateDailyBoard(dailyDate, COLS);
     } else {
-      tiles = generateDailyBoard(dailyDate);
+      tiles = generateDailyBoard(dailyDate, COLS);
     }
     resetTimer();
     resetMoves();
@@ -494,18 +523,25 @@
   // ---------------------------------------------------------------------------
   function initFifteenPuzzle() {
     dailyDate    = (window.FP_DATE       || new Date().toISOString().slice(0, 10));
+    gridSize     = (window.FP_GRID_SIZE  || '4x4');
+    COLS         = parseInt(gridSize.split('x')[0], 10) || 4;
     photoUrl     = (window.FP_PHOTO_URL  || '');
     photoMode    = (window.FP_PHOTO_MODE || '');
     revealUrl    = (window.FP_REVEAL_URL || '');
     isPhotoPuzzle = !!(photoUrl && photoMode);
     userName     = (window.FP_USER_NAME  || '');
 
+    // Build win state: [1, 2, ..., N*N-1, 0]
+    WIN_STATE = [];
+    for (var w = 1; w < COLS * COLS; w++) WIN_STATE.push(w);
+    WIN_STATE.push(0);
+
     // For photo puzzles, decode the fixed board from the hash rather than
     // re-seeding by date so the scramble always matches the uploaded layout.
     var boardHash = (window.FP_BOARD_HASH || '');
     if (isPhotoPuzzle && boardHash) {
       var decoded = hashToTiles(boardHash);
-      if (decoded && decoded.length === 16) {
+      if (decoded && decoded.length === COLS * COLS) {
         tiles = decoded;
       }
     }

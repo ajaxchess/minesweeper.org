@@ -1,20 +1,29 @@
 {% extends "base.html" %}
 
-{% set _title = "15-Puzzle — Daily | minesweeper.org" %}
-{% set _desc  = "Play today's daily 15-puzzle on minesweeper.org. Slide 15 numbered tiles into order. Same puzzle for every player, resets at midnight UTC." %}
-{% set _canon = "https://minesweeper.org/other/15puzzle/daily" %}
+{% set _gs    = grid_size or "4x4" %}
+{% set _gl    = grid_label or "4×4" %}
+{% set _is4x4 = (_gs == "4x4") %}
+{% if _is4x4 %}
+  {% set _title = "15-Puzzle — Daily | minesweeper.org" %}
+  {% set _desc  = "Play today's daily 15-puzzle on minesweeper.org. Slide 15 numbered tiles into order. Same puzzle for every player, resets at midnight UTC." %}
+  {% set _canon = "https://minesweeper.org/other/15puzzle/daily" %}
+{% else %}
+  {% set _title = "15-Puzzle " + _gl + " — Daily | minesweeper.org" %}
+  {% set _desc  = "Play today's daily " + _gl + " sliding-tile puzzle. Same board for every player, resets at midnight UTC." %}
+  {% set _canon = "https://minesweeper.org/other/15puzzle/" + _gs %}
+{% endif %}
 
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}
 {% block canonical %}{{ _canon }}{% endblock %}
 {% block og_url %}{{ _canon }}{% endblock %}
-{% block og_title %}15-Puzzle — Daily | minesweeper.org{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
 {% block og_description %}{{ _desc }}{% endblock %}
 
 {% block content %}
 <style>
 .fp-wrap {
-  max-width: 480px;
+  max-width: 640px;
   margin: 0 auto;
   padding: 1rem;
   display: flex;
@@ -22,6 +31,24 @@
   align-items: center;
   gap: 1rem;
 }
+.fp-size-picker {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.fp-size-btn {
+  padding: 0.3rem 0.65rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+.fp-size-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.fp-size-btn.active { border-color: var(--accent2); color: var(--accent2); font-weight: 700; }
 .fp-header { text-align: center; }
 .fp-header h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
 .fp-header p  { color: var(--text-dim); font-size: 0.85rem; margin: 0; }
@@ -45,14 +72,14 @@
 
 #fp-board {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* grid-template-columns set dynamically by JS based on grid size */
   gap: 6px;
   background: var(--surface2);
   border: 2px solid var(--border);
   border-radius: 10px;
   padding: 8px;
   width: 100%;
-  max-width: 360px;
+  max-width: min(580px, calc(100vw - 2rem));
   box-sizing: border-box;
 }
 .fp-tile {
@@ -136,10 +163,23 @@
   <div class="fp-subnav">
     <a href="/other">{{ t['other_h1'] }}</a>
     <span>›</span>
-    <a href="/other/15puzzle/leaderboard">{{ t['nav_leaderboard'] }}</a>
+    <a href="/other/15puzzle/leaderboard?grid={{ _gs }}">{{ t['nav_leaderboard'] }}</a>
     <span>·</span>
     <a href="/other/15puzzle/how-to-play">{{ t['nav_how_to_play'] }}</a>
   </div>
+
+  {% if not display_name %}
+  <div class="fp-size-picker">
+    <a href="/other/15puzzle/3x3"   class="fp-size-btn {% if _gs == '3x3'   %}active{% endif %}">3×3</a>
+    <a href="/other/15puzzle/daily" class="fp-size-btn {% if _is4x4         %}active{% endif %}">4×4</a>
+    <a href="/other/15puzzle/5x5"   class="fp-size-btn {% if _gs == '5x5'   %}active{% endif %}">5×5</a>
+    <a href="/other/15puzzle/6x6"   class="fp-size-btn {% if _gs == '6x6'   %}active{% endif %}">6×6</a>
+    <a href="/other/15puzzle/7x7"   class="fp-size-btn {% if _gs == '7x7'   %}active{% endif %}">7×7</a>
+    <a href="/other/15puzzle/8x8"   class="fp-size-btn {% if _gs == '8x8'   %}active{% endif %}">8×8</a>
+    <a href="/other/15puzzle/9x9"   class="fp-size-btn {% if _gs == '9x9'   %}active{% endif %}">9×9</a>
+    <a href="/other/15puzzle/10x10" class="fp-size-btn {% if _gs == '10x10' %}active{% endif %}">10×10</a>
+  </div>
+  {% endif %}
 
   <div class="fp-stats">
     <div>{{ t['fp_time'] }} <span id="fp-time">0.0</span>s</div>
@@ -171,11 +211,12 @@
 
 <script>
 window.FP_DATE       = "{{ today }}";
+window.FP_GRID_SIZE  = "{{ grid_size or '4x4' }}";
 window.FP_PHOTO_URL  = "{{ photo_url or '' }}";
 window.FP_PHOTO_MODE = "{{ photo_mode or '' }}";
 window.FP_REVEAL_URL = "{{ reveal_url or '' }}";
 window.FP_BOARD_HASH = "{{ board_hash or '' }}";
 window.FP_USER_NAME  = {{ (user.name if user else '') | tojson }};
 </script>
-<script src="/static/js/fifteen_puzzle.js?v=5"></script>
+<script src="/static/js/fifteen_puzzle.js?v=6"></script>
 {% endblock %}

@@ -11,16 +11,36 @@
 {% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
 {% block og_description %}{{ _desc }}{% endblock %}
 
-{% block content %}
-<div class="lb-wrap">
-  <h1 class="tz-page-h1">{{ t['fp_lb_h1'] }}</h1>
+{% set _gs = grid_size or "4x4" %}
 
-  <div style="text-align:center;margin-bottom:1.5rem;">
-    <a href="/other/15puzzle/daily" class="btn" style="margin:0.25rem;">{{ t['fp_play_today'] }}</a>
+{% block content %}
+<style>
+.fp-lb-size-picker { display:flex; gap:0.35rem; flex-wrap:wrap; justify-content:center; margin-bottom:1rem; }
+.fp-lb-size-btn { padding:0.3rem 0.65rem; background:var(--surface2); border:1px solid var(--border); border-radius:4px; color:var(--text); text-decoration:none; font-size:0.82rem; }
+.fp-lb-size-btn:hover { border-color:var(--accent2); color:var(--accent2); }
+.fp-lb-size-btn.active { border-color:var(--accent2); color:var(--accent2); font-weight:700; }
+</style>
+
+<div class="lb-wrap">
+  <h1 class="tz-page-h1">{{ t['fp_lb_h1'] }} — {{ _gs | replace('x', '×') }}</h1>
+
+  <div style="text-align:center;margin-bottom:0.75rem;">
+    <a href="/other/15puzzle/{% if _gs == '4x4' %}daily{% else %}{{ _gs }}{% endif %}" class="btn" style="margin:0.25rem;">{{ t['fp_play_today'] }}</a>
     <a href="/other" class="btn" style="margin:0.25rem;">{{ t['other_h1'] }}</a>
   </div>
 
-  <h2 style="font-size:1rem;color:var(--accent2);margin-top:1rem;">{{ t['fp_today_heading'] }}{{ today }}</h2>
+  <div class="fp-lb-size-picker">
+    <a href="/other/15puzzle/leaderboard?grid=3x3"   class="fp-lb-size-btn {% if _gs == '3x3'   %}active{% endif %}">3×3</a>
+    <a href="/other/15puzzle/leaderboard?grid=4x4"   class="fp-lb-size-btn {% if _gs == '4x4'   %}active{% endif %}">4×4</a>
+    <a href="/other/15puzzle/leaderboard?grid=5x5"   class="fp-lb-size-btn {% if _gs == '5x5'   %}active{% endif %}">5×5</a>
+    <a href="/other/15puzzle/leaderboard?grid=6x6"   class="fp-lb-size-btn {% if _gs == '6x6'   %}active{% endif %}">6×6</a>
+    <a href="/other/15puzzle/leaderboard?grid=7x7"   class="fp-lb-size-btn {% if _gs == '7x7'   %}active{% endif %}">7×7</a>
+    <a href="/other/15puzzle/leaderboard?grid=8x8"   class="fp-lb-size-btn {% if _gs == '8x8'   %}active{% endif %}">8×8</a>
+    <a href="/other/15puzzle/leaderboard?grid=9x9"   class="fp-lb-size-btn {% if _gs == '9x9'   %}active{% endif %}">9×9</a>
+    <a href="/other/15puzzle/leaderboard?grid=10x10" class="fp-lb-size-btn {% if _gs == '10x10' %}active{% endif %}">10×10</a>
+  </div>
+
+  <h2 style="font-size:1rem;color:var(--accent2);margin-top:0.5rem;">{{ t['fp_today_heading'] }}{{ today }}</h2>
   <div class="wt-table-wrap">
     <table class="lb-table">
       <thead>
@@ -37,10 +57,11 @@
 (async function() {
   const tbody = document.getElementById('lb-body-today');
   const today = "{{ today }}";
+  const grid  = {{ _gs | tojson }};
   const msgNoScores = {{ t['lb_no_scores'] | tojson }};
   const msgFailed   = {{ t['lb_error'] | tojson }};
   try {
-    const r = await fetch('/api/fifteen-puzzle-scores/' + today);
+    const r = await fetch('/api/fifteen-puzzle-scores/' + today + '?grid=' + grid);
     const scores = await r.json();
     if (!scores.length) {
       tbody.innerHTML = `<tr><td colspan="5" style="color:var(--text-dim);">${msgNoScores}</td></tr>`;
