@@ -118,6 +118,8 @@ F79 Tametsi
     F79-F  Leaderboards (daily + random with 3BV context)
     F79-G  SEO: page copy, meta tags, structured data
 
+  - Assign to Earl Gero
+
 ──────────────────────────────────────────────────────────────────────────────
 
 F78 Image Upload Content Moderation
