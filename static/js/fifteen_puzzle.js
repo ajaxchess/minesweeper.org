@@ -128,6 +128,7 @@
   var dailyDate = '';
   var photoUrl = '';
   var photoMode = '';   // 'tiles' | 'reveal'
+  var revealUrl = '';   // member puzzles: separate image shown full-bleed on win
   var isPhotoPuzzle = false;
   var userName = '';    // non-empty when a user is logged in
 
@@ -200,9 +201,10 @@
       board.appendChild(tile);
     }
 
-    // On win: set full-bleed background on board to show original photo
+    // On win: show reveal image if provided, otherwise fall back to tile image
     if (isPhotoPuzzle && photoUrl && gameWon) {
-      board.style.backgroundImage    = 'url(' + photoUrl + ')';
+      var winBg = revealUrl || photoUrl;
+      board.style.backgroundImage    = 'url(' + winBg + ')';
       board.style.backgroundSize     = 'cover';
       board.style.backgroundPosition = 'center';
     } else {
@@ -494,6 +496,7 @@
     dailyDate    = (window.FP_DATE       || new Date().toISOString().slice(0, 10));
     photoUrl     = (window.FP_PHOTO_URL  || '');
     photoMode    = (window.FP_PHOTO_MODE || '');
+    revealUrl    = (window.FP_REVEAL_URL || '');
     isPhotoPuzzle = !!(photoUrl && photoMode);
     userName     = (window.FP_USER_NAME  || '');
 

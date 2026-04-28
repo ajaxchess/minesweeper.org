@@ -17,7 +17,7 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, get_db, init_db, SessionLocal
 import database as _db_module
 from duel_routes import duel_router
 from duel import cleanup_old_games
@@ -1478,6 +1478,99 @@ def delete_all_fifteen_puzzle_photos(request: Request, db: Session = Depends(get
         db.delete(photo)
     db.commit()
     return {"ok": True, "deleted": len(photos)}
+
+
+# ── Member Puzzle (secret dual-image generator) ───────────────────────────────
+
+@app.get("/other/15puzzle/membergenerator", response_class=HTMLResponse)
+def fifteen_puzzle_member_generator_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    puzzles = []
+    if user:
+        puzzles = (
+            db.query(MemberPuzzle)
+            .filter_by(user_email=user["email"])
+            .order_by(MemberPuzzle.created_at.desc())
+            .all()
+        )
+    return templates.TemplateResponse("fifteen_puzzle_membergenerator.html", {
+        "request": request, "mode": "other",
+        "user": user,
+        "lang": get_lang(request), "t": get_t(request),
+        "puzzles": puzzles,
+        "noindex": True,
+    })
+
+
+@app.get("/other/15puzzle/memberphoto/{board_hash}", response_class=HTMLResponse)
+def fifteen_puzzle_member_photo_play(request: Request, board_hash: str, db: Session = Depends(get_db)):
+    import re
+    if not re.match(r'^[A-Za-z0-9_\-]{10,128}$', board_hash):
+        raise HTTPException(status_code=404, detail="Not found")
+    puzzle = db.query(MemberPuzzle).filter_by(board_hash=board_hash).first()
+    if not puzzle:
+        raise HTTPException(status_code=404, detail="Puzzle not found")
+    return templates.TemplateResponse("fifteen_puzzle_daily.html", {
+        "request": request, "mode": "other",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "today": date.today().isoformat(),
+        "photo_url": f"/static/uploads/15puzzle/{puzzle.tile_filename}",
+        "photo_mode": "tiles",
+        "reveal_url": f"/static/uploads/15puzzle/{puzzle.reveal_filename}",
+        "board_hash": board_hash,
+        "display_name": puzzle.display_name or "",
+        "noindex": True,
+    })
+
+
+@app.post("/api/fifteen-puzzle/upload-member", status_code=201)
+@limiter.limit("10/minute")
+async def upload_member_puzzle(
+    request: Request,
+    db: Session = Depends(get_db),
+    tile_file: UploadFile = File(...),
+    reveal_file: UploadFile = File(...),
+    display_name: str = Form(""),
+    board_hash: str = Form(...),
+):
+    import re
+    user = get_current_user(request)  # optional — not required
+
+    if not re.match(r'^[A-Za-z0-9_\-]{10,128}$', board_hash):
+        raise HTTPException(status_code=400, detail="Invalid board hash")
+
+    if db.query(MemberPuzzle).filter_by(board_hash=board_hash).first():
+        raise HTTPException(status_code=409, detail="A puzzle with this board already exists")
+
+    upload_dir = os.path.join("static", "uploads", "15puzzle")
+    os.makedirs(upload_dir, exist_ok=True)
+    safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
+
+    filenames = {}
+    for label, upload in (("tile", tile_file), ("reveal", reveal_file)):
+        content_type = upload.content_type or ""
+        if content_type not in ("image/jpeg", "image/png"):
+            raise HTTPException(status_code=400, detail=f"Only JPG and PNG accepted ({label} image)")
+        data = await upload.read()
+        if len(data) > 2 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail=f"File too large — max 2 MB ({label} image)")
+        ext = ".jpg" if content_type == "image/jpeg" else ".png"
+        filename = f"{safe_hash}_{label}{ext}"
+        with open(os.path.join(upload_dir, filename), "wb") as f:
+            f.write(data)
+        filenames[label] = filename
+
+    entry = MemberPuzzle(
+        board_hash      = board_hash,
+        tile_filename   = filenames["tile"],
+        reveal_filename = filenames["reveal"],
+        display_name    = display_name.strip()[:128] or None,
+        user_email      = user["email"] if user else None,
+    )
+    db.add(entry)
+    db.commit()
+    return {"ok": True, "url": f"/other/15puzzle/memberphoto/{board_hash}"}
 
 
 # ── Admin: 15-Puzzle photo moderation ─────────────────────────────────────────

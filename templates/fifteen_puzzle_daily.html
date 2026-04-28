@@ -170,9 +170,10 @@
 </div>
 
 <script>
-window.FP_DATE      = "{{ today }}";
-window.FP_PHOTO_URL = "{{ photo_url or '' }}";
+window.FP_DATE       = "{{ today }}";
+window.FP_PHOTO_URL  = "{{ photo_url or '' }}";
 window.FP_PHOTO_MODE = "{{ photo_mode or '' }}";
+window.FP_REVEAL_URL = "{{ reveal_url or '' }}";
 window.FP_BOARD_HASH = "{{ board_hash or '' }}";
 window.FP_USER_NAME  = {{ (user.name if user else '') | tojson }};
 </script>

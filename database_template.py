@@ -847,6 +847,19 @@ class FifteenPuzzlePhoto(Base):
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
+# ── MemberPuzzle ──────────────────────────────────────────────────────────────
+class MemberPuzzle(Base):
+    __tablename__ = "member_puzzles"
+
+    id              = Column(Integer, primary_key=True, index=True)
+    board_hash      = Column(String(128), nullable=False, unique=True, index=True)
+    tile_filename   = Column(String(256), nullable=False)    # image shown on tiles during play
+    reveal_filename = Column(String(256), nullable=False)    # image shown full-bleed on win
+    display_name    = Column(String(128), nullable=True)
+    user_email      = Column(String(256), nullable=True, index=True)  # set if logged in at creation
+    created_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 # ── 2048 Score model ─────────────────────────────────────────────────────────
 class Game2048Score(Base):
     __tablename__ = "game_2048_scores"
