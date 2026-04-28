@@ -10,12 +10,18 @@
     <a href="/admin">⬅ {{ t.admin_dashboard }}</a> &nbsp;|&nbsp;
     <a href="/admin/blog">💬 {{ t.admin_blog_comments }}</a> &nbsp;|&nbsp;
     <a href="/admin/contact">✉ Contact</a> &nbsp;|&nbsp;
+    <a href="/admin/jigsaw-photos">🧩 Jigsaw Photos</a> &nbsp;|&nbsp;
     <a href="/admin/analysis">📊 {{ t.admin_analysis }}</a>
   </p>
 
+  <!-- ── Photo Puzzles — Pending ──────────────────────────────────────────── -->
   <section class="admin-section">
-    <h2 class="admin-section-title">Photo Puzzles ({{ photos | length }})</h2>
-    {% if photos %}
+    <h2 class="admin-section-title">Photo Puzzles — Pending Review ({{ pending_photos | length }})</h2>
+    {% if pending_photos %}
+    <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.75rem;">
+      New uploads awaiting review. <strong>Approve</strong> makes the puzzle publicly accessible.
+      <strong>Delete</strong> removes the file and record permanently.
+    </p>
     <table class="lb-table admin-comments-table">
       <thead>
         <tr>
@@ -29,7 +35,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for p in photos %}
+        {% for p in pending_photos %}
         <tr>
           <td>
             <a href="/static/uploads/15puzzle/{{ p.filename }}" target="_blank" rel="noopener">
@@ -43,11 +49,16 @@
           <td>{{ p.photo_mode }}</td>
           <td style="font-size:0.82rem;">
             <a href="/other/15puzzle/photo/{{ p.board_hash }}?mode={{ p.photo_mode }}" target="_blank">
-              /other/15puzzle/photo/{{ p.board_hash[:12] }}…
+              /photo/{{ p.board_hash[:12] }}…
             </a>
           </td>
           <td style="white-space:nowrap">{{ p.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
-          <td style="white-space:nowrap">
+          <td style="white-space:nowrap;display:flex;gap:0.4rem;flex-wrap:nowrap;">
+            <form method="post"
+                  action="/admin/15puzzle-photos/{{ p.board_hash }}/approve"
+                  style="display:inline">
+              <button class="admin-btn" type="submit">✓ Approve</button>
+            </form>
             <form method="post"
                   action="/admin/15puzzle-photos/{{ p.board_hash }}/delete"
                   style="display:inline"
@@ -60,13 +71,71 @@
       </tbody>
     </table>
     {% else %}
-    <p style="color:var(--text-dim);padding:1rem 0">No uploaded photos yet.</p>
+    <p style="color:var(--text-dim);padding:1rem 0">No photo puzzles pending review. ✓</p>
     {% endif %}
   </section>
 
+  <!-- ── Photo Puzzles — Approved ─────────────────────────────────────────── -->
   <section class="admin-section" style="margin-top:2rem;">
-    <h2 class="admin-section-title">Member Puzzles ({{ member_puzzles | length }})</h2>
-    {% if member_puzzles %}
+    <h2 class="admin-section-title">Photo Puzzles — Approved ({{ approved_photos | length }})</h2>
+    {% if approved_photos %}
+    <table class="lb-table admin-comments-table">
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>Uploader</th>
+          <th>Title</th>
+          <th>Mode</th>
+          <th>Puzzle URL</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in approved_photos %}
+        <tr>
+          <td>
+            <a href="/static/uploads/15puzzle/{{ p.filename }}" target="_blank" rel="noopener">
+              <img src="/static/uploads/15puzzle/{{ p.filename }}"
+                   alt="{{ p.display_name or 'photo' }}"
+                   style="width:64px;height:64px;object-fit:cover;border-radius:4px;display:block;">
+            </a>
+          </td>
+          <td style="font-size:0.85rem;">{{ p.user_email }}</td>
+          <td>{{ p.display_name or '—' }}</td>
+          <td>{{ p.photo_mode }}</td>
+          <td style="font-size:0.82rem;">
+            <a href="/other/15puzzle/photo/{{ p.board_hash }}?mode={{ p.photo_mode }}" target="_blank">
+              /photo/{{ p.board_hash[:12] }}…
+            </a>
+          </td>
+          <td style="white-space:nowrap">{{ p.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td style="white-space:nowrap;display:flex;gap:0.4rem;flex-wrap:nowrap;">
+            <form method="post"
+                  action="/admin/15puzzle-photos/{{ p.board_hash }}/unapprove"
+                  style="display:inline">
+              <button class="admin-btn admin-btn-outline" type="submit">↩ Unapprove</button>
+            </form>
+            <form method="post"
+                  action="/admin/15puzzle-photos/{{ p.board_hash }}/delete"
+                  style="display:inline"
+                  onsubmit="return confirm('Permanently delete this photo and puzzle?')">
+              <button class="admin-btn admin-btn-delete" type="submit">🗑 Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--text-dim);padding:1rem 0">No approved photo puzzles yet.</p>
+    {% endif %}
+  </section>
+
+  <!-- ── Member Puzzles — Pending ──────────────────────────────────────────── -->
+  <section class="admin-section" style="margin-top:2rem;">
+    <h2 class="admin-section-title">Member Puzzles — Pending Review ({{ pending_members | length }})</h2>
+    {% if pending_members %}
     <table class="lb-table admin-comments-table">
       <thead>
         <tr>
@@ -80,7 +149,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for p in member_puzzles %}
+        {% for p in pending_members %}
         <tr>
           <td>
             <a href="/static/uploads/15puzzle/{{ p.tile_filename }}" target="_blank" rel="noopener">
@@ -106,7 +175,12 @@
             </a>
           </td>
           <td style="white-space:nowrap">{{ p.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
-          <td style="white-space:nowrap">
+          <td style="white-space:nowrap;display:flex;gap:0.4rem;flex-wrap:nowrap;">
+            <form method="post"
+                  action="/admin/15puzzle-photos/member/{{ p.board_hash }}/approve"
+                  style="display:inline">
+              <button class="admin-btn" type="submit">✓ Approve</button>
+            </form>
             <form method="post"
                   action="/admin/15puzzle-photos/member/{{ p.board_hash }}/delete"
                   style="display:inline"
@@ -119,9 +193,89 @@
       </tbody>
     </table>
     {% else %}
-    <p style="color:var(--text-dim);padding:1rem 0">No member puzzles yet.</p>
+    <p style="color:var(--text-dim);padding:1rem 0">No member puzzles pending review. ✓</p>
+    {% endif %}
+  </section>
+
+  <!-- ── Member Puzzles — Approved ─────────────────────────────────────────── -->
+  <section class="admin-section" style="margin-top:2rem;">
+    <h2 class="admin-section-title">Member Puzzles — Approved ({{ approved_members | length }})</h2>
+    {% if approved_members %}
+    <table class="lb-table admin-comments-table">
+      <thead>
+        <tr>
+          <th>Tile</th>
+          <th>Reveal</th>
+          <th>Uploader</th>
+          <th>Title</th>
+          <th>Puzzle URL</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in approved_members %}
+        <tr>
+          <td>
+            <a href="/static/uploads/15puzzle/{{ p.tile_filename }}" target="_blank" rel="noopener">
+              <img src="/static/uploads/15puzzle/{{ p.tile_filename }}"
+                   alt="{{ p.display_name or 'tile' }}"
+                   style="width:64px;height:64px;object-fit:cover;border-radius:4px;display:block;">
+            </a>
+          </td>
+          <td>
+            {% if p.reveal_filename %}
+            <a href="/static/uploads/15puzzle/{{ p.reveal_filename }}" target="_blank" rel="noopener">
+              <img src="/static/uploads/15puzzle/{{ p.reveal_filename }}"
+                   alt="reveal"
+                   style="width:64px;height:64px;object-fit:cover;border-radius:4px;display:block;">
+            </a>
+            {% else %}—{% endif %}
+          </td>
+          <td style="font-size:0.85rem;">{{ p.user_email or '—' }}</td>
+          <td>{{ p.display_name or '—' }}</td>
+          <td style="font-size:0.82rem;">
+            <a href="/other/15puzzle/memberphoto/{{ p.board_hash }}" target="_blank">
+              /memberphoto/{{ p.board_hash[:12] }}…
+            </a>
+          </td>
+          <td style="white-space:nowrap">{{ p.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td style="white-space:nowrap;display:flex;gap:0.4rem;flex-wrap:nowrap;">
+            <form method="post"
+                  action="/admin/15puzzle-photos/member/{{ p.board_hash }}/unapprove"
+                  style="display:inline">
+              <button class="admin-btn admin-btn-outline" type="submit">↩ Unapprove</button>
+            </form>
+            <form method="post"
+                  action="/admin/15puzzle-photos/member/{{ p.board_hash }}/delete"
+                  style="display:inline"
+                  onsubmit="return confirm('Permanently delete this member puzzle?')">
+              <button class="admin-btn admin-btn-delete" type="submit">🗑 Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--text-dim);padding:1rem 0">No approved member puzzles yet.</p>
     {% endif %}
   </section>
 
 </div>
+
+<style>
+.admin-btn-outline {
+  background: transparent;
+  color: var(--accent2);
+  border: 1px solid var(--accent2);
+  border-radius: 4px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.admin-btn-outline:hover { background: var(--accent2); color: #000; }
+</style>
 {% endblock %}

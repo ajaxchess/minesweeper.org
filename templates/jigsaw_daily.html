@@ -217,6 +217,12 @@
 
 <div class="jig-wrap">
 
+  {% if pending_review %}
+  <div style="background:#7c4a00;color:#ffe082;border-radius:6px;padding:0.75rem 1rem;font-size:0.9rem;text-align:center;">
+    ⏳ This puzzle is pending admin review and is only visible to you. It will be publicly accessible once approved.
+  </div>
+  {% endif %}
+
   <!-- Top 3-column: reference pic | header+nav+controls | reference pic -->
   <div class="jig-top">
     <div class="jig-top-side">

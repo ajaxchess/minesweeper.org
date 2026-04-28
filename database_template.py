@@ -845,6 +845,7 @@ class FifteenPuzzlePhoto(Base):
     display_name = Column(String(128), nullable=True)    # user-supplied title
     photo_mode   = Column(String(8),   nullable=False)   # 'tiles' or 'reveal'
     board_hash   = Column(String(128), nullable=False, unique=True, index=True)
+    approved     = Column(Boolean, nullable=False, default=False)
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -858,6 +859,7 @@ class MemberPuzzle(Base):
     reveal_filename = Column(String(256), nullable=False)    # image shown full-bleed on win
     display_name    = Column(String(128), nullable=True)
     user_email      = Column(String(256), nullable=True, index=True)  # set if logged in at creation
+    approved        = Column(Boolean, nullable=False, default=False)
     created_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -1224,8 +1226,10 @@ def _apply_migrations():
         ("nonosweeper_scores",    "guest_token",  "VARCHAR(36) NULL"),
         # 15-puzzle generator: per-user saved puzzle limit (added 2026-03-30)
         ("user_profiles",         "puzzle_storage_limit", "INT NOT NULL DEFAULT 32"),
-        # Jigsaw photo approval (added 2026-04-28)
-        ("jigsaw_photos", "approved", "TINYINT(1) NOT NULL DEFAULT 0"),
+        # Photo upload approval gating (added 2026-04-28)
+        ("jigsaw_photos",         "approved", "TINYINT(1) NOT NULL DEFAULT 0"),
+        ("fifteen_puzzle_photos", "approved", "TINYINT(1) NOT NULL DEFAULT 0"),
+        ("member_puzzles",        "approved", "TINYINT(1) NOT NULL DEFAULT 0"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:

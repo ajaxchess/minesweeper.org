@@ -34,14 +34,13 @@ F78 Image Upload Content Moderation
     JigsawPhoto.approved  TINYINT(1) NOT NULL DEFAULT 0
     FifteenPuzzlePhoto.approved  (Phase 2 — not yet implemented)
 
-  Phase 1 — Jigsaw moderation (implemented 2026-04-28)
-    /admin/jigsaw-photos page.
-    approved column on jigsaw_photos table.
+  Phase 1 — Jigsaw + 15-puzzle moderation (implemented 2026-04-28)
+    /admin/jigsaw-photos and /admin/15puzzle-photos pages split into
+    Pending Review and Approved sections.
+    approved column on jigsaw_photos, fifteen_puzzle_photos, member_puzzles tables.
     Approve / Unapprove / Delete per image.
-
-  Phase 2 — 15-puzzle moderation
-    Extend same approved column + admin UI to FifteenPuzzlePhoto and MemberPuzzle.
-    Add approved filter to /admin/15puzzle-photos page.
+    Unapproved images return 404 to everyone except the uploader.
+    Uploader (logged in) sees the game with a "pending review" amber banner.
 
   Phase 3 — Automated pre-screening (future)
     Integrate image classification API or on-device model to auto-flag

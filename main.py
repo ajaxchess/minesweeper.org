@@ -1439,11 +1439,18 @@ def fifteen_puzzle_photo_play(request: Request, board_hash: str, mode: str = Que
     photo = db.query(FifteenPuzzlePhoto).filter_by(board_hash=board_hash).first()
     if not photo:
         raise HTTPException(status_code=404, detail="Puzzle not found")
+    user = get_current_user(request)
+    if not photo.approved:
+        if not user or user.get("email") != photo.user_email:
+            raise HTTPException(status_code=404, detail="Puzzle not found")
+        pending_review = True
+    else:
+        pending_review = False
     if mode not in ("tiles", "reveal"):
         mode = photo.photo_mode
     return templates.TemplateResponse("fifteen_puzzle_daily.html", {
         "request": request, "mode": "other",
-        "user": get_current_user(request),
+        "user": user,
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
         "grid_size": "4x4", "grid_n": 4, "grid_label": "4×4",
@@ -1452,6 +1459,7 @@ def fifteen_puzzle_photo_play(request: Request, board_hash: str, mode: str = Que
         "reveal_url": "",
         "board_hash": board_hash,
         "display_name": photo.display_name or "",
+        "pending_review": pending_review,
         "noindex": True,
     })
 
@@ -1588,9 +1596,17 @@ def fifteen_puzzle_member_photo_play(request: Request, board_hash: str, db: Sess
     puzzle = db.query(MemberPuzzle).filter_by(board_hash=board_hash).first()
     if not puzzle:
         raise HTTPException(status_code=404, detail="Puzzle not found")
+    user = get_current_user(request)
+    if not puzzle.approved:
+        owner_email = puzzle.user_email
+        if not owner_email or not user or user.get("email") != owner_email:
+            raise HTTPException(status_code=404, detail="Puzzle not found")
+        pending_review = True
+    else:
+        pending_review = False
     return templates.TemplateResponse("fifteen_puzzle_daily.html", {
         "request": request, "mode": "other",
-        "user": get_current_user(request),
+        "user": user,
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
         "grid_size": "4x4", "grid_n": 4, "grid_label": "4×4",
@@ -1599,6 +1615,7 @@ def fifteen_puzzle_member_photo_play(request: Request, board_hash: str, db: Sess
         "reveal_url": f"/static/uploads/15puzzle/{puzzle.reveal_filename}",
         "board_hash": board_hash,
         "display_name": puzzle.display_name or "",
+        "pending_review": pending_review,
         "noindex": True,
     })
 
@@ -1705,21 +1722,37 @@ def admin_15puzzle_photos(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
     if not user or user.get("email") not in ADMIN_EMAILS:
         raise HTTPException(status_code=403, detail="Forbidden")
-    photos = (
+    pending_photos = (
         db.query(FifteenPuzzlePhoto)
+        .filter_by(approved=False)
         .order_by(FifteenPuzzlePhoto.created_at.desc())
         .all()
     )
-    member_puzzles = (
+    approved_photos = (
+        db.query(FifteenPuzzlePhoto)
+        .filter_by(approved=True)
+        .order_by(FifteenPuzzlePhoto.created_at.desc())
+        .all()
+    )
+    pending_members = (
         db.query(MemberPuzzle)
+        .filter_by(approved=False)
+        .order_by(MemberPuzzle.created_at.desc())
+        .all()
+    )
+    approved_members = (
+        db.query(MemberPuzzle)
+        .filter_by(approved=True)
         .order_by(MemberPuzzle.created_at.desc())
         .all()
     )
     return templates.TemplateResponse("admin_15puzzle_photos.html", {
         "request": request, "user": user,
         "lang": get_lang(request), "t": get_t(request),
-        "photos": photos,
-        "member_puzzles": member_puzzles,
+        "pending_photos":   pending_photos,
+        "approved_photos":  approved_photos,
+        "pending_members":  pending_members,
+        "approved_members": approved_members,
     })
 
 
@@ -1739,6 +1772,32 @@ def admin_delete_15puzzle_photo(board_hash: str, request: Request, db: Session =
     return RedirectResponse("/admin/15puzzle-photos", status_code=303)
 
 
+@app.post("/admin/15puzzle-photos/{board_hash}/approve")
+def admin_approve_15puzzle_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    photo = db.query(FifteenPuzzlePhoto).filter_by(board_hash=board_hash).first()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Not found")
+    photo.approved = True
+    db.commit()
+    return RedirectResponse("/admin/15puzzle-photos", status_code=303)
+
+
+@app.post("/admin/15puzzle-photos/{board_hash}/unapprove")
+def admin_unapprove_15puzzle_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    photo = db.query(FifteenPuzzlePhoto).filter_by(board_hash=board_hash).first()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Not found")
+    photo.approved = False
+    db.commit()
+    return RedirectResponse("/admin/15puzzle-photos", status_code=303)
+
+
 @app.post("/admin/15puzzle-photos/member/{board_hash}/delete")
 def admin_delete_member_puzzle(board_hash: str, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
@@ -1754,6 +1813,32 @@ def admin_delete_member_puzzle(board_hash: str, request: Request, db: Session = 
             if os.path.exists(fpath):
                 os.remove(fpath)
     db.delete(puzzle)
+    db.commit()
+    return RedirectResponse("/admin/15puzzle-photos", status_code=303)
+
+
+@app.post("/admin/15puzzle-photos/member/{board_hash}/approve")
+def admin_approve_member_puzzle(board_hash: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    puzzle = db.query(MemberPuzzle).filter_by(board_hash=board_hash).first()
+    if not puzzle:
+        raise HTTPException(status_code=404, detail="Not found")
+    puzzle.approved = True
+    db.commit()
+    return RedirectResponse("/admin/15puzzle-photos", status_code=303)
+
+
+@app.post("/admin/15puzzle-photos/member/{board_hash}/unapprove")
+def admin_unapprove_member_puzzle(board_hash: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    puzzle = db.query(MemberPuzzle).filter_by(board_hash=board_hash).first()
+    if not puzzle:
+        raise HTTPException(status_code=404, detail="Not found")
+    puzzle.approved = False
     db.commit()
     return RedirectResponse("/admin/15puzzle-photos", status_code=303)
 
@@ -6255,18 +6340,26 @@ def jigsaw_photo_play(request: Request, board_hash: str, difficulty: str = Query
     photo = db.query(JigsawPhoto).filter_by(board_hash=board_hash).first()
     if not photo:
         raise HTTPException(status_code=404, detail="Puzzle not found")
+    user = get_current_user(request)
+    if not photo.approved:
+        if not user or user.get("email") != photo.user_email:
+            raise HTTPException(status_code=404, detail="Puzzle not found")
+        pending_review = True
+    else:
+        pending_review = False
     return templates.TemplateResponse("jigsaw_daily.html", {
-        "request":      request,
-        "mode":         "other",
-        "user":         get_current_user(request),
-        "lang":         get_lang(request),
-        "t":            get_t(request),
-        "today":        date.today().isoformat(),
-        "image_name":   None,
-        "photo_url":    f"/static/uploads/jigsaw/{photo.filename}",
-        "board_hash":   board_hash,
-        "display_name": photo.display_name or "Custom Puzzle",
-        "difficulty":   difficulty,
+        "request":        request,
+        "mode":           "other",
+        "user":           user,
+        "lang":           get_lang(request),
+        "t":              get_t(request),
+        "today":          date.today().isoformat(),
+        "image_name":     None,
+        "photo_url":      f"/static/uploads/jigsaw/{photo.filename}",
+        "board_hash":     board_hash,
+        "display_name":   photo.display_name or "Custom Puzzle",
+        "difficulty":     difficulty,
+        "pending_review": pending_review,
     })
 
 
