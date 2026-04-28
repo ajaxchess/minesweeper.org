@@ -16,6 +16,109 @@ List of active features
 ──────────────────────────────────────────────────────────────────────────────
 
 F79 Tametsi
+  Tametsi is a hybrid of minesweeper and nonograms. The player is given a grid
+  with standard minesweeper adjacency hints on revealed cells, plus mine-count
+  hints along each row and column (nonogram-style). Every puzzle is guaranteed
+  no-guess solvable. The player wins by flagging all mines or revealing all safe
+  squares — whichever they achieve first.
+
+  Scope — Phase 1 (this card)
+    Square boards only, same sizes as minesweeper. Hex and irregular-shape
+    boards are explicitly deferred pending sufficient player interest.
+
+  Difficulty Levels
+    Beginner       9×9,  10 mines
+    Intermediate  16×16, 40 mines
+    Hard          30×16, 99 mines
+
+  Game Mechanics
+    Starting square: an X is displayed at the top-left corner (0,0). The
+    player clicks it to begin the timer and reveal that cell. This convention
+    makes every puzzle feel like a solvable puzzle from the first move.
+    Row/column hints: mine count shown for every row and column along the
+    grid edges (nonogram-style). A value of 0 is shown explicitly.
+    Win condition: flag all mines OR reveal all safe squares (either suffices).
+    3BV: each board's 3BV value is computed, displayed during play, and stored
+    with the score so players can assess board difficulty in context.
+
+  Puzzle Generation (server-side Python)
+    1. Place mines on the board using the standard approach.
+    2. Compute mine counts for every row and column.
+    3. Run a constraint solver starting from the top-left corner:
+         - Apply standard minesweeper cell-adjacency rules.
+         - Apply row/column mine-count constraints.
+         - Repeat until the board is fully solved or no progress can be made.
+    4. If the solver gets stuck (no deterministic move available), reject
+       the board and retry with a fresh mine placement.
+    5. On acceptance, compute 3BV and generate a reproducible board hash.
+    Reject-and-retry is used for Beginner and Intermediate. Expert generation
+    time will be benchmarked; a background job or pre-generation cache will
+    be introduced if on-demand latency is unacceptable.
+
+  Board Hash / Sharing
+    Every board (daily and random) has a unique hash derived from its seed.
+    The URL /tametsi/board/{hash} lets anyone replay the exact same board,
+    enabling players to challenge friends or compare times on equal footing.
+
+  Daily Puzzles
+    One Beginner, one Intermediate, and one Hard puzzle are pre-generated
+    at midnight UTC and stored in the database. Same reset and guest-score
+    conventions as all minesweeper.org games (guests purged daily, registered
+    scores retained permanently, seasonal leaderboards reset monthly).
+
+  Random Puzzles
+    Generated on demand per session for each difficulty level. Each board
+    gets a unique hash so it can be shared. Leaderboards for random boards
+    are time-based with 3BV displayed as context — a low-3BV board is
+    faster, but that is part of the luck of the draw.
+
+  Leaderboards
+    Daily leaderboard per difficulty (daily + seasonal).
+    Random board leaderboard: keyed by board hash, showing time + 3BV.
+    Guest and registered score rules match all other minesweeper.org games.
+
+  Database
+    tametsi_boards  — hash, board_data (JSON), rows, cols, mines, 3bv, created_at
+    tametsi_daily   — date, level (beginner/intermediate/hard), board_hash
+    tametsi_scores  — id, board_hash, level, is_daily, user_id, guest_id,
+                      time_ms, 3bv, created_at
+
+  API Endpoints
+    GET  /tametsi/                     — game hub (daily puzzles + random links)
+    GET  /tametsi/daily/{level}        — today's daily puzzle for a given level
+    GET  /tametsi/random/{level}       — generate a fresh no-guess random board
+    GET  /tametsi/board/{hash}         — load and replay a specific board
+    POST /tametsi/scores               — submit a completed score
+    GET  /tametsi/leaderboard/{level}  — leaderboard (daily or random)
+
+  Frontend
+    Extends the existing minesweeper DOM/CSS Grid vanilla JS — not a fresh
+    build. The grid is surrounded by an extra header row (column hints) and
+    an extra header column (row hints). The X starting marker is rendered
+    at cell (0,0). Existing reveal(), flag(), and renderCell() functions are
+    reused with Tametsi-specific extensions.
+    New files:
+      templates/tametsi.html
+      static/js/tametsi.js
+
+  SEO
+    Target keywords: Tametsi, Minesweeper, Nonogram, Play, Online, Free.
+    Positioned as the free online complement to the Steam Tametsi game
+    (curated puzzles, $2.99) — same puzzle style, free, with infinite random
+    boards and competitive leaderboards. Natural next step for players who
+    have finished the Steam game and want more.
+    Page title: "Tametsi — Free Online Tametsi Game | Minesweeper + Nonogram"
+
+  Implementation Sub-cards
+    F79-A  Constraint solver + board generator (Python, server-side)
+    F79-B  Database schema + daily puzzle pre-generation scheduler
+    F79-C  API endpoints
+    F79-D  Frontend: board rendering with row/column hint headers
+    F79-E  Frontend: starting-square X, win detection, 3BV display, share link
+    F79-F  Leaderboards (daily + random with 3BV context)
+    F79-G  SEO: page copy, meta tags, structured data
+
+──────────────────────────────────────────────────────────────────────────────
 
 F78 Image Upload Content Moderation
   Offensive or inappropriate images uploaded by users (jigsaw generator,
