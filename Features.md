@@ -15,6 +15,8 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F79 Tametsi
+
 F78 Image Upload Content Moderation
   Offensive or inappropriate images uploaded by users (jigsaw generator,
   15-puzzle generator) must be reviewed before they can appear in public
