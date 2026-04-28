@@ -3,6 +3,7 @@ import uuid
 import re
 import subprocess
 import os
+import hashlib
 from typing import Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, Query, Response, Form, File, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
@@ -1250,7 +1251,7 @@ def fifteen_puzzle_daily(request: Request):
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
         "grid_size": "4x4", "grid_n": 4, "grid_label": "4×4",
-        "photo_url": "", "photo_mode": "", "reveal_url": "",
+        "photo_url": _daily_pool_image(today), "photo_mode": "tiles", "reveal_url": "",
         "board_hash": "", "display_name": "",
     })
 
@@ -1599,6 +1600,23 @@ async def upload_member_puzzle(
 # ── 15-Puzzle variable grid sizes (3x3, 5x5 … 10x10) ─────────────────────────
 # This route must be declared after all specific /other/15puzzle/* routes.
 
+_FP_POOL_DIR = os.path.join("static", "img", "puzzle")
+_FP_POOL_EXTS = {".jpg", ".jpeg", ".png"}
+
+def _daily_pool_image(today_str: str) -> str:
+    """Return a /static/img/puzzle/... URL that rotates daily."""
+    try:
+        imgs = sorted(
+            f for f in os.listdir(_FP_POOL_DIR)
+            if os.path.splitext(f)[1].lower() in _FP_POOL_EXTS
+        )
+    except OSError:
+        return ""
+    if not imgs:
+        return ""
+    idx = int(hashlib.md5(today_str.encode()).hexdigest(), 16) % len(imgs)
+    return f"/static/img/puzzle/{imgs[idx]}"
+
 _GRID_LABELS = {
     "3x3": "3×3", "4x4": "4×4", "5x5": "5×5", "6x6": "6×6",
     "7x7": "7×7", "8x8": "8×8", "9x9": "9×9", "10x10": "10×10",
@@ -1611,15 +1629,16 @@ def fifteen_puzzle_grid_page(request: Request, grid: str):
         raise HTTPException(status_code=404)
     n = int(grid.split("x")[0])
     label = _GRID_LABELS[grid]
+    today = date.today().isoformat()
     return templates.TemplateResponse("fifteen_puzzle_daily.html", {
         "request": request, "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
-        "today": date.today().isoformat(),
+        "today": today,
         "grid_size": grid,
         "grid_n": n,
         "grid_label": label,
-        "photo_url": "", "photo_mode": "", "reveal_url": "",
+        "photo_url": _daily_pool_image(today), "photo_mode": "tiles", "reveal_url": "",
         "board_hash": "", "display_name": "",
     })
 
