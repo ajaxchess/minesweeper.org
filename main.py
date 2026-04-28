@@ -1758,6 +1758,75 @@ def admin_delete_member_puzzle(board_hash: str, request: Request, db: Session = 
     return RedirectResponse("/admin/15puzzle-photos", status_code=303)
 
 
+# ── Jigsaw photo moderation ───────────────────────────────────────────────────
+
+@app.get("/admin/jigsaw-photos", response_class=HTMLResponse)
+def admin_jigsaw_photos(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    pending = (
+        db.query(JigsawPhoto)
+        .filter_by(approved=False)
+        .order_by(JigsawPhoto.created_at.desc())
+        .all()
+    )
+    approved = (
+        db.query(JigsawPhoto)
+        .filter_by(approved=True)
+        .order_by(JigsawPhoto.created_at.desc())
+        .all()
+    )
+    return templates.TemplateResponse("admin_jigsaw_photos.html", {
+        "request": request, "user": user,
+        "lang": get_lang(request), "t": get_t(request),
+        "pending": pending,
+        "approved": approved,
+    })
+
+
+@app.post("/admin/jigsaw-photos/{board_hash}/delete")
+def admin_delete_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    photo = db.query(JigsawPhoto).filter_by(board_hash=board_hash).first()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Not found")
+    filepath = os.path.join(_JIGSAW_UPLOAD_DIR, photo.filename)
+    if os.path.exists(filepath):
+        os.remove(filepath)
+    db.delete(photo)
+    db.commit()
+    return RedirectResponse("/admin/jigsaw-photos", status_code=303)
+
+
+@app.post("/admin/jigsaw-photos/{board_hash}/approve")
+def admin_approve_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    photo = db.query(JigsawPhoto).filter_by(board_hash=board_hash).first()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Not found")
+    photo.approved = True
+    db.commit()
+    return RedirectResponse("/admin/jigsaw-photos", status_code=303)
+
+
+@app.post("/admin/jigsaw-photos/{board_hash}/unapprove")
+def admin_unapprove_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    photo = db.query(JigsawPhoto).filter_by(board_hash=board_hash).first()
+    if not photo:
+        raise HTTPException(status_code=404, detail="Not found")
+    photo.approved = False
+    db.commit()
+    return RedirectResponse("/admin/jigsaw-photos", status_code=303)
+
+
 # ── 2048 ──────────────────────────────────────────────────────────────────────
 
 @app.get("/other/2048", response_class=HTMLResponse)

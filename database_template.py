@@ -1122,6 +1122,7 @@ class JigsawPhoto(Base):
     filename     = Column(String(256), nullable=False)
     display_name = Column(String(128), nullable=True)
     board_hash   = Column(String(128), nullable=False, unique=True, index=True)
+    approved     = Column(Boolean, nullable=False, default=False)
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -1223,7 +1224,8 @@ def _apply_migrations():
         ("nonosweeper_scores",    "guest_token",  "VARCHAR(36) NULL"),
         # 15-puzzle generator: per-user saved puzzle limit (added 2026-03-30)
         ("user_profiles",         "puzzle_storage_limit", "INT NOT NULL DEFAULT 32"),
-        # F68 Jigsaw: tables created via create_all; no column migrations needed yet
+        # Jigsaw photo approval (added 2026-04-28)
+        ("jigsaw_photos", "approved", "TINYINT(1) NOT NULL DEFAULT 0"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:
