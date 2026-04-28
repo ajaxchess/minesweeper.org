@@ -229,6 +229,11 @@
         <label class="gen-label" for="gen-file">{{ t['fp_gen_file_label'] }}</label>
         <input class="gen-input" type="file" id="gen-file" name="file" accept="image/jpeg,image/png" {% if not user %}disabled{% endif %}>
       </div>
+      <div id="gen-reveal-section" style="display:none;">
+        <label class="gen-label" for="gen-reveal-file" style="margin-top:0.5rem;">Reveal image — shown full-screen when solved</label>
+        <input class="gen-input" type="file" id="gen-reveal-file" accept="image/jpeg,image/png" {% if not user %}disabled{% endif %}>
+        <img id="gen-reveal-preview" style="max-width:120px;max-height:120px;border-radius:6px;display:none;object-fit:cover;border:1px solid var(--border);margin-top:0.4rem;" alt="Reveal preview">
+      </div>
       <div>
         <label class="gen-label" for="gen-display-name">{{ t['fp_gen_title_label'] }}</label>
         <input class="gen-input" type="text" id="gen-display-name" name="display_name" maxlength="128" placeholder="{{ t['fp_gen_title_ph'] }}" {% if not user %}disabled{% endif %}>
@@ -237,9 +242,11 @@
 
     <div class="gen-section" style="margin-top:1rem;">
       <h2>{{ t['fp_gen_mode_h2'] }}</h2>
-      <div class="gen-mode-btns">
+      <div class="gen-mode-btns" style="flex-wrap:wrap;">
         <button type="button" class="gen-mode-btn" data-mode="tiles" {% if not user %}disabled{% endif %}>{{ t['fp_gen_mode_tiles'] }}</button>
         <button type="button" class="gen-mode-btn" data-mode="reveal" {% if not user %}disabled{% endif %}>{{ t['fp_gen_mode_reveal'] }}</button>
+        <button type="button" class="gen-mode-btn" data-mode="same" {% if not user %}disabled{% endif %}>Tiles + Win Reveal</button>
+        <button type="button" class="gen-mode-btn" data-mode="dual" {% if not user %}disabled{% endif %}>Two Images</button>
       </div>
       <p class="gen-mode-hint" id="gen-mode-hint">{{ t['fp_gen_mode_hint'] | safe }}</p>
       <input type="hidden" id="gen-photo-mode" name="photo_mode" value="tiles">
@@ -297,7 +304,7 @@
   {% endif %}
 </div>
 
-<script src="/static/js/fifteen_puzzle_generator.js?v=2"></script>
+<script src="/static/js/fifteen_puzzle_generator.js?v=3"></script>
 
 <!-- ── SEO Landing Content ── -->
 <div class="game-landing-seo" style="max-width:700px;margin:2rem auto 0;">

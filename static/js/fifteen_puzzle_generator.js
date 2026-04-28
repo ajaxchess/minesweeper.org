@@ -1,7 +1,7 @@
 /**
  * fifteen_puzzle_generator.js
  * Generator page logic: scramble a 4x4 board, preview with uploaded photo,
- * and submit to /api/fifteen-puzzle/upload-photo.
+ * and submit to /api/fifteen-puzzle/upload-photo or /api/fifteen-puzzle/upload-member.
  */
 (function () {
   'use strict';
@@ -77,7 +77,14 @@
   var COLS = 4, ROWS = 4;
   var tiles = [];
   var currentObjectURL = null;
-  var currentPhotoMode = 'tiles';
+  var currentPhotoMode = 'tiles'; // tiles | reveal | same | dual
+
+  var MODE_HINTS = {
+    tiles: 'Image shown on tiles from the start.',
+    reveal: 'Tiles face-down; image gradually revealed as you slide.',
+    same:   'Image shown on tiles. Same image displayed full-screen when you win.',
+    dual:   'Upload two images: one for the tiles, one shown full-screen on win.',
+  };
 
   // ---------------------------------------------------------------------------
   // Render preview board
@@ -97,7 +104,7 @@
 
       if (tiles[i] === 0) {
         cell.classList.add('fp-blank');
-      } else if (imgSrc && currentPhotoMode === 'tiles') {
+      } else if (imgSrc && (currentPhotoMode === 'tiles' || currentPhotoMode === 'same' || currentPhotoMode === 'dual')) {
         // show the slice of the image for this tile position
         var tileNum = tiles[i] - 1; // 0-based solved position
         var solvedCol = tileNum % COLS;
@@ -114,7 +121,7 @@
         num.style.cssText = 'position:absolute;bottom:3px;right:5px;font-size:0.65rem;opacity:0.7;color:#fff;text-shadow:0 1px 2px #000;';
         cell.style.position = 'relative';
         cell.appendChild(num);
-      } else if (imgSrc && currentPhotoMode === 'reveal') {
+      } else if (imgSrc && (currentPhotoMode === 'reveal')) {
         // solid tiles with number, image hidden until win
         cell.textContent = tiles[i];
         cell.style.background = 'var(--surface)';
@@ -140,40 +147,56 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Photo mode toggle
+  // Mode toggle
   // ---------------------------------------------------------------------------
   function setPhotoMode(mode) {
     currentPhotoMode = mode;
     document.querySelectorAll('.gen-mode-btn').forEach(function (btn) {
       btn.classList.toggle('active', btn.dataset.mode === mode);
     });
+    // show/hide reveal file section for dual-image modes
+    var revealSection = document.getElementById('gen-reveal-section');
+    if (revealSection) {
+      revealSection.style.display = (mode === 'same' || mode === 'dual') ? 'block' : 'none';
+    }
+    // update hint text
+    var hintEl = document.getElementById('gen-mode-hint');
+    if (hintEl && MODE_HINTS[mode]) hintEl.textContent = MODE_HINTS[mode];
     renderPreview();
     var modeInput = document.getElementById('gen-photo-mode');
     if (modeInput) modeInput.value = mode;
   }
 
   // ---------------------------------------------------------------------------
-  // File input preview
+  // File input handlers
   // ---------------------------------------------------------------------------
+  function validateImageFile(file) {
+    if (!file) return 'Please select an image.';
+    if (!['image/jpeg', 'image/png'].includes(file.type)) return 'Please select a JPG or PNG file.';
+    if (file.size > 2 * 1024 * 1024) return 'File is too large (max 2 MB).';
+    return null;
+  }
+
   function onFileChange(e) {
     var file = e.target.files[0];
     if (!file) return;
-
-    // Validate type and size client-side for fast feedback
-    if (!['image/jpeg', 'image/png'].includes(file.type)) {
-      alert('Please select a JPG or PNG file.');
-      e.target.value = '';
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      alert('File is too large. Maximum size is 2MB.');
-      e.target.value = '';
-      return;
-    }
-
+    var err = validateImageFile(file);
+    if (err) { alert(err); e.target.value = ''; return; }
     if (currentObjectURL) URL.revokeObjectURL(currentObjectURL);
     currentObjectURL = URL.createObjectURL(file);
     renderPreview();
+  }
+
+  function onRevealFileChange(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var err = validateImageFile(file);
+    if (err) { alert(err); e.target.value = ''; return; }
+    var preview = document.getElementById('gen-reveal-preview');
+    if (preview) {
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -181,26 +204,59 @@
   // ---------------------------------------------------------------------------
   function onSubmit(e) {
     e.preventDefault();
-    var form = document.getElementById('gen-form');
-    var fileInput = document.getElementById('gen-file');
-    var msgEl = document.getElementById('gen-msg');
-    var submitBtn = document.getElementById('gen-submit');
+    var fileInput   = document.getElementById('gen-file');
+    var revealInput = document.getElementById('gen-reveal-file');
+    var msgEl       = document.getElementById('gen-msg');
+    var submitBtn   = document.getElementById('gen-submit');
+    var mode        = currentPhotoMode;
 
-    if (!fileInput || !fileInput.files[0]) {
-      if (msgEl) { msgEl.textContent = 'Please select an image first.'; msgEl.style.color = 'var(--danger, #e55)'; }
+    var tileFile = fileInput && fileInput.files[0];
+    var tileErr = validateImageFile(tileFile);
+    if (tileErr) {
+      if (msgEl) { msgEl.textContent = tileErr; msgEl.style.color = 'var(--danger, #e55)'; }
       return;
+    }
+
+    if (mode === 'dual') {
+      var revealFile = revealInput && revealInput.files[0];
+      var revealErr = validateImageFile(revealFile);
+      if (revealErr) {
+        if (msgEl) { msgEl.textContent = 'Reveal image: ' + revealErr; msgEl.style.color = 'var(--danger, #e55)'; }
+        return;
+      }
     }
 
     var hash = boardToHash(COLS, ROWS, tiles);
     var hashInput = document.getElementById('gen-hash-hidden');
     if (hashInput) hashInput.value = hash;
 
-    var formData = new FormData(form);
+    var formData;
+    var endpoint;
+
+    if (mode === 'same' || mode === 'dual') {
+      // dual-image upload → MemberPuzzle table
+      endpoint = '/api/fifteen-puzzle/upload-member';
+      formData = new FormData();
+      formData.append('board_hash', hash);
+      var displayNameEl = document.getElementById('gen-display-name');
+      formData.append('display_name', displayNameEl ? displayNameEl.value : '');
+      formData.append('tile_file', tileFile);
+      // for "same" mode, send the tile image as the reveal image too
+      var revealSrc = (mode === 'dual' && revealInput && revealInput.files[0])
+        ? revealInput.files[0]
+        : tileFile;
+      formData.append('reveal_file', revealSrc);
+    } else {
+      // single-image upload → FifteenPuzzlePhoto table
+      endpoint = '/api/fifteen-puzzle/upload-photo';
+      var form = document.getElementById('gen-form');
+      formData = new FormData(form);
+    }
 
     if (submitBtn) submitBtn.disabled = true;
     if (msgEl) { msgEl.textContent = 'Uploading…'; msgEl.style.color = 'var(--text-dim)'; }
 
-    fetch('/api/fifteen-puzzle/upload-photo', {
+    fetch(endpoint, {
       method: 'POST',
       headers: { 'X-Requested-With': 'XMLHttpRequest' },
       body: formData,
@@ -276,11 +332,14 @@
     var scrambleBtn = document.getElementById('gen-scramble');
     if (scrambleBtn) scrambleBtn.addEventListener('click', scramble);
 
-    // File input
+    // File inputs
     var fileInput = document.getElementById('gen-file');
     if (fileInput) fileInput.addEventListener('change', onFileChange);
 
-    // Photo mode buttons
+    var revealInput = document.getElementById('gen-reveal-file');
+    if (revealInput) revealInput.addEventListener('change', onRevealFileChange);
+
+    // Mode buttons
     document.querySelectorAll('.gen-mode-btn').forEach(function (btn) {
       btn.addEventListener('click', function () { setPhotoMode(btn.dataset.mode); });
     });

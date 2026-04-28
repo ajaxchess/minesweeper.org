@@ -1636,10 +1636,16 @@ def admin_15puzzle_photos(request: Request, db: Session = Depends(get_db)):
         .order_by(FifteenPuzzlePhoto.created_at.desc())
         .all()
     )
+    member_puzzles = (
+        db.query(MemberPuzzle)
+        .order_by(MemberPuzzle.created_at.desc())
+        .all()
+    )
     return templates.TemplateResponse("admin_15puzzle_photos.html", {
         "request": request, "user": user,
         "lang": get_lang(request), "t": get_t(request),
         "photos": photos,
+        "member_puzzles": member_puzzles,
     })
 
 
@@ -1655,6 +1661,25 @@ def admin_delete_15puzzle_photo(board_hash: str, request: Request, db: Session =
     if os.path.exists(filepath):
         os.remove(filepath)
     db.delete(photo)
+    db.commit()
+    return RedirectResponse("/admin/15puzzle-photos", status_code=303)
+
+
+@app.post("/admin/15puzzle-photos/member/{board_hash}/delete")
+def admin_delete_member_puzzle(board_hash: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user or user.get("email") not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    puzzle = db.query(MemberPuzzle).filter_by(board_hash=board_hash).first()
+    if not puzzle:
+        raise HTTPException(status_code=404, detail="Not found")
+    upload_dir = os.path.join("static", "uploads", "15puzzle")
+    for fname in (puzzle.tile_filename, puzzle.reveal_filename):
+        if fname:
+            fpath = os.path.join(upload_dir, fname)
+            if os.path.exists(fpath):
+                os.remove(fpath)
+    db.delete(puzzle)
     db.commit()
     return RedirectResponse("/admin/15puzzle-photos", status_code=303)
 

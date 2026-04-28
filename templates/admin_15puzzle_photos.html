@@ -14,7 +14,7 @@
   </p>
 
   <section class="admin-section">
-    <h2 class="admin-section-title">All Uploaded Photos ({{ photos | length }})</h2>
+    <h2 class="admin-section-title">Photo Puzzles ({{ photos | length }})</h2>
     {% if photos %}
     <table class="lb-table admin-comments-table">
       <thead>
@@ -61,6 +61,65 @@
     </table>
     {% else %}
     <p style="color:var(--text-dim);padding:1rem 0">No uploaded photos yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="admin-section" style="margin-top:2rem;">
+    <h2 class="admin-section-title">Member Puzzles ({{ member_puzzles | length }})</h2>
+    {% if member_puzzles %}
+    <table class="lb-table admin-comments-table">
+      <thead>
+        <tr>
+          <th>Tile</th>
+          <th>Reveal</th>
+          <th>Uploader</th>
+          <th>Title</th>
+          <th>Puzzle URL</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in member_puzzles %}
+        <tr>
+          <td>
+            <a href="/static/uploads/15puzzle/{{ p.tile_filename }}" target="_blank" rel="noopener">
+              <img src="/static/uploads/15puzzle/{{ p.tile_filename }}"
+                   alt="{{ p.display_name or 'tile' }}"
+                   style="width:64px;height:64px;object-fit:cover;border-radius:4px;display:block;">
+            </a>
+          </td>
+          <td>
+            {% if p.reveal_filename %}
+            <a href="/static/uploads/15puzzle/{{ p.reveal_filename }}" target="_blank" rel="noopener">
+              <img src="/static/uploads/15puzzle/{{ p.reveal_filename }}"
+                   alt="reveal"
+                   style="width:64px;height:64px;object-fit:cover;border-radius:4px;display:block;">
+            </a>
+            {% else %}—{% endif %}
+          </td>
+          <td style="font-size:0.85rem;">{{ p.user_email or '—' }}</td>
+          <td>{{ p.display_name or '—' }}</td>
+          <td style="font-size:0.82rem;">
+            <a href="/other/15puzzle/memberphoto/{{ p.board_hash }}" target="_blank">
+              /memberphoto/{{ p.board_hash[:12] }}…
+            </a>
+          </td>
+          <td style="white-space:nowrap">{{ p.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td style="white-space:nowrap">
+            <form method="post"
+                  action="/admin/15puzzle-photos/member/{{ p.board_hash }}/delete"
+                  style="display:inline"
+                  onsubmit="return confirm('Permanently delete this member puzzle?')">
+              <button class="admin-btn admin-btn-delete" type="submit">🗑 Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--text-dim);padding:1rem 0">No member puzzles yet.</p>
     {% endif %}
   </section>
 
