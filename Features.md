@@ -15,6 +15,48 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F81 Toroid Ghost Numbers
+  Ghost (echo) edge cells displayed outside all four edges of the Toroid
+  Minesweeper board. Because the toroid wraps on all four sides, ghost
+  columns appear to the left and right (echoing the opposite column), and
+  ghost rows appear above and below (echoing the opposite row).
+
+  Scope
+    Toroid variant only. Follows the Cylinder Ghost Numbers feature (F80)
+    which validated the concept on a one-axis wrap.
+
+  Visual Design
+    One ghost column on the left side (echoes the rightmost real column).
+    One ghost column on the right side (echoes the leftmost real column).
+    One ghost row on the top (echoes the bottom real row).
+    One ghost row on the bottom (echoes the top real row).
+    Ghost cells are rendered at reduced opacity (0.3) using the same cell
+    size and number colors as the real board.
+    Ghost rows and columns are hidden on viewports ≤ 500 px wide.
+
+  Content Rules
+    Revealed number cells → show the number at reduced opacity.
+    Revealed empty cells (0) → blank.
+    Revealed mine cells → show the mine emoji at reduced opacity.
+    Unrevealed cells → blank.
+    Flagged cells → blank.
+
+  Interaction
+    Ghost cells are entirely non-interactive: pointer-events: none, no
+    hover highlight, no cursor change.
+
+  Implementation Notes
+    buildBoard() sets --real-cols = cols, --real-rows = rows, --cols = cols+2,
+    --rows = rows+2. Each row of grid cells is bracketed by one ghost cell on
+    each side. A full ghost top-row and ghost bottom-row are inserted before
+    and after all real rows in the flat CSS grid.
+    renderCell() calls renderGhostForEdge(r, c) whenever r or c is an edge
+    index, keeping all ghost cells in sync.
+    Mobile: @media (max-width: 500px) reverts to --cols/--rows = real values
+    and hides ghost cells.
+
+──────────────────────────────────────────────────────────────────────────────
+
 F80 Cylinder Ghost Numbers
   Ghost (echo) columns displayed outside the left and right edges of the
   Cylinder Minesweeper board. They mirror the opposite real edge column so

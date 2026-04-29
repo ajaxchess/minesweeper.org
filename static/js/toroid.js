@@ -502,6 +502,35 @@
     }
   }
 
+  // ── Ghost Edges ────────────────────────────────────────────────────────────
+  function renderGhostForEdge(r, c) {
+    const ghosts = document.querySelectorAll(
+      `[data-ghost-r="${r}"][data-ghost-c="${c}"]`
+    );
+    ghosts.forEach(ghostEl => {
+      ghostEl.className = 'cell ghost';
+      ghostEl.style.color = '';
+      ghostEl.textContent = '';
+      if (!state.revealed[r][c]) return;
+      const val = state.board[r][c];
+      ghostEl.classList.add('revealed');
+      if (val === -1) {
+        ghostEl.textContent = getMineEmoji();
+      } else if (val > 0) {
+        ghostEl.textContent = val;
+        ghostEl.style.color = getNumColors()[val];
+      }
+    });
+  }
+
+  function makeGhost(gr, gc) {
+    const el = document.createElement('div');
+    el.className = 'cell ghost';
+    el.dataset.ghostR = gr;
+    el.dataset.ghostC = gc;
+    return el;
+  }
+
   // ── Render Cell ────────────────────────────────────────────────────────────
   function renderCell(r, c, isDetonated = false) {
     const el  = cellEl(r, c);
@@ -514,6 +543,8 @@
       if (f === 1)      { el.classList.add('flagged');  el.textContent = getFlagEmoji(); }
       else if (f === 2) { el.classList.add('question'); el.textContent = '❓'; }
       else              { el.classList.add('hidden');   el.textContent = ''; }
+      if (r === 0 || r === state.rows - 1 || c === 0 || c === state.cols - 1)
+        renderGhostForEdge(r, c);
       return;
     }
 
@@ -527,15 +558,27 @@
       el.textContent = val;
       el.style.color = getNumColors()[val];
     }
+
+    if (r === 0 || r === state.rows - 1 || c === 0 || c === state.cols - 1)
+      renderGhostForEdge(r, c);
   }
 
   // ── Build Board DOM ────────────────────────────────────────────────────────
   function buildBoard(rows, cols) {
     const boardEl = document.getElementById('board');
     boardEl.innerHTML = '';
-    boardEl.style.setProperty('--cols', cols);
+    boardEl.style.setProperty('--real-cols', cols);
+    boardEl.style.setProperty('--cols', cols + 2);
+
+    // Ghost top row: corner + bottom-edge row + corner
+    boardEl.appendChild(makeGhost(rows - 1, cols - 1)); // top-left corner → mirrors [rows-1][cols-1]
+    for (let c = 0; c < cols; c++) boardEl.appendChild(makeGhost(rows - 1, c));
+    boardEl.appendChild(makeGhost(rows - 1, 0));        // top-right corner → mirrors [rows-1][0]
 
     for (let r = 0; r < rows; r++) {
+      // Left ghost — echoes the rightmost real column
+      boardEl.appendChild(makeGhost(r, cols - 1));
+
       for (let c = 0; c < cols; c++) {
         const cell = document.createElement('div');
         cell.className = 'cell hidden';
@@ -553,7 +596,15 @@
 
         boardEl.appendChild(cell);
       }
+
+      // Right ghost — echoes the leftmost real column
+      boardEl.appendChild(makeGhost(r, 0));
     }
+
+    // Ghost bottom row: corner + top-edge row + corner
+    boardEl.appendChild(makeGhost(0, cols - 1));        // bottom-left corner → mirrors [0][cols-1]
+    for (let c = 0; c < cols; c++) boardEl.appendChild(makeGhost(0, c));
+    boardEl.appendChild(makeGhost(0, 0));               // bottom-right corner → mirrors [0][0]
   }
 
   // ── Init / Reset ───────────────────────────────────────────────────────────
