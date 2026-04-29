@@ -393,21 +393,25 @@ function buildDual({ verts, tris }) {
         });
     }
 
-    // 4. Compute adjacency via shared Goldberg face vertices (ε = 1e-9).
-    // Two Goldberg faces are neighbours iff they share exactly 2 vertices.
-    const faceVertKeys = faces.map(f => new Set(f.verts.map(_vertKey)));
-
+    // 4. Compute adjacency via shared edges — O(F·degree) with an edge-key map.
+    // Two Goldberg faces are neighbours iff they share exactly one edge (2 vertices).
+    // The previous O(F²) set-intersection loop stalls for large polyhedra (e.g. F=752).
+    const edgeToFaces = new Map();
+    for (let fi = 0; fi < F; fi++) {
+        const fv = faces[fi].verts;
+        for (let k = 0; k < fv.length; k++) {
+            const ka   = _vertKey(fv[k]);
+            const kb   = _vertKey(fv[(k + 1) % fv.length]);
+            const ekey = ka < kb ? `${ka}|${kb}` : `${kb}|${ka}`;
+            if (!edgeToFaces.has(ekey)) edgeToFaces.set(ekey, []);
+            edgeToFaces.get(ekey).push(fi);
+        }
+    }
     const adj = Array.from({ length: F }, () => []);
-    for (let i = 0; i < F; i++) {
-        for (let j = i + 1; j < F; j++) {
-            let shared = 0;
-            for (const k of faceVertKeys[i]) {
-                if (faceVertKeys[j].has(k)) shared++;
-            }
-            if (shared >= 2) {
-                adj[i].push(j);
-                adj[j].push(i);
-            }
+    for (const pair of edgeToFaces.values()) {
+        if (pair.length === 2) {
+            adj[pair[0]].push(pair[1]);
+            adj[pair[1]].push(pair[0]);
         }
     }
 
