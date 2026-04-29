@@ -119,6 +119,95 @@ function _subdivideTriClassI(P0, P1, P2, a) {
 }
 
 // ---------------------------------------------------------------------------
+// G1a-beta — General Goldberg-Coxeter subdivision  (Class II a=b, Class III a≠b)
+// ---------------------------------------------------------------------------
+
+/**
+ * Subdivide a single icosahedron triangle [P0, P1, P2] into T = a²+ab+b²
+ * sub-triangles using the Goldberg-Coxeter complex-plane lattice.
+ *
+ * Algorithm:
+ *   1. Map the reference equilateral triangle to ℂ: P₀=0, P₁=1, P₂=e^{iπ/3}.
+ *   2. Integer lattice points w(m,n) = m + n·e^{iπ/3}.
+ *   3. Divide by the GP(a,b) divisor z = a + b·e^{iπ/3}  (|z|² = T).
+ *   4. Keep only points p = w/z whose barycentric coords (α,β,γ) are all ≥ 0.
+ *   5. Map (α,β,γ) back to 3-D and normalise to the unit sphere.
+ *
+ * Returns arrays of raw vertices and index triples local to this triangle.
+ */
+function _subdivideTriGC(P0, P1, P2, a, b) {
+    const T = a * a + a * b + b * b;
+    const SQRT3_2 = Math.sqrt(3) / 2;
+
+    // Divisor z = a + b·e^{iπ/3} in complex components (zr, zi).
+    // |z|² = (a + b/2)² + (b√3/2)² = a² + ab + b² = T  ✓
+    const zr = a + b * 0.5;
+    const zi = b * SQRT3_2;
+
+    const N   = a + b;   // search bound: (m,n) each range 0 … N
+    const EPS = 1e-9;
+
+    const pts       = [];
+    const vertIndex = new Map();   // "m,n" → index in pts
+
+    function addVert(m, n) {
+        const key = `${m},${n}`;
+        if (vertIndex.has(key)) return vertIndex.get(key);
+
+        // Complex lattice point w = m + n·e^{iπ/3}
+        const wr = m + n * 0.5;
+        const wi = n * SQRT3_2;
+
+        // p = w / z  using conjugate division:  p = (w · z̄) / |z|²
+        const pr = (wr * zr + wi * zi) / T;
+        const pi = (wi * zr - wr * zi) / T;
+
+        // Barycentric coords from the 2-D reference equilateral triangle
+        // (P₀=0, P₁=1, P₂=(0.5, √3/2)):
+        //   γ = 2·Im(p) / √3,   β = Re(p) − γ/2,   α = 1 − β − γ
+        const gamma = 2 * pi / Math.sqrt(3);
+        const beta  = pr - gamma * 0.5;
+        const alpha = 1 - beta - gamma;
+
+        // Reject lattice points that fall outside the triangle.
+        if (alpha < -EPS || beta < -EPS || gamma < -EPS) return -1;
+
+        const raw = {
+            x: alpha * P0.x + beta * P1.x + gamma * P2.x,
+            y: alpha * P0.y + beta * P1.y + gamma * P2.y,
+            z: alpha * P0.z + beta * P1.z + gamma * P2.z,
+        };
+        const idx = pts.length;
+        pts.push(_normalise(raw.x, raw.y, raw.z));
+        vertIndex.set(key, idx);
+        return idx;
+    }
+
+    // Emit upward and downward triangles for every cell in the (m,n) grid.
+    // Cells that map outside the icosahedron face are silently skipped because
+    // addVert returns -1 for out-of-triangle lattice points.
+    const triIdxs = [];
+    for (let m = 0; m <= N; m++) {
+        for (let n = 0; n <= N - m; n++) {
+            const v00 = addVert(m,     n);
+            const v10 = addVert(m + 1, n);
+            const v01 = addVert(m,     n + 1);
+            const v11 = addVert(m + 1, n + 1);
+
+            // Upward triangle
+            if (v00 >= 0 && v10 >= 0 && v01 >= 0)
+                triIdxs.push([v00, v10, v01]);
+
+            // Downward triangle
+            if (v10 >= 0 && v11 >= 0 && v01 >= 0)
+                triIdxs.push([v10, v11, v01]);
+        }
+    }
+
+    return { pts, triIdxs };
+}
+
+// ---------------------------------------------------------------------------
 // Public: subdivide(a, b) — entry point for G1b's buildDual
 // ---------------------------------------------------------------------------
 
