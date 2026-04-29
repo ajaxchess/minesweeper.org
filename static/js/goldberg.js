@@ -207,6 +207,29 @@ function _subdivideTriGC(P0, P1, P2, a, b) {
     return { pts, triIdxs };
 }
 
+/**
+ * Apply _subdivideTriGC over all 20 icosahedron faces and merge duplicates.
+ * Mirrors _subdivideClassI but uses the GC lattice for b > 0.
+ */
+function _subdivideClassGC(a, b) {
+    const allPts  = [];
+    const allTris = [];
+
+    for (const [vi0, vi1, vi2] of ICO_TRIS) {
+        const P0 = ICO_VERTS[vi0];
+        const P1 = ICO_VERTS[vi1];
+        const P2 = ICO_VERTS[vi2];
+
+        const { pts, triIdxs } = _subdivideTriGC(P0, P1, P2, a, b);
+        const offset = allPts.length;
+        for (const p of pts)            allPts.push(p);
+        for (const [ta, tb, tc] of triIdxs)
+            allTris.push([offset + ta, offset + tb, offset + tc]);
+    }
+
+    return _merge(allPts, allTris);
+}
+
 // ---------------------------------------------------------------------------
 // Public: subdivide(a, b) — entry point for G1b's buildDual
 // ---------------------------------------------------------------------------
