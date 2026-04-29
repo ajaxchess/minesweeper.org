@@ -255,15 +255,24 @@ function buildDual({ verts, tris }) {
         // whose tangent frame ty = V × tx ends up pointing "right" in screen
         // space rather than "up"), causing Three.js FrontSide to cull those
         // faces as back-facing — visible as rectangular holes at the poles.
+        //
+        // Use Newell's method (sum cross products of all edges from centroid)
+        // instead of sampling just the first three vertices.  The 3-vertex
+        // approach produces a near-zero cross product when those three vertices
+        // happen to be nearly collinear (common in GP(5,0) hexagons), making
+        // the inward/outward check numerically unreliable.
         if (faceVerts.length >= 3) {
-            const v0 = faceVerts[0], v1 = faceVerts[1], v2 = faceVerts[2];
-            const e1x = v1.x-v0.x, e1y = v1.y-v0.y, e1z = v1.z-v0.z;
-            const e2x = v2.x-v0.x, e2y = v2.y-v0.y, e2z = v2.z-v0.z;
-            const nx = e1y*e2z - e1z*e2y;
-            const ny = e1z*e2x - e1x*e2z;
-            const nz = e1x*e2y - e1y*e2x;
-            // If the face normal (cross product) points inward, reverse.
-            if (nx*centroid.x + ny*centroid.y + nz*centroid.z < 0) {
+            let nx = 0, ny = 0, nz = 0;
+            for (let k = 0; k < faceVerts.length; k++) {
+                const a = faceVerts[k];
+                const b = faceVerts[(k + 1) % faceVerts.length];
+                const ax = a.x - centroid.x, ay = a.y - centroid.y, az = a.z - centroid.z;
+                const bx = b.x - centroid.x, by = b.y - centroid.y, bz = b.z - centroid.z;
+                nx += ay * bz - az * by;
+                ny += az * bx - ax * bz;
+                nz += ax * by - ay * bx;
+            }
+            if (nx * centroid.x + ny * centroid.y + nz * centroid.z < 0) {
                 faceVerts.reverse();
             }
         }
