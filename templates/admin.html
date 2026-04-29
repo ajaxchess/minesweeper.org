@@ -6,7 +6,23 @@
 
   <h1 class="lb-title">Admin Dashboard</h1>
   <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">{{ today }} · signed in as {{ user.email }}</p>
-  <p style="text-align:center;margin-bottom:1.5rem;"><a href="/admin/operations">⚙ {{ t.admin_operations }}</a> &nbsp;|&nbsp; <a href="/admin/users">👥 {{ t.admin_users }}</a> &nbsp;|&nbsp; <a href="/admin/kanban">📋 {{ t.admin_kanban_board }}</a> &nbsp;|&nbsp; <a href="/admin/blog">💬 {{ t.admin_blog_comments }}</a> &nbsp;|&nbsp; <a href="/admin/analysis">📊 {{ t.admin_analysis }}</a> &nbsp;|&nbsp; <a href="/admin/hscleaning">🧹 HS Cleaning</a> &nbsp;|&nbsp; <a href="/admin/web_traffic">🌐 Web Traffic</a> &nbsp;|&nbsp; <a href="/admin/contact">✉ Contact</a> &nbsp;|&nbsp; <a href="/admin/15puzzle-photos">🖼 15P Photos</a> &nbsp;|&nbsp; <a href="/admin/jigsaw-photos">🧩 Jigsaw Photos</a></p>
+  <p style="text-align:center;margin-bottom:1.5rem;">
+    <a href="/admin/operations"{% if alert_operations %} class="admin-alert"{% endif %}>⚙ {{ t.admin_operations }}</a> &nbsp;|&nbsp;
+    <a href="/admin/users">👥 {{ t.admin_users }}</a> &nbsp;|&nbsp;
+    <a href="/admin/kanban">📋 {{ t.admin_kanban_board }}</a> &nbsp;|&nbsp;
+    <a href="/admin/blog">💬 {{ t.admin_blog_comments }}</a> &nbsp;|&nbsp;
+    <a href="/admin/analysis">📊 {{ t.admin_analysis }}</a> &nbsp;|&nbsp;
+    <a href="/admin/hscleaning"{% if alert_hs_cleaning %} class="admin-alert"{% endif %}>🧹 HS Cleaning</a> &nbsp;|&nbsp;
+    <a href="/admin/web_traffic">🌐 Web Traffic</a> &nbsp;|&nbsp;
+    <a href="/admin/contact">✉ Contact</a> &nbsp;|&nbsp;
+    <a href="/admin/15puzzle-photos"{% if alert_15p_photos %} class="admin-alert"{% endif %}>🖼 15P Photos</a> &nbsp;|&nbsp;
+    <a href="/admin/jigsaw-photos"{% if alert_jigsaw_photos %} class="admin-alert"{% endif %}>🧩 Jigsaw Photos</a>
+  </p>
+
+  <style>
+    @keyframes admin-pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
+    .admin-alert { font-weight:700; color:#f59e0b; animation:admin-pulse 1.2s ease-in-out infinite; }
+  </style>
 
   <!-- Users -->
   <section class="admin-section">

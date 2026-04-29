@@ -5237,6 +5237,42 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     except Exception:
         staging_head = None
 
+    # ── Nav alert badges ──────────────────────────────────────────────────────
+    alert_15p_photos = (
+        db.query(func.count()).select_from(FifteenPuzzlePhoto).filter_by(approved=False).scalar() +
+        db.query(func.count()).select_from(MemberPuzzle).filter_by(approved=False).scalar()
+    ) > 0
+
+    alert_jigsaw_photos = (
+        db.query(func.count()).select_from(JigsawPhoto).filter_by(approved=False).scalar()
+    ) > 0
+
+    alert_hs_cleaning = (
+        db.query(func.count()).select_from(FlaggedScore).scalar()
+    ) > 0
+
+    try:
+        from datetime import timedelta as _td
+        _four_h_ago = datetime.now(timezone.utc) - _td(hours=4)
+        _latest_stats = db.query(ServerStats).order_by(ServerStats.recorded_at.desc()).first()
+        alert_ops_disk = _latest_stats is not None and _latest_stats.disk_percent > 90
+        _cpu_q = db.query(
+            func.min(ServerStats.cpu_percent),
+            func.min(ServerStats.recorded_at),
+            func.count(),
+        ).filter(ServerStats.recorded_at >= _four_h_ago).first()
+        if _cpu_q and _cpu_q[2] > 0 and _cpu_q[0] is not None:
+            _earliest = _cpu_q[1]
+            if _earliest.tzinfo is None:
+                _earliest = _earliest.replace(tzinfo=timezone.utc)
+            _span_h = (datetime.now(timezone.utc) - _earliest).total_seconds() / 3600
+            alert_ops_cpu = _cpu_q[0] > 50 and _span_h >= 4
+        else:
+            alert_ops_cpu = False
+        alert_operations = alert_ops_disk or alert_ops_cpu
+    except Exception:
+        alert_operations = False
+
     return templates.TemplateResponse("admin.html", {
         "request": request,
         "user": user,
@@ -5261,6 +5297,10 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         "git_commits_this_week": git_commits_this_week,
         "git_contributors": git_contributors,
         "staging_head": staging_head,
+        "alert_15p_photos":    alert_15p_photos,
+        "alert_jigsaw_photos": alert_jigsaw_photos,
+        "alert_hs_cleaning":   alert_hs_cleaning,
+        "alert_operations":    alert_operations,
     })
 
 
