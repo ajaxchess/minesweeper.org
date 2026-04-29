@@ -5251,6 +5251,14 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         db.query(func.count()).select_from(FlaggedScore).scalar()
     ) > 0
 
+    alert_blog = (
+        db.query(func.count()).select_from(BlogComment).filter_by(approved=False).scalar()
+    ) > 0
+
+    alert_contact = (
+        db.query(func.count()).select_from(ContactMessage).filter_by(read=False).scalar()
+    ) > 0
+
     try:
         from datetime import timedelta as _td
         _four_h_ago = datetime.now(timezone.utc) - _td(hours=4)
@@ -5301,6 +5309,8 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         "alert_jigsaw_photos": alert_jigsaw_photos,
         "alert_hs_cleaning":   alert_hs_cleaning,
         "alert_operations":    alert_operations,
+        "alert_blog":          alert_blog,
+        "alert_contact":       alert_contact,
     })
 
 
