@@ -44,65 +44,34 @@ templates.env.globals["diana_birthday_banner"] = site_settings.diana_birthday_ba
 templates.env.globals["ga_tag"]               = ""  # not needed in duel routes
 templates.env.globals["get_breadcrumbs"]      = _get_breadcrumbs
 
-# ── Page: create a new duel ───────────────────────────────────────────────────
+# ── Page: duel (now serves pvp-beta content) ─────────────────────────────────
 @duel_router.get("/duel", response_class=HTMLResponse)
 async def duel_lobby(request: Request, m: str = "standard"):
     if m == "quick":
         rows, cols, mines = QUICK_ROWS, QUICK_COLS, QUICK_MINES
     else:
         m = "standard"
-        rows, cols, mines = ROWS, COLS, MINES
-    game      = create_game(rows=rows, cols=cols, mines=mines, submode=m)
+        rows, cols, mines = PVP_ROWS, PVP_COLS, PVP_MINES
     player_id = uuid.uuid4().hex[:8]
     return templates.TemplateResponse("duel.html", {
         "request":    request,
-        "game_id":    game.game_id,
+        "game_id":    "",
         "player_id":  player_id,
         "rows":       rows,
         "cols":       cols,
         "mines":      mines,
-        "mode":       "duel",
+        "mode":       "pvp-beta",
         "submode":    m,
-        "is_creator": True,
+        "is_creator": False,
         "opp_delay":  site_settings.PVP_OPPONENT_BOARD_DELAY_SECS,
         "user":       get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
 
-# ── Page: join an existing duel ───────────────────────────────────────────────
+# ── Page: /duel/{game_id} — redirect to /duel (join-by-id is duelold's flow) ─
 @duel_router.get("/duel/{game_id}", response_class=HTMLResponse)
 async def duel_join(request: Request, game_id: str):
-    game = get_game(game_id)
-    if not game:
-        return templates.TemplateResponse("duel_error.html", {
-            "request": request, "lang": get_lang(request), "t": get_t(request),
-            "code": 404, "title": "Game not found",
-            "message": "This duel has expired or never existed. Games are kept for 2 hours.",
-        }, status_code=404)
-    if game.finished:
-        return templates.TemplateResponse("duel_error.html", {
-            "request": request, "lang": get_lang(request), "t": get_t(request),
-            "code": 410, "title": "Game already ended",
-            "message": "This duel has already finished. Start a new one!",
-        }, status_code=410)
-
-    player_id  = uuid.uuid4().hex[:8]
-    is_creator = len(game.players) == 0
-
-    return templates.TemplateResponse("duel.html", {
-        "request":    request,
-        "game_id":    game_id,
-        "player_id":  player_id,
-        "rows":       game.rows,
-        "cols":       game.cols,
-        "mines":      game.mines,
-        "mode":       "duel",
-        "submode":    game.submode,
-        "is_creator": is_creator,
-        "opp_delay":  site_settings.PVP_OPPONENT_BOARD_DELAY_SECS,
-        "user":       get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-    })
+    return RedirectResponse(url="/duel", status_code=302)
 
 # ── Page: PvP matchmaking lobby ───────────────────────────────────────────────
 @duel_router.get("/pvp", response_class=HTMLResponse)
