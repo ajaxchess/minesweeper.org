@@ -15,6 +15,45 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F80 Cylinder Ghost Numbers
+  Ghost (echo) columns displayed outside the left and right edges of the
+  Cylinder Minesweeper board. They mirror the opposite real edge column so
+  players can see what connects to each side without having to mentally
+  scroll or remember the wrap-around.
+
+  Scope
+    Cylinder variant only (horizontal wrap). Toroid is a candidate for a
+    follow-up once this is validated.
+
+  Visual Design
+    One ghost column on the left side (echoes the rightmost real column).
+    One ghost column on the right side (echoes the leftmost real column).
+    Ghost cells are rendered at reduced opacity (0.3) using the same cell
+    size and number colors as the real board.
+    Ghost columns are hidden on viewports ≤ 500 px wide to avoid crowding.
+
+  Content Rules
+    Revealed number cells → show the number at reduced opacity.
+    Revealed empty cells (0) → blank, just like the real board.
+    Revealed mine cells → show the mine emoji at reduced opacity.
+    Unrevealed cells → blank (nothing to echo yet).
+    Flagged cells → blank (flags are interactive context; ghosts are not).
+
+  Interaction
+    Ghost cells are entirely non-interactive: pointer-events: none, no
+    hover highlight, no cursor change.
+
+  Implementation Notes
+    buildBoard() sets CSS custom property --real-cols = cols and
+    --cols = cols + 2, inserting one ghost div before and after each row
+    of real cells in the CSS grid.
+    renderCell() calls renderGhostForCol(r, c) whenever c === 0 or
+    c === cols - 1, keeping ghost cells in sync with real cell updates.
+    Mobile: @media (max-width: 500px) reverts #board.cylinder-board to
+    --cols: var(--real-cols) and sets ghost cells to display: none.
+
+──────────────────────────────────────────────────────────────────────────────
+
 F79 Tametsi
   Tametsi is a hybrid of minesweeper and nonograms. The player is given a grid
   with standard minesweeper adjacency hints on revealed cells, plus mine-count

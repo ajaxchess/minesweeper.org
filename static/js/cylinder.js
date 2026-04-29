@@ -514,6 +514,7 @@
       if (f === 1)      { el.classList.add('flagged');  el.textContent = getFlagEmoji(); }
       else if (f === 2) { el.classList.add('question'); el.textContent = '❓'; }
       else              { el.classList.add('hidden');   el.textContent = ''; }
+      if (c === 0 || c === state.cols - 1) renderGhostForCol(r, c);
       return;
     }
 
@@ -527,15 +528,46 @@
       el.textContent = val;
       el.style.color = getNumColors()[val];
     }
+
+    if (c === 0 || c === state.cols - 1) renderGhostForCol(r, c);
+  }
+
+  // ── Ghost Columns ──────────────────────────────────────────────────────────
+  function renderGhostForCol(r, c) {
+    const ghosts = document.querySelectorAll(
+      `[data-ghost-r="${r}"][data-ghost-c="${c}"]`
+    );
+    ghosts.forEach(ghostEl => {
+      ghostEl.className = 'cell ghost';
+      ghostEl.style.color = '';
+      ghostEl.textContent = '';
+      if (!state.revealed[r][c]) return;
+      const val = state.board[r][c];
+      ghostEl.classList.add('revealed');
+      if (val === -1) {
+        ghostEl.textContent = getMineEmoji();
+      } else if (val > 0) {
+        ghostEl.textContent = val;
+        ghostEl.style.color = getNumColors()[val];
+      }
+    });
   }
 
   // ── Build Board DOM ────────────────────────────────────────────────────────
   function buildBoard(rows, cols) {
     const boardEl = document.getElementById('board');
     boardEl.innerHTML = '';
-    boardEl.style.setProperty('--cols', cols);
+    boardEl.style.setProperty('--real-cols', cols);
+    boardEl.style.setProperty('--cols', cols + 2);
 
     for (let r = 0; r < rows; r++) {
+      // Left ghost — echoes the rightmost real column
+      const lg = document.createElement('div');
+      lg.className = 'cell ghost';
+      lg.dataset.ghostR = r;
+      lg.dataset.ghostC = cols - 1;
+      boardEl.appendChild(lg);
+
       for (let c = 0; c < cols; c++) {
         const cell = document.createElement('div');
         cell.className = 'cell hidden';
@@ -551,6 +583,13 @@
 
         boardEl.appendChild(cell);
       }
+
+      // Right ghost — echoes the leftmost real column
+      const rg = document.createElement('div');
+      rg.className = 'cell ghost';
+      rg.dataset.ghostR = r;
+      rg.dataset.ghostC = 0;
+      boardEl.appendChild(rg);
     }
   }
 
