@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'pvp' %}{{ t.meta_title_pvp }}{% else %}{{ t.meta_title_duel }}{% endif %}{% endblock %}
+{% block description %}{% if mode == 'pvp' %}{{ t.meta_desc_pvp }}{% else %}{{ t.meta_desc_duel }}{% endif %}{% endblock %}
+{% block keywords %}<meta name="keywords" content="{% if mode == 'pvp' %}{{ t.meta_kw_pvp }}{% else %}minesweeper multiplayer, minesweeper 1v1, minesweeper duel, 2 player minesweeper, play minesweeper with friends, online minesweeper{% endif %}">{% endblock %}
+{% block canonical %}https://minesweeper.org/duelold{% endblock %}
+{% block og_url %}https://minesweeper.org/duelold{% endblock %}
+{% block og_title %}{% if mode == 'pvp' %}{{ t.meta_title_pvp | replace(" | minesweeper.org", "") }}{% else %}{{ t.meta_title_duel | replace(" | minesweeper.org", "") }}{% endif %}{% endblock %}
+{% block og_description %}{% if mode == 'pvp' %}{{ t.meta_desc_pvp }}{% else %}{{ t.meta_desc_duel }}{% endif %}{% endblock %}
+{% block og_image %}https://minesweeper.org/static/img/og-duel.png{% endblock %}
+{% block tw_title %}{% if mode == 'pvp' %}{{ t.meta_title_pvp | replace(" | minesweeper.org", "") }}{% else %}{{ t.meta_title_duel | replace(" | minesweeper.org", "") }}{% endif %}{% endblock %}
+{% block tw_description %}{% if mode == 'pvp' %}{{ t.meta_desc_pvp }}{% else %}{{ t.meta_desc_duel }}{% endif %}{% endblock %}
+{% block tw_image %}https://minesweeper.org/static/img/og-duel.png{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">
+{% if mode == 'pvp' %}
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "{{ t.meta_jsonld_name_pvp }}",
+  "url": "https://minesweeper.org/pvp",
+  "description": "{{ t.meta_jsonld_desc_pvp }}",
+  "genre": ["Puzzle", "{{ t.meta_genre_strategy }}", "{{ t.meta_jsonld_genre_competitive }}", "{{ t.meta_jsonld_genre_multiplayer }}"],
+  "gamePlatform": "{{ t.meta_platform }}",
+  "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 2, "maxValue": 2 },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+}
+{% else %}
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "{{ t.meta_jsonld_name_duel }}",
+  "url": "https://minesweeper.org/duelold",
+  "description": "{{ t.meta_jsonld_desc_duel }}",
+  "genre": ["Puzzle", "{{ t.meta_genre_strategy }}", "{{ t.meta_jsonld_genre_multiplayer }}"],
+  "gamePlatform": "{{ t.meta_platform }}",
+  "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 2, "maxValue": 2 },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+{% endif %}
+</script>
+{% endblock %}
+
+{% block content %}
+{% if mode == 'pvp' %}<h1 class="tz-page-h1">PvP Minesweeper — Real-Time Matchmaking</h1>
+{% else %}<h1 class="tz-page-h1">Minesweeper 1v1 Duel — Challenge a Friend</h1>{% endif %}
+<div class="duel-wrapper">
+
+  <!-- ── Mode selector ── -->
+  <div class="duel-mode-tabs">
+    {% if mode in ('pvp', 'pvp-bot') %}
+    <a href="/pvp?m=standard" class="duel-mode-tab {% if mode == 'pvp' and submode == 'standard' %}active{% endif %}">Standard</a>
+    <a href="/pvp?m=quick"    class="duel-mode-tab {% if mode == 'pvp' and submode == 'quick' %}active{% endif %}">⚡ Quick</a>
+    <a href="/pvp/bot"        class="duel-mode-tab {% if mode == 'pvp-bot' %}active{% endif %}">🤖 vs Bot</a>
+    <a href="/pvp/leaderboard" class="duel-mode-tab">🏆 Leaderboard</a>
+    <a href="/pvp/rankings"    class="duel-mode-tab">👑 Rankings</a>
+    {% else %}
+    <a href="/duelold?m=standard" class="duel-mode-tab {% if submode == 'standard' %}active{% endif %}">Standard</a>
+    <a href="/duelold?m=quick"    class="duel-mode-tab {% if submode == 'quick' %}active{% endif %}">⚡ Quick</a>
+    {% endif %}
+  </div>
+
+  <!-- ── Status bar ── -->
+  <div class="duel-status-bar">
+    <div id="duel-status" class="duel-status-msg">Connecting…</div>
+
+    {% if is_creator %}
+    <div id="share-box" class="share-box" style="display:none">
+      <span>{{ t.duel_share }}</span>
+      <input id="share-link" type="text" readonly />
+      <button onclick="copyLink()">{{ t.duel_copy }}</button>
+    </div>
+    <div id="watch-box" class="share-box" style="display:none;margin-top:0.25rem;">
+      <span>👁 Watch:</span>
+      <input id="watch-link-inp" type="text" readonly />
+      <button onclick="copyWatchLink()">{{ t.duel_copy }}</button>
+    </div>
+    <button id="start-btn" class="duel-start-btn" style="display:none"
+            onclick="sendStart()">{{ t.duel_start_btn }}</button>
+    {% endif %}
+
+    {% if mode == 'pvp' %}
+    <div class="pvp-badge">⚔️ PvP Matchmaking — {{ rows }}×{{ cols }}, {{ mines }} mines</div>
+    {% elif mode == 'pvp-bot' %}
+    <div class="pvp-badge">🤖 vs Bot ({{ bot_difficulty | default('medium') | capitalize }}) — {{ rows }}×{{ cols }}, {{ mines }} mines</div>
+    {% endif %}
+  </div>
+
+  <!-- ── Score strip ── -->
+  <div class="duel-scoreboard">
+    <div class="duel-player-score" id="my-score-box">
+      <span class="score-label">{{ t.duel_you }}</span>
+      <span class="score-value" id="my-score">0</span>
+      <span class="score-sub" id="my-tiles">0 tiles</span>
+      {% if mode in ('pvp-beta', 'pvp-bot-beta') %}
+      <span class="score-sub mine-hits-badge" id="my-mine-hits" style="display:none">💥 0</span>
+      <span class="score-sub" id="my-pct" style="color:var(--text-dim)">0%</span>
+      {% endif %}
+    </div>
+    <div class="duel-vs">VS</div>
+    <div class="duel-player-score opp" id="opp-score-box">
+      <span class="score-label" id="opp-score-label">{{ t.duel_opponent }}</span>
+      <span class="score-value" id="opp-score">0</span>
+      <span class="score-sub" id="opp-tiles">0 tiles</span>
+      {% if mode in ('pvp-beta', 'pvp-bot-beta') %}
+      <span class="score-sub mine-hits-badge" id="opp-mine-hits" style="display:none">💥 0</span>
+      <span class="score-sub" id="opp-pct" style="color:var(--text-dim)">0%</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Timer ── -->
+  <div class="duel-timer-row">
+    <span class="stat-icon">⏱</span>
+    <span class="stat-value" id="duel-timer">000</span>
+  </div>
+
+  <!-- ── Boards ── -->
+  <div class="duel-boards-row">
+
+    <!-- Player's own board -->
+    <div class="duel-board-col duel-board-col-mine">
+      <div class="duel-board-col-label">⚔️ {{ t.duel_you }}</div>
+      <div class="duel-board-wrap">
+        <div id="board"
+             data-rows="{{ rows }}"
+             data-cols="{{ cols }}"
+             data-mines="{{ mines }}"
+             data-mode="{{ mode }}"
+             data-game-id="{{ game_id }}"
+             data-player-id="{{ player_id }}"
+             data-is-creator="{{ 'true' if is_creator else 'false' }}"
+             data-submode="{{ submode }}"
+             data-opp-delay="{{ opp_delay }}"
+             data-bot-difficulty="{{ bot_difficulty | default('') }}"
+             data-username="{{ user.display_name if user else '' }}"
+             data-useremail="{{ user.email if user else '' }}"
+             data-user-public-id="{{ user.public_id if user else '' }}"></div>
+        <div id="duel-overlay" class="duel-overlay" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Opponent's board (read-only, delayed) -->
+    <div class="duel-board-col duel-board-col-opp">
+      <div class="duel-board-col-label" id="opp-board-label">
+        👁 {{ t.duel_opponent }}{% if opp_delay > 0 %} <span class="opp-board-delay-badge">{{ opp_delay }}s delay</span>{% endif %}
+      </div>
+      <div class="duel-board-wrap">
+        <div id="opp-board" data-rows="{{ rows }}" data-cols="{{ cols }}"></div>
+        <div id="opp-board-waiting" class="opp-board-waiting">Waiting for opponent…</div>
+      </div>
+    </div>
+
+  </div>
+
+  {% if mode != 'pvp-bot' %}
+  <!-- ── Chat ── -->
+  <div class="duel-chat">
+    <div class="duel-chat-header">💬 Chat</div>
+    <div id="duel-chat-log" class="duel-chat-log"></div>
+    <div class="duel-chat-input-row">
+      <input id="duel-chat-input" type="text" placeholder="Message your opponent…" maxlength="200" autocomplete="off">
+      <button class="duel-chat-send-btn" onclick="sendChat()">Send</button>
+    </div>
+  </div>
+  {% endif %}
+
+  <p class="instructions">
+    <strong>{{ t.game_left_click }}</strong> {{ t.game_to_reveal }} &nbsp;|&nbsp;
+    <strong>{{ t.game_right_click }}</strong> {{ t.game_to_flag_local }}
+  </p>
+
+  <div class="duel-scoring-info">
+    <strong>{{ t.duel_scoring }}</strong>
+    {{ t.duel_scoring_body | safe }}
+  </div>
+
+</div>
+
+<!-- ── PvP stat card (mouseover player names, F69) ── -->
+<div id="pvp-stat-card" class="pvp-stat-card" style="display:none">
+  <div class="pvp-stat-card-name"></div>
+  <div class="pvp-stat-card-rows"></div>
+</div>
+
+<!-- ── SEO Landing Content ── -->
+{% if mode == 'pvp' %}
+<div class="game-landing-seo">
+
+  <h2>PvP Minesweeper — Real-Time Competitive Play</h2>
+  <p>
+    PvP mode puts you into a <strong>live 1v1 Minesweeper match</strong> against a randomly matched
+    opponent. Both players receive the same board, start simultaneously on first click, and race to
+    clear as many tiles as possible before time runs out. Your score is compared against your
+    opponent's in real time — the higher score wins the round.
+  </p>
+  <p>
+    Unlike Duel mode (which uses a private link to challenge a specific friend), PvP uses
+    <strong>automatic matchmaking</strong>: click Standard or Quick and you'll be paired with
+    another player waiting in the queue. No link to share, no waiting room to manage — just
+    a match.
+  </p>
+
+  <div class="landing-seo-grid">
+
+    <section class="landing-seo-section">
+      <h2>How Matchmaking Works</h2>
+      <p>
+        When you open the PvP lobby, you're assigned a player ID and placed in a matchmaking queue.
+        As soon as another player enters the same queue, a game room is created automatically and
+        both players are connected. The board is revealed and the clock starts on your first click.
+      </p>
+      <p>
+        <strong>Standard mode</strong> uses the full 9×9 Beginner board (10 mines). <strong>Quick
+        mode</strong> (⚡) uses a smaller board for faster rounds — ideal when you want a faster
+        pace or are warming up.
+      </p>
+      <p>
+        <strong>vs Bot</strong> is available from the tab bar above if no live opponent is available.
+        The bot plays at Medium difficulty by default; harder difficulties are available from the
+        bot lobby.
+      </p>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>How Scoring Works</h2>
+      <p>Your score is calculated in two parts:</p>
+      <ul>
+        <li><strong>5 points per tile revealed.</strong> Every safe cell you uncover earns 5 points. Chord-clicking through multiple cells at once earns points for each cell revealed.</li>
+        <li><strong>Time bonus:</strong> <code>(300 − secondsFromStart) × percentRevealed</code>, minimum 0. Finish quickly with a high percentage cleared and the time bonus can rival the tile score. The bonus decays to 0 after 300 seconds.</li>
+      </ul>
+      <p>
+        The player with the higher total score wins. If both players clear the board completely,
+        the faster time is the tiebreaker. Hitting a mine doesn't end the game — it costs you
+        no direct points, but the explosion animation briefly interrupts your board, and you lose
+        the tiles you were about to chord through.
+      </p>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>Rankings and Leaderboard</h2>
+      <p>
+        Competitive PvP tracks <strong>win/loss records</strong> and an <strong>ELO-style
+        rating</strong> across all your matches. Your rating rises when you beat higher-rated
+        opponents and falls when you lose to lower-rated ones. The leaderboard ranks players
+        by rating.
+      </p>
+      <p>
+        View the full leaderboard at <a href="/pvp/leaderboard">pvp/leaderboard</a> and the
+        ELO rankings at <a href="/pvp/rankings">pvp/rankings</a>. Your personal record appears
+        on your <a href="/profile">profile page</a> once you've played at least one rated match.
+      </p>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>Strategy for Competitive PvP</h2>
+      <ol>
+        <li><strong>Open fast, chord faster.</strong> The time bonus rewards both speed and coverage. Start with a center click to maximize the opening cascade, then chord through all completed constraints immediately.</li>
+        <li><strong>Don't over-flag.</strong> Right-clicking takes time. In PvP, many top players skip flagging entirely and rely on memory, using the spare clicks on more tile reveals instead.</li>
+        <li><strong>Watch your opponent's score.</strong> If you're trailing, play more aggressively — take risky 50/50 guesses to catch up. If you're ahead, slow down and play safely to preserve your lead.</li>
+        <li><strong>Practice in solo first.</strong> PvP uses the same board mechanics as Beginner. If your solo Beginner time is above 60 seconds, practice there first — competitive PvP rewards consistent sub-30s board clearing.</li>
+        <li><strong>Quick mode for warm-ups.</strong> The smaller Quick board completes in 10–20 seconds. Use it to get in rhythm before playing rated Standard rounds.</li>
+      </ol>
+    </section>
+
+  </div>
+
+</div>
+
+{% else %}
+<div class="game-landing-seo">
+
+  <h2>Minesweeper 1v1 Duel — Challenge a Friend</h2>
+  <p>
+    Duel mode is <strong>private 1v1 Minesweeper</strong>: you create a room, get a shareable
+    link, and send it to exactly one person. Both players receive the same board, start on their
+    first click, and race to the higher score. No matchmaking queue, no random opponent — just
+    you vs. someone you choose.
+  </p>
+  <p>
+    Duel is the right mode for challenges with friends, teammates, or anyone you want to beat
+    specifically. The room link is single-use — once two players have joined, the game begins.
+    There are no ELO ratings or persistent rankings in Duel mode; it's purely for the match itself.
+  </p>
+
+  <div class="landing-seo-grid">
+
+    <section class="landing-seo-section">
+      <h2>How to Start a Duel</h2>
+      <ol>
+        <li>Open <a href="/duelold">/duelold</a> and click <strong>Create Room</strong> (or wait — a room is created automatically when the page loads).</li>
+        <li>Copy the share link that appears in the status bar and send it to your opponent.</li>
+        <li>Wait for them to join. Once both players are connected, click <strong>Start</strong> to begin.</li>
+        <li>Both boards appear side by side. Your board is interactive; your opponent's is a live read-only view with a configurable delay.</li>
+      </ol>
+      <p>
+        The <strong>opponent board delay</strong> (visible on the badge above their board) is a
+        fairness setting — it means you see your opponent's board a few seconds behind real time,
+        so you can't simply copy their moves.
+      </p>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>How Scoring Works</h2>
+      <p>Both players are scored on the same formula:</p>
+      <ul>
+        <li><strong>5 points per tile revealed.</strong> Every safe cell you uncover earns 5 points, regardless of how you revealed it (click, chord, or auto-expand).</li>
+        <li><strong>Time bonus:</strong> <code>(300 − secondsFromStart) × percentRevealed</code>, minimum 0. Clearing more of the board faster produces a significantly higher bonus. The time bonus decays to zero after 5 minutes.</li>
+      </ul>
+      <p>
+        The player with the higher total score wins the duel. Hitting a mine doesn't end your game
+        — you keep playing, but the pause costs you time, which reduces the time bonus. Playing
+        carefully on a tight board is often more valuable than rushing and losing a mine.
+      </p>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>Standard vs. Quick Mode</h2>
+      <ul>
+        <li><strong>Standard —</strong> Full 9×9 Beginner board, 10 mines. A typical match takes 30–90 seconds. Rewards clean, efficient solving over pure speed.</li>
+        <li><strong>Quick (⚡) —</strong> Smaller board, faster rounds. Finishes in 10–20 seconds. Higher variance — a single good chord can flip the result.</li>
+      </ul>
+      <p>
+        Both players must be on the same mode when they join. The mode is set by whoever creates
+        the room — the link carries the mode selection.
+      </p>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>Strategy for 1v1 Duel</h2>
+      <ol>
+        <li><strong>First mover advantage is real.</strong> A large opening cascade on the first click can give you a scoring lead before your opponent has resolved a single constraint.</li>
+        <li><strong>Chord everything you can.</strong> Chord-clicking a revealed number auto-reveals all its neighbors if flagged correctly. It's the fastest way to rack up tile reveals and inflate your score.</li>
+        <li><strong>Minimize flags, maximize speed.</strong> Flags take a right-click and slow your reveal rate. If you can remember where mines are without flagging, you'll clear tiles faster.</li>
+        <li><strong>Know the board well.</strong> Both players get the same board. If you know common Beginner patterns cold, you'll clear faster than someone who has to think through every deduction.</li>
+        <li><strong>The time bonus is large.</strong> A clean clear under 30 seconds produces a time bonus that doubles your tile score. Chasing efficiency matters — don't waste clicks.</li>
+      </ol>
+    </section>
+
+  </div>
+
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/duel.js?v=13"></script>
+{% endblock %}
