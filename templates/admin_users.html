@@ -43,27 +43,34 @@
   })();
   </script>
 
+  <style>
+    .sort-hdr { cursor: pointer; user-select: none; white-space: nowrap; }
+    .sort-hdr:hover { color: var(--accent2); }
+    .sort-hdr .sort-arrow { font-size: 0.7em; margin-left: 0.2em; opacity: 0.5; }
+    .sort-hdr.sorted .sort-arrow { opacity: 1; color: var(--accent2); }
+  </style>
+
   <div class="lb-table-wrap">
-    <table class="lb-table">
+    <table class="lb-table" id="users-table">
       <thead>
         <tr>
           <th>#</th>
-          <th>Name</th>
+          <th class="sort-hdr" data-col="1" data-type="text">Name <span class="sort-arrow">↕</span></th>
           <th>Email</th>
-          <th>Joined</th>
-          <th title="Classic games played (GameHistory)">Classic</th>
-          <th title="Classic scores submitted">Submitted</th>
-          <th title="Rush scores">Rush</th>
-          <th title="Cylinder scores">Cyl</th>
-          <th title="Toroid scores">Tor</th>
-          <th title="Tentaizu scores">Tent</th>
-          <th title="Replay scores">Replay</th>
-          <th title="Total games across all modes" style="white-space:nowrap;text-align:right">Total</th>
+          <th class="sort-hdr" data-col="3" data-type="date">Joined <span class="sort-arrow">↕</span></th>
+          <th class="sort-hdr" data-col="4" data-type="num" title="Classic games played (GameHistory)">Classic <span class="sort-arrow">↕</span></th>
+          <th class="sort-hdr" data-col="5" data-type="num" title="Classic scores submitted">Submitted <span class="sort-arrow">↕</span></th>
+          <th class="sort-hdr" data-col="6" data-type="num" title="Rush scores">Rush <span class="sort-arrow">↕</span></th>
+          <th class="sort-hdr" data-col="7" data-type="num" title="Cylinder scores">Cyl <span class="sort-arrow">↕</span></th>
+          <th class="sort-hdr" data-col="8" data-type="num" title="Toroid scores">Tor <span class="sort-arrow">↕</span></th>
+          <th class="sort-hdr" data-col="9" data-type="num" title="Tentaizu scores">Tent <span class="sort-arrow">↕</span></th>
+          <th class="sort-hdr" data-col="10" data-type="num" title="Replay scores">Replay <span class="sort-arrow">↕</span></th>
+          <th class="sort-hdr" data-col="11" data-type="num" title="Total games across all modes" style="white-space:nowrap;text-align:right">Total <span class="sort-arrow">↕</span></th>
         </tr>
       </thead>
       <tbody>
         {% for u in users %}
-        <tr class="{{ 'top-1' if loop.index == 1 else 'top-2' if loop.index == 2 else 'top-3' if loop.index == 3 else '' }}">
+        <tr>
           <td class="lb-rank">{{ loop.index }}</td>
           <td class="lb-name">
             {% if u.vanity_slug %}
@@ -89,6 +96,60 @@
       </tbody>
     </table>
   </div>
+
+  <script>
+  (function () {
+    var sortCol = 11, sortAsc = false; // default: Total descending
+
+    function cellVal(row, col, type) {
+      var text = (row.cells[col].textContent || '').trim();
+      if (type === 'num')  return parseInt(text, 10) || 0;
+      if (type === 'date') return text === '—' ? '' : text;
+      return text.toLowerCase();
+    }
+
+    function sortTable(col, type) {
+      var tbody = document.querySelector('#users-table tbody');
+      var rows  = Array.from(tbody.rows);
+      var asc   = (col === sortCol) ? !sortAsc : false;
+
+      rows.sort(function (a, b) {
+        var av = cellVal(a, col, type), bv = cellVal(b, col, type);
+        if (type === 'num') return asc ? av - bv : bv - av;
+        if (av < bv) return asc ? -1 : 1;
+        if (av > bv) return asc ? 1 : -1;
+        return 0;
+      });
+
+      rows.forEach(function (r, i) {
+        r.cells[0].textContent = i + 1;
+        tbody.appendChild(r);
+      });
+
+      sortCol = col;
+      sortAsc = asc;
+
+      document.querySelectorAll('.sort-hdr').forEach(function (th) {
+        var active = parseInt(th.dataset.col) === col;
+        th.classList.toggle('sorted', active);
+        th.querySelector('.sort-arrow').textContent = !active ? '↕' : asc ? '▲' : '▼';
+      });
+    }
+
+    document.querySelectorAll('.sort-hdr').forEach(function (th) {
+      th.addEventListener('click', function () {
+        sortTable(parseInt(th.dataset.col), th.dataset.type);
+      });
+    });
+
+    // Mark the default sort column
+    var defaultTh = document.querySelector('.sort-hdr[data-col="11"]');
+    if (defaultTh) {
+      defaultTh.classList.add('sorted');
+      defaultTh.querySelector('.sort-arrow').textContent = '▼';
+    }
+  })();
+  </script>
 
 </div>
 {% endblock %}
