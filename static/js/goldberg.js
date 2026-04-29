@@ -237,20 +237,17 @@ function _subdivideClassGC(a, b) {
 /**
  * Geodesic subdivision of the icosahedron.
  *
- * Phase 1 supports:
- *   Class I  (b=0):  subdivide(a, 0)   T = a²
- *   Class II (a=b):  subdivide(n, n)   T = 3n²   — G1a-beta
+ *   Class I   (b=0):        subdivide(a, 0)   T = a²
+ *   Class II  (a=b):        subdivide(n, n)   T = 3n²
+ *   Class III (a≠b, b>0):   subdivide(a, b)   T = a²+ab+b²
  *
  * @param {number} a
  * @param {number} b
  * @returns {{ verts: {x,y,z}[], tris: {i0,i1,i2}[] }}
  */
 function subdivide(a, b) {
-    if (b !== 0) {
-        throw new Error(`subdivide: Class II/III (b=${b}) not yet implemented — see G1a-beta`);
-    }
-    // Class I (b=0)
-    return _subdivideClassI(a);
+    if (b === 0) return _subdivideClassI(a);   // Class I  — existing fast path
+    return _subdivideClassGC(a, b);            // Class II (a=b) and Class III (a≠b, b>0)
 }
 
 function _subdivideClassI(a) {
