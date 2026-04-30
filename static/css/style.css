@@ -577,7 +577,7 @@ html[data-skin="classic"] .landing-seo-section a { color: #0033cc; }
 
 .cell.revealed {
   background: var(--cell-rev);
-  border: 1px solid #0d1520;
+  border: 1px solid var(--cell-border);
   cursor: default;
 }
 
@@ -6010,6 +6010,9 @@ html[data-skin="light"] #highlight-errors-toggle.active {
 html[data-skin="light"] .cell.mine { background: #b02000; }
 
 html[data-skin="light"] #board,
+html[data-skin="light"] #opp-board,
+html[data-skin="light"] #board-p1,
+html[data-skin="light"] #board-p2,
 html[data-skin="light"] #rush-board,
 html[data-skin="light"] #tz-board,
 html[data-skin="light"] #cyl-board,
@@ -6025,7 +6028,7 @@ html[data-skin="light"] .cell.hidden {
 
 html[data-skin="light"] .cell.revealed {
   background: var(--cell-rev);
-  border-color: #a0bcd4;
+  border-color: var(--cell-border);
 }
 
 /* Footer */
