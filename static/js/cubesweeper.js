@@ -82,6 +82,11 @@ let _csTmpVec        = null;
 // Camera pulse
 let _csPulse = null;
 
+// Zoom
+let _csZoom = 4.5;
+const _CS_ZOOM_MIN = 2.0;
+const _CS_ZOOM_MAX = 8.0;
+
 // ---------------------------------------------------------------------------
 // Cell ID encoding  (face * N² + row * N + col)
 // ---------------------------------------------------------------------------
@@ -808,7 +813,7 @@ function _csStopTimer() {
 // ---------------------------------------------------------------------------
 
 function _csTriggerPulse() {
-    _csPulse = { t0: performance.now(), baseZ: 4.5, peakZ: 4.7, dur: 300 };
+    _csPulse = { t0: performance.now(), baseZ: _csZoom, peakZ: _csZoom + 0.2, dur: 300 };
 }
 
 // ---------------------------------------------------------------------------
@@ -865,14 +870,26 @@ function _csUpdateNoGuessBtn() {
 // ---------------------------------------------------------------------------
 
 function _csAttachEvents(canvas) {
-    let _longPress = null;
+    let _longPress   = null;
+    const _csPointers = new Map(); // pointerId -> {x, y}
+    let _csPinchDist  = 0;
 
     canvas.addEventListener('pointerdown', e => {
+        _csPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        canvas.setPointerCapture(e.pointerId);
+        if (_csPointers.size === 2) {
+            // Second finger down — switch to pinch mode
+            const [a, b] = [..._csPointers.values()];
+            const dx = a.x - b.x, dy = a.y - b.y;
+            _csPinchDist   = Math.sqrt(dx * dx + dy * dy);
+            _csDrag.active = false;
+            if (_longPress) { clearTimeout(_longPress); _longPress = null; }
+            return;
+        }
         _csDrag.active   = true;
         _csDrag.lastX    = e.clientX;
         _csDrag.lastY    = e.clientY;
         _csDrag.travelSq = 0;
-        canvas.setPointerCapture(e.pointerId);
         if (e.pointerType === 'touch') {
             _longPress = setTimeout(() => {
                 _longPress = null;
@@ -882,6 +899,20 @@ function _csAttachEvents(canvas) {
     });
 
     canvas.addEventListener('pointermove', e => {
+        _csPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (_csPointers.size === 2) {
+            // Pinch-to-zoom
+            const [a, b] = [..._csPointers.values()];
+            const dx = a.x - b.x, dy = a.y - b.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (_csPinchDist > 0 && dist > 0) {
+                _csZoom = Math.max(_CS_ZOOM_MIN, Math.min(_CS_ZOOM_MAX,
+                    _csZoom * (_csPinchDist / dist)));
+                _camera.position.z = _csZoom;
+            }
+            _csPinchDist = dist;
+            return;
+        }
         if (!_csDrag.active) return;
         const dx = e.clientX - _csDrag.lastX;
         const dy = e.clientY - _csDrag.lastY;
@@ -897,12 +928,28 @@ function _csAttachEvents(canvas) {
     });
 
     canvas.addEventListener('pointerup', e => {
+        _csPointers.delete(e.pointerId);
+        _csPinchDist = 0;
         if (_longPress) { clearTimeout(_longPress); _longPress = null; }
         if (_csDrag.active && _csDrag.travelSq < 36) _csDoRaycast(e, e.button);
         _csDrag.active = false;
     });
 
+    canvas.addEventListener('pointercancel', e => {
+        _csPointers.delete(e.pointerId);
+        _csPinchDist  = 0;
+        _csDrag.active = false;
+    });
+
     canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+    // Scroll-wheel zoom (PC)
+    canvas.addEventListener('wheel', e => {
+        e.preventDefault();
+        _csZoom = Math.max(_CS_ZOOM_MIN, Math.min(_CS_ZOOM_MAX,
+            _csZoom + e.deltaY * 0.005));
+        _camera.position.z = _csZoom;
+    }, { passive: false });
 }
 
 function _csDoRaycast(e, button) {
