@@ -525,7 +525,7 @@ html[data-skin="classic"] .landing-seo-section a { color: #0033cc; }
   display: grid;
   grid-template-columns: repeat(var(--cols), var(--cell-size));
   gap: 2px;
-  background: var(--surface);
+  background: var(--cell-border);
   padding: 8px;
   border-radius: var(--radius);
   border: 2px solid var(--surface2);
@@ -5746,8 +5746,8 @@ select.calc-input { width: 140px; }
 #opp-board {
   display: none;
   grid-template-columns: repeat(var(--cols), var(--cell-size));
-  gap: 1px;
-  background: var(--surface);
+  gap: 2px;
+  background: var(--cell-border);
   padding: 4px;
   border: 2px solid var(--border);
   border-radius: var(--radius);
@@ -5755,7 +5755,7 @@ select.calc-input { width: 140px; }
 
 /* Player board inside PvP — match sizing to opponent board */
 .duel-boards-row #board {
-  gap: 1px;
+  gap: 2px;
   padding: 4px;
 }
 
@@ -5763,8 +5763,8 @@ select.calc-input { width: 140px; }
 #board-p1, #board-p2 {
   display: grid;
   grid-template-columns: repeat(var(--cols), var(--cell-size));
-  gap: 1px;
-  background: var(--surface);
+  gap: 2px;
+  background: var(--cell-border);
   padding: 4px;
   border: 2px solid var(--border);
   border-radius: var(--radius);
