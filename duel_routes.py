@@ -191,7 +191,7 @@ async def pvp_bot_play(request: Request, d: str = "medium", m: str = "standard")
         "rows":           rows,
         "cols":           cols,
         "mines":          mines,
-        "mode":           "pvp-bot",
+        "mode":           "pvp-bot-beta",
         "submode":        m,
         "bot_difficulty": d,
         "is_creator":     False,
