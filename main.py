@@ -1722,8 +1722,7 @@ def fifteen_puzzle_grid_page(request: Request, grid: str):
 @app.get("/admin/15puzzle-photos", response_class=HTMLResponse)
 def admin_15puzzle_photos(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     pending_photos = (
         db.query(FifteenPuzzlePhoto)
         .filter_by(approved=False)
@@ -1761,8 +1760,7 @@ def admin_15puzzle_photos(request: Request, db: Session = Depends(get_db)):
 @app.post("/admin/15puzzle-photos/{board_hash}/delete")
 def admin_delete_15puzzle_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     photo = db.query(FifteenPuzzlePhoto).filter_by(board_hash=board_hash).first()
     if not photo:
         raise HTTPException(status_code=404, detail="Not found")
@@ -1777,8 +1775,7 @@ def admin_delete_15puzzle_photo(board_hash: str, request: Request, db: Session =
 @app.post("/admin/15puzzle-photos/{board_hash}/approve")
 def admin_approve_15puzzle_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     photo = db.query(FifteenPuzzlePhoto).filter_by(board_hash=board_hash).first()
     if not photo:
         raise HTTPException(status_code=404, detail="Not found")
@@ -1790,8 +1787,7 @@ def admin_approve_15puzzle_photo(board_hash: str, request: Request, db: Session 
 @app.post("/admin/15puzzle-photos/{board_hash}/unapprove")
 def admin_unapprove_15puzzle_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     photo = db.query(FifteenPuzzlePhoto).filter_by(board_hash=board_hash).first()
     if not photo:
         raise HTTPException(status_code=404, detail="Not found")
@@ -1803,8 +1799,7 @@ def admin_unapprove_15puzzle_photo(board_hash: str, request: Request, db: Sessio
 @app.post("/admin/15puzzle-photos/member/{board_hash}/delete")
 def admin_delete_member_puzzle(board_hash: str, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     puzzle = db.query(MemberPuzzle).filter_by(board_hash=board_hash).first()
     if not puzzle:
         raise HTTPException(status_code=404, detail="Not found")
@@ -1822,8 +1817,7 @@ def admin_delete_member_puzzle(board_hash: str, request: Request, db: Session = 
 @app.post("/admin/15puzzle-photos/member/{board_hash}/approve")
 def admin_approve_member_puzzle(board_hash: str, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     puzzle = db.query(MemberPuzzle).filter_by(board_hash=board_hash).first()
     if not puzzle:
         raise HTTPException(status_code=404, detail="Not found")
@@ -1835,8 +1829,7 @@ def admin_approve_member_puzzle(board_hash: str, request: Request, db: Session =
 @app.post("/admin/15puzzle-photos/member/{board_hash}/unapprove")
 def admin_unapprove_member_puzzle(board_hash: str, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     puzzle = db.query(MemberPuzzle).filter_by(board_hash=board_hash).first()
     if not puzzle:
         raise HTTPException(status_code=404, detail="Not found")
@@ -1850,8 +1843,7 @@ def admin_unapprove_member_puzzle(board_hash: str, request: Request, db: Session
 @app.get("/admin/jigsaw-photos", response_class=HTMLResponse)
 def admin_jigsaw_photos(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     pending = (
         db.query(JigsawPhoto)
         .filter_by(approved=False)
@@ -1875,8 +1867,7 @@ def admin_jigsaw_photos(request: Request, db: Session = Depends(get_db)):
 @app.post("/admin/jigsaw-photos/{board_hash}/delete")
 def admin_delete_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     photo = db.query(JigsawPhoto).filter_by(board_hash=board_hash).first()
     if not photo:
         raise HTTPException(status_code=404, detail="Not found")
@@ -1891,8 +1882,7 @@ def admin_delete_jigsaw_photo(board_hash: str, request: Request, db: Session = D
 @app.post("/admin/jigsaw-photos/{board_hash}/approve")
 def admin_approve_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     photo = db.query(JigsawPhoto).filter_by(board_hash=board_hash).first()
     if not photo:
         raise HTTPException(status_code=404, detail="Not found")
@@ -1904,8 +1894,7 @@ def admin_approve_jigsaw_photo(board_hash: str, request: Request, db: Session = 
 @app.post("/admin/jigsaw-photos/{board_hash}/unapprove")
 def admin_unapprove_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     photo = db.query(JigsawPhoto).filter_by(board_hash=board_hash).first()
     if not photo:
         raise HTTPException(status_code=404, detail="Not found")
@@ -5147,11 +5136,56 @@ def update_about(payload: AboutTextUpdate, request: Request, db: Session = Depen
 _admin_emails_raw = Config(".env")("ADMIN_EMAILS", default="")
 ADMIN_EMAILS = {e.strip() for e in _admin_emails_raw.split(",") if e.strip()}
 
+# ── Admin access logging ───────────────────────────────────────────────────────
+import logging.handlers as _log_handlers
+
+_ADMIN_LOG_MAP = {
+    "minesweeper.org":         "/var/log/uvicorn/minesweeper.org-login.log",
+    "www.minesweeper.org":     "/var/log/uvicorn/minesweeper.org-login.log",
+    "staging.minesweeper.org": "/var/log/uvicorn/staging.minesweeper.org-login.log",
+}
+_admin_loggers: dict[str, logging.Logger] = {}
+
+def _get_admin_logger(log_path: str) -> logging.Logger:
+    if log_path not in _admin_loggers:
+        lg = logging.getLogger(f"admin_access:{log_path}")
+        lg.setLevel(logging.INFO)
+        lg.propagate = False
+        try:
+            handler = _log_handlers.RotatingFileHandler(
+                log_path, maxBytes=10_000_000, backupCount=5, encoding="utf-8"
+            )
+        except OSError:
+            handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
+        lg.addHandler(handler)
+        _admin_loggers[log_path] = lg
+    return _admin_loggers[log_path]
+
+def _log_admin_access(request: Request, user: dict | None, success: bool, reason: str = "") -> None:
+    host     = request.headers.get("host", "").split(":")[0].lower()
+    log_path = _ADMIN_LOG_MAP.get(host, "/var/log/uvicorn/minesweeper.org-login.log")
+    identity = user.get("email", "unknown") if user else "anonymous"
+    path     = request.url.path
+    if success:
+        msg = f'ALLOW  {identity!r:40s} -> {path}  [host={host}]'
+    else:
+        msg = f'DENY   {identity!r:40s} -> {path}  reason={reason!r}  [host={host}]'
+    _get_admin_logger(log_path).info(msg)
+
+def require_admin(request: Request, user: dict | None) -> None:
+    if not user:
+        _log_admin_access(request, user, success=False, reason="not_logged_in")
+        raise HTTPException(status_code=403, detail="Forbidden")
+    if user.get("email", "").lower() not in {e.lower() for e in ADMIN_EMAILS}:
+        _log_admin_access(request, user, success=False, reason="email_not_in_admin_list")
+        raise HTTPException(status_code=403, detail="Forbidden")
+    _log_admin_access(request, user, success=True)
+
 @app.get("/admin", response_class=HTMLResponse)
 def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
 
     today = date.today()
 
@@ -5319,8 +5353,7 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
 @app.get("/admin/users", response_class=HTMLResponse)
 def admin_users(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
 
     import json as _json
     from sqlalchemy import text
@@ -5437,8 +5470,7 @@ def admin_operations(request: Request, db: Session = Depends(get_db)):
     import json as _json
 
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
 
     # ── Live snapshot ─────────────────────────────────────────────────────────
     disk = psutil.disk_usage("/")
@@ -5532,8 +5564,7 @@ def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
     import json as _json
     import csv as _csv
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
 
     rows = (
         db.query(WebTrafficStats)
@@ -5702,8 +5733,7 @@ def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
 @app.get("/admin/blog", response_class=HTMLResponse)
 def admin_blog(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
 
     pending  = db.query(BlogComment).filter_by(approved=False).order_by(BlogComment.created_at).all()
     approved = db.query(BlogComment).filter_by(approved=True).order_by(BlogComment.created_at.desc()).limit(50).all()
@@ -5720,8 +5750,7 @@ def admin_blog(request: Request, db: Session = Depends(get_db)):
 @app.post("/admin/blog/comments/{comment_id}/approve")
 def admin_approve_comment(comment_id: int, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     comment = db.query(BlogComment).filter_by(id=comment_id).first()
     if not comment:
         raise HTTPException(status_code=404, detail="Not found")
@@ -5733,8 +5762,7 @@ def admin_approve_comment(comment_id: int, request: Request, db: Session = Depen
 @app.post("/admin/blog/comments/{comment_id}/delete")
 def admin_delete_comment(comment_id: int, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     comment = db.query(BlogComment).filter_by(id=comment_id).first()
     if not comment:
         raise HTTPException(status_code=404, detail="Not found")
@@ -5746,8 +5774,7 @@ def admin_delete_comment(comment_id: int, request: Request, db: Session = Depend
 @app.get("/admin/contact", response_class=HTMLResponse)
 def admin_contact(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     unread = db.query(ContactMessage).filter_by(read=False).order_by(ContactMessage.created_at.desc()).all()
     read   = db.query(ContactMessage).filter_by(read=True).order_by(ContactMessage.created_at.desc()).limit(50).all()
     return templates.TemplateResponse("admin_contact.html", {
@@ -5763,8 +5790,7 @@ def admin_contact(request: Request, db: Session = Depends(get_db)):
 @app.post("/admin/contact/{msg_id}/mark-read")
 def admin_contact_mark_read(msg_id: int, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     msg = db.query(ContactMessage).filter_by(id=msg_id).first()
     if not msg:
         raise HTTPException(status_code=404, detail="Not found")
@@ -5776,8 +5802,7 @@ def admin_contact_mark_read(msg_id: int, request: Request, db: Session = Depends
 @app.post("/admin/contact/{msg_id}/delete")
 def admin_contact_delete(msg_id: int, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     msg = db.query(ContactMessage).filter_by(id=msg_id).first()
     if not msg:
         raise HTTPException(status_code=404, detail="Not found")
@@ -5797,8 +5822,7 @@ def admin_hscleaning(
     no_guess: str = "all",
 ):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
 
     from datetime import date as _date
     target_date = date.today()
@@ -5862,8 +5886,7 @@ def admin_hscleaning_delete(
     next_url: str = Query(default="/admin/hscleaning"),
 ):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     score = db.query(Score).filter_by(id=score_id).first()
     if score:
         db.delete(score)
@@ -5884,8 +5907,7 @@ def _delete_flagged_and_score(flag: FlaggedScore, db) -> None:
 @app.post("/admin/hscleaning/flagged/{flag_id}/delete")
 def admin_flagged_delete(flag_id: int, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     flag = db.query(FlaggedScore).filter_by(id=flag_id).first()
     if flag:
         _delete_flagged_and_score(flag, db)
@@ -5896,8 +5918,7 @@ def admin_flagged_delete(flag_id: int, request: Request, db: Session = Depends(g
 @app.post("/admin/hscleaning/flagged/{flag_id}/unflag")
 def admin_flagged_unflag(flag_id: int, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     flag = db.query(FlaggedScore).filter_by(id=flag_id).first()
     if flag:
         db.delete(flag)
@@ -5908,8 +5929,7 @@ def admin_flagged_unflag(flag_id: int, request: Request, db: Session = Depends(g
 @app.post("/admin/hscleaning/flagged/delete-all")
 def admin_flagged_delete_all(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
     flags = db.query(FlaggedScore).all()
     for flag in flags:
         _delete_flagged_and_score(flag, db)
@@ -5923,8 +5943,7 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
     import os
 
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
 
     analysis_dir = os.path.join(os.path.dirname(__file__), "analysis")
     download_exts = {".pptx", ".xlsx", ".docx", ".pdf"}
@@ -6000,8 +6019,7 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
 def admin_analysis_download(request: Request, file: str):
     import os
     user = get_current_user(request)
-    if not user or user.get("email") not in ADMIN_EMAILS:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    require_admin(request, user)
 
     # Allow at most one subfolder level (e.g. "folder/file.pdf").
     # Reject anything with ".." or backslashes, or more than one slash.
