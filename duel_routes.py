@@ -2,7 +2,8 @@
 duel_routes.py — Page routes and WebSocket endpoint for head-to-head duels.
 Mount this router in main.py with: app.include_router(duel_router)
 """
-import uuid, json, asyncio
+import uuid, json, asyncio, logging, logging.handlers
+from typing import Optional
 from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -37,6 +38,40 @@ BOT_NAMES = {
 }
 templates   = Jinja2Templates(directory="templates")
 templates.env.globals["DEFAULT_SKIN"]         = site_settings.DEFAULT_SKIN
+
+# ── WebSocket connection logger ───────────────────────────────────────────────
+_WS_LOG_MAP = {
+    "minesweeper.org":         "/var/log/uvicorn/minesweeper.org-websockets.log",
+    "www.minesweeper.org":     "/var/log/uvicorn/minesweeper.org-websockets.log",
+    "staging.minesweeper.org": "/var/log/uvicorn/staging.minesweeper.org-websockets.log",
+}
+_ws_loggers: dict[str, logging.Logger] = {}
+
+def _get_ws_logger(log_path: str) -> logging.Logger:
+    if log_path not in _ws_loggers:
+        lg = logging.getLogger(f"ws_connect:{log_path}")
+        lg.setLevel(logging.INFO)
+        lg.propagate = False
+        try:
+            handler = logging.handlers.RotatingFileHandler(
+                log_path, maxBytes=10_000_000, backupCount=5, encoding="utf-8"
+            )
+        except OSError:
+            handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
+        lg.addHandler(handler)
+        _ws_loggers[log_path] = lg
+    return _ws_loggers[log_path]
+
+def _log_ws_connect(ws: WebSocket, player_id: str, mode: str) -> None:
+    host     = ws.headers.get("host", "").split(":")[0].lower()
+    log_path = _WS_LOG_MAP.get(host, "/var/log/uvicorn/minesweeper.org-websockets.log")
+    ip       = ws.client.host if ws.client else "unknown"
+    ua       = ws.headers.get("user-agent", "—")[:120]
+    origin   = ws.headers.get("origin", "—")
+    _get_ws_logger(log_path).info(
+        f"CONNECT pid={player_id!r:12s} mode={mode!r:24s} ip={ip!r:18s} origin={origin!r} ua={ua!r}"
+    )
 templates.env.globals["active_skin"]          = site_settings.active_skin
 templates.env.globals["solstice_banner"]      = site_settings.solstice_banner
 templates.env.globals["equinox_banner"]       = site_settings.equinox_banner
@@ -104,7 +139,10 @@ async def duel_join(request: Request, game_id: str):
 
 # ── Page: PvP matchmaking lobby ───────────────────────────────────────────────
 @duel_router.get("/pvp", response_class=HTMLResponse)
-async def pvp_lobby(request: Request, m: str = "standard"):
+async def pvp_lobby(request: Request, m: Optional[str] = None):
+    # No explicit mode → land on vs-Bot by default
+    if not m:
+        return RedirectResponse("/pvp/bot", status_code=302)
     if m == "quick":
         rows, cols, mines = QUICK_ROWS, QUICK_COLS, QUICK_MINES
     else:
@@ -189,6 +227,7 @@ async def pvp_ws(ws: WebSocket, player_id: str):
     await ws.accept()
     if await _try_reconnect(ws, player_id):
         return
+    _log_ws_connect(ws, player_id, "pvp/standard")
     await ws.send_json({
         "type": "queued",
         "queue_pos": pvp_queue_length() + 1,
@@ -498,6 +537,7 @@ async def pvp_bot_ws(ws: WebSocket, player_id: str,
         rows, cols, mines, submode = PVP_ROWS, PVP_COLS, PVP_MINES, "standard"
 
     await ws.accept()
+    _log_ws_connect(ws, player_id, f"pvp-bot/{submode}")
 
     # Create a game and add the human immediately
     game = create_game(rows=rows, cols=cols, mines=mines, submode=submode, is_pvp=True)
@@ -601,6 +641,7 @@ async def pvp_quick_ws(ws: WebSocket, player_id: str):
     await ws.accept()
     if await _try_reconnect(ws, player_id):
         return
+    _log_ws_connect(ws, player_id, "pvp/quick")
     await ws.send_json({
         "type": "queued",
         "queue_pos": pvp_quick_queue_length() + 1,
@@ -716,6 +757,7 @@ async def pvpbeta_ws(ws: WebSocket, player_id: str):
     await ws.accept()
     if await _try_reconnect(ws, player_id):
         return
+    _log_ws_connect(ws, player_id, "pvpbeta/standard")
     await ws.send_json({
         "type": "queued",
         "queue_pos": pvpbeta_queue_length() + 1,
@@ -781,6 +823,7 @@ async def pvpbeta_quick_ws(ws: WebSocket, player_id: str):
     await ws.accept()
     if await _try_reconnect(ws, player_id):
         return
+    _log_ws_connect(ws, player_id, "pvpbeta/quick")
     await ws.send_json({
         "type": "queued",
         "queue_pos": pvpbeta_quick_queue_length() + 1,
@@ -851,6 +894,7 @@ async def pvpbeta_bot_ws(ws: WebSocket, player_id: str,
         rows, cols, mines, submode = PVP_ROWS, PVP_COLS, PVP_MINES, "standard"
 
     await ws.accept()
+    _log_ws_connect(ws, player_id, f"pvpbeta-bot/{submode}")
 
     game = create_game(rows=rows, cols=cols, mines=mines, submode=submode, is_pvp=False, use_frontier=True)
     game.add_player(player_id, ws)
@@ -948,6 +992,7 @@ async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
         return
 
     await ws.accept()
+    _log_ws_connect(ws, player_id, f"duel/{game_id}")
 
     # Reconnect into an active game without re-running the join flow
     if game.active and not game.finished and game.get_player(player_id):

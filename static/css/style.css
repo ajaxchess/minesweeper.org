@@ -5620,6 +5620,78 @@ select.calc-input { width: 140px; }
 .admin-btn-delete  { background: rgba(198,40,40,0.2);  color: #e57373; }
 .admin-btn-delete:hover  { background: rgba(198,40,40,0.4); }
 
+/* ── Debug panel (Standard PvP only) ──────────────────────────────────────── */
+.debug-toggle-row {
+  text-align: left;
+  margin: 0.3rem 0 0.1rem;
+}
+.debug-toggle-btn {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.debug-toggle-btn.active {
+  background: #2a4a7a;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.debug-panel {
+  width: 190px;
+  min-width: 190px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.72rem;
+  font-family: monospace;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-self: flex-start;
+  max-height: 480px;
+}
+.debug-section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.2rem;
+  margin-top: 0.15rem;
+}
+.debug-position {
+  font-size: 0.82rem;
+  color: var(--accent);
+  min-height: 1.3rem;
+  padding: 0.1rem 0;
+}
+.debug-log {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex: 1;
+  max-height: 380px;
+}
+.debug-log li {
+  padding: 0.15rem 0.1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+.debug-log li.dm-mine    { color: #e74c3c; }
+.debug-log li.dm-safe    { color: #2ecc71; }
+.debug-log li.dm-flag    { color: #f39c12; }
+.debug-log li.dm-locked  { color: var(--text-dim); }
+.debug-log li.dm-pending { color: var(--text-dim); font-style: italic; }
+
 /* ── PvP dual-board layout ──────────────────────────────────────────────────── */
 .duel-boards-row {
   display: flex;

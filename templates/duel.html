@@ -116,7 +116,22 @@
   </div>
 
   <!-- ── Boards ── -->
+  {% if mode in ('pvp', 'pvp-beta') and submode == 'standard' %}
+  <div class="debug-toggle-row">
+    <button id="debug-toggle-btn" class="debug-toggle-btn" onclick="toggleDebug()">🐛 Debug</button>
+  </div>
+  {% endif %}
   <div class="duel-boards-row">
+
+    {% if mode in ('pvp', 'pvp-beta') and submode == 'standard' %}
+    <!-- ── Debug panel (left of player board, Standard PvP only) ── -->
+    <div id="debug-panel" class="debug-panel" style="display:none">
+      <div class="debug-section-label">📍 Position</div>
+      <div id="debug-position" class="debug-position">NA</div>
+      <div class="debug-section-label">📋 Moves</div>
+      <ol id="debug-log" class="debug-log" reversed></ol>
+    </div>
+    {% endif %}
 
     <!-- Player's own board -->
     <div class="duel-board-col duel-board-col-mine">
@@ -345,5 +360,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/duel.js?v=13"></script>
+<script src="/static/js/duel.js?v=14"></script>
 {% endblock %}

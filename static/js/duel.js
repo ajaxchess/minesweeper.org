@@ -36,6 +36,55 @@ document.addEventListener('DOMContentLoaded', () => {
   let timerID    = null;
   let elapsed    = 0;
 
+  // ── Debug panel state (Standard PvP only) ─────────────────────────────────
+  const DEBUG_CAPABLE = IS_PVP && SUBMODE === 'standard';
+  let debugEnabled    = false;
+  let debugClickCount = 0;
+  let debugPending    = [];   // moves awaiting a server response
+  let debugLog        = [];   // completed moves, newest first
+
+  window.toggleDebug = function() {
+    if (!DEBUG_CAPABLE) return;
+    debugEnabled = !debugEnabled;
+    const panel = document.getElementById('debug-panel');
+    const btn   = document.getElementById('debug-toggle-btn');
+    if (panel) panel.style.display = debugEnabled ? 'flex' : 'none';
+    if (btn)   btn.classList.toggle('active', debugEnabled);
+  };
+
+  function _debugAddMove(r, c, type, outcome, cls) {
+    debugClickCount++;
+    const entry = { num: debugClickCount, r: r + 1, c: c + 1, type, outcome, cls };
+    debugLog.unshift(entry);
+    _debugRender();
+    return entry;
+  }
+
+  function _debugAddPending(r, c, type) {
+    debugClickCount++;
+    const entry = { num: debugClickCount, r: r + 1, c: c + 1, type, outcome: '…', cls: 'dm-pending' };
+    debugPending.push(entry);
+    debugLog.unshift(entry);
+    _debugRender();
+    return entry;
+  }
+
+  function _debugResolve(outcome, cls) {
+    const entry = debugPending.shift();
+    if (!entry) return;
+    entry.outcome = outcome;
+    entry.cls     = cls;
+    _debugRender();
+  }
+
+  function _debugRender() {
+    const el = document.getElementById('debug-log');
+    if (!el) return;
+    el.innerHTML = debugLog.slice(0, 60).map(e =>
+      `<li class="${e.cls}">${e.num}. R${e.r}C${e.c} ${e.type} → ${e.outcome}</li>`
+    ).join('');
+  }
+
   // ── Opponent board state ──────────────────────────────────────────────────
   const oppBoardEl  = document.getElementById('opp-board');
   const oppWaitEl   = document.getElementById('opp-board-waiting');
@@ -267,6 +316,25 @@ document.addEventListener('DOMContentLoaded', () => {
         boardEl.appendChild(cell);
       }
     }
+    // Mouse-position tracking for debug panel
+    if (DEBUG_CAPABLE) {
+      boardEl.addEventListener('mousemove', e => {
+        if (!debugEnabled) return;
+        const posEl = document.getElementById('debug-position');
+        if (!posEl) return;
+        const cell = e.target.closest('[data-r][data-c]');
+        if (cell) {
+          posEl.textContent = `Row ${+cell.dataset.r + 1}, Col ${+cell.dataset.c + 1}`;
+        } else {
+          posEl.textContent = 'NA';
+        }
+      });
+      boardEl.addEventListener('mouseleave', () => {
+        if (!debugEnabled) return;
+        const posEl = document.getElementById('debug-position');
+        if (posEl) posEl.textContent = 'NA';
+      });
+    }
   }
 
   // ── Build opponent board DOM (read-only) ──────────────────────────────────
@@ -426,8 +494,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Actions ───────────────────────────────────────────────────────────────
   function onReveal(r, c) {
-    if (!gameActive || revealed[r][c] || flagged[r][c] === 1 || exploded) return;
-    if (IS_BETA && minDist[r][c] > 2) return;  // F70: outside frontier
+    if (!gameActive || revealed[r][c] || flagged[r][c] === 1 || exploded) {
+      if (debugEnabled) _debugAddMove(r, c, 'L', revealed[r][c] ? 'already revealed' : 'blocked', 'dm-locked');
+      return;
+    }
+    if (IS_BETA && minDist[r][c] > 2) {
+      if (debugEnabled) _debugAddMove(r, c, 'L', 'outside playable area', 'dm-locked');
+      return;
+    }
+    if (debugEnabled) _debugAddPending(r, c, 'L');
     ws.send(JSON.stringify({type: 'reveal', r, c}));
   }
 
@@ -444,16 +519,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     const flagCount = nbs.filter(([nr, nc]) => flagged[nr][nc] === 1).length;
     if (flagCount !== boardVals[r][c]) return;
-    nbs.forEach(([nr, nc]) => {
-      if (!flagged[nr][nc] && !revealed[nr][nc])
-        ws.send(JSON.stringify({type: 'reveal', r: nr, c: nc}));
-    });
+    const toReveal = nbs.filter(([nr, nc]) => !flagged[nr][nc] && !revealed[nr][nc]);
+    if (debugEnabled && toReveal.length) _debugAddPending(r, c, 'DL');
+    toReveal.forEach(([nr, nc]) => ws.send(JSON.stringify({type: 'reveal', r: nr, c: nc})));
   }
 
   function onFlag(r, c) {
     if (!gameActive || revealed[r][c]) return;
     flagged[r][c] = (flagged[r][c] + 1) % 3;
     renderCell(r, c);
+    if (debugEnabled) {
+      const label = flagged[r][c] === 0 ? 'unflagged' : flagged[r][c] === 1 ? 'flag 🚩' : 'question ❓';
+      _debugAddMove(r, c, 'R', label, 'dm-flag');
+    }
   }
 
   function setStatus(msg) {
@@ -680,6 +758,9 @@ document.addEventListener('DOMContentLoaded', () => {
           gameActive = false;
           stopTimer();
           setStatus('💥 You hit a mine! Waiting for opponent to finish…');
+          if (debugEnabled) _debugResolve('💥 mine', 'dm-mine');
+        } else {
+          if (debugEnabled) _debugResolve(`safe ×${newCells.length}`, 'dm-safe');
         }
         updateScores(msg.score, msg.tiles, msg.opp_score, null);
         break;
@@ -787,6 +868,7 @@ document.addEventListener('DOMContentLoaded', () => {
         myMineHits = msg.mine_hits;
         updateMineHits(myMineHits, true);
         updateScores(msg.score, msg.tiles, msg.opp_score, null);
+        if (debugEnabled) _debugResolve('💥 mine (reallocated)', 'dm-mine');
         animateMineHit(msg.r, msg.c, msg.reset_cells, msg.updated_values, false);
         break;
       }
