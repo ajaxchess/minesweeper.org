@@ -187,6 +187,8 @@ async def pvp_rankings_page(request: Request):
 @duel_router.websocket("/ws/pvp/{player_id}")
 async def pvp_ws(ws: WebSocket, player_id: str):
     await ws.accept()
+    if await _try_reconnect(ws, player_id):
+        return
     await ws.send_json({
         "type": "queued",
         "queue_pos": pvp_queue_length() + 1,
@@ -527,6 +529,31 @@ async def pvp_bot_ws(ws: WebSocket, player_id: str,
     await _game_loop(ws, game, player_id)
 
 
+async def _try_reconnect(ws: WebSocket, player_id: str) -> bool:
+    """If player_id is already in an active game, restore their WS and resync state."""
+    from duel import _games
+    game = next(
+        (g for g in _games.values() if not g.finished and g.active and g.get_player(player_id)),
+        None,
+    )
+    if not game:
+        return False
+    p = game.get_player(player_id)
+    p.ws = ws
+    opp = game.opponent(player_id)
+    if opp and opp.ws:
+        try:
+            await manager.send(opp.ws, {
+                "type": "opp_reconnected",
+                "msg":  f"{p.name or 'Opponent'} reconnected!",
+            })
+        except Exception:
+            pass
+    await ws.send_json({"type": "reconnected", **game.reconnect_payload(player_id)})
+    await _game_loop(ws, game, player_id)
+    return True
+
+
 async def _game_loop(ws: WebSocket, game, player_id: str):
     try:
         while True:
@@ -572,6 +599,8 @@ async def _game_loop(ws: WebSocket, game, player_id: str):
 @duel_router.websocket("/ws/pvp/quick/{player_id}")
 async def pvp_quick_ws(ws: WebSocket, player_id: str):
     await ws.accept()
+    if await _try_reconnect(ws, player_id):
+        return
     await ws.send_json({
         "type": "queued",
         "queue_pos": pvp_quick_queue_length() + 1,
@@ -685,6 +714,8 @@ async def pvpbeta_bot_play(request: Request, d: str = "medium", m: str = "standa
 @duel_router.websocket("/ws/pvpbeta/{player_id}")
 async def pvpbeta_ws(ws: WebSocket, player_id: str):
     await ws.accept()
+    if await _try_reconnect(ws, player_id):
+        return
     await ws.send_json({
         "type": "queued",
         "queue_pos": pvpbeta_queue_length() + 1,
@@ -748,6 +779,8 @@ async def _pvpbeta_wait_loop(ws: WebSocket, player_id: str):
 @duel_router.websocket("/ws/pvpbeta/quick/{player_id}")
 async def pvpbeta_quick_ws(ws: WebSocket, player_id: str):
     await ws.accept()
+    if await _try_reconnect(ws, player_id):
+        return
     await ws.send_json({
         "type": "queued",
         "queue_pos": pvpbeta_quick_queue_length() + 1,
@@ -915,6 +948,11 @@ async def duel_ws(ws: WebSocket, game_id: str, player_id: str):
         return
 
     await ws.accept()
+
+    # Reconnect into an active game without re-running the join flow
+    if game.active and not game.finished and game.get_player(player_id):
+        if await _try_reconnect(ws, player_id):
+            return
 
     if not game.add_player(player_id, ws):
         await ws.send_json({"type": "watch_redirect", "game_id": game_id})

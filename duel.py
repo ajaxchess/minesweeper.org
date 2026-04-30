@@ -240,6 +240,27 @@ class DuelGame:
             "prerev_score": len(self.shared_prerev) * POINTS_PER_TILE,
         }
 
+    def reconnect_payload(self, pid: str) -> dict:
+        """Full current game state for a player reconnecting mid-game."""
+        p   = self.get_player(pid)
+        opp = self.opponent(pid)
+        my_rev     = [[r, c]            for r in range(self.rows) for c in range(self.cols) if p.revealed[r][c]]
+        board_vals = {f"{r},{c}": p.board[r][c] for r, c in my_rev}
+        opp_rev    = [[r, c, opp.board[r][c]] for r in range(self.rows) for c in range(self.cols)
+                      if opp.revealed[r][c]] if opp else []
+        return {
+            "active":       self.active,
+            "elapsed":      round(self.elapsed()),
+            "my_revealed":  my_rev,
+            "board_values": board_vals,
+            "my_score":     p.score,
+            "my_tiles":     p.tiles_revealed,
+            "opp_revealed": opp_rev,
+            "opp_score":    opp.score    if opp else 0,
+            "opp_tiles":    opp.tiles_revealed if opp else 0,
+            "opp_name":     opp.name     if opp else "",
+        }
+
     def elapsed(self) -> float:
         if not self.start_time:
             return 0.0

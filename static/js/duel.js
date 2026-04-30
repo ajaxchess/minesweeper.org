@@ -223,9 +223,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Recompute frontier from scratch (cells were removed from revealed set)
-      if (IS_BETA) recomputeMinDist(dist, rev);
+      if (IS_BETA) {
+        recomputeMinDist(dist, rev);
+        // Frontier shrinkage may extend well beyond the local 5×5 — re-render
+        // every unrevealed cell so stale frontier/locked CSS classes can't silently
+        // block clicks on cells that appear highlighted but are now outside frontier.
+        for (let r = 0; r < ROWS; r++)
+          for (let c = 0; c < COLS; c++)
+            if (!rev[r][c]) renderFn(r, c);
+      }
 
-      // Re-render the affected region (3×3 plus one extra ring for frontier)
+      // Re-render the local 5×5 for updated board values and flash animation
       for (let dr = -2; dr <= 2; dr++) {
         for (let dc = -2; dc <= 2; dc++) {
           const nr = hr + dr, nc = hc + dc;
@@ -554,26 +562,35 @@ document.addEventListener('DOMContentLoaded', () => {
     wsPath = `/ws/${GAME_ID}/${PLAYER_ID}`;
   }
   const wsUrl = `${proto}://${location.host}${wsPath}`;
-  const ws     = new WebSocket(wsUrl);
 
-  ws.addEventListener('open', () => {
-    const playerName  = boardEl.dataset.username  || '';
-    const playerEmail = boardEl.dataset.useremail || '';
-    if (playerName) {
-      ws.send(JSON.stringify({type: 'player_name', name: playerName, email: playerEmail}));
-    }
-    if (IS_CREATOR) {
-      const link = `${location.origin}/duel/${GAME_ID}`;
-      const inp  = document.getElementById('share-link');
-      if (inp) inp.value = link;
-      document.getElementById('share-box').style.display = 'flex';
+  let ws;
+  let reconnectAttempts = 0;
+  const MAX_RECONNECT   = 5;
+  let   firstConnect    = true;
 
-      const watchInp = document.getElementById('watch-link-inp');
-      if (watchInp) watchInp.value = `${location.origin}/duel/${GAME_ID}/watch`;
-      const watchBox = document.getElementById('watch-box');
-      if (watchBox) watchBox.style.display = 'flex';
-    }
-  });
+  function connectWs() {
+    ws = new WebSocket(wsUrl);
+
+    ws.addEventListener('open', () => {
+      reconnectAttempts = 0;
+      const playerName  = boardEl.dataset.username  || '';
+      const playerEmail = boardEl.dataset.useremail || '';
+      if (playerName) {
+        ws.send(JSON.stringify({type: 'player_name', name: playerName, email: playerEmail}));
+      }
+      if (firstConnect && IS_CREATOR) {
+        const link = `${location.origin}/duel/${GAME_ID}`;
+        const inp  = document.getElementById('share-link');
+        if (inp) inp.value = link;
+        document.getElementById('share-box').style.display = 'flex';
+
+        const watchInp = document.getElementById('watch-link-inp');
+        if (watchInp) watchInp.value = `${location.origin}/duel/${GAME_ID}/watch`;
+        const watchBox = document.getElementById('watch-box');
+        if (watchBox) watchBox.style.display = 'flex';
+      }
+      firstConnect = false;
+    });
 
   ws.addEventListener('message', e => {
     const msg = JSON.parse(e.data);
@@ -796,12 +813,58 @@ document.addEventListener('DOMContentLoaded', () => {
       case 'chat':
         appendChat(msg.from, msg.text, msg.pid === PLAYER_ID);
         break;
+
+      case 'reconnected': {
+        // Server recognised our player_id and resumed the existing game.
+        gameActive = msg.active !== false;
+        // Restore own board
+        msg.my_revealed.forEach(([r, c]) => {
+          revealed[r][c]  = true;
+          boardVals[r][c] = msg.board_values[`${r},${c}`];
+        });
+        if (IS_BETA) recomputeMinDist(minDist, revealed);
+        // Restore opponent board
+        msg.opp_revealed.forEach(([r, c, val]) => {
+          oppRevealed[r][c]  = true;
+          oppBoardVals[r][c] = val;
+        });
+        if (IS_BETA) recomputeMinDist(oppMinDist, oppRevealed);
+        // Full board re-render
+        for (let r = 0; r < ROWS; r++)
+          for (let c = 0; c < COLS; c++) { renderCell(r, c); renderOppCell(r, c); }
+        updateScores(msg.my_score, msg.my_tiles, msg.opp_score, msg.opp_tiles);
+        if (msg.opp_name) setOppName(msg.opp_name, null);
+        showOppBoard();
+        if (gameActive) {
+          elapsed = msg.elapsed || elapsed;
+          document.getElementById('duel-timer').textContent = String(elapsed).padStart(3, '0');
+          if (!timerID) startTimer();
+        }
+        setStatus('🔄 Reconnected — game is live!');
+        appendChatSystem('🔄 Reconnected to game.');
+        break;
+      }
+
+      case 'opp_reconnected':
+        setStatus('✅ ' + (msg.msg || 'Opponent reconnected!'));
+        gameActive = true;
+        if (!timerID) startTimer();
+        appendChatSystem('✅ ' + (msg.msg || 'Opponent reconnected.'));
+        break;
     }
   });
 
-  ws.addEventListener('close', () => {
-    if (gameActive) setStatus('⚠️ Connection lost.');
-  });
+    ws.addEventListener('close', () => {
+      if (reconnectAttempts < MAX_RECONNECT) {
+        reconnectAttempts++;
+        const delay = Math.min(1000 * Math.pow(2, reconnectAttempts - 1), 15000);
+        setStatus(`⚠️ Connection lost. Reconnecting… (${reconnectAttempts}/${MAX_RECONNECT})`);
+        setTimeout(connectWs, delay);
+      } else {
+        setStatus('⚠️ Connection lost. Please refresh the page.');
+      }
+    });
+  }
 
   // ── Init ──────────────────────────────────────────────────────────────────
   buildBoard();
@@ -811,4 +874,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (chatInput) {
     chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') window.sendChat(); });
   }
+
+  connectWs();
 });
