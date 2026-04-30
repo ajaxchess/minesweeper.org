@@ -2,7 +2,7 @@
 duel_routes.py — Page routes and WebSocket endpoint for head-to-head duels.
 Mount this router in main.py with: app.include_router(duel_router)
 """
-import uuid, json, asyncio, logging, logging.handlers
+import uuid, json, asyncio, logging, logging.handlers, random
 from typing import Optional
 from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -467,6 +467,14 @@ async def _run_bot(game, bot_id: str, difficulty: str) -> None:
             break
 
         r, c = move
+        # F70: bot AI is unaware of the frontier; if its pick is outside the
+        # playable set, fall back to a random unrevealed frontier cell.
+        if game.use_frontier and bot_state.playable_set and (r, c) not in bot_state.playable_set:
+            candidates = [(fr, fc) for (fr, fc) in bot_state.playable_set
+                          if not bot_state.revealed[fr][fc]]
+            if not candidates:
+                continue
+            r, c = random.choice(candidates)
         result = game.reveal(bot_id, r, c)
         if not result:
             continue
