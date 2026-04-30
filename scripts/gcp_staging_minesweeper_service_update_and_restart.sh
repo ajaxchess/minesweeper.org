@@ -126,7 +126,7 @@ smoke_test() {
 }
 
 smoke_test "Home"     "/"         "minesweeper" || SMOKE_FAILED=1
-smoke_test "PvP"      "/pvp"      "PvP Minesweeper" || SMOKE_FAILED=1
+smoke_test "PvP"      "/pvp/bot"  "PvP Minesweeper" || SMOKE_FAILED=1
 smoke_test "Duel"     "/duel"     "Minesweeper" || SMOKE_FAILED=1
 smoke_test "Tentaizu" "/tentaizu" "Tentaizu" || SMOKE_FAILED=1
 
