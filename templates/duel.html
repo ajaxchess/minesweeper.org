@@ -1,18 +1,18 @@
 {% extends "base.html" %}
-{% block title %}{% if mode == 'pvp' %}{{ t.meta_title_pvp }}{% else %}{{ t.meta_title_duel }}{% endif %}{% endblock %}
-{% block description %}{% if mode == 'pvp' %}{{ t.meta_desc_pvp }}{% else %}{{ t.meta_desc_duel }}{% endif %}{% endblock %}
-{% block keywords %}<meta name="keywords" content="{% if mode == 'pvp' %}{{ t.meta_kw_pvp }}{% else %}minesweeper multiplayer, minesweeper 1v1, minesweeper duel, 2 player minesweeper, play minesweeper with friends, online minesweeper{% endif %}">{% endblock %}
-{% block canonical %}https://minesweeper.org/{% if mode == 'pvp' %}pvp{% else %}duel{% endif %}{% endblock %}
-{% block og_url %}https://minesweeper.org/{% if mode == 'pvp' %}pvp{% else %}duel{% endif %}{% endblock %}
-{% block og_title %}{% if mode == 'pvp' %}{{ t.meta_title_pvp | replace(" | minesweeper.org", "") }}{% else %}{{ t.meta_title_duel | replace(" | minesweeper.org", "") }}{% endif %}{% endblock %}
-{% block og_description %}{% if mode == 'pvp' %}{{ t.meta_desc_pvp }}{% else %}{{ t.meta_desc_duel }}{% endif %}{% endblock %}
+{% block title %}{% if mode in ('pvp', 'pvp-beta') %}{{ t.meta_title_pvp }}{% else %}{{ t.meta_title_duel }}{% endif %}{% endblock %}
+{% block description %}{% if mode in ('pvp', 'pvp-beta') %}{{ t.meta_desc_pvp }}{% else %}{{ t.meta_desc_duel }}{% endif %}{% endblock %}
+{% block keywords %}<meta name="keywords" content="{% if mode in ('pvp', 'pvp-beta') %}{{ t.meta_kw_pvp }}{% else %}minesweeper multiplayer, minesweeper 1v1, minesweeper duel, 2 player minesweeper, play minesweeper with friends, online minesweeper{% endif %}">{% endblock %}
+{% block canonical %}https://minesweeper.org/{% if mode in ('pvp', 'pvp-beta') %}pvp{% else %}duel{% endif %}{% endblock %}
+{% block og_url %}https://minesweeper.org/{% if mode in ('pvp', 'pvp-beta') %}pvp{% else %}duel{% endif %}{% endblock %}
+{% block og_title %}{% if mode in ('pvp', 'pvp-beta') %}{{ t.meta_title_pvp | replace(" | minesweeper.org", "") }}{% else %}{{ t.meta_title_duel | replace(" | minesweeper.org", "") }}{% endif %}{% endblock %}
+{% block og_description %}{% if mode in ('pvp', 'pvp-beta') %}{{ t.meta_desc_pvp }}{% else %}{{ t.meta_desc_duel }}{% endif %}{% endblock %}
 {% block og_image %}https://minesweeper.org/static/img/og-duel.png{% endblock %}
-{% block tw_title %}{% if mode == 'pvp' %}{{ t.meta_title_pvp | replace(" | minesweeper.org", "") }}{% else %}{{ t.meta_title_duel | replace(" | minesweeper.org", "") }}{% endif %}{% endblock %}
-{% block tw_description %}{% if mode == 'pvp' %}{{ t.meta_desc_pvp }}{% else %}{{ t.meta_desc_duel }}{% endif %}{% endblock %}
+{% block tw_title %}{% if mode in ('pvp', 'pvp-beta') %}{{ t.meta_title_pvp | replace(" | minesweeper.org", "") }}{% else %}{{ t.meta_title_duel | replace(" | minesweeper.org", "") }}{% endif %}{% endblock %}
+{% block tw_description %}{% if mode in ('pvp', 'pvp-beta') %}{{ t.meta_desc_pvp }}{% else %}{{ t.meta_desc_duel }}{% endif %}{% endblock %}
 {% block tw_image %}https://minesweeper.org/static/img/og-duel.png{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">
-{% if mode == 'pvp' %}
+{% if mode in ('pvp', 'pvp-beta') %}
 {
   "@context": "https://schema.org",
   "@type": "VideoGame",
@@ -42,16 +42,16 @@
 {% endblock %}
 
 {% block content %}
-{% if mode == 'pvp' %}<h1 class="tz-page-h1">PvP Minesweeper — Real-Time Matchmaking</h1>
+{% if mode in ('pvp', 'pvp-beta') %}<h1 class="tz-page-h1">PvP Minesweeper — Real-Time Matchmaking</h1>
 {% else %}<h1 class="tz-page-h1">Minesweeper 1v1 Duel — Challenge a Friend</h1>{% endif %}
 <div class="duel-wrapper">
 
   <!-- ── Mode selector ── -->
   <div class="duel-mode-tabs">
-    {% if mode in ('pvp', 'pvp-bot') %}
-    <a href="/pvp?m=standard" class="duel-mode-tab {% if mode == 'pvp' and submode == 'standard' %}active{% endif %}">Standard</a>
-    <a href="/pvp?m=quick"    class="duel-mode-tab {% if mode == 'pvp' and submode == 'quick' %}active{% endif %}">⚡ Quick</a>
-    <a href="/pvp/bot"        class="duel-mode-tab {% if mode == 'pvp-bot' %}active{% endif %}">🤖 vs Bot</a>
+    {% if mode in ('pvp', 'pvp-bot', 'pvp-beta', 'pvp-bot-beta') %}
+    <a href="/pvp?m=standard" class="duel-mode-tab {% if mode in ('pvp', 'pvp-beta') and submode == 'standard' %}active{% endif %}">Standard</a>
+    <a href="/pvp?m=quick"    class="duel-mode-tab {% if mode in ('pvp', 'pvp-beta') and submode == 'quick' %}active{% endif %}">⚡ Quick</a>
+    <a href="/pvp/bot"        class="duel-mode-tab {% if mode in ('pvp-bot', 'pvp-bot-beta') %}active{% endif %}">🤖 vs Bot</a>
     <a href="/pvp/leaderboard" class="duel-mode-tab">🏆 Leaderboard</a>
     <a href="/pvp/rankings"    class="duel-mode-tab">👑 Rankings</a>
     {% else %}
@@ -79,9 +79,9 @@
             onclick="sendStart()">{{ t.duel_start_btn }}</button>
     {% endif %}
 
-    {% if mode == 'pvp' %}
+    {% if mode in ('pvp', 'pvp-beta') %}
     <div class="pvp-badge">⚔️ PvP Matchmaking — {{ rows }}×{{ cols }}, {{ mines }} mines</div>
-    {% elif mode == 'pvp-bot' %}
+    {% elif mode in ('pvp-bot', 'pvp-bot-beta') %}
     <div class="pvp-badge">🤖 vs Bot ({{ bot_difficulty | default('medium') | capitalize }}) — {{ rows }}×{{ cols }}, {{ mines }} mines</div>
     {% endif %}
   </div>
@@ -184,7 +184,7 @@
 </div>
 
 <!-- ── SEO Landing Content ── -->
-{% if mode == 'pvp' %}
+{% if mode in ('pvp', 'pvp-beta') %}
 <div class="game-landing-seo">
 
   <h2>PvP Minesweeper — Real-Time Competitive Play</h2>

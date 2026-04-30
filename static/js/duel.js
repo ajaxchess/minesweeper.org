@@ -737,7 +737,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p class="result-time">Time: ${msg.elapsed}s</p>
             ${hashLine}
             ${rematchBtn}
-            <a href="${IS_BETA ? '/pvpbeta' : IS_PVP ? '/pvp' : '/duel'}?m=${SUBMODE}" class="duel-play-again duel-play-again--secondary">⚔️ New Duel</a>
+            <a href="${IS_PVP ? '/pvp' : IS_BETA ? '/pvpbeta' : '/duel'}?m=${SUBMODE}" class="duel-play-again duel-play-again--secondary">⚔️ New Duel</a>
           </div>
         `);
         break;
