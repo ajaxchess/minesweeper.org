@@ -86,6 +86,11 @@ let _poleIndices = [];
 // Camera pulse
 let _pulse = null;
 
+// Zoom
+let _zoom = 3.5;
+const _ZOOM_MIN = 1.8;
+const _ZOOM_MAX = 7.0;
+
 // ---------------------------------------------------------------------------
 // Background selector
 // ---------------------------------------------------------------------------
@@ -321,16 +326,25 @@ function _buildFaceMeshes(faces) {
 // ---------------------------------------------------------------------------
 
 function _attachEvents(canvas) {
-    let _longPress = null;
+    let _longPress  = null;
+    const _pointers = new Map(); // pointerId -> {x, y}
+    let _pinchDist  = 0;
 
     canvas.addEventListener('pointerdown', e => {
+        _pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        canvas.setPointerCapture(e.pointerId);
+        if (_pointers.size === 2) {
+            const [a, b] = [..._pointers.values()];
+            const dx = a.x - b.x, dy = a.y - b.y;
+            _pinchDist   = Math.sqrt(dx * dx + dy * dy);
+            _drag.active = false;
+            if (_longPress) { clearTimeout(_longPress); _longPress = null; }
+            return;
+        }
         _drag.active   = true;
         _drag.lastX    = e.clientX;
         _drag.lastY    = e.clientY;
         _drag.travelSq = 0;
-        canvas.setPointerCapture(e.pointerId);
-
-        // Touch long-press → flag (right-click equivalent)
         if (e.pointerType === 'touch') {
             _longPress = setTimeout(() => {
                 _longPress = null;
@@ -340,18 +354,26 @@ function _attachEvents(canvas) {
     });
 
     canvas.addEventListener('pointermove', e => {
+        _pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (_pointers.size === 2) {
+            const [a, b] = [..._pointers.values()];
+            const dx = a.x - b.x, dy = a.y - b.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (_pinchDist > 0 && dist > 0) {
+                _zoom = Math.max(_ZOOM_MIN, Math.min(_ZOOM_MAX,
+                    _zoom * (_pinchDist / dist)));
+                _camera.position.z = _zoom;
+            }
+            _pinchDist = dist;
+            return;
+        }
         if (!_drag.active) return;
         const dx = e.clientX - _drag.lastX;
         const dy = e.clientY - _drag.lastY;
         _drag.travelSq += dx * dx + dy * dy;
         _drag.lastX = e.clientX;
         _drag.lastY = e.clientY;
-
-        if (_drag.travelSq > 4 && _longPress) {
-            clearTimeout(_longPress);
-            _longPress = null;
-        }
-
+        if (_drag.travelSq > 4 && _longPress) { clearTimeout(_longPress); _longPress = null; }
         const len = Math.sqrt(dx * dx + dy * dy);
         if (len < 0.001) return;
         const axis  = new THREE.Vector3(dy / len, dx / len, 0);
@@ -360,13 +382,27 @@ function _attachEvents(canvas) {
     });
 
     canvas.addEventListener('pointerup', e => {
+        _pointers.delete(e.pointerId);
+        _pinchDist = 0;
         if (_longPress) { clearTimeout(_longPress); _longPress = null; }
         if (_drag.active && _drag.travelSq < 36) _doRaycast(e, e.button);
         _drag.active = false;
     });
 
-    // Suppress browser context menu on right-click
+    canvas.addEventListener('pointercancel', e => {
+        _pointers.delete(e.pointerId);
+        _pinchDist   = 0;
+        _drag.active = false;
+    });
+
     canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+    canvas.addEventListener('wheel', e => {
+        e.preventDefault();
+        _zoom = Math.max(_ZOOM_MIN, Math.min(_ZOOM_MAX,
+            _zoom + e.deltaY * 0.005));
+        _camera.position.z = _zoom;
+    }, { passive: false });
 }
 
 function _doRaycast(e, button) {
@@ -790,7 +826,7 @@ function _stopTimer() {
 // ---------------------------------------------------------------------------
 
 function triggerPulse() {
-    _pulse = { t0: performance.now(), baseZ: 3.5, peakZ: 3.675, dur: 300 };
+    _pulse = { t0: performance.now(), baseZ: _zoom, peakZ: _zoom + 0.175, dur: 300 };
 }
 
 // ---------------------------------------------------------------------------

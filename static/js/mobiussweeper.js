@@ -90,6 +90,11 @@ let _msTmpVec      = null;
 // Camera pulse
 let _msPulse = null;
 
+// Zoom
+let _msZoom = 6.5;
+const _MS_ZOOM_MIN = 3.5;
+const _MS_ZOOM_MAX = 12.0;
+
 // ---------------------------------------------------------------------------
 // Cell ID encoding  (row * L + col)
 // ---------------------------------------------------------------------------
@@ -783,7 +788,7 @@ function _msStopTimer() {
 // ---------------------------------------------------------------------------
 
 function _msTriggerPulse() {
-    _msPulse = { t0: performance.now(), baseZ: 6.5, peakZ: 6.8, dur: 300 };
+    _msPulse = { t0: performance.now(), baseZ: _msZoom, peakZ: _msZoom + 0.3, dur: 300 };
 }
 
 // ---------------------------------------------------------------------------
@@ -840,14 +845,25 @@ function _msUpdateNoGuessBtn() {
 // ---------------------------------------------------------------------------
 
 function _msAttachEvents(canvas) {
-    let _longPress = null;
+    let _longPress   = null;
+    const _pointers  = new Map(); // pointerId -> {x, y}
+    let _pinchDist   = 0;
 
     canvas.addEventListener('pointerdown', e => {
+        _pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        canvas.setPointerCapture(e.pointerId);
+        if (_pointers.size === 2) {
+            const [a, b] = [..._pointers.values()];
+            const dx = a.x - b.x, dy = a.y - b.y;
+            _pinchDist      = Math.sqrt(dx * dx + dy * dy);
+            _msDrag.active  = false;
+            if (_longPress) { clearTimeout(_longPress); _longPress = null; }
+            return;
+        }
         _msDrag.active   = true;
         _msDrag.lastX    = e.clientX;
         _msDrag.lastY    = e.clientY;
         _msDrag.travelSq = 0;
-        canvas.setPointerCapture(e.pointerId);
         if (e.pointerType === 'touch') {
             _longPress = setTimeout(() => {
                 _longPress = null;
@@ -857,6 +873,19 @@ function _msAttachEvents(canvas) {
     });
 
     canvas.addEventListener('pointermove', e => {
+        _pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (_pointers.size === 2) {
+            const [a, b] = [..._pointers.values()];
+            const dx = a.x - b.x, dy = a.y - b.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (_pinchDist > 0 && dist > 0) {
+                _msZoom = Math.max(_MS_ZOOM_MIN, Math.min(_MS_ZOOM_MAX,
+                    _msZoom * (_pinchDist / dist)));
+                _camera.position.z = _msZoom;
+            }
+            _pinchDist = dist;
+            return;
+        }
         if (!_msDrag.active) return;
         const dx = e.clientX - _msDrag.lastX;
         const dy = e.clientY - _msDrag.lastY;
@@ -872,12 +901,27 @@ function _msAttachEvents(canvas) {
     });
 
     canvas.addEventListener('pointerup', e => {
+        _pointers.delete(e.pointerId);
+        _pinchDist = 0;
         if (_longPress) { clearTimeout(_longPress); _longPress = null; }
         if (_msDrag.active && _msDrag.travelSq < 36) _msDoRaycast(e, e.button);
         _msDrag.active = false;
     });
 
+    canvas.addEventListener('pointercancel', e => {
+        _pointers.delete(e.pointerId);
+        _pinchDist     = 0;
+        _msDrag.active = false;
+    });
+
     canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+    canvas.addEventListener('wheel', e => {
+        e.preventDefault();
+        _msZoom = Math.max(_MS_ZOOM_MIN, Math.min(_MS_ZOOM_MAX,
+            _msZoom + e.deltaY * 0.005));
+        _camera.position.z = _msZoom;
+    }, { passive: false });
 }
 
 function _msDoRaycast(e, button) {
