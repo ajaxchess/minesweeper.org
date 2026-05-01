@@ -70,15 +70,21 @@ def setup_telemetry(app, db_engine=None) -> None:
     Initialise OpenTelemetry tracing + metrics and attach to the FastAPI app.
 
     Reads configuration from environment / .env:
+      OTEL_ENABLED                 — set to false/0/no/off to disable (default: true)
       OTEL_EXPORTER_OTLP_ENDPOINT  — OTLP HTTP collector URL (required to enable)
       OTEL_SERVICE_NAME            — service name tag  (default: minesweeper.org)
       OTEL_SERVICE_VERSION         — version string    (default: unknown)
       ENVIRONMENT                  — deployment.environment tag
       OTEL_EXPORTER_OTLP_HEADERS   — optional comma-separated key=value auth headers
 
-    When OTEL_EXPORTER_OTLP_ENDPOINT is not set the function returns immediately
-    so the app works normally in development without any OTEL infrastructure.
+    Returns immediately (no-op) when OTEL_ENABLED=false or
+    OTEL_EXPORTER_OTLP_ENDPOINT is not set.
     """
+    enabled = os.environ.get("OTEL_ENABLED", "true").strip().lower()
+    if enabled in ("0", "false", "no", "off"):
+        logger.info("OTEL_ENABLED=false — telemetry disabled")
+        return
+
     endpoint = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT", "").strip()
     if not endpoint:
         logger.debug("OTEL_EXPORTER_OTLP_ENDPOINT not set — telemetry disabled")
