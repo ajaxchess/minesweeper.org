@@ -614,22 +614,27 @@ const NUM_COLORS_TENTAIZU = ['','#7ec8e3','#98e6a8','#ffb3b3','#d4a8ff',
                               '#ffd580','#7ff0e0','#c8c8c8','#909090'];
 const NUM_COLORS_FLOWER   = ['','#d4449a','#3a9e5f','#c0392b','#8e44ad',
                               '#e67e22','#16a085','#2c3e50','#7f8c8d'];
+const NUM_COLORS_MEXICO   = ['','#42a5f5','#66bb6a','#ef5350','#ab47bc',
+                              '#ffa726','#26c6da','#d4a276','#a0856c'];
 function getNumColors() {
   const skin = document.documentElement.dataset.skin;
   if (skin === 'classic')                          return NUM_COLORS_CLASSIC;
   if (skin === 'tentaizu')                         return NUM_COLORS_TENTAIZU;
   if (skin === 'flower' || skin === 'flower-light') return NUM_COLORS_FLOWER;
+  if (skin === 'mexico')                           return NUM_COLORS_MEXICO;
   return NUM_COLORS_DARK;
 }
 function getMineEmoji() {
   const skin = document.documentElement.dataset.skin;
   if (skin === 'tentaizu')                         return '⭐';
   if (skin === 'flower' || skin === 'flower-light') return '🌸';
+  if (skin === 'mexico')                           return '🪅';
   return '💣';
 }
 function getFlagEmoji() {
   const skin = document.documentElement.dataset.skin;
   if (skin === 'flower' || skin === 'flower-light') return '🌷';
+  if (skin === 'mexico')                           return '🇲🇽';
   return '🚩';
 }
 

@@ -377,6 +377,7 @@
                 <button class="mega-theme-btn" onclick="setTheme('tentaizu')"   title="Tentaizu">⭐</button>
                 <button class="mega-theme-btn" onclick="setTheme('flower')"     title="Flower Garden">🌸</button>
                 <button class="mega-theme-btn" onclick="setTheme('classic')"    title="Classic">🟦</button>
+                <button class="mega-theme-btn" onclick="setTheme('mexico')"     title="Mexico">🪅</button>
               </div>
             </div>
           </div>
@@ -427,6 +428,9 @@
   {% endif %}
   {% if diana_birthday_banner() %}
   <div class="diana-birthday-banner">👑 {{ diana_birthday_banner() }} 👑</div>
+  {% endif %}
+  {% if mexico_banner() %}
+  <div class="mexico-banner">🪅 {{ mexico_banner() }} 🪅</div>
   {% endif %}
 
 

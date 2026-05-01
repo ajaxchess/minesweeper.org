@@ -9,16 +9,22 @@
 #   'diana'        — Lady Di's Mines classic skin (stored as 'classic' in CSS/DB)
 #   'flower'       — Flower Garden night theme (mines=🌸, flags=🌷)
 #   'flower-light' — Flower Garden day theme (auto-selected during 06:00–20:00)
+#   'mexico'       — Mexico fiesta theme (active on May 5 and Sep 16)
 
 from datetime import date, datetime, timedelta
 
 DEFAULT_SKIN: str = 'dark'
-ALLOWED_SKINS: tuple[str, ...] = ('default', 'dark', 'light', 'tentaizu', 'diana', 'flower', 'flower-light')
+ALLOWED_SKINS: tuple[str, ...] = ('default', 'dark', 'light', 'tentaizu', 'diana', 'flower', 'flower-light', 'mexico')
 
 # ── PvP opponent board delay ───────────────────────────────────────────────────
 # Seconds to delay showing the opponent's board moves to the player.
 # 0 = real-time (no delay). Adjust to change competitive feel.
 PVP_OPPONENT_BOARD_DELAY_SECS: int = 3
+
+# ── Mexico theming (Cinco de Mayo + Mexican Independence Day) ────────────────
+MEXICO_SKIN:                  str = 'mexico'
+MEXICO_CINCO_BANNER:          str = "¡Feliz Cinco de Mayo! 🇲🇽"
+MEXICO_INDEPENDENCE_BANNER:   str = "¡Viva México! 🇲🇽 Happy Mexican Independence Day!"
 
 # ── Diana birthday theming ────────────────────────────────────────────────────
 DIANA_BIRTHDAY_SKIN:   str = 'diana'
@@ -87,8 +93,16 @@ def is_diana_birthday() -> bool:
     return today.month == 7 and today.day == 1
 
 
+def is_mexico_day() -> bool:
+    """Return True on Cinco de Mayo (May 5) or Mexican Independence Day (Sep 16)."""
+    today = date.today()
+    return (today.month == 5 and today.day == 5) or (today.month == 9 and today.day == 16)
+
+
 def active_skin() -> str:
     """Return the skin that should be active today."""
+    if is_mexico_day():
+        return MEXICO_SKIN
     if is_diana_birthday():
         return DIANA_BIRTHDAY_SKIN
     if is_solstice_today() or is_equinox_today():
@@ -109,3 +123,13 @@ def equinox_banner() -> str | None:
 def diana_birthday_banner() -> str | None:
     """Return the Diana birthday banner message, or None when not July 1st."""
     return DIANA_BIRTHDAY_BANNER if is_diana_birthday() else None
+
+
+def mexico_banner() -> str | None:
+    """Return the Mexico banner message for Cinco de Mayo or Independence Day."""
+    today = date.today()
+    if today.month == 5 and today.day == 5:
+        return MEXICO_CINCO_BANNER
+    if today.month == 9 and today.day == 16:
+        return MEXICO_INDEPENDENCE_BANNER
+    return None

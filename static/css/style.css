@@ -125,6 +125,17 @@ nav a.active { background: var(--accent); color: #fff; }
   border-bottom: 1px solid #7b2d8b;
 }
 
+.mexico-banner {
+  width: 100%;
+  background: linear-gradient(90deg, #005c39 0%, #006847 18%, #1a0900 38%, #1a0900 62%, #8b000e 82%, #ce1126 100%);
+  color: #f5e6c0;
+  text-align: center;
+  padding: 0.55rem 1rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid #ce1126;
+}
+
 /* ── Layout ──────────────────────────────────────────────────────────────── */
 main { flex: 1; padding: 0.25rem 0.5rem; }
 
@@ -6837,3 +6848,57 @@ html[data-skin="flower-light"] .diana-birthday-banner {
   .su-numpad { max-width: 100%; }
   .su-result-time { font-size: 2rem; }
 }
+
+/* ── Mexico theme (Cinco de Mayo / Mexican Independence Day) ─────────────── */
+html[data-skin="mexico"] {
+  --bg:          #120900;
+  --surface:     #1f1000;
+  --surface2:    #2e1800;
+  --accent:      #ce1126;
+  --accent2:     #f5a800;
+  --text:        #f0e0c0;
+  --text-dim:    #9a7050;
+  --cell-hidden: #4a2614;
+  --cell-hover:  #5e3418;
+  --cell-rev:    #0d0500;
+  --cell-border: #8a4c28;
+  --border:      #4a2614;
+  --glob-hidden:        #4a2614;
+  --glob-hidden-border: #8a4c28;
+  --glob-rev:           #f0e0c0;
+  --glob-mine:          #8b0000;
+  --glob-detonated:     #ce1126;
+}
+
+html[data-skin="mexico"] body {
+  background-color: #120900;
+}
+
+html[data-skin="mexico"] #board,
+html[data-skin="mexico"] #rush-board,
+html[data-skin="mexico"] #tz-board,
+html[data-skin="mexico"] #cyl-board,
+html[data-skin="mexico"] #tor-board {
+  background: #1f1000;
+  border-color: var(--cell-border);
+}
+
+html[data-skin="mexico"] .cell.hidden {
+  background: var(--cell-hidden);
+  border-color: var(--cell-border);
+}
+
+html[data-skin="mexico"] .cell.revealed { background: var(--cell-rev); }
+
+html[data-skin="mexico"] .cell.mine-detonated { background: #3a0000; }
+
+/* Skin preview for profile page */
+.skin-preview-mexico {
+  background: #1f1000;
+  padding: 4px;
+  border: 1px solid #8a4c28;
+}
+.skin-preview-mexico .sp-hidden   { background: #4a2614; border: 1px solid #8a4c28; }
+.skin-preview-mexico .sp-revealed { background: #0d0500; border: 1px solid #2a1000; }
+.skin-preview-mexico .sp-n1 { color: #42a5f5; }
+.skin-preview-mexico .sp-n2 { color: #66bb6a; }
