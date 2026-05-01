@@ -5820,6 +5820,7 @@ def admin_hscleaning(
     board_hash: str = "",
     hmode: str = "all",
     no_guess: str = "all",
+    page: int = 1,
 ):
     user = get_current_user(request)
     require_admin(request, user)
@@ -5833,15 +5834,24 @@ def admin_hscleaning(
             pass
 
     valid_modes = {"beginner", "intermediate", "expert", "custom"}
-    if mode not in valid_modes:
+    if mode not in valid_modes and mode != "all":
         mode = "beginner"
+
+    PAGE_SIZE = 250
+    page = max(1, page)
 
     # Daily scores for selected mode + date
     daily_q = db.query(Score).filter(
-        Score.mode == mode,
         func.date(Score.created_at) == target_date,
-    ).order_by(Score.time_ms.asc(), Score.time_secs.asc())
-    daily_scores = daily_q.limit(50).all()
+    )
+    if mode != "all":
+        daily_q = daily_q.filter(Score.mode == mode)
+    daily_q = daily_q.order_by(Score.time_ms.asc(), Score.time_secs.asc())
+
+    total_daily = daily_q.count()
+    total_pages = max(1, (total_daily + PAGE_SIZE - 1) // PAGE_SIZE)
+    page = min(page, total_pages)
+    daily_scores = daily_q.offset((page - 1) * PAGE_SIZE).limit(PAGE_SIZE).all()
 
     # Hash search results
     hash_scores = []
@@ -5875,6 +5885,9 @@ def admin_hscleaning(
         "hash_scores": hash_scores,
         "valid_modes": sorted(valid_modes),
         "flagged_scores": flagged_scores,
+        "page": page,
+        "total_daily": total_daily,
+        "total_pages": total_pages,
     })
 
 

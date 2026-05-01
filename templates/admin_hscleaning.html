@@ -80,6 +80,7 @@
       <label style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.85rem;color:var(--text-dim);">
         Mode
         <select name="mode" class="admin-select">
+          <option value="all" {% if mode == "all" %}selected{% endif %}>All modes</option>
           {% for m in valid_modes %}
           <option value="{{ m }}" {% if m == mode %}selected{% endif %}>{{ m }}</option>
           {% endfor %}
@@ -122,7 +123,7 @@
           <td style="font-size:0.8rem;">{{ s.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
           <td>
             <form method="post" action="/admin/hscleaning/delete/{{ s.id }}" onsubmit="return confirm('Remove score #{{ s.id }} by {{ s.name }}?')">
-              <input type="hidden" name="next_url" value="/admin/hscleaning?mode={{ mode }}&date_str={{ date_str }}{% if board_hash %}&board_hash={{ board_hash }}&hmode={{ hmode }}&no_guess={{ no_guess }}{% endif %}">
+              <input type="hidden" name="next_url" value="/admin/hscleaning?mode={{ mode }}&date_str={{ date_str }}&page={{ page }}{% if board_hash %}&board_hash={{ board_hash }}&hmode={{ hmode }}&no_guess={{ no_guess }}{% endif %}">
               <button type="submit" class="admin-btn-danger">Remove</button>
             </form>
           </td>
@@ -130,9 +131,21 @@
         {% endfor %}
       </tbody>
     </table>
-    <p style="font-size:0.8rem;color:var(--text-dim);margin-top:0.5rem;">{{ daily_scores|length }} score(s) shown (max 50)</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.75rem;flex-wrap:wrap;gap:0.5rem;">
+      <p style="font-size:0.8rem;color:var(--text-dim);margin:0;">{{ total_daily }} score(s) total{% if total_pages > 1 %} — page {{ page }} of {{ total_pages }}{% endif %}</p>
+      {% if total_pages > 1 %}
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        {% if page > 1 %}
+        <a href="/admin/hscleaning?mode={{ mode }}&date_str={{ date_str }}&page={{ page - 1 }}{% if board_hash %}&board_hash={{ board_hash }}&hmode={{ hmode }}&no_guess={{ no_guess }}{% endif %}" class="admin-btn" style="padding:0.3rem 0.75rem;text-decoration:none;">← Prev</a>
+        {% endif %}
+        {% if page < total_pages %}
+        <a href="/admin/hscleaning?mode={{ mode }}&date_str={{ date_str }}&page={{ page + 1 }}{% if board_hash %}&board_hash={{ board_hash }}&hmode={{ hmode }}&no_guess={{ no_guess }}{% endif %}" class="admin-btn" style="padding:0.3rem 0.75rem;text-decoration:none;">Next →</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
     {% else %}
-    <p style="color:var(--text-dim);font-size:0.9rem;">No scores found for {{ mode }} on {{ date_str }}.</p>
+    <p style="color:var(--text-dim);font-size:0.9rem;">No scores found{% if mode != "all" %} for {{ mode }}{% endif %} on {{ date_str }}.</p>
     {% endif %}
   </section>
 
