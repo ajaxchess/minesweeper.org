@@ -524,10 +524,20 @@ document.addEventListener('DOMContentLoaded', () => {
     toReveal.forEach(([nr, nc]) => ws.send(JSON.stringify({type: 'reveal', r: nr, c: nc})));
   }
 
+  function updateMyMinesLeft() {
+    let flagCount = 0;
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++)
+        if (flagged[r][c] === 1) flagCount++;
+    const el = document.getElementById('my-mines-left');
+    if (el) el.textContent = `${MINES - flagCount} mines left`;
+  }
+
   function onFlag(r, c) {
     if (!gameActive || revealed[r][c]) return;
     flagged[r][c] = (flagged[r][c] + 1) % 3;
     renderCell(r, c);
+    updateMyMinesLeft();
     if (debugEnabled) {
       const label = flagged[r][c] === 0 ? 'unflagged' : flagged[r][c] === 1 ? 'flag 🚩' : 'question ❓';
       _debugAddMove(r, c, 'R', label, 'dm-flag');

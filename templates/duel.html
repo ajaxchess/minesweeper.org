@@ -92,6 +92,7 @@
       <span class="score-label">{{ t.duel_you }}</span>
       <span class="score-value" id="my-score">0</span>
       <span class="score-sub" id="my-tiles">0 tiles</span>
+      <span class="score-sub" id="my-mines-left">{{ mines }} mines left</span>
       {% if mode in ('pvp-beta', 'pvp-bot-beta') %}
       <span class="score-sub mine-hits-badge" id="my-mine-hits" style="display:none">💥 0</span>
       <span class="score-sub" id="my-pct" style="color:var(--text-dim)">0%</span>
@@ -102,6 +103,7 @@
       <span class="score-label" id="opp-score-label">{{ t.duel_opponent }}</span>
       <span class="score-value" id="opp-score">0</span>
       <span class="score-sub" id="opp-tiles">0 tiles</span>
+      <span class="score-sub" id="opp-mines-left">{{ mines }} mines left</span>
       {% if mode in ('pvp-beta', 'pvp-bot-beta') %}
       <span class="score-sub mine-hits-badge" id="opp-mine-hits" style="display:none">💥 0</span>
       <span class="score-sub" id="opp-pct" style="color:var(--text-dim)">0%</span>
