@@ -76,6 +76,7 @@ templates.env.globals["active_skin"]          = site_settings.active_skin
 templates.env.globals["solstice_banner"]      = site_settings.solstice_banner
 templates.env.globals["equinox_banner"]       = site_settings.equinox_banner
 templates.env.globals["diana_birthday_banner"] = site_settings.diana_birthday_banner
+templates.env.globals["mexico_banner"]        = site_settings.mexico_banner
 templates.env.globals["ga_tag"]               = ""  # not needed in duel routes
 templates.env.globals["get_breadcrumbs"]      = _get_breadcrumbs
 
