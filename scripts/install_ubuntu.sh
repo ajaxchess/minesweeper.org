@@ -42,7 +42,6 @@ apt-get install -y -qq \
     nodejs npm \
     mysql-server \
     apache2 \
-    libapache2-mod-proxy-uwsgi \
     certbot python3-certbot-apache
 ok "System packages installed."
 
