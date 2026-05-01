@@ -467,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function startTimer() {
     if (timerID) return;
     timerID = setInterval(() => {
-      elapsed = Math.min(elapsed + 1, 999);
+      elapsed += 1;
       document.getElementById('duel-timer').textContent =
         String(elapsed).padStart(3, '0');
     }, 1000);

@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     elapsed = fromSec || 0;
     document.getElementById('spec-timer').textContent = String(Math.round(elapsed)).padStart(3, '0');
     timerID = setInterval(() => {
-      elapsed = Math.min(elapsed + 1, 999);
+      elapsed += 1;
       document.getElementById('spec-timer').textContent = String(Math.round(elapsed)).padStart(3, '0');
     }, 1000);
   }

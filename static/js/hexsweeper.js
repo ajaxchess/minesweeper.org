@@ -308,7 +308,7 @@
   function startTimer() {
     if (state.timerID) return;
     state.timerID = setInterval(() => {
-      state.elapsed = Math.min(state.elapsed + 1, 999);
+      state.elapsed += 1;
       document.getElementById('hex-timer').textContent =
         String(state.elapsed).padStart(3, '0');
     }, 1000);

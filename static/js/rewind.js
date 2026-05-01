@@ -201,7 +201,7 @@
     var gs = _stateAt(_e, ms);
     _renderBoard(_e, gs);
     var timerEl = document.getElementById('timer');
-    if (timerEl) timerEl.textContent = String(Math.min(Math.floor(ms / 1000), 999)).padStart(3, '0');
+    if (timerEl) timerEl.textContent = String(Math.floor(ms / 1000)).padStart(3, '0');
   }
 
   function _setRunning(yes) {
