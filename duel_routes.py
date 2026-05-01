@@ -464,6 +464,22 @@ async def _run_bot(game, bot_id: str, difficulty: str) -> None:
 
         move = ai.next_move()
         if move is None:
+            if not game.finished:
+                game.finished = True
+                winner_id = game._determine_winner()
+                scores    = game.scores_payload()
+                await manager.broadcast(game, {
+                    "type":       "game_over",
+                    "winner_id":  winner_id,
+                    "scores":     scores,
+                    "elapsed":    round(game.elapsed()),
+                    "board_hash": game.board_hash,
+                    "rows":       game.rows,
+                    "cols":       game.cols,
+                    "mines":      game.mines,
+                })
+                if winner_id:
+                    _save_pvp_result(game, winner_id)
             break
 
         r, c = move
@@ -516,8 +532,13 @@ async def _run_bot(game, bot_id: str, difficulty: str) -> None:
                 ],
             })
 
-        if result.get("finished"):
-            winner_id = result.get("winner")
+        # Bot cleared its board while human is still playing
+        bot_cleared = result.get("opp_still_alive") and not result.get("exploded")
+        if bot_cleared:
+            game.finished = True
+
+        if result.get("finished") or bot_cleared:
+            winner_id = result.get("winner") or game._determine_winner()
             scores    = game.scores_payload()
             await manager.broadcast(game, {
                 "type":       "game_over",
