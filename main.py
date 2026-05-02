@@ -2584,6 +2584,21 @@ async def team_page(request: Request):
     })
 
 
+# ── Mobile app landing pages (F83) ────────────────────────────────────────────
+
+@app.get("/mobile", response_class=HTMLResponse)
+async def mobile_landing(request: Request):
+    return templates.TemplateResponse("mobile.html", {"request": request})
+
+@app.get("/mobile/ios", response_class=HTMLResponse)
+async def mobile_ios_landing(request: Request):
+    return templates.TemplateResponse("mobile_ios.html", {"request": request})
+
+@app.get("/mobile/android", response_class=HTMLResponse)
+async def mobile_android_landing(request: Request):
+    return templates.TemplateResponse("mobile_android.html", {"request": request})
+
+
 # ── Blog ──────────────────────────────────────────────────────────────────────
 
 # Post registry — add a new entry here for each new post.

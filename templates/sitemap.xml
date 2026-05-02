@@ -96,6 +96,28 @@
     <priority>0.6</priority>
   </url>
 
+  <!-- ── Mobile app landing pages ────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/mobile</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/mobile/ios</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/mobile/android</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- ── Info pages ───────────────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/info/3bv</loc>
