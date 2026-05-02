@@ -15,9 +15,9 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
-F84 Mobile app landing page
+F83 Mobile app landing page
 
-F83 Cinco De Mayo
+F84 Cinco De Mayo
 
 F82 TriangleSweeper Triangles on the surface of a solid
 
