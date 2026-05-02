@@ -844,6 +844,12 @@ async def _pvpbeta_wait_loop(ws: WebSocket, player_id: str):
                                 "name": p.name or "Anonymous",
                                 "public_id": public_id,
                             })
+            elif mtype == "reveal":
+                from duel import _games
+                game = next((g for g in _games.values()
+                             if g.get_player(player_id)), None)
+                if game:
+                    await _handle_reveal(ws, game, player_id, msg)
     except WebSocketDisconnect:
         pvpbeta_dequeue(player_id)
 
@@ -910,6 +916,12 @@ async def _pvpbeta_quick_wait_loop(ws: WebSocket, player_id: str):
                                 "name": p.name or "Anonymous",
                                 "public_id": public_id,
                             })
+            elif mtype == "reveal":
+                from duel import _games
+                game = next((g for g in _games.values()
+                             if g.get_player(player_id)), None)
+                if game:
+                    await _handle_reveal(ws, game, player_id, msg)
     except WebSocketDisconnect:
         pvpbeta_quick_dequeue(player_id)
 
