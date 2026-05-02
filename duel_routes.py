@@ -439,8 +439,18 @@ async def _handle_reveal(ws, game, player_id, msg):
             _save_pvp_result(game, winner_id)
 
 
+_bot_log = logging.getLogger("bot_runner")
+
+
 async def _run_bot(game, bot_id: str, difficulty: str) -> None:
     """Drive the bot player through a game.  Runs as a background asyncio task."""
+    try:
+        await _run_bot_inner(game, bot_id, difficulty)
+    except Exception:
+        _bot_log.exception("_run_bot crashed for bot=%s game=%s", bot_id, game.game_id)
+
+
+async def _run_bot_inner(game, bot_id: str, difficulty: str) -> None:
     from bots.minesweeper_bot import MinesweeperBot
 
     # Wait for game to start (or abort)
@@ -450,6 +460,10 @@ async def _run_bot(game, bot_id: str, difficulty: str) -> None:
         return
 
     bot_state = game.get_player(bot_id)
+    if bot_state is None:
+        _bot_log.error("_run_bot: bot player %s not found in game %s", bot_id, game.game_id)
+        return
+
     ai = MinesweeperBot(game.rows, game.cols, game.mines, difficulty)
 
     # Seed the AI with the shared pre-revealed cells
@@ -457,6 +471,8 @@ async def _run_bot(game, bot_id: str, difficulty: str) -> None:
         ai.apply_reveal(r, c, game.shared_board[r][c])
 
     delay = ai.move_delay()
+    _bot_log.info("_run_bot started: game=%s bot=%s diff=%s tiles=%d delay=%.1f",
+                  game.game_id, bot_id, difficulty, bot_state.tiles_revealed, delay)
 
     while not game.finished:
         await asyncio.sleep(delay)
@@ -465,6 +481,7 @@ async def _run_bot(game, bot_id: str, difficulty: str) -> None:
 
         move = ai.next_move()
         if move is None:
+            _bot_log.info("_run_bot: no move available, ending game=%s", game.game_id)
             if not game.finished:
                 game.finished = True
                 winner_id = game._determine_winner()
@@ -490,10 +507,35 @@ async def _run_bot(game, bot_id: str, difficulty: str) -> None:
             candidates = [(fr, fc) for (fr, fc) in bot_state.playable_set
                           if not bot_state.revealed[fr][fc]]
             if not candidates:
+                _bot_log.warning("_run_bot: frontier candidates empty game=%s tiles=%d",
+                                 game.game_id, bot_state.tiles_revealed)
                 continue
             r, c = random.choice(candidates)
+
         result = game.reveal(bot_id, r, c)
         if not result:
+            continue
+
+        # F71 mine-hit realloc: sync AI knowledge so stale cells don't block future moves
+        if result.get("mine_hit"):
+            for nr, nc in result.get("reset_cells", []):
+                ai.reset_cell(nr, nc)
+            for key, val in result.get("updated_values", {}).items():
+                nr2, nc2 = map(int, key.split(","))
+                if bot_state.revealed[nr2][nc2]:
+                    ai.apply_reveal(nr2, nc2, val)
+            # Send opp_mine_hit to the human so their board updates
+            human = game.opponent(bot_id)
+            if human and human.ws:
+                await manager.send(human.ws, {
+                    "type":        "opp_mine_hit",
+                    "r":           result["r"],
+                    "c":           result["c"],
+                    "reset_cells": result["reset_cells"],
+                    "mine_hits":   result["mine_hits"],
+                    "opp_score":   result["score"],
+                    "opp_tiles":   result["tiles"],
+                })
             continue
 
         # Update the AI's board knowledge from newly revealed cells

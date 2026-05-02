@@ -1,5 +1,17 @@
 -- Fixed below --
 
+B24 PvP vs Bot: bot makes zero moves (silent asyncio crash + stale AI knowledge after mine-hit)
+   Two bugs combined to prevent the bot from making any visible progress:
+   1. asyncio.create_task silently swallows unhandled exceptions — any crash in _run_bot
+      would kill the task without any log output.
+   2. After an F71 mine-hit realloc, the bot AI's `known` grid was not updated: reset cells
+      kept their old revealed values (0-8) instead of being marked HIDDEN again, causing the
+      solver to skip them as candidates and eventually lock up on hard boards.
+   Fixed by: splitting _run_bot into a wrapper+inner pair so all exceptions are caught and
+   logged via the "bot_runner" logger; resetting reallocated cells to HIDDEN in the AI after
+   each mine-hit, then re-applying the updated board values for cells that remain revealed;
+   also now sending opp_mine_hit to the human so their board reflects the bot's mine hits.
+
 B23 AdSense scripts, fonts, and sensor events blocked by CSP / Permissions-Policy
    Multiple CSP and Permissions-Policy headers were too restrictive for AdSense:
    - fundingchoicesmessages.google.com blocked by script-src (consent dialog)
