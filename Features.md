@@ -15,6 +15,26 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F86 Independence Day Theme (July 4 default)
+  - New skin: `america`, active as the site-wide default on July 4 (Independence Day)
+  - resolveDefaultSkin in base.html: when the user has no stored skin preference
+    and the client date is July 4 (local time), return `america` instead of `dark`
+  - User can override via the theme picker (localStorage key "skin"); their choice
+    is respected for the rest of the session
+  - Mine icon: 💣 (retain default)
+  - Flag icon: 🦅 (eagle) replaces 🚩
+      Add `america` case to getFlagEmoji() in all game JS files
+      Files: minesweeper.js, cylinder.js, toroid.js, rush.js, duel.js,
+             spectate.js, replay.js
+  - CSS — `america` palette:
+      Background: navy blue (#002868) / red (#BF0A30) — US flag colours
+      Cells hidden: deep navy; revealed: crisp white (#FFFFFF)
+      Numbers: bright red (#BF0A30) / gold (#FFD700) replacing the standard set
+      Mine cell background: dark navy
+      Detonated cell: bright red
+  - Mega menu: add "🦅 Independence Day" to the skin switcher (non-classic nav)
+  - Assign to Earl
+
 F85 Canada Day Theme (July 1 default)
   - New skin: `canada`, active as the site-wide default on July 1 (Canada Day)
   - resolveDefaultSkin in base.html: when the user has no stored skin preference

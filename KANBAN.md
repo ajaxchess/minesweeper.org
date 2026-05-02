@@ -11,6 +11,7 @@
 - F53 Sudoku — /sudoku
 - F84 Cinco De Mayo Theme — site default on May 5 @bill
 - F85 Canada Day Theme — site default on July 1 @bill
+- F86 Independence Day Theme — site default on July 4 @earl
 
 ## In Progress
 - F52 Schulte Grid — /other/schulte @richard
