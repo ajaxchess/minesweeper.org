@@ -15,6 +15,10 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F83 Mobile app landing page
+
+F82 TriangleSweeper Triangles on the surface of a solid
+
 F81 Toroid Ghost Numbers
   Ghost (echo) edge cells displayed outside all four edges of the Toroid
   Minesweeper board. Because the toroid wraps on all four sides, ghost
