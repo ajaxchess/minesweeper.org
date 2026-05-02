@@ -9,6 +9,8 @@
 - F39 Use light theme during daylight hours based on client browser local time, defaulting to dark otherwise
 - F51 Blog post announcing the Flower Garden theme @bill
 - F53 Sudoku — /sudoku
+- F84 Cinco De Mayo Theme — site default on May 5 @bill
+- F85 Canada Day Theme — site default on July 1 @bill
 
 ## In Progress
 - F52 Schulte Grid — /other/schulte @richard

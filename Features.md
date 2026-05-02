@@ -15,9 +15,47 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
-F83 Mobile app landing page
+F85 Canada Day Theme (July 1 default)
+  - New skin: `canada`, active as the site-wide default on July 1 (Canada Day)
+  - resolveDefaultSkin in base.html: when the user has no stored skin preference
+    and the client date is July 1 (local time), return `canada` instead of `dark`
+  - User can override via the theme picker (localStorage key "skin"); their choice
+    is respected for the rest of the session
+  - Mine icon: 💣 (retain default — keep gameplay familiar)
+  - Flag icon: 🍁 (maple leaf) replaces 🚩
+      Add `canada` case to getFlagEmoji() in all game JS files
+      Files: minesweeper.js, cylinder.js, toroid.js, rush.js, duel.js,
+             spectate.js, replay.js
+  - CSS — `canada` palette:
+      Background: deep red (#CC0000) / white (#FFFFFF) — Canadian flag colours
+      Cells hidden: rich red; revealed: crisp white
+      Numbers: dark navy (#002147) replacing the standard blue/green/red set
+      Mine cell background: dark crimson
+      Detonated cell: bright red
+  - Mega menu: add "🍁 Canada Day" to the skin switcher (non-classic nav)
+  - Assign to Bill
 
-F84 Cinco De Mayo
+F84 Cinco De Mayo Theme (May 5 default)
+  - New skin: `cinco`, active as the site-wide default on May 5 (Cinco De Mayo)
+  - resolveDefaultSkin in base.html: when the user has no stored skin preference
+    and the client date is May 5 (local time), return `cinco` instead of `dark`
+  - User can override via the theme picker (localStorage key "skin"); their choice
+    is respected for the rest of the session
+  - Mine icon: 💣 (retain default)
+  - Flag icon: 🌶️ (hot pepper) replaces 🚩
+      Add `cinco` case to getFlagEmoji() in all game JS files
+      Files: minesweeper.js, cylinder.js, toroid.js, rush.js, duel.js,
+             spectate.js, replay.js
+  - CSS — `cinco` palette:
+      Background: deep forest green (#006847) / red (#CE1126) — Mexican flag
+      Cells hidden: rich green; revealed: soft warm white (#FAFAF5)
+      Numbers: golden yellow (#F4C300) replacing the standard blue/green/red set
+      Mine cell background: dark red
+      Detonated cell: vivid red-orange
+  - Mega menu: add "🌶️ Cinco De Mayo" to the skin switcher (non-classic nav)
+  - Assign to Bill
+
+F83 Mobile app landing page
 
 F82 TriangleSweeper Triangles on the surface of a solid
 
