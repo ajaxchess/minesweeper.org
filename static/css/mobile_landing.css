@@ -178,6 +178,24 @@ body {
   border-radius: var(--radius);
   box-shadow: 0 8px 24px rgba(0,0,0,0.5);
 }
+.ml-video-demo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1.75rem;
+}
+.ml-video-demo {
+  width: 200px;
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  display: block;
+}
+.ml-video-caption {
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  text-align: center;
+}
 
 /* ── Features ────────────────────────────────────────────────────── */
 .ml-features {
