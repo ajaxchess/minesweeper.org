@@ -5827,6 +5827,15 @@ def admin_contact_delete(msg_id: int, request: Request, db: Session = Depends(ge
     return RedirectResponse("/admin/contact", status_code=303)
 
 
+@app.post("/admin/contact/delete-all-unread")
+def admin_contact_delete_all_unread(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_admin(request, user)
+    db.query(ContactMessage).filter_by(read=False).delete()
+    db.commit()
+    return RedirectResponse("/admin/contact", status_code=303)
+
+
 @app.get("/admin/hscleaning", response_class=HTMLResponse)
 def admin_hscleaning(
     request: Request,

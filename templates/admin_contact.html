@@ -17,7 +17,14 @@
 
   <!-- Unread messages -->
   <section class="admin-section">
-    <h2 class="admin-section-title">Unread ({{ unread | length }})</h2>
+    <h2 class="admin-section-title">Unread ({{ unread | length }})
+      {% if unread %}
+      <form method="post" action="/admin/contact/delete-all-unread" style="display:inline;margin-left:1rem"
+            onsubmit="return confirm('Delete all {{ unread | length }} unread message(s)?')">
+        <button class="admin-btn admin-btn-delete" type="submit">🗑 Delete All</button>
+      </form>
+      {% endif %}
+    </h2>
     {% if unread %}
     <table class="lb-table admin-comments-table">
       <thead>

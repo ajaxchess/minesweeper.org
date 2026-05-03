@@ -15,6 +15,13 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F87 Admin contact: Delete All Unread button
+  - New POST /admin/contact/delete-all-unread route deletes all unread ContactMessages in one request
+  - "Delete All" button shown next to the Unread section heading (only visible when there are unread messages)
+  - Confirmation dialog prevents accidental bulk deletion
+
+──────────────────────────────────────────────────────────────────────────────
+
 F86 Independence Day Theme (July 4 default)
   - New skin: `america`, active as the site-wide default on July 4 (Independence Day)
   - resolveDefaultSkin in base.html: when the user has no stored skin preference
