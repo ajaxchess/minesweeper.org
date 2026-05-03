@@ -6,6 +6,8 @@ Name for high score submission
 Autosubmit Yes/No
 Sound On/Off
 (Music On/Off)
+If Autosubmit is Yes
+->When you win the game, go to summary screen or start next game
 
 Music
 
