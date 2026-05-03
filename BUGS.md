@@ -1,3 +1,11 @@
+B29 Blog post <title> tags too long for Bing Webmaster Tools (>70 chars)
+   Posts with long titles (e.g. "Nonosweeper's No Guess Mode: Every Puzzle,
+   Solvable by Logic Alone") had " — minesweeper.org Blog" appended unconditionally,
+   producing titles of 89 and 79 characters that Bing flagged as too long.
+   Fixed by: computing page_title in the blog_post route — the suffix is appended
+   only when the total is ≤ 60 characters (Google's stricter threshold), otherwise
+   the bare post title is used. Short posts keep the branding; long ones drop it.
+
 B28 Homepage and difficulty pages show English SEO content for non-English locales
    The 69 seo_* translation keys (seo_beg_*, seo_int_*, seo_exp_*, seo_about_*,
    seo_diff_*, seo_tips_*, seo_beyond_*) were only present in the English and German

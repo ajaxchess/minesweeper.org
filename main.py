@@ -2832,6 +2832,7 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
         "date_published": date_published,
         "date_modified":  date_modified,
         "comments":       comments,
+        "page_title":     post["title"] + " — minesweeper.org Blog" if len(post["title"]) + len(" — minesweeper.org Blog") <= 60 else post["title"],
     })
 
 
