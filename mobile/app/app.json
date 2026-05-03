@@ -2,7 +2,7 @@
   "expo": {
     "name": "Minesweeper.org",
     "slug": "minesweeper-org",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.minesweeper",
-      "buildNumber": "5",
+      "buildNumber": "7",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -22,7 +22,7 @@
     },
     "android": {
       "package": "org.minesweeper.app",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
@@ -43,7 +43,7 @@
         "react-native-google-mobile-ads",
         {
           "androidAppId": "ca-app-pub-3940256099942544~3347511713",
-          "iosAppId": "ca-app-pub-8102958922361899~3782342262",
+          "iosAppId": "ca-app-pub-8102958922361899~3782342262"
         }
       ]
     ]
