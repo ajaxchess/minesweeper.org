@@ -298,6 +298,15 @@ export default function GameScreen({ navigation }) {
         >
           <Text style={{ color: theme.accent, fontSize: 12, fontWeight: '600' }}>Scores</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.toolBtn}
+          onPress={() => navigation.navigate('Settings')}
+          accessibilityLabel="Open preferences"
+          accessibilityRole="button"
+        >
+          <Text style={{ fontSize: 18 }}>⚙️</Text>
+        </TouchableOpacity>
       </View>
 
       {/* ── Board ──────────────────────────────────────────────────────── */}
