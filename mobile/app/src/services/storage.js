@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── Keys ──────────────────────────────────────────────────────────────────────
-// Preferences:  prefs:player_name | prefs:default_mode | prefs:default_guess | prefs:theme
+// Preferences:  prefs:player_name | prefs:default_mode | prefs:default_guess |
+//               prefs:theme | prefs:sound | prefs:autosubmit | prefs:on_win
 // Scores:       scores:{mode}:{guess}  e.g. scores:beginner:guess, scores:expert:noguess
 
 const PREFS_KEYS = {
@@ -9,6 +10,9 @@ const PREFS_KEYS = {
   defaultMode:  'prefs:default_mode',
   defaultGuess: 'prefs:default_guess',
   theme:        'prefs:theme',
+  sound:        'prefs:sound',       // 'on' | 'off'
+  autoSubmit:   'prefs:autosubmit',  // 'yes' | 'no'
+  onWin:        'prefs:on_win',      // 'summary' | 'newgame'
 };
 
 const MODES   = ['beginner', 'intermediate', 'expert'];
@@ -26,8 +30,11 @@ export async function getPrefs() {
   return {
     playerName:   pairs[0][1] ?? null,
     defaultMode:  pairs[1][1] ?? 'beginner',
-    defaultGuess: pairs[2][1] ?? 'guess',
+    defaultGuess: pairs[2][1] ?? 'noguess',   // default changed to no-guess
     theme:        pairs[3][1] ?? 'auto',
+    sound:        pairs[4][1] ?? 'on',
+    autoSubmit:   (pairs[5][1] ?? 'no') === 'yes',
+    onWin:        pairs[6][1] ?? 'summary',
   };
 }
 
@@ -37,6 +44,9 @@ export async function savePrefs(updates) {
   if (updates.defaultMode  !== undefined) pairs.push([PREFS_KEYS.defaultMode,  updates.defaultMode]);
   if (updates.defaultGuess !== undefined) pairs.push([PREFS_KEYS.defaultGuess, updates.defaultGuess]);
   if (updates.theme        !== undefined) pairs.push([PREFS_KEYS.theme,        updates.theme]);
+  if (updates.sound        !== undefined) pairs.push([PREFS_KEYS.sound,        updates.sound]);
+  if (updates.autoSubmit   !== undefined) pairs.push([PREFS_KEYS.autoSubmit,   updates.autoSubmit ? 'yes' : 'no']);
+  if (updates.onWin        !== undefined) pairs.push([PREFS_KEYS.onWin,        updates.onWin]);
   if (pairs.length) await AsyncStorage.multiSet(pairs);
 }
 

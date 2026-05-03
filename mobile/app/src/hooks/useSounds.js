@@ -1,8 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const STORAGE_KEY = 'sound_muted';
+import { getPrefs } from '../services/storage';
 
 const SOURCES = {
   reveal:  require('../../assets/sounds/reveal.wav'),
@@ -15,9 +13,11 @@ export function useSounds() {
   const playerRefs = useRef({});
   const [muted, setMuted] = useState(false);
 
+  // Initialise from the sound pref — sets the state for this session only.
+  // The in-game toggle works within the session but does not save back to prefs.
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then(val => {
-      if (val === 'true') setMuted(true);
+    getPrefs().then(prefs => {
+      setMuted(prefs.sound === 'off');
     }).catch(() => {});
   }, []);
 
@@ -50,12 +50,10 @@ export function useSounds() {
     } catch {}
   }, []);
 
+  // In-session toggle only — does not persist. Use the Settings screen to
+  // change the default sound state for the next app open.
   const toggleMute = useCallback(() => {
-    setMuted(prev => {
-      const next = !prev;
-      AsyncStorage.setItem(STORAGE_KEY, String(next)).catch(() => {});
-      return next;
-    });
+    setMuted(prev => !prev);
   }, []);
 
   return { play, muted, toggleMute };

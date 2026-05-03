@@ -3,13 +3,16 @@
  *
  * Main game screen. Manages mode/no-guess selection and renders the board.
  *
- * Phase 3b additions:
- *   - flagMode toggle: tapping a cell flags/unflags instead of revealing
- *   - chord routing: tapping a revealed numbered cell dispatches CHORD
- *   - zoomScale state passed down to BoardView for pinch-to-zoom
+ * On mount, loads prefs to set the default mode, no-guess, autoSubmit, and
+ * onWin settings.  autoSubmit + onWin prefs are re-read on every focus so
+ * changes made in SettingsScreen take effect immediately on return.
  *
- * Phase 3c adds: timer display.
- * Phase 4  adds: win modal, score submission.
+ * Win behaviour:
+ *   autoSubmit=false           — WinModal shown; user enters name + submits manually
+ *   autoSubmit=true, summary   — WinModal shown; submission fires automatically
+ *   autoSubmit=true, newgame   — WinModal hidden; WinToast shown for 5 s, then new game
+ *
+ * Ad refresh: banner reloads (via refreshKey) on every win when autoSubmit is on.
  */
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
@@ -21,13 +24,17 @@ import {
   SafeAreaView,
 } from 'react-native';
 
-import { useTheme }   from '../context/ThemeContext';
-import useGameState   from '../hooks/useGameState';
-import { useSounds }  from '../hooks/useSounds';
-import useTimer      from '../hooks/useTimer';
-import BoardView     from '../components/BoardView';
-import WinModal      from '../components/WinModal';
-import AdBanner      from '../components/AdBanner';
+import { useTheme }                              from '../context/ThemeContext';
+import useGameState                              from '../hooks/useGameState';
+import { useSounds }                             from '../hooks/useSounds';
+import useTimer                                  from '../hooks/useTimer';
+import BoardView                                 from '../components/BoardView';
+import WinModal                                  from '../components/WinModal';
+import WinToast                                  from '../components/WinToast';
+import AdBanner                                  from '../components/AdBanner';
+import { getPrefs, saveLocalScore }              from '../services/storage';
+import { submitScore }                           from '../services/apiService';
+import { calc3BV, calcBoardHash }                from '../gameEngine';
 
 function formatTime(ms) {
   const totalSec = Math.floor(ms / 1000);
@@ -48,7 +55,7 @@ export default function GameScreen({ navigation }) {
     revealCell,
     toggleFlag,
     chordCell,
-  } = useGameState('beginner', false);
+  } = useGameState('beginner', true); // default noGuess=true; overridden by prefs on mount
 
   const {
     rows, cols, mines, board, mineSet, revealed, flagged,
@@ -57,15 +64,43 @@ export default function GameScreen({ navigation }) {
   } = state;
 
   // ── Local UI state ────────────────────────────────────────────────────────
-  const [flagMode,  setFlagMode]  = useState(false);
-  const [zoomScale, setZoomScale] = useState(1.0);
+  const [flagMode,      setFlagMode]      = useState(false);
+  const [zoomScale,     setZoomScale]     = useState(1.0);
+  const [autoSubmit,    setAutoSubmit]    = useState(false);
+  const [onWin,         setOnWin]         = useState('summary');
+  const [adRefreshKey,  setAdRefreshKey]  = useState(0);
+  const [toastVisible,  setToastVisible]  = useState(false);
+  const [toastStats,    setToastStats]    = useState(null);
 
-  // ── Timer (Phase 3c) ──────────────────────────────────────────────────────
+  // ── Timer ─────────────────────────────────────────────────────────────────
   const elapsedMs = useTimer(started, over);
 
   // ── Sound effects ─────────────────────────────────────────────────────────
   const { play, muted, toggleMute } = useSounds();
 
+  // ── Load prefs on mount (mode + guess defaults) ───────────────────────────
+  useEffect(() => {
+    getPrefs().then(prefs => {
+      setMode(prefs.defaultMode ?? 'beginner');
+      setNoGuess((prefs.defaultGuess ?? 'noguess') === 'noguess');
+      setAutoSubmit(prefs.autoSubmit ?? false);
+      setOnWin(prefs.onWin ?? 'summary');
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally runs once
+
+  // Re-read autoSubmit + onWin when returning from Settings
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      getPrefs().then(prefs => {
+        setAutoSubmit(prefs.autoSubmit ?? false);
+        setOnWin(prefs.onWin ?? 'summary');
+      });
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  // ── Sound + win detection ─────────────────────────────────────────────────
   const prevOver    = useRef(false);
   const prevWon     = useRef(false);
   const prevRevealed = useRef(0);
@@ -77,6 +112,12 @@ export default function GameScreen({ navigation }) {
 
     if (won && !prevWon.current) {
       play('win');
+      if (autoSubmit) {
+        setAdRefreshKey(k => k + 1); // refresh ad on every autosubmit win
+        if (onWin === 'newgame') {
+          handleAutoNewGame();
+        }
+      }
     } else if (over && !prevOver.current) {
       play('explode');
     } else if (revCount > prevRevealed.current) {
@@ -91,58 +132,98 @@ export default function GameScreen({ navigation }) {
     prevWon.current      = won;
     prevRevealed.current = revCount;
     prevFlagged.current  = flagCount;
-  }, [over, won, revealed, flagged, play]);
+  // handleAutoNewGame intentionally excluded — it's stable via useCallback
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [over, won, revealed, flagged, play, autoSubmit, onWin]);
+
+  // ── Auto-new-game: submit score, show toast, reset after 5 s ─────────────
+  const handleAutoNewGame = useCallback(async () => {
+    if (!board || !mineSet) return;
+
+    const bbbv       = calc3BV(board, rows, cols, mineSet);
+    const boardHash  = calcBoardHash(rows, cols, mineSet);
+    const total      = leftClicks + rightClicks + chordClicks;
+    const efficiency = total > 0     ? (bbbv / total) * 100              : 0;
+    const bbbvPerSec = elapsedMs > 0 ? bbbv / (elapsedMs / 1000)         : 0;
+
+    setToastStats({ bbbv, efficiency: efficiency.toFixed(1), elapsedMs, bbbvPerSec });
+    setToastVisible(true);
+
+    // Submit in background
+    const prefs = await getPrefs();
+    const name  = prefs.playerName?.trim();
+    if (name) {
+      const guessKey = noGuess ? 'noguess' : 'guess';
+      const payload  = {
+        name,
+        mode,
+        time_secs:    Math.floor(elapsedMs / 1000),
+        time_ms:      elapsedMs,
+        rows,
+        cols,
+        mines,
+        no_guess:     noGuess,
+        board_hash:   boardHash,
+        bbbv,
+        left_clicks:  leftClicks,
+        right_clicks: rightClicks,
+        chord_clicks: chordClicks,
+      };
+      const result = await submitScore(payload).catch(() => null);
+      await saveLocalScore(mode, guessKey, {
+        ...payload,
+        ...(result?.id != null ? { id: result.id } : {}),
+      });
+    }
+
+    // Reset after 5 s (matches WinToast fade duration)
+    setTimeout(() => {
+      setToastVisible(false);
+      setToastStats(null);
+      setFlagMode(false);
+      newGame(mode, noGuess);
+    }, 5000);
+  // Board/game values are stable after won=true; newGame is stable
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [board, mineSet, rows, cols, elapsedMs, leftClicks, rightClicks, chordClicks, mode, noGuess, mines, newGame]);
 
   // ── Press routing ─────────────────────────────────────────────────────────
-  //
-  // Priority:
-  //   1. Flag mode active   → always flag/unflag
-  //   2. Tap revealed cell with value > 0 and game started → chord
-  //   3. Default            → reveal
-  //
   const handlePressCell = useCallback((idx) => {
-    if (flagMode) {
-      toggleFlag(idx);
-      return;
-    }
+    if (flagMode) { toggleFlag(idx); return; }
     if (started && revealed[idx] === 1 && board !== null) {
       const r = Math.floor(idx / cols);
       const c = idx % cols;
-      if (board[r][c] > 0) {
-        chordCell(idx);
-        return;
-      }
+      if (board[r][c] > 0) { chordCell(idx); return; }
     }
     revealCell(idx);
   }, [flagMode, started, revealed, board, cols, toggleFlag, chordCell, revealCell]);
 
-  // Long-press always flags regardless of flagMode
   const handleLongPressCell = useCallback((idx) => {
     toggleFlag(idx);
   }, [toggleFlag]);
 
-  // Reset flag mode when switching mode (new board context)
   const handleSetMode = useCallback((m) => {
     setFlagMode(false);
     setMode(m);
   }, [setMode]);
 
-  // Reset flag mode on explicit new game
   const handleNewGame = useCallback(() => {
     setFlagMode(false);
     newGame(mode, noGuess);
   }, [mode, noGuess, newGame]);
 
-  // ── Mine counter ──────────────────────────────────────────────────────────
-  const flagCount  = flagged ? flagged.reduce((sum, v) => sum + v, 0) : 0;
-  const minesLeft  = mines - flagCount;
+  // ── Derived display values ────────────────────────────────────────────────
+  const flagCount = flagged ? flagged.reduce((sum, v) => sum + v, 0) : 0;
+  const minesLeft = mines - flagCount;
 
-  // ── Status text (shown beneath mine counter) ──────────────────────────────
   let statusText;
   if (won)          statusText = '🎉 You win!';
   else if (over)    statusText = '💥 Game over';
   else if (started) statusText = formatTime(elapsedMs);
-  else              statusText = null;   // mine counter alone is enough pre-start
+  else              statusText = null;
+
+  // WinModal is shown unless we're in autoSubmit+newgame mode (toast handles that)
+  const showModal = won && !(autoSubmit && onWin === 'newgame');
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.background }]}>
@@ -152,18 +233,10 @@ export default function GameScreen({ navigation }) {
         {MODES.map(m => (
           <TouchableOpacity
             key={m}
-            style={[
-              styles.modeBtn,
-              mode === m && { backgroundColor: theme.accent },
-            ]}
+            style={[styles.modeBtn, mode === m && { backgroundColor: theme.accent }]}
             onPress={() => handleSetMode(m)}
           >
-            <Text
-              style={[
-                styles.modeBtnText,
-                { color: mode === m ? theme.accentText : theme.textDim },
-              ]}
-            >
+            <Text style={[styles.modeBtnText, { color: mode === m ? theme.accentText : theme.textDim }]}>
               {m.charAt(0).toUpperCase() + m.slice(1)}
             </Text>
           </TouchableOpacity>
@@ -181,26 +254,19 @@ export default function GameScreen({ navigation }) {
           </Text>
         </TouchableOpacity>
 
-        {/* Mine counter + timer, stacked in center */}
         <View style={styles.statusCenter}>
-          <Text style={[styles.mineCount, { color: theme.text }]}>
-            💣 {minesLeft}
-          </Text>
+          <Text style={[styles.mineCount, { color: theme.text }]}>💣 {minesLeft}</Text>
           {statusText !== null && (
-            <Text style={[styles.statusText, { color: theme.textDim }]}>
-              {statusText}
-            </Text>
+            <Text style={[styles.statusText, { color: theme.textDim }]}>{statusText}</Text>
           )}
         </View>
 
         <TouchableOpacity style={styles.optionBtn} onPress={handleNewGame}>
-          <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '600' }}>
-            New Game
-          </Text>
+          <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '600' }}>New Game</Text>
         </TouchableOpacity>
       </View>
 
-      {/* ── Tool row: flag mode + zoom reset + scores ─────────────────── */}
+      {/* ── Tool row ───────────────────────────────────────────────────── */}
       <View style={[styles.toolRow, { borderBottomColor: theme.border }]}>
         <TouchableOpacity
           style={[styles.toolBtn, flagMode && { backgroundColor: theme.accent }]}
@@ -221,10 +287,7 @@ export default function GameScreen({ navigation }) {
         </TouchableOpacity>
 
         {zoomScale !== 1.0 && (
-          <TouchableOpacity
-            style={styles.toolBtn}
-            onPress={() => setZoomScale(1.0)}
-          >
+          <TouchableOpacity style={styles.toolBtn} onPress={() => setZoomScale(1.0)}>
             <Text style={{ color: theme.textDim, fontSize: 12 }}>Reset Zoom</Text>
           </TouchableOpacity>
         )}
@@ -239,107 +302,65 @@ export default function GameScreen({ navigation }) {
 
       {/* ── Board ──────────────────────────────────────────────────────── */}
       <BoardView
-        rows={rows}
-        cols={cols}
-        board={board}
-        mineSet={mineSet}
-        revealed={revealed}
-        flagged={flagged}
-        explodedIdx={explodedIdx}
-        gameOver={over}
-        gameWon={won}
-        theme={theme}
-        zoomScale={zoomScale}
-        onZoomChange={setZoomScale}
-        onPressCell={handlePressCell}
-        onLongPressCell={handleLongPressCell}
+        rows={rows} cols={cols} board={board} mineSet={mineSet}
+        revealed={revealed} flagged={flagged} explodedIdx={explodedIdx}
+        gameOver={over} gameWon={won} theme={theme}
+        zoomScale={zoomScale} onZoomChange={setZoomScale}
+        onPressCell={handlePressCell} onLongPressCell={handleLongPressCell}
       />
 
-      {/* ── Win modal (Phase 4c) ────────────────────────────────────────── */}
+      {/* ── Win modal ──────────────────────────────────────────────────── */}
       <WinModal
-        visible={won}
-        mode={mode}
-        noGuess={noGuess}
-        rows={rows}
-        cols={cols}
-        mines={mines}
-        board={board}
-        mineSet={mineSet}
-        elapsedMs={elapsedMs}
-        leftClicks={leftClicks}
-        rightClicks={rightClicks}
-        chordClicks={chordClicks}
-        theme={theme}
-        onNewGame={handleNewGame}
+        visible={showModal}
+        mode={mode} noGuess={noGuess} rows={rows} cols={cols} mines={mines}
+        board={board} mineSet={mineSet} elapsedMs={elapsedMs}
+        leftClicks={leftClicks} rightClicks={rightClicks} chordClicks={chordClicks}
+        theme={theme} onNewGame={handleNewGame}
+        autoSubmit={autoSubmit}
       />
 
-      {/* ── AdMob banner — beginner and intermediate only ──────────────── */}
-      {(mode === 'beginner' || mode === 'intermediate') && <AdBanner />}
+      {/* ── Win toast (autoSubmit + newgame mode) ──────────────────────── */}
+      {toastStats && (
+        <WinToast
+          visible={toastVisible}
+          elapsedMs={toastStats.elapsedMs}
+          bbbv={toastStats.bbbv}
+          efficiency={toastStats.efficiency}
+          theme={theme}
+        />
+      )}
+
+      {/* ── AdMob banner ───────────────────────────────────────────────── */}
+      {(mode === 'beginner' || mode === 'intermediate') && (
+        <AdBanner refreshKey={adRefreshKey} />
+      )}
 
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
+  root:       { flex: 1 },
   modeBar: {
-    flexDirection:     'row',
-    justifyContent:    'center',
-    paddingVertical:   6,
-    paddingHorizontal: 8,
-    gap:               6,
-    borderBottomWidth: 1,
+    flexDirection: 'row', justifyContent: 'center',
+    paddingVertical: 6, paddingHorizontal: 8, gap: 6, borderBottomWidth: 1,
   },
   modeBtn: {
-    flex:            1,
-    alignItems:      'center',
-    paddingVertical: 6,
-    borderRadius:    6,
+    flex: 1, alignItems: 'center', paddingVertical: 6, borderRadius: 6,
   },
-  modeBtnText: {
-    fontSize:   13,
-    fontWeight: '600',
-  },
+  modeBtnText: { fontSize: 13, fontWeight: '600' },
   optionsRow: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    justifyContent:    'space-between',
-    paddingHorizontal: 12,
-    paddingVertical:   6,
-    borderBottomWidth: 1,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 12, paddingVertical: 6, borderBottomWidth: 1,
   },
-  optionBtn: {
-    paddingHorizontal: 10,
-    paddingVertical:   5,
-    borderRadius:      6,
-  },
-  statusCenter: {
-    alignItems: 'center',
-    gap:        2,
-  },
-  mineCount: {
-    fontSize:   15,
-    fontWeight: '700',
-  },
-  statusText: {
-    fontSize: 12,
-  },
+  optionBtn: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6 },
+  statusCenter: { alignItems: 'center', gap: 2 },
+  mineCount:    { fontSize: 15, fontWeight: '700' },
+  statusText:   { fontSize: 12 },
   toolRow: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    paddingHorizontal: 12,
-    paddingVertical:   4,
-    borderBottomWidth: 1,
-    gap:               8,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 12, paddingVertical: 4, borderBottomWidth: 1, gap: 8,
   },
-  toolBtn: {
-    paddingHorizontal: 12,
-    paddingVertical:   4,
-    borderRadius:      6,
-  },
-  scoresBtn: {
-    marginLeft: 'auto',
-  },
+  toolBtn:   { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 6 },
+  scoresBtn: { marginLeft: 'auto' },
 });

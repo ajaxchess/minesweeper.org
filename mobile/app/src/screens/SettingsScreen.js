@@ -2,13 +2,17 @@
  * SettingsScreen.js
  *
  * Persisted keys (via storage.js getPrefs / savePrefs):
- *   prefs:player_name    — display name for score submission
- *   prefs:default_mode   — beginner | intermediate | expert
- *   prefs:default_guess  — guess | noguess
- *   prefs:theme          — auto | light | dark (also applied via ThemeContext)
+ *   prefs:default_mode    — beginner | intermediate | expert
+ *   prefs:default_guess   — guess | noguess  (default: noguess)
+ *   prefs:sound           — on | off          (default: on)
+ *   prefs:player_name     — display name for score submission
+ *   prefs:autosubmit      — yes | no          (only settable when name is set)
+ *   prefs:on_win          — summary | newgame (only settable when autosubmit = yes)
+ *   prefs:theme           — auto | light | dark
  *
- * All settings save immediately on change — no explicit Save button.
- * Player name saves on blur / return key so we don't thrash AsyncStorage.
+ * All settings save immediately on change. Player name saves on blur / return.
+ * Sound pref sets the initial mute state on next app open — the in-game 🔇
+ * toggle still works within the current session independently.
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -18,28 +22,27 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  Linking,
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme }        from '../context/ThemeContext';
+import { useTheme }            from '../context/ThemeContext';
 import { getPrefs, savePrefs } from '../services/storage';
 
-// ── Option sets ───────────────────────────────────────────────────────────────
+// ── Data ──────────────────────────────────────────────────────────────────────
 
-const MODES   = [
-  { value: 'beginner',     label: 'Beginner'  },
-  { value: 'intermediate', label: 'Interm.'   },
-  { value: 'expert',       label: 'Expert'    },
+const GAME_MODES = [
+  { mode: 'beginner',     noGuess: false, label: 'Beginner'              },
+  { mode: 'beginner',     noGuess: true,  label: 'Beginner No-Guess'     },
+  { mode: 'intermediate', noGuess: false, label: 'Intermediate'          },
+  { mode: 'intermediate', noGuess: true,  label: 'Intermediate No-Guess' },
+  { mode: 'expert',       noGuess: false, label: 'Expert'                },
+  { mode: 'expert',       noGuess: true,  label: 'Expert No-Guess'       },
 ];
-const GUESSES = [
-  { value: 'guess',   label: 'Guess'    },
-  { value: 'noguess', label: 'No-Guess' },
-];
-const THEMES  = [
-  { value: 'auto',  label: 'Auto'  },
-  { value: 'light', label: 'Light' },
-  { value: 'dark',  label: 'Dark'  },
-];
+
+const SOUNDS  = [{ value: 'on',  label: 'On'  }, { value: 'off', label: 'Off' }];
+const THEMES  = [{ value: 'auto', label: 'Auto' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }];
+const ON_WINS = [{ value: 'summary', label: 'Summary' }, { value: 'newgame', label: 'New Game' }];
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -48,9 +51,7 @@ function Divider({ theme }) {
 }
 
 function SectionLabel({ children, theme }) {
-  return (
-    <Text style={[styles.sectionLabel, { color: theme.textMuted }]}>{children}</Text>
-  );
+  return <Text style={[styles.sectionLabel, { color: theme.textMuted }]}>{children}</Text>;
 }
 
 function SegmentedControl({ options, value, onSelect, theme }) {
@@ -75,43 +76,87 @@ function SegmentedControl({ options, value, onSelect, theme }) {
   );
 }
 
+function RadioRow({ label, selected, onPress, theme, last }) {
+  return (
+    <TouchableOpacity
+      style={[
+        styles.radioRow,
+        !last && { borderBottomWidth: 1, borderBottomColor: theme.border },
+      ]}
+      onPress={onPress}
+      activeOpacity={0.6}
+    >
+      <Text style={[styles.radioLabel, { color: theme.text }]}>{label}</Text>
+      {selected && <Text style={[styles.radioCheck, { color: theme.accent }]}>✓</Text>}
+    </TouchableOpacity>
+  );
+}
+
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export default function SettingsScreen() {
   const { theme, themePref, setTheme } = useTheme();
 
   const [loading,      setLoading]      = useState(true);
-  const [playerName,   setPlayerName]   = useState('');
   const [defaultMode,  setDefaultMode]  = useState('beginner');
-  const [defaultGuess, setDefaultGuess] = useState('guess');
+  const [defaultGuess, setDefaultGuess] = useState('noguess');
+  const [sound,        setSound]        = useState('on');
+  const [playerName,   setPlayerName]   = useState('');
+  const [autoSubmit,   setAutoSubmit]   = useState(false);
+  const [onWin,        setOnWin]        = useState('summary');
 
-  // Load persisted prefs once on mount.
   useEffect(() => {
     getPrefs().then(prefs => {
-      setPlayerName(prefs.playerName   ?? '');
-      setDefaultMode(prefs.defaultMode ?? 'beginner');
-      setDefaultGuess(prefs.defaultGuess ?? 'guess');
+      setDefaultMode(prefs.defaultMode   ?? 'beginner');
+      setDefaultGuess(prefs.defaultGuess ?? 'noguess');
+      setSound(prefs.sound               ?? 'on');
+      setPlayerName(prefs.playerName     ?? '');
+      setAutoSubmit(prefs.autoSubmit     ?? false);
+      setOnWin(prefs.onWin               ?? 'summary');
       setLoading(false);
     });
   }, []);
 
-  // Save player name on blur or return key — not on every keystroke.
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
+  const handleModeSelect = useCallback((item) => {
+    const guess = item.noGuess ? 'noguess' : 'guess';
+    setDefaultMode(item.mode);
+    setDefaultGuess(guess);
+    savePrefs({ defaultMode: item.mode, defaultGuess: guess });
+  }, []);
+
+  const handleSoundChange = useCallback((val) => {
+    setSound(val);
+    savePrefs({ sound: val });
+  }, []);
+
   const handleNameSave = useCallback(() => {
-    savePrefs({ playerName: playerName.trim() });
+    const trimmed = playerName.trim();
+    savePrefs({ playerName: trimmed });
+    if (!trimmed) {
+      setAutoSubmit(false);
+      savePrefs({ autoSubmit: false });
+    }
   }, [playerName]);
 
-  const handleModeChange = useCallback((value) => {
-    setDefaultMode(value);
-    savePrefs({ defaultMode: value });
+  const handleAutoSubmitChange = useCallback((val) => {
+    const next = val === 'yes';
+    setAutoSubmit(next);
+    savePrefs({ autoSubmit: next });
+    if (!next) {
+      setOnWin('summary');
+      savePrefs({ onWin: 'summary' });
+    }
   }, []);
 
-  const handleGuessChange = useCallback((value) => {
-    setDefaultGuess(value);
-    savePrefs({ defaultGuess: value });
+  const handleOnWinChange = useCallback((val) => {
+    setOnWin(val);
+    savePrefs({ onWin: val });
   }, []);
 
-  const handleThemeChange = useCallback((value) => {
-    setTheme(value); // ThemeContext saves to prefs and updates UI
+  const handleThemeChange = useCallback((val) => {
+    setTheme(val);
   }, [setTheme]);
 
   if (loading) {
@@ -122,6 +167,9 @@ export default function SettingsScreen() {
     );
   }
 
+  const hasName       = playerName.trim().length > 0;
+  const autoSubmitVal = autoSubmit ? 'yes' : 'no';
+
   return (
     <ScrollView
       style={{ backgroundColor: theme.background }}
@@ -129,9 +177,53 @@ export default function SettingsScreen() {
       keyboardShouldPersistTaps="handled"
     >
 
+      {/* ── Default game ──────────────────────────────────────────────── */}
+      <View style={styles.section}>
+        <SectionLabel theme={theme}>DEFAULT GAME</SectionLabel>
+        <View style={[styles.radioList, { borderColor: theme.border }]}>
+          {GAME_MODES.map((item, idx) => {
+            const selected =
+              item.mode === defaultMode &&
+              (item.noGuess ? defaultGuess === 'noguess' : defaultGuess === 'guess');
+            return (
+              <RadioRow
+                key={item.label}
+                label={item.label}
+                selected={selected}
+                onPress={() => handleModeSelect(item)}
+                theme={theme}
+                last={idx === GAME_MODES.length - 1}
+              />
+            );
+          })}
+        </View>
+      </View>
+
+      <Divider theme={theme} />
+
+      {/* ── Sound ─────────────────────────────────────────────────────── */}
+      <View style={styles.section}>
+        <SectionLabel theme={theme}>SOUND</SectionLabel>
+        <View style={styles.row}>
+          <Text style={[styles.rowLabel, { color: theme.textDim }]}>Default</Text>
+          <SegmentedControl
+            options={SOUNDS}
+            value={sound}
+            onSelect={handleSoundChange}
+            theme={theme}
+          />
+        </View>
+        <Text style={[styles.hint, { color: theme.textMuted }]}>
+          Sets the sound state when you open the app. Use 🔇 in-game to toggle for the current session.
+        </Text>
+      </View>
+
+      <Divider theme={theme} />
+
       {/* ── Player ────────────────────────────────────────────────────── */}
       <View style={styles.section}>
         <SectionLabel theme={theme}>PLAYER</SectionLabel>
+
         <TextInput
           style={[styles.nameInput, {
             borderColor:     theme.border,
@@ -149,33 +241,41 @@ export default function SettingsScreen() {
           autoCapitalize="words"
           returnKeyType="done"
         />
-      </View>
 
-      <Divider theme={theme} />
+        {hasName && (
+          <>
+            <View style={styles.row}>
+              <Text style={[styles.rowLabel, { color: theme.textDim, width: 84 }]}>Auto-submit</Text>
+              <SegmentedControl
+                options={[{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }]}
+                value={autoSubmitVal}
+                onSelect={handleAutoSubmitChange}
+                theme={theme}
+              />
+            </View>
+            <Text style={[styles.hint, { color: theme.textMuted }]}>
+              Submits your score automatically on every win.
+            </Text>
+          </>
+        )}
 
-      {/* ── Game defaults ─────────────────────────────────────────────── */}
-      <View style={styles.section}>
-        <SectionLabel theme={theme}>GAME DEFAULTS</SectionLabel>
-
-        <View style={styles.row}>
-          <Text style={[styles.rowLabel, { color: theme.textDim }]}>Mode</Text>
-          <SegmentedControl
-            options={MODES}
-            value={defaultMode}
-            onSelect={handleModeChange}
-            theme={theme}
-          />
-        </View>
-
-        <View style={styles.row}>
-          <Text style={[styles.rowLabel, { color: theme.textDim }]}>Board</Text>
-          <SegmentedControl
-            options={GUESSES}
-            value={defaultGuess}
-            onSelect={handleGuessChange}
-            theme={theme}
-          />
-        </View>
+        {hasName && autoSubmit && (
+          <>
+            <View style={styles.row}>
+              <Text style={[styles.rowLabel, { color: theme.textDim, width: 84 }]}>On win</Text>
+              <SegmentedControl
+                options={ON_WINS}
+                value={onWin}
+                onSelect={handleOnWinChange}
+                theme={theme}
+              />
+            </View>
+            <Text style={[styles.hint, { color: theme.textMuted }]}>
+              Summary: show your stats until you tap New Game.{'\n'}
+              New Game: show a brief stats banner, then start the next game automatically.
+            </Text>
+          </>
+        )}
       </View>
 
       <Divider theme={theme} />
@@ -189,8 +289,26 @@ export default function SettingsScreen() {
           onSelect={handleThemeChange}
           theme={theme}
         />
-        <Text style={[styles.themeHint, { color: theme.textMuted }]}>
+        <Text style={[styles.hint, { color: theme.textMuted }]}>
           Auto follows the iOS system setting.
+        </Text>
+      </View>
+
+      <Divider theme={theme} />
+
+      {/* ── About ─────────────────────────────────────────────────────── */}
+      <View style={styles.section}>
+        <SectionLabel theme={theme}>ABOUT</SectionLabel>
+        <Text style={[styles.aboutText, { color: theme.textDim }]}>
+          This game is dedicated to Diana, Princess of Wales. Her dream to ban
+          landmines lives on at{' '}
+          <Text
+            style={[styles.aboutLink, { color: theme.accent }]}
+            onPress={() => Linking.openURL('https://minesweeper.org/about')}
+          >
+            minesweeper.org
+          </Text>
+          .
         </Text>
       </View>
 
@@ -213,19 +331,31 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: 24,
     paddingVertical:   20,
-    gap:               14,
+    gap:               12,
   },
   sectionLabel: {
     fontSize:      11,
     fontWeight:    '600',
     letterSpacing: 0.8,
   },
-  nameInput: {
-    borderWidth:       1,
-    borderRadius:      8,
-    paddingHorizontal: 12,
-    paddingVertical:   11,
-    fontSize:          15,
+  radioList: {
+    borderWidth:  1,
+    borderRadius: 10,
+    overflow:     'hidden',
+  },
+  radioRow: {
+    flexDirection:     'row',
+    alignItems:        'center',
+    justifyContent:    'space-between',
+    paddingHorizontal: 16,
+    paddingVertical:   13,
+  },
+  radioLabel: {
+    fontSize: 15,
+  },
+  radioCheck: {
+    fontSize:   17,
+    fontWeight: '700',
   },
   row: {
     flexDirection: 'row',
@@ -235,6 +365,13 @@ const styles = StyleSheet.create({
   rowLabel: {
     fontSize: 14,
     width:    44,
+  },
+  nameInput: {
+    borderWidth:       1,
+    borderRadius:      8,
+    paddingHorizontal: 12,
+    paddingVertical:   11,
+    fontSize:          15,
   },
   segmented: {
     flex:          1,
@@ -252,8 +389,17 @@ const styles = StyleSheet.create({
     fontSize:   13,
     fontWeight: '500',
   },
-  themeHint: {
+  hint: {
     fontSize:   12,
     marginTop:  -4,
+    lineHeight: 17,
+  },
+  aboutText: {
+    fontSize:   14,
+    lineHeight: 22,
+  },
+  aboutLink: {
+    fontWeight:         '600',
+    textDecorationLine: 'underline',
   },
 });

@@ -4,17 +4,23 @@
  * Shown automatically when the player wins.
  *
  * Responsibilities:
- *   - Compute bbbv, board_hash, efficiency, 3BV/s from props
+ *   - Compute 3BV, board_hash, efficiency, 3BV/s from props
  *   - Load stored player name; allow editing before submit
  *   - POST to /api/scores via submitScore; fall back to local on failure
  *   - saveLocalScore always — with server id on success, without on failure
  *   - Persist player name to prefs after first successful entry
  *
+ * autoSubmit mode (when the autoSubmit prop is true and a player name is stored):
+ *   - Fires submission automatically on mount without user interaction
+ *   - Skips the name-input / submit-button UI; shows stats + result directly
+ *   - "New Game" button always visible so the user can dismiss
+ *   - Falls back to manual mode if no name is stored
+ *
  * Dismissed only via the "New Game" button, which calls onNewGame() in
  * GameScreen. That resets game state (won → false), which hides the modal.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Modal,
   View,
@@ -64,40 +70,55 @@ export default function WinModal({
   chordClicks,
   theme,
   onNewGame,
+  autoSubmit = false,
 }) {
-  const [playerName, setPlayerName] = useState('');
-  const [submitting,  setSubmitting]  = useState(false);
-  const [submitted,   setSubmitted]   = useState(false);
+  const [playerName,   setPlayerName]   = useState('');
+  const [submitting,   setSubmitting]   = useState(false);
+  const [submitted,    setSubmitted]    = useState(false);
   const [submitResult, setSubmitResult] = useState(null); // 'ok' | 'offline'
 
-  // Reset submit state and load stored name each time the modal appears.
+  // Tracks whether we should fire an auto-submission once stats are ready.
+  const autoSubmitPending = useRef(false);
+
+  // Reset state and load stored name each time the modal appears.
   useEffect(() => {
     if (!visible) return;
     setSubmitted(false);
     setSubmitResult(null);
+    autoSubmitPending.current = false;
     getPrefs().then(prefs => {
-      if (prefs.playerName) setPlayerName(prefs.playerName);
+      const name = prefs.playerName ?? '';
+      setPlayerName(name);
+      if (autoSubmit && name.trim()) {
+        autoSubmitPending.current = true;
+      }
     });
-  }, [visible]);
+  }, [visible, autoSubmit]);
 
   // Computed once per win — board/mineSet are stable after the game ends.
   const stats = useMemo(() => {
     if (!board || !mineSet) return null;
-    const bbbv      = calc3BV(board, rows, cols, mineSet);
-    const boardHash = calcBoardHash(rows, cols, mineSet);
-    const total     = leftClicks + rightClicks + chordClicks;
+    const bbbv        = calc3BV(board, rows, cols, mineSet);
+    const boardHash   = calcBoardHash(rows, cols, mineSet);
+    const total       = leftClicks + rightClicks + chordClicks;
     const efficiency  = total > 0    ? bbbv / total               : 0;
     const bbbvPerSec  = elapsedMs > 0 ? bbbv / (elapsedMs / 1000) : 0;
     return { bbbv, boardHash, efficiency, bbbvPerSec };
   }, [board, mineSet, rows, cols, elapsedMs, leftClicks, rightClicks, chordClicks]);
 
-  async function handleSubmit() {
-    if (!playerName.trim() || !stats || submitting) return;
+  // Fire auto-submission once stats are available and pending flag is set.
+  useEffect(() => {
+    if (autoSubmitPending.current && stats && !submitting && !submitted) {
+      autoSubmitPending.current = false;
+      doSubmit(playerName.trim());
+    }
+  });
+
+  async function doSubmit(name) {
+    if (!name || !stats || submitting) return;
     setSubmitting(true);
 
-    const name     = playerName.trim();
     const guessKey = noGuess ? 'noguess' : 'guess';
-
     await savePrefs({ playerName: name });
 
     const payload = {
@@ -117,8 +138,6 @@ export default function WinModal({
     };
 
     const result = await submitScore(payload);
-
-    // Always persist locally; attach server id when available.
     await saveLocalScore(mode, guessKey, {
       ...payload,
       ...(result?.id != null ? { id: result.id } : {}),
@@ -127,6 +146,10 @@ export default function WinModal({
     setSubmitting(false);
     setSubmitted(true);
     setSubmitResult(result ? 'ok' : 'offline');
+  }
+
+  async function handleSubmit() {
+    await doSubmit(playerName.trim());
   }
 
   if (!visible || !stats) return null;
@@ -142,13 +165,13 @@ export default function WinModal({
 
           {/* ── Stats ─────────────────────────────────────────────────── */}
           <View style={[styles.statsBox, { borderColor: theme.border }]}>
-            <StatRow label="Time"       value={formatTime(elapsedMs)}                theme={theme} />
-            <StatRow label="3BV"        value={String(stats.bbbv)}                   theme={theme} />
-            <StatRow label="3BV/s"      value={stats.bbbvPerSec.toFixed(2)}          theme={theme} />
+            <StatRow label="Time"       value={formatTime(elapsedMs)}                    theme={theme} />
+            <StatRow label="3BV"        value={String(stats.bbbv)}                       theme={theme} />
+            <StatRow label="3BV/s"      value={stats.bbbvPerSec.toFixed(2)}              theme={theme} />
             <StatRow label="Efficiency" value={(stats.efficiency * 100).toFixed(1) + '%'} theme={theme} />
           </View>
 
-          {/* ── Name + submit ──────────────────────────────────────────── */}
+          {/* ── Name + submit (manual mode) / result (auto mode) ──────── */}
           {submitted ? (
             <Text style={[
               styles.resultText,
@@ -156,7 +179,10 @@ export default function WinModal({
             ]}>
               {submitResult === 'ok' ? 'Score submitted!' : 'Saved locally (offline)'}
             </Text>
-          ) : (
+          ) : submitting ? (
+            <ActivityIndicator color={theme.accent} />
+          ) : !autoSubmit || !playerName.trim() ? (
+            // Manual mode: show name input + submit button
             <>
               <TextInput
                 style={[styles.nameInput, {
@@ -183,13 +209,10 @@ export default function WinModal({
                 onPress={handleSubmit}
                 disabled={!canSubmit}
               >
-                {submitting
-                  ? <ActivityIndicator color={theme.accentText} />
-                  : <Text style={[styles.btnText, { color: theme.accentText }]}>Submit Score</Text>
-                }
+                <Text style={[styles.btnText, { color: theme.accentText }]}>Submit Score</Text>
               </TouchableOpacity>
             </>
-          )}
+          ) : null /* auto-submit pending — spinner shown above */}
 
           {/* ── New Game ───────────────────────────────────────────────── */}
           <TouchableOpacity
@@ -216,12 +239,12 @@ const styles = StyleSheet.create({
     padding:         24,
   },
   card: {
-    width:         '100%',
-    maxWidth:      360,
-    borderRadius:  12,
-    borderWidth:   1,
-    padding:       24,
-    gap:           16,
+    width:        '100%',
+    maxWidth:     360,
+    borderRadius: 12,
+    borderWidth:  1,
+    padding:      24,
+    gap:          16,
   },
   title: {
     fontSize:   22,
@@ -239,41 +262,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical:   8,
   },
-  statLabel: {
-    fontSize: 14,
-  },
-  statValue: {
-    fontSize:   14,
-    fontWeight: '600',
-  },
+  statLabel: { fontSize: 14 },
+  statValue: { fontSize: 14, fontWeight: '600' },
   nameInput: {
-    borderWidth:   1,
-    borderRadius:  8,
+    borderWidth:       1,
+    borderRadius:      8,
     paddingHorizontal: 12,
     paddingVertical:   10,
-    fontSize:      15,
+    fontSize:          15,
   },
   submitBtn: {
     borderRadius:    8,
     paddingVertical: 12,
     alignItems:      'center',
   },
-  disabledBtn: {
-    opacity: 0.4,
-  },
+  disabledBtn: { opacity: 0.4 },
   newGameBtn: {
-    borderWidth:   1,
-    borderRadius:  8,
+    borderWidth:     1,
+    borderRadius:    8,
     paddingVertical: 12,
-    alignItems:    'center',
+    alignItems:      'center',
   },
-  btnText: {
-    fontSize:   15,
-    fontWeight: '600',
-  },
-  resultText: {
-    textAlign:  'center',
-    fontSize:   14,
-    fontWeight: '500',
-  },
+  btnText: { fontSize: 15, fontWeight: '600' },
+  resultText: { textAlign: 'center', fontSize: 14, fontWeight: '500' },
 });
