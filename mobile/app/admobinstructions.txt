@@ -1,0 +1,7 @@
+Next, place the ad unit inside your app
+Follow these instructions:
+Complete the instructions in the Google Mobile Ads SDK guide using this app ID:
+Minesweeper.orgca-app-pub-8102958922361899~3782342262
+Follow the banner implementation guide to integrate the SDK. You'll specify ad type, size, and placement when you integrate the code using this ad unit ID:
+Bottom Bannerca-app-pub-8102958922361899/1016578124
+Review the AdMob policies to ensure your implementation complies.
