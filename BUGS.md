@@ -1,5 +1,12 @@
 -- Fixed below --
 
+B25 /strategy returns 500 internal server error
+   strategy.html had {% block jsonld %} defined twice — once with a simple Article
+   schema and once with a BreadcrumbList + Article. Jinja2 raises
+   TemplateAssertionError on duplicate block names, causing a 500 on every request.
+   Fixed by: merging both into a single block containing the BreadcrumbList and
+   the Article with the publisher logo retained from the first definition.
+
 B24 PvP vs Bot: bot makes zero moves (silent asyncio crash + stale AI knowledge after mine-hit)
    Two bugs combined to prevent the bot from making any visible progress:
    1. asyncio.create_task silently swallows unhandled exceptions — any crash in _run_bot
