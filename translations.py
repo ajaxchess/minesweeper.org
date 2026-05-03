@@ -2408,10 +2408,10 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
         "meta_platform":       "Web Browser",
-        "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
+        "meta_jsonld_desc":    "Juega al Buscaminas gratis en línea. Modo clásico, sin adivinar y duelos 1v1 en tiempo real. Sin descarga necesaria.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
-        "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
+        "meta_desc_beginner":      "Juega al Buscaminas gratis en línea — modo clásico, sin adivinar y duelos 1v1 en tiempo real. Sin descarga. Reta a un amigo o juega solo.",
         "meta_kw_beginner":        "minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game",
         "meta_title_intermediate": "Minesweeper Intermediate \u2014 Play Free Online | minesweeper.org",
         "meta_desc_intermediate":  "Play Minesweeper Intermediate online \u2014 {rows}\u00d7{cols} board with {mines} mines. Free, no download required.",
