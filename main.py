@@ -5685,6 +5685,88 @@ def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
     hr_net_recv  = [round((r.net_delta_recv or 0) / (1024 ** 2), 2) for r in history]
     hr_requests  = [r.http_requests for r in history]
 
+    # ── Score submission API report ──────────────────────────────────────────
+    _api_tables = [
+        (Score,              "Minesweeper"),
+        (GameHistory,        "Game History"),
+        (RushScore,          "Rush"),
+        (TentaizuScore,      "Tentaizu"),
+        (TentaizuEasyScore,  "Tentaizu Easy"),
+        (MosaicScore,        "Mosaic"),
+        (MosaicEasyScore,    "Mosaic Easy"),
+        (MosaicCustomScore,  "Mosaic Custom"),
+        (CylinderScore,      "Cylinder"),
+        (ToroidScore,        "Toroid"),
+        (HexsweeperScore,    "Hexsweeper"),
+        (GlobesweeperScore,  "Globesweeper"),
+        (CubesweeperScore,   "Cubesweeper"),
+        (MobiussweeperScore, "Mobiussweeper"),
+        (ReplayScore,        "Replay"),
+        (NonosweeperScore,   "Nonosweeper"),
+        (FifteenPuzzleScore, "15 Puzzle"),
+        (Game2048Score,      "2048"),
+        (Game2048HexScore,   "2048 Hex"),
+        (SchulteGridScore,   "Schulte Grid"),
+        (SudokuScore,        "Sudoku"),
+        (MahjongScore,       "Mahjong"),
+        (JigsawScore,        "Jigsaw"),
+    ]
+    _ct_totals: dict = {}
+    _game_rows = []
+    for _model, _lbl in _api_tables:
+        _ct_qry = (
+            db.query(_model.client_type, func.count().label("n"))
+            .group_by(_model.client_type)
+            .all()
+        )
+        _game_n = 0
+        for _ct, _n in _ct_qry:
+            _k = _ct or "na"
+            _ct_totals[_k] = _ct_totals.get(_k, 0) + _n
+            _game_n += _n
+        _game_rows.append({"label": _lbl, "total": _game_n})
+    _game_rows.sort(key=lambda x: x["total"], reverse=True)
+
+    _ct_known = [
+        ("ios_app",        "iOS App"),
+        ("android_app",    "Android App"),
+        ("chrome",         "Chrome"),
+        ("firefox",        "Firefox"),
+        ("safari",         "Safari"),
+        ("edge",           "Edge"),
+        ("opera",          "Opera"),
+        ("mobile_browser", "Mobile Browser"),
+        ("browser",        "Other Browser"),
+        ("na",             "Unknown"),
+    ]
+    _ct_rows = []
+    _ct_seen = {k for k, _ in _ct_known}
+    for _k, _d in _ct_known:
+        if _ct_totals.get(_k, 0):
+            _ct_rows.append({"label": _d, "count": _ct_totals[_k]})
+    for _k, _n in _ct_totals.items():
+        if _k not in _ct_seen and _n:
+            _ct_rows.append({"label": _k, "count": _n})
+
+    _api_total     = sum(r["total"] for r in _game_rows)
+    _api_mobile_app = _ct_totals.get("ios_app", 0) + _ct_totals.get("android_app", 0)
+    _api_mob_brow  = _ct_totals.get("mobile_browser", 0)
+    _api_desktop   = sum(_ct_totals.get(k, 0) for k in ("chrome", "firefox", "safari", "edge", "opera", "browser"))
+    _api_unknown   = _ct_totals.get("na", 0)
+    _nz_games      = [r for r in _game_rows if r["total"] > 0]
+
+    api_by_game      = _game_rows
+    api_ct_breakdown = _ct_rows
+    api_ct_labels    = _json.dumps([r["label"] for r in _ct_rows])
+    api_ct_counts    = _json.dumps([r["count"] for r in _ct_rows])
+    api_game_labels  = _json.dumps([r["label"] for r in _nz_games[:15]])
+    api_game_counts  = _json.dumps([r["total"] for r in _nz_games[:15]])
+    api_total        = _api_total
+    api_mobile_app   = _api_mobile_app
+    api_mob_brow     = _api_mob_brow
+    api_desktop      = _api_desktop
+    api_unknown      = _api_unknown
+
     return templates.TemplateResponse("admin_web_traffic.html", {
         "request":      request,
         "user":         user,
@@ -5744,6 +5826,18 @@ def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
         "earn_imp_rpm":       earn_imp_rpm,
         "earn_clicks":        earn_clicks,
         "earn_views":         earn_views,
+        # API submission report
+        "api_by_game":      api_by_game,
+        "api_ct_breakdown": api_ct_breakdown,
+        "api_ct_labels":    api_ct_labels,
+        "api_ct_counts":    api_ct_counts,
+        "api_game_labels":  api_game_labels,
+        "api_game_counts":  api_game_counts,
+        "api_total":        api_total,
+        "api_mobile_app":   api_mobile_app,
+        "api_mob_brow":     api_mob_brow,
+        "api_desktop":      api_desktop,
+        "api_unknown":      api_unknown,
     })
 
 

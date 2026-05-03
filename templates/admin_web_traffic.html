@@ -29,6 +29,12 @@ const EARN_IMP_RPM  = {{ earn_imp_rpm  | safe }};
 const EARN_CLICKS   = {{ earn_clicks   | safe }};
 const EARN_VIEWS    = {{ earn_views    | safe }};
 
+// API submission report
+const API_CT_LABELS   = {{ api_ct_labels   | safe }};
+const API_CT_COUNTS   = {{ api_ct_counts   | safe }};
+const API_GAME_LABELS = {{ api_game_labels | safe }};
+const API_GAME_COUNTS = {{ api_game_counts | safe }};
+
 // Hourly ops data
 const HR_LABELS   = {{ hr_labels   | safe }};
 const HR_CPU      = {{ hr_cpu      | safe }};
@@ -183,6 +189,66 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // API client type donut
+  if (API_CT_COUNTS.length) {
+    new Chart(document.getElementById('chartApiClient'), {
+      type: 'doughnut',
+      data: {
+        labels: API_CT_LABELS,
+        datasets: [{
+          data: API_CT_COUNTS,
+          backgroundColor: [
+            'rgba(74,158,255,0.85)',
+            'rgba(80,200,120,0.85)',
+            'rgba(255,200,60,0.85)',
+            'rgba(255,140,30,0.85)',
+            'rgba(200,120,255,0.85)',
+            'rgba(130,190,255,0.85)',
+            'rgba(255,180,100,0.85)',
+            'rgba(100,200,180,0.85)',
+            'rgba(160,160,160,0.85)',
+            'rgba(80,80,80,0.85)',
+          ],
+          borderColor: 'rgba(0,0,0,0.3)',
+          borderWidth: 1,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { color: '#aaa', boxWidth: 12, font: { size: 11 } } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed.toLocaleString()}` } },
+        },
+      },
+    });
+  }
+
+  // API submissions by game — horizontal bar
+  if (API_GAME_COUNTS.length) {
+    new Chart(document.getElementById('chartApiGame'), {
+      type: 'bar',
+      data: {
+        labels: API_GAME_LABELS,
+        datasets: [{
+          label: 'Submissions',
+          data: API_GAME_COUNTS,
+          backgroundColor: 'rgba(74,158,255,0.7)',
+          borderColor:     'rgba(74,158,255,0.9)',
+          borderWidth: 1,
+        }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#888' }, grid: { color: '#333' }, min: 0 },
+          y: { ticks: { color: '#888', font: { size: 11 } }, grid: { color: '#333' } },
+        },
+      },
+    });
+  }
+
   // Chart 1 — total requests & unique visitors
   makeLineChart('chartTraffic', [
     { label: 'Total Requests', data: TOTAL,
@@ -307,6 +373,10 @@ document.addEventListener('DOMContentLoaded', () => {
 .ops-chart-card { background: var(--bg2, #1a1a2e); border: 1px solid var(--border, #333); border-radius: 8px; padding: 1rem 1.25rem; }
 .ops-chart-card h3 { margin: 0 0 0.6rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim, #888); }
 .ops-chart-wrap { position: relative; height: 180px; }
+.api-stats { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin: 1rem 0 1.5rem; }
+.api-stat { background: var(--bg2, #1a1a2e); border: 1px solid var(--border, #333); border-radius: 8px; padding: 0.75rem 1.25rem; text-align: center; min-width: 110px; }
+.api-stat-val { font-size: 1.5rem; font-weight: 700; color: var(--text); }
+.api-stat-lbl { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.2rem; text-transform: uppercase; letter-spacing: 0.04em; }
 </style>
 {% endblock %}
 
@@ -371,6 +441,78 @@ document.addEventListener('DOMContentLoaded', () => {
     </table>
   </div>
   {% endif %}
+
+  <!-- Score Submission API Report -->
+  <h2 style="font-size:1rem;margin-top:2rem;color:var(--accent2);">Score Submission API Report</h2>
+
+  <div class="api-stats">
+    <div class="api-stat">
+      <div class="api-stat-val">{{ "{:,}".format(api_total) }}</div>
+      <div class="api-stat-lbl">Total Submissions</div>
+    </div>
+    <div class="api-stat">
+      <div class="api-stat-val">{{ "{:,}".format(api_mobile_app) }}</div>
+      <div class="api-stat-lbl">Mobile Apps</div>
+    </div>
+    <div class="api-stat">
+      <div class="api-stat-val">{{ "{:,}".format(api_desktop) }}</div>
+      <div class="api-stat-lbl">Desktop Browsers</div>
+    </div>
+    <div class="api-stat">
+      <div class="api-stat-val">{{ "{:,}".format(api_mob_brow) }}</div>
+      <div class="api-stat-lbl">Mobile Browsers</div>
+    </div>
+    <div class="api-stat">
+      <div class="api-stat-val">{{ "{:,}".format(api_unknown) }}</div>
+      <div class="api-stat-lbl">Unknown Client</div>
+    </div>
+  </div>
+
+  <div class="wt-charts">
+    <div class="wt-chart-card">
+      <h3>Client Type Mix</h3>
+      <div class="wt-chart-wrap" style="height:250px;"><canvas id="chartApiClient"></canvas></div>
+    </div>
+    <div class="wt-chart-card">
+      <h3>Submissions by Game (top {{ api_by_game | selectattr("total", "gt", 0) | list | length }})</h3>
+      <div class="wt-chart-wrap" style="height:250px;"><canvas id="chartApiGame"></canvas></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;margin:0.5rem 0 1rem;">
+    <div>
+      <h3 style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-dim);margin:0 0 0.5rem;">Client Breakdown</h3>
+      <table class="wt-table">
+        <thead><tr><th>Client</th><th>Submissions</th><th>%</th></tr></thead>
+        <tbody>
+          {% for r in api_ct_breakdown %}
+          <tr>
+            <td>{{ r.label }}</td>
+            <td>{{ "{:,}".format(r.count) }}</td>
+            <td>{{ "%.1f"|format(r.count / api_total * 100) if api_total else "—" }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3 style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-dim);margin:0 0 0.5rem;">Submissions by Game</h3>
+      <table class="wt-table">
+        <thead><tr><th>Game</th><th>Submissions</th></tr></thead>
+        <tbody>
+          {% for r in api_by_game %}{% if r.total > 0 %}
+          <tr>
+            <td>{{ r.label }}</td>
+            <td>{{ "{:,}".format(r.total) }}</td>
+          </tr>
+          {% endif %}{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p style="font-size:0.74rem;color:var(--text-dim);text-align:center;margin:0 0 1.5rem;">
+    Note: unique IP reporting is not available — score tables do not store IP addresses.
+  </p>
 
   {% if rows %}
   <div class="wt-charts">

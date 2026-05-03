@@ -15,6 +15,36 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F90 Admin web traffic: Score Submission API Report
+  - New section on /admin/web_traffic showing score submission stats from all 23 game tables
+  - Stat boxes: total submissions, mobile apps, desktop browsers, mobile browsers, unknown client
+  - Client Type Mix donut chart and Submissions by Game horizontal bar chart (top 15 by volume)
+  - Client breakdown table (iOS App, Android App, Chrome, Firefox, Safari, Edge, Opera, Mobile Browser, Other Browser, Unknown)
+  - Submissions by Game table (all games with >0 submissions, sorted by volume)
+  - Note: unique IP reporting unavailable — score tables do not store IP addresses
+
+──────────────────────────────────────────────────────────────────────────────
+
+F89 Mobile app: Preferences screen
+  - Full SettingsScreen rewrite with 5 sections: Default Game, Sound, Player, Theme, About
+  - Default Game: vertical radio list of 6 modes (Beginner / Beginner No-Guess / Intermediate / Intermediate No-Guess / Expert / Expert No-Guess)
+  - Sound: segmented On/Off control; sets initial mute state on next app open (in-game 🔇 toggle is session-only)
+  - Player: name input; if name set → Auto-submit Yes/No; if auto-submit → On Win Summary/New Game
+  - Theme: Auto/Light/Dark segmented control
+  - About: "This game is dedicated to Diana, Princess of Wales…" with link to minesweeper.org/about
+  - No-Guess mode is now the default in GameScreen (prefs override on mount)
+  - WinToast component: bottom-anchored banner shown for 5s when autoSubmit + onWin = 'newgame'
+  - WinModal: auto-submit path fires submission without user interaction; shows spinner then result
+  - AdBanner refreshes on every autoSubmit win via React key prop remount
+
+──────────────────────────────────────────────────────────────────────────────
+
+F88 iOS AdMob: real banner ad unit ID
+  - Switched AdBanner.js from test ad unit to real iOS unit: ca-app-pub-8102958922361899/1016578124
+  - refreshKey prop added: changing the key remounts BannerAd, requesting a fresh ad from AdMob
+
+──────────────────────────────────────────────────────────────────────────────
+
 F87 Admin contact: Delete All Unread button
   - New POST /admin/contact/delete-all-unread route deletes all unread ContactMessages in one request
   - "Delete All" button shown next to the Unread section heading (only visible when there are unread messages)
