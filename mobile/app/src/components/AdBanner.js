@@ -3,26 +3,18 @@
  *
  * Anchored adaptive banner ad using Google Mobile Ads.
  *
- * Ad unit IDs below are Google's test IDs.
- * TODO before production release: replace with real ad unit IDs from AdMob console:
- *   Publisher: ca-app-pub-8102958922361899
- *   iOS ad unit:     ca-app-pub-8102958922361899/XXXXXXXXXX
+ * TODO: replace Android ad unit with real ID once Android app is approved in AdMob:
  *   Android ad unit: ca-app-pub-8102958922361899/XXXXXXXXXX
- *
- * Also replace the androidAppId / iosAppId in app.json with real App IDs:
- *   ca-app-pub-8102958922361899~XXXXXXXXXX (iOS)
- *   ca-app-pub-8102958922361899~XXXXXXXXXX (Android)
+ *   Android App ID (app.json): ca-app-pub-3940256099942544~3347511713 → real ID
  */
 
 import React from 'react';
 import { View, Platform, StyleSheet } from 'react-native';
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 
-// Test ad unit ID — same for both platforms during development
-// ca-app-pub-3940256099942544/9214589741 is Google's official test adaptive banner
 const AD_UNIT_ID = Platform.select({
-  ios:     'ca-app-pub-3940256099942544/9214589741',
-  android: 'ca-app-pub-3940256099942544/9214589741',
+  ios:     'ca-app-pub-8102958922361899/1016578124',
+  android: 'ca-app-pub-3940256099942544/9214589741', // test ID — replace when Android is approved
 });
 
 export default function AdBanner() {
