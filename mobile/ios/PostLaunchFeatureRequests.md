@@ -25,3 +25,5 @@ Picutre of Honey
 Share just played game on Facebook
 
 Share just played game by URL
+
+Refresh ad in the banner on every game win
