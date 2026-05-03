@@ -2,19 +2,19 @@
 
 {% if mode == 'hex-beginner' %}
   {% set _title = "Hexsweeper — Easy | minesweeper.org" %}
-  {% set _desc  = "Play Hexsweeper — minesweeper on a hex board where each cell has 6 neighbours. Easy mode: radius 5, 8 mines. Free to play, no download required." %}
+  {% set _desc  = t["meta_desc_hexsweeper_beginner"] %}
   {% set _canon = "https://minesweeper.org/hexsweeper" %}
 {% elif mode == 'hex-intermediate' %}
   {% set _title = "Hexsweeper — Medium | minesweeper.org" %}
-  {% set _desc  = "Play Hexsweeper — minesweeper on a hexagonal board. Medium mode: radius 7 hex board with 20 mines." %}
+  {% set _desc  = t["meta_desc_hexsweeper_intermediate"] %}
   {% set _canon = "https://minesweeper.org/hexsweeper/intermediate" %}
 {% elif mode == 'hex-expert' %}
   {% set _title = "Hexsweeper — Hard | minesweeper.org" %}
-  {% set _desc  = "Play Hexsweeper — minesweeper on a hexagonal board. Hard mode: radius 10 hex board with 57 mines." %}
+  {% set _desc  = t["meta_desc_hexsweeper_expert"] %}
   {% set _canon = "https://minesweeper.org/hexsweeper/expert" %}
 {% else %}
   {% set _title = "Hexsweeper — Custom | minesweeper.org" %}
-  {% set _desc  = "Play Hexsweeper with a custom board size — minesweeper on hexagonal tiles." %}
+  {% set _desc  = t["meta_desc_hexsweeper_custom"] %}
   {% set _canon = "https://minesweeper.org/hexsweeper/custom" %}
 {% endif %}
 

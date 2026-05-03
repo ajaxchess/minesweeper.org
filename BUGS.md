@@ -1,3 +1,18 @@
+B28 Homepage and difficulty pages show English SEO content for non-English locales
+   The 69 seo_* translation keys (seo_beg_*, seo_int_*, seo_exp_*, seo_about_*,
+   seo_diff_*, seo_tips_*, seo_beyond_*) were only present in the English and German
+   locales. All 15 other locales fell back to English via ChainMap, so visiting
+   /?lang=es or /intermediate?lang=ko always rendered English headings and body text.
+   Fixed by: adding all 69 seo_* keys to the 15 remaining locales (es, fr, eo, th,
+   pgl, uk, ko, ja, zh, zh-hant, pl, tl, ru, pt, it) in translations.py.
+
+B27 Hexsweeper meta description always shows in English regardless of locale
+   hexsweeper.html hardcodes _desc using {% set _desc = "..." %} in English instead
+   of pulling from the translation dictionary. No meta_desc_hexsweeper_* keys existed
+   in translations.py, so the template had no way to render localised descriptions.
+   Fixed by: adding meta_desc_hexsweeper_{beginner,intermediate,expert,custom} to all
+   17 locales in translations.py; updating hexsweeper.html to use t["meta_desc_..."].
+
 -- Fixed below --
 
 B25 /strategy returns 500 internal server error
