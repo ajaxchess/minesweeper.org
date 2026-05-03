@@ -8,6 +8,8 @@ Sound On/Off
 (Music On/Off)
 If Autosubmit is Yes
 ->When you win the game, go to summary screen or start next game
+Instead, the summary of the finished game would appear below the game board
+and disapear in 10 seconds
 
 Music
 
