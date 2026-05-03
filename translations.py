@@ -1170,7 +1170,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
-        "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
+        "meta_desc_beginner":      "Ludu Minesweeper senpage rete — klasika, sendivena kaj realtempaj 1v1 batalreĝimoj. Neniu elŝuto bezonatas. Defiu amikon aŭ ludu sola.",
         "meta_kw_beginner":        "minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game",
         "meta_title_intermediate": "Minesweeper Intermediate \u2014 Play Free Online | minesweeper.org",
         "meta_desc_intermediate":  "Play Minesweeper Intermediate online \u2014 {rows}\u00d7{cols} board with {mines} mines. Free, no download required.",
@@ -2923,7 +2923,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
-        "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
+        "meta_desc_beginner":      "เล่น Minesweeper ออนไลน์ฟรี — โหมดคลาสสิก ไม่เดาสุ่ม และดวล 1v1 แบบเรียลไทม์ ไม่ต้องดาวน์โหลด ท้าทายเพื่อนหรือเล่นคนเดียว",
         "meta_kw_beginner":        "minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game",
         "meta_title_intermediate": "Minesweeper Intermediate \u2014 Play Free Online | minesweeper.org",
         "meta_desc_intermediate":  "Play Minesweeper Intermediate online \u2014 {rows}\u00d7{cols} board with {mines} mines. Free, no download required.",
@@ -3451,7 +3451,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
-        "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
+        "meta_desc_beginner":      "Ayplay eefray InesweeperMay onlineway — assiclay, onay-uessgay, andway ealray-imetay 1v1 uelday odesmay. Onay ownloadday equiredray. Allengechay away iendfray orway ayplay olosay.",
         "meta_kw_beginner":        "minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game",
         "meta_title_intermediate": "Minesweeper Intermediate \u2014 Play Free Online | minesweeper.org",
         "meta_desc_intermediate":  "Play Minesweeper Intermediate online \u2014 {rows}\u00d7{cols} board with {mines} mines. Free, no download required.",
@@ -3979,7 +3979,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
-        "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
+        "meta_desc_beginner":      "Грайте в Сапер безкоштовно онлайн — класичний, без вгадувань і дуель 1v1 у реальному часі. Без завантаження. Кидайте виклик другові або грайте наодинці.",
         "meta_kw_beginner":        "minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game",
         "meta_title_intermediate": "Minesweeper Intermediate \u2014 Play Free Online | minesweeper.org",
         "meta_desc_intermediate":  "Play Minesweeper Intermediate online \u2014 {rows}\u00d7{cols} board with {mines} mines. Free, no download required.",
@@ -4505,7 +4505,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
-        "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
+        "meta_desc_beginner":      "Jouez au Démineur gratuitement en ligne — modes classique, sans devinette et duel 1v1 en temps réel. Aucun téléchargement requis. Défiez un ami ou jouez seul.",
         "meta_kw_beginner":        "minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game",
         "meta_title_intermediate": "Minesweeper Intermediate \u2014 Play Free Online | minesweeper.org",
         "meta_desc_intermediate":  "Play Minesweeper Intermediate online \u2014 {rows}\u00d7{cols} board with {mines} mines. Free, no download required.",
@@ -5015,7 +5015,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
-        "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
+        "meta_desc_beginner":      "온라인 지뢰찾기 무료 플레이 — 클래식, 추측 없음, 실시간 1v1 결투 모드. 다운로드 불필요. 친구에게 도전하거나 혼자 플레이하세요.",
         "meta_kw_beginner":        "minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game",
         "meta_title_intermediate": "Minesweeper Intermediate \u2014 Play Free Online | minesweeper.org",
         "meta_desc_intermediate":  "Play Minesweeper Intermediate online \u2014 {rows}\u00d7{cols} board with {mines} mines. Free, no download required.",
@@ -5541,7 +5541,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
-        "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
+        "meta_desc_beginner":      "マインスイーパーをオンラインで無料プレイ — クラシック、ノーゲス、リアルタイム1v1対戦モード。ダウンロード不要。友達に挑戦またはソロでプレイ。",
         "meta_kw_beginner":        "minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game",
         "meta_title_intermediate": "Minesweeper Intermediate \u2014 Play Free Online | minesweeper.org",
         "meta_desc_intermediate":  "Play Minesweeper Intermediate online \u2014 {rows}\u00d7{cols} board with {mines} mines. Free, no download required.",
@@ -6152,7 +6152,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
-        "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
+        "meta_desc_beginner":      "免费在线玩扫雷 — 经典、无猜测和实时1v1决斗模式。无需下载。挑战朋友或单人游戏。",
         "meta_kw_beginner":        "minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game",
         "meta_title_intermediate": "Minesweeper Intermediate \u2014 Play Free Online | minesweeper.org",
         "meta_desc_intermediate":  "Play Minesweeper Intermediate online \u2014 {rows}\u00d7{cols} board with {mines} mines. Free, no download required.",
@@ -6662,7 +6662,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
-        "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
+        "meta_desc_beginner":      "免費在線玩掃雷 — 經典、無猜測和即時1v1決鬥模式。無需下載。挑戰朋友或單人遊戲。",
         "meta_kw_beginner":        "minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game",
         "meta_title_intermediate": "Minesweeper Intermediate \u2014 Play Free Online | minesweeper.org",
         "meta_desc_intermediate":  "Play Minesweeper Intermediate online \u2014 {rows}\u00d7{cols} board with {mines} mines. Free, no download required.",
@@ -7172,7 +7172,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
-        "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
+        "meta_desc_beginner":      "Graj w Sapera za darmo online — tryby klasyczny, bez zgadywania i pojedynek 1v1 w czasie rzeczywistym. Bez pobierania. Rzuć wyzwanie znajomemu lub graj solo.",
         "meta_kw_beginner":        "minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game",
         "meta_title_intermediate": "Minesweeper Intermediate \u2014 Play Free Online | minesweeper.org",
         "meta_desc_intermediate":  "Play Minesweeper Intermediate online \u2014 {rows}\u00d7{cols} board with {mines} mines. Free, no download required.",
@@ -7683,7 +7683,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper \u2014 Play Free Online | Multiplayer & Classic Modes",
-        "meta_desc_beginner":      "Play free Minesweeper online \u2014 classic, no-guess, and real-time 1v1 duel modes. No download required. Challenge a friend or play solo.",
+        "meta_desc_beginner":      "Maglaro ng Minesweeper nang libre online — klasiko, walang hula, at 1v1 labanan sa real time. Hindi kailangan ng download. Hamunin ang isang kaibigan o maglaro nang mag-isa.",
         "meta_kw_beginner":        "minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game",
         "meta_title_intermediate": "Minesweeper Intermediate \u2014 Play Free Online | minesweeper.org",
         "meta_desc_intermediate":  "Play Minesweeper Intermediate online \u2014 {rows}\u00d7{cols} board with {mines} mines. Free, no download required.",
