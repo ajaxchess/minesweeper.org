@@ -10,24 +10,6 @@
 {% block tw_description %}{{ t.meta_desc_strategy }}{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "Minesweeper Strategy Guide",
-  "url": "https://minesweeper.org/strategy",
-  "description": "Advanced Minesweeper strategy: pattern recognition, constraint solving, chord clicking, and techniques to improve your speed and accuracy.",
-  "publisher": {
-    "@type": "Organization",
-    "name": "minesweeper.org",
-    "url": "https://minesweeper.org/",
-    "logo": { "@type": "ImageObject", "url": "https://minesweeper.org/static/img/LadyDisMinesLogo.png" }
-  }
-}
-</script>
-{% endblock %}
-
-{% block jsonld %}
-<script type="application/ld+json">
 [
   {
     "@context": "https://schema.org",
@@ -43,7 +25,12 @@
     "headline": "Minesweeper Strategy & Tips",
     "description": "Advanced patterns, speed techniques, and probability reasoning for minesweeper players who want to get faster, smarter, and more consistent.",
     "url": "https://minesweeper.org/strategy",
-    "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+    "publisher": {
+      "@type": "Organization",
+      "name": "minesweeper.org",
+      "url": "https://minesweeper.org/",
+      "logo": { "@type": "ImageObject", "url": "https://minesweeper.org/static/img/LadyDisMinesLogo.png" }
+    }
   }
 ]
 </script>
