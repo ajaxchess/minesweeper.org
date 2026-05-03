@@ -69,6 +69,7 @@ export default function GameScreen({ navigation }) {
   const [autoSubmit,    setAutoSubmit]    = useState(false);
   const [onWin,         setOnWin]         = useState('summary');
   const [adRefreshKey,  setAdRefreshKey]  = useState(0);
+  const [adHeight,      setAdHeight]      = useState(0);
   const [toastVisible,  setToastVisible]  = useState(false);
   const [toastStats,    setToastStats]    = useState(null);
 
@@ -328,7 +329,15 @@ export default function GameScreen({ navigation }) {
         autoSubmit={autoSubmit}
       />
 
+      {/* ── AdMob banner ───────────────────────────────────────────────── */}
+      {(mode === 'beginner' || mode === 'intermediate') && (
+        <View onLayout={e => setAdHeight(e.nativeEvent.layout.height)}>
+          <AdBanner refreshKey={adRefreshKey} />
+        </View>
+      )}
+
       {/* ── Win toast (autoSubmit + newgame mode) ──────────────────────── */}
+      {/* Rendered after AdBanner so it sits on top in z-order */}
       {toastStats && (
         <WinToast
           visible={toastVisible}
@@ -336,12 +345,8 @@ export default function GameScreen({ navigation }) {
           bbbv={toastStats.bbbv}
           efficiency={toastStats.efficiency}
           theme={theme}
+          bottomOffset={Math.max(adHeight + 16, 80)}
         />
-      )}
-
-      {/* ── AdMob banner ───────────────────────────────────────────────── */}
-      {(mode === 'beginner' || mode === 'intermediate') && (
-        <AdBanner refreshKey={adRefreshKey} />
       )}
 
     </SafeAreaView>

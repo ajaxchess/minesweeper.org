@@ -16,7 +16,7 @@ function formatTime(ms) {
   return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}s`;
 }
 
-export default function WinToast({ visible, elapsedMs, bbbv, efficiency, theme }) {
+export default function WinToast({ visible, elapsedMs, bbbv, efficiency, theme, bottomOffset = 80 }) {
   const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -43,6 +43,7 @@ export default function WinToast({ visible, elapsedMs, bbbv, efficiency, theme }
       backgroundColor: theme.surface,
       borderColor:     theme.border,
       opacity,
+      bottom:          bottomOffset,
     }]}>
       <Text style={[styles.winText, { color: theme.accent }]}>🎉 You Win!</Text>
       <View style={styles.statsRow}>
@@ -59,7 +60,6 @@ export default function WinToast({ visible, elapsedMs, bbbv, efficiency, theme }
 const styles = StyleSheet.create({
   toast: {
     position:          'absolute',
-    bottom:            80,
     left:              16,
     right:             16,
     borderRadius:      10,
