@@ -177,12 +177,16 @@ export default function GameScreen({ navigation }) {
       });
     }
 
-    // Reset after 5 s (matches WinToast fade duration)
+    // Start new game after 0.5 s so the player can play again immediately
+    setTimeout(() => {
+      setFlagMode(false);
+      newGame(mode, noGuess);
+    }, 500);
+
+    // Clear toast after 5 s (matches WinToast fade duration)
     setTimeout(() => {
       setToastVisible(false);
       setToastStats(null);
-      setFlagMode(false);
-      newGame(mode, noGuess);
     }, 5000);
   // Board/game values are stable after won=true; newGame is stable
   // eslint-disable-next-line react-hooks/exhaustive-deps
