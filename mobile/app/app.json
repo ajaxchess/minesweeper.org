@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.minesweeper",
-      "buildNumber": "7",
+      "buildNumber": "9",
       "config": {
         "usesNonExemptEncryption": false
       },
