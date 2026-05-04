@@ -8,6 +8,7 @@
  *   prefs:player_name     — display name for score submission
  *   prefs:autosubmit      — yes | no          (only settable when name is set)
  *   prefs:on_win          — summary | newgame (only settable when autosubmit = yes)
+ *   prefs:on_lose         — summary | newgame (settable when name is set)
  *   prefs:theme           — auto | light | dark
  *
  * All settings save immediately on change. Player name saves on blur / return.
@@ -42,7 +43,8 @@ const GAME_MODES = [
 
 const SOUNDS  = [{ value: 'on',  label: 'On'  }, { value: 'off', label: 'Off' }];
 const THEMES  = [{ value: 'auto', label: 'Auto' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }];
-const ON_WINS = [{ value: 'summary', label: 'Summary' }, { value: 'newgame', label: 'New Game' }];
+const ON_WINS  = [{ value: 'summary', label: 'Summary' }, { value: 'newgame', label: 'New Game' }];
+const ON_LOSES = [{ value: 'summary', label: 'Summary' }, { value: 'newgame', label: 'New Game' }];
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -104,6 +106,7 @@ export default function SettingsScreen() {
   const [playerName,   setPlayerName]   = useState('');
   const [autoSubmit,   setAutoSubmit]   = useState(false);
   const [onWin,        setOnWin]        = useState('summary');
+  const [onLose,       setOnLose]       = useState('summary');
 
   useEffect(() => {
     getPrefs().then(prefs => {
@@ -113,6 +116,7 @@ export default function SettingsScreen() {
       setPlayerName(prefs.playerName     ?? '');
       setAutoSubmit(prefs.autoSubmit     ?? false);
       setOnWin(prefs.onWin               ?? 'summary');
+      setOnLose(prefs.onLose             ?? 'summary');
       setLoading(false);
     });
   }, []);
@@ -153,6 +157,11 @@ export default function SettingsScreen() {
   const handleOnWinChange = useCallback((val) => {
     setOnWin(val);
     savePrefs({ onWin: val });
+  }, []);
+
+  const handleOnLoseChange = useCallback((val) => {
+    setOnLose(val);
+    savePrefs({ onLose: val });
   }, []);
 
   const handleThemeChange = useCallback((val) => {
@@ -273,6 +282,24 @@ export default function SettingsScreen() {
             <Text style={[styles.hint, { color: theme.textMuted }]}>
               Summary: show your stats until you tap New Game.{'\n'}
               New Game: show a brief stats banner, then start the next game automatically.
+            </Text>
+          </>
+        )}
+
+        {hasName && (
+          <>
+            <View style={styles.row}>
+              <Text style={[styles.rowLabel, { color: theme.textDim, width: 84 }]}>On lose</Text>
+              <SegmentedControl
+                options={ON_LOSES}
+                value={onLose}
+                onSelect={handleOnLoseChange}
+                theme={theme}
+              />
+            </View>
+            <Text style={[styles.hint, { color: theme.textMuted }]}>
+              Summary: board stays on screen until you tap New Game.{'\n'}
+              New Game: automatically start a new game after half a second.
             </Text>
           </>
         )}

@@ -15,6 +15,18 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F92 Web + Mobile: On Lose preference — Summary (default) or New Game
+  - After hitting a mine, show the loss overlay (Summary) or immediately reset
+    the board after 0.5 s (New Game); no toast shown on loss
+  - Web: stored as pref_on_lose (VARCHAR 16) in user_profiles; exposed via
+    GET /api/profile/prefs as on_lose; applied as window.PREF_ON_LOSE
+  - Mobile: new onLose pref stored alongside onWin in AsyncStorage; shown in
+    SettingsScreen below On Win; GameScreen resets at 0.5 s on explosion when
+    onLose = 'newgame' (no WinModal or toast shown)
+  - Logged-in / named users only; guest/unnamed behaviour unchanged
+
+──────────────────────────────────────────────────────────────────────────────
+
 F91 Web: On Win preference for logged-in players
   - New "On Win" preference on /profile: Summary (default) or New Game
   - Summary: unchanged — shows the existing win overlay with score submission

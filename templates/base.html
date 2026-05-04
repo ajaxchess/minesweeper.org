@@ -579,7 +579,7 @@
   <script>
   fetch('/api/profile/prefs', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
     .then(function(r) { return r.ok ? r.json() : null; })
-    .then(function(d) { if (d) window.PREF_ON_WIN = d.on_win; })
+    .then(function(d) { if (d) { window.PREF_ON_WIN = d.on_win; window.PREF_ON_LOSE = d.on_lose; } })
     .catch(function() {});
   </script>
   {% endif %}

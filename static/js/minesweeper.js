@@ -542,6 +542,11 @@ async function handleNewGameWin(username) {
   setTimeout(() => resetGame(), 500);
 }
 
+// ── New-game lose handler (F92) ───────────────────────────────────────────────
+function handleNewGameLose() {
+  setTimeout(() => resetGame(), 500);
+}
+
 // ── Overlay ──────────────────────────────────────────────────────────────────
 function showOverlay(msg, won) {
   const board    = document.getElementById('board');
@@ -550,6 +555,12 @@ function showOverlay(msg, won) {
   // F91: logged-in users with On Win = New Game skip the overlay entirely
   if (won && username && window.PREF_ON_WIN === 'new_game') {
     handleNewGameWin(username);
+    return;
+  }
+
+  // F92: logged-in users with On Lose = New Game skip the loss overlay
+  if (!won && username && window.PREF_ON_LOSE === 'new_game') {
+    handleNewGameLose();
     return;
   }
 

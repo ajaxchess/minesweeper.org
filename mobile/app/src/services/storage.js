@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── Keys ──────────────────────────────────────────────────────────────────────
 // Preferences:  prefs:player_name | prefs:default_mode | prefs:default_guess |
-//               prefs:theme | prefs:sound | prefs:autosubmit | prefs:on_win
+//               prefs:theme | prefs:sound | prefs:autosubmit | prefs:on_win | prefs:on_lose
 // Scores:       scores:{mode}:{guess}  e.g. scores:beginner:guess, scores:expert:noguess
 
 const PREFS_KEYS = {
@@ -13,6 +13,7 @@ const PREFS_KEYS = {
   sound:        'prefs:sound',       // 'on' | 'off'
   autoSubmit:   'prefs:autosubmit',  // 'yes' | 'no'
   onWin:        'prefs:on_win',      // 'summary' | 'newgame'
+  onLose:       'prefs:on_lose',     // 'summary' | 'newgame'
 };
 
 const MODES   = ['beginner', 'intermediate', 'expert'];
@@ -35,6 +36,7 @@ export async function getPrefs() {
     sound:        pairs[4][1] ?? 'on',
     autoSubmit:   (pairs[5][1] ?? 'no') === 'yes',
     onWin:        pairs[6][1] ?? 'summary',
+    onLose:       pairs[7][1] ?? 'summary',
   };
 }
 
@@ -47,6 +49,7 @@ export async function savePrefs(updates) {
   if (updates.sound        !== undefined) pairs.push([PREFS_KEYS.sound,        updates.sound]);
   if (updates.autoSubmit   !== undefined) pairs.push([PREFS_KEYS.autoSubmit,   updates.autoSubmit ? 'yes' : 'no']);
   if (updates.onWin        !== undefined) pairs.push([PREFS_KEYS.onWin,        updates.onWin]);
+  if (updates.onLose       !== undefined) pairs.push([PREFS_KEYS.onLose,       updates.onLose]);
   if (pairs.length) await AsyncStorage.multiSet(pairs);
 }
 

@@ -111,6 +111,16 @@
       </div>
       <div class="setting-row">
         <div class="setting-info">
+          <span class="setting-name">On Lose</span>
+          <span class="setting-desc">After hitting a mine, show the loss overlay or automatically start a new game after half a second.</span>
+        </div>
+        <div style="display:flex;gap:0.4rem;">
+          <button class="setting-toggle" id="onlose-summary-btn" onclick="setOnLose('summary')">Summary</button>
+          <button class="setting-toggle" id="onlose-newgame-btn" onclick="setOnLose('new_game')">New Game</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
           <span class="setting-name">Public Profile</span>
           <span class="setting-desc">Allow others to view your stats via a shareable link. Only your display name is shown — never your email.</span>
         </div>
@@ -676,6 +686,7 @@ let   prefSounds   = {{ 'true' if pref_sounds   else 'false' }};
 let   prefChording = {{ 'true' if pref_chording else 'false' }};
 let   prefSkin     = "{{ pref_skin }}";
 let   prefOnWin    = "{{ pref_on_win }}";
+let   prefOnLose   = "{{ pref_on_lose }}";
 
 function updatePublicUI() {
   const btn       = document.getElementById('public-toggle');
@@ -706,6 +717,7 @@ async function saveSettings() {
       pref_chording: prefChording,
       pref_skin:     prefSkin,
       pref_on_win:   prefOnWin,
+      pref_on_lose:  prefOnLose,
     }),
   });
 }
@@ -714,6 +726,13 @@ async function setOnWin(val) {
   prefOnWin = val;
   document.getElementById('onwin-summary-btn').classList.toggle('active', val === 'summary');
   document.getElementById('onwin-newgame-btn').classList.toggle('active', val === 'new_game');
+  await saveSettings();
+}
+
+async function setOnLose(val) {
+  prefOnLose = val;
+  document.getElementById('onlose-summary-btn').classList.toggle('active', val === 'summary');
+  document.getElementById('onlose-newgame-btn').classList.toggle('active', val === 'new_game');
   await saveSettings();
 }
 
@@ -766,9 +785,11 @@ document.addEventListener('DOMContentLoaded', () => {
   localStorage.setItem('chording', prefChording);
   localStorage.setItem('skin', prefSkin);
   document.documentElement.dataset.skin = prefSkin;
-  // Init On Win buttons
+  // Init On Win / On Lose buttons
   document.getElementById('onwin-summary-btn').classList.toggle('active', prefOnWin === 'summary');
   document.getElementById('onwin-newgame-btn').classList.toggle('active', prefOnWin === 'new_game');
+  document.getElementById('onlose-summary-btn').classList.toggle('active', prefOnLose === 'summary');
+  document.getElementById('onlose-newgame-btn').classList.toggle('active', prefOnLose === 'new_game');
 });
 
 // ── About ─────────────────────────────────────────────────────────────────────

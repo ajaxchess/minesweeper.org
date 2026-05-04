@@ -706,6 +706,7 @@ class UserProfile(Base):
     pref_chording = Column(Boolean, default=True,  nullable=False)
     pref_skin     = Column(String(16), default='dark',    nullable=False)
     pref_on_win   = Column(String(16), default='summary', nullable=False)
+    pref_on_lose  = Column(String(16), default='summary', nullable=False)
     about_text    = Column(String(5000), nullable=True)
     pvp_elo       = Column(Integer, default=1200, nullable=False)
     created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -1231,8 +1232,9 @@ def _apply_migrations():
         ("jigsaw_photos",         "approved",    "TINYINT(1) NOT NULL DEFAULT 0"),
         ("fifteen_puzzle_photos", "approved",    "TINYINT(1) NOT NULL DEFAULT 0"),
         ("member_puzzles",        "approved",    "TINYINT(1) NOT NULL DEFAULT 0"),
-        # On-win preference (added 2026-05-03)
-        ("user_profiles",         "pref_on_win", "VARCHAR(16) NOT NULL DEFAULT 'summary'"),
+        # On-win / on-lose preferences (added 2026-05-03)
+        ("user_profiles",         "pref_on_win",  "VARCHAR(16) NOT NULL DEFAULT 'summary'"),
+        ("user_profiles",         "pref_on_lose", "VARCHAR(16) NOT NULL DEFAULT 'summary'"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:

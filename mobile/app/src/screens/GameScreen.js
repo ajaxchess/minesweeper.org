@@ -68,6 +68,7 @@ export default function GameScreen({ navigation }) {
   const [zoomScale,     setZoomScale]     = useState(1.0);
   const [autoSubmit,    setAutoSubmit]    = useState(false);
   const [onWin,         setOnWin]         = useState('summary');
+  const [onLose,        setOnLose]        = useState('summary');
   const [adRefreshKey,  setAdRefreshKey]  = useState(0);
   const [adHeight,      setAdHeight]      = useState(0);
   const [toastVisible,  setToastVisible]  = useState(false);
@@ -86,6 +87,7 @@ export default function GameScreen({ navigation }) {
       setNoGuess((prefs.defaultGuess ?? 'noguess') === 'noguess');
       setAutoSubmit(prefs.autoSubmit ?? false);
       setOnWin(prefs.onWin ?? 'summary');
+      setOnLose(prefs.onLose ?? 'summary');
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // intentionally runs once
@@ -96,6 +98,7 @@ export default function GameScreen({ navigation }) {
       getPrefs().then(prefs => {
         setAutoSubmit(prefs.autoSubmit ?? false);
         setOnWin(prefs.onWin ?? 'summary');
+        setOnLose(prefs.onLose ?? 'summary');
       });
     });
     return unsubscribe;
@@ -121,6 +124,12 @@ export default function GameScreen({ navigation }) {
       }
     } else if (over && !prevOver.current) {
       play('explode');
+      if (onLose === 'newgame') {
+        setTimeout(() => {
+          setFlagMode(false);
+          newGame(mode, noGuess);
+        }, 500);
+      }
     } else if (revCount > prevRevealed.current) {
       play('reveal');
     }
@@ -135,7 +144,7 @@ export default function GameScreen({ navigation }) {
     prevFlagged.current  = flagCount;
   // handleAutoNewGame intentionally excluded — it's stable via useCallback
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [over, won, revealed, flagged, play, autoSubmit, onWin]);
+  }, [over, won, revealed, flagged, play, autoSubmit, onWin, onLose]);
 
   // ── Auto-new-game: submit score, show toast, reset after 5 s ─────────────
   const handleAutoNewGame = useCallback(async () => {
