@@ -214,7 +214,7 @@ export default function SettingsScreen() {
       <View style={styles.section}>
         <SectionLabel theme={theme}>SOUND</SectionLabel>
         <View style={styles.row}>
-          <Text style={[styles.rowLabel, { color: theme.textDim }]}>Default</Text>
+          <Text style={[styles.rowLabel, { color: theme.textDim, width: 58 }]}>Default</Text>
           <SegmentedControl
             options={SOUNDS}
             value={sound}
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
   segment: {
     flex:            1,
     alignItems:      'center',
-    paddingVertical: 8,
+    paddingVertical: 6,
   },
   segmentText: {
     fontSize:   13,
