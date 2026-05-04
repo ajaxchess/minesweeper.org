@@ -823,7 +823,7 @@ function _ssKey() {
 
 function _ssEntry() {
   const k = _ssKey();
-  if (!_ss[k]) _ss[k] = { wins: 0, losses: 0, bestTime: null, bbbvSum: 0, clickSum: 0 };
+  if (!_ss[k]) _ss[k] = { wins: 0, losses: 0, bestTime: null, bbbvSum: 0, clickSum: 0, timeMsSum: 0 };
   return _ss[k];
 }
 
@@ -835,8 +835,9 @@ function recordSessionWin() {
   if (state.elapsed != null && (e.bestTime === null || state.elapsed < e.bestTime)) {
     e.bestTime = state.elapsed;
   }
-  e.bbbvSum  += (state.bbbv || 0);
-  e.clickSum += (state.leftClicks || 0) + (state.rightClicks || 0) + (state.chordClicks || 0);
+  e.bbbvSum   += (state.bbbv || 0);
+  e.clickSum  += (state.leftClicks || 0) + (state.rightClicks || 0) + (state.chordClicks || 0);
+  e.timeMsSum += (state.timeMs || (state.elapsed * 1000) || 0);
   renderSessionStats();
 }
 
@@ -854,6 +855,7 @@ function renderSessionStats() {
   if (e.wins === 0 && e.losses === 0) { el.innerHTML = ''; return; }
   const bestStr = e.bestTime !== null ? e.bestTime + 's' : '—';
   const avgEff  = e.clickSum > 0 ? Math.round((e.bbbvSum / e.clickSum) * 100) + '%' : '—';
+  const cps     = e.timeMsSum > 0 ? (e.clickSum / (e.timeMsSum / 1000)).toFixed(2) : '—';
   el.innerHTML =
     `<div class="session-stats-bar">` +
     `<span class="ss-label">Session</span>` +
@@ -864,6 +866,8 @@ function renderSessionStats() {
     `<span class="ss-item">Best <span class="ss-val">${bestStr}</span></span>` +
     `<span class="ss-sep">·</span>` +
     `<span class="ss-item">Avg eff <span class="ss-val">${avgEff}</span></span>` +
+    `<span class="ss-sep">·</span>` +
+    `<span class="ss-item"><span class="ss-val">${cps}</span> clicks/s</span>` +
     `</div>`;
 }
 
