@@ -53,6 +53,8 @@ One combined selector covering all 6 combinations:
 
 ### Longer-term items (not yet scheduled)
 
+Session stats if you have autosubmit and New Game on Win and Lose set
+
 Replay game modelled after the replay on the main site
 
 Music
