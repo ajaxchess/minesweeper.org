@@ -15,6 +15,17 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F94 Web: iOS app install banner for iPhone and iPad visitors
+  - Shown on all game pages (classic + variant) to iOS / iPadOS visitors
+  - Links directly to App Store: apps.apple.com/us/app/minesweeper-org/id6761314113
+  - Dismissable with ×; dismissal stored in localStorage for 30 days
+  - Stacks above the guest-login-banner when both are visible; drops to bottom: 0
+    when the guest banner is dismissed
+  - Modern iPad detection: checks navigator.maxTouchPoints > 1 for iPadOS devices
+    that report MacIntel in navigator.platform
+
+──────────────────────────────────────────────────────────────────────────────
+
 F93 Web: Session statistics for classic minesweeper (Beginner / Intermediate / Expert)
   - In-memory stats tracked from page load: wins, losses, best time, avg efficiency
   - Stats bar appears below the board after the first game completes; stays visible

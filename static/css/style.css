@@ -783,6 +783,43 @@ footer a:hover { text-decoration: underline; }
 }
 
 /* ── Guest login reminder banner (fixed bottom) ──────────────────────────── */
+#ios-app-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 998;
+  background: #0071e3;
+  color: #fff;
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 0.55rem 2.5rem 0.55rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+#ios-app-banner a {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: underline;
+}
+#ios-app-banner button {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.75;
+  padding: 0 0.25rem;
+}
+#ios-app-banner button:hover { opacity: 1; }
+
 #guest-login-banner {
   position: fixed;
   bottom: 0;

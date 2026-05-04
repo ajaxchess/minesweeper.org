@@ -18,8 +18,49 @@ document.addEventListener('DOMContentLoaded', function () {
   const post = T.guest_banner_post || 'or your scores will vanish at midnight UTC.';
   banner.innerHTML =
     pre + ' <a href="' + loginHref + '">' + link + '</a> ' + post +
-    '<button onclick="document.getElementById(\'guest-login-banner\').remove();sessionStorage.setItem(\'guest-banner-dismissed\',\'1\')" aria-label="Dismiss">\u00d7</button>';
+    '<button aria-label="Dismiss">\u00d7</button>';
   document.body.appendChild(banner);
+  banner.querySelector('button').addEventListener('click', function () {
+    banner.remove();
+    sessionStorage.setItem('guest-banner-dismissed', '1');
+    // If the iOS app banner is showing, drop it back to bottom
+    var ios = document.getElementById('ios-app-banner');
+    if (ios) ios.style.bottom = '0';
+  });
+});
+
+// ── iOS app install banner (F94) ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  if (!document.getElementById('board')) return; // game pages only
+
+  // Detect iPhone / iPad (including modern iPads that report MacIntel)
+  var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (!isIOS) return;
+
+  // Honour 30-day dismissal
+  var ts = localStorage.getItem('ios-app-banner-dismissed');
+  if (ts && (Date.now() - parseInt(ts, 10)) < 30 * 24 * 60 * 60 * 1000) return;
+
+  var banner = document.createElement('div');
+  banner.id = 'ios-app-banner';
+  banner.innerHTML =
+    '\uD83D\uDCF1 <a href="https://apps.apple.com/us/app/minesweeper-org/id6761314113"'
+    + ' target="_blank" rel="noopener">Download the free Minesweeper app</a>'
+    + ' for iPhone &amp; iPad.'
+    + '<button aria-label="Dismiss">\u00d7</button>';
+  document.body.appendChild(banner);
+
+  banner.querySelector('button').addEventListener('click', function () {
+    banner.remove();
+    localStorage.setItem('ios-app-banner-dismissed', String(Date.now()));
+  });
+
+  // Stack above the guest-login-banner if it is also visible
+  requestAnimationFrame(function () {
+    var guest = document.getElementById('guest-login-banner');
+    if (guest) banner.style.bottom = guest.getBoundingClientRect().height + 'px';
+  });
 });
 
 // ── Touch helpers ─────────────────────────────────────────────────────────────
