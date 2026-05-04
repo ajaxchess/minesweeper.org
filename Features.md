@@ -15,6 +15,19 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F91 Web: On Win preference for logged-in players
+  - New "On Win" preference on /profile: Summary (default) or New Game
+  - Summary: unchanged — shows the existing win overlay with score submission
+  - New Game: skips the overlay; submits score silently in the background; shows
+    a brief toast below the board (time · 3BV · efficiency) for 5 s; board resets
+    at 0.5 s so the player can start playing immediately
+  - Stored as pref_on_win (VARCHAR 16) in user_profiles table; default 'summary'
+  - Preference fetched at page load via GET /api/profile/prefs and stored as
+    window.PREF_ON_WIN for use by all game pages
+  - Logged-in users only; no change to guest behaviour
+
+──────────────────────────────────────────────────────────────────────────────
+
 F90 Admin web traffic: Score Submission API Report
   - New section on /admin/web_traffic showing score submission stats from all 23 game tables
   - Stat boxes: total submissions, mobile apps, desktop browsers, mobile browsers, unknown client

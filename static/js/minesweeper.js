@@ -489,8 +489,70 @@ async function guestLoginAndSave(e, href, submitFnName, inputId) {
   window.location.href = href;
 }
 
+// ── New-game win handler (F91) ────────────────────────────────────────────────
+async function handleNewGameWin(username) {
+  const board = document.getElementById('board');
+  const mode  = board?.dataset.mode || 'beginner';
+  const bbbv  = state.bbbv || 0;
+  const total = (state.leftClicks || 0) + (state.rightClicks || 0) + (state.chordClicks || 0);
+  const eff   = total > 0 ? ((bbbv / total) * 100).toFixed(1) : '0.0';
+  const secs  = state.elapsed || 0;
+  const timeLabel = secs >= 60
+    ? Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0')
+    : secs + 's';
+
+  // Show toast in #game-result
+  const resultEl = document.getElementById('game-result');
+  if (resultEl) {
+    resultEl.innerHTML = `<div class="win-toast" id="win-toast-el">
+      <span class="win-toast-title">🎉 You Win!</span>
+      <span class="win-toast-stats">${timeLabel}&ensp;·&ensp;3BV ${bbbv}&ensp;·&ensp;${eff}% eff</span>
+    </div>`;
+    const toastEl = document.getElementById('win-toast-el');
+    // Trigger fade-out after 4.2 s so it's gone by 5 s
+    setTimeout(() => { if (toastEl) toastEl.classList.add('win-toast-fade'); }, 4200);
+    setTimeout(() => { if (resultEl) resultEl.innerHTML = ''; }, 5000);
+  }
+
+  // Submit score silently in background
+  if (username) {
+    const payload = {
+      name:         username,
+      mode,
+      time_secs:    state.elapsed,
+      time_ms:      state.timeMs,
+      rows:         state.rows,
+      cols:         state.cols,
+      mines:        state.mines,
+      no_guess:     state.noGuess,
+      board_hash:   state.boardHash,
+      bbbv:         state.bbbv,
+      left_clicks:  state.leftClicks,
+      right_clicks: state.rightClicks,
+      chord_clicks: state.chordClicks,
+    };
+    fetch('/api/scores', {
+      method:  'POST',
+      headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+      body:    JSON.stringify(payload),
+    }).catch(() => {});
+  }
+
+  // Reset board at 0.5 s
+  setTimeout(() => resetGame(), 500);
+}
+
 // ── Overlay ──────────────────────────────────────────────────────────────────
 function showOverlay(msg, won) {
+  const board    = document.getElementById('board');
+  const username = board?.dataset.username || '';
+
+  // F91: logged-in users with On Win = New Game skip the overlay entirely
+  if (won && username && window.PREF_ON_WIN === 'new_game') {
+    handleNewGameWin(username);
+    return;
+  }
+
   let el = document.getElementById('game-overlay');
   if (!el) {
     el = document.createElement('div');
@@ -499,8 +561,6 @@ function showOverlay(msg, won) {
   }
   el.className = won ? 'overlay win' : 'overlay loss';
 
-  const board    = document.getElementById('board');
-  const username = board.dataset.username || '';
   const mode     = board.dataset.mode || 'beginner';
 
   let scoreForm = '';

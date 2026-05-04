@@ -575,6 +575,14 @@
   }
   </script>
   {% block scripts %}{% endblock %}
+  {% if user %}
+  <script>
+  fetch('/api/profile/prefs', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(d) { if (d) window.PREF_ON_WIN = d.on_win; })
+    .catch(function() {});
+  </script>
+  {% endif %}
   <script>
   // Collapse ad containers when AdSense reports unfilled (JS fallback for browsers without :has())
   document.querySelectorAll('.ad-container ins.adsbygoogle').forEach(function(ins) {

@@ -2918,6 +2918,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "pref_sounds":   profile.pref_sounds   if profile else False,
         "pref_chording": profile.pref_chording if profile else True,
         "pref_skin":     profile.pref_skin     if profile else site_settings.active_skin(),
+        "pref_on_win":   profile.pref_on_win   if profile else 'summary',
         "about_text":    profile.about_text    if profile else "",
         "fp_photos":     db.query(FifteenPuzzlePhoto).filter_by(user_email=user["email"]).order_by(FifteenPuzzlePhoto.created_at.desc()).all(),
         "fp_limit":      getattr(profile, "puzzle_storage_limit", 32) if profile else 32,
@@ -5011,6 +5012,7 @@ class ProfileSettingsUpdate(BaseModel):
     pref_sounds:   bool = False
     pref_chording: bool = True
     pref_skin:     str  = site_settings.active_skin()
+    pref_on_win:   str  = 'summary'
 
 
 @app.post("/api/profile/settings")
@@ -5027,8 +5029,18 @@ def update_profile_settings(payload: ProfileSettingsUpdate, request: Request, db
     profile.pref_chording = payload.pref_chording
     _skin = payload.pref_skin if payload.pref_skin in site_settings.ALLOWED_SKINS else site_settings.DEFAULT_SKIN
     profile.pref_skin     = 'classic' if _skin == 'diana' else _skin
+    profile.pref_on_win   = payload.pref_on_win if payload.pref_on_win in ('summary', 'new_game') else 'summary'
     db.commit()
     return {"ok": True, "public_id": profile.public_id}
+
+
+@app.get("/api/profile/prefs")
+def get_profile_prefs(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+    return {"on_win": profile.pref_on_win if profile else "summary"}
 
 
 @app.get("/u/{slug}", response_class=HTMLResponse)

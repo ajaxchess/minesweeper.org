@@ -101,6 +101,16 @@
       </div>
       <div class="setting-row">
         <div class="setting-info">
+          <span class="setting-name">On Win</span>
+          <span class="setting-desc">After you win, show a summary overlay or automatically start a new game. Stats are always submitted silently in the background.</span>
+        </div>
+        <div style="display:flex;gap:0.4rem;">
+          <button class="setting-toggle" id="onwin-summary-btn" onclick="setOnWin('summary')">Summary</button>
+          <button class="setting-toggle" id="onwin-newgame-btn" onclick="setOnWin('new_game')">New Game</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
           <span class="setting-name">Public Profile</span>
           <span class="setting-desc">Allow others to view your stats via a shareable link. Only your display name is shown — never your email.</span>
         </div>
@@ -665,6 +675,7 @@ const VANITY_SLUG  = "{{ vanity_slug or '' }}";
 let   prefSounds   = {{ 'true' if pref_sounds   else 'false' }};
 let   prefChording = {{ 'true' if pref_chording else 'false' }};
 let   prefSkin     = "{{ pref_skin }}";
+let   prefOnWin    = "{{ pref_on_win }}";
 
 function updatePublicUI() {
   const btn       = document.getElementById('public-toggle');
@@ -694,8 +705,16 @@ async function saveSettings() {
       pref_sounds:   prefSounds,
       pref_chording: prefChording,
       pref_skin:     prefSkin,
+      pref_on_win:   prefOnWin,
     }),
   });
+}
+
+async function setOnWin(val) {
+  prefOnWin = val;
+  document.getElementById('onwin-summary-btn').classList.toggle('active', val === 'summary');
+  document.getElementById('onwin-newgame-btn').classList.toggle('active', val === 'new_game');
+  await saveSettings();
 }
 
 async function togglePublic() {
@@ -747,6 +766,9 @@ document.addEventListener('DOMContentLoaded', () => {
   localStorage.setItem('chording', prefChording);
   localStorage.setItem('skin', prefSkin);
   document.documentElement.dataset.skin = prefSkin;
+  // Init On Win buttons
+  document.getElementById('onwin-summary-btn').classList.toggle('active', prefOnWin === 'summary');
+  document.getElementById('onwin-newgame-btn').classList.toggle('active', prefOnWin === 'new_game');
 });
 
 // ── About ─────────────────────────────────────────────────────────────────────
