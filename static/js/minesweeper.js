@@ -447,6 +447,7 @@ function boom(r, c) {
     renderCell(mr, mc, mr === r && mc === c);
   }
   document.getElementById('reset-btn').textContent = '😵';
+  recordSessionLoss();
   showOverlay(window.T.game_over, false);
 }
 
@@ -469,6 +470,7 @@ function checkWin() {
       }
     }
     document.getElementById('mines-left').textContent = '000';
+    recordSessionWin();
     showOverlay(window.T.game_you_won.replace('{time}', state.elapsed + 's'), true);
 
     // Quest hooks
@@ -769,6 +771,61 @@ function buildBoard(rows, cols) {
   }
 }
 
+// ── Session stats (F93) ───────────────────────────────────────────────────────
+const _CLASSIC_MODES = new Set(['beginner', 'intermediate', 'expert']);
+const _ss = {};
+
+function _ssKey() {
+  const mode = document.getElementById('board')?.dataset.mode || '';
+  return `${mode}:${state.noGuess ? 'noguess' : 'guess'}`;
+}
+
+function _ssEntry() {
+  const k = _ssKey();
+  if (!_ss[k]) _ss[k] = { wins: 0, losses: 0, bestTime: null, bbbvSum: 0, clickSum: 0 };
+  return _ss[k];
+}
+
+function recordSessionWin() {
+  const mode = document.getElementById('board')?.dataset.mode || '';
+  if (!_CLASSIC_MODES.has(mode)) return;
+  const e = _ssEntry();
+  e.wins++;
+  if (state.elapsed != null && (e.bestTime === null || state.elapsed < e.bestTime)) {
+    e.bestTime = state.elapsed;
+  }
+  e.bbbvSum  += (state.bbbv || 0);
+  e.clickSum += (state.leftClicks || 0) + (state.rightClicks || 0) + (state.chordClicks || 0);
+  renderSessionStats();
+}
+
+function recordSessionLoss() {
+  const mode = document.getElementById('board')?.dataset.mode || '';
+  if (!_CLASSIC_MODES.has(mode)) return;
+  _ssEntry().losses++;
+  renderSessionStats();
+}
+
+function renderSessionStats() {
+  const el = document.getElementById('session-stats');
+  if (!el) return;
+  const e = _ssEntry();
+  if (e.wins === 0 && e.losses === 0) { el.innerHTML = ''; return; }
+  const bestStr = e.bestTime !== null ? e.bestTime + 's' : '—';
+  const avgEff  = e.clickSum > 0 ? Math.round((e.bbbvSum / e.clickSum) * 100) + '%' : '—';
+  el.innerHTML =
+    `<div class="session-stats-bar">` +
+    `<span class="ss-label">Session</span>` +
+    `<span class="ss-item"><span class="ss-val ss-wins">${e.wins}</span> won</span>` +
+    `<span class="ss-sep">·</span>` +
+    `<span class="ss-item"><span class="ss-val ss-loss">${e.losses}</span> lost</span>` +
+    `<span class="ss-sep">·</span>` +
+    `<span class="ss-item">Best <span class="ss-val">${bestStr}</span></span>` +
+    `<span class="ss-sep">·</span>` +
+    `<span class="ss-item">Avg eff <span class="ss-val">${avgEff}</span></span>` +
+    `</div>`;
+}
+
 // ── Init / Reset ─────────────────────────────────────────────────────────────
 function initGame(rows, cols, mines, noGuess = false, chording = true) {
   stopTimer();
@@ -784,6 +841,7 @@ function initGame(rows, cols, mines, noGuess = false, chording = true) {
   if (typeof window.rewindReset === 'function') window.rewindReset();
   buildBoard(rows, cols);
   updateNoGuessUI(noGuess);
+  renderSessionStats();
 }
 
 function resetGame() {

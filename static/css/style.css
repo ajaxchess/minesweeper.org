@@ -1917,6 +1917,36 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   background: rgba(83, 216, 251, 0.1);
 }
 
+/* ── Session stats bar (F93) ─────────────────────────────────────────────── */
+.session-stats-bar {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  flex-wrap:       wrap;
+  gap:             0.4rem 0.6rem;
+  padding:         0.45rem 1rem;
+  margin:          0.5rem auto;
+  max-width:       500px;
+  font-size:       0.78rem;
+  color:           var(--text-dim);
+  background:      var(--surface2);
+  border:          1px solid var(--border);
+  border-radius:   var(--radius);
+}
+.ss-label {
+  font-size:      0.68rem;
+  font-weight:    700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity:        0.55;
+  margin-right:   0.1rem;
+}
+.ss-item { white-space: nowrap; }
+.ss-val  { font-weight: 700; color: var(--accent2); }
+.ss-wins { color: var(--accent2); }
+.ss-loss { color: var(--text-dim); }
+.ss-sep  { opacity: 0.35; }
+
 /* ── Win toast (F91 On Win = New Game) ───────────────────────────────────── */
 .win-toast {
   display:         flex;

@@ -15,6 +15,18 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F93 Web: Session statistics for classic minesweeper (Beginner / Intermediate / Expert)
+  - In-memory stats tracked from page load: wins, losses, best time, avg efficiency
+  - Stats bar appears below the board after the first game completes; stays visible
+    during subsequent games so players can see running session progress
+  - Tracked separately for Guess and No-Guess variants; display updates when the
+    No-Guess toggle is flipped
+  - Avg efficiency = total 3BV across wins / total clicks across wins × 100 %
+  - Classic modes only (beginner / intermediate / expert); other variants excluded
+  - No backend or login required — entirely client-side, resets on page reload
+
+──────────────────────────────────────────────────────────────────────────────
+
 F92 Web + Mobile: On Lose preference — Summary (default) or New Game
   - After hitting a mine, show the loss overlay (Summary) or immediately reset
     the board after 0.5 s (New Game); no toast shown on loss
