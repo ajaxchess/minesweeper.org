@@ -429,6 +429,6 @@ document.querySelectorAll('#page-lb-table .lb-th-stat[data-tip]').forEach(th => 
   th.addEventListener('mouseleave', () => pageTip.classList.remove('visible'));
 });
 
-loadPageLb();
+document.addEventListener('DOMContentLoaded', loadPageLb);
 </script>
 {% endblock %}
