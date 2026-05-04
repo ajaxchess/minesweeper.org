@@ -4,7 +4,7 @@
 {% block description %}Challenge a Minesweeper bot in real-time PvP. Choose Easy, Medium, or Hard and race to clear the board faster than your AI opponent. Free to play.{% endblock %}
 
 {% block content %}
-<h1 class="tz-page-h1">PvP Minesweeper — Play vs Bot</h1>
+<h1 class="tz-page-h1">{{ t.pvp_bot_h1 }}</h1>
 
 <div class="duel-wrapper">
 
@@ -18,50 +18,43 @@
   </div>
 
   <div class="bot-lobby">
-    <p class="bot-lobby-intro">
-      Play a real PvP-rules match against a computer opponent. Both you and the bot receive
-      the same board and start simultaneously — whoever scores higher wins.
-      The bot uses an <strong>iterative constraint solver</strong>: it reads every revealed
-      number, propagates deductions across the board, and only guesses when no safe move
-      can be proven. The difficulty setting controls how fast it clicks and how often it
-      plays a random move instead of solving.
-    </p>
+    <p class="bot-lobby-intro">{{ t.pvp_bot_intro | safe }}</p>
 
     <div class="bot-lobby-section">
-      <div class="bot-lobby-section-label">Board size</div>
+      <div class="bot-lobby-section-label">{{ t.pvp_bot_board_size }}</div>
       <div class="bot-lobby-btn-row">
-        <a href="/pvp/bot/play?m=standard&d=medium" id="size-standard" class="bot-lobby-size-btn active" data-m="standard">Standard (24×16, 75 mines)</a>
-        <a href="/pvp/bot/play?m=quick&d=medium"    id="size-quick"    class="bot-lobby-size-btn"        data-m="quick">⚡ Quick (20×10, 35 mines)</a>
+        <a href="/pvp/bot/play?m=standard&d=medium" id="size-standard" class="bot-lobby-size-btn active" data-m="standard">{{ t.pvp_bot_size_standard }}</a>
+        <a href="/pvp/bot/play?m=quick&d=medium"    id="size-quick"    class="bot-lobby-size-btn"        data-m="quick">{{ t.pvp_bot_size_quick }}</a>
       </div>
     </div>
 
     <div class="bot-lobby-section">
-      <div class="bot-lobby-section-label">Difficulty</div>
+      <div class="bot-lobby-section-label">{{ t.pvp_bot_difficulty }}</div>
       <div class="bot-lobby-btn-row">
         <button class="bot-difficulty-btn" data-d="easy"   onclick="setDifficulty('easy')">
-          <span class="bot-diff-name">🟢 Easy</span>
-          <span class="bot-diff-desc">One click every 2 s &mdash; 40% chance of a random move instead of solving. Beatable with basic technique.</span>
+          <span class="bot-diff-name">{{ t.pvp_bot_diff_easy_name }}</span>
+          <span class="bot-diff-desc">{{ t.pvp_bot_diff_easy_desc }}</span>
         </button>
         <button class="bot-difficulty-btn active" data-d="medium" onclick="setDifficulty('medium')">
-          <span class="bot-diff-name">🟡 Medium</span>
-          <span class="bot-diff-desc">One click every 0.7 s &mdash; full constraint solver, no random moves. A solid test for intermediate players.</span>
+          <span class="bot-diff-name">{{ t.pvp_bot_diff_medium_name }}</span>
+          <span class="bot-diff-desc">{{ t.pvp_bot_diff_medium_desc }}</span>
         </button>
         <button class="bot-difficulty-btn" data-d="hard"   onclick="setDifficulty('hard')">
-          <span class="bot-diff-name">🔴 Hard</span>
-          <span class="bot-diff-desc">One click every 0.2 s &mdash; full constraint solver with smarter guessing under uncertainty. Very difficult to beat.</span>
+          <span class="bot-diff-name">{{ t.pvp_bot_diff_hard_name }}</span>
+          <span class="bot-diff-desc">{{ t.pvp_bot_diff_hard_desc }}</span>
         </button>
       </div>
     </div>
 
-    <a id="play-btn" href="/pvp/bot/play?m=standard&d=medium" class="bot-play-btn">⚔️ Play vs Bot</a>
+    <a id="play-btn" href="/pvp/bot/play?m=standard&d=medium" class="bot-play-btn">{{ t.pvp_bot_play_btn }}</a>
 
     <div class="bot-lobby-tips">
-      <h2>Tips for beating the bot</h2>
+      <h2>{{ t.pvp_bot_tips_h2 }}</h2>
       <ul>
-        <li><strong>Chord aggressively.</strong> Both players start from the same pre-revealed opening, so the race begins immediately. Fast chord-clicking produces more tile reveals per second than the bot's fixed click rate — even on Hard.</li>
-        <li><strong>Easy is a real warmup.</strong> With a 40% random-move rate, Easy will hit mines and stall. Use it to get comfortable with the PvP board size before stepping up.</li>
-        <li><strong>Hard is genuinely hard.</strong> At 5 clicks per second with a full solver, the Hard bot clears tiles quickly and consistently. To win you need sub-30s Beginner-level play and zero wasted clicks.</li>
-        <li><strong>Scoring is the same as live PvP.</strong> 5 points per tile revealed, plus a time bonus of <code>(300 − seconds) × percentRevealed</code>. Clearing more of the board fast matters as much as not hitting mines.</li>
+        <li>{{ t.pvp_bot_tip1 | safe }}</li>
+        <li>{{ t.pvp_bot_tip2 | safe }}</li>
+        <li>{{ t.pvp_bot_tip3 | safe }}</li>
+        <li>{{ t.pvp_bot_tip4 | safe }}</li>
       </ul>
     </div>
 
