@@ -367,6 +367,9 @@ GAME_MODES = {
 
 EVIL_NG_MODE = {"rows": 20, "cols": 30, "mines": 130}
 
+_ANALYSIS_DIR      = os.path.realpath(os.path.join(os.path.dirname(__file__), "analysis"))
+_ANALYSIS_EXTS     = {".ts", ".py", ".js"}
+
 CYLINDER_MODES = {
     "cylinder-beginner":     {"rows": 9, "cols": 9, "mines": 10},
     "cylinder-intermediate": {"rows": 16, "cols": 16, "mines": 40},
@@ -730,6 +733,39 @@ async def evil_ng(request: Request):
         "lang": get_lang(request), "t": get_t(request),
         **EVIL_NG_MODE
     })
+
+
+@app.get("/analysis", response_class=HTMLResponse)
+def analysis_index():
+    rows = []
+    for dirpath, _, filenames in os.walk(_ANALYSIS_DIR):
+        for fn in sorted(filenames):
+            if os.path.splitext(fn)[1].lower() not in _ANALYSIS_EXTS:
+                continue
+            full = os.path.join(dirpath, fn)
+            rel  = os.path.relpath(full, _ANALYSIS_DIR).replace(os.sep, "/")
+            rows.append(f'<li><a href="/analysis/{rel}">{rel}</a></li>')
+    listing = "\n".join(rows) or "<li>No files found.</li>"
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Analysis Source Files</title>
+<style>body{{font-family:monospace;padding:2rem}}a{{color:#4a9eff}}</style>
+</head><body>
+<h1>Analysis Source Files</h1>
+<ul>{listing}</ul>
+</body></html>""")
+
+
+@app.get("/analysis/{path:path}")
+def analysis_file(path: str):
+    resolved = os.path.realpath(os.path.join(_ANALYSIS_DIR, path))
+    if not resolved.startswith(_ANALYSIS_DIR + os.sep):
+        raise HTTPException(status_code=404)
+    if os.path.splitext(resolved)[1].lower() not in _ANALYSIS_EXTS:
+        raise HTTPException(status_code=404)
+    if not os.path.isfile(resolved):
+        raise HTTPException(status_code=404)
+    return FileResponse(resolved, media_type="text/plain; charset=utf-8")
 
 
 @app.get("/custom", response_class=HTMLResponse)
