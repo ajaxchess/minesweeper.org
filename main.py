@@ -1080,37 +1080,96 @@ class RewindSubmit(BaseModel):
     no_guess:   bool           = False
     mode:       Optional[str]  = Field(None, max_length=32)
     time_ms:    Optional[int]  = Field(None, ge=0, le=3_600_000)
-    won:        bool           = False
-    log:        list           = Field(...)  # [[t_ms, type, r, c], …]
+    won:        bool           = False                                # legacy — derived from outcome when absent
+    log:        list           = Field(...)                           # [[t_ms, type, r, c], …]
+
+    # Phase 1 additions
+    outcome:          Optional[str] = Field(None, pattern=r"^(win|loss|abandon)$")
+    bbbv:             Optional[int] = Field(None, ge=0, le=10_000)
+    left_clicks:      Optional[int] = Field(None, ge=0, le=10_000)
+    right_clicks:     Optional[int] = Field(None, ge=0, le=10_000)
+    chord_clicks:     Optional[int] = Field(None, ge=0, le=10_000)
+    cells_revealed:   Optional[int] = Field(None, ge=0, le=2_500)
+    cells_total_safe: Optional[int] = Field(None, ge=0, le=2_500)
+    score_id:         Optional[int] = Field(None, ge=0)
 
     @field_validator("log")
     @classmethod
     def validate_log(cls, v):
         if len(v) > 10_000:
             raise ValueError("Log too large")
+        for entry in v[:50]:
+            if not isinstance(entry, list) or len(entry) != 4:
+                raise ValueError("Log entry must be [t_ms, type, r, c]")
+            if entry[1] not in ("l", "r", "c"):
+                raise ValueError(f"Invalid action type: {entry[1]!r}")
         return v
 
 
 @app.post("/api/rewind", status_code=201)
-@limiter.limit("30/minute")
+@limiter.limit("60/minute")
 def submit_rewind(payload: RewindSubmit, request: Request, db: Session = Depends(get_db)):
     import json as _json
-    user = get_current_user(request)
+
+    # Canonical outcome: prefer explicit field, fall back to legacy won bool
+    outcome = payload.outcome if payload.outcome else ("win" if payload.won else "loss")
+
+    user       = get_current_user(request)
+    user_email = user["email"] if user else None
+
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+
+    client_type = get_client_type(request)
+
+    # Best-effort link to matching Score row for wins
+    score_id = payload.score_id
+    if score_id is None and outcome == "win" and payload.board_hash:
+        match_q = db.query(Score.id).filter(
+            Score.board_hash == payload.board_hash,
+            Score.time_ms    == payload.time_ms,
+        )
+        if user_email:
+            match_q = match_q.filter(Score.user_email == user_email)
+        elif guest_token:
+            match_q = match_q.filter(Score.guest_token == guest_token)
+        row = match_q.order_by(Score.created_at.desc()).first()
+        if row:
+            score_id = row[0]
+
+    cells_total_safe = payload.cells_total_safe
+    if cells_total_safe is None:
+        cells_total_safe = payload.rows * payload.cols - payload.mines
+
     replay = GameReplay(
-        user_email = user["email"] if user else None,
-        mode       = payload.mode,
-        rows       = payload.rows,
-        cols       = payload.cols,
-        mines      = payload.mines,
-        no_guess   = payload.no_guess,
-        board_hash = payload.board_hash,
-        time_ms    = payload.time_ms,
-        log_json   = _json.dumps(payload.log, separators=(',', ':')),
+        user_email       = user_email,
+        mode             = payload.mode,
+        rows             = payload.rows,
+        cols             = payload.cols,
+        mines            = payload.mines,
+        no_guess         = payload.no_guess,
+        board_hash       = payload.board_hash,
+        time_ms          = payload.time_ms,
+        log_json         = _json.dumps(payload.log, separators=(',', ':')),
+        outcome          = outcome,
+        bbbv             = payload.bbbv,
+        left_clicks      = payload.left_clicks,
+        right_clicks     = payload.right_clicks,
+        chord_clicks     = payload.chord_clicks,
+        cells_revealed   = payload.cells_revealed,
+        cells_total_safe = cells_total_safe,
+        client_type      = client_type,
+        guest_token      = guest_token,
+        score_id         = score_id,
     )
     db.add(replay)
     db.commit()
     db.refresh(replay)
-    return {"id": replay.id}
+    return {"id": replay.id, "outcome": outcome}
 
 
 @app.get("/api/scores/{mode}")

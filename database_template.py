@@ -1135,17 +1135,36 @@ class JigsawPhoto(Base):
 class GameReplay(Base):
     __tablename__ = "game_replays"
 
-    id         = Column(Integer, primary_key=True, index=True)
-    user_email = Column(String(256), nullable=True, index=True)
-    mode       = Column(String(32),  nullable=True)          # beginner/intermediate/expert/custom/daily/…
-    rows       = Column(Integer,     nullable=False)
-    cols       = Column(Integer,     nullable=False)
-    mines      = Column(Integer,     nullable=False)
-    no_guess   = Column(Boolean,     default=False, nullable=False)
-    board_hash = Column(String(128), nullable=True)
-    time_ms    = Column(Integer,     nullable=True)
-    log_json   = Column(Text,        nullable=False)          # JSON array of [t_ms, type, r, c]
-    created_at = Column(DateTime,    default=lambda: datetime.now(timezone.utc))
+    id           = Column(Integer, primary_key=True, index=True)
+    user_email   = Column(String(256), nullable=True, index=True)
+    mode         = Column(String(32),  nullable=True)          # beginner/intermediate/expert/custom/daily/…
+    rows         = Column(Integer,     nullable=False)
+    cols         = Column(Integer,     nullable=False)
+    mines        = Column(Integer,     nullable=False)
+    no_guess     = Column(Boolean,     default=False, nullable=False)
+    board_hash   = Column(String(128), nullable=True)
+    time_ms      = Column(Integer,     nullable=True)
+    log_json     = Column(Text,        nullable=False)         # JSON array of [t_ms, type, r, c]
+
+    # ── Phase 1 analytics instrumentation ────────────────────────────────────
+    outcome           = Column(String(16),  nullable=False, server_default="win")  # win | loss | abandon
+    bbbv              = Column(Integer,     nullable=True)
+    left_clicks       = Column(Integer,     nullable=True)
+    right_clicks      = Column(Integer,     nullable=True)
+    chord_clicks      = Column(Integer,     nullable=True)
+    cells_revealed    = Column(Integer,     nullable=True)
+    cells_total_safe  = Column(Integer,     nullable=True)
+    client_type       = Column(String(32),  nullable=False, server_default="na")
+    guest_token       = Column(String(36),  nullable=True, index=True)
+    score_id          = Column(Integer,     nullable=True, index=True)
+    # ──────────────────────────────────────────────────────────────────────────
+
+    created_at   = Column(DateTime,    default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_game_replays_mode_outcome_created", "mode", "outcome", "created_at"),
+        Index("ix_game_replays_email_created", "user_email", "created_at"),
+    )
 
 
 # ── Profanity flagging ───────────────────────────────────────────────────────
@@ -1195,6 +1214,30 @@ def _seed_bot_profiles():
         db.close()
 
 
+def _create_phase1_indexes(conn):
+    """Idempotently create analyzer-friendly indexes on game_replays."""
+    indexes = [
+        ("ix_game_replays_mode_outcome_created",
+         "CREATE INDEX `ix_game_replays_mode_outcome_created` "
+         "ON `game_replays` (`mode`, `outcome`, `created_at`)"),
+        ("ix_game_replays_email_created",
+         "CREATE INDEX `ix_game_replays_email_created` "
+         "ON `game_replays` (`user_email`, `created_at`)"),
+    ]
+    for name, ddl in indexes:
+        exists = conn.execute(
+            text(
+                "SELECT COUNT(*) FROM information_schema.statistics "
+                "WHERE table_schema = DATABASE() "
+                "AND table_name = 'game_replays' AND index_name = :idx"
+            ),
+            {"idx": name},
+        ).scalar()
+        if not exists:
+            conn.execute(text(ddl))
+            conn.commit()
+
+
 def _apply_migrations():
     """Idempotent ALTER TABLE migrations for columns added after initial deploy."""
     migrations = [
@@ -1236,6 +1279,17 @@ def _apply_migrations():
         # On-win / on-lose preferences (added 2026-05-03)
         ("user_profiles",         "pref_on_win",  "VARCHAR(16) NOT NULL DEFAULT 'summary'"),
         ("user_profiles",         "pref_on_lose", "VARCHAR(16) NOT NULL DEFAULT 'summary'"),
+        # game_replays — Phase 1 analytics instrumentation (added 2026-05-05)
+        ("game_replays", "outcome",          "VARCHAR(16) NOT NULL DEFAULT 'win'"),
+        ("game_replays", "bbbv",             "INT NULL"),
+        ("game_replays", "left_clicks",      "INT NULL"),
+        ("game_replays", "right_clicks",     "INT NULL"),
+        ("game_replays", "chord_clicks",     "INT NULL"),
+        ("game_replays", "cells_revealed",   "INT NULL"),
+        ("game_replays", "cells_total_safe", "INT NULL"),
+        ("game_replays", "client_type",      "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("game_replays", "guest_token",      "VARCHAR(36) NULL"),
+        ("game_replays", "score_id",         "INT NULL"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:
@@ -1250,3 +1304,4 @@ def _apply_migrations():
             if not exists:
                 conn.execute(text(f"ALTER TABLE `{table}` ADD COLUMN `{column}` {col_def}"))
                 conn.commit()
+        _create_phase1_indexes(conn)

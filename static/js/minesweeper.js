@@ -160,6 +160,7 @@ function freshState(rows, cols, mines, noGuess = false, chording = true) {
     boardHash:   null,
     bbbv:        null,
     rewindLog:   [],    // [[t_ms, type, r, c], …] — F74 Rewind
+    rewindSent:  false, // guard against duplicate /api/rewind submissions
   };
 }
 
@@ -170,10 +171,18 @@ function rewindRecord(type, r, c) {
   state.rewindLog.push([t, type, r, c]);
 }
 
-function rewindSave(won) {
-  if (!state.rewindLog || !state.rewindLog.length || !state.boardHash) return;
-  const mode  = document.getElementById('board')?.dataset.mode || '';
-  const entry = {
+function rewindSave(outcome) {
+  // Accept legacy boolean callers
+  if (outcome === true)  outcome = 'win';
+  if (outcome === false) outcome = 'loss';
+  if (!outcome || !['win', 'loss', 'abandon'].includes(outcome)) outcome = 'loss';
+
+  if (!state || !state.rewindLog || !state.rewindLog.length || !state.boardHash) return;
+
+  const mode = document.getElementById('board')?.dataset.mode || '';
+
+  // sessionStorage entry stays camelCase — rewind.js reads these keys
+  const cacheEntry = {
     rows:      state.rows,
     cols:      state.cols,
     mines:     state.mines,
@@ -181,17 +190,58 @@ function rewindSave(won) {
     noGuess:   state.noGuess,
     mode,
     timeMs:    state.timeMs || 0,
-    won,
+    won:       outcome === 'win',
     log:       state.rewindLog,
   };
-  try { sessionStorage.setItem('rewind-last', JSON.stringify(entry)); } catch (_) {}
-  if (won) {
-    fetch('/api/rewind', {
-      method:  'POST',
-      headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
-      body:    JSON.stringify(entry),
-    }).catch(function () {});
+  try { sessionStorage.setItem('rewind-last', JSON.stringify(cacheEntry)); } catch (_) {}
+
+  if (state.rewindSent) return;
+  state.rewindSent = true;
+
+  // Count cells revealed at game end
+  let cellsRevealed = 0;
+  if (state.revealed) {
+    for (const row of state.revealed) {
+      for (const cell of row) if (cell) cellsRevealed++;
+    }
   }
+
+  // Server payload uses snake_case with Phase 1 analytics fields
+  const payload = JSON.stringify({
+    rows:             state.rows,
+    cols:             state.cols,
+    mines:            state.mines,
+    board_hash:       state.boardHash,
+    no_guess:         !!state.noGuess,
+    mode,
+    time_ms:          state.timeMs || 0,
+    won:              outcome === 'win',
+    outcome,
+    bbbv:             state.bbbv || null,
+    left_clicks:      state.leftClicks  || 0,
+    right_clicks:     state.rightClicks || 0,
+    chord_clicks:     state.chordClicks || 0,
+    cells_revealed:   cellsRevealed,
+    cells_total_safe: state.rows * state.cols - state.mines,
+    log:              state.rewindLog,
+  });
+
+  // sendBeacon for abandons — survives tab close unlike fetch()
+  if (outcome === 'abandon' && navigator.sendBeacon) {
+    try {
+      const blob = new Blob([payload], {type: 'application/json'});
+      if (navigator.sendBeacon('/api/rewind', blob)) return;
+    } catch (_) {}
+  }
+
+  try {
+    fetch('/api/rewind', {
+      method:    'POST',
+      headers:   {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+      body:      payload,
+      keepalive: true,
+    }).catch(function () {});
+  } catch (_) {}
 }
 
 // ── Mine Placement (safe first click) ────────────────────────────────────────
@@ -494,7 +544,7 @@ function boom(r, c) {
   state.over   = true;
   state.timeMs = state.startTime ? Math.round(performance.now() - state.startTime) : null;
   stopTimer();
-  rewindSave(false);
+  rewindSave('loss');
   // Reveal all mines
   for (const idx of state.mineSet) {
     const mr = Math.floor(idx / state.cols), mc = idx % state.cols;
@@ -514,7 +564,7 @@ function checkWin() {
     state.won    = true;
     state.timeMs = state.startTime ? Math.round(performance.now() - state.startTime) : null;
     stopTimer();
-    rewindSave(true);
+    rewindSave('win');
     document.getElementById('reset-btn').textContent = '😎';
     // Auto-flag remaining mines
     for (const idx of state.mineSet) {
@@ -960,3 +1010,26 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('reset-btn')
     .addEventListener('click', resetGame);
 });
+
+// ── F74 Rewind — abandon capture (tab close / backgrounding) ─────────────────
+(function attachAbandonCapture() {
+  if (!document.getElementById('board')) return; // non-game pages: skip
+  function maybeSendAbandon() {
+    try {
+      if (!state || !state.boardHash) return; // game not started
+      if (state.over)        return;          // already won or lost
+      if (state.rewindSent)  return;          // already sent
+      // Capture precise elapsed time since the timer may have stopped
+      if (!state.timeMs && state.startTime) {
+        state.timeMs = Math.round(performance.now() - state.startTime);
+      }
+      rewindSave('abandon');
+    } catch (_) {}
+  }
+  // pagehide: fires on tab close, navigation, bfcache stash
+  window.addEventListener('pagehide', maybeSendAbandon);
+  // visibilitychange: catches backgrounding on iOS where pagehide may not fire
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') maybeSendAbandon();
+  });
+})();
