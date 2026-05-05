@@ -6137,7 +6137,8 @@ def admin_flagged_delete_all(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/admin/analysis", response_class=HTMLResponse)
-def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional[str] = None):
+def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional[str] = None,
+                   src: Optional[str] = None):
     import markdown as md_lib
     import os
 
@@ -6146,6 +6147,7 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
 
     analysis_dir = os.path.join(os.path.dirname(__file__), "analysis")
     download_exts = {".pptx", ".xlsx", ".docx", ".pdf"}
+    source_exts   = {".ts", ".py", ".js"}
 
     # Validate folder param — no traversal, no nesting
     if folder and (".." in folder or "/" in folder or "\\" in folder):
@@ -6162,6 +6164,7 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
     folders = []
     docs = []
     downloads = []
+    source_files = []
     if os.path.isdir(analysis_dir):
         for name in sorted(os.listdir(analysis_dir)):
             if os.path.isdir(os.path.join(analysis_dir, name)) and not name.startswith("."):
@@ -6172,10 +6175,13 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
             fpath = os.path.join(active_dir, fname)
             if not os.path.isfile(fpath):
                 continue
+            ext = os.path.splitext(fname)[1].lower()
             if fname.endswith(".md") or fname.endswith(".html"):
                 docs.append(fname.rsplit(".", 1)[0])
-            elif any(fname.endswith(ext) for ext in download_exts):
+            elif ext in download_exts:
                 downloads.append(fname)
+            elif ext in source_exts:
+                source_files.append(fname)
 
     content_html = None
     current_doc = None
@@ -6198,6 +6204,16 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
                 current_doc_file = current_doc + ext
                 break
 
+    # Source file viewer
+    source_content = None
+    current_src = None
+    if src and src in source_files:
+        src_path = os.path.join(active_dir, src)
+        if os.path.isfile(src_path):
+            with open(src_path, encoding="utf-8") as f:
+                source_content = f.read()
+            current_src = src
+
     return templates.TemplateResponse("admin_analysis.html", {
         "request":          request,
         "user":             user,
@@ -6208,9 +6224,12 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
         "current_folder":   current_folder,
         "docs":             docs,
         "downloads":        downloads,
+        "source_files":     source_files,
         "content_html":     content_html,
         "current_doc":      current_doc,
         "current_doc_file": current_doc_file,
+        "source_content":   source_content,
+        "current_src":      current_src,
     })
 
 

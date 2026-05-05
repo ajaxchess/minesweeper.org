@@ -49,7 +49,16 @@
         </a>
         {% endfor %}
       {% endif %}
-      {% if not folders and not docs and not downloads %}
+      {% if source_files %}
+        <p style="font-size:0.75rem;color:var(--text-muted);margin:1rem 0 0.25rem;text-transform:uppercase;letter-spacing:.05em;">Source Files</p>
+        {% for fname in source_files %}
+        <a href="/admin/analysis?{% if current_folder %}folder={{ current_folder }}&{% endif %}src={{ fname }}"
+           class="analysis-doc-link {% if fname == current_src %}active{% endif %}">
+          📄 {{ fname }}
+        </a>
+        {% endfor %}
+      {% endif %}
+      {% if not folders and not docs and not downloads and not source_files %}
         <p class="analysis-empty">No documents yet.<br>Add .md files to the <code>analysis/</code> directory.</p>
       {% endif %}
     </div>
@@ -64,6 +73,11 @@
         <div class="blog-article-body">{{ content_html | safe }}</div>
       {% elif current_doc %}
         <p class="analysis-empty">Document not found.</p>
+      {% elif source_content is not none %}
+        <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:0.5rem;">📄 {{ current_src }}</p>
+        <pre style="background:var(--cell-rev,#111b2a);padding:1.25rem;border-radius:6px;overflow-x:auto;font-size:0.8rem;line-height:1.5;white-space:pre-wrap;word-break:break-all;">{{ source_content | e }}</pre>
+      {% elif current_src %}
+        <p class="analysis-empty">File not found.</p>
       {% else %}
         <p class="analysis-empty">Select a document from the sidebar.</p>
       {% endif %}
