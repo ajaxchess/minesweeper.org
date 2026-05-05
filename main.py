@@ -5098,6 +5098,60 @@ def _build_stats(email: str, db: Session) -> dict:
     return stats
 
 
+def _build_bootcamp(email: str, db: Session) -> dict:
+    """Last 100 wins per mode/no_guess combo for Bootcamp performance charts."""
+    result = {}
+    combos = [
+        ("beginner",     False),
+        ("beginner",     True),
+        ("intermediate", False),
+        ("intermediate", True),
+        ("expert",       False),
+        ("expert",       True),
+    ]
+    for mode, no_guess in combos:
+        key = f"{mode}_ng" if no_guess else mode
+        ng_filter = (
+            GameHistory.no_guess == True
+            if no_guess
+            else (GameHistory.no_guess == False) | GameHistory.no_guess.is_(None)
+        )
+        rows = (
+            db.query(GameHistory)
+            .filter(
+                GameHistory.user_email == email,
+                GameHistory.mode == mode,
+                ng_filter,
+            )
+            .order_by(GameHistory.created_at.desc())
+            .limit(100)
+            .all()
+        )
+        if not rows:
+            result[key] = None
+            continue
+        rows = list(reversed(rows))  # chronological so chart reads left→right
+        result[key] = [
+            {
+                "ms":   g.time_ms if g.time_ms else g.time_secs * 1000,
+                "bbbv": g.bbbv,
+                "lc":   g.left_clicks,
+                "rc":   g.right_clicks,
+                "cc":   g.chord_clicks,
+            }
+            for g in rows
+        ]
+    return result
+
+
+@app.get("/api/profile/bootcamp")
+def profile_bootcamp(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    return _build_bootcamp(user["email"], db)
+
+
 @app.get("/api/profile/stats")
 def profile_stats(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)

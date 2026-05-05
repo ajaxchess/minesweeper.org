@@ -2221,6 +2221,44 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   letter-spacing: 0.5px;
 }
 
+/* ── Minesweeper Bootcamp ─────────────────────────────────────────────────── */
+.bc-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  font-size: 0.88rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.bc-sep { color: var(--text-dim); opacity: 0.5; }
+.bc-stat strong { color: var(--accent); }
+.bc-ratio { font-size: 0.8rem; color: var(--text-dim); }
+.bc-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+.bc-chart-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 0.75rem 0.5rem;
+}
+.bc-chart-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.4rem;
+}
+@media (max-width: 800px) {
+  .bc-charts-grid { grid-template-columns: 1fr; }
+}
+
 .avatar-link { line-height: 0; }
 
 @media (max-width: 700px) {

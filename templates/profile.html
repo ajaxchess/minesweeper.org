@@ -54,6 +54,24 @@
     </div>
   </div>
 
+  <!-- ── Minesweeper Bootcamp ── -->
+  <div class="profile-recent" id="bootcamp-section">
+    <h2 class="section-title">🏋️ Minesweeper Bootcamp</h2>
+
+    <div class="lb-tabs" role="tablist" id="bc-tabs">
+      <button class="lb-tab active" data-bc="beginner">Beginner</button>
+      <button class="lb-tab" data-bc="beginner_ng">Beginner NG</button>
+      <button class="lb-tab" data-bc="intermediate">Intermediate</button>
+      <button class="lb-tab" data-bc="intermediate_ng">Intermediate NG</button>
+      <button class="lb-tab" data-bc="expert">Expert</button>
+      <button class="lb-tab" data-bc="expert_ng">Expert NG</button>
+    </div>
+
+    <div id="bc-content" style="margin-top:0.75rem;">
+      <p style="color:var(--text-dim);font-size:0.9rem;">Loading…</p>
+    </div>
+  </div>
+
   <!-- ── Settings ── -->
   <div class="profile-settings">
     <h2 class="section-title">Settings</h2>
@@ -378,6 +396,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
 function fpDeletePhoto(boardHash) {
   if (!confirm('Delete this puzzle permanently?')) return;
@@ -676,6 +695,156 @@ document.querySelectorAll('.lb-tab').forEach(btn => {
 });
 
 loadStats();
+
+// ── Minesweeper Bootcamp ──────────────────────────────────────────────────────
+let bcData = null;
+let bcCharts = [];
+
+const BC_LABELS = {
+  beginner:        'Beginner',
+  beginner_ng:     'Beginner No Guess',
+  intermediate:    'Intermediate',
+  intermediate_ng: 'Intermediate No Guess',
+  expert:          'Expert',
+  expert_ng:       'Expert No Guess',
+};
+
+async function loadBootcamp() {
+  try {
+    const res = await fetch('/api/profile/bootcamp');
+    bcData = await res.json();
+    renderBootcamp('beginner');
+  } catch (e) {
+    document.getElementById('bc-content').innerHTML =
+      `<p style="color:var(--text-dim);font-size:0.9rem;">Could not load bootcamp data.</p>`;
+  }
+}
+
+function renderBootcamp(mode) {
+  const content = document.getElementById('bc-content');
+  bcCharts.forEach(c => c.destroy());
+  bcCharts = [];
+
+  const data = bcData?.[mode];
+  if (!data || data.length === 0) {
+    content.innerHTML = `<p style="color:var(--text-dim);font-size:0.9rem;">No wins recorded for ${BC_LABELS[mode]} yet.</p>`;
+    return;
+  }
+
+  // Compute per-game metrics
+  const times = data.map(g => +(g.ms / 1000).toFixed(3));
+  const cps   = data.map(g => {
+    const clicks = (g.lc || 0) + (g.rc || 0) + (g.cc || 0);
+    return clicks > 0 && g.ms > 0 ? +(clicks / (g.ms / 1000)).toFixed(2) : null;
+  });
+  const eff = data.map(g => {
+    const effClicks = (g.lc || 0) + (g.cc || 0); // left + chord; right clicks are flags
+    return g.bbbv && effClicks > 0 ? Math.round(g.bbbv / effClicks * 100) : null;
+  });
+
+  const validTimes = times.filter(t => t > 0);
+  const bestTime   = validTimes.length ? Math.min(...validTimes).toFixed(3) : '—';
+  const avgTime    = validTimes.length ? (validTimes.reduce((a, b) => a + b, 0) / validTimes.length).toFixed(1) : '—';
+  const validCps   = cps.filter(c => c !== null);
+  const avgCps     = validCps.length ? (validCps.reduce((a, b) => a + b, 0) / validCps.length).toFixed(2) : '—';
+  const validEff   = eff.filter(e => e !== null);
+  const avgEff     = validEff.length ? Math.round(validEff.reduce((a, b) => a + b, 0) / validEff.length) + '%' : '—';
+
+  const winCount   = data.length;
+  const ratioNote  = winCount < 10
+    ? '<span class="bc-ratio">(win/loss ratio accumulating…)</span>'
+    : '<span class="bc-ratio">(loss data accumulating)</span>';
+
+  content.innerHTML = `
+    <div class="bc-summary">
+      <span class="bc-stat"><strong>${winCount}</strong> wins</span>
+      <span class="bc-sep">·</span>
+      <span class="bc-stat">Best <strong>${bestTime}s</strong></span>
+      <span class="bc-sep">·</span>
+      <span class="bc-stat">Avg <strong>${avgTime}s</strong></span>
+      <span class="bc-sep">·</span>
+      <span class="bc-stat">Avg CPS <strong>${avgCps}</strong></span>
+      <span class="bc-sep">·</span>
+      <span class="bc-stat">Avg eff <strong>${avgEff}</strong></span>
+      <span class="bc-sep">·</span>
+      ${ratioNote}
+    </div>
+    <div class="bc-charts-grid" style="margin-top:0.75rem;">
+      <div class="bc-chart-box">
+        <div class="bc-chart-title">Time (seconds)</div>
+        <canvas id="bc-chart-time"></canvas>
+      </div>
+      <div class="bc-chart-box">
+        <div class="bc-chart-title">Clicks / second</div>
+        <canvas id="bc-chart-cps"></canvas>
+      </div>
+      <div class="bc-chart-box">
+        <div class="bc-chart-title">Efficiency (%)</div>
+        <canvas id="bc-chart-eff"></canvas>
+      </div>
+    </div>
+  `;
+
+  const cs      = getComputedStyle(document.documentElement);
+  const accent  = cs.getPropertyValue('--accent').trim()  || '#4caf50';
+  const accent2 = cs.getPropertyValue('--accent2').trim() || '#2196f3';
+  const textDim = cs.getPropertyValue('--text-dim').trim() || '#888';
+  const border  = cs.getPropertyValue('--border').trim()  || '#333';
+  const labels  = data.map((_, i) => i + 1);
+  const ptRadius = data.length > 50 ? 1 : 3;
+
+  function makeChart(id, label, color, chartData, suffix) {
+    return new Chart(document.getElementById(id), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label,
+          data: chartData,
+          borderColor: color,
+          backgroundColor: color + '22',
+          fill: true,
+          tension: 0.3,
+          pointRadius: ptRadius,
+          pointHoverRadius: 5,
+          spanGaps: true,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        animation: { duration: 300 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => `Game ${items[0].label}`,
+              label: (item) => `${item.dataset.label}: ${item.raw ?? '—'}${suffix}`,
+            },
+          },
+        },
+        scales: {
+          x: { ticks: { color: textDim, maxTicksLimit: 10 }, grid: { color: border + '44' } },
+          y: { ticks: { color: textDim },                    grid: { color: border + '44' } },
+        },
+      },
+    });
+  }
+
+  bcCharts.push(makeChart('bc-chart-time', 'Time (s)',  accent2,    times, 's'));
+  bcCharts.push(makeChart('bc-chart-cps',  'CPS',       accent,     cps,   ''));
+  bcCharts.push(makeChart('bc-chart-eff',  'Eff %',     '#f0a500',  eff,   '%'));
+}
+
+document.getElementById('bc-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('[data-bc]');
+  if (!btn) return;
+  document.querySelectorAll('#bc-tabs .lb-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (bcData) renderBootcamp(btn.dataset.bc);
+});
+
+loadBootcamp();
 
 // ── Public Profile ────────────────────────────────────────────────────────────
 const PUBLIC_ID    = "{{ public_id }}";
