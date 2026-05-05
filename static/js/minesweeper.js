@@ -407,6 +407,10 @@ function reveal(r, c) {
 
   // First click — place mines now (guarantees safe first click)
   if (!state.started) {
+    // Evil NG: only the top-right corner is a valid first click
+    const bEl = document.getElementById('board');
+    if (bEl && bEl.dataset.mode === 'evil' && !(r === 0 && c === state.cols - 1)) return;
+
     const placer = state.noGuess ? placeMinesNoGuess : placeMines;
     const {mineSet, board} = placer(state.rows, state.cols, state.mines, r, c);
     state.mineSet    = mineSet;
@@ -416,6 +420,16 @@ function reveal(r, c) {
     state.boardHash  = calcBoardHash(state.rows, state.cols, mineSet);
     state.bbbv       = calc3BV(board, state.rows, state.cols, mineSet);
     startTimer();
+
+    // Remove evil-start marker and show normal hint
+    if (bEl && bEl.dataset.mode === 'evil') {
+      const sc = cellEl(0, state.cols - 1);
+      if (sc) sc.classList.remove('evil-start');
+      const startHint = document.getElementById('evil-start-hint');
+      const normalHint = document.getElementById('evil-normal-hint');
+      if (startHint) startHint.style.display = 'none';
+      if (normalHint) normalHint.style.display = '';
+    }
   }
 
   if (state.board[r][c] === -1) {
@@ -887,6 +901,17 @@ function initGame(rows, cols, mines, noGuess = false, chording = true) {
   buildBoard(rows, cols);
   updateNoGuessUI(noGuess);
   renderSessionStats();
+
+  // Evil NG: mark the forced start cell and reset hint visibility
+  const bEl = document.getElementById('board');
+  if (bEl && bEl.dataset.mode === 'evil') {
+    const sc = cellEl(0, cols - 1);
+    if (sc) { sc.classList.add('evil-start'); sc.textContent = '✕'; }
+    const startHint  = document.getElementById('evil-start-hint');
+    const normalHint = document.getElementById('evil-normal-hint');
+    if (startHint)  startHint.style.display  = '';
+    if (normalHint) normalHint.style.display = 'none';
+  }
 }
 
 function resetGame() {
@@ -919,11 +944,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const rows    = parseInt(board.dataset.rows);
   const cols    = parseInt(board.dataset.cols);
   const mines   = parseInt(board.dataset.mines);
-  // ?ng=1 or ?ng=0 in the URL overrides the stored preference
-  const ngParam  = new URLSearchParams(window.location.search).get('ng');
-  if (ngParam === '1') localStorage.setItem('noGuess', 'true');
-  else if (ngParam === '0') localStorage.setItem('noGuess', 'false');
-  const noGuess  = localStorage.getItem('noGuess')   === 'true';
+  const isEvil  = board.dataset.mode === 'evil';
+  // ?ng=1 or ?ng=0 in the URL overrides the stored preference (not applicable to evil)
+  if (!isEvil) {
+    const ngParam = new URLSearchParams(window.location.search).get('ng');
+    if (ngParam === '1') localStorage.setItem('noGuess', 'true');
+    else if (ngParam === '0') localStorage.setItem('noGuess', 'false');
+  }
+  // Evil NG is always no-guess; other modes read from localStorage
+  const noGuess  = isEvil || (localStorage.getItem('noGuess') === 'true');
   const chording = localStorage.getItem('chording') !== 'false';
 
   initGame(rows, cols, mines, noGuess, chording);

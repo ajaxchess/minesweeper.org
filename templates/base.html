@@ -155,6 +155,7 @@
         <a href="/intermediate" class="{% if mode == 'intermediate' %}active{% endif %}">{{ t.nav_intermediate }}</a>
         <a href="/expert" class="{% if mode == 'expert' %}active{% endif %}">{{ t.nav_expert }}</a>
         <a href="/custom" class="{% if mode == 'custom' %}active{% endif %}">{{ t.nav_custom }}</a>
+        <a href="/evil" class="{% if mode == 'evil' %}active{% endif %}">💀 Evil NG</a>
         <a href="/leaderboard" class="{% if mode == 'leaderboard' %}active{% endif %}">🏆 {{ t.nav_leaderboard }}</a>
         <a href="/rush" class="{% if mode == 'rush' %}active{% endif %}">⚡ {{ t.nav_rush }}</a>
         <div class="nav-pvp-group{% if mode in ['duel', 'pvp', 'pvp-leaderboard', 'pvp-rankings'] %} open{% endif %}">
@@ -188,7 +189,7 @@
 
         <!-- Play -->
         <div class="mega-group" id="mg-play">
-          <button class="mega-trigger {% if mode in ['beginner','intermediate','expert','custom','leaderboard','rush'] %}active{% endif %}" onclick="toggleMega(event,'mg-play')">💣 {{ t.nav_play }} ▾</button>
+          <button class="mega-trigger {% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush'] %}active{% endif %}" onclick="toggleMega(event,'mg-play')">💣 {{ t.nav_play }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/" class="mega-card {% if mode=='beginner' %}active{% endif %}">
@@ -206,6 +207,10 @@
               <a href="/custom" class="mega-card {% if mode=='custom' %}active{% endif %}">
                 <span class="mega-icon">⚙️</span>
                 <span class="mega-card-text"><strong>{{ t.nav_custom }}</strong><span>{{ t.nav_sub_custom }}</span></span>
+              </a>
+              <a href="/evil" class="mega-card {% if mode=='evil' %}active{% endif %}">
+                <span class="mega-icon">💀</span>
+                <span class="mega-card-text"><strong>Evil NG</strong><span>20×30 · 130 mines · No-Guess</span></span>
               </a>
             </div>
             <div class="mega-col">

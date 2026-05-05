@@ -15,6 +15,18 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F95 Web: Evil NG minesweeper mode
+  - Route: /evil
+  - Board: 20 rows × 30 cols, 130 mines (always No-Guess only, no toggle)
+  - Start position: top-right corner (row 0, col 29) — guaranteed mine-free
+  - Green ✕ marker displayed on start cell before first click; only that cell
+    accepts a first click (all other cells blocked until game starts)
+  - Separate high scores leaderboard (mode="evil", no_guess=true always)
+  - Evil NG added to GameMode enum and nav (both top-nav and mega-menu)
+  - Session stats not tracked for Evil NG (too rare / different difficulty)
+
+──────────────────────────────────────────────────────────────────────────────
+
 F94 Web: iOS app install banner for iPhone and iPad visitors
   - Shown on all game pages (classic + variant) to iOS / iPadOS visitors
   - Links directly to App Store: apps.apple.com/us/app/minesweeper-org/id6761314113

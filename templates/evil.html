@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Evil NG Minesweeper — 20×30, 130 Mines, No-Guess | minesweeper.org{% endblock %}
+{% block description %}Evil NG: the hardest Minesweeper mode. 20×30 board, 130 mines, No-Guess only. Every board is fully solvable by logic — no coin flips. Global high scores.{% endblock %}
+{% block keywords %}<meta name="keywords" content="evil minesweeper, hard minesweeper, no-guess minesweeper, minesweeper 20x30, minesweeper 130 mines">{% endblock %}
+{% block canonical %}https://minesweeper.org/evil{% endblock %}
+{% block og_url %}https://minesweeper.org/evil{% endblock %}
+{% block og_type %}game{% endblock %}
+{% block og_title %}Evil NG Minesweeper — 20×30, 130 Mines{% endblock %}
+{% block og_description %}The hardest Minesweeper mode: 20×30 board, 130 mines, No-Guess only. Every board solvable by logic. Global high scores.{% endblock %}
+
+{% block content %}
+<div class="game-wrapper">
+
+  <!-- Left sidebar ad -->
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+  <section class="game-section">
+    <h1 class="visually-hidden">Evil NG Minesweeper — 20×30, 130 Mines, No-Guess Only</h1>
+    <div class="game-info">
+      <div class="mode-row">
+        <div class="mode-badge evil-badge">💀 Evil NG</div>
+        <button id="reset-btn" title="{{ t.game_new_game }}">🙂</button>
+        <span class="evil-ng-label">No-Guess · 20×30 · 130 mines</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat" id="mine-count">
+          <span class="stat-icon">💣</span>
+          <span class="stat-value" id="mines-left">{{ mines }}</span>
+        </div>
+        <div class="stat" id="timer-display">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="timer">000</span>
+        </div>
+        <div class="stat" id="pct-display">
+          <span class="stat-icon">🧹</span>
+          <span class="stat-value" id="pct-cleared">0%</span>
+        </div>
+      </div>
+      <button id="flag-mode-btn" class="flag-mode-btn" onclick="toggleFlagMode()" title="{{ t.game_flag_title }}">{{ t.game_flag_btn }}</button>
+    </div>
+
+    <div id="board"
+         data-rows="{{ rows }}"
+         data-cols="{{ cols }}"
+         data-mines="{{ mines }}"
+         data-mode="evil"
+         data-evil="1"
+         data-username="{{ user.display_name if user else '' }}">
+    </div>
+
+    <div id="game-result"></div>
+    <div id="session-stats"></div>
+
+    <p class="instructions evil-start-hint" id="evil-start-hint">
+      👆 Click the <strong style="color:#4eff8a">green X</strong> (top-right corner) to start
+    </p>
+    <p class="instructions" id="evil-normal-hint" style="display:none">
+      <strong>{{ t.game_left_click }}</strong> {{ t.game_to_reveal }} &nbsp;|&nbsp;
+      <strong>{{ t.game_right_click }}</strong> {{ t.game_to_flag }} &nbsp;|&nbsp;
+      <strong>🙂</strong> {{ t.game_to_reset }}
+    </p>
+  </section>
+
+  <!-- Right sidebar ad -->
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle"
+         style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899"
+         data-ad-slot="4865894696"
+         data-ad-format="auto"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+
+</div>
+
+<!-- ── Evil NG Leaderboard ── -->
+<div class="game-landing" id="game-landing">
+
+  <section class="game-landing-lb">
+    <h2 class="game-landing-lb-title" id="page-lb-title">Today's Best — Evil NG</h2>
+    <div class="lb-table-wrap">
+      <table class="lb-table" id="page-lb-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{ t.lb_col_name }}</th>
+            <th>{{ t.lb_col_time }}</th>
+            <th>{{ t.lb_col_board }}</th>
+            <th>{{ t.lb_col_mines }}</th>
+            <th class="lb-th-stat" data-tip="3BV is the minimum number of clicks required to complete a board without using flags."><a href="/info/3bv" class="lb-th-link" title="Learn about 3BV">3BV</a></th>
+            <th class="lb-th-stat" data-tip="3BV per second — speed of completing the game. Higher is better."><a href="/info/3bv" class="lb-th-link" title="Learn about 3BV">3BV/s</a></th>
+            <th class="lb-th-stat" data-tip="Efficiency: 3BV divided by clicks performed. Fewer clicks = higher efficiency."><a href="/info/3bv" class="lb-th-link" title="Learn about 3BV">Eff</a></th>
+            <th>{{ t.lb_col_date }}</th>
+            <th>Board</th>
+          </tr>
+        </thead>
+        <tbody id="page-lb-body">
+          <tr><td colspan="10" class="lb-loading">{{ t.lb_loading }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="page-lb-tip" class="lb-tip" role="tooltip" aria-hidden="true"></div>
+  </section>
+
+  <section class="game-landing-welcome">
+    <h2 class="game-landing-title">What Is Evil NG?</h2>
+    <p>Evil NG is the hardest Minesweeper mode on minesweeper.org. The 20×30 board packs 130 mines — a density that forces intricate logical patterns. <strong>No-Guess mode is always active</strong>: every board is guaranteed solvable by pure deduction, no coin flips required.</p>
+    <p>The top-right corner is always safe. A green X marks your starting cell. From there, careful constraint propagation and pattern recognition are your only tools.</p>
+    <nav class="game-landing-links">
+      <a href="/">Beginner</a>
+      <a href="/intermediate">Intermediate</a>
+      <a href="/expert">Expert</a>
+      <a href="/leaderboard">Leaderboard</a>
+    </nav>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const MEDALS = ['🥇','🥈','🥉'];
+
+function fmtTime(s) {
+  return s.time_ms != null ? (s.time_ms / 1000).toFixed(3) + 's' : s.time_secs + 's';
+}
+function fmtBbbvS(s) {
+  if (!s.bbbv) return '—';
+  const secs = s.time_ms != null ? s.time_ms / 1000 : s.time_secs;
+  return secs ? (s.bbbv / secs).toFixed(3) : '—';
+}
+function fmtEff(s) {
+  if (!s.bbbv) return '—';
+  const total = (s.left_clicks || 0) + (s.chord_clicks || 0);
+  return total ? Math.round(s.bbbv / total * 100) + '%' : '—';
+}
+function esc(v) {
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function loadPageLb() {
+  const body  = document.getElementById('page-lb-body');
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="10" class="lb-loading">Loading…</td></tr>';
+  try {
+    const res  = await fetch('/api/scores/evil?no_guess=true&period=daily');
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    if (!Array.isArray(data) || !data.length) {
+      body.innerHTML = '<tr><td colspan="10" class="lb-empty">No scores yet today. Be the first!</td></tr>';
+      return;
+    }
+    body.innerHTML = data.map((s, i) => {
+      const nameCell = s.profile_url
+        ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
+        : esc(s.name);
+      let hashCell = '<td class="lb-hash">—</td>';
+      if (s.board_hash) {
+        const rp = new URLSearchParams({
+          rows: s.rows, cols: s.cols, mines: s.mines,
+          hash: s.board_hash, date: s.created_at,
+          mode: 'evil', game: 'standard',
+        });
+        const short = s.board_hash.slice(0, 8) + '…';
+        hashCell = `<td class="lb-hash"><a href="/variants/replay/?${rp}" class="lb-replay-link" title="${esc(s.board_hash)}">${short}</a></td>`;
+      }
+      return `
+        <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
+          <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
+          <td class="lb-name">${nameCell}</td>
+          <td class="lb-time">${fmtTime(s)}</td>
+          <td class="lb-board">${s.rows}×${s.cols}</td>
+          <td class="lb-mines">${s.mines}</td>
+          <td class="lb-stat">${s.bbbv ?? '—'}</td>
+          <td class="lb-stat">${fmtBbbvS(s)}</td>
+          <td class="lb-stat">${fmtEff(s)}</td>
+          <td class="lb-date">${s.created_at}</td>
+          ${hashCell}
+        </tr>`;
+    }).join('');
+  } catch {
+    body.innerHTML = '<tr><td colspan="10" class="lb-empty">Could not load scores.</td></tr>';
+  }
+}
+
+// Refresh leaderboard after a score is submitted
+const _origSubmitScoreEvil = window.submitScore;
+window.submitScore = async function(autoName) {
+  await _origSubmitScoreEvil(autoName);
+  loadPageLb();
+};
+
+// Stat column tooltips
+const pageTip = document.getElementById('page-lb-tip');
+document.querySelectorAll('#page-lb-table .lb-th-stat[data-tip]').forEach(th => {
+  th.addEventListener('mouseenter', () => {
+    const r = th.getBoundingClientRect();
+    pageTip.textContent   = th.dataset.tip;
+    pageTip.style.left    = r.left + 'px';
+    pageTip.style.top     = (r.bottom + window.scrollY + 4) + 'px';
+    pageTip.style.display = 'block';
+    pageTip.removeAttribute('aria-hidden');
+  });
+  th.addEventListener('mouseleave', () => {
+    pageTip.style.display = 'none';
+    pageTip.setAttribute('aria-hidden', 'true');
+  });
+});
+
+document.addEventListener('DOMContentLoaded', loadPageLb);
+</script>
+{% endblock %}

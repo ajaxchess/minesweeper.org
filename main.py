@@ -365,6 +365,8 @@ GAME_MODES = {
     "expert":       {"rows": 30, "cols": 16, "mines": 99},
 }
 
+EVIL_NG_MODE = {"rows": 20, "cols": 30, "mines": 130}
+
 CYLINDER_MODES = {
     "cylinder-beginner":     {"rows": 9, "cols": 9, "mines": 10},
     "cylinder-intermediate": {"rows": 16, "cols": 16, "mines": 40},
@@ -719,6 +721,16 @@ async def expert(request: Request):
         "lang": get_lang(request), "t": get_t(request),
         **GAME_MODES["expert"]
     })
+
+@app.get("/evil", response_class=HTMLResponse)
+async def evil_ng(request: Request):
+    return templates.TemplateResponse("evil.html", {
+        "request": request, "mode": "evil",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        **EVIL_NG_MODE
+    })
+
 
 @app.get("/custom", response_class=HTMLResponse)
 async def custom(request: Request):

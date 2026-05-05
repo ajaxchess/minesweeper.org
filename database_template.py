@@ -40,6 +40,7 @@ class GameMode(str, enum.Enum):
     intermediate = "intermediate"
     expert       = "expert"
     custom       = "custom"
+    evil         = "evil"
 
 # ── Score model ───────────────────────────────────────────────────────────────
 class Score(Base):

@@ -1985,6 +1985,40 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   color:     var(--text-dim);
 }
 
+/* ── Evil NG mode ────────────────────────────────────────────────────────── */
+.evil-badge {
+  background: #6b1f1f;
+  color: #ff8080;
+  border-color: #a03030;
+}
+
+.evil-ng-label {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  align-self: center;
+  margin-left: 4px;
+}
+
+.evil-start-hint {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* Green X marker for Evil NG start cell */
+.cell.evil-start {
+  background: #1a5c32 !important;
+  color: #4eff8a;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cell.evil-start:hover {
+  background: #1f7a40 !important;
+}
+
 /* ── Display name edit ───────────────────────────────────────────────────── */
 .display-name-edit {
   display: flex;
