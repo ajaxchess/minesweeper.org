@@ -30,6 +30,13 @@
     <priority>0.8</priority>
   </url>
 
+  <url>
+    <loc>https://minesweeper.org/evil</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- ── Rush ─────────────────────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/rush</loc>
@@ -187,6 +194,13 @@
 
   <url>
     <loc>https://minesweeper.org/nonosweeper</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/minesweeperchess</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
