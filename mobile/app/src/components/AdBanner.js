@@ -18,7 +18,7 @@ import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 
 const AD_UNIT_ID = Platform.select({
   ios:     'ca-app-pub-8102958922361899/1016578124',
-  android: 'ca-app-pub-3940256099942544/9214589741', // test ID — replace when Android is approved
+  android: 'ca-app-pub-8102958922361899/1016578124',
 });
 
 export default function AdBanner({ refreshKey = 0 }) {
