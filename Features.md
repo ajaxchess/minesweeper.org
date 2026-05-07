@@ -275,8 +275,10 @@ F79 Tametsi
 
   Game Mechanics
     Starting square: an X is displayed at the top-left corner (0,0). The
-    player clicks it to begin the timer and reveal that cell. This convention
-    makes every puzzle feel like a solvable puzzle from the first move.
+    player clicks it to begin the timer and flood-fill reveal from that cell —
+    same behaviour as standard minesweeper (reveals neighbours recursively if
+    the cell has no adjacent mines). This convention makes every puzzle feel
+    like a solvable puzzle from the first move.
     Row/column hints: each row and column edge cell shows two numbers:
       - Static total (white): the fixed mine count for that row/column.
         Never changes. A value of 0 is shown explicitly.
@@ -324,6 +326,7 @@ F79 Tametsi
   Leaderboards
     Daily leaderboard per difficulty (daily + seasonal).
     Random board leaderboard: keyed by board hash, showing time + 3BV.
+    No seasonal leaderboard for random boards.
     Guest and registered score rules match all other minesweeper.org games.
 
   Database
@@ -331,6 +334,9 @@ F79 Tametsi
     tametsi_daily   — date, level (beginner/intermediate/expert), board_hash
     tametsi_scores  — id, board_hash, level, is_daily, user_email, guest_token,
                       time_ms, 3bv, created_at
+    game_history    — write a row on every completed Tametsi game (logged-in
+                      users only). mode = 'tametsi'. Enables streaks and quests.
+                      Add 'tametsi' to the GameMode enum.
 
   API Endpoints
     GET  /tametsi                       — game hub (daily puzzles + random links)
