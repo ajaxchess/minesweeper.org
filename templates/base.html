@@ -415,7 +415,7 @@
             {{ t.auth_sign_in }}
           </a>
         {% endif %}
-        <select class="lang-select" style="min-width:100px" onchange="(function(v,p){document.cookie='lang='+v+';path=/;max-age=31536000;samesite=lax';location.href=v==='en'?p:'/'+v+(p==='/'?'':p);})(this.value,{{ request.url.path | tojson }})">
+        <select class="lang-select" style="min-width:100px" onchange="(function(v,p){document.cookie='lang='+v+';path=/;max-age=31536000;samesite=lax';location.href=v==='en'?p:'/'+v+(p==='/'?'':p);})(this.value,'{{ request.url.path }}')">
           <option value="en"      {% if lang == 'en'      %}selected{% endif %}>🇬🇧 EN</option>
           <option value="de"      {% if lang == 'de'      %}selected{% endif %}>🇩🇪 DE</option>
           <option value="fr"      {% if lang == 'fr'      %}selected{% endif %}>🇫🇷 FR</option>
