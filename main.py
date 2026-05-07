@@ -18,7 +18,8 @@ from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, get_db, init_db, SessionLocal
+from tametsi_generator import generate_daily as _tametsi_generate_daily, LEVELS as _TAMETSI_LEVELS
 import database as _db_module
 from duel_routes import duel_router
 from duelold_routes import duelold_router
@@ -661,9 +662,55 @@ def archive_guest_scores():
         db.close()
 
 
+def generate_tametsi_dailies(date_str: str = None):
+    """Pre-generate (or verify) daily Tametsi puzzles for all three levels."""
+    if date_str is None:
+        date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    db = SessionLocal()
+    try:
+        for level in _TAMETSI_LEVELS:
+            existing = (
+                db.query(TametsiDaily)
+                .filter(TametsiDaily.puzzle_date == date_str, TametsiDaily.level == level)
+                .first()
+            )
+            if existing:
+                logger.info(f"generate_tametsi_dailies: {level} {date_str} already exists.")
+                continue
+
+            board = _tametsi_generate_daily(level, date_str)
+
+            if not db.get(TametsiBoard, board.board_hash):
+                db.add(TametsiBoard(
+                    board_hash = board.board_hash,
+                    rows       = board.rows,
+                    cols       = board.cols,
+                    mines      = len(board.mines),
+                    bbbv       = board.bbbv,
+                    board_data = board.board_data,
+                ))
+
+            db.add(TametsiDaily(
+                puzzle_date = date_str,
+                level       = level,
+                board_hash  = board.board_hash,
+            ))
+
+        db.commit()
+        logger.info(f"generate_tametsi_dailies: done for {date_str}.")
+        record_scheduler_run("generate_tametsi_dailies", success=True)
+    except Exception as e:
+        db.rollback()
+        logger.error(f"generate_tametsi_dailies failed: {e}")
+        record_scheduler_run("generate_tametsi_dailies", success=False)
+    finally:
+        db.close()
+
+
 scheduler = BackgroundScheduler(timezone="UTC")
 scheduler.add_job(archive_guest_scores,        CronTrigger(hour=23, minute=59)) # 23:59 UTC — archive guests before reset
 scheduler.add_job(reset_scores,               CronTrigger(hour=0,  minute=0))  # midnight UTC — clear all scores
+scheduler.add_job(generate_tametsi_dailies,   CronTrigger(hour=0,  minute=1))  # 00:01 UTC — pre-generate daily Tametsi puzzles
 scheduler.add_job(cleanup_old_games,          CronTrigger(hour="*"))             # hourly
 scheduler.add_job(collect_server_stats,       CronTrigger(minute=0))             # top of every hour
 scheduler.add_job(collect_web_traffic_stats,  CronTrigger(hour=1,  minute=0))   # 1 AM UTC — parse yesterday's logs
@@ -674,7 +721,8 @@ def startup():
     init_db()
     scheduler.start()
     logger.info("Scheduler started — scores reset daily at midnight UTC.")
-    threading.Thread(target=_backfill_web_traffic, daemon=True).start()
+    threading.Thread(target=_backfill_web_traffic,    daemon=True).start()
+    threading.Thread(target=generate_tametsi_dailies, daemon=True).start()
 
 @app.on_event("shutdown")
 def shutdown():

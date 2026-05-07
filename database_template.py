@@ -3,7 +3,7 @@ database.py — SQLAlchemy setup for MySQL via PyMySQL
 """
 from sqlalchemy import (
     create_engine, Column, Integer, BigInteger, String, Float,
-    DateTime, Date, Enum, Index, Boolean, text, Text
+    DateTime, Date, Enum, Index, Boolean, text, Text, JSON
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from datetime import datetime, timezone
@@ -41,6 +41,7 @@ class GameMode(str, enum.Enum):
     expert       = "expert"
     custom       = "custom"
     evil         = "evil"
+    tametsi      = "tametsi"
 
 # ── Score model ───────────────────────────────────────────────────────────────
 class Score(Base):
@@ -1167,6 +1168,68 @@ class GameReplay(Base):
     )
 
 
+# ── Tametsi Board model (one row per unique board layout) ────────────────────
+class TametsiBoard(Base):
+    __tablename__ = "tametsi_boards"
+
+    board_hash = Column(String(64), primary_key=True)      # SHA-256 hex (64 chars)
+    rows       = Column(Integer, nullable=False)
+    cols       = Column(Integer, nullable=False)
+    mines      = Column(Integer, nullable=False)
+    bbbv       = Column(Integer, nullable=False)
+    board_data = Column(JSON, nullable=False)               # {"mines":[[r,c],...], "row_counts":[...], "col_counts":[...]}
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ── Tametsi Daily model (one row per level per day) ───────────────────────────
+class TametsiDaily(Base):
+    __tablename__ = "tametsi_daily"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)        # YYYY-MM-DD
+    level       = Column(String(16), nullable=False)        # beginner/intermediate/expert
+    board_hash  = Column(String(64), nullable=False, index=True)
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_tametsi_daily_date_level", "puzzle_date", "level", unique=True),
+    )
+
+
+# ── Tametsi Score model ───────────────────────────────────────────────────────
+class TametsiScore(Base):
+    __tablename__ = "tametsi_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    board_hash  = Column(String(64), nullable=False, index=True)
+    level       = Column(String(16), nullable=False)        # beginner/intermediate/expert
+    is_daily    = Column(Boolean, nullable=False, default=False)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    guest_token = Column(String(36), nullable=True, index=True)
+    time_ms     = Column(Integer, nullable=False)
+    bbbv        = Column(Integer, nullable=False)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_tametsi_scores_hash_time",        "board_hash", "time_ms"),
+        Index("ix_tametsi_scores_level_daily_time", "level", "is_daily", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":         self.id,
+            "board_hash": self.board_hash,
+            "level":      self.level,
+            "is_daily":   self.is_daily,
+            "name":       self.name,
+            "time_ms":    self.time_ms,
+            "bbbv":       self.bbbv,
+            "created_at": self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
 # ── Profanity flagging ───────────────────────────────────────────────────────
 class FlaggedScore(Base):
     __tablename__ = "flagged_scores"
@@ -1305,3 +1368,18 @@ def _apply_migrations():
                 conn.execute(text(f"ALTER TABLE `{table}` ADD COLUMN `{column}` {col_def}"))
                 conn.commit()
         _create_phase1_indexes(conn)
+
+        # Extend game_history.mode ENUM to include 'tametsi'
+        col_type = conn.execute(
+            text(
+                "SELECT COLUMN_TYPE FROM information_schema.columns "
+                "WHERE table_schema = DATABASE() "
+                "AND table_name = 'game_history' AND column_name = 'mode'"
+            )
+        ).scalar()
+        if col_type and "'tametsi'" not in col_type:
+            conn.execute(text(
+                "ALTER TABLE `game_history` MODIFY COLUMN `mode` "
+                "ENUM('beginner','intermediate','expert','custom','evil','tametsi') NOT NULL"
+            ))
+            conn.commit()
