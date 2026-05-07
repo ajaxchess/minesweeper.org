@@ -240,7 +240,7 @@ def goldberg(a, b):
 
 
 def main():
-    configs = [(1, 1), (2, 1)]
+    configs = [(1, 0), (1, 1), (2, 1), (5, 0)]
     prebaked = {}
     for a, b in configs:
         print(f"Baking GP({a},{b})…", end=" ", flush=True)
