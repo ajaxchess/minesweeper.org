@@ -294,6 +294,11 @@ async def apple_app_site_association():
     })
 
 
+@app.get("/a5d8abb456594f019c6c89a7d9420d5c.txt", include_in_schema=False)
+async def domain_verification():
+    return PlainTextResponse("a5d8abb456594f019c6c89a7d9420d5c")
+
+
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     from fastapi.responses import FileResponse
