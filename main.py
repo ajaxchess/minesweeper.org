@@ -7302,6 +7302,33 @@ async def nonosweeper_permalink(request: Request, date_str: str):
         raise
 
 
+# ── Tametsi (F79-D) — HTML routes ────────────────────────────────────────────
+
+@app.get("/tametsi", response_class=HTMLResponse)
+async def tametsi_page(request: Request):
+    return templates.TemplateResponse("tametsi.html", {
+        "request":      request,
+        "mode":         "tametsi",
+        "user":         get_current_user(request),
+        "lang":         get_lang(request),
+        "t":            get_t(request),
+        "initial_hash": None,
+    })
+
+
+@app.get("/tametsi/board/{board_hash}", response_class=HTMLResponse)
+async def tametsi_board_page(request: Request, board_hash: str):
+    _hash = board_hash if re.match(r"^[0-9a-f]{64}$", board_hash) else None
+    return templates.TemplateResponse("tametsi.html", {
+        "request":      request,
+        "mode":         "tametsi",
+        "user":         get_current_user(request),
+        "lang":         get_lang(request),
+        "t":            get_t(request),
+        "initial_hash": _hash,
+    })
+
+
 # ── MVS static pages ──────────────────────────────────────────────────────────
 
 _MVS_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), "static", "mvs"))
