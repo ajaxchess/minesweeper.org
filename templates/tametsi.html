@@ -1,13 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}Tametsi — Free Online Tametsi Game | Minesweeper + Nonogram{% endblock %}
-{% block description %}Play Tametsi free online — a hybrid of Minesweeper and Nonogram. Every board is no-guess solvable using row, column, and adjacency clues. Daily puzzles + infinite random boards.{% endblock %}
-{% block keywords %}<meta name="keywords" content="tametsi, tametsi game, minesweeper nonogram, logic puzzle, no-guess minesweeper, daily puzzle">{% endblock %}
+{% block title %}Tametsi — Free Online Logic Puzzle | Minesweeper + Nonogram Hybrid{% endblock %}
+{% block description %}Play Tametsi free online — a logic puzzle combining Minesweeper adjacency clues with Nonogram row and column mine counts. Every board is guaranteed no-guess solvable. Daily puzzles + infinite random boards on Beginner, Intermediate, and Expert.{% endblock %}
+{% block keywords %}<meta name="keywords" content="tametsi, tametsi game, tametsi puzzle, minesweeper nonogram, logic puzzle, no-guess minesweeper, minesweeper hybrid, daily logic puzzle, nonogram minesweeper">{% endblock %}
 {% block canonical %}https://minesweeper.org/tametsi{% endblock %}
 {% block og_url %}https://minesweeper.org/tametsi{% endblock %}
 {% block og_type %}game{% endblock %}
-{% block og_title %}Tametsi — Free Online Tametsi Game{% endblock %}
+{% block og_title %}Tametsi — Free Online Logic Puzzle | minesweeper.org{% endblock %}
 {% block og_description %}Minesweeper meets Nonogram. Use row, column, and adjacency clues to find all mines — every board guaranteed no-guess solvable. Daily puzzles + infinite random boards.{% endblock %}
+{% block og_image %}https://minesweeper.org/static/img/og-default.png{% endblock %}
+{% block tw_title %}Tametsi — Free Online Logic Puzzle | minesweeper.org{% endblock %}
+{% block tw_description %}Minesweeper meets Nonogram. Row/column mine counts plus adjacency clues — every board is no-guess solvable. Daily puzzles on Beginner, Intermediate, and Expert.{% endblock %}
+{% block tw_image %}https://minesweeper.org/static/img/og-default.png{% endblock %}
 
 {% block jsonld %}
 <script type="application/ld+json">
@@ -16,10 +20,13 @@
   "@type": "VideoGame",
   "name": "Tametsi",
   "url": "https://minesweeper.org/tametsi",
-  "description": "A hybrid puzzle combining Minesweeper and Nonogram. Use row/column mine-count hints plus adjacency clues to find all mines — every board is fully solvable by logic alone.",
-  "genre": ["Puzzle", "Logic", "Brain Teaser"],
+  "description": "A hybrid logic puzzle combining Minesweeper adjacency clues with Nonogram-style row and column mine counts. Every board is verified no-guess solvable by a server-side constraint solver. Daily puzzles and infinite random boards on Beginner (9×9), Intermediate (16×16), and Expert (16×30).",
+  "genre": ["Puzzle", "Logic", "Brain Teaser", "Nonogram", "Minesweeper"],
   "gamePlatform": "Web Browser",
   "operatingSystem": "Any",
+  "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 1 },
+  "playMode": "SinglePlayer",
+  "applicationCategory": "Game",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
 }
@@ -283,64 +290,190 @@
 
 </div>
 
-<!-- SEO landing content (full copy in F79-G) -->
+<!-- SEO landing content -->
 <div class="tz-landing">
+
+  <h2 class="tz-landing-h1">About Tametsi</h2>
+
   <div class="tz-landing-grid">
 
     <section class="tz-section">
       <h2>What Is Tametsi?</h2>
       <p>
-        Tametsi is a hybrid puzzle that combines classic Minesweeper with Nonogram-style row
-        and column clues. Each cell hides either a mine or a safe square. Revealed safe cells
-        show their adjacency count (how many of their 8 neighbours contain a mine), exactly
-        as in Minesweeper. What makes Tametsi unique are the <strong>row and column mine-count
-        hints</strong> running along the edges of the grid — these tell you exactly how many
-        mines are in each row and column, giving you powerful extra constraints to work with.
+        Tametsi is a logic deduction puzzle that layers two independent constraint systems onto a
+        single grid. Like classic Minesweeper, each revealed safe cell shows an
+        <strong>adjacency count</strong> — the number of mines among its eight neighbors. Unlike
+        Minesweeper, Tametsi surrounds every grid with <strong>row and column mine-count
+        hints</strong> in the style of a Nonogram: the edge of each row and column tells you
+        exactly how many mines that line contains. You solve by combining both systems — cell-level
+        adjacency clues and line-level totals — until every mine is located.
       </p>
       <p>
-        Every board on minesweeper.org is <strong>guaranteed no-guess solvable</strong>: a
-        server-side constraint solver confirms that the puzzle can be fully deduced by logic
-        alone before you ever see it. No coin flips, no luck required.
+        The two constraint layers complement each other in a way neither game achieves alone. Row
+        and column totals give you a global picture of mine distribution before you uncover a
+        single cell. Adjacency numbers then pinpoint individual cells within lines that the totals
+        alone cannot resolve. Where classic Minesweeper regularly reaches a dead end and forces a
+        coin-flip guess, Tametsi's double-constraint system closes every gap. Every board published
+        on minesweeper.org is <strong>verified no-guess solvable</strong> by a server-side
+        constraint solver before you ever see it.
+      </p>
+      <p>
+        Three difficulty levels cover a wide skill range. <strong>Beginner</strong> (9×9, 10 mines)
+        is the ideal starting point — the grid is small enough to hold the whole picture in your
+        head while the row/column hint system teaches its fundamentals. <strong>Intermediate</strong>
+        (16×16, 40 mines) requires chaining adjacency and line constraints together across a board
+        large enough that no single technique dominates. <strong>Expert</strong> (16×30, 99 mines)
+        matches the density of classic expert Minesweeper but remains fully solvable — an
+        achievement that feels qualitatively different from beating a random expert board that
+        required several lucky guesses. A fresh daily puzzle is generated at midnight UTC for each
+        difficulty level.
       </p>
     </section>
 
     <section class="tz-section">
-      <h2>How to Read the Hints</h2>
-      <p>
-        Each row and column edge shows <strong>two numbers</strong>:
-      </p>
-      <ul class="tz-list">
-        <li><strong style="color:#4caf50">Green (top / left)</strong> — mines <em>remaining</em> in that row or column. Decrements automatically as you place flags. Turns dim when it reaches zero.</li>
-        <li><strong style="color:var(--text-dim)">Grey (bottom / right)</strong> — the fixed mine total for that row or column. Never changes.</li>
-      </ul>
-      <p>
-        When the green remaining count reaches <strong>0</strong>, every unflagged cell in
-        that line is safe to reveal. When the number of hidden cells equals the remaining
-        count, every hidden cell in that line is a mine.
-      </p>
-    </section>
-
-    <section class="tz-section">
-      <h2>How to Play</h2>
+      <h2>How to Play Tametsi</h2>
       <ol class="tz-list">
-        <li>Click the <strong style="color:#4eff8a">green ✕</strong> at the top-left corner to start the timer and open the starting region.</li>
-        <li>Use the revealed adjacency numbers together with the row/column totals to deduce which cells are safe and which are mines.</li>
-        <li><strong>Left-click</strong> a cell to reveal it. <strong>Right-click</strong> (or long-press on mobile) to cycle: hidden → 🚩 flagged → ? unknown → hidden.</li>
-        <li>You win when all mines are flagged <em>or</em> all safe cells are revealed — whichever you achieve first.</li>
+        <li>
+          <strong>Start the game.</strong> Click the <strong style="color:#4eff8a">green ✕</strong>
+          in the top-left corner. This starts the timer and opens the starting region — all cells
+          connected to the corner through zero-adjacency cells are revealed at once via flood fill,
+          exactly as in classic Minesweeper.
+        </li>
+        <li>
+          <strong>Read the row and column hints.</strong> Each edge shows two numbers:
+          a <strong style="color:#4caf50">green "remaining"</strong> count that decrements as you
+          flag mines, and a <strong style="color:var(--text-dim)">grey "total"</strong> that never
+          changes. When the green count hits 0, every unflagged cell in that line is safe. When the
+          number of hidden cells equals the green count, every hidden cell in that line is a mine.
+        </li>
+        <li>
+          <strong>Reveal safe cells.</strong> Left-click any hidden cell to uncover it. A number
+          appears showing how many of its up-to-eight neighbors contain mines. A blank cell means
+          zero mine neighbors — the flood fill expands automatically. Clicking a mine ends the game.
+        </li>
+        <li>
+          <strong>Flag mines.</strong> Right-click (or long-press on mobile) to cycle:
+          hidden → 🚩 flagged → ❓ uncertain → hidden. Each flag automatically decrements the
+          green remaining count for that cell's row and column.
+        </li>
+        <li>
+          <strong>Win.</strong> You win as soon as all mines are flagged <em>or</em> all safe cells
+          are revealed — whichever you accomplish first. You do not need to do both.
+        </li>
       </ol>
     </section>
 
     <section class="tz-section">
-      <h2>Difficulty Levels</h2>
+      <h2>Tametsi vs. Classic Minesweeper</h2>
       <ul class="tz-list">
-        <li><strong>Beginner</strong> — 9×9 grid, 10 mines. Great for learning the row/column hint system.</li>
-        <li><strong>Intermediate</strong> — 16×16 grid, 40 mines. Requires combining adjacency and line constraints.</li>
-        <li><strong>Expert</strong> — 16×30 grid, 99 mines. Densely packed; demands full constraint chaining.</li>
+        <li>
+          <strong>Extra hint layer.</strong> Classic Minesweeper gives you only adjacency counts as
+          you reveal cells. Tametsi adds row and column mine totals visible from the very first
+          move, giving you a global picture of mine distribution before you uncover anything.
+        </li>
+        <li>
+          <strong>Always solvable by logic.</strong> Standard Minesweeper boards regularly force
+          guesses — an isolated corner, a region with two equally valid configurations. Every
+          Tametsi board here is guaranteed to have exactly one solution reachable entirely through
+          deduction. No coin flips, ever.
+        </li>
+        <li>
+          <strong>Same standard sizes.</strong> Beginner (9×9, 10 mines), Intermediate (16×16, 40
+          mines), and Expert (16×30, 99 mines) match the classic Minesweeper grid dimensions, so
+          experienced players can directly benchmark their logic speed against familiar board shapes.
+        </li>
+        <li>
+          <strong>3BV speed metric.</strong> Like competitive Minesweeper, Tametsi tracks
+          3BV (Bechtel's Board Benchmark Value) — a measure of board complexity independent of
+          luck. Your 3BV/s score is recorded alongside your time, enabling fair cross-board
+          comparisons on the daily leaderboard.
+        </li>
+        <li>
+          <strong>Shared daily boards.</strong> A specific board is fixed for each difficulty every
+          day, so the entire community competes on identical layouts. Classic Minesweeper generates
+          a fresh random board for every player; Tametsi's daily format creates a truly shared
+          competitive experience.
+        </li>
       </ul>
-      <p>A fresh <strong>daily puzzle</strong> is generated for each level at midnight UTC. Share the same board hash with friends to compare times on identical layouts.</p>
+    </section>
+
+    <section class="tz-section">
+      <h2>Tametsi vs. Tentaizu</h2>
+      <p>
+        Both Tametsi and <a href="/tentaizu" class="tz-link">Tentaizu</a> are minesweeper-adjacent
+        logic puzzles with a no-guess guarantee, but they are structurally quite different.
+      </p>
+      <ul class="tz-list">
+        <li>
+          <strong>Tentaizu has no reveals.</strong> In Tentaizu, all clue cells are visible before
+          you begin, and you never uncover anything — you only annotate cells with flags or safe
+          marks. The board is static; only your markings change. In Tametsi you actively reveal
+          cells, changing the board state and unlocking new adjacency information as you play.
+        </li>
+        <li>
+          <strong>Different clue types.</strong> Tentaizu uses only pre-placed adjacency counts as
+          clues, with no row or column totals. Tametsi is the opposite emphasis: row and column
+          totals are always present, while adjacency clues emerge dynamically as you reveal cells.
+        </li>
+        <li>
+          <strong>Different scale and pace.</strong> Tentaizu is always a compact 7×7 grid with
+          exactly 10 mines — completable in well under a minute once you learn the patterns.
+          Tametsi scales from beginner (9×9) to expert (16×30), with solve times that can run
+          several minutes on the harder boards.
+        </li>
+        <li>
+          <strong>Same no-guess philosophy.</strong> Both games guarantee every puzzle is uniquely
+          solvable by pure deduction. Neither should ever require a random guess. If you are stuck,
+          you have missed a deduction — not run out of information.
+        </li>
+      </ul>
+    </section>
+
+    <section class="tz-section">
+      <h2>Strategy Tips</h2>
+      <ol class="tz-list">
+        <li>
+          <strong>Read all line totals before placing a single flag.</strong> After the opening
+          flood fill, scan every row and column hint. Lines with a total of 0 contain no mines at
+          all — reveal every cell in them immediately. Lines where the total equals the number of
+          hidden cells are fully mined — flag every hidden cell at once. These free resolutions
+          often cascade into further deductions.
+        </li>
+        <li>
+          <strong>Watch the green "remaining" counters.</strong> Every flag you place decrements
+          the green count for that cell's row and column. A counter dropping to 0 makes every
+          remaining unflagged cell in that line safe. Keep an eye on counters approaching zero —
+          they are your next free reveals.
+        </li>
+        <li>
+          <strong>Cross-reference adjacency clues with line totals.</strong> An adjacency clue
+          might leave two equally likely candidates, but a row total can eliminate one of them.
+          Never analyze a cell in isolation — always check whether the outstanding line counts
+          confirm or rule out a candidate.
+        </li>
+        <li>
+          <strong>Use constraint subtraction between adjacent lines.</strong> If two adjacent rows
+          share a region of unknown cells, the difference between their remaining counts tells you
+          the net mine count in the non-shared cells. This subtraction technique extends the same
+          pattern used in classic Minesweeper to entire rows and columns.
+        </li>
+        <li>
+          <strong>Corners and edges first.</strong> A corner cell has only 3 neighbors; an edge
+          cell has only 5. Their adjacency clues are the most constrained and often the first to
+          resolve cleanly. Combined with the tight row/column totals that corner regions produce,
+          the perimeter almost always provides the strongest opening deductions.
+        </li>
+        <li>
+          <strong>Use the global mine count in the endgame.</strong> The mine counter shows how
+          many unflagged mines remain. When you are down to the last few, scan the entire board
+          for configurations consistent with both the remaining count and all outstanding line
+          totals. Global reasoning becomes extremely powerful once local options are exhausted.
+        </li>
+      </ol>
     </section>
 
   </div>
+
 </div>
 {% endblock %}
 
