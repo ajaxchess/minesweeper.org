@@ -329,7 +329,7 @@ F79 Tametsi
   Database
     tametsi_boards  — hash, board_data (JSON), rows, cols, mines, 3bv, created_at
     tametsi_daily   — date, level (beginner/intermediate/expert), board_hash
-    tametsi_scores  — id, board_hash, level, is_daily, user_id, guest_id,
+    tametsi_scores  — id, board_hash, level, is_daily, user_email, guest_token,
                       time_ms, 3bv, created_at
 
   API Endpoints
