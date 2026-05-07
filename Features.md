@@ -265,7 +265,7 @@ F79 Tametsi
   squares — whichever they achieve first.
 
   Scope — Phase 1 (this card)
-    Square boards only, same sizes as minesweeper. Hex and irregular-shape
+    Rectangular and square boards are both supported. Hex and irregular-shape
     boards are explicitly deferred pending sufficient player interest.
 
   Difficulty Levels
@@ -277,7 +277,9 @@ F79 Tametsi
     Starting square: an X is displayed at the top-left corner (0,0). The
     player clicks it to begin the timer and flood-fill reveal from that cell —
     same behaviour as standard minesweeper (reveals neighbours recursively if
-    the cell has no adjacent mines). This convention makes every puzzle feel
+    the cell has no adjacent mines). (0,0) is always guaranteed to be
+    mine-free — the generator rejects any mine placement where (0,0) is a
+    mine before running the solver. This convention makes every puzzle feel
     like a solvable puzzle from the first move.
     Row/column hints: each row and column edge cell shows two numbers:
       - Static total (white): the fixed mine count for that row/column.
@@ -290,10 +292,12 @@ F79 Tametsi
     definition (opening regions + isolated numbered cells), ignoring the
     row/column hints. It is a familiar proxy for board complexity, though it
     may not fully reflect difficulty in Tametsi where hints add extra
-    information. Displayed during play and stored with each score.
+    information. Revealed to the player after the game is completed and
+    stored with each score.
 
   Puzzle Generation (server-side Python)
-    1. Place mines on the board using the standard approach.
+    1. Place mines randomly, ensuring (0,0) is always mine-free
+       (re-draw if the random placement hits (0,0)).
     2. Compute mine counts for every row and column.
     3. Run a constraint solver starting from the top-left corner:
          - Apply standard minesweeper cell-adjacency rules.
@@ -321,16 +325,19 @@ F79 Tametsi
     Generated on demand per session for each difficulty level. Each board
     gets a unique hash so it can be shared. Leaderboards for random boards
     are time-based with 3BV displayed as context — a low-3BV board is
-    faster, but that is part of the luck of the draw.
+    faster, but that is part of the luck of the draw. A maximum of 15
+    scores are retained per board hash.
 
   Leaderboards
     Daily leaderboard per difficulty (daily + seasonal).
-    Random board leaderboard: keyed by board hash, showing time + 3BV.
-    No seasonal leaderboard for random boards.
+    Random board leaderboard: keyed by board hash, showing time + 3BV;
+    top 15 scores per board retained. No seasonal leaderboard for random boards.
     Guest and registered score rules match all other minesweeper.org games.
 
   Database
     tametsi_boards  — hash, board_data (JSON), rows, cols, mines, 3bv, created_at
+                      board_data schema: { "mines": [[r, c], ...],
+                        "row_counts": [int, ...], "col_counts": [int, ...] }
     tametsi_daily   — date, level (beginner/intermediate/expert), board_hash
     tametsi_scores  — id, board_hash, level, is_daily, user_email, guest_token,
                       time_ms, 3bv, created_at
@@ -344,7 +351,8 @@ F79 Tametsi
     GET  /tametsi/random/{level}       — generate a fresh no-guess random board
     GET  /tametsi/board/{hash}         — load and replay a specific board
     POST /tametsi/scores               — submit a completed score
-    GET  /tametsi/leaderboard/{level}  — leaderboard (daily or random)
+    GET  /tametsi/leaderboard/{level}          — daily leaderboard for level
+    GET  /tametsi/leaderboard/board/{hash}     — random board leaderboard by hash
 
   Frontend
     Extends the existing minesweeper DOM/CSS Grid vanilla JS — not a fresh
