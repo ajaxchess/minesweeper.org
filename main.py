@@ -3907,6 +3907,15 @@ GLOBESWEEPER_MODES = {
 }
 GLOBE_MODES_VALID = {"dodecahedron", "beginner", "intermediate", "expert", "custom"}
 
+# Valid Goldberg T values for the custom board and their GP(a,b) parameters.
+CUSTOM_T_AB: dict[int, tuple[int, int]] = {
+    1:  (1, 0),  3:  (1, 1),  4:  (2, 0),  7:  (2, 1),  9:  (3, 0),
+    12: (2, 2),  13: (3, 1),  16: (4, 0),  19: (3, 2),  21: (4, 1),
+    25: (5, 0),  27: (3, 3),  28: (4, 2),  31: (5, 1),  36: (6, 0),
+    37: (4, 3),  39: (5, 2),  43: (6, 1),  48: (4, 4),  49: (7, 0),
+    57: (7, 1),  61: (5, 4),  75: (5, 5),
+}
+
 
 @app.get("/worldsweeper", response_class=HTMLResponse)
 async def worldsweeper_beginner(request: Request):
@@ -3953,12 +3962,17 @@ async def worldsweeper_expert(request: Request):
 
 
 @app.get("/worldsweeper/custom", response_class=HTMLResponse)
-async def worldsweeper_custom(request: Request):
+async def worldsweeper_custom(request: Request, t: int = 3, mines: int = 4):
+    if t not in CUSTOM_T_AB:
+        t = 3
+    a, b = CUSTOM_T_AB[t]
+    face_count = 10 * t + 2
+    mines = max(1, min(mines, face_count - 1))
     return templates.TemplateResponse("worldsweeper.html", {
         "request": request, "mode": "custom",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
-        "a": 1, "b": 1, "t_param": 3, "face_count": 32, "mines": 4,
+        "a": a, "b": b, "t_param": t, "face_count": face_count, "mines": mines,
     })
 
 

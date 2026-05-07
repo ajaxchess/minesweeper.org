@@ -159,36 +159,65 @@
     <label style="display:block;margin-bottom:0.5rem;">
       {{ t['ws_t_param'] }}
       <select id="t-select" style="margin-left:0.5rem;">
-        <option value="1">T=1 — 12 faces (dodecahedron)</option>
-        <option value="3" selected>T=3 — 32 faces (truncated icosahedron)</option>
-        <option value="4">T=4 — 42 faces</option>
-        <option value="7">T=7 — 72 faces</option>
-        <option value="9">T=9 — 92 faces</option>
-        <option value="12">T=12 — 122 faces</option>
-        <option value="13">T=13 — 132 faces</option>
-        <option value="16">T=16 — 162 faces</option>
-        <option value="19">T=19 — 192 faces</option>
-        <option value="21">T=21 — 212 faces</option>
-        <option value="25">T=25 — 252 faces</option>
-        <option value="27">T=27 — 272 faces</option>
-        <option value="28">T=28 — 282 faces</option>
-        <option value="31">T=31 — 312 faces</option>
-        <option value="36">T=36 — 362 faces</option>
-        <option value="37">T=37 — 372 faces</option>
-        <option value="48">T=48 — 482 faces</option>
-        <option value="49">T=49 — 492 faces</option>
-        <option value="75">T=75 — 752 faces</option>
+        <option value="1"  {% if t_param==1  %}selected{% endif %}>T=1  — 12 faces (dodecahedron)</option>
+        <option value="3"  {% if t_param==3  %}selected{% endif %}>T=3  — 32 faces (truncated icosahedron)</option>
+        <option value="4"  {% if t_param==4  %}selected{% endif %}>T=4  — 42 faces</option>
+        <option value="7"  {% if t_param==7  %}selected{% endif %}>T=7  — 72 faces</option>
+        <option value="9"  {% if t_param==9  %}selected{% endif %}>T=9  — 92 faces</option>
+        <option value="12" {% if t_param==12 %}selected{% endif %}>T=12 — 122 faces</option>
+        <option value="13" {% if t_param==13 %}selected{% endif %}>T=13 — 132 faces</option>
+        <option value="16" {% if t_param==16 %}selected{% endif %}>T=16 — 162 faces</option>
+        <option value="19" {% if t_param==19 %}selected{% endif %}>T=19 — 192 faces</option>
+        <option value="21" {% if t_param==21 %}selected{% endif %}>T=21 — 212 faces</option>
+        <option value="25" {% if t_param==25 %}selected{% endif %}>T=25 — 252 faces</option>
+        <option value="27" {% if t_param==27 %}selected{% endif %}>T=27 — 272 faces</option>
+        <option value="28" {% if t_param==28 %}selected{% endif %}>T=28 — 282 faces</option>
+        <option value="31" {% if t_param==31 %}selected{% endif %}>T=31 — 312 faces</option>
+        <option value="36" {% if t_param==36 %}selected{% endif %}>T=36 — 362 faces</option>
+        <option value="37" {% if t_param==37 %}selected{% endif %}>T=37 — 372 faces</option>
+        <option value="39" {% if t_param==39 %}selected{% endif %}>T=39 — 392 faces</option>
+        <option value="43" {% if t_param==43 %}selected{% endif %}>T=43 — 432 faces</option>
+        <option value="48" {% if t_param==48 %}selected{% endif %}>T=48 — 482 faces</option>
+        <option value="49" {% if t_param==49 %}selected{% endif %}>T=49 — 492 faces</option>
+        <option value="57" {% if t_param==57 %}selected{% endif %}>T=57 — 572 faces</option>
+        <option value="61" {% if t_param==61 %}selected{% endif %}>T=61 — 612 faces</option>
+        <option value="75" {% if t_param==75 %}selected{% endif %}>T=75 — 752 faces</option>
       </select>
     </label>
     <p id="face-info" style="color:var(--text-dim);font-size:0.85rem;margin-bottom:0.5rem;">
-      This board has 32 faces (12 pentagons, 20 hexagons).
+      This board has {{ face_count }} faces (12 pentagons, {{ face_count - 12 }} hexagons).
     </p>
     <label style="display:block;margin-bottom:0.75rem;">
-      {{ t['custom_mines'] }}: <input id="mine-input" type="number" min="1" max="31" value="4"
+      {{ t['custom_mines'] }}: <input id="mine-input" type="number" min="1" max="{{ face_count - 1 }}" value="{{ mines }}"
                     style="width:60px;margin-left:0.5rem;">
     </label>
     <button id="custom-play-btn" class="btn" style="padding:0.4rem 1.2rem;">{{ t['ws_play'] }}</button>
   </div>
+  <script>
+  (function () {
+    const sel  = document.getElementById('t-select');
+    const info = document.getElementById('face-info');
+    const inp  = document.getElementById('mine-input');
+    const btn  = document.getElementById('custom-play-btn');
+
+    function updateInfo() {
+      const T = parseInt(sel.value, 10);
+      const F = 10 * T + 2;
+      inp.max = F - 1;
+      if (parseInt(inp.value, 10) > F - 1) inp.value = Math.max(1, F - 1);
+      const hex = F - 12;
+      info.textContent = 'This board has ' + F + ' faces (12 pentagons, ' + hex + ' hexagons).';
+    }
+
+    sel.addEventListener('change', updateInfo);
+
+    btn.addEventListener('click', function () {
+      const T = parseInt(sel.value, 10);
+      const m = Math.max(1, Math.min(parseInt(inp.value, 10) || 1, 10 * T + 1));
+      window.location.href = '/worldsweeper/custom?t=' + T + '&mines=' + m;
+    });
+  })();
+  </script>
   {% endif %}
 
 </div>
