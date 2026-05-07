@@ -234,6 +234,50 @@ for (let i = 0; i < g.faces.length; i++)
 
 ---
 
+## Step 5a — Validate Class II geometry (GP(1,1))
+
+```javascript
+let g = goldberg(1,1);
+console.assert(g.faces.length === 32, `expected 32 faces, got ${g.faces.length}`);
+console.assert(g.pentagons.size === 12, `expected 12 pentagons, got ${g.pentagons.size}`);
+```
+
+If this fails, the lattice loop bounds or triangle filter are wrong for `a=b`.
+
+---
+
+## Step 5b — Validate Class III geometry (GP(2,1) and GP(2,2))
+
+```javascript
+let g2 = goldberg(2,1);
+console.assert(g2.faces.length === 72, `expected 72 faces, got ${g2.faces.length}`);
+console.assert(g2.pentagons.size === 12, `expected 12 pentagons, got ${g2.pentagons.size}`);
+let g3 = goldberg(2,2);
+console.assert(g3.faces.length === 122, `expected 122 faces, got ${g3.faces.length}`);
+```
+
+If this fails independently of 5a, the complex division or loop bounds for `a≠b` are the culprit.
+
+---
+
+## Step 5c — Validate adjacency symmetry
+
+```javascript
+for (let i = 0; i < g.faces.length; i++)
+    for (const j of g.adj[i])
+        console.assert(g.adj[j].includes(i), `asymmetric adj ${i}↔${j}`);
+```
+
+Isolated here because it tests Step 4 (the edge-key adjacency rewrite) rather than the subdivision math.
+
+---
+
+## Step 5d — Visual smoke test
+
+Navigate to `/worldsweeper` (beginner, GP(1,1)) and `/worldsweeper/intermediate` (GP(2,1)) and confirm the sphere renders without console errors and looks geometrically correct. The assertions can't catch visual artifacts like flipped normals or misaligned faces.
+
+---
+
 ## Step 6 — Add Test Cases to `tests/test_worldsweeper.py`
 
 ```python
