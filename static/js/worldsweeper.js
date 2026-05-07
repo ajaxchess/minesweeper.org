@@ -50,7 +50,7 @@ const _NUM_COLORS = ['', '#1976D2', '#388E3C', '#D32F2F', '#7B1FA2',
 
 let _renderer, _camera, _scene, _globeGroup, _raycaster;
 let _faceMeshes = [];   // THREE.Mesh[F]
-let _sprites    = [];   // THREE.Sprite|null[F]
+let _sprites    = [];   // THREE.Mesh|null[F]  — co-planar label planes
 let _globeData  = null; // { faces, adj, T, F, pentagons }
 
 // Shared game state — allocated in initGlobe, managed by G3
@@ -431,9 +431,33 @@ function _doRaycast(e, button) {
 
 // ---------------------------------------------------------------------------
 // Sprite overlays — number labels, flags, mines
+// Rendered as PlaneGeometry meshes co-planar with each Goldberg face so labels
+// appear painted on the surface rather than billboarding toward the camera.
 // ---------------------------------------------------------------------------
 
-function _makeSprite(text, color, size, bgColor) {
+function _faceLabelBasis(face) {
+    const c = face.centroid;
+    const N = new THREE.Vector3(c.x, c.y, c.z).normalize();
+
+    // Gram-Schmidt tangent frame aligned with the face's first vertex
+    const ref = (Math.abs(N.y) < 0.9)
+        ? new THREE.Vector3(0, 1, 0)
+        : new THREE.Vector3(1, 0, 0);
+    const right = new THREE.Vector3().crossVectors(ref, N).normalize();
+    const up    = new THREE.Vector3().crossVectors(N, right).normalize();
+
+    // Size from average centroid-to-vertex chord so it scales across all T values
+    let sumDist = 0;
+    for (const v of face.verts) {
+        const dx = v.x - c.x, dy = v.y - c.y, dz = v.z - c.z;
+        sumDist += Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+    const size = (sumDist / face.verts.length) * 1.6;
+
+    return { N, right, up, size };
+}
+
+function _makeSprite(text, color, size, bgColor, right, up, normal) {
     const c   = document.createElement('canvas');
     c.width   = c.height = 128;
     const ctx = c.getContext('2d');
@@ -449,19 +473,24 @@ function _makeSprite(text, color, size, bgColor) {
     ctx.textBaseline = 'middle';
     ctx.fillStyle    = color;
     ctx.fillText(text, 64, 64);
-    const mat = new THREE.SpriteMaterial({
-        map: new THREE.CanvasTexture(c),
+    const mat = new THREE.MeshBasicMaterial({
+        map:         new THREE.CanvasTexture(c),
         transparent: true,
         depthTest:   false,
+        side:        THREE.DoubleSide,
     });
-    const spr = new THREE.Sprite(mat);
-    spr.scale.set(size, size, 1);
-    return spr;
+    const geo  = new THREE.PlaneGeometry(size, size);
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.quaternion.setFromRotationMatrix(
+        new THREE.Matrix4().makeBasis(right, up, normal)
+    );
+    return mesh;
 }
 
 function _clearSprite(idx) {
     if (!_sprites[idx]) return;
     _globeGroup.remove(_sprites[idx]);
+    _sprites[idx].geometry.dispose();
     _sprites[idx].material.map.dispose();
     _sprites[idx].material.dispose();
     _sprites[idx] = null;
@@ -470,12 +499,12 @@ function _clearSprite(idx) {
 function _placeSprite(idx, text, color, bgColor) {
     _clearSprite(idx);
     const face = _globeData.faces[idx];
-    const size = face.isPentagon ? 0.18 : 0.22;
-    const spr  = _makeSprite(text, color, size, bgColor);
-    const c    = face.centroid;
-    spr.position.set(c.x * 1.02, c.y * 1.02, c.z * 1.02);
-    _globeGroup.add(spr);
-    _sprites[idx] = spr;
+    const { N, right, up, size } = _faceLabelBasis(face);
+    const mesh = _makeSprite(text, color, size, bgColor, right, up, N);
+    const c = face.centroid;
+    mesh.position.set(c.x * 1.015, c.y * 1.015, c.z * 1.015);
+    _globeGroup.add(mesh);
+    _sprites[idx] = mesh;
 }
 
 // ---------------------------------------------------------------------------
