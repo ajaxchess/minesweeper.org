@@ -426,6 +426,20 @@ function showOverlay(type) {
             const s = (sTotal % 60).toFixed(3);
             winTime.textContent = m > 0 ? `${m}:${s.padStart(6, '0')}` : `${s}s`;
         }
+
+        // 3BV display
+        const bbbvRow  = document.getElementById('tmt-win-bbbv-row');
+        const bbbvEl   = document.getElementById('tmt-win-bbbv');
+        const bbbvsEl  = document.getElementById('tmt-win-bbbvs');
+        if (bbbvRow) {
+            bbbvRow.style.display = '';
+            if (bbbvEl) bbbvEl.textContent = G.bbbv ?? '—';
+            if (bbbvsEl) {
+                bbbvsEl.textContent = (G.bbbv && ms > 0)
+                    ? (G.bbbv / (ms / 1000)).toFixed(3)
+                    : '—';
+            }
+        }
         const username = document.getElementById('tmt-grid')?.dataset.username || '';
         if (username) {
             if (form) form.style.display = 'none';
@@ -440,9 +454,22 @@ function showOverlay(type) {
     } else {
         if (title) title.textContent = '💥 Mine hit!';
         if (timeRow) timeRow.style.display = 'none';
+        const bbbvRow = document.getElementById('tmt-win-bbbv-row');
+        if (bbbvRow) bbbvRow.style.display = 'none';
         if (form) form.style.display = 'none';
         if (scoreMsg) scoreMsg.style.display = 'none';
     }
+}
+
+// ── Share link / permalink ─────────────────────────────────────────────────────
+function updatePermalink() {
+    const row  = document.getElementById('tmt-permalink-row');
+    const link = document.getElementById('tmt-permalink-link');
+    if (!row || !link || !G) return;
+    const path = `/tametsi/board/${G.board_hash}`;
+    link.href        = path;
+    link.textContent = `minesweeper.org${path}`;
+    row.style.display = '';
 }
 
 // ── Score submission ──────────────────────────────────────────────────────────
@@ -566,6 +593,7 @@ async function initGame(level, isDaily, boardHash) {
         G = makeState(data, level, isDaily);
         renderBoard();
         updateMineCounter();
+        updatePermalink();
         if (isDaily) loadLeaderboard();
     } catch (e) {
         grid.innerHTML = `<div class="tmt-error">⚠️ Could not load board. <button onclick="initGame('${esc(level)}',${isDaily})">Retry</button></div>`;
@@ -616,6 +644,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('tmt-overlay-daily')?.addEventListener('click',  () => playDaily(currentLevel));
     document.getElementById('tmt-overlay-random')?.addEventListener('click', () => playRandom(currentLevel));
+
+    // Copy share link
+    document.getElementById('tmt-copy-btn')?.addEventListener('click', () => {
+        if (!G) return;
+        const url = `https://minesweeper.org/tametsi/board/${G.board_hash}`;
+        navigator.clipboard?.writeText(url).then(() => {
+            const btn = document.getElementById('tmt-copy-btn');
+            if (btn) { btn.textContent = '✓'; setTimeout(() => { btn.textContent = '📋'; }, 1500); }
+        }).catch(() => {
+            // Fallback: select the link text
+            const link = document.getElementById('tmt-permalink-link');
+            if (link) { const r = document.createRange(); r.selectNode(link); window.getSelection()?.removeAllRanges(); window.getSelection()?.addRange(r); }
+        });
+    });
 
     // Score form
     document.getElementById('tmt-save-btn')?.addEventListener('click', () => {

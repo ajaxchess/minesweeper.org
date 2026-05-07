@@ -154,6 +154,20 @@
   font-size: 0.9rem;
 }
 
+/* Permalink / share row */
+.tmt-permalink-row {
+  margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-dim);
+  display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;
+}
+.tmt-permalink-row a { color: inherit; word-break: break-all; }
+.tmt-copy-btn {
+  font-size: 0.75rem; padding: 0.1rem 0.35rem;
+  border-radius: var(--radius); cursor: pointer;
+  background: var(--surface2); border: 1px solid var(--surface2);
+  color: var(--text-dim); transition: color 0.15s;
+}
+.tmt-copy-btn:hover { color: var(--text); }
+
 /* Leaderboard placeholder section */
 .tmt-lb-section { margin-top: 1.25rem; }
 .tmt-lb-title   { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
@@ -215,6 +229,10 @@
         <div class="tmt-overlay-time" id="tmt-overlay-time-row">
           Time: <strong id="tmt-win-time">—</strong>
         </div>
+        <div class="tmt-overlay-time" id="tmt-win-bbbv-row" style="display:none">
+          3BV: <strong id="tmt-win-bbbv">—</strong> &nbsp;·&nbsp;
+          3BV/s: <strong id="tmt-win-bbbvs">—</strong>
+        </div>
         <div id="tmt-score-form" class="tmt-score-form" style="display:none">
           <input id="tmt-name-input" type="text" maxlength="32"
                  placeholder="Your name" autocomplete="nickname">
@@ -227,6 +245,11 @@
           <button id="tmt-overlay-random" class="tmt-action-btn">🎲 New Random</button>
         </div>
       </div>
+    </div>
+
+    <div id="tmt-permalink-row" class="tmt-permalink-row" style="display:none">
+      🔗 <a id="tmt-permalink-link" href="#"></a>
+      <button id="tmt-copy-btn" class="tmt-copy-btn" title="Copy share link">📋</button>
     </div>
 
     <p class="instructions" id="tmt-start-hint">
@@ -320,5 +343,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/tametsi.js?v=1"></script>
+<script src="/static/js/tametsi.js?v=2"></script>
 {% endblock %}
