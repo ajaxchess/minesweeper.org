@@ -19,7 +19,11 @@ from pydantic import BaseModel, Field, field_validator
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, get_db, init_db, SessionLocal
-from tametsi_generator import generate_daily as _tametsi_generate_daily, LEVELS as _TAMETSI_LEVELS
+from tametsi_generator import (
+    generate_daily as _tametsi_generate_daily,
+    generate_board as _tametsi_generate_board,
+    LEVELS as _TAMETSI_LEVELS,
+)
 import database as _db_module
 from duel_routes import duel_router
 from duelold_routes import duelold_router
@@ -664,11 +668,13 @@ def archive_guest_scores():
 
 def generate_tametsi_dailies(date_str: str = None):
     """Pre-generate (or verify) daily Tametsi puzzles for all three levels."""
+    from sqlalchemy.exc import IntegrityError
     if date_str is None:
         date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    db = SessionLocal()
-    try:
-        for level in _TAMETSI_LEVELS:
+    all_ok = True
+    for level in _TAMETSI_LEVELS:
+        db = SessionLocal()
+        try:
             existing = (
                 db.query(TametsiDaily)
                 .filter(TametsiDaily.puzzle_date == date_str, TametsiDaily.level == level)
@@ -695,16 +701,18 @@ def generate_tametsi_dailies(date_str: str = None):
                 level       = level,
                 board_hash  = board.board_hash,
             ))
-
-        db.commit()
-        logger.info(f"generate_tametsi_dailies: done for {date_str}.")
-        record_scheduler_run("generate_tametsi_dailies", success=True)
-    except Exception as e:
-        db.rollback()
-        logger.error(f"generate_tametsi_dailies failed: {e}")
-        record_scheduler_run("generate_tametsi_dailies", success=False)
-    finally:
-        db.close()
+            db.commit()
+            logger.info(f"generate_tametsi_dailies: {level} {date_str} stored.")
+        except IntegrityError:
+            db.rollback()
+            logger.info(f"generate_tametsi_dailies: {level} {date_str} already stored by concurrent request.")
+        except Exception as e:
+            db.rollback()
+            logger.error(f"generate_tametsi_dailies {level} failed: {e}")
+            all_ok = False
+        finally:
+            db.close()
+    record_scheduler_run("generate_tametsi_dailies", success=all_ok)
 
 
 scheduler = BackgroundScheduler(timezone="UTC")
@@ -7225,6 +7233,212 @@ _MVS_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), "static", "m
 @app.get("/mvs")
 def mvs_root():
     return RedirectResponse("/mvs/index.html", status_code=302)
+
+
+# ── Tametsi (F79-C) — API endpoints ──────────────────────────────────────────
+
+_TAMETSI_LEVEL_RE = re.compile(r"^(beginner|intermediate|expert)$")
+_TAMETSI_HASH_RE  = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _tametsi_board_response(board_row: TametsiBoard) -> dict:
+    return {
+        "board_hash": board_row.board_hash,
+        "rows":       board_row.rows,
+        "cols":       board_row.cols,
+        "mines":      board_row.mines,
+        "bbbv":       board_row.bbbv,
+        "board_data": board_row.board_data,
+    }
+
+
+@app.get("/api/tametsi/daily/{level}")
+def tametsi_daily(level: str, db: Session = Depends(get_db)):
+    if not _TAMETSI_LEVEL_RE.match(level):
+        raise HTTPException(status_code=400, detail="Invalid level")
+    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    daily = db.query(TametsiDaily).filter_by(puzzle_date=date_str, level=level).first()
+    if not daily:
+        board = _tametsi_generate_daily(level, date_str)
+        if not db.get(TametsiBoard, board.board_hash):
+            db.add(TametsiBoard(
+                board_hash = board.board_hash,
+                rows       = board.rows,
+                cols       = board.cols,
+                mines      = len(board.mines),
+                bbbv       = board.bbbv,
+                board_data = board.board_data,
+            ))
+        daily = TametsiDaily(puzzle_date=date_str, level=level, board_hash=board.board_hash)
+        db.add(daily)
+        db.commit()
+        db.refresh(daily)
+    return _tametsi_board_response(db.get(TametsiBoard, daily.board_hash))
+
+
+@app.get("/api/tametsi/random/{level}")
+def tametsi_random(level: str, db: Session = Depends(get_db)):
+    if not _TAMETSI_LEVEL_RE.match(level):
+        raise HTTPException(status_code=400, detail="Invalid level")
+    rows, cols, num_mines = _TAMETSI_LEVELS[level]
+    board = _tametsi_generate_board(rows, cols, num_mines)
+    if not db.get(TametsiBoard, board.board_hash):
+        db.add(TametsiBoard(
+            board_hash = board.board_hash,
+            rows       = board.rows,
+            cols       = board.cols,
+            mines      = len(board.mines),
+            bbbv       = board.bbbv,
+            board_data = board.board_data,
+        ))
+        db.commit()
+    return _tametsi_board_response(db.get(TametsiBoard, board.board_hash))
+
+
+@app.get("/api/tametsi/board/{board_hash}")
+def tametsi_load_board(board_hash: str, db: Session = Depends(get_db)):
+    if not _TAMETSI_HASH_RE.match(board_hash):
+        raise HTTPException(status_code=400, detail="Invalid board hash")
+    board_row = db.get(TametsiBoard, board_hash)
+    if not board_row:
+        raise HTTPException(status_code=404, detail="Board not found")
+    return _tametsi_board_response(board_row)
+
+
+class TametsiScoreSubmit(BaseModel):
+    board_hash: str = Field(..., min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
+    level:      str = Field(..., pattern=r"^(beginner|intermediate|expert)$")
+    is_daily:   bool
+    name:       str = Field(..., min_length=1, max_length=32)
+    time_ms:    int = Field(..., ge=1, le=9_999_999)
+    bbbv:       int = Field(..., ge=1, le=10_000)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+
+@app.post("/api/tametsi/scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_tametsi_score(
+    payload: TametsiScoreSubmit,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    board_row = db.get(TametsiBoard, payload.board_hash)
+    if not board_row:
+        raise HTTPException(status_code=404, detail="Unknown board hash")
+
+    if payload.is_daily:
+        date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        daily = db.query(TametsiDaily).filter_by(
+            puzzle_date=date_str, level=payload.level
+        ).first()
+        if not daily or daily.board_hash != payload.board_hash:
+            raise HTTPException(status_code=400, detail="Board hash does not match today's daily puzzle")
+
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+
+    client_type = get_client_type(request)
+    entry = TametsiScore(
+        board_hash  = payload.board_hash,
+        level       = payload.level,
+        is_daily    = payload.is_daily,
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        guest_token = guest_token,
+        time_ms     = payload.time_ms,
+        bbbv        = payload.bbbv,
+        client_type = client_type,
+    )
+    db.add(entry)
+
+    if user:
+        db.add(GameHistory(
+            user_email  = user["email"],
+            name        = payload.name,
+            mode        = GameMode.tametsi,
+            time_secs   = payload.time_ms // 1000,
+            time_ms     = payload.time_ms,
+            rows        = board_row.rows,
+            cols        = board_row.cols,
+            mines       = board_row.mines,
+            board_hash  = payload.board_hash,
+            bbbv        = payload.bbbv,
+            no_guess    = True,
+            client_type = client_type,
+        ))
+
+    db.commit()
+    db.refresh(entry)
+    entry_id = entry.id   # capture before possible second commit expires the object
+    flag_if_profane(db, entry.__tablename__, entry_id, payload.name)
+
+    # Enforce 15-score cap for random boards
+    if not payload.is_daily:
+        all_ids = [
+            r.id for r in (
+                db.query(TametsiScore.id)
+                .filter(TametsiScore.board_hash == payload.board_hash)
+                .order_by(TametsiScore.time_ms.asc(), TametsiScore.created_at.asc())
+                .all()
+            )
+        ]
+        if len(all_ids) > 15:
+            db.query(TametsiScore).filter(
+                TametsiScore.id.in_(all_ids[15:])
+            ).delete(synchronize_session=False)
+            db.commit()
+
+    record_score_submit("tametsi", payload.level)
+    record_game_complete("tametsi", mode=payload.level, duration_ms=payload.time_ms)
+    return {"ok": True, "id": entry_id}
+
+
+@app.get("/api/tametsi/leaderboard/{level}")
+def tametsi_leaderboard_daily(level: str, db: Session = Depends(get_db)):
+    if not _TAMETSI_LEVEL_RE.match(level):
+        raise HTTPException(status_code=400, detail="Invalid level")
+    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    daily = db.query(TametsiDaily).filter_by(puzzle_date=date_str, level=level).first()
+    if not daily:
+        return []
+    q = db.query(TametsiScore).filter(
+        TametsiScore.board_hash == daily.board_hash,
+        TametsiScore.is_daily   == True,
+    )
+    q = exclude_flagged(q, TametsiScore, db)
+    top = (
+        q.order_by(TametsiScore.time_ms.asc(), TametsiScore.created_at.asc())
+        .limit(20)
+        .all()
+    )
+    return _enrich_with_profiles(top, db)
+
+
+@app.get("/api/tametsi/leaderboard/board/{board_hash}")
+def tametsi_leaderboard_board(board_hash: str, db: Session = Depends(get_db)):
+    if not _TAMETSI_HASH_RE.match(board_hash):
+        raise HTTPException(status_code=400, detail="Invalid board hash")
+    q = db.query(TametsiScore).filter(TametsiScore.board_hash == board_hash)
+    q = exclude_flagged(q, TametsiScore, db)
+    top = (
+        q.order_by(TametsiScore.time_ms.asc(), TametsiScore.created_at.asc())
+        .limit(15)
+        .all()
+    )
+    return _enrich_with_profiles(top, db)
 
 
 @app.get("/mvs/{path:path}")
