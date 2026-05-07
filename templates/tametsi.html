@@ -168,9 +168,10 @@
 }
 .tmt-copy-btn:hover { color: var(--text); }
 
-/* Leaderboard placeholder section */
-.tmt-lb-section { margin-top: 1.25rem; }
-.tmt-lb-title   { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+/* Leaderboard section */
+.tmt-lb-section  { margin-top: 1.25rem; }
+.tmt-lb-title    { font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem; }
+.tmt-lb-subtitle { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.5rem; }
 </style>
 
 <h1 class="tz-page-h1">Tametsi</h1>
@@ -261,9 +262,10 @@
       Row/col hints: <span style="color:#4caf50">remaining</span> / <span style="color:var(--text-dim)">total</span>
     </p>
 
-    <!-- Leaderboard (populated by tametsi.js; full UI in F79-F) -->
+    <!-- Leaderboard -->
     <div id="tmt-lb-section" class="tmt-lb-section" style="display:none">
       <div id="tmt-lb-title" class="tmt-lb-title">🏆 Today's Best</div>
+      <div id="tmt-lb-subtitle" class="tmt-lb-subtitle"></div>
       <div id="tmt-lb-content"><div class="lb-loading">Loading…</div></div>
     </div>
 
@@ -343,5 +345,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/tametsi.js?v=2"></script>
+<script src="/static/js/tametsi.js?v=3"></script>
 {% endblock %}

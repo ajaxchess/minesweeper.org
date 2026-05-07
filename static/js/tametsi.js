@@ -510,21 +510,32 @@ async function saveScore(autoName, timeMs) {
     }
 }
 
-// ── Leaderboard (basic; full implementation in F79-F) ─────────────────────────
+// ── Leaderboard (F79-F) ───────────────────────────────────────────────────────
 async function loadLeaderboard() {
-    if (!G?.isDaily) return;
-    const section = document.getElementById('tmt-lb-section');
-    const content = document.getElementById('tmt-lb-content');
-    const title   = document.getElementById('tmt-lb-title');
-    if (!section || !content) return;
+    const section  = document.getElementById('tmt-lb-section');
+    const content  = document.getElementById('tmt-lb-content');
+    const title    = document.getElementById('tmt-lb-title');
+    const subtitle = document.getElementById('tmt-lb-subtitle');
+    if (!section || !content || !G) return;
 
     section.style.display = '';
     const lvlLabel = G.level.charAt(0).toUpperCase() + G.level.slice(1);
-    if (title) title.textContent = `🏆 Today's Best — ${lvlLabel}`;
+
+    if (G.isDaily) {
+        if (title)    title.textContent    = `🏆 Today's Best — ${lvlLabel}`;
+        if (subtitle) subtitle.textContent = new Date().toISOString().slice(0, 10);
+    } else {
+        if (title)    title.textContent    = `🏆 This Board's Best`;
+        if (subtitle) subtitle.textContent = `${lvlLabel} · #${G.board_hash.slice(0, 8)}…`;
+    }
     content.innerHTML = '<div class="lb-loading">Loading…</div>';
 
+    const url = G.isDaily
+        ? `/api/tametsi/leaderboard/${G.level}`
+        : `/api/tametsi/leaderboard/board/${G.board_hash}`;
+
     try {
-        const r = await fetch(`/api/tametsi/leaderboard/${G.level}`);
+        const r = await fetch(url);
         if (!r.ok) throw new Error(r.status);
         const data = await r.json();
         if (!Array.isArray(data) || !data.length) {
@@ -537,22 +548,23 @@ async function loadLeaderboard() {
                 ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
                 : esc(s.name);
             const ms = s.time_ms;
-            const sec = (ms / 1000).toFixed(3);
-            const m = Math.floor(ms / 60000);
+            const m  = Math.floor(ms / 60000);
             const timeStr = m > 0
                 ? `${m}:${((ms % 60000) / 1000).toFixed(3).padStart(6, '0')}`
-                : sec + 's';
+                : (ms / 1000).toFixed(3) + 's';
+            const bbbvs = (s.bbbv && ms > 0) ? (s.bbbv / (ms / 1000)).toFixed(2) : '—';
             return `<tr class="${i < 3 ? 'top-' + (i + 1) : ''}">
                 <td class="lb-rank">${medals[i] ?? i + 1}</td>
                 <td class="lb-name">${nameCell}</td>
                 <td class="lb-time">${timeStr}</td>
                 <td class="lb-stat">${s.bbbv ?? '—'}</td>
+                <td class="lb-stat">${bbbvs}</td>
             </tr>`;
         }).join('');
         content.innerHTML = `
             <div class="lb-table-wrap">
               <table class="lb-table">
-                <thead><tr><th>#</th><th>Name</th><th>Time</th><th>3BV</th></tr></thead>
+                <thead><tr><th>#</th><th>Name</th><th>Time</th><th>3BV</th><th>3BV/s</th></tr></thead>
                 <tbody>${rows}</tbody>
               </table>
             </div>`;
@@ -594,7 +606,7 @@ async function initGame(level, isDaily, boardHash) {
         renderBoard();
         updateMineCounter();
         updatePermalink();
-        if (isDaily) loadLeaderboard();
+        loadLeaderboard();
     } catch (e) {
         grid.innerHTML = `<div class="tmt-error">⚠️ Could not load board. <button onclick="initGame('${esc(level)}',${isDaily})">Retry</button></div>`;
     }
