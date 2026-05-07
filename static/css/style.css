@@ -3947,7 +3947,7 @@ html[data-skin="classic"] body {
 /* ── Left sidebar layout via CSS Grid ───────────────────────────────────── */
 html[data-skin="classic"] body {
   display: grid;
-  grid-template-columns: 180px 1fr;
+  grid-template-columns: 210px 1fr;
   grid-template-rows: auto;
   min-height: 100vh;
   align-items: start;
@@ -4579,9 +4579,94 @@ html[data-skin="classic"] .nav-pvp-menu a.active { background: #c0c0c0; color: #
 
 /* ── Mega menu nav (dark / light / tentaizu skins) ───────────────────────── */
 
-/* Classic skin: show classic-nav, hide mega-nav */
-html[data-skin="classic"] .classic-nav { display: flex; }
-html[data-skin="classic"] .mega-nav    { display: none; }
+/* Classic skin: hide simple classic-nav, show mega-nav as vertical sidebar accordion */
+html[data-skin="classic"] .classic-nav { display: none; }
+html[data-skin="classic"] .mega-nav {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 0;
+  align-items: stretch;
+  padding-left: 0 !important;
+}
+html[data-skin="classic"] .mega-group { width: 100%; }
+html[data-skin="classic"] .mega-trigger {
+  width: 100%;
+  text-align: left;
+  justify-content: flex-start;
+  color: #ffffff;
+  font-weight: 700;
+  text-shadow: 1px 1px 3px #000, 0 0 6px #000;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0;
+  font-size: 0.82rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: none;
+  transition: background 0.1s, color 0.1s;
+}
+html[data-skin="classic"] .mega-trigger:hover    { background: rgba(255,255,255,0.12); color: #fff; }
+html[data-skin="classic"] .mega-trigger.active   { background: #c0c0c0; color: #000; text-shadow: none; }
+html[data-skin="classic"] .mega-group.open .mega-trigger { background: rgba(255,255,255,0.18); color: #fff; }
+html[data-skin="classic"] .mega-panel {
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  display: none;
+  flex-direction: column;
+  gap: 0;
+  background: rgba(0,0,0,0.22);
+  border: none;
+  border-radius: 0;
+  padding: 0.2rem 0;
+  box-shadow: none;
+  width: 100%;
+  min-width: unset;
+}
+html[data-skin="classic"] .mega-group.open .mega-panel { display: flex; }
+html[data-skin="classic"] .mega-col                    { min-width: unset; width: 100%; gap: 0; }
+html[data-skin="classic"] .mega-card {
+  padding: 0.3rem 0.5rem 0.3rem 1rem;
+  border-radius: 0;
+  gap: 0.45rem;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  text-decoration: none;
+}
+html[data-skin="classic"] .mega-card:hover  { background: rgba(255,255,255,0.12); color: #fff; }
+html[data-skin="classic"] .mega-card.active { background: #c0c0c0; color: #000; }
+html[data-skin="classic"] .mega-icon        { font-size: 1rem; width: 16px; min-width: 16px; }
+html[data-skin="classic"] .mega-card-text strong {
+  font-size: 0.78rem;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px #000;
+}
+html[data-skin="classic"] .mega-card.active .mega-card-text strong { color: #000; text-shadow: none; }
+html[data-skin="classic"] .mega-card-text span { display: none; }
+html[data-skin="classic"] .mega-col-themes        { padding: 0.5rem 0.6rem; min-width: unset; }
+html[data-skin="classic"] .mega-theme-label       { color: rgba(255,255,255,0.6); }
+html[data-skin="classic"] .mega-theme-btns        { gap: 0.25rem; }
+html[data-skin="classic"] .mega-theme-btn         { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: #fff; }
+html[data-skin="classic"] .mega-theme-btn:hover   { background: rgba(255,255,255,0.3); transform: none; }
+
+/* Classic skin on mobile: collapse sidebar to horizontal top bar */
+@media (max-width: 860px) {
+  html[data-skin="classic"] body           { display: block; }
+  html[data-skin="classic"] header         { position: sticky; top: 0; width: 100%; min-height: auto; border-right: none; border-bottom: 2px solid #000; overflow-y: visible; }
+  html[data-skin="classic"] main,
+  html[data-skin="classic"] footer         { grid-column: unset; }
+  html[data-skin="classic"] .header-inner  { flex-direction: row; flex-wrap: wrap; max-width: none; padding: 0.4rem 0.5rem; gap: 0.4rem; align-items: center; }
+  html[data-skin="classic"] .auth-area     { flex-direction: row; width: auto; border-top: none; padding-top: 0; }
+  html[data-skin="classic"] .lang-select   { max-width: 100px; width: auto; }
+  html[data-skin="classic"] .mega-nav      { flex-direction: row; flex-wrap: wrap; gap: 0.1rem; padding: 0.2rem 0; }
+  html[data-skin="classic"] .mega-group    { width: auto; }
+  html[data-skin="classic"] .mega-trigger  { width: auto; border-radius: 4px; border-bottom: none; padding: 0.3rem 0.5rem; font-size: 0.78rem; text-shadow: none; }
+  html[data-skin="classic"] .mega-panel    { position: fixed !important; left: 0 !important; width: 100vw !important; background: #1a4040 !important; flex-direction: row !important; flex-wrap: wrap !important; padding: 0.5rem !important; gap: 0.5rem; box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important; }
+  html[data-skin="classic"] .mega-col      { min-width: 140px; width: auto; }
+  html[data-skin="classic"] .mega-card     { border-radius: 4px; }
+  html[data-skin="classic"] .mega-card-text span   { display: flex; }
+  html[data-skin="classic"] .mega-card-text strong { text-shadow: none; }
+}
 
 /* All other skins: hide classic-nav, show mega-nav */
 html:not([data-skin="classic"]) .classic-nav { display: none; }

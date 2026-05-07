@@ -18,7 +18,7 @@
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=36" />
+  <link rel="stylesheet" href="/static/css/style.css?v=37" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     // Resolve the "default" auto-theme: special-day override takes priority,
@@ -571,10 +571,14 @@
     document.querySelectorAll('.mega-group.open').forEach(function(g) { g.classList.remove('open'); });
     if (!isOpen) {
       grp.classList.add('open');
-      var header = document.querySelector('header');
-      var panel  = grp.querySelector('.mega-panel');
-      if (header && panel) {
-        panel.style.top = header.getBoundingClientRect().bottom + 'px';
+      // Classic skin on desktop uses position:static accordion panels — no top-offset needed
+      var classicDesktop = document.documentElement.dataset.skin === 'classic' && window.innerWidth > 860;
+      if (!classicDesktop) {
+        var header = document.querySelector('header');
+        var panel  = grp.querySelector('.mega-panel');
+        if (header && panel) {
+          panel.style.top = header.getBoundingClientRect().bottom + 'px';
+        }
       }
     }
   }
