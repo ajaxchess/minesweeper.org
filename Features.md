@@ -271,7 +271,7 @@ F79 Tametsi
   Difficulty Levels
     Beginner       9×9,  10 mines
     Intermediate  16×16, 40 mines
-    Hard          30×16, 99 mines
+    Expert        30×16, 99 mines
 
   Game Mechanics
     Starting square: an X is displayed at the top-left corner (0,0). The
@@ -280,8 +280,11 @@ F79 Tametsi
     Row/column hints: mine count shown for every row and column along the
     grid edges (nonogram-style). A value of 0 is shown explicitly.
     Win condition: flag all mines OR reveal all safe squares (either suffices).
-    3BV: each board's 3BV value is computed, displayed during play, and stored
-    with the score so players can assess board difficulty in context.
+    3BV: each board's 3BV value is computed using the standard minesweeper
+    definition (opening regions + isolated numbered cells), ignoring the
+    row/column hints. It is a familiar proxy for board complexity, though it
+    may not fully reflect difficulty in Tametsi where hints add extra
+    information. Displayed during play and stored with each score.
 
   Puzzle Generation (server-side Python)
     1. Place mines on the board using the standard approach.
@@ -303,7 +306,7 @@ F79 Tametsi
     enabling players to challenge friends or compare times on equal footing.
 
   Daily Puzzles
-    One Beginner, one Intermediate, and one Hard puzzle are pre-generated
+    One Beginner, one Intermediate, and one Expert puzzle are pre-generated
     at midnight UTC and stored in the database. Same reset and guest-score
     conventions as all minesweeper.org games (guests purged daily, registered
     scores retained permanently, seasonal leaderboards reset monthly).
@@ -321,12 +324,12 @@ F79 Tametsi
 
   Database
     tametsi_boards  — hash, board_data (JSON), rows, cols, mines, 3bv, created_at
-    tametsi_daily   — date, level (beginner/intermediate/hard), board_hash
+    tametsi_daily   — date, level (beginner/intermediate/expert), board_hash
     tametsi_scores  — id, board_hash, level, is_daily, user_id, guest_id,
                       time_ms, 3bv, created_at
 
   API Endpoints
-    GET  /tametsi/                     — game hub (daily puzzles + random links)
+    GET  /tametsi                       — game hub (daily puzzles + random links)
     GET  /tametsi/daily/{level}        — today's daily puzzle for a given level
     GET  /tametsi/random/{level}       — generate a fresh no-guess random board
     GET  /tametsi/board/{hash}         — load and replay a specific board

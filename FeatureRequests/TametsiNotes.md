@@ -5,7 +5,7 @@ https://www.youtube.com/watch?v=Q2xU4B0APcs
 https://steamcommunity.com/app/709920
 $2.99 on Steam
 
-Tametsi is the love child of minesweeper and nonosweeper.
+Tametsi is the child of minesweeper and nonosweeper.
 You have numbers on the edge of the grid that tell you how many mines
 on that row or column.
 You have numbers on a square that tell you how many adjacent mines to that
