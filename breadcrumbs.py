@@ -124,15 +124,17 @@ _BREADCRUMB_MAP: dict[str, list[tuple[str, str]]] = {
 }
 
 
-def get_breadcrumbs(path: str) -> list[dict]:
+def get_breadcrumbs(path: str, lang: str = "en") -> list[dict]:
     """Return full BreadcrumbList items for a URL path, including Home at position 1.
     Returns [] for the home page, unrecognised paths, and blog post detail pages
     (those provide a richer 3-level crumb via their own template block).
+    Non-English lang codes prepend /{lang} to all breadcrumb URLs.
     """
     trail = _BREADCRUMB_MAP.get(path)
     if trail is None:
         return []
-    result = [{"name": "Home", "url": _BASE_URL + "/"}]
+    prefix = f"/{lang}" if lang != "en" else ""
+    result = [{"name": "Home", "url": _BASE_URL + prefix + "/"}]
     for name, rel in trail:
-        result.append({"name": name, "url": _BASE_URL + rel})
+        result.append({"name": name, "url": _BASE_URL + prefix + rel})
     return result

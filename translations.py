@@ -10638,16 +10638,38 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
 }
 
 
+# Languages with valid BCP 47 codes — used for hreflang alternate tags and sitemap.
+# Fun/novelty languages are intentionally excluded: unknown hreflang values cause
+# Google Search Console errors.
+REAL_LANGS: frozenset = frozenset({
+    "de", "fr", "es", "ko", "ja", "zh", "zh-hant",
+    "ru", "pt", "it", "pl", "uk", "th", "tl",
+})
+
+# Novelty languages — path-prefix routing works but no hreflang or sitemap entries.
+# Add new fun languages here as their translations are added.
+FUN_LANGS: frozenset = frozenset({
+    "eo", "pgl",
+})
+
+# All routeable language codes (real + fun + "en")
+SUPPORTED_LANGS: frozenset = frozenset(TRANSLATIONS.keys())
+
+
 def get_lang(request) -> str:
-    # 1. Query param takes precedence (enables direct language URLs for hreflang/SEO)
+    # 1. Path-prefix lang injected by lang_prefix_middleware (highest priority)
+    lang = getattr(request.state, "lang", None)
+    if lang and lang in TRANSLATIONS:
+        return lang
+    # 2. Query param — backward compat while ?lang= URLs are still indexed
     lang = request.query_params.get("lang")
     if lang and lang in TRANSLATIONS:
         return lang
-    # 2. Explicit cookie (user's own choice)
+    # 3. Explicit cookie (user's saved choice)
     lang = request.cookies.get("lang")
     if lang and lang in TRANSLATIONS:
         return lang
-    # 3. Subdomain default (e.g. de.minesweeper.org → "de")
+    # 4. Subdomain default (e.g. de.minesweeper.org → "de")
     host = request.headers.get("host", "").split(":")[0]
     parts = host.split(".")
     if len(parts) >= 3:
