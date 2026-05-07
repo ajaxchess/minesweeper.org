@@ -6,6 +6,7 @@ Disallow: /game/
 Disallow: /duel/room/
 Disallow: /api/
 Disallow: /ws/
+Disallow: /*?ng=*
 
 # Block auth and user account paths if present
 Disallow: /login
