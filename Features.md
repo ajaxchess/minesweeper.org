@@ -277,8 +277,12 @@ F79 Tametsi
     Starting square: an X is displayed at the top-left corner (0,0). The
     player clicks it to begin the timer and reveal that cell. This convention
     makes every puzzle feel like a solvable puzzle from the first move.
-    Row/column hints: mine count shown for every row and column along the
-    grid edges (nonogram-style). A value of 0 is shown explicitly.
+    Row/column hints: each row and column edge cell shows two numbers:
+      - Static total (white): the fixed mine count for that row/column.
+        Never changes. A value of 0 is shown explicitly.
+      - Dynamic remaining (green): displayed above (columns) or to the left
+        (rows) of the static total. Decrements as the player places flags.
+        When remaining reaches 0 the hint cell is visually satisfied.
     Win condition: flag all mines OR reveal all safe squares (either suffices).
     3BV: each board's 3BV value is computed using the standard minesweeper
     definition (opening regions + isolated numbered cells), ignoring the

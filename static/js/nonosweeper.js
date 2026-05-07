@@ -487,6 +487,7 @@ async function saveScore(autoName = null) {
             scoreMsg.style.display = '';
             scoreMsg.textContent = `✅ Score saved for ${esc(name)}!`;
             loadLeaderboard();
+            if (G.isPOTD) setTimeout(() => window._nnPlayRandom?.(), 1500);
         } else {
             if (btn) { btn.textContent = 'Error — retry'; btn.disabled = false; }
             scoreMsg.style.display = '';
@@ -643,6 +644,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function playRandom() {
         initGame(Date.now().toString(36) + Math.random().toString(36).slice(2, 6), false, currentDiff, noGuess);
     }
+    window._nnPlayRandom = playRandom;
 
     document.querySelectorAll('.nn-diff-btn').forEach(btn => {
         btn.addEventListener('click', () => playPOTD(btn.dataset.diff));

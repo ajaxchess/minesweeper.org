@@ -7,7 +7,7 @@ square or hex or shape.
 You have a starting square for each puzzle.
 You must either flag all the mines or uncover all the non-mine spaces.
 There is a sequence of set levels (puzzles) and random puzzle of the day.
-Random Beginner, Intermediate and Hard.
+Random Beginner, Intermediate and Expert.
 
 Our initial implementation will be the random puzzles.
 Tametsi can be played on a minesweeper-like board with squares and on
