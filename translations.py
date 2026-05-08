@@ -308,8 +308,22 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Evil NG nav entry
         "nav_evil_ng":     "Evil NG",
         "nav_sub_evil_ng": "20×30 · 130 mines · No-Guess",
-        # Theme switcher label
-        "nav_theme":       "Theme",
+        # Theme switcher label and per-theme names/descriptions
+        "nav_theme":             "Theme",
+        "nav_theme_auto":        "Auto",
+        "nav_theme_auto_desc":   "Follows system light/dark",
+        "nav_theme_dark":        "Dark",
+        "nav_theme_dark_desc":   "Classic dark theme",
+        "nav_theme_light":       "Light",
+        "nav_theme_light_desc":  "Daylight-friendly",
+        "nav_theme_tentaizu":    "Tentaizu",
+        "nav_theme_tentaizu_desc": "Star & space theme",
+        "nav_theme_flower":      "Flower",
+        "nav_theme_flower_desc": "Floral night theme",
+        "nav_theme_classic":     "Classic",
+        "nav_theme_classic_desc": "Lady Di's Mines",
+        "nav_theme_mexico":      "Mexico",
+        "nav_theme_mexico_desc": "Fiesta theme",
         # Seasonal / holiday banners (text shown in header when active)
         "banner_solstice":             "Tentaizu theme is in celebration of the solstice!",
         "banner_equinox":              "In celebration of the Equinox, please enjoy the Tentaizu theme",

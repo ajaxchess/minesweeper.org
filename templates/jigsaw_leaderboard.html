@@ -151,7 +151,7 @@ table.jlb-table a:hover { text-decoration:underline; }
           : '—';
         return `<tr>
           <td>${i + 1}</td>
-          <td>${(s.country ? `<img src="/static/img/flags/${s.country}.png" class="lb-flag" alt="">` : '') + (s.profile_url ? `<a href="${s.profile_url}">${s.name}</a>` : s.name)}</td>
+          <td>${(s.country ? `<img src="/static/img/country-flags/${s.country}.png" class="lb-flag" alt="">` : '') + (s.profile_url ? `<a href="${s.profile_url}">${s.name}</a>` : s.name)}</td>
           <td>${fmt(s.time_ms)}</td>
           <td>${s.puzzle_date}</td>
           <td>${thumb}</td>

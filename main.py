@@ -16,6 +16,7 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
+from countries import COUNTRIES as ALL_COUNTRIES, VALID_COUNTRY_CODES
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, get_db, init_db, SessionLocal
@@ -3159,6 +3160,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "pref_on_lose":  profile.pref_on_lose  if profile else 'summary',
         "about_text":    profile.about_text    if profile else "",
         "country":       profile.country       if profile else "",
+        "countries":     ALL_COUNTRIES,
         "fp_photos":     db.query(FifteenPuzzlePhoto).filter_by(user_email=user["email"]).order_by(FifteenPuzzlePhoto.created_at.desc()).all(),
         "fp_limit":      getattr(profile, "puzzle_storage_limit", 32) if profile else 32,
         "jigsaw_saves":  db.query(JigsawSavedGame).filter_by(user_email=user["email"]).order_by(JigsawSavedGame.updated_at.desc()).all(),
@@ -5475,13 +5477,7 @@ def update_about(payload: AboutTextUpdate, request: Request, db: Session = Depen
     return {"ok": True}
 
 
-VALID_COUNTRIES = {
-    "alg", "arg", "aus", "aut", "bel", "bih", "bra", "can", "civ", "cod",
-    "col", "cpv", "cro", "cuw", "cze", "ecu", "egy", "eng", "esp", "fra",
-    "ger", "gha", "hai", "irn", "irq", "jor", "jpn", "kor", "ksa", "mar",
-    "mex", "ned", "nor", "nzl", "pan", "par", "por", "qat", "rsa", "sco",
-    "sen", "sui", "swe", "tun", "tur", "uru", "usa", "uzb",
-}
+VALID_COUNTRIES = VALID_COUNTRY_CODES
 
 class CountryUpdate(BaseModel):
     country: Optional[str] = None

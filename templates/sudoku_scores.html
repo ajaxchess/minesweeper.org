@@ -35,7 +35,7 @@ async function loadScores() {
 
     tbody.innerHTML = rows.map((r, i) => {
       const rank     = i < 3 ? ['🥇','🥈','🥉'][i] : i + 1;
-      const flag     = r.country ? `<img src="/static/img/flags/${r.country}.png" class="lb-flag" alt="">` : '';
+      const flag     = r.country ? `<img src="/static/img/country-flags/${r.country}.png" class="lb-flag" alt="">` : '';
       const name     = flag + (r.profile_url
         ? `<a href="${r.profile_url}" style="color:var(--accent2);">${escHtml(r.name)}</a>`
         : escHtml(r.name));
