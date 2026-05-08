@@ -21,6 +21,7 @@ const NM_COLORS = [
 
 // ── Game state ─────────────────────────────────────────────────────────────────
 let G = {};
+let _lbReqId = 0;   // incremented each loadLeaderboard call; stale responses are discarded
 
 // ── Utility ────────────────────────────────────────────────────────────────────
 function fmtTime(s) {
@@ -333,23 +334,23 @@ function showWinOverlay() {
             form.style.display = 'none';
             const msgEl = document.getElementById('nm-score-msg');
             if (msgEl) msgEl.textContent = 'Saving score…';
-            saveScore(username);
+            saveScore(username);   // loadLeaderboard is called by saveScore on success
         } else {
             form.style.display = 'flex';
             document.getElementById('nm-name-input').value = localStorage.getItem('nm_name') || '';
             const btn = document.getElementById('nm-save-btn');
             btn.disabled    = false;
             btn.textContent = 'Save Score';
+            loadLeaderboard();   // show current standings while the guest fills in their name
         }
     } else {
         form.style.display = 'none';
     }
-
-    if (G.isPOTD) loadLeaderboard();
 }
 
 // ── Score submission ───────────────────────────────────────────────────────────
 async function saveScore(autoName = null) {
+    if (G.scoreSaved) return;
     const inp  = document.getElementById('nm-name-input');
     const btn  = document.getElementById('nm-save-btn');
     const name = autoName || inp?.value.trim();
@@ -370,6 +371,7 @@ async function saveScore(autoName = null) {
             }),
         });
         if (r.ok) {
+            G.scoreSaved = true;
             localStorage.setItem('nm_name', name);
             if (btn) btn.textContent = '✓ Saved!';
             const msgEl = document.getElementById('nm-score-msg');
@@ -392,11 +394,13 @@ async function loadLeaderboard() {
     if (!G.isPOTD) return;
     const el = document.getElementById('nm-lb-content');
     if (!el) return;
+    const myId = ++_lbReqId;
     el.innerHTML = '<div class="lb-loading">Loading…</div>';
 
     try {
         const r    = await fetch(`/api/numbers-match-scores/${G.puzzleId}`);
         const data = await r.json();
+        if (myId !== _lbReqId) return;   // a newer request already arrived
 
         if (!data.length) {
             el.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
@@ -427,7 +431,9 @@ async function loadLeaderboard() {
                 <tbody>${rows}</tbody>
               </table>
             </div>`;
+        document.getElementById('nm-lb-section')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } catch {
+        if (myId !== _lbReqId) return;
         el.innerHTML = '<div class="lb-empty">⚠️ Could not load scores.</div>';
     }
 }
@@ -473,8 +479,9 @@ function _startGame(boardData, rows, puzzleId, isPOTD) {
         hintsLeft:  9,
         isPOTD,
         puzzleId,
-        linesAdded: 0,
-        won:        false,
+        linesAdded:  0,
+        won:         false,
+        scoreSaved:  false,
     };
 
     document.getElementById('nm-overlay').style.display = 'none';

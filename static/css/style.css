@@ -7679,6 +7679,15 @@ html[data-skin="mexico"] .cell.mine-detonated { background: #3a0000; }
     align-items: center;
   }
   .nm-wrapper .ad-sidebar { display: none; }
+  .nm-wrapper .mode-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .nm-wrapper .game-info { padding: 0.5rem 0.75rem; }
   #nm-grid { gap: 2px; }
   .nm-cell { font-size: clamp(0.75rem, 3.5vw, 1rem); }
+  #nm-overlay { padding: 24px 16px; }
+  .nm-actions { gap: 6px; }
+  .nm-actions button { padding: 7px 10px; font-size: 0.82rem; }
 }
