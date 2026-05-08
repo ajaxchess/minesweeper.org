@@ -7654,35 +7654,41 @@ async def numbers_match_permalink(request: Request, date_str: str):
 
 
 @app.get("/api/numbers-match-board/{date_str}")
-def get_numbers_match_board(date_str: str, db: Session = Depends(get_db)):
+async def get_numbers_match_board(date_str: str, db: Session = Depends(get_db)):
     """Return the pre-generated board for the given date (or generate on demand)."""
-    if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
-        raise HTTPException(status_code=400, detail="Invalid date format")
-    row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
-    if not row:
-        # On-demand fallback: generate and cache synchronously
-        from sqlalchemy.exc import IntegrityError
-        result = _nm_generate_daily(date_str)
-        try:
-            entry = NumbersMatchDaily(
-                puzzle_date = date_str,
-                board_num   = result["board_num"],
-                rows        = result["rows"],
-                board_data  = result["board_data"],
-            )
-            db.add(entry)
-            db.commit()
-            db.refresh(entry)
-            row = entry
-        except IntegrityError:
-            db.rollback()
-            row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
-    return {
-        "puzzle_date": row.puzzle_date,
-        "board_num":   row.board_num,
-        "rows":        row.rows,
-        "board_data":  row.board_data,
-    }
+    logger.error("NM_DIAG board handler entered date_str=%r", date_str)
+    try:
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
+            raise HTTPException(status_code=400, detail="Invalid date format")
+        row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
+        if not row:
+            from sqlalchemy.exc import IntegrityError
+            result = _nm_generate_daily(date_str)
+            try:
+                entry = NumbersMatchDaily(
+                    puzzle_date = date_str,
+                    board_num   = result["board_num"],
+                    rows        = result["rows"],
+                    board_data  = result["board_data"],
+                )
+                db.add(entry)
+                db.commit()
+                db.refresh(entry)
+                row = entry
+            except IntegrityError:
+                db.rollback()
+                row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
+        return {
+            "puzzle_date": row.puzzle_date,
+            "board_num":   row.board_num,
+            "rows":        row.rows,
+            "board_data":  row.board_data,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("NM_DIAG board handler exception %s: %s", type(e).__name__, e, exc_info=True)
+        raise
 
 
 # ── Numbers Match Score API ────────────────────────────────────────────────────
@@ -7739,7 +7745,8 @@ def submit_numbers_match_score(
 
 
 @app.get("/api/numbers-match-scores/{puzzle_date}")
-def get_numbers_match_scores(puzzle_date: str, db: Session = Depends(get_db)):
+async def get_numbers_match_scores(puzzle_date: str, db: Session = Depends(get_db)):
+    logger.error("NM_DIAG scores handler entered puzzle_date=%r", puzzle_date)
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
     q = db.query(NumbersMatchScore).filter(NumbersMatchScore.puzzle_date == puzzle_date)
