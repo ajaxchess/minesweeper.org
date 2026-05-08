@@ -7249,6 +7249,10 @@ def get_numbers_match_board(date_str: str, db: Session = Depends(get_db)):
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
         raise HTTPException(status_code=400, detail="Invalid date format")
     row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
+    if row and row.rows != 4:
+        db.delete(row)
+        db.commit()
+        row = None
     if not row:
         from sqlalchemy.exc import IntegrityError
         result = _nm_generate_daily(date_str)
