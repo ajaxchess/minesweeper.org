@@ -128,10 +128,12 @@ smoke_test() {
     return 0
 }
 
-smoke_test "Home"     "/"         "minesweeper" || SMOKE_FAILED=1
-smoke_test "PvP"      "/pvp/bot"  "PvP Minesweeper" || SMOKE_FAILED=1
-smoke_test "Duel"     "/duel"     "Minesweeper" || SMOKE_FAILED=1
-smoke_test "Tentaizu" "/tentaizu" "Tentaizu" || SMOKE_FAILED=1
+smoke_test "Home"              "/"                                          "minesweeper" || SMOKE_FAILED=1
+smoke_test "PvP"               "/pvp/bot"                                   "PvP Minesweeper" || SMOKE_FAILED=1
+smoke_test "Duel"              "/duel"                                      "Minesweeper" || SMOKE_FAILED=1
+smoke_test "Tentaizu"          "/tentaizu"                                  "Tentaizu" || SMOKE_FAILED=1
+smoke_test "Numbers Match page" "/numbers-match"                            "Numbers Match" || SMOKE_FAILED=1
+smoke_test "Numbers Match API"  "/api/numbers-match-board/$(date +%Y-%m-%d)" "board_data" || SMOKE_FAILED=1
 
 # ── Handle smoke test outcome ─────────────────────────────────────────────────
 if [ "$SMOKE_FAILED" = "1" ]; then
