@@ -8,6 +8,12 @@ VENV_DIR="$REPO_DIR/venv"
 SERVICE_NAME="minesweeper-staging"
 source "$REPO_DIR/.env"
 
+FORCE=0
+if [ "$1" = "--force" ]; then
+    FORCE=1
+    echo "Force mode enabled — skipping commit checks."
+fi
+
 if [ "$(id -u)" -eq 0 ]; then
     echo "Error: This script must not be run as root. Run as the 'ubuntu' user."
     exit 1
@@ -24,16 +30,15 @@ LOCAL_COMMIT=$(git rev-parse HEAD)
 REMOTE_COMMIT=$(git rev-parse origin/main)
 
 # ── Blocked commit check ──────────────────────────────────────────────────────
-# If the tip of origin/main is the same commit that failed smoke tests last time,
-# skip deployment and wait for a new commit to arrive.
 BLOCKED_COMMIT=$(cat "$STATE_DIR/blocked_commit" 2>/dev/null || echo "")
-if [ "$REMOTE_COMMIT" = "$BLOCKED_COMMIT" ]; then
+if [ "$FORCE" = "0" ] && [ "$REMOTE_COMMIT" = "$BLOCKED_COMMIT" ]; then
     echo "Commit $REMOTE_COMMIT is blocked (failed smoke tests). Waiting for a new commit."
+    echo "Use --force to override and redeploy anyway."
     exit 0
 fi
 
 # ── Up-to-date check ─────────────────────────────────────────────────────────
-if [ "$LOCAL_COMMIT" = "$REMOTE_COMMIT" ]; then
+if [ "$FORCE" = "0" ] && [ "$LOCAL_COMMIT" = "$REMOTE_COMMIT" ]; then
     echo "Staging is up to date. No changes to deploy."
     exit 0
 fi
