@@ -18,7 +18,7 @@
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=39" />
+  <link rel="stylesheet" href="/static/css/style.css?v=40" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     // Resolve the "default" auto-theme: special-day override takes priority,
@@ -391,17 +391,36 @@
                 <span class="mega-card-text"><strong>{{ t.nav_links_label }}</strong><span>{{ t.nav_sub_links }}</span></span>
               </a>
             </div>
-            <div class="mega-col mega-col-themes">
+            <div class="mega-col">
               <div class="mega-theme-label">{{ t.nav_theme }}</div>
-              <div class="mega-theme-btns">
-                <button class="mega-theme-btn" onclick="setTheme('default')"    title="Auto (day/night)">🌓</button>
-                <button class="mega-theme-btn" onclick="setTheme('dark')"       title="Dark">🌑</button>
-                <button class="mega-theme-btn" onclick="setTheme('light')"      title="Light">☀️</button>
-                <button class="mega-theme-btn" onclick="setTheme('tentaizu')"   title="Tentaizu">⭐</button>
-                <button class="mega-theme-btn" onclick="setTheme('flower')"     title="Flower Garden">🌸</button>
-                <button class="mega-theme-btn" onclick="setTheme('classic')"    title="Classic">🟦</button>
-                <button class="mega-theme-btn" onclick="setTheme('mexico')"     title="Mexico">🪅</button>
-              </div>
+              <button class="mega-card mega-theme-card" data-theme-btn="default"  onclick="setTheme('default')">
+                <span class="mega-icon">🌓</span>
+                <span class="mega-card-text"><strong>{{ t.nav_theme_auto }}</strong><span>{{ t.nav_theme_auto_desc }}</span></span>
+              </button>
+              <button class="mega-card mega-theme-card" data-theme-btn="dark"     onclick="setTheme('dark')">
+                <span class="mega-icon">🌑</span>
+                <span class="mega-card-text"><strong>{{ t.nav_theme_dark }}</strong><span>{{ t.nav_theme_dark_desc }}</span></span>
+              </button>
+              <button class="mega-card mega-theme-card" data-theme-btn="light"    onclick="setTheme('light')">
+                <span class="mega-icon">☀️</span>
+                <span class="mega-card-text"><strong>{{ t.nav_theme_light }}</strong><span>{{ t.nav_theme_light_desc }}</span></span>
+              </button>
+              <button class="mega-card mega-theme-card" data-theme-btn="tentaizu" onclick="setTheme('tentaizu')">
+                <span class="mega-icon">⭐</span>
+                <span class="mega-card-text"><strong>{{ t.nav_theme_tentaizu }}</strong><span>{{ t.nav_theme_tentaizu_desc }}</span></span>
+              </button>
+              <button class="mega-card mega-theme-card" data-theme-btn="flower"   onclick="setTheme('flower')">
+                <span class="mega-icon">🌸</span>
+                <span class="mega-card-text"><strong>{{ t.nav_theme_flower }}</strong><span>{{ t.nav_theme_flower_desc }}</span></span>
+              </button>
+              <button class="mega-card mega-theme-card" data-theme-btn="classic"  onclick="setTheme('classic')">
+                <span class="mega-icon">🟦</span>
+                <span class="mega-card-text"><strong>{{ t.nav_theme_classic }}</strong><span>{{ t.nav_theme_classic_desc }}</span></span>
+              </button>
+              <button class="mega-card mega-theme-card" data-theme-btn="mexico"   onclick="setTheme('mexico')">
+                <span class="mega-icon">🪅</span>
+                <span class="mega-card-text"><strong>{{ t.nav_theme_mexico }}</strong><span>{{ t.nav_theme_mexico_desc }}</span></span>
+              </button>
             </div>
           </div>
         </div>
@@ -644,8 +663,17 @@
       resolved = skin === 'diana' ? 'classic' : skin;
     }
     document.documentElement.dataset.skin = resolved;
+    document.querySelectorAll('[data-theme-btn]').forEach(function(btn) {
+      btn.classList.toggle('active', btn.dataset.themeBtn === skin);
+    });
     document.querySelectorAll('.mega-group.open').forEach(function(g) { g.classList.remove('open'); });
   }
+  (function() {
+    var stored = localStorage.getItem('skin') || 'default';
+    document.querySelectorAll('[data-theme-btn]').forEach(function(btn) {
+      btn.classList.toggle('active', btn.dataset.themeBtn === stored);
+    });
+  })();
   </script>
   {% block scripts %}{% endblock %}
   {% if user %}

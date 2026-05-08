@@ -4879,6 +4879,16 @@ html:not([data-skin="classic"]) .mega-nav    { display: flex; align-items: cente
   color: inherit;
 }
 
+/* ── Theme-card buttons (same visual as mega-card but rendered as <button>) */
+button.mega-card {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+
 /* ── PvP sub-page links ──────────────────────────────────────────────────── */
 .pvp-sub-links {
   display: flex;
