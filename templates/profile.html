@@ -94,58 +94,13 @@
           <span class="setting-desc">Shown on your public profile and leaderboards.</span>
         </div>
         <div class="country-edit">
-          <img id="country-flag" src="/static/img/flags/{{ country or 'can' }}.png"
+          <img id="country-flag" src="/static/img/country-flags/{{ country }}.png"
                alt="" style="width:20px;height:14px;object-fit:cover;vertical-align:middle;border-radius:2px;display:{{ 'inline' if country else 'none' }};" />
           <select id="country-select" class="favorite-game-select" onchange="saveCountry()">
             <option value="">— none —</option>
-            <option value="alg">Algeria</option>
-            <option value="arg">Argentina</option>
-            <option value="aus">Australia</option>
-            <option value="aut">Austria</option>
-            <option value="bel">Belgium</option>
-            <option value="bih">Bosnia and Herzegovina</option>
-            <option value="bra">Brazil</option>
-            <option value="cpv">Cabo Verde</option>
-            <option value="can">Canada</option>
-            <option value="col">Colombia</option>
-            <option value="cod">Congo DR</option>
-            <option value="cro">Croatia</option>
-            <option value="civ">Côte d'Ivoire</option>
-            <option value="cuw">Curaçao</option>
-            <option value="cze">Czechia</option>
-            <option value="ecu">Ecuador</option>
-            <option value="egy">Egypt</option>
-            <option value="eng">England</option>
-            <option value="fra">France</option>
-            <option value="ger">Germany</option>
-            <option value="gha">Ghana</option>
-            <option value="hai">Haiti</option>
-            <option value="irn">IR Iran</option>
-            <option value="irq">Iraq</option>
-            <option value="jpn">Japan</option>
-            <option value="jor">Jordan</option>
-            <option value="kor">Korea Republic</option>
-            <option value="mex">Mexico</option>
-            <option value="mar">Morocco</option>
-            <option value="ned">Netherlands</option>
-            <option value="nzl">New Zealand</option>
-            <option value="nor">Norway</option>
-            <option value="pan">Panama</option>
-            <option value="par">Paraguay</option>
-            <option value="por">Portugal</option>
-            <option value="qat">Qatar</option>
-            <option value="ksa">Saudi Arabia</option>
-            <option value="sco">Scotland</option>
-            <option value="sen">Senegal</option>
-            <option value="rsa">South Africa</option>
-            <option value="esp">Spain</option>
-            <option value="swe">Sweden</option>
-            <option value="sui">Switzerland</option>
-            <option value="tun">Tunisia</option>
-            <option value="tur">Türkiye</option>
-            <option value="uru">Uruguay</option>
-            <option value="usa">USA</option>
-            <option value="uzb">Uzbekistan</option>
+            {% for code, name in countries %}
+            <option value="{{ code }}"{% if country == code %} selected{% endif %}>{{ name }}</option>
+            {% endfor %}
           </select>
           <span id="country-msg" class="setting-msg"></span>
         </div>
@@ -1060,7 +1015,7 @@ async function saveAbout() {
 
   function updateFlag(code) {
     if (code) {
-      flag.src = '/static/img/flags/' + code + '.png';
+      flag.src = '/static/img/country-flags/' + code + '.png';
       flag.style.display = 'inline';
     } else {
       flag.style.display = 'none';
