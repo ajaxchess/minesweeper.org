@@ -268,6 +268,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_tentaizu_howto":   "How to Play Tentaizu",
         "nav_tametsi":          "Tametsi",
         "nav_tametsi_daily":    "Tametsi Daily",
+        "nav_numbers_match":         "Numbers Match",
+        "nav_sub_numbers_match":     "Match pairs · daily number puzzle",
         "nav_mosaic":           "Mosaic",
         "nav_mosaic_daily":     "Mosaic Daily",
         "nav_mosaic_easy":      "Mosaic Easy",
