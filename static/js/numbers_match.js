@@ -3,6 +3,7 @@
 // ── Constants ─────────────────────────────────────────────────────────────────
 const NM_COLS  = 9;
 const NM_EPOCH = '2024-01-01';
+const NM_DIFF_LABELS = { 4: 'Easy', 8: 'Medium', 16: 'Hard', 32: 'Expert' };
 
 // Matching pairs share a color: 1↔9 red, 2↔8 blue, 3↔7 green, 4↔6 orange, 5↔5 purple
 const NM_COLORS = [
@@ -448,11 +449,9 @@ async function initDailyGame(dateStr) {
     }
 }
 
-function initRandomGame() {
+function initRandomGame(rows) {
     stopTimer();
     const seed  = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const bNum  = boardNumber(document.getElementById('nm-board').dataset.realToday);
-    const rows  = initialRows(bNum);
     const board = generateBoardClient(seed, rows);
     _startGame(board, rows, seed, false);
 }
@@ -462,6 +461,7 @@ function _startGame(boardData, rows, puzzleId, isPOTD) {
     G = {
         board:      boardData.slice(),
         rows,
+        diffRows:   rows,
         score:      0,
         elapsed:    0,
         timer:      null,
@@ -480,7 +480,13 @@ function _startGame(boardData, rows, puzzleId, isPOTD) {
     document.getElementById('nm-overlay').style.display = 'none';
     document.getElementById('nm-timer').textContent     = '0:00';
     document.getElementById('nm-mode-label').textContent =
-        isPOTD ? '📅 Daily Puzzle' : '🎲 Random Puzzle';
+        isPOTD ? '📅 Daily Puzzle'
+               : `🎲 ${NM_DIFF_LABELS[rows] || rows + ' rows'}`;
+
+    document.querySelectorAll('.nm-diff-btn').forEach(btn => {
+        btn.classList.toggle('nm-diff-btn--active',
+            !isPOTD && parseInt(btn.dataset.rows) === rows);
+    });
 
     document.getElementById('nm-lb-section').style.display = isPOTD ? 'block' : 'none';
 
@@ -508,12 +514,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nm-daily-btn').addEventListener('click', () =>
         initDailyGame(boardEl.dataset.realToday));
 
-    document.getElementById('nm-random-btn').addEventListener('click', initRandomGame);
+    document.querySelectorAll('.nm-diff-btn').forEach(btn =>
+        btn.addEventListener('click', () => initRandomGame(parseInt(btn.dataset.rows))));
 
     document.getElementById('nm-overlay-daily').addEventListener('click', () =>
         initDailyGame(boardEl.dataset.realToday));
 
-    document.getElementById('nm-overlay-random').addEventListener('click', initRandomGame);
+    document.getElementById('nm-overlay-random').addEventListener('click', () =>
+        initRandomGame(G.diffRows || 4));
 
     document.getElementById('nm-undo-btn').addEventListener('click', doUndo);
     document.getElementById('nm-hint-btn').addEventListener('click', doHint);

@@ -53,8 +53,11 @@
       <div class="mode-row">
         <span id="nm-mode-label" class="mode-badge">📅 Daily Puzzle</span>
         <div class="tz-mode-btns">
-          <button id="nm-daily-btn"  class="tz-mode-btn">📅 Daily</button>
-          <button id="nm-random-btn" class="tz-mode-btn">🎲 Random</button>
+          <button id="nm-daily-btn" class="tz-mode-btn">📅 Daily</button>
+          <button class="tz-mode-btn nm-diff-btn" data-rows="4">Easy</button>
+          <button class="tz-mode-btn nm-diff-btn" data-rows="8">Medium</button>
+          <button class="tz-mode-btn nm-diff-btn" data-rows="16">Hard</button>
+          <button class="tz-mode-btn nm-diff-btn" data-rows="32">Expert</button>
         </div>
       </div>
       <div class="stat-row">
@@ -104,7 +107,7 @@
         </div>
         <div class="nm-overlay-btns">
           <button id="nm-overlay-daily">📅 New Daily</button>
-          <button id="nm-overlay-random">🎲 Random</button>
+          <button id="nm-overlay-random">🎲 Play Again</button>
         </div>
       </div>
     </div>
@@ -207,5 +210,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/numbers_match.js?v=4"></script>
+<script src="/static/js/numbers_match.js?v=5"></script>
 {% endblock %}
