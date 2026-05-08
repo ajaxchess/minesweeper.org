@@ -18,7 +18,7 @@ JS_FILES=(minesweeper.js quests.js duel.js rush.js tentaizu.js tentaizu_easy.js 
 for f in "${JS_FILES[@]}"; do
     src="$JS_DIR/$f"
     if [ -f "$src" ]; then
-        npx terser "$src" --compress --mangle --output "$src" 2>/dev/null \
+        npx --yes terser "$src" --compress --mangle --output "$src" 2>/dev/null \
             && echo "  Minified JS: $f" \
             || echo "  [WARN] Failed to minify: $f"
     fi
@@ -27,7 +27,7 @@ done
 # Minify CSS in place
 CSS_FILE="$CSS_DIR/style.css"
 if [ -f "$CSS_FILE" ]; then
-    npx csso-cli "$CSS_FILE" --output "$CSS_FILE" 2>/dev/null \
+    npx --yes csso-cli "$CSS_FILE" --output "$CSS_FILE" 2>/dev/null \
         && echo "  Minified CSS: style.css" \
         || echo "  [WARN] Failed to minify: style.css"
 fi
