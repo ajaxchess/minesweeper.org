@@ -1231,6 +1231,49 @@ class TametsiScore(Base):
         }
 
 
+# ── Numbers Match Daily Board (pre-generated, server-side) ───────────────────
+class NumbersMatchDaily(Base):
+    __tablename__ = "numbers_match_daily"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    puzzle_date = Column(String(10), nullable=False, unique=True, index=True)  # YYYY-MM-DD
+    board_num   = Column(Integer, nullable=False)   # sequential board number (1-based from 2024-01-01)
+    rows        = Column(Integer, nullable=False)   # initial row count per board_num schedule
+    board_data  = Column(JSON, nullable=False)      # flat array of ints, 1-9 (length = rows * 9)
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ── Numbers Match Score model ─────────────────────────────────────────────────
+class NumbersMatchScore(Base):
+    __tablename__ = "numbers_match_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD (daily) or random hex (random mode, not stored)
+    score       = Column(Integer, nullable=False, default=0)
+    time_secs   = Column(Integer, nullable=False)
+    lines_added = Column(Integer, nullable=False, default=0)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_numbers_match_scores_date_score_time", "puzzle_date", "score", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "score":       self.score,
+            "time_secs":   self.time_secs,
+            "lines_added": self.lines_added,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
 # ── Profanity flagging ───────────────────────────────────────────────────────
 class FlaggedScore(Base):
     __tablename__ = "flagged_scores"

@@ -19,12 +19,13 @@ from pydantic import BaseModel, Field, field_validator
 from countries import COUNTRIES as ALL_COUNTRIES, VALID_COUNTRY_CODES
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, get_db, init_db, SessionLocal
 from tametsi_generator import (
     generate_daily as _tametsi_generate_daily,
     generate_board as _tametsi_generate_board,
     LEVELS as _TAMETSI_LEVELS,
 )
+from numbers_match_generator import generate_daily as _nm_generate_daily
 import database as _db_module
 from duel_routes import duel_router
 from duelold_routes import duelold_router
@@ -81,7 +82,7 @@ def _build_score_table_map():
             CubesweeperScore, MobiussweeperScore, ReplayScore,
             NonosweeperScore, FifteenPuzzleScore, Game2048Score,
             Game2048HexScore, SchulteGridScore, SudokuScore,
-            MahjongScore, JigsawScore,
+            MahjongScore, JigsawScore, NumbersMatchScore,
         ]
     }
 
@@ -777,10 +778,45 @@ def generate_tametsi_dailies(date_str: str = None):
     record_scheduler_run("generate_tametsi_dailies", success=all_ok)
 
 
+def generate_numbers_match_daily(date_str: str = None):
+    """Pre-generate (or verify) the Numbers Match daily board for date_str."""
+    from sqlalchemy.exc import IntegrityError
+    if date_str is None:
+        date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    db = SessionLocal()
+    try:
+        existing = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
+        if existing:
+            logger.info(f"generate_numbers_match_daily: {date_str} already exists.")
+            record_scheduler_run("generate_numbers_match_daily", success=True)
+            return
+        result = _nm_generate_daily(date_str)
+        db.add(NumbersMatchDaily(
+            puzzle_date = date_str,
+            board_num   = result["board_num"],
+            rows        = result["rows"],
+            board_data  = result["board_data"],
+        ))
+        db.commit()
+        logger.info(f"generate_numbers_match_daily: {date_str} stored (board_num={result['board_num']}, rows={result['rows']}).")
+    except IntegrityError:
+        db.rollback()
+        logger.info(f"generate_numbers_match_daily: {date_str} already stored by concurrent request.")
+    except Exception as e:
+        db.rollback()
+        logger.error(f"generate_numbers_match_daily {date_str} failed: {e}")
+        record_scheduler_run("generate_numbers_match_daily", success=False)
+        return
+    finally:
+        db.close()
+    record_scheduler_run("generate_numbers_match_daily", success=True)
+
+
 scheduler = BackgroundScheduler(timezone="UTC")
-scheduler.add_job(archive_guest_scores,        CronTrigger(hour=23, minute=59)) # 23:59 UTC — archive guests before reset
-scheduler.add_job(reset_scores,               CronTrigger(hour=0,  minute=0))  # midnight UTC — clear all scores
-scheduler.add_job(generate_tametsi_dailies,   CronTrigger(hour=0,  minute=1))  # 00:01 UTC — pre-generate daily Tametsi puzzles
+scheduler.add_job(archive_guest_scores,              CronTrigger(hour=23, minute=59)) # 23:59 UTC — archive guests before reset
+scheduler.add_job(reset_scores,                      CronTrigger(hour=0,  minute=0))  # midnight UTC — clear all scores
+scheduler.add_job(generate_tametsi_dailies,          CronTrigger(hour=0,  minute=1))  # 00:01 UTC — pre-generate daily Tametsi puzzles
+scheduler.add_job(generate_numbers_match_daily,      CronTrigger(hour=0,  minute=1))  # 00:01 UTC — pre-generate daily Numbers Match board
 scheduler.add_job(cleanup_old_games,          CronTrigger(hour="*"))             # hourly
 scheduler.add_job(collect_server_stats,       CronTrigger(minute=0))             # top of every hour
 scheduler.add_job(collect_web_traffic_stats,  CronTrigger(hour=1,  minute=0))   # 1 AM UTC — parse yesterday's logs
@@ -791,8 +827,9 @@ def startup():
     init_db()
     scheduler.start()
     logger.info("Scheduler started — scores reset daily at midnight UTC.")
-    threading.Thread(target=_backfill_web_traffic,    daemon=True).start()
-    threading.Thread(target=generate_tametsi_dailies, daemon=True).start()
+    threading.Thread(target=_backfill_web_traffic,         daemon=True).start()
+    threading.Thread(target=generate_tametsi_dailies,      daemon=True).start()
+    threading.Thread(target=generate_numbers_match_daily,  daemon=True).start()
 
 @app.on_event("shutdown")
 def shutdown():
@@ -7577,6 +7614,144 @@ def tametsi_leaderboard_board(board_hash: str, db: Session = Depends(get_db)):
     top = (
         q.order_by(TametsiScore.time_ms.asc(), TametsiScore.created_at.asc())
         .limit(15)
+        .all()
+    )
+    return _enrich_with_profiles(top, db)
+
+
+# ── Numbers Match ─────────────────────────────────────────────────────────────
+
+@app.get("/numbers-match", response_class=HTMLResponse)
+async def numbers_match_page(request: Request):
+    real_today = date.today().isoformat()
+    return templates.TemplateResponse("numbers_match.html", {
+        "request":    request,
+        "mode":       "numbers-match",
+        "user":       get_current_user(request),
+        "lang":       get_lang(request),
+        "t":          get_t(request),
+        "today":      real_today,
+        "real_today": real_today,
+    })
+
+
+# Must be declared AFTER any future static sub-routes (e.g. /numbers-match/how-to-play)
+@app.get("/numbers-match/{date_str}", response_class=HTMLResponse)
+async def numbers_match_permalink(request: Request, date_str: str):
+    real_today = date.today().isoformat()
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
+        return RedirectResponse("/numbers-match", status_code=302)
+    return templates.TemplateResponse("numbers_match.html", {
+        "request":    request,
+        "mode":       "numbers-match",
+        "user":       get_current_user(request),
+        "lang":       get_lang(request),
+        "t":          get_t(request),
+        "today":      date_str,
+        "real_today": real_today,
+        "noindex":    True,
+    })
+
+
+@app.get("/api/numbers-match-board/{date_str}")
+def get_numbers_match_board(date_str: str, db: Session = Depends(get_db)):
+    """Return the pre-generated board for the given date (or generate on demand)."""
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
+        raise HTTPException(status_code=400, detail="Invalid date format")
+    row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
+    if not row:
+        # On-demand fallback: generate and cache synchronously
+        from sqlalchemy.exc import IntegrityError
+        result = _nm_generate_daily(date_str)
+        try:
+            entry = NumbersMatchDaily(
+                puzzle_date = date_str,
+                board_num   = result["board_num"],
+                rows        = result["rows"],
+                board_data  = result["board_data"],
+            )
+            db.add(entry)
+            db.commit()
+            db.refresh(entry)
+            row = entry
+        except IntegrityError:
+            db.rollback()
+            row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
+    return {
+        "puzzle_date": row.puzzle_date,
+        "board_num":   row.board_num,
+        "rows":        row.rows,
+        "board_data":  row.board_data,
+    }
+
+
+# ── Numbers Match Score API ────────────────────────────────────────────────────
+
+class NumbersMatchScoreSubmit(BaseModel):
+    name:        str = Field(..., min_length=1, max_length=32)
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    score:       int = Field(..., ge=0, le=99999)
+    time_secs:   int = Field(..., ge=1, le=99999)
+    lines_added: int = Field(default=0, ge=0, le=999)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+
+@app.post("/api/numbers-match-scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_numbers_match_score(
+    payload: NumbersMatchScoreSubmit,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = NumbersMatchScore(
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        puzzle_date = payload.puzzle_date,
+        score       = payload.score,
+        time_secs   = payload.time_secs,
+        lines_added = payload.lines_added,
+        guest_token = guest_token,
+        client_type = get_client_type(request),
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
+    record_score_submit("numbers_match", str(payload.puzzle_date))
+    record_game_complete("numbers_match", mode="daily",
+                         duration_ms=payload.time_secs * 1000)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/numbers-match-scores/{puzzle_date}")
+def get_numbers_match_scores(puzzle_date: str, db: Session = Depends(get_db)):
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
+        raise HTTPException(status_code=400, detail="Invalid date format")
+    q = db.query(NumbersMatchScore).filter(NumbersMatchScore.puzzle_date == puzzle_date)
+    q = exclude_flagged(q, NumbersMatchScore, db)
+    top = (
+        q
+        .order_by(
+            NumbersMatchScore.score.desc(),
+            NumbersMatchScore.time_secs.asc(),
+            NumbersMatchScore.created_at.asc(),
+        )
+        .limit(20)
         .all()
     )
     return _enrich_with_profiles(top, db)
