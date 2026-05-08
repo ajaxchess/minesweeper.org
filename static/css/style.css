@@ -7498,7 +7498,7 @@ html[data-skin="mexico"] .cell.mine-detonated { background: #3a0000; }
 
 .nm-cell.nm-empty {
   background: transparent;
-  border-color: rgba(128, 128, 128, 0.2);
+  border-color: rgba(128, 128, 128, 0.4);
   cursor: default;
 }
 
