@@ -159,9 +159,10 @@ async function loadPageLb() {
       return;
     }
     body.innerHTML = data.map((s, i) => {
+      const flag     = s.country ? `<img src="/static/img/flags/${s.country}.png" class="lb-flag" alt="">` : '';
       const nameCell = s.profile_url
-        ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
-        : esc(s.name);
+        ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${flag}${esc(s.name)}</a>`
+        : `${flag}${esc(s.name)}`;
       let hashCell = '<td class="lb-hash">—</td>';
       if (s.board_hash) {
         const rp = new URLSearchParams({

@@ -1194,6 +1194,14 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
 .lb-name { font-weight: 600; }
 .lb-time { font-family: var(--font-mono); font-size: 1rem; }
 
+.lb-flag {
+  width: 20px; height: 14px;
+  object-fit: cover;
+  border-radius: 2px;
+  vertical-align: middle;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
 .lb-profile-link {
   color: inherit;
   text-decoration: underline;

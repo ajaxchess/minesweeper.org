@@ -165,9 +165,9 @@ function renderWinsTable() {
   body.innerHTML = sorted.map((r, i) => `
     <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
       <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
-      <td class="lb-name">${r.profile_url
+      <td class="lb-name">${(r.country ? `<img src="/static/img/flags/${r.country}.png" class="lb-flag" alt="">` : '') + (r.profile_url
         ? `<a href="${esc(r.profile_url)}">${esc(r.name || 'Anonymous')}</a>`
-        : esc(r.name || 'Anonymous')}</td>
+        : esc(r.name || 'Anonymous'))}</td>
       <td class="lb-stat"><strong>${r.wins}</strong></td>
       <td class="lb-stat">${r.elo != null ? r.elo : '—'}</td>
     </tr>`).join('');
@@ -205,9 +205,9 @@ async function loadEloRankings() {
     body.innerHTML = data.map((r, i) => `
       <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
         <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
-        <td class="lb-name">${r.profile_url
+        <td class="lb-name">${(r.country ? `<img src="/static/img/flags/${r.country}.png" class="lb-flag" alt="">` : '') + (r.profile_url
           ? `<a href="${esc(r.profile_url)}">${esc(r.name || 'Anonymous')}</a>`
-          : esc(r.name || 'Anonymous')}</td>
+          : esc(r.name || 'Anonymous'))}</td>
         <td class="lb-stat"><strong>${r.elo}</strong></td>
       </tr>`).join('');
   } catch {

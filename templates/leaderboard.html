@@ -251,9 +251,10 @@ async function loadScores(mode, noGuess, period, game) {
     body.innerHTML = data.map((s, i) => {
       const bbbvS    = fmtBbbvS(s.bbbv, s);
       const eff      = fmtEff(s.bbbv, s.left_clicks, s.chord_clicks);
+      const flag     = s.country ? `<img src="/static/img/flags/${s.country}.png" class="lb-flag" alt="">` : '';
       const nameCell = s.profile_url
-        ? `<a href="${escHtml(s.profile_url)}" class="lb-profile-link">${escHtml(s.name)}</a>`
-        : escHtml(s.name);
+        ? `<a href="${escHtml(s.profile_url)}" class="lb-profile-link">${flag}${escHtml(s.name)}</a>`
+        : `${flag}${escHtml(s.name)}`;
       let hashCell = '<td class="lb-hash">—</td>';
       if (s.board_hash) {
         const game = currentGame === 'classic' ? (currentNoGuess ? 'no-guess' : 'standard') : currentGame;

@@ -1085,18 +1085,22 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
 
 
 def _enrich_with_profiles(scores: list, db) -> list:
-    """Add profile_url to score dicts for entries with a user_email."""
+    """Add profile_url and country to score dicts for entries with a user_email."""
     emails = [s.user_email for s in scores if s.user_email]
     if not emails:
         return [s.to_dict() for s in scores]
 
     profiles = (
-        db.query(UserProfile.email, UserProfile.vanity_slug, UserProfile.public_id, UserProfile.is_public)
+        db.query(UserProfile.email, UserProfile.vanity_slug, UserProfile.public_id,
+                 UserProfile.is_public, UserProfile.country)
         .filter(UserProfile.email.in_(emails))
         .all()
     )
-    url_map: dict = {}
+    url_map:     dict = {}
+    country_map: dict = {}
     for p in profiles:
+        if p.country:
+            country_map[p.email] = p.country
         if not p.is_public:
             continue
         if p.vanity_slug:
@@ -1108,6 +1112,7 @@ def _enrich_with_profiles(scores: list, db) -> list:
     for s in scores:
         d = s.to_dict()
         d["profile_url"] = url_map.get(s.user_email) if s.user_email else None
+        d["country"]     = country_map.get(s.user_email) if s.user_email else None
         result.append(d)
     return result
 
@@ -4580,7 +4585,8 @@ def get_pvp_rankings(period: str = "alltime",
         profile_map = {p.email: p for p in profiles}
         for p in top:
             prof = profile_map.get(p.get("email"))
-            p["elo"] = prof.pvp_elo if prof else None
+            p["elo"]     = prof.pvp_elo if prof else None
+            p["country"] = prof.country if prof else None
             if prof and prof.is_public:
                 p["profile_url"] = f"/u/{prof.vanity_slug or prof.public_id}"
             else:
@@ -4610,6 +4616,7 @@ def get_pvp_elo_rankings(db: Session = Depends(get_db), response: Response = Non
         {
             "name":        p.display_name,
             "elo":         p.pvp_elo,
+            "country":     p.country,
             "profile_url": f"/u/{p.vanity_slug or p.public_id}" if p.is_public else None,
         }
         for p in profiles
