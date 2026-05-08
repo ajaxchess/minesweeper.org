@@ -18,7 +18,7 @@
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=37" />
+  <link rel="stylesheet" href="/static/css/style.css?v=38" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     // Resolve the "default" auto-theme: special-day override takes priority,
@@ -415,25 +415,44 @@
             {{ t.auth_sign_in }}
           </a>
         {% endif %}
-        <select class="lang-select" style="min-width:100px" onchange="(function(v,p){document.cookie='lang='+v+';path=/;max-age=31536000;samesite=lax';location.href=v==='en'?p:'/'+v+(p==='/'?'':p);})(this.value,'{{ request.url.path }}')">
-          <option value="en"      {% if lang == 'en'      %}selected{% endif %}>🇬🇧 EN</option>
-          <option value="de"      {% if lang == 'de'      %}selected{% endif %}>🇩🇪 DE</option>
-          <option value="fr"      {% if lang == 'fr'      %}selected{% endif %}>🇫🇷 FR</option>
-          <option value="es"      {% if lang == 'es'      %}selected{% endif %}>🇪🇸 ES</option>
-          <option value="pt"      {% if lang == 'pt'      %}selected{% endif %}>🇵🇹 PT</option>
-          <option value="it"      {% if lang == 'it'      %}selected{% endif %}>🇮🇹 IT</option>
-          <option value="pl"      {% if lang == 'pl'      %}selected{% endif %}>🇵🇱 PL</option>
-          <option value="ru"      {% if lang == 'ru'      %}selected{% endif %}>🇷🇺 RU</option>
-          <option value="uk"      {% if lang == 'uk'      %}selected{% endif %}>🇺🇦 UK</option>
-          <option value="zh"      {% if lang == 'zh'      %}selected{% endif %}>🇨🇳 ZH</option>
-          <option value="zh-hant" {% if lang == 'zh-hant' %}selected{% endif %}>🇹🇼 繁體</option>
-          <option value="ja"      {% if lang == 'ja'      %}selected{% endif %}>🇯🇵 JA</option>
-          <option value="ko"      {% if lang == 'ko'      %}selected{% endif %}>🇰🇷 KO</option>
-          <option value="th"      {% if lang == 'th'      %}selected{% endif %}>🇹🇭 TH</option>
-          <option value="tl"      {% if lang == 'tl'      %}selected{% endif %}>🇵🇭 TL</option>
-          <option value="pgl"     {% if lang == 'pgl'     %}selected{% endif %}>🏴‍☠️ PGL</option>
-          <option value="eo"      {% if lang == 'eo'      %}selected{% endif %}>🌿 EO</option>
-        </select>
+        {%- set _lc = lang if lang is defined else 'en' -%}
+        {%- set _ll = {'en':'EN','de':'DE','fr':'FR','es':'ES','pt':'PT','it':'IT','pl':'PL','ru':'RU','uk':'UK','zh':'ZH','zh-hant':'繁體','ja':'JA','ko':'KO','th':'TH','tl':'TL','pgl':'PGL','eo':'EO'} -%}
+        <div class="lang-picker" id="lang-picker">
+          <button class="lang-picker-btn" type="button" onclick="toggleLangPicker(event)" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">
+            <img src="/static/img/flags/{{ _lc }}.png" class="lang-flag" width="20" height="14" alt="{{ _lc }}">
+            <span>{{ _ll.get(_lc, _lc | upper) }}</span>
+            <span class="lang-caret">▾</span>
+          </button>
+          <div class="lang-picker-menu" role="listbox">
+            {%- for code, label, name in [
+              ('en',      'EN',   'English'),
+              ('de',      'DE',   'Deutsch'),
+              ('fr',      'FR',   'Français'),
+              ('es',      'ES',   'Español'),
+              ('pt',      'PT',   'Português'),
+              ('it',      'IT',   'Italiano'),
+              ('pl',      'PL',   'Polski'),
+              ('ru',      'RU',   'Русский'),
+              ('uk',      'UK',   'Українська'),
+              ('zh',      'ZH',   '中文(简)'),
+              ('zh-hant', '繁體',  '中文(繁)'),
+              ('ja',      'JA',   '日本語'),
+              ('ko',      'KO',   '한국어'),
+              ('th',      'TH',   'ไทย'),
+              ('tl',      'TL',   'Filipino'),
+              ('pgl',     'PGL',  'Pig Latin'),
+              ('eo',      'EO',   'Esperanto')
+            ] %}
+            <button class="lang-option{{ ' lang-current' if _lc == code }}"
+                    onclick="doSetLang('{{ code }}','{{ request.url.path }}')"
+                    role="option" aria-selected="{{ 'true' if _lc == code else 'false' }}">
+              <img src="/static/img/flags/{{ code }}.png" class="lang-flag" width="20" height="14" alt="{{ label }}">
+              <span class="lang-opt-code">{{ label }}</span>
+              <span class="lang-opt-name">{{ name }}</span>
+            </button>
+            {%- endfor %}
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -532,6 +551,31 @@
   <script src="/static/js/rewind.js?v=1"></script>
   <script src="/static/js/quests.js?v=1"></script>
   <script>
+  function toggleLangPicker(e) {
+    e.stopPropagation();
+    var picker = document.getElementById('lang-picker');
+    if (!picker) return;
+    var open = picker.classList.toggle('open');
+    picker.querySelector('.lang-picker-btn').setAttribute('aria-expanded', String(open));
+  }
+  function doSetLang(v, p) {
+    document.cookie = 'lang=' + v + ';path=/;max-age=31536000;samesite=lax';
+    location.href = v === 'en' ? p : '/' + v + (p === '/' ? '' : p);
+  }
+  // Close lang picker when clicking anywhere outside it
+  document.addEventListener('click', function() {
+    var picker = document.getElementById('lang-picker');
+    if (picker && picker.classList.contains('open')) {
+      picker.classList.remove('open');
+      picker.querySelector('.lang-picker-btn').setAttribute('aria-expanded', 'false');
+    }
+  });
+  // Prevent touch events inside the picker from bubbling to the close handler
+  (function() {
+    var lp = document.getElementById('lang-picker');
+    if (lp) lp.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: true });
+  })();
+
   function togglePvpMenu(e) {
     e.stopPropagation();
     const group  = e.currentTarget.closest('.nav-pvp-group');
