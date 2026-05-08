@@ -15,6 +15,10 @@ List of active features
 
 ──────────────────────────────────────────────────────────────────────────────
 
+F96 Numbers Match
+
+──────────────────────────────────────────────────────────────────────────────
+
 F95 Web: Evil NG minesweeper mode
   - Route: /evil
   - Board: 20 rows × 30 cols, 130 mines (always No-Guess only, no toggle)
