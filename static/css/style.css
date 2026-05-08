@@ -49,8 +49,6 @@ header {
 }
 
 .header-inner {
-  max-width: 1200px;
-  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4745,7 +4743,7 @@ html[data-skin="classic"] .hamburger-btn { display: none !important; }
 }
 
 /* All other skins: show mega-nav */
-html:not([data-skin="classic"]) .mega-nav    { display: flex; align-items: center; gap: 0.25rem; flex: 1; }
+html:not([data-skin="classic"]) .mega-nav    { display: flex; align-items: center; gap: 0.25rem; flex: 1; overflow: visible; min-width: 0; }
 @media (min-width: 861px) { html:not([data-skin="classic"]) .mega-nav { padding-left: 1rem; } }
 
 .mega-group {
@@ -4784,6 +4782,8 @@ html:not([data-skin="classic"]) .mega-nav    { display: flex; align-items: cente
   gap: 1.5rem;
   justify-content: flex-start;
   flex-wrap: wrap;
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
 }
 .mega-group.open .mega-panel { display: flex; }
 
