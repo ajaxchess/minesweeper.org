@@ -349,6 +349,10 @@ async def apple_app_site_association():
 async def domain_verification():
     return PlainTextResponse("a5d8abb456594f019c6c89a7d9420d5c")
 
+@app.get("/d6f2e20789ed4fd28401bd6975a9fb56.txt", include_in_schema=False)
+async def domain_verification_2():
+    return PlainTextResponse("d6f2e20789ed4fd28401bd6975a9fb56")
+
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
