@@ -1,0 +1,11 @@
+{
+  "host": "minesweeper.org",
+  "key": "d6f2e20789ed4fd28401bd6975a9fb56",
+  "keyLocation": "https://minesweeper.org/d6f2e20789ed4fd28401bd6975a9fb56.txt",
+  "urlList": [
+    "https://minesweeper.org/",
+    "https://minesweeper.org/about",
+    "https://minesweeper.org/nonosweeper",
+    "https://minesweeper.org/tametsi"
+  ]
+}
