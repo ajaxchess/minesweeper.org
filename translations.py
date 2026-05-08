@@ -305,6 +305,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_how_to_play":       "Learn Minesweeper rules & tips",
         "nav_sub_blog":              "News, strategy, and updates",
         "nav_sub_links":             "Related sites and resources",
+        # Evil NG nav entry
+        "nav_evil_ng":     "Evil NG",
+        "nav_sub_evil_ng": "20×30 · 130 mines · No-Guess",
+        # Theme switcher label
+        "nav_theme":       "Theme",
+        # Seasonal / holiday banners (text shown in header when active)
+        "banner_solstice":             "Tentaizu theme is in celebration of the solstice!",
+        "banner_equinox":              "In celebration of the Equinox, please enjoy the Tentaizu theme",
+        "banner_diana_birthday":       "Happy birthday, Diana, Princess of Wales!",
+        "banner_mexico_cinco":         "¡Feliz Cinco de Mayo! 🇲🇽",
+        "banner_mexico_independence":  "¡Viva México! 🇲🇽 Happy Mexican Independence Day!",
         # Game UI controls
         "game_no_guess_btn":   "No Guess",
         "game_no_guess_title": "Generate boards that require no guessing",
@@ -319,6 +330,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "footer_contact": "Contact",
         "footer_privacy": "Privacy Policy",
         "footer_terms":   "Terms of Service",
+        "footer_history": "History",
         # JSON-LD structured data
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",

@@ -228,6 +228,8 @@ templates.env.globals["solstice_banner"]       = site_settings.solstice_banner
 templates.env.globals["equinox_banner"]        = site_settings.equinox_banner
 templates.env.globals["diana_birthday_banner"] = site_settings.diana_birthday_banner
 templates.env.globals["mexico_banner"]         = site_settings.mexico_banner
+templates.env.globals["is_mexico_cinco"]       = site_settings.is_mexico_cinco
+templates.env.globals["is_mexico_independence"] = site_settings.is_mexico_independence
 templates.env.globals["page_localized"]        = True  # default; English-only routes override to False
 
 def _autolink(text):

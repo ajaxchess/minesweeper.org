@@ -18,7 +18,7 @@
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=38" />
+  <link rel="stylesheet" href="/static/css/style.css?v=39" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     // Resolve the "default" auto-theme: special-day override takes priority,
@@ -168,7 +168,7 @@
         <a href="/intermediate" class="{% if mode == 'intermediate' %}active{% endif %}">{{ t.nav_intermediate }}</a>
         <a href="/expert" class="{% if mode == 'expert' %}active{% endif %}">{{ t.nav_expert }}</a>
         <a href="/custom" class="{% if mode == 'custom' %}active{% endif %}">{{ t.nav_custom }}</a>
-        <a href="/evil" class="{% if mode == 'evil' %}active{% endif %}">💀 Evil NG</a>
+        <a href="/evil" class="{% if mode == 'evil' %}active{% endif %}">💀 {{ t.nav_evil_ng }}</a>
         <a href="/leaderboard" class="{% if mode == 'leaderboard' %}active{% endif %}">🏆 {{ t.nav_leaderboard }}</a>
         <a href="/rush" class="{% if mode == 'rush' %}active{% endif %}">⚡ {{ t.nav_rush }}</a>
         <div class="nav-pvp-group{% if mode in ['duel', 'pvp', 'pvp-leaderboard', 'pvp-rankings'] %} open{% endif %}">
@@ -224,7 +224,7 @@
               </a>
               <a href="/evil" class="mega-card {% if mode=='evil' %}active{% endif %}">
                 <span class="mega-icon">💀</span>
-                <span class="mega-card-text"><strong>Evil NG</strong><span>20×30 · 130 mines · No-Guess</span></span>
+                <span class="mega-card-text"><strong>{{ t.nav_evil_ng }}</strong><span>{{ t.nav_sub_evil_ng }}</span></span>
               </a>
             </div>
             <div class="mega-col">
@@ -392,7 +392,7 @@
               </a>
             </div>
             <div class="mega-col mega-col-themes">
-              <div class="mega-theme-label">Theme</div>
+              <div class="mega-theme-label">{{ t.nav_theme }}</div>
               <div class="mega-theme-btns">
                 <button class="mega-theme-btn" onclick="setTheme('default')"    title="Auto (day/night)">🌓</button>
                 <button class="mega-theme-btn" onclick="setTheme('dark')"       title="Dark">🌑</button>
@@ -463,16 +463,18 @@
   </header>
 
   {% if solstice_banner() %}
-  <div class="solstice-banner">⭐ {{ solstice_banner() }} ⭐</div>
+  <div class="solstice-banner">⭐ {{ t.banner_solstice }} ⭐</div>
   {% endif %}
   {% if equinox_banner() %}
-  <div class="solstice-banner">🌍 {{ equinox_banner() }} 🌍</div>
+  <div class="solstice-banner">🌍 {{ t.banner_equinox }} 🌍</div>
   {% endif %}
   {% if diana_birthday_banner() %}
-  <div class="diana-birthday-banner">👑 {{ diana_birthday_banner() }} 👑</div>
+  <div class="diana-birthday-banner">👑 {{ t.banner_diana_birthday }} 👑</div>
   {% endif %}
-  {% if mexico_banner() %}
-  <div class="mexico-banner">🪅 {{ mexico_banner() }} 🪅</div>
+  {% if is_mexico_cinco() %}
+  <div class="mexico-banner">🪅 {{ t.banner_mexico_cinco }} 🪅</div>
+  {% elif is_mexico_independence() %}
+  <div class="mexico-banner">🪅 {{ t.banner_mexico_independence }} 🪅</div>
   {% endif %}
 
 
@@ -492,7 +494,7 @@
   </div>
 
   <footer>
-    <p>© 2026 Minesweeper.org &mdash; {{ t.footer | safe }} &mdash; <a href="/about">{{ t.footer_about }}</a> &mdash; <a href="/history">History</a> &mdash; <a href="/contact">{{ t.footer_contact }}</a> &mdash; <a href="/privacy">{{ t.footer_privacy }}</a> &mdash; <a href="/terms">{{ t.footer_terms }}</a> &mdash; <a href="/blog">{{ t.nav_blog }}</a> &mdash; <a href="/links">{{ t.nav_links_label }}</a> &mdash; <a href="https://www.linkedin.com/company/minesweeper-org" target="_blank" rel="noopener">LinkedIn</a></p>
+    <p>© 2026 Minesweeper.org &mdash; {{ t.footer | safe }} &mdash; <a href="/about">{{ t.footer_about }}</a> &mdash; <a href="/history">{{ t.footer_history }}</a> &mdash; <a href="/contact">{{ t.footer_contact }}</a> &mdash; <a href="/privacy">{{ t.footer_privacy }}</a> &mdash; <a href="/terms">{{ t.footer_terms }}</a> &mdash; <a href="/blog">{{ t.nav_blog }}</a> &mdash; <a href="/links">{{ t.nav_links_label }}</a> &mdash; <a href="https://www.linkedin.com/company/minesweeper-org" target="_blank" rel="noopener">LinkedIn</a></p>
   </footer>
 
   <!-- Translations available to all page scripts -->

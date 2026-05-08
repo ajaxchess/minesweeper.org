@@ -99,6 +99,18 @@ def is_mexico_day() -> bool:
     return (today.month == 5 and today.day == 5) or (today.month == 9 and today.day == 16)
 
 
+def is_mexico_cinco() -> bool:
+    """Return True on Cinco de Mayo (May 5)."""
+    today = date.today()
+    return today.month == 5 and today.day == 5
+
+
+def is_mexico_independence() -> bool:
+    """Return True on Mexican Independence Day (Sep 16)."""
+    today = date.today()
+    return today.month == 9 and today.day == 16
+
+
 def active_skin() -> str:
     """Return the skin that should be active today."""
     if is_mexico_day():
