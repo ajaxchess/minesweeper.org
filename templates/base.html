@@ -181,6 +181,7 @@
           </div>
         </div>
         <a href="/tentaizu" class="{% if mode == 'tentaizu' %}active{% endif %}">🔢 {{ t.nav_tentaizu }}</a>
+        <a href="/tametsi"  class="{% if mode == 'tametsi' %}active{% endif %}">🔀 {{ t.nav_tametsi }}</a>
         <a href="/mosaic"   class="{% if mode == 'mosaic' %}active{% endif %}">🧩 {{ t.nav_mosaic }}</a>
         <div class="nav-pvp-group">
           <button class="nav-pvp-toggle{% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or mode == 'replay' or mode == 'board-generator' %} active{% endif %}" onclick="togglePvpMenu(event)">🔄 {{ t.nav_variants }} ▾</button>
@@ -323,7 +324,7 @@
 
         <!-- Puzzles -->
         <div class="mega-group" id="mg-puzzles">
-          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')">🧩 {{ t.nav_puzzles }} ▾</button>
+          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')">🧩 {{ t.nav_puzzles }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/tentaizu" class="mega-card {% if mode=='tentaizu' %}active{% endif %}">
@@ -354,6 +355,10 @@
               </a>
             </div>
             <div class="mega-col">
+              <a href="/tametsi" class="mega-card {% if mode=='tametsi' %}active{% endif %}">
+                <span class="mega-icon">🔀</span>
+                <span class="mega-card-text"><strong>{{ t.nav_tametsi_daily }}</strong><span>{{ t.nav_sub_tametsi_daily }}</span></span>
+              </a>
               <a href="/other" class="mega-card {% if mode=='other' %}active{% endif %}">
                 <span class="mega-icon">🧩</span>
                 <span class="mega-card-text"><strong>{{ t.nav_other }}</strong><span>{{ t.nav_sub_other }}</span></span>
