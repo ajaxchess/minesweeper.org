@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
   <!-- ── Core game pages ──────────────────────────────────────────────────── -->
   <url>
@@ -444,5 +445,26 @@
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+
+
+  <!-- ── Localised variants (path-prefix i18n, real languages only) ─────────── -->
+  {% set _seo_pages = [
+    {"path": "",              "freq": "weekly",  "pri": "0.9"},
+    {"path": "/intermediate", "freq": "monthly", "pri": "0.8"},
+    {"path": "/expert",       "freq": "monthly", "pri": "0.8"},
+    {"path": "/how-to-play",  "freq": "monthly", "pri": "0.7"},
+    {"path": "/strategy",     "freq": "monthly", "pri": "0.7"},
+    {"path": "/about",        "freq": "monthly", "pri": "0.5"},
+  ] %}
+  {% for _lang in sitemap_langs %}
+    {% for _pg in _seo_pages %}
+  <url>
+    <loc>https://minesweeper.org/{{ _lang }}{{ _pg.path }}</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>{{ _pg.freq }}</changefreq>
+    <priority>{{ _pg.pri }}</priority>
+  </url>
+    {% endfor %}
+  {% endfor %}
 
 </urlset>

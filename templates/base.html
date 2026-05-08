@@ -7,11 +7,18 @@
   <title>{% block title %}Minesweeper — Play Free Online | minesweeper.org{% endblock %}</title>
   <meta name="description" content="{% block description %}Play free Minesweeper online — classic, no-guess, and real-time 1v1 duel modes. No download required.{% endblock %}">
   {% block keywords %}<meta name="keywords" content="minesweeper, minesweeper online, play minesweeper, free minesweeper, minesweeper game">{% endblock %}
-  <link rel="canonical" href="{% block canonical %}https://minesweeper.org/{% endblock %}">
+  {# Non-English: canonical uses the path-prefixed URL computed from the bare path + lang.
+     English: child templates continue to override {% block canonical %} unchanged. #}
+  {% if lang is defined and lang != "en" %}
+    {%- set _lp = "" if request.url.path == "/" else request.url.path -%}
+    <link rel="canonical" href="https://minesweeper.org/{{ lang }}{{ _lp }}">
+  {% else %}
+    <link rel="canonical" href="{% block canonical %}https://minesweeper.org/{% endblock %}">
+  {% endif %}
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=36" />
+  <link rel="stylesheet" href="/static/css/style.css?v=39" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     // Resolve the "default" auto-theme: special-day override takes priority,
@@ -51,30 +58,36 @@
     })();
   </script>
 
-  <!-- hreflang: tell Google about language variants -->
+  <!-- hreflang: path-prefix i18n (real BCP 47 languages only; fun langs excluded) -->
+  <!-- request.url.path is always the bare path after lang_prefix_middleware rewrites the scope -->
   {% set _path = request.url.path %}
+  {% set _sfx  = "" if _path == "/" else _path %}
   <link rel="alternate" hreflang="x-default" href="https://minesweeper.org{{ _path }}">
   <link rel="alternate" hreflang="en"      href="https://minesweeper.org{{ _path }}">
-  <link rel="alternate" hreflang="eo"      href="https://minesweeper.org{{ _path }}?lang=eo">
-  <link rel="alternate" hreflang="de"      href="https://minesweeper.org{{ _path }}?lang=de">
-  <link rel="alternate" hreflang="es"      href="https://minesweeper.org{{ _path }}?lang=es">
-  <link rel="alternate" hreflang="fr"      href="https://minesweeper.org{{ _path }}?lang=fr">
-  <link rel="alternate" hreflang="ko"      href="https://minesweeper.org{{ _path }}?lang=ko">
-  <link rel="alternate" hreflang="ja"      href="https://minesweeper.org{{ _path }}?lang=ja">
-  <link rel="alternate" hreflang="th"      href="https://minesweeper.org{{ _path }}?lang=th">
-  <link rel="alternate" hreflang="uk"      href="https://minesweeper.org{{ _path }}?lang=uk">
-  <link rel="alternate" hreflang="zh-Hans" href="https://minesweeper.org{{ _path }}?lang=zh">
-  <link rel="alternate" hreflang="zh-Hant" href="https://minesweeper.org{{ _path }}?lang=zh-hant">
-  <link rel="alternate" hreflang="pl"      href="https://minesweeper.org{{ _path }}?lang=pl">
-  <link rel="alternate" hreflang="tl"      href="https://minesweeper.org{{ _path }}?lang=tl">
-  <link rel="alternate" hreflang="ru"      href="https://minesweeper.org{{ _path }}?lang=ru">
-  <link rel="alternate" hreflang="pt"      href="https://minesweeper.org{{ _path }}?lang=pt">
-  <link rel="alternate" hreflang="it"      href="https://minesweeper.org{{ _path }}?lang=it">
+  <link rel="alternate" hreflang="de"      href="https://minesweeper.org/de{{ _sfx }}">
+  <link rel="alternate" hreflang="fr"      href="https://minesweeper.org/fr{{ _sfx }}">
+  <link rel="alternate" hreflang="es"      href="https://minesweeper.org/es{{ _sfx }}">
+  <link rel="alternate" hreflang="ko"      href="https://minesweeper.org/ko{{ _sfx }}">
+  <link rel="alternate" hreflang="ja"      href="https://minesweeper.org/ja{{ _sfx }}">
+  <link rel="alternate" hreflang="zh-Hans" href="https://minesweeper.org/zh{{ _sfx }}">
+  <link rel="alternate" hreflang="zh-Hant" href="https://minesweeper.org/zh-hant{{ _sfx }}">
+  <link rel="alternate" hreflang="ru"      href="https://minesweeper.org/ru{{ _sfx }}">
+  <link rel="alternate" hreflang="pt"      href="https://minesweeper.org/pt{{ _sfx }}">
+  <link rel="alternate" hreflang="it"      href="https://minesweeper.org/it{{ _sfx }}">
+  <link rel="alternate" hreflang="pl"      href="https://minesweeper.org/pl{{ _sfx }}">
+  <link rel="alternate" hreflang="uk"      href="https://minesweeper.org/uk{{ _sfx }}">
+  <link rel="alternate" hreflang="th"      href="https://minesweeper.org/th{{ _sfx }}">
+  <link rel="alternate" hreflang="tl"      href="https://minesweeper.org/tl{{ _sfx }}">
 
   <!-- Open Graph -->
   <meta property="og:type"         content="{% block og_type %}website{% endblock %}">
   <meta property="og:site_name"    content="minesweeper.org">
-  <meta property="og:url"          content="{% block og_url %}https://minesweeper.org/{% endblock %}">
+  {% if lang is defined and lang != "en" %}
+    {%- set _lp = "" if request.url.path == "/" else request.url.path -%}
+    <meta property="og:url" content="https://minesweeper.org/{{ lang }}{{ _lp }}">
+  {% else %}
+    <meta property="og:url" content="{% block og_url %}https://minesweeper.org/{% endblock %}">
+  {% endif %}
   <meta property="og:title"        content="{% block og_title %}Minesweeper — Play Free Online{% endblock %}">
   <meta property="og:description"  content="{% block og_description %}Play classic Minesweeper or challenge a friend to a real-time 1v1 duel. Free, no download required.{% endblock %}">
   <meta property="og:image"        content="{% block og_image %}https://minesweeper.org/static/img/og-default.png{% endblock %}">
@@ -107,7 +120,7 @@
   {% endblock %}
 
   <!-- BreadcrumbList structured data -->
-  {%- set _bc = get_breadcrumbs(request.url.path) %}
+  {%- set _bc = get_breadcrumbs(request.url.path, lang if lang is defined else "en") %}
   {%- if _bc %}
   <script type="application/ld+json">
   {
@@ -155,7 +168,7 @@
         <a href="/intermediate" class="{% if mode == 'intermediate' %}active{% endif %}">{{ t.nav_intermediate }}</a>
         <a href="/expert" class="{% if mode == 'expert' %}active{% endif %}">{{ t.nav_expert }}</a>
         <a href="/custom" class="{% if mode == 'custom' %}active{% endif %}">{{ t.nav_custom }}</a>
-        <a href="/evil" class="{% if mode == 'evil' %}active{% endif %}">💀 Evil NG</a>
+        <a href="/evil" class="{% if mode == 'evil' %}active{% endif %}">💀 {{ t.nav_evil_ng }}</a>
         <a href="/leaderboard" class="{% if mode == 'leaderboard' %}active{% endif %}">🏆 {{ t.nav_leaderboard }}</a>
         <a href="/rush" class="{% if mode == 'rush' %}active{% endif %}">⚡ {{ t.nav_rush }}</a>
         <div class="nav-pvp-group{% if mode in ['duel', 'pvp', 'pvp-leaderboard', 'pvp-rankings'] %} open{% endif %}">
@@ -168,6 +181,7 @@
           </div>
         </div>
         <a href="/tentaizu" class="{% if mode == 'tentaizu' %}active{% endif %}">🔢 {{ t.nav_tentaizu }}</a>
+        <a href="/tametsi"  class="{% if mode == 'tametsi' %}active{% endif %}">🔀 {{ t.nav_tametsi }}</a>
         <a href="/mosaic"   class="{% if mode == 'mosaic' %}active{% endif %}">🧩 {{ t.nav_mosaic }}</a>
         <div class="nav-pvp-group">
           <button class="nav-pvp-toggle{% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or mode == 'replay' or mode == 'board-generator' %} active{% endif %}" onclick="togglePvpMenu(event)">🔄 {{ t.nav_variants }} ▾</button>
@@ -210,7 +224,7 @@
               </a>
               <a href="/evil" class="mega-card {% if mode=='evil' %}active{% endif %}">
                 <span class="mega-icon">💀</span>
-                <span class="mega-card-text"><strong>Evil NG</strong><span>20×30 · 130 mines · No-Guess</span></span>
+                <span class="mega-card-text"><strong>{{ t.nav_evil_ng }}</strong><span>{{ t.nav_sub_evil_ng }}</span></span>
               </a>
             </div>
             <div class="mega-col">
@@ -310,7 +324,7 @@
 
         <!-- Puzzles -->
         <div class="mega-group" id="mg-puzzles">
-          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')">🧩 {{ t.nav_puzzles }} ▾</button>
+          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')">🧩 {{ t.nav_puzzles }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/tentaizu" class="mega-card {% if mode=='tentaizu' %}active{% endif %}">
@@ -341,6 +355,10 @@
               </a>
             </div>
             <div class="mega-col">
+              <a href="/tametsi" class="mega-card {% if mode=='tametsi' %}active{% endif %}">
+                <span class="mega-icon">🔀</span>
+                <span class="mega-card-text"><strong>{{ t.nav_tametsi_daily }}</strong><span>{{ t.nav_sub_tametsi_daily }}</span></span>
+              </a>
               <a href="/other" class="mega-card {% if mode=='other' %}active{% endif %}">
                 <span class="mega-icon">🧩</span>
                 <span class="mega-card-text"><strong>{{ t.nav_other }}</strong><span>{{ t.nav_sub_other }}</span></span>
@@ -374,7 +392,7 @@
               </a>
             </div>
             <div class="mega-col mega-col-themes">
-              <div class="mega-theme-label">Theme</div>
+              <div class="mega-theme-label">{{ t.nav_theme }}</div>
               <div class="mega-theme-btns">
                 <button class="mega-theme-btn" onclick="setTheme('default')"    title="Auto (day/night)">🌓</button>
                 <button class="mega-theme-btn" onclick="setTheme('dark')"       title="Dark">🌑</button>
@@ -397,45 +415,66 @@
           <a href="/profile" class="auth-name">{{ user.name.split()[0] }}</a>
           <a href="/auth/logout" class="auth-btn logout-btn">{{ t.auth_sign_out }}</a>
         {% else %}
-          <a href="/auth/login?next={{ request.url.path }}" class="auth-btn login-btn">
+          <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="auth-btn login-btn">
             <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.93 6.36h-1.65c-.19 0-.4.25-.4.59v1.19h2.05l-.27 2.08H14.88V18h-2.15v-5.78h-1.4v-2.08h1.4v-1.37C12.73 7.47 13.83 6 15.72 6c.86 0 1.21.06 1.21.06v1.3z"/></svg>
             {{ t.auth_sign_in }}
           </a>
         {% endif %}
-        <select class="lang-select" onchange="window.location='/set-lang?lang='+this.value">
-          <option value="en"      {% if lang == 'en'      %}selected{% endif %}>EN</option>
-          <option value="de"      {% if lang == 'de'      %}selected{% endif %}>DE</option>
-          <option value="fr"      {% if lang == 'fr'      %}selected{% endif %}>FR</option>
-          <option value="es"      {% if lang == 'es'      %}selected{% endif %}>ES</option>
-          <option value="pt"      {% if lang == 'pt'      %}selected{% endif %}>PT</option>
-          <option value="it"      {% if lang == 'it'      %}selected{% endif %}>IT</option>
-          <option value="pl"      {% if lang == 'pl'      %}selected{% endif %}>PL</option>
-          <option value="ru"      {% if lang == 'ru'      %}selected{% endif %}>RU</option>
-          <option value="uk"      {% if lang == 'uk'      %}selected{% endif %}>UK</option>
-          <option value="zh"      {% if lang == 'zh'      %}selected{% endif %}>ZH</option>
-          <option value="zh-hant" {% if lang == 'zh-hant' %}selected{% endif %}>繁體</option>
-          <option value="ja"      {% if lang == 'ja'      %}selected{% endif %}>JA</option>
-          <option value="ko"      {% if lang == 'ko'      %}selected{% endif %}>KO</option>
-          <option value="th"      {% if lang == 'th'      %}selected{% endif %}>TH</option>
-          <option value="tl"      {% if lang == 'tl'      %}selected{% endif %}>TL</option>
-          <option value="pgl"     {% if lang == 'pgl'     %}selected{% endif %}>PGL</option>
-          <option value="eo"      {% if lang == 'eo'      %}selected{% endif %}>EO</option>
-        </select>
+        {%- set _lc = lang if lang is defined else 'en' -%}
+        {%- set _ll = {'en':'EN','de':'DE','fr':'FR','es':'ES','pt':'PT','it':'IT','pl':'PL','ru':'RU','uk':'UK','zh':'ZH','zh-hant':'繁體','ja':'JA','ko':'KO','th':'TH','tl':'TL','pgl':'PGL','eo':'EO'} -%}
+        <div class="lang-picker" id="lang-picker">
+          <button class="lang-picker-btn" type="button" onclick="toggleLangPicker(event)" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">
+            <img src="/static/img/flags/{{ _lc }}.png" class="lang-flag" width="20" height="14" alt="{{ _lc }}">
+            <span>{{ _ll.get(_lc, _lc | upper) }}</span>
+            <span class="lang-caret">▾</span>
+          </button>
+          <div class="lang-picker-menu" role="listbox">
+            {%- for code, label, name in [
+              ('en',      'EN',   'English'),
+              ('de',      'DE',   'Deutsch'),
+              ('fr',      'FR',   'Français'),
+              ('es',      'ES',   'Español'),
+              ('pt',      'PT',   'Português'),
+              ('it',      'IT',   'Italiano'),
+              ('pl',      'PL',   'Polski'),
+              ('ru',      'RU',   'Русский'),
+              ('uk',      'UK',   'Українська'),
+              ('zh',      'ZH',   '中文(简)'),
+              ('zh-hant', '繁體',  '中文(繁)'),
+              ('ja',      'JA',   '日本語'),
+              ('ko',      'KO',   '한국어'),
+              ('th',      'TH',   'ไทย'),
+              ('tl',      'TL',   'Filipino'),
+              ('pgl',     'PGL',  'Pig Latin'),
+              ('eo',      'EO',   'Esperanto')
+            ] %}
+            <button class="lang-option{{ ' lang-current' if _lc == code }}"
+                    onclick="doSetLang('{{ code }}','{{ request.url.path }}')"
+                    role="option" aria-selected="{{ 'true' if _lc == code else 'false' }}">
+              <img src="/static/img/flags/{{ code }}.png" class="lang-flag" width="20" height="14" alt="{{ label }}">
+              <span class="lang-opt-code">{{ label }}</span>
+              <span class="lang-opt-name">{{ name }}</span>
+            </button>
+            {%- endfor %}
+          </div>
+        </div>
       </div>
     </div>
   </header>
 
   {% if solstice_banner() %}
-  <div class="solstice-banner">⭐ {{ solstice_banner() }} ⭐</div>
+  <div class="solstice-banner">⭐ {{ t.banner_solstice }} ⭐</div>
   {% endif %}
   {% if equinox_banner() %}
-  <div class="solstice-banner">🌍 {{ equinox_banner() }} 🌍</div>
+  <div class="solstice-banner">🌍 {{ t.banner_equinox }} 🌍</div>
   {% endif %}
   {% if diana_birthday_banner() %}
-  <div class="diana-birthday-banner">👑 {{ diana_birthday_banner() }} 👑</div>
+  <div class="diana-birthday-banner">👑 {{ t.banner_diana_birthday }} 👑</div>
   {% endif %}
-  {% if mexico_banner() %}
-  <div class="mexico-banner">🪅 {{ mexico_banner() }} 🪅</div>
+  {% if is_mexico_cinco() %}
+  <div class="mexico-banner">🪅 {{ t.banner_mexico_cinco }} 🪅</div>
+  {% elif is_mexico_independence() %}
+  <div class="mexico-banner">🪅 {{ t.banner_mexico_independence }} 🪅</div>
   {% endif %}
 
 
@@ -455,7 +494,7 @@
   </div>
 
   <footer>
-    <p>© 2026 Minesweeper.org &mdash; {{ t.footer | safe }} &mdash; <a href="/about">{{ t.footer_about }}</a> &mdash; <a href="/history">History</a> &mdash; <a href="/contact">{{ t.footer_contact }}</a> &mdash; <a href="/privacy">{{ t.footer_privacy }}</a> &mdash; <a href="/terms">{{ t.footer_terms }}</a> &mdash; <a href="/blog">{{ t.nav_blog }}</a> &mdash; <a href="/links">{{ t.nav_links_label }}</a> &mdash; <a href="https://www.linkedin.com/company/minesweeper-org" target="_blank" rel="noopener">LinkedIn</a></p>
+    <p>© 2026 Minesweeper.org &mdash; {{ t.footer | safe }} &mdash; <a href="/about">{{ t.footer_about }}</a> &mdash; <a href="/history">{{ t.footer_history }}</a> &mdash; <a href="/contact">{{ t.footer_contact }}</a> &mdash; <a href="/privacy">{{ t.footer_privacy }}</a> &mdash; <a href="/terms">{{ t.footer_terms }}</a> &mdash; <a href="/blog">{{ t.nav_blog }}</a> &mdash; <a href="/links">{{ t.nav_links_label }}</a> &mdash; <a href="https://www.linkedin.com/company/minesweeper-org" target="_blank" rel="noopener">LinkedIn</a></p>
   </footer>
 
   <!-- Translations available to all page scripts -->
@@ -519,6 +558,31 @@
   <script src="/static/js/rewind.js?v=1"></script>
   <script src="/static/js/quests.js?v=1"></script>
   <script>
+  function toggleLangPicker(e) {
+    e.stopPropagation();
+    var picker = document.getElementById('lang-picker');
+    if (!picker) return;
+    var open = picker.classList.toggle('open');
+    picker.querySelector('.lang-picker-btn').setAttribute('aria-expanded', String(open));
+  }
+  function doSetLang(v, p) {
+    document.cookie = 'lang=' + v + ';path=/;max-age=31536000;samesite=lax';
+    location.href = v === 'en' ? p : '/' + v + (p === '/' ? '' : p);
+  }
+  // Close lang picker when clicking anywhere outside it
+  document.addEventListener('click', function() {
+    var picker = document.getElementById('lang-picker');
+    if (picker && picker.classList.contains('open')) {
+      picker.classList.remove('open');
+      picker.querySelector('.lang-picker-btn').setAttribute('aria-expanded', 'false');
+    }
+  });
+  // Prevent touch events inside the picker from bubbling to the close handler
+  (function() {
+    var lp = document.getElementById('lang-picker');
+    if (lp) lp.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: true });
+  })();
+
   function togglePvpMenu(e) {
     e.stopPropagation();
     const group  = e.currentTarget.closest('.nav-pvp-group');
@@ -558,10 +622,14 @@
     document.querySelectorAll('.mega-group.open').forEach(function(g) { g.classList.remove('open'); });
     if (!isOpen) {
       grp.classList.add('open');
-      var header = document.querySelector('header');
-      var panel  = grp.querySelector('.mega-panel');
-      if (header && panel) {
-        panel.style.top = header.getBoundingClientRect().bottom + 'px';
+      // Classic skin on desktop uses position:static accordion panels — no top-offset needed
+      var classicDesktop = document.documentElement.dataset.skin === 'classic' && window.innerWidth > 860;
+      if (!classicDesktop) {
+        var header = document.querySelector('header');
+        var panel  = grp.querySelector('.mega-panel');
+        if (header && panel) {
+          panel.style.top = header.getBoundingClientRect().bottom + 'px';
+        }
       }
     }
   }

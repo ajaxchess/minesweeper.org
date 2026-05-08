@@ -266,6 +266,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_tentaizu_daily":   "Tentaizu Daily",
         "nav_tentaizu_easy":    "Tentaizu Easy",
         "nav_tentaizu_howto":   "How to Play Tentaizu",
+        "nav_tametsi":          "Tametsi",
+        "nav_tametsi_daily":    "Tametsi Daily",
         "nav_mosaic":           "Mosaic",
         "nav_mosaic_daily":     "Mosaic Daily",
         "nav_mosaic_easy":      "Mosaic Easy",
@@ -291,6 +293,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_tentaizu_daily":    "7\u00d77 pure-logic daily puzzle",
         "nav_sub_tentaizu_easy":     "5\u00d75 beginner mode, 6 mines",
         "nav_sub_tentaizu_howto":    "Rules, tips & strategy",
+        "nav_sub_tametsi_daily": "Nonogram × Minesweeper daily puzzle",
         "nav_sub_mosaic_daily":      "9\u00d79 daily fill puzzle",
         "nav_sub_mosaic_easy":       "5\u00d75 beginner daily puzzle",
         "nav_sub_mosaic_howto":      "Rules, tips & strategy",
@@ -302,6 +305,17 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_how_to_play":       "Learn Minesweeper rules & tips",
         "nav_sub_blog":              "News, strategy, and updates",
         "nav_sub_links":             "Related sites and resources",
+        # Evil NG nav entry
+        "nav_evil_ng":     "Evil NG",
+        "nav_sub_evil_ng": "20×30 · 130 mines · No-Guess",
+        # Theme switcher label
+        "nav_theme":       "Theme",
+        # Seasonal / holiday banners (text shown in header when active)
+        "banner_solstice":             "Tentaizu theme is in celebration of the solstice!",
+        "banner_equinox":              "In celebration of the Equinox, please enjoy the Tentaizu theme",
+        "banner_diana_birthday":       "Happy birthday, Diana, Princess of Wales!",
+        "banner_mexico_cinco":         "¡Feliz Cinco de Mayo! 🇲🇽",
+        "banner_mexico_independence":  "¡Viva México! 🇲🇽 Happy Mexican Independence Day!",
         # Game UI controls
         "game_no_guess_btn":   "No Guess",
         "game_no_guess_title": "Generate boards that require no guessing",
@@ -316,6 +330,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "footer_contact": "Contact",
         "footer_privacy": "Privacy Policy",
         "footer_terms":   "Terms of Service",
+        "footer_history": "History",
         # JSON-LD structured data
         "meta_genre_strategy": "Strategy",
         "meta_genre_browser":  "Browser Game",
@@ -10638,16 +10653,38 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
 }
 
 
+# Languages with valid BCP 47 codes — used for hreflang alternate tags and sitemap.
+# Fun/novelty languages are intentionally excluded: unknown hreflang values cause
+# Google Search Console errors.
+REAL_LANGS: frozenset = frozenset({
+    "de", "fr", "es", "ko", "ja", "zh", "zh-hant",
+    "ru", "pt", "it", "pl", "uk", "th", "tl",
+})
+
+# Novelty languages — path-prefix routing works but no hreflang or sitemap entries.
+# Add new fun languages here as their translations are added.
+FUN_LANGS: frozenset = frozenset({
+    "eo", "pgl",
+})
+
+# All routeable language codes (real + fun + "en")
+SUPPORTED_LANGS: frozenset = frozenset(TRANSLATIONS.keys())
+
+
 def get_lang(request) -> str:
-    # 1. Query param takes precedence (enables direct language URLs for hreflang/SEO)
+    # 1. Path-prefix lang injected by lang_prefix_middleware (highest priority)
+    lang = getattr(request.state, "lang", None)
+    if lang and lang in TRANSLATIONS:
+        return lang
+    # 2. Query param — backward compat while ?lang= URLs are still indexed
     lang = request.query_params.get("lang")
     if lang and lang in TRANSLATIONS:
         return lang
-    # 2. Explicit cookie (user's own choice)
+    # 3. Explicit cookie (user's saved choice)
     lang = request.cookies.get("lang")
     if lang and lang in TRANSLATIONS:
         return lang
-    # 3. Subdomain default (e.g. de.minesweeper.org → "de")
+    # 4. Subdomain default (e.g. de.minesweeper.org → "de")
     host = request.headers.get("host", "").split(":")[0]
     parts = host.split(".")
     if len(parts) >= 3:

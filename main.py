@@ -30,7 +30,7 @@ from duelold_routes import duelold_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
 from starlette.config import Config
-from translations import get_lang, get_t
+from translations import get_lang, get_t, SUPPORTED_LANGS, REAL_LANGS
 import settings as site_settings
 import logging
 import psutil
@@ -228,6 +228,8 @@ templates.env.globals["solstice_banner"]       = site_settings.solstice_banner
 templates.env.globals["equinox_banner"]        = site_settings.equinox_banner
 templates.env.globals["diana_birthday_banner"] = site_settings.diana_birthday_banner
 templates.env.globals["mexico_banner"]         = site_settings.mexico_banner
+templates.env.globals["is_mexico_cinco"]       = site_settings.is_mexico_cinco
+templates.env.globals["is_mexico_independence"] = site_settings.is_mexico_independence
 templates.env.globals["page_localized"]        = True  # default; English-only routes override to False
 
 def _autolink(text):
@@ -255,6 +257,55 @@ templates.env.filters['autolink'] = _autolink
 from breadcrumbs import get_breadcrumbs as _get_breadcrumbs
 
 templates.env.globals["get_breadcrumbs"] = _get_breadcrumbs
+
+# ── Language-prefix middleware ────────────────────────────────────────────────
+# Registered last → runs outermost (first) for every request.
+# Responsibilities:
+#   1. Record the original path in request.state.original_path (used by the
+#      auth ?next= link in base.html so post-login returns to the lang URL).
+#   2. Redirect legacy ?lang=XX query-param URLs to path-based equivalents
+#      with 301 so search engines update their index entries.
+#   3. Strip the /{lang}/ prefix from the scope path so all existing route
+#      handlers see bare paths unchanged, then store the lang code in
+#      request.state.lang where get_lang() picks it up.
+@app.middleware("http")
+async def lang_prefix_middleware(request: Request, call_next):
+    path = request.scope["path"]  # read from scope to avoid caching request.url
+
+    _SKIP = ("/api/", "/static/", "/auth/", "/ws/", "/admin/",
+             "/health", "/set-lang", "/sitemap", "/robots",
+             "/favicon", "/ads.txt", "/app-ads.txt", "/.well-known/")
+    if any(path.startswith(p) for p in _SKIP):
+        return await call_next(request)
+
+    request.state.original_path = path  # pre-rewrite; used by auth ?next= link
+
+    # ── Redirect ?lang=XX → /{lang}/path (301) ────────────────────────────────
+    lang_param = request.query_params.get("lang")
+    if lang_param:
+        other_qs = "&".join(
+            f"{k}={v}" for k, v in request.query_params.items() if k != "lang"
+        )
+        if lang_param in SUPPORTED_LANGS and lang_param != "en":
+            new_path = f"/{lang_param}" + ("" if path == "/" else path)
+            redirect_url = new_path + (f"?{other_qs}" if other_qs else "")
+            return RedirectResponse(url=redirect_url, status_code=301)
+        elif lang_param == "en":
+            redirect_url = path + (f"?{other_qs}" if other_qs else "")
+            return RedirectResponse(url=redirect_url, status_code=301)
+
+    # ── Strip /{lang}/ prefix and rewrite scope path ──────────────────────────
+    parts = path.lstrip("/").split("/", 1)
+    if parts and parts[0] in SUPPORTED_LANGS and parts[0] != "en":
+        lang_code = parts[0]
+        bare_path = "/" + (parts[1] if len(parts) > 1 else "")
+        if bare_path == "//":
+            bare_path = "/"
+        request.state.lang = lang_code
+        request.scope["path"] = bare_path
+        request.scope["raw_path"] = bare_path.encode("utf-8")
+
+    return await call_next(request)
 
 
 @app.exception_handler(404)
@@ -345,7 +396,8 @@ async def health(request: Request):
 async def sitemap(request: Request):
     return templates.TemplateResponse(
         "sitemap.xml",
-        {"request": request, "today": date.today().isoformat(), "blog_posts": BLOG_POSTS},
+        {"request": request, "today": date.today().isoformat(),
+         "blog_posts": BLOG_POSTS, "sitemap_langs": sorted(REAL_LANGS)},
         media_type="application/xml",
     )
 
@@ -746,14 +798,22 @@ def shutdown():
 
 @app.get("/set-lang")
 async def set_lang(request: Request, lang: str = "en", next: Optional[str] = None):
-    if lang not in ("en", "eo", "de", "es", "th", "pgl", "uk", "fr", "ko", "ja", "zh", "zh-hant", "pl", "tl", "ru", "pt", "it"):
+    if lang not in SUPPORTED_LANGS:
         lang = "en"
-    # Use explicit next param, then referer, then home
     redirect_to = next or request.headers.get("referer", "/")
     # Safety: only allow relative URLs to prevent open redirect
-    # Block absolute (http/https) and protocol-relative (//evil.com) URLs
     if not redirect_to.startswith("/") or redirect_to.startswith("//"):
         redirect_to = "/"
+    # Strip any existing lang prefix so we never stack prefixes (e.g. /de/fr/about)
+    parts = redirect_to.lstrip("/").split("/", 1)
+    if parts and parts[0] in SUPPORTED_LANGS:
+        redirect_to = "/" + (parts[1] if len(parts) > 1 else "")
+        if not redirect_to:
+            redirect_to = "/"
+    # Apply the new lang prefix for non-English
+    if lang != "en":
+        bare = "" if redirect_to == "/" else redirect_to
+        redirect_to = f"/{lang}{bare}"
     response = RedirectResponse(url=redirect_to)
     response.set_cookie("lang", lang, max_age=365 * 24 * 3600, samesite="lax")
     return response
@@ -7242,6 +7302,33 @@ async def nonosweeper_permalink(request: Request, date_str: str):
     except Exception as e:
         print(f"[DEBUG] nonosweeper_permalink ERROR: {type(e).__name__}: {e}", flush=True)
         raise
+
+
+# ── Tametsi (F79-D) — HTML routes ────────────────────────────────────────────
+
+@app.get("/tametsi", response_class=HTMLResponse)
+async def tametsi_page(request: Request):
+    return templates.TemplateResponse("tametsi.html", {
+        "request":      request,
+        "mode":         "tametsi",
+        "user":         get_current_user(request),
+        "lang":         get_lang(request),
+        "t":            get_t(request),
+        "initial_hash": None,
+    })
+
+
+@app.get("/tametsi/board/{board_hash}", response_class=HTMLResponse)
+async def tametsi_board_page(request: Request, board_hash: str):
+    _hash = board_hash if re.match(r"^[0-9a-f]{64}$", board_hash) else None
+    return templates.TemplateResponse("tametsi.html", {
+        "request":      request,
+        "mode":         "tametsi",
+        "user":         get_current_user(request),
+        "lang":         get_lang(request),
+        "t":            get_t(request),
+        "initial_hash": _hash,
+    })
 
 
 # ── MVS static pages ──────────────────────────────────────────────────────────
