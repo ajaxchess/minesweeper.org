@@ -7284,16 +7284,23 @@ def get_numbers_match_scores(puzzle_date: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Invalid date format")
     q = db.query(NumbersMatchScore).filter(NumbersMatchScore.puzzle_date == puzzle_date)
     q = exclude_flagged(q, NumbersMatchScore, db)
-    top = (
+    all_rows = (
         q
         .order_by(
             NumbersMatchScore.score.desc(),
             NumbersMatchScore.time_secs.asc(),
             NumbersMatchScore.created_at.asc(),
         )
-        .limit(20)
         .all()
     )
+    seen, top = set(), []
+    for row in all_rows:
+        key = row.name.strip().lower()
+        if key not in seen:
+            seen.add(key)
+            top.append(row)
+        if len(top) >= 20:
+            break
     return _enrich_with_profiles(top, db)
 
 

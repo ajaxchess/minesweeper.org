@@ -317,6 +317,7 @@ function updateHUD() {
 
 // ── Win overlay ────────────────────────────────────────────────────────────────
 function showWinOverlay() {
+    document.getElementById('nm-grid').style.display = 'none';
     const ov = document.getElementById('nm-overlay');
     ov.style.display = 'flex';
 
