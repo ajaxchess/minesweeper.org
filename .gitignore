@@ -21,6 +21,7 @@ static/mvs/
 #External repos
 mobile/mjsmobile/
 mobile/leaguemobile/
+mobile/nmmobile/
 
 
 .DS_Store
