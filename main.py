@@ -3153,6 +3153,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "pref_on_win":   profile.pref_on_win   if profile else 'summary',
         "pref_on_lose":  profile.pref_on_lose  if profile else 'summary',
         "about_text":    profile.about_text    if profile else "",
+        "country":       profile.country       if profile else "",
         "fp_photos":     db.query(FifteenPuzzlePhoto).filter_by(user_email=user["email"]).order_by(FifteenPuzzlePhoto.created_at.desc()).all(),
         "fp_limit":      getattr(profile, "puzzle_storage_limit", 32) if profile else 32,
         "jigsaw_saves":  db.query(JigsawSavedGame).filter_by(user_email=user["email"]).order_by(JigsawSavedGame.updated_at.desc()).all(),
@@ -5463,6 +5464,33 @@ def update_about(payload: AboutTextUpdate, request: Request, db: Session = Depen
     if not profile:
         return JSONResponse({"error": "Profile not found"}, status_code=404)
     profile.about_text = payload.about_text.strip() or None
+    db.commit()
+    return {"ok": True}
+
+
+VALID_COUNTRIES = {
+    "alg", "arg", "aus", "aut", "bel", "bih", "bra", "can", "civ", "cod",
+    "col", "cpv", "cro", "cuw", "cze", "ecu", "egy", "eng", "esp", "fra",
+    "ger", "gha", "hai", "irn", "irq", "jor", "jpn", "kor", "ksa", "mar",
+    "mex", "ned", "nor", "nzl", "pan", "par", "por", "qat", "rsa", "sco",
+    "sen", "sui", "swe", "tun", "tur", "uru", "usa", "uzb",
+}
+
+class CountryUpdate(BaseModel):
+    country: Optional[str] = None
+
+@app.post("/api/profile/country")
+def update_country(payload: CountryUpdate, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+    if not profile:
+        return JSONResponse({"error": "Profile not found"}, status_code=404)
+    code = (payload.country or "").strip().lower() or None
+    if code and code not in VALID_COUNTRIES:
+        return JSONResponse({"error": "Invalid country code"}, status_code=400)
+    profile.country = code
     db.commit()
     return {"ok": True}
 

@@ -710,6 +710,7 @@ class UserProfile(Base):
     pref_on_win   = Column(String(16), default='summary', nullable=False)
     pref_on_lose  = Column(String(16), default='summary', nullable=False)
     about_text    = Column(String(5000), nullable=True)
+    country       = Column(String(8),    nullable=True)
     pvp_elo       = Column(Integer, default=1200, nullable=False)
     created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -1342,6 +1343,8 @@ def _apply_migrations():
         # On-win / on-lose preferences (added 2026-05-03)
         ("user_profiles",         "pref_on_win",  "VARCHAR(16) NOT NULL DEFAULT 'summary'"),
         ("user_profiles",         "pref_on_lose", "VARCHAR(16) NOT NULL DEFAULT 'summary'"),
+        # Country selection using FIFA codes (added 2026-05-08)
+        ("user_profiles",         "country",      "VARCHAR(8) NULL"),
         # game_replays — Phase 1 analytics instrumentation (added 2026-05-05)
         ("game_replays", "outcome",          "VARCHAR(16) NOT NULL DEFAULT 'win'"),
         ("game_replays", "bbbv",             "INT NULL"),
