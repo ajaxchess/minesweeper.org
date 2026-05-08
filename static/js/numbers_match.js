@@ -55,14 +55,7 @@ function boardNumber(dateStr) {
 }
 
 function initialRows(boardNum) {
-    if (boardNum === 1)  return 3;
-    if (boardNum <= 3)   return 4;
-    if (boardNum <= 6)   return 5;
-    if (boardNum <= 10)  return 6;
-    if (boardNum <= 15)  return 7;
-    if (boardNum <= 21)  return 8;
-    if (boardNum <= 28)  return 9;
-    return 10 + Math.floor((boardNum - 29) / 7);
+    return 4;
 }
 
 function generateBoardClient(seed, rows) {
@@ -162,6 +155,17 @@ function countRowClearBonus(prevBoard) {
     return bonus;
 }
 
+// ── Row collapse ──────────────────────────────────────────────────────────────
+function collapseEmptyRows() {
+    const newBoard = [];
+    for (let r = 0; r < G.rows; r++) {
+        const row = G.board.slice(r * NM_COLS, (r + 1) * NM_COLS);
+        if (row.some(v => v !== 0)) newBoard.push(...row);
+    }
+    G.rows  = newBoard.length / NM_COLS;
+    G.board = newBoard;
+}
+
 // ── Undo history ───────────────────────────────────────────────────────────────
 function saveHistory() {
     G.history.push({
@@ -195,6 +199,7 @@ function doMatch(i, j) {
         showWinOverlay();
         return;
     }
+    collapseEmptyRows();
     renderBoard();
     updateHUD();
 }
