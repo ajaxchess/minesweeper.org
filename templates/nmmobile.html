@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Numbers Match — minesweeper.org</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/css/style.css?v=46">
+
+  <!-- Skin detection (mirrors base.html logic) -->
+  <script>
+    window.resolveDefaultSkin = function() {
+      var h = new Date().getHours();
+      return (h >= 6 && h < 20) ? 'light' : 'dark';
+    };
+    (function(){
+      var stored = localStorage.getItem('skin');
+      var skin;
+      if (!stored || stored === 'default') {
+        skin = window.resolveDefaultSkin();
+      } else if (stored === 'flower' || stored === 'flower-light') {
+        skin = (new Date().getHours() >= 6 && new Date().getHours() < 20) ? 'flower-light' : 'flower';
+      } else {
+        skin = stored;
+      }
+      document.documentElement.dataset.skin = (skin === 'diana' ? 'classic' : skin);
+    })();
+  </script>
+
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 0; background: var(--bg); color: var(--text); }
+
+    .nm-mob-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.82rem;
+    }
+    .nm-mob-bar a { color: var(--text-dim); text-decoration: none; }
+    .nm-mob-bar strong { color: var(--text); font-size: 0.88rem; }
+
+    .nm-mob-wrap {
+      padding: 10px 10px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .nm-mob-wrap .game-info  { max-width: 100%; width: 100%; }
+    .nm-mob-wrap .nm-actions { max-width: 100%; width: 100%; }
+    .nm-mob-wrap #nm-board-wrap,
+    .nm-mob-wrap #nm-grid,
+    .nm-mob-wrap #nm-overlay  { max-width: 100%; }
+    .nm-mob-wrap #nm-lb-section { width: 100%; }
+
+    /* Slightly larger tap targets for cell text */
+    .nm-mob-wrap .nm-cell { font-size: clamp(0.85rem, 4.5vw, 1.15rem); }
+
+    /* Mode row always wraps */
+    .nm-mob-wrap .mode-row {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="nm-mob-bar">
+    <a href="/numbers-match">← Full Site</a>
+    <strong>Numbers Match</strong>
+    <span></span>
+  </div>
+
+  <div class="nm-mob-wrap">
+
+    <!-- Info panel -->
+    <div class="game-info">
+      <div class="mode-row">
+        <span id="nm-mode-label" class="mode-badge">📅 Daily Puzzle</span>
+        <div class="tz-mode-btns">
+          <button id="nm-daily-btn" class="tz-mode-btn">📅 Daily</button>
+          <button class="tz-mode-btn nm-diff-btn" data-rows="4">Easy</button>
+          <button class="tz-mode-btn nm-diff-btn" data-rows="8">Medium</button>
+          <button class="tz-mode-btn nm-diff-btn" data-rows="16">Hard</button>
+          <button class="tz-mode-btn nm-diff-btn" data-rows="32">Expert</button>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat" title="Score">
+          <span class="stat-icon">⭐</span>
+          <span class="stat-value" id="nm-score">0</span>
+        </div>
+        <div class="stat" title="Time elapsed">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="nm-timer">0:00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="nm-actions">
+      <button id="nm-undo-btn" title="Undo last match (3 per game)">↩ 3</button>
+      <button id="nm-hint-btn" title="Highlight a valid pair (9 per game)">💡 9</button>
+      <button id="nm-add-btn" title="Append remaining numbers to the bottom">+ Add Lines</button>
+    </div>
+
+    <!-- Board -->
+    <div id="nm-board-wrap">
+      <div id="nm-board"
+           data-today="{{ today }}"
+           data-real-today="{{ real_today }}"
+           data-username="{{ user.display_name if user else '' }}">
+        <div id="nm-loading">Loading puzzle…</div>
+        <div id="nm-grid" style="display:none"></div>
+      </div>
+
+      <!-- Win card -->
+      <div id="nm-overlay">
+        <div class="nm-overlay-title">🎉 Board Cleared!</div>
+        <div class="nm-overlay-result">
+          Score <strong id="nm-win-score">0</strong>
+          &nbsp;·&nbsp;
+          Time <strong id="nm-win-time">0:00</strong>
+        </div>
+        <div id="nm-score-form" style="display:none">
+          <input id="nm-name-input" type="text" maxlength="32"
+                 placeholder="Your name" autocomplete="nickname">
+          <button id="nm-save-btn">Save Score</button>
+          <div id="nm-score-msg"></div>
+        </div>
+        <div class="nm-overlay-btns">
+          <button id="nm-overlay-daily">📅 New Daily</button>
+          <button id="nm-overlay-random">🎲 Play Again</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div id="nm-lb-section" style="display:none">
+      <div class="nm-lb-title">🏆 Today's Leaderboard</div>
+      <div id="nm-lb-content">
+        <div class="lb-loading">Loading…</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/static/js/numbers_match.js?v=6"></script>
+</body>
+</html>

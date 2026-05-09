@@ -2873,6 +2873,16 @@ async def mobile_ios_landing(request: Request):
 async def mobile_android_landing(request: Request):
     return templates.TemplateResponse("mobile_android.html", {"request": request})
 
+@app.get("/mobile/nmmobile", response_class=HTMLResponse)
+async def mobile_nmmobile(request: Request):
+    real_today = date.today().isoformat()
+    return templates.TemplateResponse("nmmobile.html", {
+        "request":    request,
+        "user":       get_current_user(request),
+        "today":      real_today,
+        "real_today": real_today,
+    })
+
 
 # ── Blog ──────────────────────────────────────────────────────────────────────
 
