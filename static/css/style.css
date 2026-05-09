@@ -6616,6 +6616,25 @@ html[data-skin="light"] .lb-table .top-1 { background: rgba(255,215,0,0.12); }
 html[data-skin="light"] .lb-table .top-2 { background: rgba(192,192,192,0.14); }
 html[data-skin="light"] .lb-table .top-3 { background: rgba(205,127,50,0.10); }
 
+/* Light mode — Quests page: dark boxes on white page background */
+html[data-skin="light"] .quest-section {
+  background: #1e2840;
+  border-color: #3a5278;
+}
+html[data-skin="light"] .quest-section-hdr h2 { color: #e0e0e0; }
+html[data-skin="light"] .quest-section-meta,
+html[data-skin="light"] .quest-section-note  { color: #8892a4; }
+html[data-skin="light"] .quest-card,
+html[data-skin="light"] .q-reward-card {
+  background: #1a1a2e;
+  border-color: #3a5278;
+}
+html[data-skin="light"] .quest-card-label,
+html[data-skin="light"] .q-reward-label { color: #e0e0e0; }
+html[data-skin="light"] .quest-progress-bar { background: #3a5278; }
+html[data-skin="light"] .quest-progress-text,
+html[data-skin="light"] .q-reward-desc { color: #8892a4; }
+
 /* ══════════════════════════════════════════════════════════════════════════════
    F50  Flower Garden — Night theme  (data-skin="flower")
    ══════════════════════════════════════════════════════════════════════════════ */
