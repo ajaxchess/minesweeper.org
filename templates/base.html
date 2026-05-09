@@ -18,7 +18,7 @@
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=48" />
+  <link rel="stylesheet" href="/static/css/style.css?v=49" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     // Resolve the "default" auto-theme: special-day override takes priority,
@@ -26,7 +26,7 @@
     window.resolveDefaultSkin = function() {
       var serverSkin  = '{{ active_skin() }}';
       var defaultSkin = '{{ DEFAULT_SKIN }}';
-      if (serverSkin !== defaultSkin) return serverSkin === 'diana' ? 'classic' : serverSkin;
+      if (serverSkin !== defaultSkin) return serverSkin;
       return (new Date().getHours() >= 6 && new Date().getHours() < 20) ? 'light' : 'dark';
     };
     // For skins that have day/night pairs, resolve the correct variant by time.
@@ -39,13 +39,17 @@
     (function(){
       var p = new URLSearchParams(window.location.search);
       var t = p.get('theme');
-      if (t === 'diana' || t === 'classic') localStorage.setItem('skin', 'classic');
-      else if (t === 'dark')         localStorage.setItem('skin', 'dark');
-      else if (t === 'light')        localStorage.setItem('skin', 'light');
-      else if (t === 'tentaizu')     localStorage.setItem('skin', 'tentaizu');
-      else if (t === 'flower')       localStorage.setItem('skin', 'flower');
-      else if (t === 'default')      localStorage.setItem('skin', 'default');
+      if (t === 'dark')         localStorage.setItem('skin', 'dark');
+      else if (t === 'light')   localStorage.setItem('skin', 'light');
+      else if (t === 'tentaizu')localStorage.setItem('skin', 'tentaizu');
+      else if (t === 'flower')  localStorage.setItem('skin', 'flower');
+      else if (t === 'default') localStorage.setItem('skin', 'default');
       var stored = localStorage.getItem('skin');
+      // Migrate legacy classic/diana skin to dark
+      if (stored === 'classic' || stored === 'diana') {
+        stored = 'dark';
+        localStorage.setItem('skin', 'dark');
+      }
       var skin;
       if (!stored || stored === 'default') {
         skin = window.resolveDefaultSkin();
@@ -54,7 +58,7 @@
       } else {
         skin = stored;
       }
-      document.documentElement.dataset.skin = (skin === 'diana' ? 'classic' : skin);
+      document.documentElement.dataset.skin = skin;
     })();
   </script>
 
@@ -292,8 +296,8 @@
 
         <!-- Puzzles -->
         <div class="mega-group" id="mg-puzzles">
-          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">🧩 {{ t.nav_puzzles }} ▾</button>
-          <div class="mega-panel">
+          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode in ['other','puzzles','tametsi','numbers-match'] %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">🧩 {{ t.nav_puzzles }} ▾</button>
+          <div class="mega-panel mega-panel--puzzles">
             <div class="mega-col">
               <a href="/tentaizu" class="mega-card {% if mode=='tentaizu' %}active{% endif %}">
                 <span class="mega-icon">📅</span>
@@ -331,10 +335,39 @@
                 <span class="mega-icon">🔢</span>
                 <span class="mega-card-text"><strong>{{ t.nav_numbers_match }}</strong><span>{{ t.nav_sub_numbers_match }}</span></span>
               </a>
-              <a href="/other" class="mega-card {% if mode=='other' %}active{% endif %}">
-                <span class="mega-icon">🧩</span>
-                <span class="mega-card-text"><strong>{{ t.nav_other }}</strong><span>{{ t.nav_sub_other }}</span></span>
+              <a href="/other/sudoku/daily" class="mega-card">
+                <span class="mega-icon">🔷</span>
+                <span class="mega-card-text"><strong>Sudoku</strong><span>Classic logic · daily</span></span>
               </a>
+              <a href="/other/schulte/play" class="mega-card">
+                <span class="mega-icon">🧠</span>
+                <span class="mega-card-text"><strong>Schulte Grid</strong><span>Speed recognition · train focus</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/other/15puzzle/daily" class="mega-card">
+                <span class="mega-icon">🔢</span>
+                <span class="mega-card-text"><strong>15-Puzzle</strong><span>Sliding tiles · daily</span></span>
+              </a>
+              <a href="/other/2048/daily" class="mega-card">
+                <span class="mega-icon">🟨</span>
+                <span class="mega-card-text"><strong>2048</strong><span>Merge tiles · daily</span></span>
+              </a>
+              <a href="/other/2048hex/play" class="mega-card">
+                <span class="mega-icon">⬡</span>
+                <span class="mega-card-text"><strong>2048 Hexagon</strong><span>Hex grid · 18 tiles</span></span>
+              </a>
+              <a href="/other/mahjong/daily" class="mega-card">
+                <span class="mega-icon">🀄</span>
+                <span class="mega-card-text"><strong>Mahjong Solitaire</strong><span>Match tiles · daily</span></span>
+              </a>
+              <a href="/other/jigsaw/daily" class="mega-card">
+                <span class="mega-icon">🧩</span>
+                <span class="mega-card-text"><strong>Jigsaw Puzzle</strong><span>Photo puzzles · daily</span></span>
+              </a>
+            </div>
+            <div class="mega-panel-footer">
+              <a href="/puzzles" class="mega-panel-all {% if mode in ['other','puzzles'] %}active{% endif %}">🧩 All Puzzles →</a>
             </div>
           </div>
         </div>
@@ -353,7 +386,6 @@
             <button class="theme-opt" data-theme-btn="light"    onclick="setTheme('light')"><span>☀️</span><span>{{ t.nav_theme_light }}</span></button>
             <button class="theme-opt" data-theme-btn="tentaizu" onclick="setTheme('tentaizu')"><span>⭐</span><span>{{ t.nav_theme_tentaizu }}</span></button>
             <button class="theme-opt" data-theme-btn="flower"   onclick="setTheme('flower')"><span>🌸</span><span>{{ t.nav_theme_flower }}</span></button>
-            <button class="theme-opt" data-theme-btn="classic"  onclick="setTheme('classic')"><span>🟦</span><span>{{ t.nav_theme_classic }}</span></button>
             <button class="theme-opt" data-theme-btn="mexico"   onclick="setTheme('mexico')"><span>🪅</span><span>{{ t.nav_theme_mexico }}</span></button>
           </div>
         </div>
@@ -475,7 +507,7 @@
           <a href="/variants/board-generator" class="drawer-link {% if mode=='board-generator' %}active{% endif %}">🔧 {{ t.nav_board_generator }}</a>
         </div>
       </details>
-      <details class="drawer-group {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' %}open{% endif %}">
+      <details class="drawer-group {% if 'tentaizu' in mode or 'mosaic' in mode or mode in ['other','puzzles','tametsi','numbers-match'] %}open{% endif %}">
         <summary class="drawer-summary">🧩 {{ t.nav_puzzles }}</summary>
         <div class="drawer-links">
           <a href="/tentaizu" class="drawer-link {% if mode=='tentaizu' %}active{% endif %}">📅 {{ t.nav_tentaizu_daily }}</a>
@@ -483,7 +515,15 @@
           <a href="/mosaic/standard" class="drawer-link {% if mode=='mosaic' %}active{% endif %}">🟫 {{ t.nav_mosaic_daily }}</a>
           <a href="/mosaic" class="drawer-link {% if mode=='mosaic-easy' %}active{% endif %}">⭐ {{ t.nav_mosaic_easy }}</a>
           <a href="/tametsi" class="drawer-link {% if mode=='tametsi' %}active{% endif %}">🔀 {{ t.nav_tametsi_daily }}</a>
-          <a href="/other" class="drawer-link {% if mode=='other' %}active{% endif %}">🧩 {{ t.nav_other }}</a>
+          <a href="/numbers-match" class="drawer-link {% if mode=='numbers-match' %}active{% endif %}">🔢 {{ t.nav_numbers_match }}</a>
+          <a href="/other/15puzzle/daily" class="drawer-link">🔢 15-Puzzle</a>
+          <a href="/other/2048/daily" class="drawer-link">🟨 2048</a>
+          <a href="/other/2048hex/play" class="drawer-link">⬡ 2048 Hexagon</a>
+          <a href="/other/mahjong/daily" class="drawer-link">🀄 Mahjong Solitaire</a>
+          <a href="/other/jigsaw/daily" class="drawer-link">🧩 Jigsaw Puzzle</a>
+          <a href="/other/schulte/play" class="drawer-link">🧠 Schulte Grid</a>
+          <a href="/other/sudoku/daily" class="drawer-link">🔷 Sudoku</a>
+          <a href="/puzzles" class="drawer-link drawer-link--direct {% if mode in ['other','puzzles'] %}active{% endif %}">🧩 All Puzzles</a>
         </div>
       </details>
       <a href="/quests" class="drawer-link drawer-link--direct {% if mode=='quests' %}active{% endif %}">🎯 {{ t.nav_quests }}</a>
@@ -496,7 +536,6 @@
         <button class="drawer-theme-btn" data-theme-btn="light"    onclick="setTheme('light')">☀️<br><span>{{ t.nav_theme_light }}</span></button>
         <button class="drawer-theme-btn" data-theme-btn="tentaizu" onclick="setTheme('tentaizu')">⭐<br><span>{{ t.nav_theme_tentaizu }}</span></button>
         <button class="drawer-theme-btn" data-theme-btn="flower"   onclick="setTheme('flower')">🌸<br><span>{{ t.nav_theme_flower }}</span></button>
-        <button class="drawer-theme-btn" data-theme-btn="classic"  onclick="setTheme('classic')">🟦<br><span>{{ t.nav_theme_classic }}</span></button>
         <button class="drawer-theme-btn" data-theme-btn="mexico"   onclick="setTheme('mexico')">🪅<br><span>{{ t.nav_theme_mexico }}</span></button>
       </div>
     </div>
@@ -680,7 +719,7 @@
     } else if (!skin || skin === 'default') {
       resolved = window.resolveDefaultSkin();
     } else {
-      resolved = skin === 'diana' ? 'classic' : skin;
+      resolved = skin;
     }
     document.documentElement.dataset.skin = resolved;
     document.querySelectorAll('[data-theme-btn]').forEach(function(btn) {

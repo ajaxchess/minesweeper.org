@@ -1569,15 +1569,19 @@ async def contact_submit(
     return RedirectResponse("/contact?submitted=true", status_code=303)
 
 
-# ── Other Puzzles ──────────────────────────────────────────────────────────────
+# ── Puzzles hub (All Puzzles) ──────────────────────────────────────────────────
 
-@app.get("/other", response_class=HTMLResponse)
-def other_hub(request: Request):
-    return templates.TemplateResponse("other.html", {
-        "request": request, "mode": "other",
+@app.get("/puzzles", response_class=HTMLResponse)
+def puzzles_hub(request: Request):
+    return templates.TemplateResponse("puzzles.html", {
+        "request": request, "mode": "puzzles",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
+
+@app.get("/other", response_class=HTMLResponse)
+def other_hub_redirect(request: Request):
+    return RedirectResponse("/puzzles", status_code=301)
 
 
 @app.get("/other/15puzzle", response_class=HTMLResponse)
