@@ -70,6 +70,8 @@
           <th>{{ t.lb_col_rank }}</th>
           <th>{{ t.lb_col_name }}</th>
           <th>{{ t.lb_col_time }}</th>
+          <th class="lb-custom-col" style="display:none">{{ t.lb_col_board }}</th>
+          <th class="lb-custom-col" style="display:none">{{ t.lb_col_mines }}</th>
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_bbbv_tip }}">3BV</th>
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_bbbv_s_tip }}">3BV/s</th>
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_eff_tip }}">Eff</th>
@@ -195,6 +197,20 @@ function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+function isCustomMode() {
+  return currentMode === 'custom';
+}
+
+function tableColspan() {
+  return isCustomMode() ? 9 : 7;
+}
+
+function setCustomColumnsVisible(visible) {
+  document.querySelectorAll('#lb-table .lb-custom-col').forEach(el => {
+    el.style.display = visible ? '' : 'none';
+  });
+}
+
 function apiUrl(game, mode, noGuess, period) {
   let base;
   if (game === 'cylinder') base = `/api/cylinder-scores/${mode}`;
@@ -216,7 +232,8 @@ async function loadScores(mode, noGuess, period, game) {
   const body     = document.getElementById('lb-body');
   const meta     = document.getElementById('lb-meta');
   const noteEl   = document.getElementById('lb-period-note');
-  body.innerHTML = `<tr><td colspan="7" class="lb-loading">${window.T.lb_loading}</td></tr>`;
+  setCustomColumnsVisible(isCustomMode());
+  body.innerHTML = `<tr><td colspan="${tableColspan()}" class="lb-loading">${window.T.lb_loading}</td></tr>`;
   meta.textContent = '';
 
   let noteText;
@@ -241,7 +258,7 @@ async function loadScores(mode, noGuess, period, game) {
                      : currentPeriod === 'daily'   ? 'No scores yet today — be the first!'
                      : currentPeriod === 'season'  ? 'No scores yet this season — be the first!'
                      :                               'No all-time scores yet — be the first!';
-      body.innerHTML = `<tr><td colspan="7" class="lb-empty">${emptyMsg}</td></tr>`;
+      body.innerHTML = `<tr><td colspan="${tableColspan()}" class="lb-empty">${emptyMsg}</td></tr>`;
       return;
     }
 
@@ -268,6 +285,7 @@ async function loadScores(mode, noGuess, period, game) {
           <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
           <td class="lb-name">${nameCell}</td>
           <td class="lb-time">${fmtTime(s)}</td>
+          ${isCustomMode() ? `<td class="lb-board">${s.rows}×${s.cols}</td><td class="lb-mines">${s.mines}</td>` : ''}
           <td class="lb-stat lb-stat-col">${s.bbbv ?? '—'}</td>
           <td class="lb-stat lb-stat-col">${bbbvS}</td>
           <td class="lb-stat lb-stat-col">${eff}</td>
@@ -278,7 +296,7 @@ async function loadScores(mode, noGuess, period, game) {
     const suffix = data.length !== 1 ? window.T.lb_top_suffix_many : window.T.lb_top_suffix_one;
     meta.textContent = `${window.T.lb_top_prefix} ${data.length} ${suffix}`;
   } catch {
-    body.innerHTML = `<tr><td colspan="7" class="lb-empty">${window.T.lb_error}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="${tableColspan()}" class="lb-empty">${window.T.lb_error}</td></tr>`;
   }
 }
 
