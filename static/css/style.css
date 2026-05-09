@@ -4870,35 +4870,78 @@ button.mega-card {
 }
 .drawer-overlay.open { opacity: 1; pointer-events: auto; }
 
-/* ── Mobile slide-in drawer ──────────────────────────────────────────────── */
+/* ── Full-width top dropdown drawer ─────────────────────────────────────── */
 .mobile-drawer {
   position: fixed;
-  top: 0;
+  top: 60px;
+  left: 0;
   right: 0;
-  width: min(320px, 85vw);
-  height: 100dvh;
-  height: 100vh;
+  width: 100%;
+  height: auto;
+  max-height: calc(100dvh - 60px);
+  max-height: calc(100vh - 60px);
   background: var(--surface);
-  border-left: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   z-index: 300;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  transform: translateX(100%);
-  transition: transform 0.25s ease;
+  transform: translateY(-110%);
+  transition: transform 0.25s ease, visibility 0s linear 0.25s;
   visibility: hidden;
 }
-.mobile-drawer.open { transform: translateX(0); visibility: visible; }
+.mobile-drawer.open {
+  transform: translateY(0);
+  visibility: visible;
+  transition: transform 0.25s ease, visibility 0s linear 0s;
+}
 body.drawer-open { overflow: hidden; }
 
-.drawer-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.85rem 1rem;
+/* Auth section at top of drawer */
+.drawer-auth {
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
+.drawer-auth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.drawer-auth-signin {
+  flex: 1;
+  display: block;
+  text-align: center;
+  padding: 0.65rem 1rem;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: opacity 0.15s;
+}
+.drawer-auth-signin:hover { opacity: 0.88; }
+.drawer-auth-user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.drawer-auth-name { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+.drawer-auth-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.875rem;
+  min-height: 40px;
+  transition: color 0.12s;
+}
+.drawer-auth-link:hover { color: var(--text); }
+
 .drawer-close {
   background: none;
   border: none;
@@ -4910,6 +4953,7 @@ body.drawer-open { overflow: hidden; }
   line-height: 1;
   transition: background 0.15s, color 0.15s;
   font-family: inherit;
+  flex-shrink: 0;
 }
 .drawer-close:hover { background: var(--surface2); color: var(--text); }
 
@@ -5009,11 +5053,19 @@ body.drawer-open { overflow: hidden; }
 .drawer-theme-btn:hover { border-color: var(--accent2); }
 .drawer-theme-btn.active { border-color: var(--accent); background: rgba(233,69,96,0.12); }
 
-/* ── Mobile/tablet: show hamburger, hide mega-nav ────────────────────────── */
-@media (max-width: 959px) {
-  .mega-nav       { display: none !important; }
-  .hamburger-btn  { display: flex; }
-  .mega-panel     { max-height: calc(100vh - 60px); overflow-y: auto; }
+/* ── Tablet/desktop: show hamburger, hide mega-nav ──────────────────────── */
+@media (max-width: 1100px) {
+  .mega-nav        { display: none !important; }
+  .hamburger-btn   { display: flex; }
+  .mega-panel      { max-height: calc(100vh - 60px); overflow-y: auto; }
+  /* Auth button and user menu move into the drawer at this breakpoint */
+  .auth-btn.login-btn { display: none; }
+  .user-menu          { display: none; }
+}
+
+/* ── Narrow: hide logo text, keep icon ───────────────────────────────────── */
+@media (max-width: 480px) {
+  .logo-text { display: none; }
 }
 
 /* ── PvP sub-page links ──────────────────────────────────────────────────── */
@@ -6526,7 +6578,10 @@ html[data-skin="light"] .mega-panel {
 html[data-skin="light"] .mega-card-text span { color: #6a7a94; }
 
 /* Light mode — mobile drawer (transparent-white borders are invisible on white) */
-html[data-skin="light"] .mobile-drawer { background: #f8fafc; }
+html[data-skin="light"] .mobile-drawer { background: #f8fafc; border-bottom-color: rgba(0,0,0,0.12); }
+html[data-skin="light"] .drawer-auth { border-bottom-color: rgba(0,0,0,0.10); }
+html[data-skin="light"] .drawer-auth-link { color: #374151; }
+html[data-skin="light"] .drawer-auth-link:hover { color: #111; }
 html[data-skin="light"] .drawer-group { border-bottom-color: rgba(0,0,0,0.08); }
 html[data-skin="light"] .drawer-group[open] > .drawer-summary { background: rgba(0,0,0,0.04); color: var(--text); }
 html[data-skin="light"] .drawer-links { background: rgba(0,0,0,0.04); }

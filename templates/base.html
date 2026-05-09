@@ -18,7 +18,7 @@
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=50" />
+  <link rel="stylesheet" href="/static/css/style.css?v=51" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     // Resolve the "default" auto-theme: special-day override takes priority,
@@ -164,7 +164,7 @@
     <div class="header-inner">
       <a href="/" class="logo">
         <img src="/static/img/LadyDisMinesLogo.png" class="logo-classic" alt="Lady Di's Mines">
-        <span class="logo-text">💣 Minesweeper.org</span>
+        <span class="logo-icon">💣</span><span class="logo-text"> Minesweeper.org</span>
       </a>
       <!-- Mega menu nav (modern skins) -->
       <nav class="mega-nav">
@@ -446,10 +446,7 @@
           </div>
         </div>
         {% else %}
-          <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="auth-btn login-btn">
-            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.93 6.36h-1.65c-.19 0-.4.25-.4.59v1.19h2.05l-.27 2.08H14.88V18h-2.15v-5.78h-1.4v-2.08h1.4v-1.37C12.73 7.47 13.83 6 15.72 6c.86 0 1.21.06 1.21.06v1.3z"/></svg>
-            {{ t.auth_sign_in }}
-          </a>
+          <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="auth-btn login-btn">Sign In</a>
         {% endif %}
         <!-- Hamburger: mobile only (non-classic skins) -->
         <button class="hamburger-btn" id="hamburger-btn" onclick="toggleDrawer()" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-drawer">
@@ -464,9 +461,23 @@
   <!-- Mobile nav overlay + slide-in drawer -->
   <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
   <aside id="mobile-drawer" class="mobile-drawer" aria-label="Navigation" aria-hidden="true">
-    <div class="drawer-top">
-      <a href="/" class="logo" onclick="closeDrawer()"><span class="logo-text">💣 Minesweeper.org</span></a>
-      <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">✕</button>
+    <div class="drawer-auth">
+      {% if user %}
+        <div class="drawer-auth-row">
+          <div class="drawer-auth-user">
+            <img src="{{ user.picture }}" class="avatar" alt="{{ user.name }}">
+            <span class="drawer-auth-name">{{ user.name.split()[0] }}</span>
+          </div>
+          <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">✕</button>
+        </div>
+        <a href="/profile" class="drawer-auth-link" onclick="closeDrawer()">👤 {{ t.auth_view_profile }}</a>
+        <a href="/auth/logout" class="drawer-auth-link">🚪 {{ t.auth_sign_out }}</a>
+      {% else %}
+        <div class="drawer-auth-row">
+          <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="drawer-auth-signin">Sign In</a>
+          <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">✕</button>
+        </div>
+      {% endif %}
     </div>
     <nav class="drawer-nav">
       <details class="drawer-group {% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %}open{% endif %}">
