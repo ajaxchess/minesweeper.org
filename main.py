@@ -7281,6 +7281,12 @@ def delete_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends
 
 # These two 3-segment routes must be defined before /{mode}/{date_str}/{guess_mode}
 # below, which is a wildcard that would intercept them first.
+@app.get("/api/numbers-match-today")
+def get_numbers_match_today(response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    return {"today": utc_today_str()}
+
+
 @app.get("/api/numbers-match-board/{date_str}")
 def get_numbers_match_board(date_str: str, response: Response, db: Session = Depends(get_db)):
     response.headers["Cache-Control"] = "no-store"

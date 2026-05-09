@@ -43,6 +43,18 @@ function utcToday() {
     return new Date().toISOString().slice(0, 10);
 }
 
+async function serverToday() {
+    try {
+        const r = await fetch(cacheBustUrl('/api/numbers-match-today'), { cache: 'no-store' });
+        if (!r.ok) throw new Error('today failed');
+        const data = await r.json();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(data.today)) return data.today;
+    } catch {
+        // Fall back to browser UTC if the server date endpoint is unavailable.
+    }
+    return utcToday();
+}
+
 function cacheBustUrl(path) {
     return `${path}?_=${Date.now()}`;
 }
@@ -63,14 +75,15 @@ function rememberVariant(kind, rows = null) {
     localStorage.setItem('nm_last_variant', kind === 'daily' ? 'daily' : String(rows || 4));
 }
 
-function startLastVariant() {
+async function startLastVariant() {
     const last = localStorage.getItem('nm_last_variant');
+    const today = await serverToday();
     if (last === 'daily') {
-        initDailyGame(utcToday());
+        initDailyGame(today);
         return;
     }
     const rows = parseInt(last || G.diffRows || 4, 10);
-    initRandomGame([4, 8, 16, 32].includes(rows) ? rows : 4);
+    initRandomGame([4, 8, 16, 32].includes(rows) ? rows : 4, today);
 }
 
 // ── Seeded RNG (mirrors Python generator — used for random-mode boards) ────────
@@ -535,9 +548,9 @@ async function initDailyGame(dateStr) {
     }
 }
 
-function initRandomGame(rows) {
+function initRandomGame(rows, dateStr = null) {
     stopTimer();
-    const today    = utcToday();
+    const today    = dateStr || utcToday();
     const diffKey  = NM_DIFF_LABELS[rows]?.toLowerCase();
     const seed     = diffKey ? `${today}-${diffKey}` : Date.now().toString(36);
     const board    = generateBoardClient(seed, rows);
@@ -610,24 +623,26 @@ function _showLoading(show) {
 }
 
 // ── Entry point ────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const boardEl = document.getElementById('nm-board');
     const permalinkMatch = window.location.pathname.match(/^\/numbers-match\/(\d{4}-\d{2}-\d{2})\/?$/);
-    const today          = permalinkMatch ? permalinkMatch[1] : utcToday();
+    const liveToday      = await serverToday();
+    const today          = permalinkMatch ? permalinkMatch[1] : liveToday;
 
     initDailyGame(today);
 
     document.getElementById('nm-daily-btn').addEventListener('click', () =>
-        initDailyGame(utcToday()));
+        serverToday().then(initDailyGame));
 
     document.querySelectorAll('.nm-diff-btn').forEach(btn =>
-        btn.addEventListener('click', () => initRandomGame(parseInt(btn.dataset.rows))));
+        btn.addEventListener('click', () =>
+            serverToday().then(today => initRandomGame(parseInt(btn.dataset.rows), today))));
 
     document.getElementById('nm-overlay-daily').addEventListener('click', () =>
-        initDailyGame(utcToday()));
+        serverToday().then(initDailyGame));
 
     document.getElementById('nm-overlay-random').addEventListener('click', () =>
-        initRandomGame(G.diffRows || 4));
+        serverToday().then(today => initRandomGame(G.diffRows || 4, today)));
 
     document.getElementById('nm-undo-btn').addEventListener('click', doUndo);
     document.getElementById('nm-hint-btn').addEventListener('click', doHint);
