@@ -2924,6 +2924,17 @@ async def mobile_nmmobile(request: Request):
 # excerpt: one-sentence summary shown on the index page
 BLOG_POSTS = [
     {
+        "slug":          "taking-the-show-on-the-road",
+        "file":          "blog/taking-the-show-on-the-road.md",
+        "title":         "Taking the Show on the Road",
+        "date":          "2026-05-09",
+        "datePublished": "2026-05-09T00:00:00Z",
+        "image":         "/static/img/roadview.jpeg",
+        "excerpt":       "The minesweeper.org iOS app is live — play on the go, keep your "
+                         "leaderboard access, and start a new game the moment you finish the last one. "
+                         "No unskippable ads. Android is coming soon.",
+    },
+    {
         "slug":          "nononoguess",
         "file":          "blog/nononoguess.md",
         "title":         "Nonosweeper's No Guess Mode: Every Puzzle, Solvable by Logic Alone",
