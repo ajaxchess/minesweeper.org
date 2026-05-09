@@ -18,7 +18,7 @@
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=55" />
+  <link rel="stylesheet" href="/static/css/style.css?v=56" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     // Resolve the "default" auto-theme: special-day override takes priority,
@@ -167,7 +167,7 @@
 
         <!-- Play -->
         <div class="mega-group" id="mg-play">
-          <button class="mega-trigger {% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %}active{% endif %}" onclick="toggleMega(event,'mg-play')" aria-haspopup="true" aria-expanded="false">💣 {{ t.nav_play }} ▾</button>
+          <button class="mega-trigger {% if mode in ['beginner','intermediate','expert','custom','evil','rush','how-to-play','rush-howto'] %}active{% endif %}" onclick="toggleMega(event,'mg-play')" aria-haspopup="true" aria-expanded="false">{{ t.nav_play }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/" class="mega-card {% if mode=='beginner' %}active{% endif %}">
@@ -339,8 +339,9 @@
           </div>
         </div>
 
-        <!-- Quests: direct link -->
-        <a href="/quests" class="mega-direct {% if mode=='quests' %}active{% endif %}">🎯 {{ t.nav_quests }}</a>
+        <!-- Leaderboard + Quests: direct links -->
+        <a href="/leaderboard" class="mega-direct {% if mode=='leaderboard' %}active{% endif %}">{{ t.nav_leaderboard }}</a>
+        <a href="/quests" class="mega-direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
 
       </nav>
       <div class="auth-area">
@@ -486,7 +487,8 @@
           <a href="/other" class="drawer-link {% if mode=='other' %}active{% endif %}">🧩 {{ t.nav_other }}</a>
         </div>
       </details>
-      <a href="/quests" class="drawer-link drawer-link--direct {% if mode=='quests' %}active{% endif %}">🎯 {{ t.nav_quests }}</a>
+      <a href="/leaderboard" class="drawer-link drawer-link--direct {% if mode=='leaderboard' %}active{% endif %}">{{ t.nav_leaderboard }}</a>
+      <a href="/quests" class="drawer-link drawer-link--direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
     </nav>
     <div class="drawer-theme">
       <div class="drawer-theme-label">{{ t.nav_theme }}</div>
