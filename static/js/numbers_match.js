@@ -1,9 +1,11 @@
 'use strict';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const NM_COLS  = 9;
-const NM_EPOCH = '2024-01-01';
+const NM_COLS      = 9;
+const NM_EPOCH     = '2024-01-01';
 const NM_DIFF_LABELS = { 4: 'Easy', 8: 'Medium', 16: 'Hard', 32: 'Expert' };
+const HINT_COST    = 3;   // score penalty per hint used
+const UNDO_COST    = 5;   // score penalty per undo used
 
 // Matching pairs share a color: 1↔9 red, 2↔8 blue, 3↔7 green, 4↔6 orange, 5↔5 purple
 const NM_COLORS = [
@@ -210,7 +212,7 @@ function doUndo() {
     if (G.undosLeft <= 0 || G.history.length === 0 || G.won) return;
     const snap   = G.history.pop();
     G.board      = snap.board;
-    G.score      = snap.score;
+    G.score      = Math.max(0, snap.score - UNDO_COST);
     G.rows       = snap.rows;
     G.linesAdded = snap.linesAdded;
     G.undosLeft--;
@@ -244,6 +246,7 @@ function doHint() {
     }
     G.hintPair  = pair;
     G.hintsLeft--;
+    G.score = Math.max(0, G.score - HINT_COST);
     renderBoard();
     updateHUD();
 }
@@ -509,6 +512,13 @@ function _startGame(boardData, rows, puzzleId, isPOTD) {
     });
 
     document.getElementById('nm-lb-section').style.display = isPOTD ? 'block' : 'none';
+
+    const lbTitle = document.querySelector('.nm-lb-title');
+    if (lbTitle) {
+        lbTitle.textContent = isDailyPuzzle
+            ? '🏆 Today\'s Leaderboard'
+            : `🏆 ${NM_DIFF_LABELS[rows] || rows + ' rows'} — Today's Best`;
+    }
 
     _showLoading(false);
     renderBoard();

@@ -118,6 +118,7 @@
       Numbers match if they are <strong>equal</strong> or <strong>sum to 10</strong>,
       and are connected by a clear horizontal, vertical, or diagonal line
       (row-end wraps to the next row). Use <strong>Add Lines</strong> when stuck.
+      Using <strong>Hint (−3 pts)</strong> or <strong>Undo (−5 pts)</strong> deducts from your score.
     </p>
 
     <!-- Scoring reference -->
@@ -129,10 +130,13 @@
           <li><strong>+1 to +4</strong> Far Apart bonus — one point per empty cell between the pair (max 4)</li>
           <li><strong>+10</strong> per full row cleared</li>
           <li><strong>+150</strong> board cleared</li>
+          <li><strong>−3</strong> per 💡 Hint used</li>
+          <li><strong>−5</strong> per ↩ Undo used</li>
         </ul>
         <p>
-          <strong>Tools:</strong> ↩ Undo (3 per game) · 💡 Hint (9 per game) · + Add Lines (unlimited)<br>
+          <strong>Tools:</strong> ↩ Undo (3 per game, −5 pts each) · 💡 Hint (9 per game, −3 pts each) · + Add Lines (free, unlimited)<br>
           Leaderboard ranks by <strong>score</strong> (higher is better), then by <strong>time</strong> (lower is better).
+          All modes — Daily, Easy, Medium, Hard and Expert — have their own daily leaderboard.
         </p>
       </div>
     </details>
@@ -191,7 +195,10 @@
         <li><strong>Far Apart bonus (+1–4):</strong> Matching numbers with empty cells between them earns a bonus — one point per empty cell, up to four. Seek out long-range matches for maximum points.</li>
         <li><strong>Row clear (+10):</strong> When an entire row becomes empty, you earn a 10-point bonus. Plan ahead to clear full rows.</li>
         <li><strong>Board clear (+150):</strong> Clear the entire board for a large bonus and a spot on the leaderboard.</li>
+        <li><strong>Hint penalty (−3):</strong> Each 💡 Hint you use deducts 3 points. Use them wisely.</li>
+        <li><strong>Undo penalty (−5):</strong> Each ↩ Undo deducts 5 points. Think before you match.</li>
       </ul>
+      <p>All five modes — Daily, Easy, Medium, Hard, and Expert — have their own daily leaderboard. Your best score of the day counts.</p>
     </section>
 
     <section class="tz-section">
@@ -199,9 +206,9 @@
       <ol class="tz-list">
         <li><strong>Scan for long-range pairs.</strong> Far Apart bonuses add up quickly. Before making an obvious adjacent match, look for the same pair connected through empty space.</li>
         <li><strong>Target row clears.</strong> A row with only one or two numbers remaining is close to a +10 bonus. Prioritise clearing those numbers to trigger the bonus.</li>
-        <li><strong>Use hints sparingly.</strong> You only have 9 hints per game. Save them for when you are genuinely stuck, not just for confirmation.</li>
-        <li><strong>Undo strategically.</strong> With only 3 undos, save them for accidental taps or missed scoring opportunities, not routine exploration.</li>
-        <li><strong>Add Lines as a last resort.</strong> More rows mean more cells to scan. Use Add Lines only when no valid move exists anywhere on the current board.</li>
+        <li><strong>Avoid hints unless truly stuck.</strong> Each hint costs −3 pts. If you need to use one, it probably won't be the last — save the rest for later rows.</li>
+        <li><strong>Undo is expensive.</strong> At −5 pts each and only 3 available, reserve undos for accidental taps, not exploration. Plan your matches before tapping.</li>
+        <li><strong>Add Lines is free.</strong> Unlike hints and undos, Add Lines has no score penalty and is unlimited. Use it whenever no valid move exists.</li>
       </ol>
     </section>
 
@@ -210,5 +217,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/numbers_match.js?v=8"></script>
+<script src="/static/js/numbers_match.js?v=9"></script>
 {% endblock %}
