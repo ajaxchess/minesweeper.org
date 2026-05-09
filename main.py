@@ -516,6 +516,7 @@ def reset_scores():
 
 
 NUMBERS_MATCH_TZ = ZoneInfo("America/New_York")
+NUMBERS_MATCH_BOARD_REVISION = "v2"
 
 
 def numbers_match_today_str() -> str:
@@ -7288,14 +7289,34 @@ def delete_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends
 @app.get("/api/numbers-match-today")
 def get_numbers_match_today(response: Response):
     response.headers["Cache-Control"] = "no-store"
-    return {"today": numbers_match_today_str(), "timezone": "America/New_York"}
+    return {
+        "today": numbers_match_today_str(),
+        "timezone": "America/New_York",
+        "revision": NUMBERS_MATCH_BOARD_REVISION,
+    }
 
 
 @app.get("/api/numbers-match-board/{date_str}")
-def get_numbers_match_board(date_str: str, response: Response, db: Session = Depends(get_db)):
+def get_numbers_match_board(
+    date_str: str,
+    response: Response,
+    rev: str = Query(None),
+    db: Session = Depends(get_db),
+):
     response.headers["Cache-Control"] = "no-store"
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
         raise HTTPException(status_code=400, detail="Invalid date format")
+    if rev:
+        if not re.match(r"^v\d+$", rev):
+            raise HTTPException(status_code=400, detail="Invalid revision")
+        result = _nm_generate_daily(date_str, seed_suffix=f":{rev}")
+        return {
+            "puzzle_date": date_str,
+            "board_num":   result["board_num"],
+            "rows":        result["rows"],
+            "board_data":  result["board_data"],
+            "revision":    rev,
+        }
     row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
     if row and row.rows != 4:
         db.delete(row)
@@ -7329,7 +7350,7 @@ def get_numbers_match_board(date_str: str, response: Response, db: Session = Dep
 @app.get("/api/numbers-match-scores/{puzzle_date}")
 def get_numbers_match_scores(puzzle_date: str, response: Response, db: Session = Depends(get_db)):
     response.headers["Cache-Control"] = "no-store"
-    if not re.match(r"^\d{4}-\d{2}-\d{2}(-(?:easy|medium|hard|expert))?$", puzzle_date):
+    if not re.match(r"^\d{4}-\d{2}-\d{2}(-(?:easy|medium|hard|expert))?(-v\d+)?$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
     q = db.query(NumbersMatchScore).filter(NumbersMatchScore.puzzle_date == puzzle_date)
     q = exclude_flagged(q, NumbersMatchScore, db)
@@ -7772,7 +7793,7 @@ async def numbers_match_permalink(request: Request, date_str: str):
 
 class NumbersMatchScoreSubmit(BaseModel):
     name:        str = Field(..., min_length=1, max_length=32)
-    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}(-(?:easy|medium|hard|expert))?$")
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}(-(?:easy|medium|hard|expert))?(-v\d+)?$")
     score:       int = Field(..., ge=0, le=99999)
     time_secs:   int = Field(..., ge=1, le=99999)
     lines_added: int = Field(default=0, ge=0, le=999)

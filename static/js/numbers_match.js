@@ -29,6 +29,7 @@ let _lbReqId = 0;          // incremented each loadLeaderboard call; stale respo
 let _showConnections = false; // persists across games; toggled by the Paths button
 let _autoNextTimer = null;
 let _gameSeq = 0;
+let _serverRevision = 'v2';
 
 // ── Utility ────────────────────────────────────────────────────────────────────
 function fmtTime(s) {
@@ -48,6 +49,7 @@ async function serverToday() {
         const r = await fetch(cacheBustUrl('/api/numbers-match-today'), { cache: 'no-store' });
         if (!r.ok) throw new Error('today failed');
         const data = await r.json();
+        if (/^v\d+$/.test(data.revision || '')) _serverRevision = data.revision;
         if (/^\d{4}-\d{2}-\d{2}$/.test(data.today)) return data.today;
     } catch {
         // Fall back to browser UTC if the server date endpoint is unavailable.
@@ -56,7 +58,16 @@ async function serverToday() {
 }
 
 function cacheBustUrl(path) {
-    return `${path}?_=${Date.now()}`;
+    const sep = path.includes('?') ? '&' : '?';
+    return `${path}${sep}_=${Date.now()}`;
+}
+
+function boardUrl(dateStr) {
+    return cacheBustUrl(`/api/numbers-match-board/${dateStr}?rev=${encodeURIComponent(_serverRevision)}`);
+}
+
+function scorePuzzleId(dateStr, diffKey = null) {
+    return diffKey ? `${dateStr}-${diffKey}-${_serverRevision}` : `${dateStr}-${_serverRevision}`;
 }
 
 function playerName() {
@@ -537,10 +548,10 @@ async function initDailyGame(dateStr) {
     const requestedDate = dateStr || utcToday();
 
     try {
-        const r = await fetch(cacheBustUrl(`/api/numbers-match-board/${requestedDate}`), { cache: 'no-store' });
+        const r = await fetch(boardUrl(requestedDate), { cache: 'no-store' });
         if (!r.ok) throw new Error('fetch failed');
         const data = await r.json();
-        _startGame(data.board_data, data.rows, requestedDate, true);
+        _startGame(data.board_data, data.rows, scorePuzzleId(requestedDate), true);
     } catch {
         _showLoading(false);
         document.getElementById('nm-grid').innerHTML =
@@ -552,9 +563,9 @@ function initRandomGame(rows, dateStr = null) {
     stopTimer();
     const today    = dateStr || utcToday();
     const diffKey  = NM_DIFF_LABELS[rows]?.toLowerCase();
-    const seed     = diffKey ? `${today}-${diffKey}` : Date.now().toString(36);
+    const seed     = diffKey ? scorePuzzleId(today, diffKey) : Date.now().toString(36);
     const board    = generateBoardClient(seed, rows);
-    const puzzleId = diffKey ? `${today}-${diffKey}` : seed;
+    const puzzleId = diffKey ? scorePuzzleId(today, diffKey) : seed;
     rememberVariant('variant', rows);
     _startGame(board, rows, puzzleId, !!diffKey);
 }
@@ -589,7 +600,7 @@ function _startGame(boardData, rows, puzzleId, isPOTD) {
     document.getElementById('nm-score-msg').style.display = 'none';
     document.getElementById('nm-timer').textContent     = '0:00';
 
-    const isDailyPuzzle = isPOTD && /^\d{4}-\d{2}-\d{2}$/.test(puzzleId);
+    const isDailyPuzzle = isPOTD && /^\d{4}-\d{2}-\d{2}-v\d+$/.test(puzzleId);
     document.getElementById('nm-mode-label').textContent =
         isDailyPuzzle ? '📅 Daily Puzzle'
                       : `🎲 ${NM_DIFF_LABELS[rows] || rows + ' rows'}`;

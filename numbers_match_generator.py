@@ -30,7 +30,7 @@ def initial_rows(board_num: int) -> int:
     return 4
 
 
-def generate_daily(date_str: str) -> dict:
+def generate_daily(date_str: str, seed_suffix: str = "") -> dict:
     """
     Generate the daily Numbers Match board for the given YYYY-MM-DD date.
 
@@ -47,7 +47,7 @@ def generate_daily(date_str: str) -> dict:
     base = [(i % 9) + 1 for i in range(total)]
 
     # Deterministic seed derived from date string via SHA-256
-    seed = int(hashlib.sha256(date_str.encode()).hexdigest(), 16) % (2 ** 32)
+    seed = int(hashlib.sha256((date_str + seed_suffix).encode()).hexdigest(), 16) % (2 ** 32)
     rng  = random.Random(seed)
     rng.shuffle(base)
 
