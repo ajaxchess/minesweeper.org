@@ -870,9 +870,10 @@ footer a:hover { text-decoration: underline; }
 }
 
 .login-btn {
-  background: #fff;
-  color: #333;
-  border: 1px solid #ddd;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  letter-spacing: 0.02em;
 }
 
 .logout-btn {
@@ -4592,7 +4593,10 @@ html[data-skin="classic"] nav a:visited { color: #ffffff; font-weight: 700; text
   transition: background 0.15s, color 0.15s;
 }
 .mega-trigger:hover { background: var(--surface2); color: var(--text); }
-.mega-trigger.active { background: var(--accent); color: #fff; }
+.mega-trigger.active {
+  background: color-mix(in srgb, var(--accent2) 14%, transparent);
+  color: var(--accent2);
+}
 .mega-group.open .mega-trigger { background: var(--surface2); color: var(--text); }
 
 .mega-panel {
@@ -4686,7 +4690,10 @@ button.mega-card {
   transition: background 0.15s, color 0.15s;
 }
 .mega-direct:hover  { background: var(--surface2); color: var(--text); }
-.mega-direct.active { background: var(--accent); color: #fff; }
+.mega-direct.active {
+  background: color-mix(in srgb, var(--accent2) 14%, transparent);
+  color: var(--accent2);
+}
 
 /* ── Puzzles mega-panel footer ───────────────────────────────────────────── */
 .mega-panel-footer {

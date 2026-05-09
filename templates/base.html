@@ -18,7 +18,7 @@
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=52" />
+  <link rel="stylesheet" href="/static/css/style.css?v=53" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     // Resolve the "default" auto-theme: special-day override takes priority,
@@ -171,7 +171,7 @@
 
         <!-- Play -->
         <div class="mega-group" id="mg-play">
-          <button class="mega-trigger {% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %}active{% endif %}" onclick="toggleMega(event,'mg-play')" aria-haspopup="true" aria-expanded="false">💣 {{ t.nav_play }} ▾</button>
+          <button class="mega-trigger {% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %}active{% endif %}" onclick="toggleMega(event,'mg-play')" aria-haspopup="true" aria-expanded="false">{{ t.nav_play }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/" class="mega-card {% if mode=='beginner' %}active{% endif %}">
@@ -214,7 +214,7 @@
 
         <!-- PvP -->
         <div class="mega-group" id="mg-pvp">
-          <button class="mega-trigger {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}active{% endif %}" onclick="toggleMega(event,'mg-pvp')" aria-haspopup="true" aria-expanded="false">🎮 PvP ▾</button>
+          <button class="mega-trigger {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}active{% endif %}" onclick="toggleMega(event,'mg-pvp')" aria-haspopup="true" aria-expanded="false">PvP ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/pvp" class="mega-card {% if mode=='pvp' %}active{% endif %}">
@@ -245,7 +245,7 @@
 
         <!-- Variants -->
         <div class="mega-group" id="mg-variants">
-          <button class="mega-trigger {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %}active{% endif %}" onclick="toggleMega(event,'mg-variants')" aria-haspopup="true" aria-expanded="false">🔄 {{ t.nav_variants }} ▾</button>
+          <button class="mega-trigger {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %}active{% endif %}" onclick="toggleMega(event,'mg-variants')" aria-haspopup="true" aria-expanded="false">{{ t.nav_variants }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/cylinder" class="mega-card {% if 'cylinder' in mode %}active{% endif %}">
@@ -296,7 +296,7 @@
 
         <!-- Puzzles -->
         <div class="mega-group" id="mg-puzzles">
-          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode in ['other','puzzles','tametsi','numbers-match'] %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">🧩 {{ t.nav_puzzles }} ▾</button>
+          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode in ['other','puzzles','tametsi','numbers-match'] %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">{{ t.nav_puzzles }} ▾</button>
           <div class="mega-panel mega-panel--puzzles">
             <div class="mega-col">
               <a href="/tentaizu" class="mega-card {% if mode=='tentaizu' %}active{% endif %}">
@@ -373,7 +373,7 @@
         </div>
 
         <!-- Quests: direct link -->
-        <a href="/quests" class="mega-direct {% if mode=='quests' %}active{% endif %}">🎯 {{ t.nav_quests }}</a>
+        <a href="/quests" class="mega-direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
 
       </nav>
       <div class="auth-area">
@@ -481,7 +481,7 @@
     </div>
     <nav class="drawer-nav">
       <details class="drawer-group {% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %}open{% endif %}">
-        <summary class="drawer-summary">💣 {{ t.nav_play }}</summary>
+        <summary class="drawer-summary">{{ t.nav_play }}</summary>
         <div class="drawer-links">
           <a href="/" class="drawer-link {% if mode=='beginner' %}active{% endif %}">🟢 {{ t.nav_beginner }}</a>
           <a href="/intermediate" class="drawer-link {% if mode=='intermediate' %}active{% endif %}">🟡 {{ t.nav_intermediate }}</a>
@@ -494,7 +494,7 @@
         </div>
       </details>
       <details class="drawer-group {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}open{% endif %}">
-        <summary class="drawer-summary">🎮 PvP</summary>
+        <summary class="drawer-summary">PvP</summary>
         <div class="drawer-links">
           <a href="/pvp" class="drawer-link {% if mode=='pvp' %}active{% endif %}">🎮 {{ t.nav_pvp }}</a>
           <a href="/duel" class="drawer-link {% if mode=='duel' %}active{% endif %}">⚔️ {{ t.nav_duel }}</a>
@@ -504,7 +504,7 @@
         </div>
       </details>
       <details class="drawer-group {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %}open{% endif %}">
-        <summary class="drawer-summary">🔄 {{ t.nav_variants }}</summary>
+        <summary class="drawer-summary">{{ t.nav_variants }}</summary>
         <div class="drawer-links">
           <a href="/cylinder" class="drawer-link {% if 'cylinder' in mode %}active{% endif %}">🔄 {{ t.nav_cylinder }}</a>
           <a href="/hexsweeper" class="drawer-link {% if 'hex' in mode %}active{% endif %}">⬡ {{ t.nav_hexsweeper }}</a>
@@ -519,7 +519,7 @@
         </div>
       </details>
       <details class="drawer-group {% if 'tentaizu' in mode or 'mosaic' in mode or mode in ['other','puzzles','tametsi','numbers-match'] %}open{% endif %}">
-        <summary class="drawer-summary">🧩 {{ t.nav_puzzles }}</summary>
+        <summary class="drawer-summary">{{ t.nav_puzzles }}</summary>
         <div class="drawer-links">
           <a href="/tentaizu" class="drawer-link {% if mode=='tentaizu' %}active{% endif %}">📅 {{ t.nav_tentaizu_daily }}</a>
           <a href="/tentaizu/easy-5x5-6" class="drawer-link">⭐ {{ t.nav_tentaizu_easy }}</a>
@@ -537,7 +537,7 @@
           <a href="/puzzles" class="drawer-link drawer-link--direct {% if mode in ['other','puzzles'] %}active{% endif %}">🧩 All Puzzles</a>
         </div>
       </details>
-      <a href="/quests" class="drawer-link drawer-link--direct {% if mode=='quests' %}active{% endif %}">🎯 {{ t.nav_quests }}</a>
+      <a href="/quests" class="drawer-link drawer-link--direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
     </nav>
     <div class="drawer-theme">
       <div class="drawer-theme-label">{{ t.nav_theme }}</div>
