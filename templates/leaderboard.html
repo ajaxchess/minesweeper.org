@@ -28,8 +28,8 @@
   <!-- Game selector -->
   <div class="lb-game-toggle" role="group" aria-label="Game variant">
     <button class="lb-game-btn active" data-game="classic">Classic</button>
-    <button class="lb-game-btn" data-game="cylinder">🛢 Cylinder</button>
-    <button class="lb-game-btn" data-game="toroid">🍩 Toroid</button>
+    <button class="lb-game-btn" data-game="cylinder">Cylinder</button>
+    <button class="lb-game-btn" data-game="toroid">Toroid</button>
   </div>
 
   <div class="lb-tabs" id="lb-mode-tabs" role="tablist">
@@ -41,7 +41,7 @@
 
   <div class="lb-ng-toggle" role="group" aria-label="Game mode">
     <button class="lb-ng-btn active" data-ng="false">Standard mode</button>
-    <button class="lb-ng-btn"        data-ng="true">⚡ No-Guess mode</button>
+    <button class="lb-ng-btn"        data-ng="true">No-Guess mode</button>
   </div>
 
   <div class="lb-period-toggle" role="group" aria-label="Time period">
@@ -70,17 +70,14 @@
           <th>{{ t.lb_col_rank }}</th>
           <th>{{ t.lb_col_name }}</th>
           <th>{{ t.lb_col_time }}</th>
-          <th>{{ t.lb_col_board }}</th>
-          <th>{{ t.lb_col_mines }}</th>
-          <th class="lb-th-stat" data-tip="{{ t.lb_bbbv_tip }}">3BV</th>
-          <th class="lb-th-stat" data-tip="{{ t.lb_bbbv_s_tip }}">3BV/s</th>
-          <th class="lb-th-stat" data-tip="{{ t.lb_eff_tip }}">Eff</th>
-          <th>{{ t.lb_col_date }}</th>
-          <th>{{ t.lb_col_board }}</th>
+          <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_bbbv_tip }}">3BV</th>
+          <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_bbbv_s_tip }}">3BV/s</th>
+          <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_eff_tip }}">Eff</th>
+          <th>Hash</th>
         </tr>
       </thead>
       <tbody id="lb-body">
-        <tr><td colspan="10" class="lb-loading">{{ t.lb_loading }}</td></tr>
+        <tr><td colspan="7" class="lb-loading">{{ t.lb_loading }}</td></tr>
       </tbody>
     </table>
   </div>
@@ -219,7 +216,7 @@ async function loadScores(mode, noGuess, period, game) {
   const body     = document.getElementById('lb-body');
   const meta     = document.getElementById('lb-meta');
   const noteEl   = document.getElementById('lb-period-note');
-  body.innerHTML = `<tr><td colspan="9" class="lb-loading">${window.T.lb_loading}</td></tr>`;
+  body.innerHTML = `<tr><td colspan="7" class="lb-loading">${window.T.lb_loading}</td></tr>`;
   meta.textContent = '';
 
   let noteText;
@@ -244,7 +241,7 @@ async function loadScores(mode, noGuess, period, game) {
                      : currentPeriod === 'daily'   ? 'No scores yet today — be the first!'
                      : currentPeriod === 'season'  ? 'No scores yet this season — be the first!'
                      :                               'No all-time scores yet — be the first!';
-      body.innerHTML = `<tr><td colspan="10" class="lb-empty">${emptyMsg}</td></tr>`;
+      body.innerHTML = `<tr><td colspan="7" class="lb-empty">${emptyMsg}</td></tr>`;
       return;
     }
 
@@ -267,16 +264,13 @@ async function loadScores(mode, noGuess, period, game) {
         hashCell = `<td class="lb-hash"><a href="/variants/replay/?${rp}" class="lb-replay-link" title="${escHtml(s.board_hash)}">${short}</a></td>`;
       }
       return `
-        <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
+        <tr class="${i < 3 ? 'top-' + (i+1) : ''}${i % 2 === 1 ? ' lb-even' : ''}">
           <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
           <td class="lb-name">${nameCell}</td>
           <td class="lb-time">${fmtTime(s)}</td>
-          <td class="lb-board">${s.rows}×${s.cols}</td>
-          <td class="lb-mines">${s.mines}</td>
-          <td class="lb-stat">${s.bbbv ?? '—'}</td>
-          <td class="lb-stat">${bbbvS}</td>
-          <td class="lb-stat">${eff}</td>
-          <td class="lb-date">${s.created_at}</td>
+          <td class="lb-stat lb-stat-col">${s.bbbv ?? '—'}</td>
+          <td class="lb-stat lb-stat-col">${bbbvS}</td>
+          <td class="lb-stat lb-stat-col">${eff}</td>
           ${hashCell}
         </tr>`;
     }).join('');
@@ -284,7 +278,7 @@ async function loadScores(mode, noGuess, period, game) {
     const suffix = data.length !== 1 ? window.T.lb_top_suffix_many : window.T.lb_top_suffix_one;
     meta.textContent = `${window.T.lb_top_prefix} ${data.length} ${suffix}`;
   } catch {
-    body.innerHTML = `<tr><td colspan="10" class="lb-empty">${window.T.lb_error}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7" class="lb-empty">${window.T.lb_error}</td></tr>`;
   }
 }
 

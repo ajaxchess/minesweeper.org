@@ -1,8 +1,12 @@
 'use strict';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const NM_COLS  = 9;
-const NM_EPOCH = '2024-01-01';
+const NM_COLS      = 9;
+const NM_EPOCH     = '2024-01-01';
+const NM_DIFF_LABELS = { 4: 'Easy', 8: 'Medium', 16: 'Hard', 32: 'Expert' };
+const HINT_COST       = 3;   // score penalty per hint used
+const UNDO_COST       = 5;   // score penalty per undo used
+const ADD_LINES_LIMIT = 5;   // max Add Lines uses per game
 
 // Matching pairs share a color: 1↔9 red, 2↔8 blue, 3↔7 green, 4↔6 orange, 5↔5 purple
 const NM_COLORS = [
@@ -20,6 +24,8 @@ const NM_COLORS = [
 
 // ── Game state ─────────────────────────────────────────────────────────────────
 let G = {};
+let _lbReqId = 0;          // incremented each loadLeaderboard call; stale responses are discarded
+let _showConnections = false; // persists across games; toggled by the Paths button
 
 // ── Utility ────────────────────────────────────────────────────────────────────
 function fmtTime(s) {
@@ -55,14 +61,7 @@ function boardNumber(dateStr) {
 }
 
 function initialRows(boardNum) {
-    if (boardNum === 1)  return 3;
-    if (boardNum <= 3)   return 4;
-    if (boardNum <= 6)   return 5;
-    if (boardNum <= 10)  return 6;
-    if (boardNum <= 15)  return 7;
-    if (boardNum <= 21)  return 8;
-    if (boardNum <= 28)  return 9;
-    return 10 + Math.floor((boardNum - 29) / 7);
+    return 4;
 }
 
 function generateBoardClient(seed, rows) {
@@ -162,13 +161,25 @@ function countRowClearBonus(prevBoard) {
     return bonus;
 }
 
+// ── Row collapse ──────────────────────────────────────────────────────────────
+function collapseEmptyRows() {
+    const newBoard = [];
+    for (let r = 0; r < G.rows; r++) {
+        const row = G.board.slice(r * NM_COLS, (r + 1) * NM_COLS);
+        if (row.some(v => v !== 0)) newBoard.push(...row);
+    }
+    G.rows  = newBoard.length / NM_COLS;
+    G.board = newBoard;
+}
+
 // ── Undo history ───────────────────────────────────────────────────────────────
 function saveHistory() {
     G.history.push({
-        board:      [...G.board],
-        score:      G.score,
-        rows:       G.rows,
-        linesAdded: G.linesAdded,
+        board:         [...G.board],
+        score:         G.score,
+        rows:          G.rows,
+        linesAdded:    G.linesAdded,
+        addLinesLeft:  G.addLinesLeft,
     });
     if (G.history.length > 3) G.history.shift();
 }
@@ -195,6 +206,7 @@ function doMatch(i, j) {
         showWinOverlay();
         return;
     }
+    collapseEmptyRows();
     renderBoard();
     updateHUD();
 }
@@ -202,10 +214,11 @@ function doMatch(i, j) {
 function doUndo() {
     if (G.undosLeft <= 0 || G.history.length === 0 || G.won) return;
     const snap   = G.history.pop();
-    G.board      = snap.board;
-    G.score      = snap.score;
-    G.rows       = snap.rows;
-    G.linesAdded = snap.linesAdded;
+    G.board        = snap.board;
+    G.score        = Math.max(0, snap.score - UNDO_COST);
+    G.rows         = snap.rows;
+    G.linesAdded   = snap.linesAdded;
+    G.addLinesLeft = snap.addLinesLeft ?? ADD_LINES_LIMIT;
     G.undosLeft--;
     G.selected   = null;
     G.hintPair   = null;
@@ -228,23 +241,34 @@ function findHint() {
 function doHint() {
     if (G.hintsLeft <= 0 || G.won) return;
     G.selected = null;
-    G.hintPair = findHint();
+    const pair = findHint();
+    if (!pair) {
+        const btn = document.getElementById('nm-add-btn');
+        btn.classList.add('nm-add-pulse');
+        setTimeout(() => btn.classList.remove('nm-add-pulse'), 700);
+        return;
+    }
+    G.hintPair  = pair;
     G.hintsLeft--;
+    G.score = Math.max(0, G.score - HINT_COST);
     renderBoard();
     updateHUD();
 }
 
 function doAddLines() {
-    if (G.won) return;
+    if (G.won || G.addLinesLeft <= 0) return;
     const remaining = G.board.filter(v => v !== 0);
     if (!remaining.length) return;
+    saveHistory();
     while (remaining.length % NM_COLS !== 0) remaining.push(0);
-    G.board      = [...G.board, ...remaining];
-    G.rows      += remaining.length / NM_COLS;
+    G.board         = [...G.board, ...remaining];
+    G.rows         += remaining.length / NM_COLS;
     G.linesAdded++;
-    G.selected   = null;
-    G.hintPair   = null;
+    G.addLinesLeft--;
+    G.selected      = null;
+    G.hintPair      = null;
     renderBoard();
+    updateHUD();
 }
 
 // ── Cell click ─────────────────────────────────────────────────────────────────
@@ -275,6 +299,31 @@ function handleCellClick(idx) {
     }
 }
 
+// ── Connections (Paths mode) ───────────────────────────────────────────────────
+function applyAxisHighlight(hovIdx) {
+    clearAxisHighlight();
+    if (!_showConnections || hovIdx === null) return;
+    const hovRow = Math.floor(hovIdx / NM_COLS);
+    const hovCol = hovIdx % NM_COLS;
+    const cells  = document.querySelectorAll('#nm-grid .nm-cell');
+    cells.forEach(el => {
+        const idx = parseInt(el.dataset.idx, 10);
+        if (isNaN(idx) || idx === hovIdx) return;
+        const r = Math.floor(idx / NM_COLS);
+        const c = idx % NM_COLS;
+        const isWrap = (hovCol === 0 && idx === hovIdx - 1) ||
+                       (hovCol === NM_COLS - 1 && idx === hovIdx + 1);
+        if (r === hovRow || c === hovCol ||
+            (r - hovRow) === (c - hovCol) || (r - hovRow) === -(c - hovCol) || isWrap) {
+            el.classList.add('nm-axis');
+        }
+    });
+}
+
+function clearAxisHighlight() {
+    document.querySelectorAll('#nm-grid .nm-axis').forEach(el => el.classList.remove('nm-axis'));
+}
+
 // ── Rendering ──────────────────────────────────────────────────────────────────
 function renderBoard() {
     const grid = document.getElementById('nm-grid');
@@ -293,8 +342,8 @@ function renderBoard() {
         } else {
             el.textContent = val;
             el.style.color = NM_COLORS[val] || '';
-            if (idx === G.selected) el.classList.add('nm-selected');
-            if (hintSet.has(idx))   el.classList.add('nm-hint');
+            if (idx === G.selected)  el.classList.add('nm-selected');
+            if (hintSet.has(idx))    el.classList.add('nm-hint');
             el.addEventListener('click', () => handleCellClick(idx));
         }
 
@@ -306,12 +355,15 @@ function updateHUD() {
     document.getElementById('nm-score').textContent    = G.score;
     document.getElementById('nm-undo-btn').textContent = `↩ ${G.undosLeft}`;
     document.getElementById('nm-hint-btn').textContent = `💡 ${G.hintsLeft}`;
+    document.getElementById('nm-add-btn').textContent  = `+ Add Lines (${G.addLinesLeft})`;
     document.getElementById('nm-undo-btn').disabled    = G.undosLeft <= 0 || G.history.length === 0;
     document.getElementById('nm-hint-btn').disabled    = G.hintsLeft <= 0;
+    document.getElementById('nm-add-btn').disabled     = G.addLinesLeft <= 0;
 }
 
 // ── Win overlay ────────────────────────────────────────────────────────────────
 function showWinOverlay() {
+    document.getElementById('nm-grid').style.display = 'none';
     const ov = document.getElementById('nm-overlay');
     ov.style.display = 'flex';
 
@@ -321,28 +373,31 @@ function showWinOverlay() {
     const form     = document.getElementById('nm-score-form');
     const username = document.getElementById('nm-board').dataset.username || '';
 
+    const msgEl = document.getElementById('nm-score-msg');
+
     if (G.isPOTD) {
         if (username) {
             form.style.display = 'none';
-            const msgEl = document.getElementById('nm-score-msg');
-            if (msgEl) msgEl.textContent = 'Saving score…';
-            saveScore(username);
+            if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = 'Saving score…'; }
+            saveScore(username);   // loadLeaderboard is called by saveScore on success
         } else {
             form.style.display = 'flex';
+            if (msgEl) msgEl.style.display = 'none';
             document.getElementById('nm-name-input').value = localStorage.getItem('nm_name') || '';
             const btn = document.getElementById('nm-save-btn');
             btn.disabled    = false;
             btn.textContent = 'Save Score';
+            loadLeaderboard();   // show current standings while the guest fills in their name
         }
     } else {
         form.style.display = 'none';
+        if (msgEl) msgEl.style.display = 'none';
     }
-
-    if (G.isPOTD) loadLeaderboard();
 }
 
 // ── Score submission ───────────────────────────────────────────────────────────
 async function saveScore(autoName = null) {
+    if (G.scoreSaved) return;
     const inp  = document.getElementById('nm-name-input');
     const btn  = document.getElementById('nm-save-btn');
     const name = autoName || inp?.value.trim();
@@ -362,21 +417,32 @@ async function saveScore(autoName = null) {
                 lines_added: G.linesAdded,
             }),
         });
+        const msgEl = document.getElementById('nm-score-msg');
         if (r.ok) {
+            G.scoreSaved = true;
             localStorage.setItem('nm_name', name);
             if (btn) btn.textContent = '✓ Saved!';
-            const msgEl = document.getElementById('nm-score-msg');
-            if (msgEl) msgEl.textContent = `✅ Score saved for ${esc(name)}!`;
+            if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = `✅ Score saved for ${esc(name)}!`; }
             loadLeaderboard();
         } else {
-            if (btn) { btn.textContent = 'Error — retry'; btn.disabled = false; }
-            const msgEl = document.getElementById('nm-score-msg');
-            if (msgEl) msgEl.textContent = '❌ Could not save score.';
+            if (btn) { btn.textContent = 'Save Score'; btn.disabled = false; }
+            if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = '❌ Could not save score. Try again.'; }
+            // If auto-save failed for a logged-in user, expose the form so they can retry
+            const form = document.getElementById('nm-score-form');
+            if (form && form.style.display === 'none') {
+                form.style.display = 'flex';
+                document.getElementById('nm-name-input').value = autoName || '';
+            }
         }
     } catch {
-        if (btn) { btn.textContent = 'Error — retry'; btn.disabled = false; }
+        if (btn) { btn.textContent = 'Save Score'; btn.disabled = false; }
         const msgEl = document.getElementById('nm-score-msg');
-        if (msgEl) msgEl.textContent = '❌ Network error.';
+        if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = '❌ Network error. Try again.'; }
+        const form = document.getElementById('nm-score-form');
+        if (form && form.style.display === 'none') {
+            form.style.display = 'flex';
+            document.getElementById('nm-name-input').value = autoName || '';
+        }
     }
 }
 
@@ -385,11 +451,13 @@ async function loadLeaderboard() {
     if (!G.isPOTD) return;
     const el = document.getElementById('nm-lb-content');
     if (!el) return;
+    const myId = ++_lbReqId;
     el.innerHTML = '<div class="lb-loading">Loading…</div>';
 
     try {
         const r    = await fetch(`/api/numbers-match-scores/${G.puzzleId}`);
         const data = await r.json();
+        if (myId !== _lbReqId) return;   // a newer request already arrived
 
         if (!data.length) {
             el.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
@@ -420,7 +488,9 @@ async function loadLeaderboard() {
                 <tbody>${rows}</tbody>
               </table>
             </div>`;
+        document.getElementById('nm-lb-section')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } catch {
+        if (myId !== _lbReqId) return;
         el.innerHTML = '<div class="lb-empty">⚠️ Could not load scores.</div>';
     }
 }
@@ -442,13 +512,14 @@ async function initDailyGame(dateStr) {
     }
 }
 
-function initRandomGame() {
+function initRandomGame(rows) {
     stopTimer();
-    const seed  = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const bNum  = boardNumber(document.getElementById('nm-board').dataset.realToday);
-    const rows  = initialRows(bNum);
-    const board = generateBoardClient(seed, rows);
-    _startGame(board, rows, seed, false);
+    const seed     = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const board    = generateBoardClient(seed, rows);
+    const today    = document.getElementById('nm-board').dataset.realToday;
+    const diffKey  = NM_DIFF_LABELS[rows]?.toLowerCase();
+    const puzzleId = diffKey ? `${today}-${diffKey}` : seed;
+    _startGame(board, rows, puzzleId, !!diffKey);
 }
 
 function _startGame(boardData, rows, puzzleId, isPOTD) {
@@ -456,6 +527,7 @@ function _startGame(boardData, rows, puzzleId, isPOTD) {
     G = {
         board:      boardData.slice(),
         rows,
+        diffRows:   rows,
         score:      0,
         elapsed:    0,
         timer:      null,
@@ -467,16 +539,33 @@ function _startGame(boardData, rows, puzzleId, isPOTD) {
         hintsLeft:  9,
         isPOTD,
         puzzleId,
-        linesAdded: 0,
-        won:        false,
+        linesAdded:    0,
+        addLinesLeft:  ADD_LINES_LIMIT,
+        won:           false,
+        scoreSaved:    false,
     };
 
     document.getElementById('nm-overlay').style.display = 'none';
     document.getElementById('nm-timer').textContent     = '0:00';
+
+    const isDailyPuzzle = isPOTD && /^\d{4}-\d{2}-\d{2}$/.test(puzzleId);
     document.getElementById('nm-mode-label').textContent =
-        isPOTD ? '📅 Daily Puzzle' : '🎲 Random Puzzle';
+        isDailyPuzzle ? '📅 Daily Puzzle'
+                      : `🎲 ${NM_DIFF_LABELS[rows] || rows + ' rows'}`;
+
+    document.querySelectorAll('.nm-diff-btn').forEach(btn => {
+        btn.classList.toggle('nm-diff-btn--active',
+            !isDailyPuzzle && parseInt(btn.dataset.rows) === rows);
+    });
 
     document.getElementById('nm-lb-section').style.display = isPOTD ? 'block' : 'none';
+
+    const lbTitle = document.querySelector('.nm-lb-title');
+    if (lbTitle) {
+        lbTitle.textContent = isDailyPuzzle
+            ? '🏆 Today\'s Leaderboard'
+            : `🏆 ${NM_DIFF_LABELS[rows] || rows + ' rows'} — Today's Best`;
+    }
 
     _showLoading(false);
     renderBoard();
@@ -502,16 +591,32 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nm-daily-btn').addEventListener('click', () =>
         initDailyGame(boardEl.dataset.realToday));
 
-    document.getElementById('nm-random-btn').addEventListener('click', initRandomGame);
+    document.querySelectorAll('.nm-diff-btn').forEach(btn =>
+        btn.addEventListener('click', () => initRandomGame(parseInt(btn.dataset.rows))));
 
     document.getElementById('nm-overlay-daily').addEventListener('click', () =>
         initDailyGame(boardEl.dataset.realToday));
 
-    document.getElementById('nm-overlay-random').addEventListener('click', initRandomGame);
+    document.getElementById('nm-overlay-random').addEventListener('click', () =>
+        initRandomGame(G.diffRows || 4));
 
     document.getElementById('nm-undo-btn').addEventListener('click', doUndo);
     document.getElementById('nm-hint-btn').addEventListener('click', doHint);
     document.getElementById('nm-add-btn').addEventListener('click',  doAddLines);
+
+    document.getElementById('nm-connect-btn').addEventListener('click', () => {
+        _showConnections = !_showConnections;
+        document.getElementById('nm-connect-btn').classList.toggle('nm-connect-active', _showConnections);
+        if (!_showConnections) clearAxisHighlight();
+    });
+
+    const grid = document.getElementById('nm-grid');
+    grid.addEventListener('mouseover', e => {
+        const cell = e.target.closest('.nm-cell');
+        if (!cell || cell.classList.contains('nm-empty')) return;
+        applyAxisHighlight(parseInt(cell.dataset.idx, 10));
+    });
+    grid.addEventListener('mouseleave', () => clearAxisHighlight());
 
     document.getElementById('nm-save-btn').addEventListener('click', () => saveScore());
     document.getElementById('nm-name-input').addEventListener('keydown', e => {

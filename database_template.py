@@ -1250,7 +1250,7 @@ class NumbersMatchScore(Base):
     id          = Column(Integer, primary_key=True, index=True)
     name        = Column(String(32), nullable=False)
     user_email  = Column(String(256), nullable=True, index=True)
-    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD (daily) or random hex (random mode, not stored)
+    puzzle_date = Column(String(32), nullable=False)   # YYYY-MM-DD (daily) or YYYY-MM-DD-{easy|medium|hard|expert}
     score       = Column(Integer, nullable=False, default=0)
     time_secs   = Column(Integer, nullable=False)
     lines_added = Column(Integer, nullable=False, default=0)

@@ -26,16 +26,8 @@ def board_number(date_str: str) -> int:
 
 
 def initial_rows(board_num: int) -> int:
-    """Return the starting row count for a given board number (spec table)."""
-    if board_num == 1:  return 3
-    if board_num <= 3:  return 4
-    if board_num <= 6:  return 5
-    if board_num <= 10: return 6
-    if board_num <= 15: return 7
-    if board_num <= 21: return 8
-    if board_num <= 28: return 9
-    # Pattern continues: +1 row every 7 boards
-    return 10 + (board_num - 29) // 7
+    """Return the starting row count. Always 4; Add Lines handles progression."""
+    return 4
 
 
 def generate_daily(date_str: str) -> dict:

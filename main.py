@@ -821,10 +821,27 @@ scheduler.add_job(cleanup_old_games,          CronTrigger(hour="*"))            
 scheduler.add_job(collect_server_stats,       CronTrigger(minute=0))             # top of every hour
 scheduler.add_job(collect_web_traffic_stats,  CronTrigger(hour=1,  minute=0))   # 1 AM UTC — parse yesterday's logs
 
+def _migrate_numbers_match_puzzle_date():
+    """Widen numbers_match_scores.puzzle_date from VARCHAR(10) to VARCHAR(32)
+    to support difficulty-mode IDs like '2026-05-08-easy'."""
+    db = SessionLocal()
+    try:
+        db.execute(text(
+            "ALTER TABLE numbers_match_scores "
+            "MODIFY COLUMN puzzle_date VARCHAR(32) NOT NULL"
+        ))
+        db.commit()
+    except Exception:
+        db.rollback()
+    finally:
+        db.close()
+
+
 # Create DB tables and start scheduler on startup
 @app.on_event("startup")
 def startup():
     init_db()
+    _migrate_numbers_match_puzzle_date()
     scheduler.start()
     logger.info("Scheduler started — scores reset daily at midnight UTC.")
     threading.Thread(target=_backfill_web_traffic,         daemon=True).start()
@@ -1554,15 +1571,19 @@ async def contact_submit(
     return RedirectResponse("/contact?submitted=true", status_code=303)
 
 
-# ── Other Puzzles ──────────────────────────────────────────────────────────────
+# ── Puzzles hub (All Puzzles) ──────────────────────────────────────────────────
 
-@app.get("/other", response_class=HTMLResponse)
-def other_hub(request: Request):
-    return templates.TemplateResponse("other.html", {
-        "request": request, "mode": "other",
+@app.get("/puzzles", response_class=HTMLResponse)
+def puzzles_hub(request: Request):
+    return templates.TemplateResponse("puzzles.html", {
+        "request": request, "mode": "puzzles",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
+
+@app.get("/other", response_class=HTMLResponse)
+def other_hub_redirect(request: Request):
+    return RedirectResponse("/puzzles", status_code=301)
 
 
 @app.get("/other/15puzzle", response_class=HTMLResponse)
@@ -2872,6 +2893,16 @@ async def mobile_ios_landing(request: Request):
 @app.get("/mobile/android", response_class=HTMLResponse)
 async def mobile_android_landing(request: Request):
     return templates.TemplateResponse("mobile_android.html", {"request": request})
+
+@app.get("/mobile/nmmobile", response_class=HTMLResponse)
+async def mobile_nmmobile(request: Request):
+    real_today = date.today().isoformat()
+    return templates.TemplateResponse("nmmobile.html", {
+        "request":    request,
+        "user":       get_current_user(request),
+        "today":      real_today,
+        "real_today": real_today,
+    })
 
 
 # ── Blog ──────────────────────────────────────────────────────────────────────
@@ -7242,6 +7273,69 @@ def delete_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends
     return {"ok": True}
 
 
+# These two 3-segment routes must be defined before /{mode}/{date_str}/{guess_mode}
+# below, which is a wildcard that would intercept them first.
+@app.get("/api/numbers-match-board/{date_str}")
+def get_numbers_match_board(date_str: str, db: Session = Depends(get_db)):
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
+        raise HTTPException(status_code=400, detail="Invalid date format")
+    row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
+    if row and row.rows != 4:
+        db.delete(row)
+        db.commit()
+        row = None
+    if not row:
+        from sqlalchemy.exc import IntegrityError
+        result = _nm_generate_daily(date_str)
+        try:
+            entry = NumbersMatchDaily(
+                puzzle_date = date_str,
+                board_num   = result["board_num"],
+                rows        = result["rows"],
+                board_data  = result["board_data"],
+            )
+            db.add(entry)
+            db.commit()
+            db.refresh(entry)
+            row = entry
+        except IntegrityError:
+            db.rollback()
+            row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
+    return {
+        "puzzle_date": row.puzzle_date,
+        "board_num":   row.board_num,
+        "rows":        row.rows,
+        "board_data":  row.board_data,
+    }
+
+
+@app.get("/api/numbers-match-scores/{puzzle_date}")
+def get_numbers_match_scores(puzzle_date: str, db: Session = Depends(get_db)):
+    if not re.match(r"^\d{4}-\d{2}-\d{2}(-(?:easy|medium|hard|expert))?$", puzzle_date):
+        raise HTTPException(status_code=400, detail="Invalid date format")
+    q = db.query(NumbersMatchScore).filter(NumbersMatchScore.puzzle_date == puzzle_date)
+    q = exclude_flagged(q, NumbersMatchScore, db)
+    all_rows = q.all()
+    # Rank by score-to-time ratio: higher score achieved faster = better rank.
+    # Tiebreak: higher raw score, then lower time.
+    all_rows.sort(
+        key=lambda r: (
+            -(r.score / max(1, r.time_secs)),
+            -r.score,
+            r.time_secs,
+        )
+    )
+    seen, top = set(), []
+    for row in all_rows:
+        key = row.name.strip().lower()
+        if key not in seen:
+            seen.add(key)
+            top.append(row)
+        if len(top) >= 20:
+            break
+    return _enrich_with_profiles(top, db)
+
+
 @app.get("/{mode}/{date_str}/{guess_mode}", response_class=HTMLResponse)
 async def archive_day(
     request: Request,
@@ -7653,43 +7747,14 @@ async def numbers_match_permalink(request: Request, date_str: str):
     })
 
 
-@app.get("/api/numbers-match-board/{date_str}")
-def get_numbers_match_board(date_str: str, db: Session = Depends(get_db)):
-    """Return the pre-generated board for the given date (or generate on demand)."""
-    if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
-        raise HTTPException(status_code=400, detail="Invalid date format")
-    row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
-    if not row:
-        # On-demand fallback: generate and cache synchronously
-        from sqlalchemy.exc import IntegrityError
-        result = _nm_generate_daily(date_str)
-        try:
-            entry = NumbersMatchDaily(
-                puzzle_date = date_str,
-                board_num   = result["board_num"],
-                rows        = result["rows"],
-                board_data  = result["board_data"],
-            )
-            db.add(entry)
-            db.commit()
-            db.refresh(entry)
-            row = entry
-        except IntegrityError:
-            db.rollback()
-            row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
-    return {
-        "puzzle_date": row.puzzle_date,
-        "board_num":   row.board_num,
-        "rows":        row.rows,
-        "board_data":  row.board_data,
-    }
+# get_numbers_match_board is defined before /{mode}/{date_str}/{guess_mode} above
 
 
 # ── Numbers Match Score API ────────────────────────────────────────────────────
 
 class NumbersMatchScoreSubmit(BaseModel):
     name:        str = Field(..., min_length=1, max_length=32)
-    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}(-(?:easy|medium|hard|expert))?$")
     score:       int = Field(..., ge=0, le=99999)
     time_secs:   int = Field(..., ge=1, le=99999)
     lines_added: int = Field(default=0, ge=0, le=999)
@@ -7738,23 +7803,7 @@ def submit_numbers_match_score(
     return {"ok": True, "id": entry.id}
 
 
-@app.get("/api/numbers-match-scores/{puzzle_date}")
-def get_numbers_match_scores(puzzle_date: str, db: Session = Depends(get_db)):
-    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
-        raise HTTPException(status_code=400, detail="Invalid date format")
-    q = db.query(NumbersMatchScore).filter(NumbersMatchScore.puzzle_date == puzzle_date)
-    q = exclude_flagged(q, NumbersMatchScore, db)
-    top = (
-        q
-        .order_by(
-            NumbersMatchScore.score.desc(),
-            NumbersMatchScore.time_secs.asc(),
-            NumbersMatchScore.created_at.asc(),
-        )
-        .limit(20)
-        .all()
-    )
-    return _enrich_with_profiles(top, db)
+# get_numbers_match_scores is defined before /{mode}/{date_str}/{guess_mode} above
 
 
 @app.get("/mvs/{path:path}")

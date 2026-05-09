@@ -126,17 +126,14 @@
             <th>#</th>
             <th>{{ t.lb_col_name }}</th>
             <th>{{ t.lb_col_time }}</th>
-            <th>{{ t.lb_col_board }}</th>
-            <th>{{ t.lb_col_mines }}</th>
-            <th class="lb-th-stat" data-tip="3BV is the minimum number of clicks required to complete a board without using flags."><a href="/info/3bv" class="lb-th-link" title="Learn about 3BV">3BV</a></th>
-            <th class="lb-th-stat" data-tip="3BV per second — speed of completing the game. Higher is better."><a href="/info/3bv" class="lb-th-link" title="Learn about 3BV">3BV/s</a></th>
-            <th class="lb-th-stat" data-tip="Efficiency: 3BV divided by clicks performed. Fewer clicks = higher efficiency."><a href="/info/3bv" class="lb-th-link" title="Learn about 3BV">Eff</a></th>
-            <th>{{ t.lb_col_date }}</th>
-            <th>Board</th>
+            <th class="lb-th-stat lb-stat-col" data-tip="3BV is the minimum number of clicks required to complete a board without using flags."><a href="/info/3bv" class="lb-th-link" title="Learn about 3BV">3BV</a></th>
+            <th class="lb-th-stat lb-stat-col" data-tip="3BV per second — speed of completing the game. Higher is better."><a href="/info/3bv" class="lb-th-link" title="Learn about 3BV">3BV/s</a></th>
+            <th class="lb-th-stat lb-stat-col" data-tip="Efficiency: 3BV divided by clicks performed. Fewer clicks = higher efficiency."><a href="/info/3bv" class="lb-th-link" title="Learn about 3BV">Eff</a></th>
+            <th>Hash</th>
           </tr>
         </thead>
         <tbody id="page-lb-body">
-          <tr><td colspan="10" class="lb-loading">{{ t.lb_loading }}</td></tr>
+          <tr><td colspan="7" class="lb-loading">{{ t.lb_loading }}</td></tr>
         </tbody>
       </table>
     </div>
@@ -356,14 +353,14 @@ async function loadPageLb() {
     const url   = `${LB_MODE_URL}?ng=${noGuess ? '1' : '0'}`;
     title.innerHTML = `${window.T.index_todays_best} — <a href="${url}" class="lb-title-link">${label}</a>`;
   }
-  body.innerHTML = `<tr><td colspan="10" class="lb-loading">${window.T.lb_loading}</td></tr>`;
+  body.innerHTML = `<tr><td colspan="7" class="lb-loading">${window.T.lb_loading}</td></tr>`;
 
   try {
     const res  = await fetch(`/api/scores/${LB_MODE}?no_guess=${noGuess}&period=daily`);
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
     if (!Array.isArray(data) || !data.length) {
-      body.innerHTML = `<tr><td colspan="10" class="lb-empty">${window.T.lb_no_scores}</td></tr>`;
+      body.innerHTML = `<tr><td colspan="7" class="lb-empty">${window.T.lb_no_scores}</td></tr>`;
       return;
     }
     body.innerHTML = data.map((s, i) => {
@@ -382,21 +379,18 @@ async function loadPageLb() {
         hashCell = `<td class="lb-hash"><a href="/variants/replay/?${rp}" class="lb-replay-link" title="${esc(s.board_hash)}">${short}</a></td>`;
       }
       return `
-        <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
+        <tr class="${i < 3 ? 'top-' + (i+1) : (i % 2 === 1 ? 'lb-even' : '')}">
           <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
           <td class="lb-name">${nameCell}</td>
           <td class="lb-time">${fmtTime(s)}</td>
-          <td class="lb-board">${s.rows}×${s.cols}</td>
-          <td class="lb-mines">${s.mines}</td>
-          <td class="lb-stat">${s.bbbv ?? '—'}</td>
-          <td class="lb-stat">${fmtBbbvS(s)}</td>
-          <td class="lb-stat">${fmtEff(s)}</td>
-          <td class="lb-date">${s.created_at}</td>
+          <td class="lb-stat lb-stat-col">${s.bbbv ?? '—'}</td>
+          <td class="lb-stat lb-stat-col">${fmtBbbvS(s)}</td>
+          <td class="lb-stat lb-stat-col">${fmtEff(s)}</td>
           ${hashCell}
         </tr>`;
     }).join('');
   } catch {
-    body.innerHTML = `<tr><td colspan="10" class="lb-empty">${window.T.lb_error}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7" class="lb-empty">${window.T.lb_error}</td></tr>`;
   }
 }
 
