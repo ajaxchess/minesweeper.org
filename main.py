@@ -513,6 +513,11 @@ def reset_scores():
     finally:
         db.close()
 
+
+def utc_today_str() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+
 _prev_net_sent: int | None = None
 _prev_net_recv: int | None = None
 
@@ -696,6 +701,7 @@ def archive_guest_scores():
             (FifteenPuzzleScore,  "fifteen_puzzle_scores", "puzzle_date"),
             (Game2048Score,       "game_2048_scores",      "puzzle_date"),
             (MahjongScore,        "mahjong_scores",        "puzzle_date"),
+            (NumbersMatchScore,    "numbers_match_scores",  "puzzle_date"),
         ]
         total = 0
         for model, table_name, mode_attr in tables:
@@ -2896,7 +2902,7 @@ async def mobile_android_landing(request: Request):
 
 @app.get("/mobile/nmmobile", response_class=HTMLResponse)
 async def mobile_nmmobile(request: Request):
-    real_today = date.today().isoformat()
+    real_today = utc_today_str()
     return templates.TemplateResponse("nmmobile.html", {
         "request":    request,
         "user":       get_current_user(request),
@@ -7717,7 +7723,7 @@ def tametsi_leaderboard_board(board_hash: str, db: Session = Depends(get_db)):
 
 @app.get("/numbers-match", response_class=HTMLResponse)
 async def numbers_match_page(request: Request):
-    real_today = date.today().isoformat()
+    real_today = utc_today_str()
     return templates.TemplateResponse("numbers_match.html", {
         "request":    request,
         "mode":       "numbers-match",
@@ -7732,7 +7738,7 @@ async def numbers_match_page(request: Request):
 # Must be declared AFTER any future static sub-routes (e.g. /numbers-match/how-to-play)
 @app.get("/numbers-match/{date_str}", response_class=HTMLResponse)
 async def numbers_match_permalink(request: Request, date_str: str):
-    real_today = date.today().isoformat()
+    real_today = utc_today_str()
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
         return RedirectResponse("/numbers-match", status_code=302)
     return templates.TemplateResponse("numbers_match.html", {

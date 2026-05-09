@@ -7,6 +7,7 @@ const NM_DIFF_LABELS = { 4: 'Easy', 8: 'Medium', 16: 'Hard', 32: 'Expert' };
 const HINT_COST       = 3;   // score penalty per hint used
 const UNDO_COST       = 5;   // score penalty per undo used
 const ADD_LINES_LIMIT = 5;   // max Add Lines uses per game
+const AUTO_NEXT_DELAY_MS = 350;
 
 // Matching pairs share a color: 1↔9 red, 2↔8 blue, 3↔7 green, 4↔6 orange, 5↔5 purple
 const NM_COLORS = [
@@ -26,6 +27,8 @@ const NM_COLORS = [
 let G = {};
 let _lbReqId = 0;          // incremented each loadLeaderboard call; stale responses are discarded
 let _showConnections = false; // persists across games; toggled by the Paths button
+let _autoNextTimer = null;
+let _gameSeq = 0;
 
 // ── Utility ────────────────────────────────────────────────────────────────────
 function fmtTime(s) {
@@ -34,6 +37,32 @@ function fmtTime(s) {
 
 function esc(s) {
     return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+function playerName() {
+    const username = document.getElementById('nm-board')?.dataset.username?.trim() || '';
+    const saved    = localStorage.getItem('nm_name')?.trim() || '';
+    if (username || saved) return username || saved;
+    let guest = localStorage.getItem('nm_guest_name')?.trim() || '';
+    if (!guest) {
+        guest = `Guest ${Math.floor(1000 + Math.random() * 9000)}`;
+        localStorage.setItem('nm_guest_name', guest);
+    }
+    return guest;
+}
+
+function rememberVariant(kind, rows = null) {
+    localStorage.setItem('nm_last_variant', kind === 'daily' ? 'daily' : String(rows || 4));
+}
+
+function startLastVariant() {
+    const last = localStorage.getItem('nm_last_variant');
+    if (last === 'daily') {
+        initDailyGame(document.getElementById('nm-board').dataset.realToday);
+        return;
+    }
+    const rows = parseInt(last || G.diffRows || 4, 10);
+    initRandomGame([4, 8, 16, 32].includes(rows) ? rows : 4);
 }
 
 // ── Seeded RNG (mirrors Python generator — used for random-mode boards) ────────
@@ -370,28 +399,19 @@ function showWinOverlay() {
     document.getElementById('nm-win-score').textContent = G.score;
     document.getElementById('nm-win-time').textContent  = fmtTime(G.elapsed);
 
-    const form     = document.getElementById('nm-score-form');
-    const username = document.getElementById('nm-board').dataset.username || '';
-
+    const form  = document.getElementById('nm-score-form');
     const msgEl = document.getElementById('nm-score-msg');
+    const name  = playerName();
 
     if (G.isPOTD) {
-        if (username) {
-            form.style.display = 'none';
-            if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = 'Saving score…'; }
-            saveScore(username);   // loadLeaderboard is called by saveScore on success
-        } else {
-            form.style.display = 'flex';
-            if (msgEl) msgEl.style.display = 'none';
-            document.getElementById('nm-name-input').value = localStorage.getItem('nm_name') || '';
-            const btn = document.getElementById('nm-save-btn');
-            btn.disabled    = false;
-            btn.textContent = 'Save Score';
-            loadLeaderboard();   // show current standings while the guest fills in their name
-        }
+        form.style.display = 'none';
+        if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = 'Saving score...'; }
+        saveScore(name);
+        _autoNextTimer = setTimeout(startLastVariant, AUTO_NEXT_DELAY_MS);
     } else {
         form.style.display = 'none';
         if (msgEl) msgEl.style.display = 'none';
+        _autoNextTimer = setTimeout(startLastVariant, AUTO_NEXT_DELAY_MS);
     }
 }
 
@@ -400,8 +420,17 @@ async function saveScore(autoName = null) {
     if (G.scoreSaved) return;
     const inp  = document.getElementById('nm-name-input');
     const btn  = document.getElementById('nm-save-btn');
-    const name = autoName || inp?.value.trim();
+    const name = autoName || inp?.value.trim() || playerName();
     if (!name) { inp?.focus(); return; }
+    const gameId = G.gameId;
+    const payload = {
+        name,
+        puzzle_date: G.puzzleId,
+        score:       G.score,
+        time_secs:   Math.max(1, G.elapsed),
+        lines_added: G.linesAdded,
+    };
+    G.scoreSaved = true;
 
     if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
 
@@ -409,40 +438,24 @@ async function saveScore(autoName = null) {
         const r = await fetch('/api/numbers-match-scores', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-            body:    JSON.stringify({
-                name,
-                puzzle_date: G.puzzleId,
-                score:       G.score,
-                time_secs:   Math.max(1, G.elapsed),
-                lines_added: G.linesAdded,
-            }),
+            body:    JSON.stringify(payload),
         });
         const msgEl = document.getElementById('nm-score-msg');
         if (r.ok) {
-            G.scoreSaved = true;
             localStorage.setItem('nm_name', name);
             if (btn) btn.textContent = '✓ Saved!';
             if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = `✅ Score saved for ${esc(name)}!`; }
-            loadLeaderboard();
+            if (G.gameId === gameId) loadLeaderboard();
         } else {
+            if (G.gameId === gameId) G.scoreSaved = false;
             if (btn) { btn.textContent = 'Save Score'; btn.disabled = false; }
-            if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = '❌ Could not save score. Try again.'; }
-            // If auto-save failed for a logged-in user, expose the form so they can retry
-            const form = document.getElementById('nm-score-form');
-            if (form && form.style.display === 'none') {
-                form.style.display = 'flex';
-                document.getElementById('nm-name-input').value = autoName || '';
-            }
+            if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = 'Could not save score. Starting a new game...'; }
         }
     } catch {
+        if (G.gameId === gameId) G.scoreSaved = false;
         if (btn) { btn.textContent = 'Save Score'; btn.disabled = false; }
         const msgEl = document.getElementById('nm-score-msg');
-        if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = '❌ Network error. Try again.'; }
-        const form = document.getElementById('nm-score-form');
-        if (form && form.style.display === 'none') {
-            form.style.display = 'flex';
-            document.getElementById('nm-name-input').value = autoName || '';
-        }
+        if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = 'Network error saving score. Starting a new game...'; }
     }
 }
 
@@ -498,6 +511,7 @@ async function loadLeaderboard() {
 // ── Game init ──────────────────────────────────────────────────────────────────
 async function initDailyGame(dateStr) {
     stopTimer();
+    rememberVariant('daily');
     _showLoading(true);
 
     try {
@@ -514,17 +528,20 @@ async function initDailyGame(dateStr) {
 
 function initRandomGame(rows) {
     stopTimer();
-    const seed     = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const board    = generateBoardClient(seed, rows);
     const today    = document.getElementById('nm-board').dataset.realToday;
     const diffKey  = NM_DIFF_LABELS[rows]?.toLowerCase();
+    const seed     = diffKey ? `${today}-${diffKey}` : Date.now().toString(36);
+    const board    = generateBoardClient(seed, rows);
     const puzzleId = diffKey ? `${today}-${diffKey}` : seed;
+    rememberVariant('variant', rows);
     _startGame(board, rows, puzzleId, !!diffKey);
 }
 
 function _startGame(boardData, rows, puzzleId, isPOTD) {
     clearInterval(G.timer);
+    clearTimeout(_autoNextTimer);
     G = {
+        gameId:     ++_gameSeq,
         board:      boardData.slice(),
         rows,
         diffRows:   rows,
@@ -546,6 +563,8 @@ function _startGame(boardData, rows, puzzleId, isPOTD) {
     };
 
     document.getElementById('nm-overlay').style.display = 'none';
+    document.getElementById('nm-score-form').style.display = 'none';
+    document.getElementById('nm-score-msg').style.display = 'none';
     document.getElementById('nm-timer').textContent     = '0:00';
 
     const isDailyPuzzle = isPOTD && /^\d{4}-\d{2}-\d{2}$/.test(puzzleId);
