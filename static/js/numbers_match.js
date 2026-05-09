@@ -23,7 +23,8 @@ const NM_COLORS = [
 
 // ── Game state ─────────────────────────────────────────────────────────────────
 let G = {};
-let _lbReqId = 0;   // incremented each loadLeaderboard call; stale responses are discarded
+let _lbReqId = 0;          // incremented each loadLeaderboard call; stale responses are discarded
+let _showConnections = false; // persists across games; toggled by the Paths button
 
 // ── Utility ────────────────────────────────────────────────────────────────────
 function fmtTime(s) {
@@ -293,13 +294,27 @@ function handleCellClick(idx) {
     }
 }
 
+// ── Connections (Paths mode) ───────────────────────────────────────────────────
+function getReachableCells(idx) {
+    const reachable = [];
+    if (G.board[idx] === 0) return reachable;
+    for (let j = 0; j < G.board.length; j++) {
+        if (j === idx || G.board[j] === 0) continue;
+        if (areAdjacent(idx, j)) reachable.push(j);
+    }
+    return reachable;
+}
+
 // ── Rendering ──────────────────────────────────────────────────────────────────
 function renderBoard() {
     const grid = document.getElementById('nm-grid');
     grid.innerHTML = '';
     grid.style.gridTemplateColumns = `repeat(${NM_COLS}, 1fr)`;
 
-    const hintSet = G.hintPair ? new Set(G.hintPair) : new Set();
+    const hintSet    = G.hintPair ? new Set(G.hintPair) : new Set();
+    const reachSet   = (_showConnections && G.selected !== null)
+        ? new Set(getReachableCells(G.selected))
+        : new Set();
 
     G.board.forEach((val, idx) => {
         const el = document.createElement('div');
@@ -311,8 +326,9 @@ function renderBoard() {
         } else {
             el.textContent = val;
             el.style.color = NM_COLORS[val] || '';
-            if (idx === G.selected) el.classList.add('nm-selected');
-            if (hintSet.has(idx))   el.classList.add('nm-hint');
+            if (idx === G.selected)  el.classList.add('nm-selected');
+            if (hintSet.has(idx))    el.classList.add('nm-hint');
+            if (reachSet.has(idx))   el.classList.add('nm-reachable');
             el.addEventListener('click', () => handleCellClick(idx));
         }
 
@@ -340,14 +356,16 @@ function showWinOverlay() {
     const form     = document.getElementById('nm-score-form');
     const username = document.getElementById('nm-board').dataset.username || '';
 
+    const msgEl = document.getElementById('nm-score-msg');
+
     if (G.isPOTD) {
         if (username) {
             form.style.display = 'none';
-            const msgEl = document.getElementById('nm-score-msg');
-            if (msgEl) msgEl.textContent = 'Saving score…';
+            if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = 'Saving score…'; }
             saveScore(username);   // loadLeaderboard is called by saveScore on success
         } else {
             form.style.display = 'flex';
+            if (msgEl) msgEl.style.display = 'none';
             document.getElementById('nm-name-input').value = localStorage.getItem('nm_name') || '';
             const btn = document.getElementById('nm-save-btn');
             btn.disabled    = false;
@@ -356,6 +374,7 @@ function showWinOverlay() {
         }
     } else {
         form.style.display = 'none';
+        if (msgEl) msgEl.style.display = 'none';
     }
 }
 
@@ -381,22 +400,32 @@ async function saveScore(autoName = null) {
                 lines_added: G.linesAdded,
             }),
         });
+        const msgEl = document.getElementById('nm-score-msg');
         if (r.ok) {
             G.scoreSaved = true;
             localStorage.setItem('nm_name', name);
             if (btn) btn.textContent = '✓ Saved!';
-            const msgEl = document.getElementById('nm-score-msg');
-            if (msgEl) msgEl.textContent = `✅ Score saved for ${esc(name)}!`;
+            if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = `✅ Score saved for ${esc(name)}!`; }
             loadLeaderboard();
         } else {
-            if (btn) { btn.textContent = 'Error — retry'; btn.disabled = false; }
-            const msgEl = document.getElementById('nm-score-msg');
-            if (msgEl) msgEl.textContent = '❌ Could not save score.';
+            if (btn) { btn.textContent = 'Save Score'; btn.disabled = false; }
+            if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = '❌ Could not save score. Try again.'; }
+            // If auto-save failed for a logged-in user, expose the form so they can retry
+            const form = document.getElementById('nm-score-form');
+            if (form && form.style.display === 'none') {
+                form.style.display = 'flex';
+                document.getElementById('nm-name-input').value = autoName || '';
+            }
         }
     } catch {
-        if (btn) { btn.textContent = 'Error — retry'; btn.disabled = false; }
+        if (btn) { btn.textContent = 'Save Score'; btn.disabled = false; }
         const msgEl = document.getElementById('nm-score-msg');
-        if (msgEl) msgEl.textContent = '❌ Network error.';
+        if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = '❌ Network error. Try again.'; }
+        const form = document.getElementById('nm-score-form');
+        if (form && form.style.display === 'none') {
+            form.style.display = 'flex';
+            document.getElementById('nm-name-input').value = autoName || '';
+        }
     }
 }
 
@@ -556,6 +585,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nm-undo-btn').addEventListener('click', doUndo);
     document.getElementById('nm-hint-btn').addEventListener('click', doHint);
     document.getElementById('nm-add-btn').addEventListener('click',  doAddLines);
+
+    document.getElementById('nm-connect-btn').addEventListener('click', () => {
+        _showConnections = !_showConnections;
+        document.getElementById('nm-connect-btn').classList.toggle('nm-connect-active', _showConnections);
+        renderBoard();
+    });
 
     document.getElementById('nm-save-btn').addEventListener('click', () => saveScore());
     document.getElementById('nm-name-input').addEventListener('keydown', e => {

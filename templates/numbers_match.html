@@ -74,9 +74,10 @@
 
     <!-- Action buttons -->
     <div class="nm-actions">
-      <button id="nm-undo-btn" title="Undo last match (3 per game)">↩ 3</button>
-      <button id="nm-hint-btn" title="Highlight a valid pair (9 per game)">💡 9</button>
+      <button id="nm-undo-btn" title="Undo last match (3 per game, −5 pts)">↩ 3</button>
+      <button id="nm-hint-btn" title="Highlight a valid pair (9 per game, −3 pts)">💡 9</button>
       <button id="nm-add-btn"  title="Append remaining numbers to the bottom">+ Add Lines</button>
+      <button id="nm-connect-btn" title="Show all cells reachable from your selection — helps you spot connections">🔗 Paths</button>
     </div>
 
     <!-- Board -->
@@ -103,8 +104,8 @@
           <input id="nm-name-input" type="text" maxlength="32"
                  placeholder="Your name" autocomplete="nickname">
           <button id="nm-save-btn">Save Score</button>
-          <div id="nm-score-msg"></div>
         </div>
+        <div id="nm-score-msg" style="display:none"></div>
         <div class="nm-overlay-btns">
           <button id="nm-overlay-daily">📅 New Daily</button>
           <button id="nm-overlay-random">🎲 Play Again</button>
@@ -135,7 +136,7 @@
         </ul>
         <p>
           <strong>Tools:</strong> ↩ Undo (3 per game, −5 pts each) · 💡 Hint (9 per game, −3 pts each) · + Add Lines (free, unlimited)<br>
-          Leaderboard ranks by <strong>score</strong> (higher is better), then by <strong>time</strong> (lower is better).
+          Leaderboard ranks by <strong>score ÷ time</strong> — higher score achieved faster = better rank.
           All modes — Daily, Easy, Medium, Hard and Expert — have their own daily leaderboard.
         </p>
       </div>
@@ -217,5 +218,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/numbers_match.js?v=9"></script>
+<script src="/static/js/numbers_match.js?v=10"></script>
 {% endblock %}

@@ -6,7 +6,7 @@
   <title>Numbers Match — minesweeper.org</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-  <link rel="stylesheet" href="/static/css/style.css?v=47">
+  <link rel="stylesheet" href="/static/css/style.css?v=48">
 
   <!-- Skin detection (mirrors base.html logic) -->
   <script>
@@ -105,9 +105,10 @@
 
     <!-- Action buttons -->
     <div class="nm-actions">
-      <button id="nm-undo-btn" title="Undo last match (3 per game)">↩ 3</button>
-      <button id="nm-hint-btn" title="Highlight a valid pair (9 per game)">💡 9</button>
+      <button id="nm-undo-btn" title="Undo last match (3 per game, −5 pts)">↩ 3</button>
+      <button id="nm-hint-btn" title="Highlight a valid pair (9 per game, −3 pts)">💡 9</button>
       <button id="nm-add-btn" title="Append remaining numbers to the bottom">+ Add Lines</button>
+      <button id="nm-connect-btn" title="Show all cells reachable from your selection">🔗 Paths</button>
     </div>
 
     <!-- Board -->
@@ -132,8 +133,8 @@
           <input id="nm-name-input" type="text" maxlength="32"
                  placeholder="Your name" autocomplete="nickname">
           <button id="nm-save-btn">Save Score</button>
-          <div id="nm-score-msg"></div>
         </div>
+        <div id="nm-score-msg" style="display:none"></div>
         <div class="nm-overlay-btns">
           <button id="nm-overlay-daily">📅 New Daily</button>
           <button id="nm-overlay-random">🎲 Play Again</button>
@@ -151,6 +152,6 @@
 
   </div>
 
-  <script src="/static/js/numbers_match.js?v=9"></script>
+  <script src="/static/js/numbers_match.js?v=10"></script>
 </body>
 </html>

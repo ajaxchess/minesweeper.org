@@ -7294,14 +7294,15 @@ def get_numbers_match_scores(puzzle_date: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Invalid date format")
     q = db.query(NumbersMatchScore).filter(NumbersMatchScore.puzzle_date == puzzle_date)
     q = exclude_flagged(q, NumbersMatchScore, db)
-    all_rows = (
-        q
-        .order_by(
-            NumbersMatchScore.score.desc(),
-            NumbersMatchScore.time_secs.asc(),
-            NumbersMatchScore.created_at.asc(),
+    all_rows = q.all()
+    # Rank by score-to-time ratio: higher score achieved faster = better rank.
+    # Tiebreak: higher raw score, then lower time.
+    all_rows.sort(
+        key=lambda r: (
+            -(r.score / max(1, r.time_secs)),
+            -r.score,
+            r.time_secs,
         )
-        .all()
     )
     seen, top = set(), []
     for row in all_rows:
