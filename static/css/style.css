@@ -5373,6 +5373,15 @@ html[data-skin="tentaizu"] .cell.mine-detonated { background: #2a0a2a; }
 /* Tentaizu accent (#7ec8e3 sky-blue) is too light for white text on filled buttons */
 html[data-skin="tentaizu"] .variant-play-btn,
 html[data-skin="tentaizu"] .variant-play-btn:visited { color: #0a0e1a; }
+html[data-skin="tentaizu"] .variant-play-btn-outline,
+html[data-skin="tentaizu"] .variant-play-btn-outline:visited {
+  color: var(--accent);
+}
+html[data-skin="tentaizu"] .variant-play-btn-outline:hover {
+  background: var(--accent);
+  color: #0a0e1a;
+  opacity: 1;
+}
 html[data-skin="tentaizu"] .mega-card.active { color: #0a0e1a; }
 
 /* Replace bomb icon with star in tentaizu */
