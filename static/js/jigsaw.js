@@ -730,7 +730,17 @@
             pp.el.style.left = pp.x + 'px';
             pp.el.style.top  = pp.y + 'px';
           });
-          mergeGroups(movedPids, op.id);
+          // Only merge the sub-group that mp belongs to.  movedPids may span
+          // multiple unrelated groups (e.g. rubber-band selection), so merging
+          // all of them here would lock unrelated pieces together incorrectly.
+          var mpSnapGid = mp.groupId;
+          var snapPids = [];
+          movedPids.forEach(function (pid) {
+            if (mpSnapGid >= 0 ? pieces[pid].groupId === mpSnapGid : pid === mp.id) {
+              snapPids.push(pid);
+            }
+          });
+          mergeGroups(snapPids, op.id);
           playSnap();
           snapped = true;
           break snapSearch;
