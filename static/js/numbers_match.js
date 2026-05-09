@@ -457,9 +457,12 @@ async function initDailyGame(dateStr) {
 
 function initRandomGame(rows) {
     stopTimer();
-    const seed  = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const board = generateBoardClient(seed, rows);
-    _startGame(board, rows, seed, false);
+    const seed     = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const board    = generateBoardClient(seed, rows);
+    const today    = document.getElementById('nm-board').dataset.realToday;
+    const diffKey  = NM_DIFF_LABELS[rows]?.toLowerCase();
+    const puzzleId = diffKey ? `${today}-${diffKey}` : seed;
+    _startGame(board, rows, puzzleId, !!diffKey);
 }
 
 function _startGame(boardData, rows, puzzleId, isPOTD) {
@@ -486,13 +489,15 @@ function _startGame(boardData, rows, puzzleId, isPOTD) {
 
     document.getElementById('nm-overlay').style.display = 'none';
     document.getElementById('nm-timer').textContent     = '0:00';
+
+    const isDailyPuzzle = isPOTD && /^\d{4}-\d{2}-\d{2}$/.test(puzzleId);
     document.getElementById('nm-mode-label').textContent =
-        isPOTD ? '📅 Daily Puzzle'
-               : `🎲 ${NM_DIFF_LABELS[rows] || rows + ' rows'}`;
+        isDailyPuzzle ? '📅 Daily Puzzle'
+                      : `🎲 ${NM_DIFF_LABELS[rows] || rows + ' rows'}`;
 
     document.querySelectorAll('.nm-diff-btn').forEach(btn => {
         btn.classList.toggle('nm-diff-btn--active',
-            !isPOTD && parseInt(btn.dataset.rows) === rows);
+            !isDailyPuzzle && parseInt(btn.dataset.rows) === rows);
     });
 
     document.getElementById('nm-lb-section').style.display = isPOTD ? 'block' : 'none';

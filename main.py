@@ -7290,7 +7290,7 @@ def get_numbers_match_board(date_str: str, db: Session = Depends(get_db)):
 
 @app.get("/api/numbers-match-scores/{puzzle_date}")
 def get_numbers_match_scores(puzzle_date: str, db: Session = Depends(get_db)):
-    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
+    if not re.match(r"^\d{4}-\d{2}-\d{2}(-(?:easy|medium|hard|expert))?$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
     q = db.query(NumbersMatchScore).filter(NumbersMatchScore.puzzle_date == puzzle_date)
     q = exclude_flagged(q, NumbersMatchScore, db)
@@ -7732,7 +7732,7 @@ async def numbers_match_permalink(request: Request, date_str: str):
 
 class NumbersMatchScoreSubmit(BaseModel):
     name:        str = Field(..., min_length=1, max_length=32)
-    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}(-(?:easy|medium|hard|expert))?$")
     score:       int = Field(..., ge=0, le=99999)
     time_secs:   int = Field(..., ge=1, le=99999)
     lines_added: int = Field(default=0, ge=0, le=999)
