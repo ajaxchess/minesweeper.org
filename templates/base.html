@@ -18,7 +18,7 @@
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=53" />
+  <link rel="stylesheet" href="/static/css/style.css?v=54" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     // Resolve the "default" auto-theme: special-day override takes priority,
@@ -26,7 +26,7 @@
     window.resolveDefaultSkin = function() {
       var serverSkin  = '{{ active_skin() }}';
       var defaultSkin = '{{ DEFAULT_SKIN }}';
-      if (serverSkin !== defaultSkin) return serverSkin;
+      if (serverSkin !== defaultSkin) return serverSkin === 'diana' ? 'classic' : serverSkin;
       return (new Date().getHours() >= 6 && new Date().getHours() < 20) ? 'light' : 'dark';
     };
     // For skins that have day/night pairs, resolve the correct variant by time.
@@ -39,17 +39,13 @@
     (function(){
       var p = new URLSearchParams(window.location.search);
       var t = p.get('theme');
-      if (t === 'dark')         localStorage.setItem('skin', 'dark');
-      else if (t === 'light')   localStorage.setItem('skin', 'light');
-      else if (t === 'tentaizu')localStorage.setItem('skin', 'tentaizu');
-      else if (t === 'flower')  localStorage.setItem('skin', 'flower');
-      else if (t === 'default') localStorage.setItem('skin', 'default');
+      if (t === 'diana' || t === 'classic') localStorage.setItem('skin', 'classic');
+      else if (t === 'dark')         localStorage.setItem('skin', 'dark');
+      else if (t === 'light')        localStorage.setItem('skin', 'light');
+      else if (t === 'tentaizu')     localStorage.setItem('skin', 'tentaizu');
+      else if (t === 'flower')       localStorage.setItem('skin', 'flower');
+      else if (t === 'default')      localStorage.setItem('skin', 'default');
       var stored = localStorage.getItem('skin');
-      // Migrate legacy classic/diana skin to dark
-      if (stored === 'classic' || stored === 'diana') {
-        stored = 'dark';
-        localStorage.setItem('skin', 'dark');
-      }
       var skin;
       if (!stored || stored === 'default') {
         skin = window.resolveDefaultSkin();
@@ -58,7 +54,7 @@
       } else {
         skin = stored;
       }
-      document.documentElement.dataset.skin = skin;
+      document.documentElement.dataset.skin = (skin === 'diana' ? 'classic' : skin);
     })();
   </script>
 
@@ -164,14 +160,14 @@
     <div class="header-inner">
       <a href="/" class="logo">
         <img src="/static/img/LadyDisMinesLogo.png" class="logo-classic" alt="Lady Di's Mines">
-        <span class="logo-icon">💣</span><span class="logo-text"> Minesweeper.org</span>
+        <span class="logo-text">💣 Minesweeper.org</span>
       </a>
       <!-- Mega menu nav (modern skins) -->
       <nav class="mega-nav">
 
         <!-- Play -->
         <div class="mega-group" id="mg-play">
-          <button class="mega-trigger {% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %}active{% endif %}" onclick="toggleMega(event,'mg-play')" aria-haspopup="true" aria-expanded="false">{{ t.nav_play }} ▾</button>
+          <button class="mega-trigger {% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %}active{% endif %}" onclick="toggleMega(event,'mg-play')" aria-haspopup="true" aria-expanded="false">💣 {{ t.nav_play }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/" class="mega-card {% if mode=='beginner' %}active{% endif %}">
@@ -214,7 +210,7 @@
 
         <!-- PvP -->
         <div class="mega-group" id="mg-pvp">
-          <button class="mega-trigger {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}active{% endif %}" onclick="toggleMega(event,'mg-pvp')" aria-haspopup="true" aria-expanded="false">PvP ▾</button>
+          <button class="mega-trigger {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}active{% endif %}" onclick="toggleMega(event,'mg-pvp')" aria-haspopup="true" aria-expanded="false">🎮 PvP ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/pvp" class="mega-card {% if mode=='pvp' %}active{% endif %}">
@@ -245,7 +241,7 @@
 
         <!-- Variants -->
         <div class="mega-group" id="mg-variants">
-          <button class="mega-trigger {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %}active{% endif %}" onclick="toggleMega(event,'mg-variants')" aria-haspopup="true" aria-expanded="false">{{ t.nav_variants }} ▾</button>
+          <button class="mega-trigger {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %}active{% endif %}" onclick="toggleMega(event,'mg-variants')" aria-haspopup="true" aria-expanded="false">🔄 {{ t.nav_variants }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/cylinder" class="mega-card {% if 'cylinder' in mode %}active{% endif %}">
@@ -296,8 +292,8 @@
 
         <!-- Puzzles -->
         <div class="mega-group" id="mg-puzzles">
-          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode in ['other','puzzles','tametsi','numbers-match'] %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">{{ t.nav_puzzles }} ▾</button>
-          <div class="mega-panel mega-panel--puzzles">
+          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">🧩 {{ t.nav_puzzles }} ▾</button>
+          <div class="mega-panel">
             <div class="mega-col">
               <a href="/tentaizu" class="mega-card {% if mode=='tentaizu' %}active{% endif %}">
                 <span class="mega-icon">📅</span>
@@ -335,45 +331,16 @@
                 <span class="mega-icon">🔢</span>
                 <span class="mega-card-text"><strong>{{ t.nav_numbers_match }}</strong><span>{{ t.nav_sub_numbers_match }}</span></span>
               </a>
-              <a href="/other/sudoku/daily" class="mega-card">
-                <span class="mega-icon">🔷</span>
-                <span class="mega-card-text"><strong>Sudoku</strong><span>Classic logic · daily</span></span>
-              </a>
-              <a href="/other/schulte/play" class="mega-card">
-                <span class="mega-icon">🧠</span>
-                <span class="mega-card-text"><strong>Schulte Grid</strong><span>Speed recognition · train focus</span></span>
-              </a>
-            </div>
-            <div class="mega-col">
-              <a href="/other/15puzzle/daily" class="mega-card">
-                <span class="mega-icon">🔢</span>
-                <span class="mega-card-text"><strong>15-Puzzle</strong><span>Sliding tiles · daily</span></span>
-              </a>
-              <a href="/other/2048/daily" class="mega-card">
-                <span class="mega-icon">🟨</span>
-                <span class="mega-card-text"><strong>2048</strong><span>Merge tiles · daily</span></span>
-              </a>
-              <a href="/other/2048hex/play" class="mega-card">
-                <span class="mega-icon">⬡</span>
-                <span class="mega-card-text"><strong>2048 Hexagon</strong><span>Hex grid · 18 tiles</span></span>
-              </a>
-              <a href="/other/mahjong/daily" class="mega-card">
-                <span class="mega-icon">🀄</span>
-                <span class="mega-card-text"><strong>Mahjong Solitaire</strong><span>Match tiles · daily</span></span>
-              </a>
-              <a href="/other/jigsaw/daily" class="mega-card">
+              <a href="/other" class="mega-card {% if mode=='other' %}active{% endif %}">
                 <span class="mega-icon">🧩</span>
-                <span class="mega-card-text"><strong>Jigsaw Puzzle</strong><span>Photo puzzles · daily</span></span>
+                <span class="mega-card-text"><strong>{{ t.nav_other }}</strong><span>{{ t.nav_sub_other }}</span></span>
               </a>
-            </div>
-            <div class="mega-panel-footer">
-              <a href="/puzzles" class="mega-panel-all {% if mode in ['other','puzzles'] %}active{% endif %}">🧩 All Puzzles →</a>
             </div>
           </div>
         </div>
 
         <!-- Quests: direct link -->
-        <a href="/quests" class="mega-direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
+        <a href="/quests" class="mega-direct {% if mode=='quests' %}active{% endif %}">🎯 {{ t.nav_quests }}</a>
 
       </nav>
       <div class="auth-area">
@@ -386,6 +353,7 @@
             <button class="theme-opt" data-theme-btn="light"    onclick="setTheme('light')"><span>☀️</span><span>{{ t.nav_theme_light }}</span></button>
             <button class="theme-opt" data-theme-btn="tentaizu" onclick="setTheme('tentaizu')"><span>⭐</span><span>{{ t.nav_theme_tentaizu }}</span></button>
             <button class="theme-opt" data-theme-btn="flower"   onclick="setTheme('flower')"><span>🌸</span><span>{{ t.nav_theme_flower }}</span></button>
+            <button class="theme-opt" data-theme-btn="classic"  onclick="setTheme('classic')"><span>🟦</span><span>{{ t.nav_theme_classic }}</span></button>
             <button class="theme-opt" data-theme-btn="mexico"   onclick="setTheme('mexico')"><span>🪅</span><span>{{ t.nav_theme_mexico }}</span></button>
           </div>
         </div>
@@ -446,7 +414,10 @@
           </div>
         </div>
         {% else %}
-          <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="auth-btn login-btn">Sign In</a>
+          <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="auth-btn login-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.93 6.36h-1.65c-.19 0-.4.25-.4.59v1.19h2.05l-.27 2.08H14.88V18h-2.15v-5.78h-1.4v-2.08h1.4v-1.37C12.73 7.47 13.83 6 15.72 6c.86 0 1.21.06 1.21.06v1.3z"/></svg>
+            {{ t.auth_sign_in }}
+          </a>
         {% endif %}
         <!-- Hamburger: mobile only (non-classic skins) -->
         <button class="hamburger-btn" id="hamburger-btn" onclick="toggleDrawer()" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-drawer">
@@ -461,27 +432,13 @@
   <!-- Mobile nav overlay + slide-in drawer -->
   <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
   <aside id="mobile-drawer" class="mobile-drawer" aria-label="Navigation" aria-hidden="true">
-    <div class="drawer-auth">
-      {% if user %}
-        <div class="drawer-auth-row">
-          <div class="drawer-auth-user">
-            <img src="{{ user.picture }}" class="avatar" alt="{{ user.name }}">
-            <span class="drawer-auth-name">{{ user.name.split()[0] }}</span>
-          </div>
-          <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">✕</button>
-        </div>
-        <a href="/profile" class="drawer-auth-link" onclick="closeDrawer()">👤 {{ t.auth_view_profile }}</a>
-        <a href="/auth/logout" class="drawer-auth-link">🚪 {{ t.auth_sign_out }}</a>
-      {% else %}
-        <div class="drawer-auth-row">
-          <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="drawer-auth-signin">Sign In</a>
-          <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">✕</button>
-        </div>
-      {% endif %}
+    <div class="drawer-top">
+      <a href="/" class="logo" onclick="closeDrawer()"><span class="logo-text">💣 Minesweeper.org</span></a>
+      <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">✕</button>
     </div>
     <nav class="drawer-nav">
       <details class="drawer-group {% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %}open{% endif %}">
-        <summary class="drawer-summary">{{ t.nav_play }}</summary>
+        <summary class="drawer-summary">💣 {{ t.nav_play }}</summary>
         <div class="drawer-links">
           <a href="/" class="drawer-link {% if mode=='beginner' %}active{% endif %}">🟢 {{ t.nav_beginner }}</a>
           <a href="/intermediate" class="drawer-link {% if mode=='intermediate' %}active{% endif %}">🟡 {{ t.nav_intermediate }}</a>
@@ -494,7 +451,7 @@
         </div>
       </details>
       <details class="drawer-group {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}open{% endif %}">
-        <summary class="drawer-summary">PvP</summary>
+        <summary class="drawer-summary">🎮 PvP</summary>
         <div class="drawer-links">
           <a href="/pvp" class="drawer-link {% if mode=='pvp' %}active{% endif %}">🎮 {{ t.nav_pvp }}</a>
           <a href="/duel" class="drawer-link {% if mode=='duel' %}active{% endif %}">⚔️ {{ t.nav_duel }}</a>
@@ -504,7 +461,7 @@
         </div>
       </details>
       <details class="drawer-group {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %}open{% endif %}">
-        <summary class="drawer-summary">{{ t.nav_variants }}</summary>
+        <summary class="drawer-summary">🔄 {{ t.nav_variants }}</summary>
         <div class="drawer-links">
           <a href="/cylinder" class="drawer-link {% if 'cylinder' in mode %}active{% endif %}">🔄 {{ t.nav_cylinder }}</a>
           <a href="/hexsweeper" class="drawer-link {% if 'hex' in mode %}active{% endif %}">⬡ {{ t.nav_hexsweeper }}</a>
@@ -518,26 +475,18 @@
           <a href="/variants/board-generator" class="drawer-link {% if mode=='board-generator' %}active{% endif %}">🔧 {{ t.nav_board_generator }}</a>
         </div>
       </details>
-      <details class="drawer-group {% if 'tentaizu' in mode or 'mosaic' in mode or mode in ['other','puzzles','tametsi','numbers-match'] %}open{% endif %}">
-        <summary class="drawer-summary">{{ t.nav_puzzles }}</summary>
+      <details class="drawer-group {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' %}open{% endif %}">
+        <summary class="drawer-summary">🧩 {{ t.nav_puzzles }}</summary>
         <div class="drawer-links">
           <a href="/tentaizu" class="drawer-link {% if mode=='tentaizu' %}active{% endif %}">📅 {{ t.nav_tentaizu_daily }}</a>
           <a href="/tentaizu/easy-5x5-6" class="drawer-link">⭐ {{ t.nav_tentaizu_easy }}</a>
           <a href="/mosaic/standard" class="drawer-link {% if mode=='mosaic' %}active{% endif %}">🟫 {{ t.nav_mosaic_daily }}</a>
           <a href="/mosaic" class="drawer-link {% if mode=='mosaic-easy' %}active{% endif %}">⭐ {{ t.nav_mosaic_easy }}</a>
           <a href="/tametsi" class="drawer-link {% if mode=='tametsi' %}active{% endif %}">🔀 {{ t.nav_tametsi_daily }}</a>
-          <a href="/numbers-match" class="drawer-link {% if mode=='numbers-match' %}active{% endif %}">🔢 {{ t.nav_numbers_match }}</a>
-          <a href="/other/15puzzle/daily" class="drawer-link">🔢 15-Puzzle</a>
-          <a href="/other/2048/daily" class="drawer-link">🟨 2048</a>
-          <a href="/other/2048hex/play" class="drawer-link">⬡ 2048 Hexagon</a>
-          <a href="/other/mahjong/daily" class="drawer-link">🀄 Mahjong Solitaire</a>
-          <a href="/other/jigsaw/daily" class="drawer-link">🧩 Jigsaw Puzzle</a>
-          <a href="/other/schulte/play" class="drawer-link">🧠 Schulte Grid</a>
-          <a href="/other/sudoku/daily" class="drawer-link">🔷 Sudoku</a>
-          <a href="/puzzles" class="drawer-link drawer-link--direct {% if mode in ['other','puzzles'] %}active{% endif %}">🧩 All Puzzles</a>
+          <a href="/other" class="drawer-link {% if mode=='other' %}active{% endif %}">🧩 {{ t.nav_other }}</a>
         </div>
       </details>
-      <a href="/quests" class="drawer-link drawer-link--direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
+      <a href="/quests" class="drawer-link drawer-link--direct {% if mode=='quests' %}active{% endif %}">🎯 {{ t.nav_quests }}</a>
     </nav>
     <div class="drawer-theme">
       <div class="drawer-theme-label">{{ t.nav_theme }}</div>
@@ -547,6 +496,7 @@
         <button class="drawer-theme-btn" data-theme-btn="light"    onclick="setTheme('light')">☀️<br><span>{{ t.nav_theme_light }}</span></button>
         <button class="drawer-theme-btn" data-theme-btn="tentaizu" onclick="setTheme('tentaizu')">⭐<br><span>{{ t.nav_theme_tentaizu }}</span></button>
         <button class="drawer-theme-btn" data-theme-btn="flower"   onclick="setTheme('flower')">🌸<br><span>{{ t.nav_theme_flower }}</span></button>
+        <button class="drawer-theme-btn" data-theme-btn="classic"  onclick="setTheme('classic')">🟦<br><span>{{ t.nav_theme_classic }}</span></button>
         <button class="drawer-theme-btn" data-theme-btn="mexico"   onclick="setTheme('mexico')">🪅<br><span>{{ t.nav_theme_mexico }}</span></button>
       </div>
     </div>
@@ -730,7 +680,7 @@
     } else if (!skin || skin === 'default') {
       resolved = window.resolveDefaultSkin();
     } else {
-      resolved = skin;
+      resolved = skin === 'diana' ? 'classic' : skin;
     }
     document.documentElement.dataset.skin = resolved;
     document.querySelectorAll('[data-theme-btn]').forEach(function(btn) {

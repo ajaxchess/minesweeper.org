@@ -7639,6 +7639,12 @@ html[data-skin="mexico"] .cell.mine-detonated { background: #3a0000; }
   opacity: 0.85;
 }
 
+.nm-cell.nm-empty.nm-axis {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: var(--accent);
+  opacity: 1;
+}
+
 #nm-add-btn.nm-add-pulse {
   animation: nm-add-pulse 0.7s ease;
 }
