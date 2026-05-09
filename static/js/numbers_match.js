@@ -4,8 +4,9 @@
 const NM_COLS      = 9;
 const NM_EPOCH     = '2024-01-01';
 const NM_DIFF_LABELS = { 4: 'Easy', 8: 'Medium', 16: 'Hard', 32: 'Expert' };
-const HINT_COST    = 3;   // score penalty per hint used
-const UNDO_COST    = 5;   // score penalty per undo used
+const HINT_COST       = 3;   // score penalty per hint used
+const UNDO_COST       = 5;   // score penalty per undo used
+const ADD_LINES_LIMIT = 5;   // max Add Lines uses per game
 
 // Matching pairs share a color: 1↔9 red, 2↔8 blue, 3↔7 green, 4↔6 orange, 5↔5 purple
 const NM_COLORS = [
@@ -174,10 +175,11 @@ function collapseEmptyRows() {
 // ── Undo history ───────────────────────────────────────────────────────────────
 function saveHistory() {
     G.history.push({
-        board:      [...G.board],
-        score:      G.score,
-        rows:       G.rows,
-        linesAdded: G.linesAdded,
+        board:         [...G.board],
+        score:         G.score,
+        rows:          G.rows,
+        linesAdded:    G.linesAdded,
+        addLinesLeft:  G.addLinesLeft,
     });
     if (G.history.length > 3) G.history.shift();
 }
@@ -212,10 +214,11 @@ function doMatch(i, j) {
 function doUndo() {
     if (G.undosLeft <= 0 || G.history.length === 0 || G.won) return;
     const snap   = G.history.pop();
-    G.board      = snap.board;
-    G.score      = Math.max(0, snap.score - UNDO_COST);
-    G.rows       = snap.rows;
-    G.linesAdded = snap.linesAdded;
+    G.board        = snap.board;
+    G.score        = Math.max(0, snap.score - UNDO_COST);
+    G.rows         = snap.rows;
+    G.linesAdded   = snap.linesAdded;
+    G.addLinesLeft = snap.addLinesLeft ?? ADD_LINES_LIMIT;
     G.undosLeft--;
     G.selected   = null;
     G.hintPair   = null;
@@ -253,17 +256,19 @@ function doHint() {
 }
 
 function doAddLines() {
-    if (G.won) return;
+    if (G.won || G.addLinesLeft <= 0) return;
     const remaining = G.board.filter(v => v !== 0);
     if (!remaining.length) return;
     saveHistory();
     while (remaining.length % NM_COLS !== 0) remaining.push(0);
-    G.board      = [...G.board, ...remaining];
-    G.rows      += remaining.length / NM_COLS;
+    G.board         = [...G.board, ...remaining];
+    G.rows         += remaining.length / NM_COLS;
     G.linesAdded++;
-    G.selected   = null;
-    G.hintPair   = null;
+    G.addLinesLeft--;
+    G.selected      = null;
+    G.hintPair      = null;
     renderBoard();
+    updateHUD();
 }
 
 // ── Cell click ─────────────────────────────────────────────────────────────────
@@ -306,7 +311,10 @@ function applyAxisHighlight(hovIdx) {
         if (isNaN(idx) || idx === hovIdx) return;
         const r = Math.floor(idx / NM_COLS);
         const c = idx % NM_COLS;
-        if (r === hovRow || c === hovCol || (r - hovRow) === (c - hovCol) || (r - hovRow) === -(c - hovCol)) {
+        const isWrap = (hovCol === 0 && idx === hovIdx - 1) ||
+                       (hovCol === NM_COLS - 1 && idx === hovIdx + 1);
+        if (r === hovRow || c === hovCol ||
+            (r - hovRow) === (c - hovCol) || (r - hovRow) === -(c - hovCol) || isWrap) {
             el.classList.add('nm-axis');
         }
     });
@@ -347,8 +355,10 @@ function updateHUD() {
     document.getElementById('nm-score').textContent    = G.score;
     document.getElementById('nm-undo-btn').textContent = `↩ ${G.undosLeft}`;
     document.getElementById('nm-hint-btn').textContent = `💡 ${G.hintsLeft}`;
+    document.getElementById('nm-add-btn').textContent  = `+ Add Lines (${G.addLinesLeft})`;
     document.getElementById('nm-undo-btn').disabled    = G.undosLeft <= 0 || G.history.length === 0;
     document.getElementById('nm-hint-btn').disabled    = G.hintsLeft <= 0;
+    document.getElementById('nm-add-btn').disabled     = G.addLinesLeft <= 0;
 }
 
 // ── Win overlay ────────────────────────────────────────────────────────────────
@@ -529,9 +539,10 @@ function _startGame(boardData, rows, puzzleId, isPOTD) {
         hintsLeft:  9,
         isPOTD,
         puzzleId,
-        linesAdded:  0,
-        won:         false,
-        scoreSaved:  false,
+        linesAdded:    0,
+        addLinesLeft:  ADD_LINES_LIMIT,
+        won:           false,
+        scoreSaved:    false,
     };
 
     document.getElementById('nm-overlay').style.display = 'none';
