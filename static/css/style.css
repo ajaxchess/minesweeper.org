@@ -7661,6 +7661,16 @@ html[data-skin="mexico"] .cell.mine-detonated { background: #3a0000; }
   color: var(--accent);
 }
 
+#nm-add-btn.nm-add-pulse {
+  animation: nm-add-pulse 0.7s ease;
+}
+
+@keyframes nm-add-pulse {
+  0%   { transform: scale(1);    background: var(--surface2); }
+  40%  { transform: scale(1.1);  background: var(--accent);   color: #fff; border-color: var(--accent); }
+  100% { transform: scale(1);    background: var(--surface2); }
+}
+
 #nm-lb-section {
   margin-top: 20px;
 }

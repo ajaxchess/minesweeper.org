@@ -235,7 +235,14 @@ function findHint() {
 function doHint() {
     if (G.hintsLeft <= 0 || G.won) return;
     G.selected = null;
-    G.hintPair = findHint();
+    const pair = findHint();
+    if (!pair) {
+        const btn = document.getElementById('nm-add-btn');
+        btn.classList.add('nm-add-pulse');
+        setTimeout(() => btn.classList.remove('nm-add-pulse'), 700);
+        return;
+    }
+    G.hintPair  = pair;
     G.hintsLeft--;
     renderBoard();
     updateHUD();
@@ -245,6 +252,7 @@ function doAddLines() {
     if (G.won) return;
     const remaining = G.board.filter(v => v !== 0);
     if (!remaining.length) return;
+    saveHistory();
     while (remaining.length % NM_COLS !== 0) remaining.push(0);
     G.board      = [...G.board, ...remaining];
     G.rows      += remaining.length / NM_COLS;
