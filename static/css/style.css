@@ -1035,6 +1035,12 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
   letter-spacing: 1px;
 }
 
+.lb-section-title {
+  font-size: 1.25rem;
+  text-align: center;
+  color: var(--text);
+}
+
 .lb-tabs {
   display: flex;
   gap: 0.5rem;
