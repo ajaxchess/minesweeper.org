@@ -39,6 +39,14 @@ function esc(s) {
     return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
 
+function utcToday() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function cacheBustUrl(path) {
+    return `${path}?_=${Date.now()}`;
+}
+
 function playerName() {
     const username = document.getElementById('nm-board')?.dataset.username?.trim() || '';
     const saved    = localStorage.getItem('nm_name')?.trim() || '';
@@ -58,7 +66,7 @@ function rememberVariant(kind, rows = null) {
 function startLastVariant() {
     const last = localStorage.getItem('nm_last_variant');
     if (last === 'daily') {
-        initDailyGame(document.getElementById('nm-board').dataset.realToday);
+        initDailyGame(utcToday());
         return;
     }
     const rows = parseInt(last || G.diffRows || 4, 10);
@@ -468,7 +476,7 @@ async function loadLeaderboard() {
     el.innerHTML = '<div class="lb-loading">Loading…</div>';
 
     try {
-        const r    = await fetch(`/api/numbers-match-scores/${G.puzzleId}`);
+        const r    = await fetch(cacheBustUrl(`/api/numbers-match-scores/${G.puzzleId}`), { cache: 'no-store' });
         const data = await r.json();
         if (myId !== _lbReqId) return;   // a newer request already arrived
 
@@ -513,12 +521,13 @@ async function initDailyGame(dateStr) {
     stopTimer();
     rememberVariant('daily');
     _showLoading(true);
+    const requestedDate = dateStr || utcToday();
 
     try {
-        const r = await fetch(`/api/numbers-match-board/${dateStr}`);
+        const r = await fetch(cacheBustUrl(`/api/numbers-match-board/${requestedDate}`), { cache: 'no-store' });
         if (!r.ok) throw new Error('fetch failed');
         const data = await r.json();
-        _startGame(data.board_data, data.rows, dateStr, true);
+        _startGame(data.board_data, data.rows, requestedDate, true);
     } catch {
         _showLoading(false);
         document.getElementById('nm-grid').innerHTML =
@@ -528,7 +537,7 @@ async function initDailyGame(dateStr) {
 
 function initRandomGame(rows) {
     stopTimer();
-    const today    = document.getElementById('nm-board').dataset.realToday;
+    const today    = utcToday();
     const diffKey  = NM_DIFF_LABELS[rows]?.toLowerCase();
     const seed     = diffKey ? `${today}-${diffKey}` : Date.now().toString(36);
     const board    = generateBoardClient(seed, rows);
@@ -603,18 +612,19 @@ function _showLoading(show) {
 // ── Entry point ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     const boardEl = document.getElementById('nm-board');
-    const today   = boardEl.dataset.today;
+    const permalinkMatch = window.location.pathname.match(/^\/numbers-match\/(\d{4}-\d{2}-\d{2})\/?$/);
+    const today          = permalinkMatch ? permalinkMatch[1] : utcToday();
 
     initDailyGame(today);
 
     document.getElementById('nm-daily-btn').addEventListener('click', () =>
-        initDailyGame(boardEl.dataset.realToday));
+        initDailyGame(utcToday()));
 
     document.querySelectorAll('.nm-diff-btn').forEach(btn =>
         btn.addEventListener('click', () => initRandomGame(parseInt(btn.dataset.rows))));
 
     document.getElementById('nm-overlay-daily').addEventListener('click', () =>
-        initDailyGame(boardEl.dataset.realToday));
+        initDailyGame(utcToday()));
 
     document.getElementById('nm-overlay-random').addEventListener('click', () =>
         initRandomGame(G.diffRows || 4));

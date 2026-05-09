@@ -2908,7 +2908,7 @@ async def mobile_nmmobile(request: Request):
         "user":       get_current_user(request),
         "today":      real_today,
         "real_today": real_today,
-    })
+    }, headers={"Cache-Control": "no-store"})
 
 
 # ── Blog ──────────────────────────────────────────────────────────────────────
@@ -7282,7 +7282,8 @@ def delete_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends
 # These two 3-segment routes must be defined before /{mode}/{date_str}/{guess_mode}
 # below, which is a wildcard that would intercept them first.
 @app.get("/api/numbers-match-board/{date_str}")
-def get_numbers_match_board(date_str: str, db: Session = Depends(get_db)):
+def get_numbers_match_board(date_str: str, response: Response, db: Session = Depends(get_db)):
+    response.headers["Cache-Control"] = "no-store"
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
         raise HTTPException(status_code=400, detail="Invalid date format")
     row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
@@ -7316,7 +7317,8 @@ def get_numbers_match_board(date_str: str, db: Session = Depends(get_db)):
 
 
 @app.get("/api/numbers-match-scores/{puzzle_date}")
-def get_numbers_match_scores(puzzle_date: str, db: Session = Depends(get_db)):
+def get_numbers_match_scores(puzzle_date: str, response: Response, db: Session = Depends(get_db)):
+    response.headers["Cache-Control"] = "no-store"
     if not re.match(r"^\d{4}-\d{2}-\d{2}(-(?:easy|medium|hard|expert))?$", puzzle_date):
         raise HTTPException(status_code=400, detail="Invalid date format")
     q = db.query(NumbersMatchScore).filter(NumbersMatchScore.puzzle_date == puzzle_date)
@@ -7732,7 +7734,7 @@ async def numbers_match_page(request: Request):
         "t":          get_t(request),
         "today":      real_today,
         "real_today": real_today,
-    })
+    }, headers={"Cache-Control": "no-store"})
 
 
 # Must be declared AFTER any future static sub-routes (e.g. /numbers-match/how-to-play)
@@ -7750,7 +7752,7 @@ async def numbers_match_permalink(request: Request, date_str: str):
         "today":      date_str,
         "real_today": real_today,
         "noindex":    True,
-    })
+    }, headers={"Cache-Control": "no-store"})
 
 
 # get_numbers_match_board is defined before /{mode}/{date_str}/{guess_mode} above
