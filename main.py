@@ -824,15 +824,17 @@ scheduler.add_job(collect_web_traffic_stats,  CronTrigger(hour=1,  minute=0))   
 def _migrate_numbers_match_puzzle_date():
     """Widen numbers_match_scores.puzzle_date from VARCHAR(10) to VARCHAR(32)
     to support difficulty-mode IDs like '2026-05-08-easy'."""
+    db = SessionLocal()
     try:
-        with SessionLocal() as db:
-            db.execute(text(
-                "ALTER TABLE numbers_match_scores "
-                "MODIFY COLUMN puzzle_date VARCHAR(32) NOT NULL"
-            ))
-            db.commit()
+        db.execute(text(
+            "ALTER TABLE numbers_match_scores "
+            "MODIFY COLUMN puzzle_date VARCHAR(32) NOT NULL"
+        ))
+        db.commit()
     except Exception:
-        pass  # column already widened or table doesn't exist yet
+        db.rollback()
+    finally:
+        db.close()
 
 
 # Create DB tables and start scheduler on startup
