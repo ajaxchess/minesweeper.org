@@ -3264,7 +3264,7 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
 .quest-play-btn {
   display: inline-block;
   background: var(--accent2);
-  color: #fff;
+  color: #111;
   text-decoration: none;
   padding: 0.4rem 0.9rem;
   border-radius: 6px;
@@ -5353,6 +5353,13 @@ html[data-skin="tentaizu"] :is(#board, #rush-board, #tz-board, #cyl-board, #tor-
 
 html[data-skin="tentaizu"] .cell.mine-detonated { background: #2a0a2a; }
 
+/* Tentaizu accent (#7ec8e3 sky-blue) is too light for white text on filled buttons */
+html[data-skin="tentaizu"] .login-btn,
+html[data-skin="tentaizu"] .variant-play-btn,
+html[data-skin="tentaizu"] .variant-play-btn:visited,
+html[data-skin="tentaizu"] .drawer-auth-signin { color: #0a0e1a; }
+html[data-skin="tentaizu"] .mega-card.active { color: #0a0e1a; }
+
 /* Replace bomb icon with star in tentaizu */
 html[data-skin="tentaizu"] #mine-count .stat-icon {
   font-size: 0;
@@ -6566,6 +6573,8 @@ html[data-skin="light"] nav a.active  { color: #fff; }
 /* Button-styled links must keep white text on the dark accent background */
 html[data-skin="light"] .tz-btn-potd,
 html[data-skin="light"] .tz-btn-potd:visited { color: #fff; }
+html[data-skin="light"] .quest-play-btn,
+html[data-skin="light"] .quest-play-btn:visited { color: #fff; }
 html[data-skin="light"] .tz-play-cta,
 html[data-skin="light"] .tz-play-cta:visited { color: #fff; }
 html[data-skin="light"] .variant-play-btn:not(.variant-play-btn-outline),
@@ -6691,8 +6700,6 @@ html[data-skin="flower"] nav a,
 html[data-skin="flower"] nav a:visited { color: var(--text-dim); }
 html[data-skin="flower"] nav a.active  { color: #fff; }
 
-html[data-skin="flower"] .tz-btn-potd,
-html[data-skin="flower"] .tz-btn-potd:visited { color: #fff; }
 html[data-skin="flower"] .variant-play-btn,
 html[data-skin="flower"] .variant-play-btn:visited { color: #fff; }
 
@@ -6776,6 +6783,8 @@ html[data-skin="flower-light"] #highlight-errors-toggle.active {
 
 html[data-skin="flower-light"] .tz-btn-potd,
 html[data-skin="flower-light"] .tz-btn-potd:visited { color: #fff; }
+html[data-skin="flower-light"] .quest-play-btn,
+html[data-skin="flower-light"] .quest-play-btn:visited { color: #fff; }
 
 html[data-skin="flower-light"] .solstice-banner,
 html[data-skin="flower-light"] .diana-birthday-banner {
