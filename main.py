@@ -1,4 +1,5 @@
 from datetime import date, timedelta, datetime, timezone
+from zoneinfo import ZoneInfo
 import uuid
 import re
 import subprocess
@@ -514,8 +515,11 @@ def reset_scores():
         db.close()
 
 
-def utc_today_str() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+NUMBERS_MATCH_TZ = ZoneInfo("America/New_York")
+
+
+def numbers_match_today_str() -> str:
+    return datetime.now(NUMBERS_MATCH_TZ).strftime("%Y-%m-%d")
 
 
 _prev_net_sent: int | None = None
@@ -788,7 +792,7 @@ def generate_numbers_match_daily(date_str: str = None):
     """Pre-generate (or verify) the Numbers Match daily board for date_str."""
     from sqlalchemy.exc import IntegrityError
     if date_str is None:
-        date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        date_str = numbers_match_today_str()
     db = SessionLocal()
     try:
         existing = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
@@ -822,7 +826,7 @@ scheduler = BackgroundScheduler(timezone="UTC")
 scheduler.add_job(archive_guest_scores,              CronTrigger(hour=23, minute=59)) # 23:59 UTC — archive guests before reset
 scheduler.add_job(reset_scores,                      CronTrigger(hour=0,  minute=0))  # midnight UTC — clear all scores
 scheduler.add_job(generate_tametsi_dailies,          CronTrigger(hour=0,  minute=1))  # 00:01 UTC — pre-generate daily Tametsi puzzles
-scheduler.add_job(generate_numbers_match_daily,      CronTrigger(hour=0,  minute=1))  # 00:01 UTC — pre-generate daily Numbers Match board
+scheduler.add_job(generate_numbers_match_daily,      CronTrigger(hour=0,  minute=1, timezone=NUMBERS_MATCH_TZ))  # 00:01 America/New_York — pre-generate daily Numbers Match board
 scheduler.add_job(cleanup_old_games,          CronTrigger(hour="*"))             # hourly
 scheduler.add_job(collect_server_stats,       CronTrigger(minute=0))             # top of every hour
 scheduler.add_job(collect_web_traffic_stats,  CronTrigger(hour=1,  minute=0))   # 1 AM UTC — parse yesterday's logs
@@ -2902,7 +2906,7 @@ async def mobile_android_landing(request: Request):
 
 @app.get("/mobile/nmmobile", response_class=HTMLResponse)
 async def mobile_nmmobile(request: Request):
-    real_today = utc_today_str()
+    real_today = numbers_match_today_str()
     return templates.TemplateResponse("nmmobile.html", {
         "request":    request,
         "user":       get_current_user(request),
@@ -7284,7 +7288,7 @@ def delete_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends
 @app.get("/api/numbers-match-today")
 def get_numbers_match_today(response: Response):
     response.headers["Cache-Control"] = "no-store"
-    return {"today": utc_today_str()}
+    return {"today": numbers_match_today_str(), "timezone": "America/New_York"}
 
 
 @app.get("/api/numbers-match-board/{date_str}")
@@ -7731,7 +7735,7 @@ def tametsi_leaderboard_board(board_hash: str, db: Session = Depends(get_db)):
 
 @app.get("/numbers-match", response_class=HTMLResponse)
 async def numbers_match_page(request: Request):
-    real_today = utc_today_str()
+    real_today = numbers_match_today_str()
     return templates.TemplateResponse("numbers_match.html", {
         "request":    request,
         "mode":       "numbers-match",
@@ -7746,7 +7750,7 @@ async def numbers_match_page(request: Request):
 # Must be declared AFTER any future static sub-routes (e.g. /numbers-match/how-to-play)
 @app.get("/numbers-match/{date_str}", response_class=HTMLResponse)
 async def numbers_match_permalink(request: Request, date_str: str):
-    real_today = utc_today_str()
+    real_today = numbers_match_today_str()
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
         return RedirectResponse("/numbers-match", status_code=302)
     return templates.TemplateResponse("numbers_match.html", {
