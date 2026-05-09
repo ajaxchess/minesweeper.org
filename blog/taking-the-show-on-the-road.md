@@ -33,7 +33,7 @@ That's not something most free minesweeper apps can say.
 
 The iOS app is live now on the App Store. Android is in testing and won't be far behind. We'll post the link here when it lands.
 
-In the meantime: if you have an iPhone or iPad, go get it.
+If you have an iPhone or iPad: **[get it here](https://apps.apple.com/us/app/minesweeper-org/id6761314113)**.
 
 *Sweep on.*
 
