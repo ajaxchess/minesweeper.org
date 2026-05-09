@@ -295,14 +295,25 @@ function handleCellClick(idx) {
 }
 
 // ── Connections (Paths mode) ───────────────────────────────────────────────────
-function getReachableCells(idx) {
-    const reachable = [];
-    if (G.board[idx] === 0) return reachable;
-    for (let j = 0; j < G.board.length; j++) {
-        if (j === idx || G.board[j] === 0) continue;
-        if (areAdjacent(idx, j)) reachable.push(j);
-    }
-    return reachable;
+function applyAxisHighlight(hovIdx) {
+    clearAxisHighlight();
+    if (!_showConnections || hovIdx === null) return;
+    const hovRow = Math.floor(hovIdx / NM_COLS);
+    const hovCol = hovIdx % NM_COLS;
+    const cells  = document.querySelectorAll('#nm-grid .nm-cell');
+    cells.forEach(el => {
+        const idx = parseInt(el.dataset.idx, 10);
+        if (isNaN(idx) || idx === hovIdx) return;
+        const r = Math.floor(idx / NM_COLS);
+        const c = idx % NM_COLS;
+        if (r === hovRow || c === hovCol || (r - hovRow) === (c - hovCol) || (r - hovRow) === -(c - hovCol)) {
+            el.classList.add('nm-axis');
+        }
+    });
+}
+
+function clearAxisHighlight() {
+    document.querySelectorAll('#nm-grid .nm-axis').forEach(el => el.classList.remove('nm-axis'));
 }
 
 // ── Rendering ──────────────────────────────────────────────────────────────────
@@ -311,10 +322,7 @@ function renderBoard() {
     grid.innerHTML = '';
     grid.style.gridTemplateColumns = `repeat(${NM_COLS}, 1fr)`;
 
-    const hintSet    = G.hintPair ? new Set(G.hintPair) : new Set();
-    const reachSet   = (_showConnections && G.selected !== null)
-        ? new Set(getReachableCells(G.selected))
-        : new Set();
+    const hintSet = G.hintPair ? new Set(G.hintPair) : new Set();
 
     G.board.forEach((val, idx) => {
         const el = document.createElement('div');
@@ -328,7 +336,6 @@ function renderBoard() {
             el.style.color = NM_COLORS[val] || '';
             if (idx === G.selected)  el.classList.add('nm-selected');
             if (hintSet.has(idx))    el.classList.add('nm-hint');
-            if (reachSet.has(idx))   el.classList.add('nm-reachable');
             el.addEventListener('click', () => handleCellClick(idx));
         }
 
@@ -589,8 +596,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nm-connect-btn').addEventListener('click', () => {
         _showConnections = !_showConnections;
         document.getElementById('nm-connect-btn').classList.toggle('nm-connect-active', _showConnections);
-        renderBoard();
+        if (!_showConnections) clearAxisHighlight();
     });
+
+    const grid = document.getElementById('nm-grid');
+    grid.addEventListener('mouseover', e => {
+        const cell = e.target.closest('.nm-cell');
+        if (!cell || cell.classList.contains('nm-empty')) return;
+        applyAxisHighlight(parseInt(cell.dataset.idx, 10));
+    });
+    grid.addEventListener('mouseleave', () => clearAxisHighlight());
 
     document.getElementById('nm-save-btn').addEventListener('click', () => saveScore());
     document.getElementById('nm-name-input').addEventListener('keydown', e => {

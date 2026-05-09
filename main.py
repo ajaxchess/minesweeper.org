@@ -821,10 +821,25 @@ scheduler.add_job(cleanup_old_games,          CronTrigger(hour="*"))            
 scheduler.add_job(collect_server_stats,       CronTrigger(minute=0))             # top of every hour
 scheduler.add_job(collect_web_traffic_stats,  CronTrigger(hour=1,  minute=0))   # 1 AM UTC — parse yesterday's logs
 
+def _migrate_numbers_match_puzzle_date():
+    """Widen numbers_match_scores.puzzle_date from VARCHAR(10) to VARCHAR(32)
+    to support difficulty-mode IDs like '2026-05-08-easy'."""
+    try:
+        with SessionLocal() as db:
+            db.execute(text(
+                "ALTER TABLE numbers_match_scores "
+                "MODIFY COLUMN puzzle_date VARCHAR(32) NOT NULL"
+            ))
+            db.commit()
+    except Exception:
+        pass  # column already widened or table doesn't exist yet
+
+
 # Create DB tables and start scheduler on startup
 @app.on_event("startup")
 def startup():
     init_db()
+    _migrate_numbers_match_puzzle_date()
     scheduler.start()
     logger.info("Scheduler started — scores reset daily at midnight UTC.")
     threading.Thread(target=_backfill_web_traffic,         daemon=True).start()

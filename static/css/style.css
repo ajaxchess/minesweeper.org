@@ -7667,7 +7667,7 @@ html[data-skin="mexico"] .cell.mine-detonated { background: #3a0000; }
   color: var(--accent);
 }
 
-.nm-cell.nm-reachable:not(.nm-selected):not(.nm-hint) {
+.nm-cell.nm-axis:not(.nm-selected):not(.nm-hint) {
   box-shadow: inset 0 0 0 2px var(--accent);
   opacity: 0.85;
 }
