@@ -334,7 +334,7 @@
             <button onclick="replaySubmitScore()">Save Score</button>
           </div>
           <div id="replay-score-msg" style="font-size:0.85rem;min-height:1.2em"></div>
-          <div class="overlay-guest-warning">🎉 Congratulations! <a href="${loginHref}" onclick="guestLoginAndSave(event, '${loginHref}', 'replaySubmitScore', 'replay-player-name')">Login with Google</a> or your score will vanish at 0:00 UTC.</div>
+          <div class="overlay-guest-warning">🎉 Congratulations! <a href="${loginHref}" onclick="guestLoginAndSave(event, '${loginHref}', 'replaySubmitScore', 'replay-player-name')">Sign In</a> or your score will vanish at 0:00 UTC.</div>
         `;
       }
     }
@@ -780,7 +780,7 @@
             const loginHref = '/auth/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
             const toast = document.createElement('div');
             toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#eee;padding:10px 20px;border-radius:6px;z-index:9998;font-size:0.9rem;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.5)';
-            toast.innerHTML = '🔒 <a href="' + loginHref + '" style="color:#7ec8e3">Login with Google</a> to enable cheat mode.';
+            toast.innerHTML = '🔒 <a href="' + loginHref + '" style="color:#7ec8e3">Sign In</a> to enable cheat mode.';
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
           } else {

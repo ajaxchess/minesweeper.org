@@ -476,7 +476,7 @@
             <button onclick="torSubmitScore()">Save Score</button>
           </div>
           <div id="tor-score-msg" style="font-size:0.85rem;min-height:1.2em"></div>
-          <div class="overlay-guest-warning">🎉 Congratulations! <a href="${loginHref}" onclick="guestLoginAndSave(event, '${loginHref}', 'torSubmitScore', 'tor-player-name')">Login with Google</a> or your score will vanish at 0:00 UTC.</div>
+          <div class="overlay-guest-warning">🎉 Congratulations! <a href="${loginHref}" onclick="guestLoginAndSave(event, '${loginHref}', 'torSubmitScore', 'tor-player-name')">Sign In</a> or your score will vanish at 0:00 UTC.</div>
         `;
       }
     }

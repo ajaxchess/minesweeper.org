@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
   banner.id = 'guest-login-banner';
   const T = window.T || {};
   const pre  = T.guest_banner_pre  || '\u26a0\ufe0f You\u2019re not signed in \u2014';
-  const link = T.auth_sign_in      || 'Login with Google';
+  const link = T.auth_sign_in      || 'Sign In';
   const post = T.guest_banner_post || 'or your scores will vanish at midnight UTC.';
   banner.innerHTML =
     pre + ' <a href="' + loginHref + '">' + link + '</a> ' + post +
