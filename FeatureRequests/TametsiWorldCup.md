@@ -6,6 +6,12 @@ Your country flag is the flag of your home country and that will still display i
 There will be a new database field, the 2026 fan flag, which is selected among the 48 teams in the cup.
 You can set this in your profile or on any of the pages in the 2026worldcup tree
 
+**Implementation note (2026-05-10):** The fan flag selector is live on the profile page (`/profile`).
+- Database table: `user_profiles`
+- Database column: `2026_world_cup_fan_flag` (VARCHAR 16, nullable)
+- Python model attribute: `UserProfile.wc2026_fan` (mapped via SQLAlchemy `name=` parameter)
+- API endpoint: `POST /api/profile/wc2026-fan`
+
 There's a little ambiguity in this document.  Each country is playing games in the world cup.  We want to keep everyone up-to-date on how those games are going.
 So the https://minesweeper.org/2026worldcup will have all the latest world cup news.  What games are coming up.  What scores have happened already.  Which teams
 are winning their groups.  We will be providing that data and that will update the content for the main page and the teams page.
