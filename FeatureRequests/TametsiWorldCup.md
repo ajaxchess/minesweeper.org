@@ -1,4 +1,8 @@
 There are 48 teams in the 2026 world cup.  I want to make a Tametsi World Cup page.
+
+There will be a new database field, the 2026 fan flag, which is selected among the 48 teams in the cup.
+You can set this in your profile or on any of the pages in the 2026worldcup tree
+
 So 
 minesweeper.org/2026worldcup
 minesweeper.org/2026worldcup/algeria
@@ -15,12 +19,13 @@ Then the country game times will show in that time zone.
 
 We will focus on the group stage.  The idea is to have a web page that has all 48 teams.  You can click on a country and you get a Tametsi game that uses the colors of that team.
 The country page will list the other countries in the group and when that team will play their group games.
-There will be a Tametsi board on each countries home page.  The board will be
-15 squares (x) and 9 squares (y)  The country's primary color will fill the top 5 squares and the secondary color will fill the bottom 4 squares.  There will be 18 mines.
-Whenever you flag a mine, the flag icon will be the flag of that country.
+There will be a Tametsi board on each countries home page.  The standard board will be (no guess)
+15 squares (x) and 9 squares (y)  The country's primary color will fill the top 5 squares and the secondary color will fill the bottom 4 squares.  There will be 20 mines.
+Whenever you flag a mine, the flag icon will be the fan flag of your selected world cup favorite team.
 The Tametsi rules will be:  There will be a white number which is the total number of mines on that row or column.  Above or to the left will be a green number which is the number of mines
 that have not yet been flagged on that row or column.  Above and to the left of the board will be a count of the number of unflagged mines in the part of the board with the primary or secondary color.
 There will be a starting x on the top left of the board.
+You can also select a Tametsi hard board and you will get a board of 30x18 with 99 mines.  This should also be no guess.
 
 For example:
 Canada upper 5 rows will be in Red (FF0000) and the bottom 4 rows will be in White (FFFFFF).
@@ -195,3 +200,16 @@ Houston,NRG Stadium,29.6847,-95.4107,USA
 Kansas City,Arrowhead Stadium,39.0490,-94.4839,USA
 Philadelphia,Lincoln Financial Field,39.9008,-75.1675,USA
 Boston,Gillette Stadium,42.0909,-71.2643,USA
+
+Tametsi fan challenge:
+If you login, you can set your world cup fan flag in your profile or on any Tametsi world cup page.
+You must be logged in and set your country flag to play.
+If you are logged in, when you uncover a mine, your country gets a point.  When you solve board, your country gets 20 points.
+The total points for each team are displayed on the team page and on a country leaderboard on the main page.
+
+The minesweeper.org/2026worldcup page will have a welcome and how to play at the top.  Then clickable countries organized by groups.
+Then the country Tametsi leaderboard.
+Then the biggest fans individual leaderboard.
+The countries get the points depending on what team you set on that day.  So Bill can set his fan flag as Canada on June 1st and play easy and hard games to earn 400 points for Canada.
+Suppose Canada doesn't make it into the knockout phase.  On June 27th Bill changes his fan flag to Mexico.  Each Tametsi game won will need a database field for the fan flag set at time won.
+If no flag is set, no points are earned.  Once you set your flag, you should have a notice at the top of every world cup page that says You are a fan of <fan flag>!
