@@ -504,7 +504,7 @@
       {% endif %}
     </div>
     <nav class="drawer-nav">
-      <details class="drawer-group {% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %}open{% endif %}">
+      <details class="drawer-group"{% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %} open{% endif %}>
         <summary class="drawer-summary">💣 {{ t.nav_play }}</summary>
         <div class="drawer-links">
           <a href="/" class="drawer-link {% if mode=='beginner' %}active{% endif %}">🟢 {{ t.nav_beginner }}</a>
@@ -517,7 +517,7 @@
           <a href="/how-to-play" class="drawer-link {% if mode in ['how-to-play','rush-howto'] %}active{% endif %}">❓ {{ t.nav_how_to_play }}</a>
         </div>
       </details>
-      <details class="drawer-group {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}open{% endif %}">
+      <details class="drawer-group"{% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %} open{% endif %}>
         <summary class="drawer-summary">🎮 PvP</summary>
         <div class="drawer-links">
           <a href="/pvp" class="drawer-link {% if mode=='pvp' %}active{% endif %}">🎮 {{ t.nav_pvp }}</a>
@@ -527,7 +527,7 @@
           <a href="/pvp/rankings" class="drawer-link {% if mode=='pvp-rankings' %}active{% endif %}">👑 {{ t.nav_elo_rankings }}</a>
         </div>
       </details>
-      <details class="drawer-group {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %}open{% endif %}">
+      <details class="drawer-group"{% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %} open{% endif %}>
         <summary class="drawer-summary">🔄 {{ t.nav_variants }}</summary>
         <div class="drawer-links">
           <a href="/cylinder" class="drawer-link {% if 'cylinder' in mode %}active{% endif %}">🔄 {{ t.nav_cylinder }}</a>
@@ -542,7 +542,7 @@
           <a href="/variants/board-generator" class="drawer-link {% if mode=='board-generator' %}active{% endif %}">🔧 {{ t.nav_board_generator }}</a>
         </div>
       </details>
-      <details class="drawer-group {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' %}open{% endif %}">
+      <details class="drawer-group"{% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' %} open{% endif %}>
         <summary class="drawer-summary">🧩 {{ t.nav_puzzles }}</summary>
         <div class="drawer-links">
           <a href="/tentaizu" class="drawer-link {% if mode=='tentaizu' %}active{% endif %}">📅 {{ t.nav_tentaizu_daily }}</a>
