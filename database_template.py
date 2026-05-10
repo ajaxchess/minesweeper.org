@@ -1,6 +1,7 @@
 """
 database.py — SQLAlchemy setup for MySQL via PyMySQL
 """
+import os
 from sqlalchemy import (
     create_engine, Column, Integer, BigInteger, String, Float,
     DateTime, Date, Enum, Index, Boolean, text, Text, JSON
@@ -9,16 +10,18 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from datetime import datetime, timezone
 import enum
 
-# ── Config — replace with your real credentials ───────────────────────────────
-DB_USER     = "the_minesweeper_user"
-DB_PASSWORD = "the_password"
-DB_HOST     = "localhost"
-DB_PORT     = 3306
-DB_NAME     = "the_db_name"
+# ── Database config ───────────────────────────────────────────────────────────
+# Prefer DATABASE_URL in production. The component vars keep local/staging
+# deploys simple without baking credentials into source control.
+DB_USER     = os.getenv("DB_USER", "")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+DB_HOST     = os.getenv("DB_HOST", "localhost")
+DB_PORT     = int(os.getenv("DB_PORT", "3306"))
+DB_NAME     = os.getenv("DB_NAME", "minesweeper")
 
-DATABASE_URL = (
-    f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}"
-    f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}",
 )
 
 engine = create_engine(

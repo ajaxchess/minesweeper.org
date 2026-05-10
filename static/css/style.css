@@ -240,18 +240,7 @@ main { flex: 1; padding: 0.25rem 0.5rem; }
   transition: background 0.15s;
 }
 .game-landing-signin-btn::before {
-  content: "G";
-  font-family: Georgia, serif;
-  font-weight: 700;
-  font-size: 1.1rem;
-  background: #fff;
-  color: #4285f4;
-  width: 1.4em;
-  height: 1.4em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 2px;
+  content: none;
 }
 .game-landing-signin-btn:hover { background: #2a6fdb; }
 
@@ -870,8 +859,8 @@ footer a:hover { text-decoration: underline; }
 }
 
 .login-btn {
-  background: #ffffff;
-  color: #1a73e8;
+  background: #1a73e8;
+  color: #ffffff;
   border: none;
   letter-spacing: 0.02em;
 }
@@ -949,6 +938,29 @@ footer a:hover { text-decoration: underline; }
 }
 .lang-picker.open .lang-picker-menu { display: block; }
 
+.lang-search-wrap {
+  display: block;
+  padding: 0.35rem 0.45rem 0.45rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.lang-search {
+  width: 100%;
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 0.42rem 0.5rem;
+  outline: none;
+}
+
+.lang-search:focus {
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 2px rgba(83,216,251,0.18);
+}
+
 .lang-option {
   display: flex;
   align-items: center;
@@ -971,6 +983,43 @@ footer a:hover { text-decoration: underline; }
 .lang-opt-name              { font-size: 0.75rem; opacity: 0.7; }
 .lang-option:hover .lang-opt-name,
 .lang-option.lang-current .lang-opt-name { opacity: 1; }
+
+.language-suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.55rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--surface2);
+  color: var(--text);
+  font-size: 0.88rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+  z-index: 90;
+}
+
+.language-suggestion[hidden] { display: none; }
+
+.language-suggestion button {
+  border: 1px solid var(--surface2);
+  border-radius: var(--radius);
+  background: var(--surface2);
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  padding: 0.28rem 0.65rem;
+  cursor: pointer;
+}
+
+.language-suggestion button:first-of-type {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.language-suggestion button:hover {
+  border-color: var(--accent2);
+}
 
 /* Classic skin overrides */
 html[data-skin="classic"] .lang-picker-btn {
@@ -996,6 +1045,13 @@ html[data-skin="classic"] .lang-picker-menu {
   right: 0;
   left: 0;
   min-width: unset;
+}
+html[data-skin="classic"] .lang-search-wrap { border-bottom-color: rgba(255,255,255,0.25); }
+html[data-skin="classic"] .lang-search {
+  background: #ffffff;
+  color: #000000;
+  border-radius: 0;
+  border-color: #808080;
 }
 html[data-skin="classic"] .lang-option       { color: #dde; }
 html[data-skin="classic"] .lang-option:hover { background: rgba(255,255,255,0.12); color: #fff; }
@@ -4094,17 +4150,102 @@ html[data-skin="classic"] {
 }
 
 html[data-skin="classic"] body {
-  font-family: Arial, Helvetica, sans-serif;
-  background: #ffffff;
+  font-family: "MS Sans Serif", Tahoma, Arial, Helvetica, sans-serif;
+  background: #008080;
   color: #000000;
+}
+
+html[data-skin="classic"] header {
+  background: #c0c0c0;
+  border-bottom: 2px solid #808080;
+  box-shadow: inset 0 1px #ffffff, inset 0 -1px #404040;
+}
+
+html[data-skin="classic"] .header-inner {
+  height: 50px;
+  gap: 0.5rem;
 }
 
 
 html[data-skin="classic"] .logo {
-  color: #fff;
+  color: #000;
   font-size: 0.9rem;
   padding: 0.25rem 0;
   display: block;
+}
+
+html[data-skin="classic"] .mega-nav {
+  align-items: center;
+  gap: 0.2rem;
+}
+
+html[data-skin="classic"] .mega-trigger,
+html[data-skin="classic"] .mega-direct,
+html[data-skin="classic"] .theme-icon-btn,
+html[data-skin="classic"] .lang-picker-btn,
+html[data-skin="classic"] .auth-btn {
+  background: #c0c0c0;
+  color: #000000;
+  border-radius: 0;
+  border: none;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-bottom: 2px solid #808080;
+  border-right: 2px solid #808080;
+  text-shadow: none;
+  font-family: "MS Sans Serif", Tahoma, Arial, sans-serif;
+  font-weight: 700;
+}
+
+html[data-skin="classic"] .mega-trigger:hover,
+html[data-skin="classic"] .mega-trigger.active,
+html[data-skin="classic"] .mega-group.open .mega-trigger,
+html[data-skin="classic"] .mega-direct:hover,
+html[data-skin="classic"] .mega-direct.active,
+html[data-skin="classic"] .theme-icon-btn:hover,
+html[data-skin="classic"] .lang-picker.open .lang-picker-btn,
+html[data-skin="classic"] .auth-btn:hover {
+  background: #d4d0c8;
+  color: #000000;
+}
+
+html[data-skin="classic"] .mega-trigger:active,
+html[data-skin="classic"] .mega-direct:active,
+html[data-skin="classic"] .theme-icon-btn:active,
+html[data-skin="classic"] .auth-btn:active {
+  border-top-color: #808080;
+  border-left-color: #808080;
+  border-bottom-color: #ffffff;
+  border-right-color: #ffffff;
+}
+
+html[data-skin="classic"] .mega-panel,
+html[data-skin="classic"] .theme-picker-menu,
+html[data-skin="classic"] .lang-picker-menu {
+  background: #c0c0c0;
+  color: #000000;
+  border: 2px solid #808080;
+  border-top-color: #ffffff;
+  border-left-color: #ffffff;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
+}
+
+html[data-skin="classic"] .mega-card,
+html[data-skin="classic"] .mega-panel-all {
+  color: #000000;
+  border-radius: 0;
+}
+
+html[data-skin="classic"] .mega-card:hover,
+html[data-skin="classic"] .mega-card.active,
+html[data-skin="classic"] .mega-panel-all:hover,
+html[data-skin="classic"] .mega-panel-all.active {
+  background: #000080;
+  color: #ffffff;
+}
+
+html[data-skin="classic"] .mega-card-text span {
+  color: inherit;
 }
 
 html[data-skin="classic"] nav {
@@ -4328,13 +4469,13 @@ html[data-skin="classic"] .ad-container {
 
 html[data-skin="classic"] body {
   background-image: none !important;
-  background-color: #ffffff !important;
+  background-color: #008080 !important;
 }
 
 /* ── Classic leaderboard / content pages ─────────────────────────────────── */
 html[data-skin="classic"] main {
   background-image: none !important;
-  background-color: #ffffff !important;
+  background-color: #008080 !important;
   color: #000000 !important;
 }
 
@@ -4486,6 +4627,17 @@ html[data-skin="classic"] .tz-btn-random {
 /* Nav links stay white — more specific selector */
 html[data-skin="classic"] nav a,
 html[data-skin="classic"] nav a:visited { color: #ffffff; font-weight: 700; text-shadow: 1px 1px 3px #000, 0 0 6px #000; }
+
+html[data-skin="classic"] .mega-nav a,
+html[data-skin="classic"] .mega-nav a:visited {
+  color: #000000;
+  text-shadow: none;
+}
+
+html[data-skin="classic"] .mega-nav a:hover,
+html[data-skin="classic"] .mega-nav a.active {
+  color: #ffffff;
+}
 
 /* ── Classic skin preview (in profile picker) ────────────────────────────── */
 .skin-preview-classic {
@@ -4639,12 +4791,18 @@ html[data-skin="classic"] nav a:visited { color: #ffffff; font-weight: 700; text
   overflow-y: auto;
 }
 .mega-group.open .mega-panel { display: flex; }
+.mega-panel-puzzles { gap: 1rem; }
 
 .mega-col {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   min-width: 180px;
+}
+
+.mega-panel-puzzles .mega-col {
+  min-width: 210px;
+  flex: 1 1 210px;
 }
 
 .mega-card {

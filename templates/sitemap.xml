@@ -207,6 +207,34 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- Catalog-driven puzzle pages -->
+  <url>
+    <loc>https://minesweeper.org/puzzles</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  {% for game in puzzle_games if game.is_indexable %}
+  <url>
+    <loc>https://minesweeper.org{{ game.canonical_path }}</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>{{ "daily" if game.is_daily else "weekly" }}</changefreq>
+    <priority>{{ "0.9" if game.is_daily else "0.7" }}</priority>
+  </url>
+    {% if game.how_to_play_path %}
+  <url>
+    <loc>https://minesweeper.org{{ game.how_to_play_path }}</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+    {% endif %}
+  {% endfor %}
+
+  {# Legacy puzzle URLs are intentionally omitted from the sitemap. They remain
+     available through 301 redirects in redirects.py. #}
+  {% if false %}
   <!-- ── Other Puzzles ────────────────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/other</loc>
@@ -311,6 +339,8 @@
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
+
+  {% endif %}
 
   <!-- ── Worldsweeper ────────────────────────────────────────────────────────── -->
   <url>
