@@ -1055,8 +1055,8 @@ async def logout(request: Request):
 class ScoreSubmit(BaseModel):
     name:         str = Field(..., min_length=1, max_length=32)
     mode:         GameMode
-    time_secs:    int = Field(..., ge=1, le=999)
-    time_ms:      Optional[int]  = Field(None, ge=1, le=3_600_000)
+    time_secs:    int = Field(..., ge=1, le=99999)
+    time_ms:      Optional[int]  = Field(None, ge=1, le=99_999_999)
     rows:         int = Field(..., ge=5,  le=30)
     cols:         int = Field(..., ge=5,  le=50)
     mines:        int = Field(..., ge=1,  le=999)

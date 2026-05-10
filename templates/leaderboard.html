@@ -37,6 +37,7 @@
     <button class="lb-tab"        data-mode="intermediate" role="tab">{{ t.nav_intermediate }}</button>
     <button class="lb-tab"        data-mode="expert"       role="tab">{{ t.nav_expert }}</button>
     <button class="lb-tab"        data-mode="custom"       role="tab">{{ t.nav_custom }}</button>
+    <button class="lb-tab"        data-mode="evil"         role="tab">{{ t.nav_evil_ng }}</button>
   </div>
 
   <div class="lb-ng-toggle" role="group" aria-label="Game mode">
@@ -125,6 +126,7 @@ const GAME_MODES = {
     { mode: 'intermediate', label: {{ t.nav_intermediate | tojson }} },
     { mode: 'expert',       label: {{ t.nav_expert | tojson }} },
     { mode: 'custom',       label: {{ t.nav_custom | tojson }} },
+    { mode: 'evil',         label: {{ t.nav_evil_ng | tojson }} },
   ],
   cylinder: [
     { mode: 'easy',         label: 'Easy' },
@@ -156,7 +158,8 @@ const GAME_BACK_LINKS = {
   classic: `<a href="/">{{ t.lb_play_beginner }}</a>
             <a href="/intermediate">{{ t.lb_play_intermediate }}</a>
             <a href="/expert">{{ t.lb_play_expert }}</a>
-            <a href="/custom">{{ t.lb_play_custom }}</a>`,
+            <a href="/custom">{{ t.lb_play_custom }}</a>
+            <a href="/evil">{{ t.nav_evil_ng }}</a>`,
   cylinder: `<a href="/cylinder">Play Cylinder</a>
              <a href="/cylinder/intermediate">Cylinder Intermediate</a>
              <a href="/cylinder/expert">Cylinder Expert</a>
@@ -201,6 +204,10 @@ function isCustomMode() {
   return currentMode === 'custom';
 }
 
+function isEvilMode() {
+  return currentGame === 'classic' && currentMode === 'evil';
+}
+
 function tableColspan() {
   return isCustomMode() ? 9 : 7;
 }
@@ -208,6 +215,13 @@ function tableColspan() {
 function setCustomColumnsVisible(visible) {
   document.querySelectorAll('#lb-table .lb-custom-col').forEach(el => {
     el.style.display = visible ? '' : 'none';
+  });
+}
+
+function syncNoGuessControls() {
+  document.querySelectorAll('.lb-ng-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.ng === String(currentNoGuess));
+    btn.disabled = isEvilMode();
   });
 }
 
@@ -228,6 +242,8 @@ async function loadScores(mode, noGuess, period, game) {
   currentMode    = mode    ?? currentMode;
   currentNoGuess = noGuess ?? currentNoGuess;
   currentPeriod  = period  ?? currentPeriod;
+  if (isEvilMode()) currentNoGuess = true;
+  syncNoGuessControls();
 
   const body     = document.getElementById('lb-body');
   const meta     = document.getElementById('lb-meta');
@@ -249,7 +265,7 @@ async function loadScores(mode, noGuess, period, game) {
   if (noteEl) noteEl.textContent = noteText;
 
   try {
-    const res  = await fetch(apiUrl(currentGame, currentMode, currentNoGuess, currentPeriod));
+    const res  = await fetch(apiUrl(currentGame, currentMode, currentNoGuess, currentPeriod), { cache: 'no-store' });
     const data = await res.json();
 
     if (!data.length) {

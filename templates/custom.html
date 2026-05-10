@@ -193,7 +193,8 @@ async function loadCustomLb() {
   const body = document.getElementById('page-lb-body');
   body.innerHTML = `<tr><td colspan="6" class="lb-loading">${window.T.lb_loading}</td></tr>`;
   try {
-    const res  = await fetch('/api/scores/custom?no_guess=false&period=daily');
+    const noGuess = typeof state !== 'undefined' && !!state.noGuess;
+    const res  = await fetch(`/api/scores/custom?no_guess=${noGuess}&period=daily`, { cache: 'no-store' });
     if (!res.ok) throw new Error(res.status);
     const rows = await res.json();
     if (!Array.isArray(rows) || !rows.length) {
@@ -248,6 +249,7 @@ loadCustomLb();
     board.dataset.mines = mines;
     document.getElementById('mines-left').textContent = String(mines).padStart(3,'0');
     initGame(rows, cols, mines, state.noGuess, state.chording);
+    loadCustomLb();
   });
 </script>
 {% endblock %}

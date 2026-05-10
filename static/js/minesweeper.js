@@ -599,7 +599,6 @@ async function guestLoginAndSave(e, href, submitFnName, inputId) {
 // ── New-game win handler (F91) ────────────────────────────────────────────────
 async function handleNewGameWin(username) {
   const board = document.getElementById('board');
-  const mode  = board?.dataset.mode || 'beginner';
   const bbbv  = state.bbbv || 0;
   const total = (state.leftClicks || 0) + (state.rightClicks || 0) + (state.chordClicks || 0);
   const eff   = total > 0 ? ((bbbv / total) * 100).toFixed(1) : '0.0';
@@ -623,26 +622,7 @@ async function handleNewGameWin(username) {
 
   // Submit score silently in background
   if (username) {
-    const payload = {
-      name:         username,
-      mode,
-      time_secs:    state.elapsed,
-      time_ms:      state.timeMs,
-      rows:         state.rows,
-      cols:         state.cols,
-      mines:        state.mines,
-      no_guess:     state.noGuess,
-      board_hash:   state.boardHash,
-      bbbv:         state.bbbv,
-      left_clicks:  state.leftClicks,
-      right_clicks: state.rightClicks,
-      chord_clicks: state.chordClicks,
-    };
-    fetch('/api/scores', {
-      method:  'POST',
-      headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
-      body:    JSON.stringify(payload),
-    }).catch(() => {});
+    submitScore(username).catch(() => {});
   }
 
   // Reset board at 0.5 s
