@@ -249,6 +249,13 @@ function renderBoard() {
         el.append(rem, tot);
         if (G.colRemaining[c] === 0) el.classList.add('satisfied');
         grid.appendChild(el);
+        el.addEventListener('click', () => {
+            const pinned = el.classList.toggle('tmt-pinned');
+            for (let r = 0; r < G.rows; r++) {
+                const cellEl = grid.querySelector(`.tmt-cell[data-idx="${r * G.cols + c}"]`);
+                if (cellEl) cellEl.classList.toggle('tmt-col-pinned', pinned);
+            }
+        });
     }
 
     // Rows: hint + cells
@@ -266,6 +273,13 @@ function renderBoard() {
         rowHint.append(rem, tot);
         if (G.rowRemaining[r] === 0) rowHint.classList.add('satisfied');
         grid.appendChild(rowHint);
+        rowHint.addEventListener('click', () => {
+            const pinned = rowHint.classList.toggle('tmt-pinned');
+            for (let c = 0; c < G.cols; c++) {
+                const cellEl = grid.querySelector(`.tmt-cell[data-idx="${r * G.cols + c}"]`);
+                if (cellEl) cellEl.classList.toggle('tmt-row-pinned', pinned);
+            }
+        });
 
         // Cells
         for (let c = 0; c < G.cols; c++) {
