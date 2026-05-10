@@ -367,6 +367,13 @@
             <span class="lang-caret">▾</span>
           </button>
           <div class="lang-picker-menu" role="listbox">
+            <input id="lang-search"
+                   class="lang-search"
+                   type="search"
+                   placeholder="Search languages"
+                   autocomplete="off"
+                   oninput="filterLanguages(this.value)"
+                   onclick="event.stopPropagation()">
             {%- for code, label, name in [
               ('en',      'EN',   'English'),
               ('de',      'DE',   'Deutsch'),
@@ -387,6 +394,7 @@
               ('eo',      'EO',   'Esperanto')
             ] %}
             <button class="lang-option{{ ' lang-current' if _lc == code }}"
+                    data-lang-search-text="{{ (label ~ ' ' ~ name ~ ' ' ~ code) | lower }}"
                     onclick="doSetLang('{{ code }}','{{ request.url.path }}')"
                     role="option" aria-selected="{{ 'true' if _lc == code else 'false' }}">
               <img src="/static/img/flags/{{ code }}.png" class="lang-flag" width="20" height="14" alt="{{ label }}">
@@ -603,6 +611,21 @@
     if (!picker) return;
     var open = picker.classList.toggle('open');
     picker.querySelector('.lang-picker-btn').setAttribute('aria-expanded', String(open));
+    if (open) {
+      var search = document.getElementById('lang-search');
+      if (search) {
+        search.value = '';
+        filterLanguages('');
+        setTimeout(function() { search.focus(); }, 0);
+      }
+    }
+  }
+  function filterLanguages(query) {
+    var q = (query || '').trim().toLowerCase();
+    document.querySelectorAll('#lang-picker .lang-option').forEach(function(option) {
+      var haystack = option.getAttribute('data-lang-search-text') || option.textContent.toLowerCase();
+      option.hidden = q && haystack.indexOf(q) === -1;
+    });
   }
   function doSetLang(v, p) {
     document.cookie = 'lang=' + v + ';path=/;max-age=31536000;samesite=lax';

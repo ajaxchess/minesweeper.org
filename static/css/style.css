@@ -949,6 +949,22 @@ footer a:hover { text-decoration: underline; }
 }
 .lang-picker.open .lang-picker-menu { display: block; }
 
+.lang-search {
+  width: calc(100% - 0.7rem);
+  margin: 0.35rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  outline: none;
+}
+.lang-search:focus {
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent2) 18%, transparent);
+}
+
 .lang-option {
   display: flex;
   align-items: center;
@@ -996,6 +1012,12 @@ html[data-skin="classic"] .lang-picker-menu {
   right: 0;
   left: 0;
   min-width: unset;
+}
+html[data-skin="classic"] .lang-search {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border-color: rgba(255,255,255,0.25);
+  border-radius: 0;
 }
 html[data-skin="classic"] .lang-option       { color: #dde; }
 html[data-skin="classic"] .lang-option:hover { background: rgba(255,255,255,0.12); color: #fff; }
