@@ -17,7 +17,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_how_to_play":  "How to Play",
         # Auth
         "auth_sign_out":      "Sign out",
-        "auth_sign_in":       "Sign in with Google",
+        "auth_sign_in":       "Sign In",
         "auth_view_profile":  "View profile",
         # Game board
         "game_left_click":  "Left-click",

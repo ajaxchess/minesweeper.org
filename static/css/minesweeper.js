@@ -209,7 +209,7 @@ function showOverlay(msg, won) {
           <button onclick="submitScore()">Save Score</button>
         </div>
         <div id="score-msg" style="font-size:0.85rem;min-height:1.2em"></div>
-        <a class="overlay-lb-link" href="/auth/login">Sign in with Google to skip this step</a>
+        <a class="overlay-lb-link" href="/auth/login">Sign In to skip this step</a>
       `;
     }
   }

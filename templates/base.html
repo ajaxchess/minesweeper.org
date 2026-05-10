@@ -160,7 +160,7 @@
     <div class="header-inner">
       <a href="/" class="logo">
         <img src="/static/img/LadyDisMinesLogo.png" class="logo-classic" alt="Lady Di's Mines">
-        <span class="logo-text">💣 Minesweeper.org</span>
+        <span class="logo-text">Minesweeper.org</span>
       </a>
       <!-- Mega menu nav (modern skins) -->
       <nav class="mega-nav">
@@ -210,7 +210,7 @@
 
         <!-- PvP -->
         <div class="mega-group" id="mg-pvp">
-          <button class="mega-trigger {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}active{% endif %}" onclick="toggleMega(event,'mg-pvp')" aria-haspopup="true" aria-expanded="false">🎮 PvP ▾</button>
+          <button class="mega-trigger {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}active{% endif %}" onclick="toggleMega(event,'mg-pvp')" aria-haspopup="true" aria-expanded="false">PvP ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/pvp" class="mega-card {% if mode=='pvp' %}active{% endif %}">
@@ -241,7 +241,7 @@
 
         <!-- Variants -->
         <div class="mega-group" id="mg-variants">
-          <button class="mega-trigger {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %}active{% endif %}" onclick="toggleMega(event,'mg-variants')" aria-haspopup="true" aria-expanded="false">🔄 {{ t.nav_variants }} ▾</button>
+          <button class="mega-trigger {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %}active{% endif %}" onclick="toggleMega(event,'mg-variants')" aria-haspopup="true" aria-expanded="false">{{ t.nav_variants }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/cylinder" class="mega-card {% if 'cylinder' in mode %}active{% endif %}">
@@ -292,7 +292,7 @@
 
         <!-- Puzzles -->
         <div class="mega-group" id="mg-puzzles">
-          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">🧩 {{ t.nav_puzzles }} ▾</button>
+          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">{{ t.nav_puzzles }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/tentaizu" class="mega-card {% if mode=='tentaizu' %}active{% endif %}">
@@ -347,7 +347,7 @@
       <div class="auth-area">
         <!-- Theme picker icon -->
         <div class="theme-picker" id="theme-picker">
-          <button class="theme-icon-btn" onclick="toggleThemePicker(event)" aria-label="{{ t.nav_theme }}" aria-expanded="false" aria-haspopup="true" title="{{ t.nav_theme }}">🌓</button>
+          <button class="theme-icon-btn" onclick="toggleThemePicker(event)" aria-label="{{ t.nav_theme }}" aria-expanded="false" aria-haspopup="true" title="{{ t.nav_theme }}">{{ t.nav_theme }}</button>
           <div class="theme-picker-menu">
             <button class="theme-opt" data-theme-btn="default"  onclick="setTheme('default')"><span>🌓</span><span>{{ t.nav_theme_auto }}</span></button>
             <button class="theme-opt" data-theme-btn="dark"     onclick="setTheme('dark')"><span>🌑</span><span>{{ t.nav_theme_dark }}</span></button>
@@ -367,6 +367,13 @@
             <span class="lang-caret">▾</span>
           </button>
           <div class="lang-picker-menu" role="listbox">
+            <input id="lang-search"
+                   class="lang-search"
+                   type="search"
+                   placeholder="Search languages"
+                   autocomplete="off"
+                   oninput="filterLanguages(this.value)"
+                   onclick="event.stopPropagation()">
             {%- for code, label, name in [
               ('en',      'EN',   'English'),
               ('de',      'DE',   'Deutsch'),
@@ -387,6 +394,7 @@
               ('eo',      'EO',   'Esperanto')
             ] %}
             <button class="lang-option{{ ' lang-current' if _lc == code }}"
+                    data-lang-search-text="{{ (label ~ ' ' ~ name ~ ' ' ~ code) | lower }}"
                     onclick="doSetLang('{{ code }}','{{ request.url.path }}')"
                     role="option" aria-selected="{{ 'true' if _lc == code else 'false' }}">
               <img src="/static/img/flags/{{ code }}.png" class="lang-flag" width="20" height="14" alt="{{ label }}">
@@ -415,10 +423,7 @@
           </div>
         </div>
         {% else %}
-          <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="auth-btn login-btn">
-            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.93 6.36h-1.65c-.19 0-.4.25-.4.59v1.19h2.05l-.27 2.08H14.88V18h-2.15v-5.78h-1.4v-2.08h1.4v-1.37C12.73 7.47 13.83 6 15.72 6c.86 0 1.21.06 1.21.06v1.3z"/></svg>
-            {{ t.auth_sign_in }}
-          </a>
+          <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="auth-btn login-btn">Sign In</a>
         {% endif %}
         <!-- Hamburger: mobile only (non-classic skins) -->
         <button class="hamburger-btn" id="hamburger-btn" onclick="toggleDrawer()" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-drawer">
@@ -434,7 +439,7 @@
   <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
   <aside id="mobile-drawer" class="mobile-drawer" aria-label="Navigation" aria-hidden="true">
     <div class="drawer-top">
-      <a href="/" class="logo" onclick="closeDrawer()"><span class="logo-text">💣 Minesweeper.org</span></a>
+      <a href="/" class="logo" onclick="closeDrawer()"><span class="logo-text">Minesweeper.org</span></a>
       <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">✕</button>
     </div>
     <nav class="drawer-nav">
@@ -606,6 +611,21 @@
     if (!picker) return;
     var open = picker.classList.toggle('open');
     picker.querySelector('.lang-picker-btn').setAttribute('aria-expanded', String(open));
+    if (open) {
+      var search = document.getElementById('lang-search');
+      if (search) {
+        search.value = '';
+        filterLanguages('');
+        setTimeout(function() { search.focus(); }, 0);
+      }
+    }
+  }
+  function filterLanguages(query) {
+    var q = (query || '').trim().toLowerCase();
+    document.querySelectorAll('#lang-picker .lang-option').forEach(function(option) {
+      var haystack = option.getAttribute('data-lang-search-text') || option.textContent.toLowerCase();
+      option.hidden = q && haystack.indexOf(q) === -1;
+    });
   }
   function doSetLang(v, p) {
     document.cookie = 'lang=' + v + ';path=/;max-age=31536000;samesite=lax';
