@@ -121,8 +121,8 @@
       "logo": {
         "@type": "ImageObject",
         "url": "https://minesweeper.org/static/img/minesweeper-org-logo.png",
-        "width": 865,
-        "height": 582,
+        "width": 960,
+        "height": 349,
         "caption": "Minesweeper.org logo with minesweeper tiles, a smiling bomb mascot, and a red flag"
       }
     }
@@ -176,8 +176,8 @@
                class="site-logo-image"
                alt="Minesweeper.org logo with minesweeper tiles, a smiling bomb mascot, and a red flag"
                title="Minesweeper.org - free online minesweeper and puzzle games"
-               width="865"
-               height="582">
+               width="960"
+               height="349">
         </picture>
         <picture class="site-logo-picture site-logo-classic">
           <source srcset="/static/img/LadyDisMinesLogo.webp" type="image/webp">
@@ -474,8 +474,8 @@
                class="site-logo-image"
                alt="Minesweeper.org logo with minesweeper tiles, a smiling bomb mascot, and a red flag"
                title="Minesweeper.org - free online minesweeper and puzzle games"
-               width="865"
-               height="582">
+               width="960"
+               height="349">
         </picture>
         <picture class="site-logo-picture site-logo-classic">
           <source srcset="/static/img/LadyDisMinesLogo.webp" type="image/webp">
@@ -488,6 +488,20 @@
         </picture>
       </a>
       <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">✕</button>
+    </div>
+    <div class="drawer-auth">
+      {% if user %}
+      <div class="drawer-auth-row">
+        <div class="drawer-auth-user">
+          <img src="{{ user.picture }}" class="avatar" alt="{{ user.name }}">
+          <span class="drawer-auth-name">{{ user.name }}</span>
+        </div>
+        <a href="/profile" class="drawer-auth-link" onclick="closeDrawer()">{{ t.auth_view_profile }}</a>
+      </div>
+      <a href="/auth/logout" class="drawer-auth-link" onclick="closeDrawer()">{{ t.auth_sign_out }}</a>
+      {% else %}
+      <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="drawer-auth-signin" onclick="closeDrawer()">Sign In</a>
+      {% endif %}
     </div>
     <nav class="drawer-nav">
       <details class="drawer-group {% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %}open{% endif %}">
