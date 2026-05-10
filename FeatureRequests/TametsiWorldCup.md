@@ -1,4 +1,7 @@
 There are 48 teams in the 2026 world cup.  I want to make a Tametsi 2026 World Cup Celebration page.
+We will need a link in the menu and a banner if you haven't set your fan flag.
+Your fan flag is the flag that will display on all scores in the 2026worldcup tree.
+Your country flag is the flag of your home country and that will still display if you play regular minesweeper on the associated high score list for that game.
 
 There will be a new database field, the 2026 fan flag, which is selected among the 48 teams in the cup.
 You can set this in your profile or on any of the pages in the 2026worldcup tree
