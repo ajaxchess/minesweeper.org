@@ -18,16 +18,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, case, text, cast, Date as SQLDate
 from pydantic import BaseModel, Field, field_validator
 from countries import COUNTRIES as ALL_COUNTRIES, VALID_COUNTRY_CODES
-from game_catalog import (
-    LANGUAGE_OPTIONS,
-    PUZZLE_GAMES,
-    PUZZLE_SECTIONS,
-    game_title,
-    localized_action_path,
-    localized_game_path,
-    with_query,
-)
-from redirects import REDIRECTS_301
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, get_db, init_db, SessionLocal
@@ -244,12 +234,6 @@ templates.env.globals["mexico_banner"]         = site_settings.mexico_banner
 templates.env.globals["is_mexico_cinco"]       = site_settings.is_mexico_cinco
 templates.env.globals["is_mexico_independence"] = site_settings.is_mexico_independence
 templates.env.globals["page_localized"]        = True  # default; English-only routes override to False
-templates.env.globals["language_options"]      = LANGUAGE_OPTIONS
-templates.env.globals["puzzle_games"]          = PUZZLE_GAMES
-templates.env.globals["puzzle_sections"]       = PUZZLE_SECTIONS
-templates.env.globals["game_title"]            = game_title
-templates.env.globals["localized_game_path"]   = localized_game_path
-templates.env.globals["localized_action_path"] = localized_action_path
 
 def _autolink(text):
     """Jinja2 filter: HTML-escape text then wrap bare URLs in <a> tags."""
@@ -261,7 +245,7 @@ def _autolink(text):
     def _replace(m):
         url = m.group(0)
         # Strip trailing punctuation that's unlikely to be part of the URL
-        while url and url[-1] in '.,;:!?)]\'\"':
+        while url and url[-1] in '.,;:!?)\]\'\"':
             url = url[:-1]
         return '<a href="{u}" target="_blank" rel="noopener noreferrer">{u}</a>'.format(u=url)
     return Markup(re.sub(r'https?://[^\s<>"\'\x00-\x1f]+', _replace, safe))
@@ -276,31 +260,6 @@ templates.env.filters['autolink'] = _autolink
 from breadcrumbs import get_breadcrumbs as _get_breadcrumbs
 
 templates.env.globals["get_breadcrumbs"] = _get_breadcrumbs
-
-
-def _localized_puzzle_target(lang_code: str, bare_path: str) -> Optional[str]:
-    """Map /puzzles/{translated-slug} to the internal canonical route path."""
-    for game in PUZZLE_GAMES:
-        slug_map = game.get("translated_slugs", {})
-        if not isinstance(slug_map, dict):
-            continue
-        translated_slug = slug_map.get(lang_code)
-        if not translated_slug:
-            continue
-        translated_base = f"/puzzles/{translated_slug}"
-        if bare_path == translated_base or bare_path.startswith(f"{translated_base}/"):
-            suffix = bare_path[len(translated_base):]
-            return f"{game['canonical_path']}{suffix}"
-    return None
-
-
-def _localized_redirect_target(lang_code: str, target: str) -> str:
-    """Return a browser-facing redirect target, using translated puzzle slugs."""
-    for game in PUZZLE_GAMES:
-        canonical = str(game.get("canonical_path", ""))
-        if canonical and (target == canonical or target.startswith(f"{canonical}/")):
-            return localized_game_path(game, lang_code, target[len(canonical):])
-    return f"/{lang_code}{target}"
 
 # ── Language-prefix middleware ────────────────────────────────────────────────
 # Registered last → runs outermost (first) for every request.
@@ -348,47 +307,6 @@ async def lang_prefix_middleware(request: Request, call_next):
         request.state.lang = lang_code
         request.scope["path"] = bare_path
         request.scope["raw_path"] = bare_path.encode("utf-8")
-
-    return await call_next(request)
-
-
-@app.middleware("http")
-async def permanent_redirect_middleware(request: Request, call_next):
-    """Centralized 301 redirects for migrated SEO URLs."""
-    path = request.scope["path"].rstrip("/") or "/"
-    if request.method not in ("GET", "HEAD"):
-        return await call_next(request)
-
-    _SKIP = ("/api/", "/static/", "/auth/", "/ws/", "/admin/",
-             "/health", "/sitemap", "/robots", "/favicon",
-             "/ads.txt", "/app-ads.txt", "/.well-known/")
-    if any(path.startswith(p) for p in _SKIP):
-        return await call_next(request)
-
-    lang_prefix = ""
-    bare_path = path
-    parts = path.lstrip("/").split("/", 1)
-    if parts and parts[0] in SUPPORTED_LANGS and parts[0] != "en":
-        lang_prefix = f"/{parts[0]}"
-        bare_path = "/" + (parts[1] if len(parts) > 1 else "")
-        bare_path = bare_path.rstrip("/") or "/"
-
-    if lang_prefix:
-        localized_target = _localized_puzzle_target(lang_prefix.lstrip("/"), bare_path)
-        if localized_target and localized_target != bare_path:
-            rewritten_path = f"{lang_prefix}{localized_target}"
-            request.state.localized_path = path
-            request.scope["path"] = rewritten_path
-            request.scope["raw_path"] = rewritten_path.encode("utf-8")
-            return await call_next(request)
-
-    target = REDIRECTS_301.get(bare_path)
-    if target:
-        redirect_target = (
-            _localized_redirect_target(lang_prefix.lstrip("/"), target)
-            if lang_prefix else target
-        )
-        return RedirectResponse(url=with_query(redirect_target, request.query_params), status_code=301)
 
     return await call_next(request)
 
@@ -486,8 +404,7 @@ async def sitemap(request: Request):
     return templates.TemplateResponse(
         "sitemap.xml",
         {"request": request, "today": date.today().isoformat(),
-         "blog_posts": BLOG_POSTS, "puzzle_games": PUZZLE_GAMES,
-         "sitemap_langs": sorted(REAL_LANGS)},
+         "blog_posts": BLOG_POSTS, "sitemap_langs": sorted(REAL_LANGS)},
         media_type="application/xml",
     )
 
@@ -7467,244 +7384,6 @@ def get_numbers_match_scores(puzzle_date: str, response: Response, db: Session =
         if len(top) >= 20:
             break
     return _enrich_with_profiles(top, db)
-
-
-# ── Clean puzzle routes (/puzzles/...) ────────────────────────────────────────
-# These are the canonical public URLs. Legacy /other and top-level puzzle URLs
-# are handled by redirects.py through permanent_redirect_middleware.
-
-@app.get("/puzzles/15-puzzle", response_class=HTMLResponse)
-def puzzle_15_play(request: Request):
-    return fifteen_puzzle_daily(request)
-
-
-@app.get("/puzzles/15-puzzle/leaderboard", response_class=HTMLResponse)
-def puzzle_15_leaderboard(request: Request, grid: str = Query(default="4x4")):
-    return fifteen_puzzle_leaderboard_page(request, grid=grid)
-
-
-@app.get("/puzzles/15-puzzle/generator", response_class=HTMLResponse)
-def puzzle_15_generator(request: Request, db: Session = Depends(get_db)):
-    return fifteen_puzzle_generator_page(request, db=db)
-
-
-@app.get("/puzzles/15-puzzle/how-to-play", response_class=HTMLResponse)
-def puzzle_15_howtoplay(request: Request):
-    return fifteen_puzzle_howtoplay(request)
-
-
-@app.get("/puzzles/2048", response_class=HTMLResponse)
-def puzzle_2048_play(request: Request):
-    return game_2048_daily(request)
-
-
-@app.get("/puzzles/2048/leaderboard", response_class=HTMLResponse)
-def puzzle_2048_leaderboard(request: Request):
-    return game_2048_leaderboard_page(request)
-
-
-@app.get("/puzzles/2048/how-to-play", response_class=HTMLResponse)
-def puzzle_2048_howtoplay(request: Request):
-    return game_2048_howtoplay(request)
-
-
-@app.get("/puzzles/2048-hexagon", response_class=HTMLResponse)
-def puzzle_2048hex_play(request: Request):
-    return game_2048hex_play(request)
-
-
-@app.get("/puzzles/2048-hexagon/leaderboard", response_class=HTMLResponse)
-def puzzle_2048hex_leaderboard(request: Request):
-    return game_2048hex_leaderboard(request)
-
-
-@app.get("/puzzles/2048-hexagon/how-to-play", response_class=HTMLResponse)
-def puzzle_2048hex_howtoplay(request: Request):
-    return game_2048hex_htp(request)
-
-
-@app.get("/puzzles/mahjong-solitaire", response_class=HTMLResponse)
-def puzzle_mahjong_play(request: Request):
-    return RedirectResponse(f"/puzzles/mahjong-solitaire/game?board={_MAH_TURTLE_BOARD}", status_code=302)
-
-
-@app.get("/puzzles/mahjong-solitaire/game")
-def puzzle_mahjong_game_root():
-    return mahjong_game_root()
-
-
-@app.get("/puzzles/mahjong-solitaire/leaderboard", response_class=HTMLResponse)
-def puzzle_mahjong_leaderboard(request: Request):
-    return mahjong_leaderboard_page(request)
-
-
-@app.get("/puzzles/mahjong-solitaire/how-to-play", response_class=HTMLResponse)
-def puzzle_mahjong_howtoplay(request: Request):
-    return mahjong_howtoplay_page(request)
-
-
-@app.get("/puzzles/jigsaw", response_class=HTMLResponse)
-def puzzle_jigsaw_play(request: Request, img: Optional[str] = Query(None), diff: Optional[str] = Query(None)):
-    return jigsaw_daily_page(request, img=img, diff=diff)
-
-
-@app.get("/puzzles/jigsaw/gallery", response_class=HTMLResponse)
-def puzzle_jigsaw_gallery(request: Request):
-    return jigsaw_gallery_page(request)
-
-
-@app.get("/puzzles/jigsaw/generator", response_class=HTMLResponse)
-def puzzle_jigsaw_generator(request: Request, db: Session = Depends(get_db)):
-    return jigsaw_generator_page(request, db=db)
-
-
-@app.get("/puzzles/jigsaw/leaderboard", response_class=HTMLResponse)
-def puzzle_jigsaw_leaderboard(request: Request):
-    return jigsaw_leaderboard_page(request)
-
-
-@app.get("/puzzles/jigsaw/how-to-play", response_class=HTMLResponse)
-def puzzle_jigsaw_howtoplay(request: Request):
-    return jigsaw_howtoplay_page(request)
-
-
-@app.get("/puzzles/jigsaw/photo/{board_hash}", response_class=HTMLResponse)
-def puzzle_jigsaw_photo(request: Request, board_hash: str, difficulty: str = Query("beginner"),
-                        db: Session = Depends(get_db)):
-    return jigsaw_photo_play(request, board_hash=board_hash, difficulty=difficulty, db=db)
-
-
-@app.get("/puzzles/schulte-grid", response_class=HTMLResponse)
-def puzzle_schulte_play(request: Request):
-    return schulte_play(request)
-
-
-@app.get("/puzzles/schulte-grid/leaderboard", response_class=HTMLResponse)
-def puzzle_schulte_leaderboard(request: Request):
-    return schulte_leaderboard_page(request)
-
-
-@app.get("/puzzles/schulte-grid/how-to-play", response_class=HTMLResponse)
-def puzzle_schulte_howtoplay(request: Request):
-    return schulte_howtoplay(request)
-
-
-@app.get("/puzzles/sudoku", response_class=HTMLResponse)
-def puzzle_sudoku_play(request: Request):
-    return sudoku_daily(request)
-
-
-@app.get("/puzzles/sudoku/easy", response_class=HTMLResponse)
-def puzzle_sudoku_easy(request: Request):
-    return sudoku_easy(request)
-
-
-@app.get("/puzzles/sudoku/medium", response_class=HTMLResponse)
-def puzzle_sudoku_medium(request: Request):
-    return sudoku_medium(request)
-
-
-@app.get("/puzzles/sudoku/hard", response_class=HTMLResponse)
-def puzzle_sudoku_hard(request: Request):
-    return sudoku_hard(request)
-
-
-@app.get("/puzzles/sudoku/expert", response_class=HTMLResponse)
-def puzzle_sudoku_expert(request: Request):
-    return sudoku_expert(request)
-
-
-@app.get("/puzzles/sudoku/leaderboard", response_class=HTMLResponse)
-def puzzle_sudoku_leaderboard(request: Request):
-    return sudoku_scores_page(request)
-
-
-@app.get("/puzzles/tentaizu", response_class=HTMLResponse)
-async def puzzle_tentaizu_page(request: Request, date_param: str = Query(None, alias="date")):
-    real_today = date.today().isoformat()
-    puzzle_date = real_today
-    if date_param and re.match(r"^\d{4}-\d{2}-\d{2}$", date_param):
-        puzzle_date = date_param
-    return templates.TemplateResponse("tentaizu.html", {
-        "request": request, "mode": "tentaizu",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": puzzle_date,
-        "real_today": real_today,
-    })
-
-
-@app.get("/puzzles/tentaizu/how-to-play", response_class=HTMLResponse)
-async def puzzle_tentaizu_howtoplay(request: Request):
-    return templates.TemplateResponse("tentaizu_howto.html", {
-        "request": request, "mode": "tentaizu-howto",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-    })
-
-
-@app.get("/puzzles/tentaizu/easy-5x5-6", response_class=HTMLResponse)
-async def puzzle_tentaizu_easy(request: Request):
-    real_today = date.today().isoformat()
-    return templates.TemplateResponse("tentaizu_easy.html", {
-        "request": request, "mode": "tentaizu-easy",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": real_today,
-        "real_today": real_today,
-    })
-
-
-@app.get("/puzzles/mosaic", response_class=HTMLResponse)
-async def puzzle_mosaic_page(request: Request, seed: str = ""):
-    return templates.TemplateResponse("mosaic.html", {
-        "request": request, "mode": "mosaic",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": date.today().isoformat(),
-        "seed": seed.replace(".", "-"),
-    })
-
-
-@app.get("/puzzles/mosaic/easy", response_class=HTMLResponse)
-async def puzzle_mosaic_easy(request: Request, seed: str = ""):
-    return templates.TemplateResponse("mosaic_easy.html", {
-        "request": request, "mode": "mosaic",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": date.today().isoformat(),
-        "seed": seed.replace(".", "-"),
-    })
-
-
-@app.get("/puzzles/mosaic/how-to-play", response_class=HTMLResponse)
-async def puzzle_mosaic_howtoplay(request: Request):
-    return templates.TemplateResponse("mosaic_howto.html", {
-        "request": request, "mode": "mosaic-howto",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-    })
-
-
-@app.get("/puzzles/tametsi", response_class=HTMLResponse)
-async def puzzle_tametsi_page(request: Request):
-    return templates.TemplateResponse("tametsi.html", {
-        "request": request, "mode": "tametsi",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-    })
-
-
-@app.get("/puzzles/numbers-match", response_class=HTMLResponse)
-async def puzzle_numbers_match_page(request: Request, date_str: Optional[str] = None):
-    today = date.today().isoformat()
-    return templates.TemplateResponse("numbers_match.html", {
-        "request": request, "mode": "numbers-match",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": today,
-        "puzzle_date": date_str or today,
-    })
 
 
 @app.get("/{mode}/{date_str}/{guess_mode}", response_class=HTMLResponse)

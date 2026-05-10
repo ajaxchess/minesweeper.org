@@ -10,13 +10,8 @@
   {# Non-English: canonical uses the path-prefixed URL computed from the bare path + lang.
      English: child templates continue to override {% block canonical %} unchanged. #}
   {% if lang is defined and lang != "en" %}
-    {%- if request.state.localized_path is defined -%}
-      {%- set _localized_url_path = request.state.localized_path -%}
-    {%- else -%}
-      {%- set _lp = "" if request.url.path == "/" else request.url.path -%}
-      {%- set _localized_url_path = "/" ~ lang ~ _lp -%}
-    {%- endif -%}
-    <link rel="canonical" href="https://minesweeper.org{{ _localized_url_path }}">
+    {%- set _lp = "" if request.url.path == "/" else request.url.path -%}
+    <link rel="canonical" href="https://minesweeper.org/{{ lang }}{{ _lp }}">
   {% else %}
     <link rel="canonical" href="{% block canonical %}https://minesweeper.org/{% endblock %}">
   {% endif %}
@@ -88,13 +83,8 @@
   <meta property="og:type"         content="{% block og_type %}website{% endblock %}">
   <meta property="og:site_name"    content="minesweeper.org">
   {% if lang is defined and lang != "en" %}
-    {%- if request.state.localized_path is defined -%}
-      {%- set _localized_og_path = request.state.localized_path -%}
-    {%- else -%}
-      {%- set _lp = "" if request.url.path == "/" else request.url.path -%}
-      {%- set _localized_og_path = "/" ~ lang ~ _lp -%}
-    {%- endif -%}
-    <meta property="og:url" content="https://minesweeper.org{{ _localized_og_path }}">
+    {%- set _lp = "" if request.url.path == "/" else request.url.path -%}
+    <meta property="og:url" content="https://minesweeper.org/{{ lang }}{{ _lp }}">
   {% else %}
     <meta property="og:url" content="{% block og_url %}https://minesweeper.org/{% endblock %}">
   {% endif %}
@@ -170,7 +160,7 @@
     <div class="header-inner">
       <a href="/" class="logo">
         <img src="/static/img/LadyDisMinesLogo.png" class="logo-classic" alt="Lady Di's Mines">
-        <span class="logo-text">Minesweeper.org</span>
+        <span class="logo-text">💣 Minesweeper.org</span>
       </a>
       <!-- Mega menu nav (modern skins) -->
       <nav class="mega-nav">
@@ -220,7 +210,7 @@
 
         <!-- PvP -->
         <div class="mega-group" id="mg-pvp">
-          <button class="mega-trigger {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}active{% endif %}" onclick="toggleMega(event,'mg-pvp')" aria-haspopup="true" aria-expanded="false">PvP ▾</button>
+          <button class="mega-trigger {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}active{% endif %}" onclick="toggleMega(event,'mg-pvp')" aria-haspopup="true" aria-expanded="false">🎮 PvP ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/pvp" class="mega-card {% if mode=='pvp' %}active{% endif %}">
@@ -251,7 +241,7 @@
 
         <!-- Variants -->
         <div class="mega-group" id="mg-variants">
-          <button class="mega-trigger {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %}active{% endif %}" onclick="toggleMega(event,'mg-variants')" aria-haspopup="true" aria-expanded="false">{{ t.nav_variants }} ▾</button>
+          <button class="mega-trigger {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %}active{% endif %}" onclick="toggleMega(event,'mg-variants')" aria-haspopup="true" aria-expanded="false">🔄 {{ t.nav_variants }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="/cylinder" class="mega-card {% if 'cylinder' in mode %}active{% endif %}">
@@ -302,20 +292,49 @@
 
         <!-- Puzzles -->
         <div class="mega-group" id="mg-puzzles">
-          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode in ['other','puzzles','tametsi','numbers-match'] %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">{{ t.nav_puzzles }} ▾</button>
-          <div class="mega-panel mega-panel-puzzles">
-            {% for game in puzzle_games %}
-              {% if loop.index0 % 4 == 0 %}<div class="mega-col">{% endif %}
-              <a href="{{ localized_game_path(game, lang) }}" class="mega-card {% if mode == game.mode or request.url.path.startswith(game.primary_href|string) %}active{% endif %}">
-                <span class="mega-card-text">
-                  <strong>{{ game_title(game, lang) }}</strong>
-                  <span>{{ t[game.desc_key] if game.desc_key is defined else game.desc }}</span>
-                </span>
+          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">🧩 {{ t.nav_puzzles }} ▾</button>
+          <div class="mega-panel">
+            <div class="mega-col">
+              <a href="/tentaizu" class="mega-card {% if mode=='tentaizu' %}active{% endif %}">
+                <span class="mega-icon">📅</span>
+                <span class="mega-card-text"><strong>{{ t.nav_tentaizu_daily }}</strong><span>{{ t.nav_sub_tentaizu_daily }}</span></span>
               </a>
-              {% if loop.index0 % 4 == 3 or loop.last %}</div>{% endif %}
-            {% endfor %}
-            <div class="mega-panel-footer">
-              <a href="/puzzles" class="mega-panel-all {% if mode=='puzzles' %}active{% endif %}">All Puzzles</a>
+              <a href="/tentaizu/easy-5x5-6" class="mega-card">
+                <span class="mega-icon">⭐</span>
+                <span class="mega-card-text"><strong>{{ t.nav_tentaizu_easy }}</strong><span>{{ t.nav_sub_tentaizu_easy }}</span></span>
+              </a>
+              <a href="/tentaizu/how-to-play" class="mega-card {% if mode=='tentaizu-howto' %}active{% endif %}">
+                <span class="mega-icon">📖</span>
+                <span class="mega-card-text"><strong>{{ t.nav_tentaizu_howto }}</strong><span>{{ t.nav_sub_tentaizu_howto }}</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/mosaic/standard" class="mega-card {% if mode=='mosaic' %}active{% endif %}">
+                <span class="mega-icon">🟫</span>
+                <span class="mega-card-text"><strong>{{ t.nav_mosaic_daily }}</strong><span>{{ t.nav_sub_mosaic_daily }}</span></span>
+              </a>
+              <a href="/mosaic" class="mega-card {% if mode=='mosaic-easy' %}active{% endif %}">
+                <span class="mega-icon">⭐</span>
+                <span class="mega-card-text"><strong>{{ t.nav_mosaic_easy }}</strong><span>{{ t.nav_sub_mosaic_easy }}</span></span>
+              </a>
+              <a href="/mosaic/how-to-play" class="mega-card {% if mode=='mosaic-howto' %}active{% endif %}">
+                <span class="mega-icon">📖</span>
+                <span class="mega-card-text"><strong>{{ t.nav_mosaic_howto }}</strong><span>{{ t.nav_sub_mosaic_howto }}</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/tametsi" class="mega-card {% if mode=='tametsi' %}active{% endif %}">
+                <span class="mega-icon">🔀</span>
+                <span class="mega-card-text"><strong>{{ t.nav_tametsi_daily }}</strong><span>{{ t.nav_sub_tametsi_daily }}</span></span>
+              </a>
+              <a href="/numbers-match" class="mega-card {% if mode=='numbers-match' %}active{% endif %}">
+                <span class="mega-icon">🔢</span>
+                <span class="mega-card-text"><strong>{{ t.nav_numbers_match }}</strong><span>{{ t.nav_sub_numbers_match }}</span></span>
+              </a>
+              <a href="/other" class="mega-card {% if mode=='other' %}active{% endif %}">
+                <span class="mega-icon">🧩</span>
+                <span class="mega-card-text"><strong>{{ t.nav_other }}</strong><span>{{ t.nav_sub_other }}</span></span>
+              </a>
             </div>
           </div>
         </div>
@@ -328,7 +347,7 @@
       <div class="auth-area">
         <!-- Theme picker icon -->
         <div class="theme-picker" id="theme-picker">
-          <button class="theme-icon-btn" onclick="toggleThemePicker(event)" aria-label="{{ t.nav_theme }}" aria-expanded="false" aria-haspopup="true" title="{{ t.nav_theme }}">{{ t.nav_theme }}</button>
+          <button class="theme-icon-btn" onclick="toggleThemePicker(event)" aria-label="{{ t.nav_theme }}" aria-expanded="false" aria-haspopup="true" title="{{ t.nav_theme }}">🌓</button>
           <div class="theme-picker-menu">
             <button class="theme-opt" data-theme-btn="default"  onclick="setTheme('default')"><span>🌓</span><span>{{ t.nav_theme_auto }}</span></button>
             <button class="theme-opt" data-theme-btn="dark"     onclick="setTheme('dark')"><span>🌑</span><span>{{ t.nav_theme_dark }}</span></button>
@@ -340,8 +359,7 @@
           </div>
         </div>
         {%- set _lc = lang if lang is defined else 'en' -%}
-        {%- set _ll = {} -%}
-        {%- for opt in language_options -%}{%- set _ = _ll.update({opt.code: opt.label}) -%}{%- endfor -%}
+        {%- set _ll = {'en':'EN','de':'DE','fr':'FR','es':'ES','pt':'PT','it':'IT','pl':'PL','ru':'RU','uk':'UK','zh':'ZH','zh-hant':'繁體','ja':'JA','ko':'KO','th':'TH','tl':'TL','pgl':'PGL','eo':'EO'} -%}
         <div class="lang-picker" id="lang-picker">
           <button class="lang-picker-btn" type="button" onclick="toggleLangPicker(event)" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">
             <img src="/static/img/flags/{{ _lc }}.png" class="lang-flag" width="20" height="14" alt="{{ _lc }}">
@@ -349,19 +367,31 @@
             <span class="lang-caret">▾</span>
           </button>
           <div class="lang-picker-menu" role="listbox">
-            <label class="lang-search-wrap">
-              <span class="visually-hidden">Search languages</span>
-              <input id="lang-search" class="lang-search" type="search" placeholder="Search languages" autocomplete="off" oninput="filterLanguages(this.value)">
-            </label>
-            {%- for opt in language_options %}
-            <button class="lang-option{{ ' lang-current' if _lc == opt.code }}"
-                    data-lang-code="{{ opt.code }}"
-                    data-lang-name="{{ opt.name }}"
-                    onclick="doSetLang('{{ opt.code }}','{{ request.url.path }}')"
-                    role="option" aria-selected="{{ 'true' if _lc == opt.code else 'false' }}">
-              <img src="/static/img/flags/{{ opt.flag }}.png" class="lang-flag" width="20" height="14" alt="{{ opt.label }}">
-              <span class="lang-opt-code">{{ opt.label }}</span>
-              <span class="lang-opt-name">{{ opt.name }}</span>
+            {%- for code, label, name in [
+              ('en',      'EN',   'English'),
+              ('de',      'DE',   'Deutsch'),
+              ('fr',      'FR',   'Français'),
+              ('es',      'ES',   'Español'),
+              ('pt',      'PT',   'Português'),
+              ('it',      'IT',   'Italiano'),
+              ('pl',      'PL',   'Polski'),
+              ('ru',      'RU',   'Русский'),
+              ('uk',      'UK',   'Українська'),
+              ('zh',      'ZH',   '中文(简)'),
+              ('zh-hant', '繁體',  '中文(繁)'),
+              ('ja',      'JA',   '日本語'),
+              ('ko',      'KO',   '한국어'),
+              ('th',      'TH',   'ไทย'),
+              ('tl',      'TL',   'Filipino'),
+              ('pgl',     'PGL',  'Pig Latin'),
+              ('eo',      'EO',   'Esperanto')
+            ] %}
+            <button class="lang-option{{ ' lang-current' if _lc == code }}"
+                    onclick="doSetLang('{{ code }}','{{ request.url.path }}')"
+                    role="option" aria-selected="{{ 'true' if _lc == code else 'false' }}">
+              <img src="/static/img/flags/{{ code }}.png" class="lang-flag" width="20" height="14" alt="{{ label }}">
+              <span class="lang-opt-code">{{ label }}</span>
+              <span class="lang-opt-name">{{ name }}</span>
             </button>
             {%- endfor %}
           </div>
@@ -385,7 +415,10 @@
           </div>
         </div>
         {% else %}
-          <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="auth-btn login-btn">Sign In</a>
+          <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="auth-btn login-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.93 6.36h-1.65c-.19 0-.4.25-.4.59v1.19h2.05l-.27 2.08H14.88V18h-2.15v-5.78h-1.4v-2.08h1.4v-1.37C12.73 7.47 13.83 6 15.72 6c.86 0 1.21.06 1.21.06v1.3z"/></svg>
+            {{ t.auth_sign_in }}
+          </a>
         {% endif %}
         <!-- Hamburger: mobile only (non-classic skins) -->
         <button class="hamburger-btn" id="hamburger-btn" onclick="toggleDrawer()" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-drawer">
@@ -397,22 +430,16 @@
     </div>
   </header>
 
-  <div id="language-suggestion" class="language-suggestion" hidden>
-    <span id="language-suggestion-text"></span>
-    <button type="button" id="language-suggestion-accept">Switch</button>
-    <button type="button" id="language-suggestion-dismiss">Keep English</button>
-  </div>
-
   <!-- Mobile nav overlay + slide-in drawer -->
   <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
   <aside id="mobile-drawer" class="mobile-drawer" aria-label="Navigation" aria-hidden="true">
     <div class="drawer-top">
-      <a href="/" class="logo" onclick="closeDrawer()"><span class="logo-text">Minesweeper.org</span></a>
+      <a href="/" class="logo" onclick="closeDrawer()"><span class="logo-text">💣 Minesweeper.org</span></a>
       <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">✕</button>
     </div>
     <nav class="drawer-nav">
       <details class="drawer-group {% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %}open{% endif %}">
-        <summary class="drawer-summary">{{ t.nav_play }}</summary>
+        <summary class="drawer-summary">💣 {{ t.nav_play }}</summary>
         <div class="drawer-links">
           <a href="/" class="drawer-link {% if mode=='beginner' %}active{% endif %}">🟢 {{ t.nav_beginner }}</a>
           <a href="/intermediate" class="drawer-link {% if mode=='intermediate' %}active{% endif %}">🟡 {{ t.nav_intermediate }}</a>
@@ -425,7 +452,7 @@
         </div>
       </details>
       <details class="drawer-group {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}open{% endif %}">
-        <summary class="drawer-summary">PvP</summary>
+        <summary class="drawer-summary">🎮 PvP</summary>
         <div class="drawer-links">
           <a href="/pvp" class="drawer-link {% if mode=='pvp' %}active{% endif %}">🎮 {{ t.nav_pvp }}</a>
           <a href="/duel" class="drawer-link {% if mode=='duel' %}active{% endif %}">⚔️ {{ t.nav_duel }}</a>
@@ -435,7 +462,7 @@
         </div>
       </details>
       <details class="drawer-group {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %}open{% endif %}">
-        <summary class="drawer-summary">{{ t.nav_variants }}</summary>
+        <summary class="drawer-summary">🔄 {{ t.nav_variants }}</summary>
         <div class="drawer-links">
           <a href="/cylinder" class="drawer-link {% if 'cylinder' in mode %}active{% endif %}">🔄 {{ t.nav_cylinder }}</a>
           <a href="/hexsweeper" class="drawer-link {% if 'hex' in mode %}active{% endif %}">⬡ {{ t.nav_hexsweeper }}</a>
@@ -449,13 +476,15 @@
           <a href="/variants/board-generator" class="drawer-link {% if mode=='board-generator' %}active{% endif %}">🔧 {{ t.nav_board_generator }}</a>
         </div>
       </details>
-      <details class="drawer-group {% if 'tentaizu' in mode or 'mosaic' in mode or mode in ['other','puzzles','tametsi','numbers-match'] %}open{% endif %}">
-        <summary class="drawer-summary">{{ t.nav_puzzles }}</summary>
+      <details class="drawer-group {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' %}open{% endif %}">
+        <summary class="drawer-summary">🧩 {{ t.nav_puzzles }}</summary>
         <div class="drawer-links">
-          {% for game in puzzle_games %}
-          <a href="{{ game.primary_href }}" class="drawer-link {% if mode == game.mode or request.url.path.startswith(game.primary_href|string) %}active{% endif %}">{{ t[game.title_key] if game.title_key is defined else game.title }}</a>
-          {% endfor %}
-          <a href="/puzzles" class="drawer-link {% if mode=='puzzles' %}active{% endif %}">All Puzzles</a>
+          <a href="/tentaizu" class="drawer-link {% if mode=='tentaizu' %}active{% endif %}">📅 {{ t.nav_tentaizu_daily }}</a>
+          <a href="/tentaizu/easy-5x5-6" class="drawer-link">⭐ {{ t.nav_tentaizu_easy }}</a>
+          <a href="/mosaic/standard" class="drawer-link {% if mode=='mosaic' %}active{% endif %}">🟫 {{ t.nav_mosaic_daily }}</a>
+          <a href="/mosaic" class="drawer-link {% if mode=='mosaic-easy' %}active{% endif %}">⭐ {{ t.nav_mosaic_easy }}</a>
+          <a href="/tametsi" class="drawer-link {% if mode=='tametsi' %}active{% endif %}">🔀 {{ t.nav_tametsi_daily }}</a>
+          <a href="/other" class="drawer-link {% if mode=='other' %}active{% endif %}">🧩 {{ t.nav_other }}</a>
         </div>
       </details>
       <a href="/leaderboard" class="drawer-link drawer-link--direct {% if mode=='leaderboard' %}active{% endif %}">{{ t.nav_leaderboard }}</a>
@@ -577,61 +606,11 @@
     if (!picker) return;
     var open = picker.classList.toggle('open');
     picker.querySelector('.lang-picker-btn').setAttribute('aria-expanded', String(open));
-    if (open) {
-      var search = document.getElementById('lang-search');
-      if (search) setTimeout(function() { search.focus(); }, 0);
-    }
-  }
-  function filterLanguages(query) {
-    var q = (query || '').trim().toLowerCase();
-    document.querySelectorAll('.lang-option').forEach(function(btn) {
-      var haystack = ((btn.dataset.langCode || '') + ' ' + (btn.dataset.langName || '') + ' ' + btn.textContent).toLowerCase();
-      btn.hidden = q && haystack.indexOf(q) === -1;
-    });
   }
   function doSetLang(v, p) {
     document.cookie = 'lang=' + v + ';path=/;max-age=31536000;samesite=lax';
-    localStorage.setItem('langConfirmed', 'true');
     location.href = v === 'en' ? p : '/' + v + (p === '/' ? '' : p);
   }
-  (function() {
-    var currentLang = {{ (lang if lang is defined else 'en') | tojson }};
-    var supported = {{ language_options | tojson }};
-    var supportedMap = {};
-    supported.forEach(function(opt) { supportedMap[opt.code] = opt; });
-    function readCookie(name) {
-      return document.cookie.split(';').map(function(v) { return v.trim(); }).find(function(v) { return v.indexOf(name + '=') === 0; });
-    }
-    function normalizeBrowserLang(value) {
-      var raw = (value || '').toLowerCase();
-      if (!raw) return '';
-      if (raw === 'zh-tw' || raw === 'zh-hk' || raw === 'zh-mo' || raw.indexOf('zh-hant') === 0) return 'zh-hant';
-      var base = raw.split('-')[0];
-      if (base === 'zh') return 'zh';
-      return supportedMap[raw] ? raw : base;
-    }
-    function bestBrowserLang() {
-      var langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language];
-      for (var i = 0; i < langs.length; i++) {
-        var normalized = normalizeBrowserLang(langs[i]);
-        if (supportedMap[normalized]) return normalized;
-      }
-      return 'en';
-    }
-    if (window.location.pathname !== '/' || readCookie('lang') || localStorage.getItem('langConfirmed') === 'true') return;
-    var detected = bestBrowserLang();
-    if (!detected || detected === currentLang || detected === 'en') return;
-    var banner = document.getElementById('language-suggestion');
-    if (!banner) return;
-    var opt = supportedMap[detected];
-    document.getElementById('language-suggestion-text').textContent = 'Your browser language looks like ' + opt.name + '. Switch the site language?';
-    document.getElementById('language-suggestion-accept').onclick = function() { doSetLang(detected, '/'); };
-    document.getElementById('language-suggestion-dismiss').onclick = function() {
-      localStorage.setItem('langConfirmed', 'true');
-      banner.hidden = true;
-    };
-    banner.hidden = false;
-  })();
   document.addEventListener('click', function() {
     var picker = document.getElementById('lang-picker');
     if (picker && picker.classList.contains('open')) {

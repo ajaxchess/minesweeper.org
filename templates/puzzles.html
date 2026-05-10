@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% set _title = "All Puzzles | minesweeper.org" %}
-{% set _desc  = "Every puzzle game on minesweeper.org: daily puzzles, logic games, and brain teasers. Free to play, no download required." %}
+{% set _desc  = "Every puzzle game on minesweeper.org — daily puzzles, logic games, and brain teasers. Free to play, no download required." %}
 {% set _canon = "https://minesweeper.org/puzzles" %}
 
 {% block title %}{{ _title }}{% endblock %}
@@ -10,54 +10,139 @@
 {% block og_url %}{{ _canon }}{% endblock %}
 {% block og_title %}All Puzzles | minesweeper.org{% endblock %}
 {% block og_description %}{{ _desc }}{% endblock %}
-{% block jsonld %}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "CollectionPage",
-  "name": "All Puzzles",
-  "url": "https://minesweeper.org/puzzles",
-  "description": {{ _desc|tojson }},
-  "mainEntity": {
-    "@type": "ItemList",
-    "itemListElement": [
-      {% for game in puzzle_games %}
-      {
-        "@type": "ListItem",
-        "position": {{ loop.index }},
-        "url": "https://minesweeper.org{{ game.canonical_path }}",
-        "name": {{ game.title|tojson }}
-      }{{ "," if not loop.last else "" }}
-      {% endfor %}
-    ]
-  }
-}
-</script>
-{% endblock %}
 
 {% block content %}
 <div class="variants-page">
-  <h1 class="variants-title">All Puzzles</h1>
-  <p class="variants-subtitle">Daily puzzles, logic games, and brain teasers. All free, no download required.</p>
+  <h1 class="variants-title">🧩 All Puzzles</h1>
+  <p class="variants-subtitle">Daily puzzles, logic games, and brain teasers — all free, no download required.</p>
 
-  {% for section in puzzle_sections %}
-  <div class="puzzles-section-label">{{ section }}</div>
+  <div class="puzzles-section-label">Daily Logic Puzzles</div>
   <div class="variants-grid">
-    {% for game in puzzle_games if game.section == section %}
+
     <div class="variant-card">
-      <h2 class="variant-card-title">{{ game_title(game, lang) }}</h2>
-      <p class="variant-card-desc">{{ t[game.desc_key] if game.desc_key is defined else game.desc }}</p>
+      <div class="variant-card-icon">📅</div>
+      <h2 class="variant-card-title">{{ t.nav_tentaizu_daily }}</h2>
+      <p class="variant-card-desc">{{ t.nav_sub_tentaizu_daily }}</p>
       <div class="variant-card-links">
-        {% for action in game.actions %}
-        <a href="{{ localized_action_path(game, action.href, lang) }}"
-           class="variant-play-btn{{ '' if action.primary is defined and action.primary else ' variant-play-btn-outline' }}">
-          {{ t[action.label_key] if action.label_key is defined else action.label }}
-        </a>
-        {% endfor %}
+        <a href="/tentaizu"                    class="variant-play-btn">{{ t['other_daily_puzzle'] }}</a>
+        <a href="/tentaizu/easy-5x5-6"         class="variant-play-btn variant-play-btn-outline">{{ t.nav_tentaizu_easy }}</a>
+        <a href="/tentaizu/how-to-play"        class="variant-play-btn variant-play-btn-outline">{{ t['nav_how_to_play'] }}</a>
       </div>
     </div>
-    {% endfor %}
+
+    <div class="variant-card">
+      <div class="variant-card-icon">🟫</div>
+      <h2 class="variant-card-title">{{ t.nav_mosaic_daily }}</h2>
+      <p class="variant-card-desc">{{ t.nav_sub_mosaic_daily }}</p>
+      <div class="variant-card-links">
+        <a href="/mosaic/standard"             class="variant-play-btn">{{ t['other_daily_puzzle'] }}</a>
+        <a href="/mosaic"                      class="variant-play-btn variant-play-btn-outline">{{ t.nav_mosaic_easy }}</a>
+        <a href="/mosaic/how-to-play"          class="variant-play-btn variant-play-btn-outline">{{ t['nav_how_to_play'] }}</a>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-card-icon">🔀</div>
+      <h2 class="variant-card-title">{{ t.nav_tametsi_daily }}</h2>
+      <p class="variant-card-desc">{{ t.nav_sub_tametsi_daily }}</p>
+      <div class="variant-card-links">
+        <a href="/tametsi"                     class="variant-play-btn">{{ t['other_daily_puzzle'] }}</a>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-card-icon">🔢</div>
+      <h2 class="variant-card-title">{{ t.nav_numbers_match }}</h2>
+      <p class="variant-card-desc">{{ t.nav_sub_numbers_match }}</p>
+      <div class="variant-card-links">
+        <a href="/numbers-match"               class="variant-play-btn">{{ t['other_daily_puzzle'] }}</a>
+      </div>
+    </div>
+
   </div>
-  {% endfor %}
+
+  <div class="puzzles-section-label">More Games</div>
+  <div class="variants-grid">
+
+    <div class="variant-card">
+      <div class="variant-card-icon">🔢</div>
+      <h2 class="variant-card-title">15-Puzzle</h2>
+      <p class="variant-card-desc">{{ t['other_15puzzle_desc'] }}</p>
+      <div class="variant-card-links">
+        <a href="/other/15puzzle/daily"       class="variant-play-btn">{{ t['other_daily_puzzle'] }}</a>
+        <a href="/other/15puzzle/leaderboard" class="variant-play-btn variant-play-btn-outline">{{ t['nav_leaderboard'] }}</a>
+        <a href="/other/15puzzle/generator"   class="variant-play-btn variant-play-btn-outline">{{ t['other_generator'] }}</a>
+        <a href="/other/15puzzle/how-to-play" class="variant-play-btn variant-play-btn-outline">{{ t['nav_how_to_play'] }}</a>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-card-icon">🟨</div>
+      <h2 class="variant-card-title">2048</h2>
+      <p class="variant-card-desc">{{ t['other_2048_desc'] }}</p>
+      <div class="variant-card-links">
+        <a href="/other/2048/daily"       class="variant-play-btn">{{ t['other_daily_puzzle'] }}</a>
+        <a href="/other/2048/leaderboard" class="variant-play-btn variant-play-btn-outline">{{ t['nav_leaderboard'] }}</a>
+        <a href="/other/2048/how-to-play" class="variant-play-btn variant-play-btn-outline">{{ t['nav_how_to_play'] }}</a>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-card-icon">⬡</div>
+      <h2 class="variant-card-title">2048 Hexagon</h2>
+      <p class="variant-card-desc">2048 on a hexagonal grid — 18 tiles, a fixed stone in the center, and 6 directions to slide.</p>
+      <div class="variant-card-links">
+        <a href="/other/2048hex/play"        class="variant-play-btn">Play</a>
+        <a href="/other/2048hex/leaderboard" class="variant-play-btn variant-play-btn-outline">{{ t['nav_leaderboard'] }}</a>
+        <a href="/other/2048hex/how-to-play" class="variant-play-btn variant-play-btn-outline">{{ t['nav_how_to_play'] }}</a>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-card-icon">🀄</div>
+      <h2 class="variant-card-title">Mahjong Solitaire</h2>
+      <p class="variant-card-desc">{{ t['other_mahjong_desc'] }}</p>
+      <div class="variant-card-links">
+        <a href="/other/mahjong/daily"       class="variant-play-btn">{{ t['other_daily_puzzle'] }}</a>
+        <a href="/other/mahjong/leaderboard" class="variant-play-btn variant-play-btn-outline">{{ t['nav_leaderboard'] }}</a>
+        <a href="/other/mahjong/how-to-play" class="variant-play-btn variant-play-btn-outline">{{ t['nav_how_to_play'] }}</a>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-card-icon">🧩</div>
+      <h2 class="variant-card-title">Jigsaw Puzzle</h2>
+      <p class="variant-card-desc">{{ t['other_jigsaw_desc'] }}</p>
+      <div class="variant-card-links">
+        <a href="/other/jigsaw/daily"       class="variant-play-btn">{{ t['other_daily_puzzle'] }}</a>
+        <a href="/other/jigsaw/leaderboard" class="variant-play-btn variant-play-btn-outline">{{ t['nav_leaderboard'] }}</a>
+        <a href="/other/jigsaw/gallery"     class="variant-play-btn variant-play-btn-outline">Gallery</a>
+        <a href="/other/jigsaw/generator"   class="variant-play-btn variant-play-btn-outline">{{ t['other_generator'] }}</a>
+        <a href="/other/jigsaw/how-to-play" class="variant-play-btn variant-play-btn-outline">{{ t['nav_how_to_play'] }}</a>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-card-icon">🧠</div>
+      <h2 class="variant-card-title">Schulte Grid</h2>
+      <p class="variant-card-desc">{{ t['other_schulte_desc'] }}</p>
+      <div class="variant-card-links">
+        <a href="/other/schulte/play"        class="variant-play-btn">Play</a>
+        <a href="/other/schulte/leaderboard" class="variant-play-btn variant-play-btn-outline">{{ t['nav_leaderboard'] }}</a>
+        <a href="/other/schulte/how-to-play" class="variant-play-btn variant-play-btn-outline">{{ t['nav_how_to_play'] }}</a>
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <div class="variant-card-icon">🔷</div>
+      <h2 class="variant-card-title">Sudoku</h2>
+      <p class="variant-card-desc">{{ t['other_sudoku_desc'] }}</p>
+      <div class="variant-card-links">
+        <a href="/other/sudoku/daily"  class="variant-play-btn">Play Daily</a>
+        <a href="/other/sudoku/scores" class="variant-play-btn variant-play-btn-outline">{{ t['nav_leaderboard'] }}</a>
+      </div>
+    </div>
+
+  </div>
 </div>
 {% endblock %}
