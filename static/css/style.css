@@ -56,12 +56,29 @@ header {
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   font-size: 1.3rem;
   font-weight: 700;
   color: var(--accent2);
   text-decoration: none;
   letter-spacing: 0.5px;
+  min-width: 0;
 }
+.site-logo-picture {
+  display: block;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 42px;
+}
+.site-logo-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.site-logo-classic { display: none; }
 
 nav { display: flex; gap: 0.25rem; overflow-x: auto; min-width: 0; }
 
@@ -3548,6 +3565,52 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   text-decoration: none;
 }
 .blog-post-nav-link:hover { text-decoration: underline; }
+.blog-post-nav-index {
+  display: inline-flex;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+.blog-post-nav-pager {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.85rem;
+}
+.blog-post-nav-card {
+  display: block;
+  min-height: 92px;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--surface);
+}
+.blog-post-nav-card[href]:hover {
+  border-color: var(--accent2);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+}
+.blog-post-nav-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--text-muted, #888);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+.blog-post-nav-card strong {
+  display: block;
+  line-height: 1.35;
+}
+.blog-post-nav-next { text-align: right; }
+.blog-post-nav-disabled {
+  color: var(--text-muted, #888);
+  opacity: 0.72;
+}
+
+@media (max-width: 640px) {
+  .blog-post-nav-pager { grid-template-columns: 1fr; }
+  .blog-post-nav-next { text-align: left; }
+}
 
 /* ── Tentaizu mode nav (Daily 7×7 ↔ Easy 5×5) ───────────────────────────── */
 .tz-mode-nav {
@@ -4081,13 +4144,11 @@ html[data-skin="classic"] .variant-play-btn-outline:visited { color: #0033cc; }
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Classic logo: show image, hide text ─────────────────────────────────── */
-.logo-classic { display: none; }
-
-html[data-skin="classic"] .logo-classic {
+html[data-skin="classic"] .site-logo-master { display: none; }
+html[data-skin="classic"] .site-logo-classic {
   display: block;
-  width: 150px;
-  max-width: 100%;
-  height: auto;
+  width: 120px;
+  height: 48px;
 }
 
 html[data-skin="classic"] .logo-text { display: none; }
@@ -4389,8 +4450,18 @@ html[data-skin="classic"] .blog-article-title {
 
 html[data-skin="classic"] .blog-card-read-more,
 html[data-skin="classic"] .blog-breadcrumb a,
-html[data-skin="classic"] .blog-post-nav-link {
+html[data-skin="classic"] .blog-post-nav-link,
+html[data-skin="classic"] .blog-post-nav-card[href] {
   color: #0033cc;
+}
+html[data-skin="classic"] .blog-post-nav-card {
+  background: #fff;
+  border-color: #ccc;
+  border-radius: 0;
+}
+html[data-skin="classic"] .blog-post-nav-label,
+html[data-skin="classic"] .blog-post-nav-disabled {
+  color: #444;
 }
 
 html[data-skin="classic"] .blog-article-body { color: #111; }
@@ -4510,6 +4581,324 @@ html[data-skin="classic"] nav a,
 html[data-skin="classic"] nav a:visited { color: #ffffff; font-weight: 700; text-shadow: 1px 1px 3px #000, 0 0 6px #000; }
 
 /* ── Classic skin preview (in profile picker) ────────────────────────────── */
+/* Classic 90s theme refresh: keep modern structure, render it like Windows-era Minesweeper */
+html[data-skin="classic"] {
+  --bg: #008080;
+  --surface: #c0c0c0;
+  --surface2: #d4d0c8;
+  --accent: #000080;
+  --accent2: #000080;
+  --text: #000000;
+  --text-dim: #404040;
+  --border: #808080;
+  --radius: 0;
+  --header-shadow: none;
+}
+
+html[data-skin="classic"] body {
+  font-family: "MS Sans Serif", Tahoma, Arial, sans-serif;
+  background: #008080 !important;
+  color: #000;
+}
+
+html[data-skin="classic"] header {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #404040;
+  border-bottom: 2px solid #404040;
+  box-shadow: none;
+}
+
+html[data-skin="classic"] .header-inner {
+  height: 56px;
+  gap: 0.75rem;
+}
+
+html[data-skin="classic"] .logo {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+}
+
+html[data-skin="classic"] .mega-nav,
+html[data-skin="classic"] nav {
+  flex-direction: row;
+  align-items: center;
+  width: auto;
+  gap: 4px;
+}
+
+html[data-skin="classic"] nav a[href="/"]::before,
+html[data-skin="classic"] nav a[href="/intermediate"]::before,
+html[data-skin="classic"] nav a[href="/expert"]::before,
+html[data-skin="classic"] nav a[href="/custom"]::before {
+  content: none;
+}
+
+html[data-skin="classic"] .mega-trigger,
+html[data-skin="classic"] .mega-direct,
+html[data-skin="classic"] .theme-icon-btn,
+html[data-skin="classic"] .lang-picker-btn,
+html[data-skin="classic"] .auth-btn,
+html[data-skin="classic"] .user-menu-btn,
+html[data-skin="classic"] .mobile-menu-btn,
+html[data-skin="classic"] .drawer-close,
+html[data-skin="classic"] button,
+html[data-skin="classic"] input[type="button"],
+html[data-skin="classic"] input[type="submit"] {
+  background: #c0c0c0;
+  color: #000 !important;
+  border: 0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #404040;
+  border-bottom: 2px solid #404040;
+  border-radius: 0;
+  box-shadow: none;
+  text-shadow: none;
+  font-family: inherit;
+}
+
+html[data-skin="classic"] .mega-trigger:hover,
+html[data-skin="classic"] .mega-direct:hover,
+html[data-skin="classic"] .theme-icon-btn:hover,
+html[data-skin="classic"] .lang-picker-btn:hover,
+html[data-skin="classic"] .auth-btn:hover,
+html[data-skin="classic"] .user-menu-btn:hover,
+html[data-skin="classic"] .mobile-menu-btn:hover,
+html[data-skin="classic"] .drawer-close:hover {
+  background: #d4d0c8;
+  color: #000 !important;
+  transform: none;
+}
+
+html[data-skin="classic"] .mega-trigger:active,
+html[data-skin="classic"] .mega-direct:active,
+html[data-skin="classic"] .theme-icon-btn:active,
+html[data-skin="classic"] .lang-picker-btn:active,
+html[data-skin="classic"] .auth-btn:active,
+html[data-skin="classic"] .user-menu-btn:active,
+html[data-skin="classic"] .mobile-menu-btn:active,
+html[data-skin="classic"] .drawer-close:active {
+  border-top-color: #404040;
+  border-left-color: #404040;
+  border-right-color: #ffffff;
+  border-bottom-color: #ffffff;
+}
+
+html[data-skin="classic"] .mega-trigger.active,
+html[data-skin="classic"] .mega-direct.active,
+html[data-skin="classic"] .mega-card.active,
+html[data-skin="classic"] .mega-panel-all.active,
+html[data-skin="classic"] .drawer-link.active,
+html[data-skin="classic"] .lb-tab.active {
+  background: #000080;
+  color: #fff !important;
+  text-shadow: none;
+}
+
+html[data-skin="classic"] .mega-panel,
+html[data-skin="classic"] .theme-menu,
+html[data-skin="classic"] .lang-picker-menu,
+html[data-skin="classic"] .user-menu-dropdown,
+html[data-skin="classic"] .mobile-drawer {
+  background: #c0c0c0;
+  color: #000;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #404040;
+  border-bottom: 2px solid #404040;
+  border-radius: 0;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
+}
+
+html[data-skin="classic"] .mega-card,
+html[data-skin="classic"] .mega-panel-all,
+html[data-skin="classic"] .drawer-link,
+html[data-skin="classic"] .drawer-summary,
+html[data-skin="classic"] .drawer-auth-link,
+html[data-skin="classic"] .theme-menu-item,
+html[data-skin="classic"] .lang-option,
+html[data-skin="classic"] .user-menu-dropdown a {
+  color: #000 !important;
+  background: transparent;
+  border-radius: 0;
+  text-shadow: none;
+}
+
+html[data-skin="classic"] .mega-card:hover,
+html[data-skin="classic"] .mega-panel-all:hover,
+html[data-skin="classic"] .drawer-link:hover,
+html[data-skin="classic"] .drawer-summary:hover,
+html[data-skin="classic"] .theme-menu-item:hover,
+html[data-skin="classic"] .lang-option:hover,
+html[data-skin="classic"] .user-menu-dropdown a:hover {
+  background: #000080;
+  color: #fff !important;
+}
+
+html[data-skin="classic"] .mega-card-text strong,
+html[data-skin="classic"] .mega-card-text span,
+html[data-skin="classic"] .lang-opt-name,
+html[data-skin="classic"] .drawer-auth-name,
+html[data-skin="classic"] .drawer-theme-label {
+  color: inherit;
+  text-shadow: none;
+}
+
+html[data-skin="classic"] .drawer-links,
+html[data-skin="classic"] .drawer-auth {
+  background: #d4d0c8;
+  border-color: #808080;
+}
+
+html[data-skin="classic"] main,
+html[data-skin="classic"] footer,
+html[data-skin="classic"] .lb-wrapper,
+html[data-skin="classic"] .blog-wrapper,
+html[data-skin="classic"] .game-landing-welcome,
+html[data-skin="classic"] .landing-seo-section,
+html[data-skin="classic"] .tz-section,
+html[data-skin="classic"] .quest-section,
+html[data-skin="classic"] .blog-card,
+html[data-skin="classic"] .blog-post-nav-card,
+html[data-skin="classic"] .lb-table-wrap,
+html[data-skin="classic"] .game-info,
+html[data-skin="classic"] .ad-container {
+  background: #c0c0c0 !important;
+  color: #000 !important;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #404040;
+  border-bottom: 2px solid #404040;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html[data-skin="classic"] main {
+  padding-top: 0.75rem;
+}
+
+html[data-skin="classic"] h1,
+html[data-skin="classic"] h2,
+html[data-skin="classic"] h3,
+html[data-skin="classic"] .lb-title,
+html[data-skin="classic"] .blog-card-title,
+html[data-skin="classic"] .blog-article-title,
+html[data-skin="classic"] .game-landing-title,
+html[data-skin="classic"] .game-landing-lb-title,
+html[data-skin="classic"] .tz-section h2 {
+  color: #000080 !important;
+  letter-spacing: 0;
+}
+
+html[data-skin="classic"] a,
+html[data-skin="classic"] a:visited,
+html[data-skin="classic"] .blog-card-read-more,
+html[data-skin="classic"] .blog-breadcrumb a,
+html[data-skin="classic"] .blog-post-nav-link,
+html[data-skin="classic"] .blog-post-nav-card[href] {
+  color: #000080;
+  text-shadow: none;
+}
+
+html[data-skin="classic"] input,
+html[data-skin="classic"] select,
+html[data-skin="classic"] textarea,
+html[data-skin="classic"] .lang-search {
+  background: #ffffff;
+  color: #000;
+  border-top: 2px solid #404040;
+  border-left: 2px solid #404040;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  border-radius: 0;
+  font-family: inherit;
+}
+
+html[data-skin="classic"] .lb-table thead tr {
+  background: #000080;
+}
+
+html[data-skin="classic"] .lb-table th,
+html[data-skin="classic"] .lb-table thead a {
+  color: #fff !important;
+}
+
+html[data-skin="classic"] #board,
+html[data-skin="classic"] #rush-board,
+html[data-skin="classic"] #tz-board,
+html[data-skin="classic"] #game {
+  background: #c0c0c0;
+  border-top: 3px solid #808080;
+  border-left: 3px solid #808080;
+  border-right: 3px solid #ffffff;
+  border-bottom: 3px solid #ffffff;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html[data-skin="classic"] .cell.hidden,
+html[data-skin="classic"] .cell.flagged,
+html[data-skin="classic"] .cell.question {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #808080;
+  border-bottom: 2px solid #808080;
+}
+
+html[data-skin="classic"] .cell.revealed,
+html[data-skin="classic"] .cell.mine {
+  background: #c0c0c0;
+  border: 1px solid #808080;
+}
+
+html[data-skin="classic"] #reset-btn,
+html[data-skin="classic"] .lb-tab,
+html[data-skin="classic"] .quest-play-btn,
+html[data-skin="classic"] .variant-play-btn,
+html[data-skin="classic"] .tz-play-cta,
+html[data-skin="classic"] .game-landing-signin-btn,
+html[data-skin="classic"] .duel-play-again,
+html[data-skin="classic"] .info-link-prominent {
+  background: #c0c0c0;
+  color: #000 !important;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #404040;
+  border-bottom: 2px solid #404040;
+  border-radius: 0;
+  text-shadow: none;
+}
+
+html[data-skin="classic"] .stat {
+  background: #000;
+  border: 2px inset #808080;
+}
+
+html[data-skin="classic"] .stat-value {
+  color: #ff0000;
+  font-family: "Courier New", monospace;
+}
+
+html[data-skin="classic"] .blog-subtitle,
+html[data-skin="classic"] .blog-card-excerpt,
+html[data-skin="classic"] .blog-article-date,
+html[data-skin="classic"] .blog-post-nav-disabled,
+html[data-skin="classic"] .blog-post-nav-label {
+  color: #404040;
+}
+
+@media (max-width: 640px) {
+  html[data-skin="classic"] .site-logo-classic {
+    width: 96px;
+    height: 40px;
+  }
+}
+
 .skin-preview-classic {
   background: #c0c0c0;
   padding: 5px;
@@ -6977,11 +7366,11 @@ html[data-skin="flower-light"] .diana-birthday-banner {
    JS reads --glob-* via getComputedStyle(globeWrapEl).
    ───────────────────────────────────────────────────────────────────────── */
 
-/* Classic theme — concept-art orange background (applied via JS radial gradient) */
+/* Classic theme for Worldsweeper: Windows-era gray and navy face colors */
 [data-glob-skin="classic"] {
-  --glob-hidden:        #4a4a4a;   /* dark metallic gray */
-  --glob-hidden-border: #c8892a;   /* orange-gold border */
-  --glob-rev:           #e8e8e8;   /* plain white reveal */
+  --glob-hidden:        #c0c0c0;
+  --glob-hidden-border: #808080;
+  --glob-rev:           #d4d0c8;
   --glob-mine:          #7a0000;
   --glob-detonated:     #c00000;
 }

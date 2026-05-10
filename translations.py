@@ -278,7 +278,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
         "nav_board_generator":  "Board Generator",
-        "nav_blog":             "Blog",
+        "nav_blog":             "News",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
         "nav_sub_beginner":          "9\u00d79 \u00b7 10 mines",

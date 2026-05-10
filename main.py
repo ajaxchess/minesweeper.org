@@ -245,7 +245,7 @@ def _autolink(text):
     def _replace(m):
         url = m.group(0)
         # Strip trailing punctuation that's unlikely to be part of the URL
-        while url and url[-1] in '.,;:!?)\]\'\"':
+        while url and url[-1] in '.,;:!?)]\'\"':
             url = url[:-1]
         return '<a href="{u}" target="_blank" rel="noopener noreferrer">{u}</a>'.format(u=url)
     return Markup(re.sub(r'https?://[^\s<>"\'\x00-\x1f]+', _replace, safe))
@@ -3146,11 +3146,16 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
         .order_by(BlogComment.created_at)
         .all()
     )
+    post_index = next((i for i, p in enumerate(_BLOG_INDEX) if p["slug"] == slug), -1)
+    newer_post = _BLOG_INDEX[post_index - 1] if post_index > 0 else None
+    older_post = _BLOG_INDEX[post_index + 1] if 0 <= post_index < len(_BLOG_INDEX) - 1 else None
     return templates.TemplateResponse("blog_post.html", {
         "request":        request, "mode": "blog",
         "user":           get_current_user(request),
         "lang":           get_lang(request), "t": get_t(request),
         "post":           post,
+        "newer_post":     newer_post,
+        "older_post":     older_post,
         "content":        html_content,
         "author":         front_matter.get("author", "") or "minesweeper.org",
         "authorurl":      front_matter.get("authorurl", "") if front_matter.get("authorurl", "").startswith(("https://", "http://")) else "",
@@ -3160,7 +3165,7 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
         "date_published": date_published,
         "date_modified":  date_modified,
         "comments":       comments,
-        "page_title":     post["title"] + " — minesweeper.org Blog" if len(post["title"]) + len(" — minesweeper.org Blog") <= 60 else post["title"],
+        "page_title":     post["title"] + " — minesweeper.org News" if len(post["title"]) + len(" — minesweeper.org News") <= 60 else post["title"],
     })
 
 

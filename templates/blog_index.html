@@ -1,26 +1,32 @@
 {% extends "base.html" %}
 
-{% block title %}Minesweeper Blog — Strategy, News &amp; Updates | minesweeper.org{% endblock %}
-{% block description %}The minesweeper.org blog — thoughts on building a game site with AI, vibe coding, minesweeper strategy, and the changing landscape of software development.{% endblock %}
+{% block title %}Minesweeper News — Strategy, Updates &amp; Articles | minesweeper.org{% endblock %}
+{% block description %}News from minesweeper.org: site updates, puzzle releases, minesweeper strategy, mobile app notes, and stories from the team building the game.{% endblock %}
 {% block canonical %}https://minesweeper.org/blog{% endblock %}
 {% block og_url %}https://minesweeper.org/blog{% endblock %}
-{% block og_title %}Minesweeper Blog — Strategy, News &amp; Updates{% endblock %}
-{% block og_description %}The minesweeper.org blog — thoughts on building a game site with AI, vibe coding, minesweeper strategy, and the changing landscape of software development.{% endblock %}
-{% block tw_title %}Minesweeper Blog — Strategy, News &amp; Updates{% endblock %}
-{% block tw_description %}The minesweeper.org blog — thoughts on AI-assisted development, minesweeper strategy, site updates, and the changing landscape of software.{% endblock %}
+{% block og_title %}Minesweeper News — Strategy, Updates &amp; Articles{% endblock %}
+{% block og_description %}News from minesweeper.org: site updates, puzzle releases, minesweeper strategy, mobile app notes, and stories from the team building the game.{% endblock %}
+{% block tw_title %}Minesweeper News — Strategy, Updates &amp; Articles{% endblock %}
+{% block tw_description %}News from minesweeper.org: site updates, puzzle releases, strategy, mobile app notes, and behind-the-scenes articles.{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Blog",
-  "name": "Lady Di's Mines",
+  "name": "Minesweeper.org News",
   "url": "https://minesweeper.org/blog",
-  "description": "The minesweeper.org blog — thoughts on building a game site with AI, vibe coding, minesweeper strategy, and the changing landscape of software development.",
+  "description": "News from minesweeper.org: site updates, puzzle releases, minesweeper strategy, mobile app notes, and stories from the team building the game.",
   "publisher": {
     "@type": "Organization",
     "name": "minesweeper.org",
     "url": "https://minesweeper.org/",
-    "logo": { "@type": "ImageObject", "url": "https://minesweeper.org/static/img/LadyDisMinesLogo.png" }
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://minesweeper.org/static/img/minesweeper-org-logo.png",
+      "width": 865,
+      "height": 582,
+      "caption": "Minesweeper.org logo with minesweeper tiles, a smiling bomb mascot, and a red flag"
+    }
   }
 }
 </script>
@@ -30,8 +36,8 @@
 <div class="blog-wrapper">
 
   <div class="blog-header">
-    <h1 class="blog-title">Lady Di's Mines</h1>
-    <p class="blog-subtitle">Thoughts on building, AI, and the changing landscape of software.</p>
+    <h1 class="blog-title">Minesweeper.org News</h1>
+    <p class="blog-subtitle">Updates, strategy, puzzle releases, and notes from the team.</p>
   </div>
 
   <div class="blog-post-list">

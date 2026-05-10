@@ -24,7 +24,7 @@ _BREADCRUMB_MAP: dict[str, list[tuple[str, str]]] = {
     "/quests":                    [("Quests", "/quests")],
     "/info/3bv":                  [("How to Play", "/how-to-play"), ("3BV", "/info/3bv")],
     # ── Blog ─────────────────────────────────────────────────────────────────
-    "/blog":                      [("Blog", "/blog")],
+    "/blog":                      [("News", "/blog")],
     # ── Rush ─────────────────────────────────────────────────────────────────
     "/rush":                      [("Rush", "/rush")],
     "/rush/how-to-play":          [("Rush", "/rush"), ("How to Play", "/rush/how-to-play")],

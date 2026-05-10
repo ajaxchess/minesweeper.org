@@ -114,7 +114,18 @@
     "gamePlatform": "{{ t.meta_platform }}",
     "operatingSystem": "Any",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "publisher": { "@type": "Organization", "name": "minesweeper.org", "url": "https://minesweeper.org/" }
+    "publisher": {
+      "@type": "Organization",
+      "name": "minesweeper.org",
+      "url": "https://minesweeper.org/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://minesweeper.org/static/img/minesweeper-org-logo.png",
+        "width": 865,
+        "height": 582,
+        "caption": "Minesweeper.org logo with minesweeper tiles, a smiling bomb mascot, and a red flag"
+      }
+    }
   }
   </script>
   {% endblock %}
@@ -159,7 +170,24 @@
   <header>
     <div class="header-inner">
       <a href="/" class="logo">
-        <img src="/static/img/LadyDisMinesLogo.png" class="logo-classic" alt="Lady Di's Mines">
+        <picture class="site-logo-picture site-logo-master">
+          <source srcset="/static/img/minesweeper-org-logo.webp" type="image/webp">
+          <img src="/static/img/minesweeper-org-logo.png"
+               class="site-logo-image"
+               alt="Minesweeper.org logo with minesweeper tiles, a smiling bomb mascot, and a red flag"
+               title="Minesweeper.org - free online minesweeper and puzzle games"
+               width="865"
+               height="582">
+        </picture>
+        <picture class="site-logo-picture site-logo-classic">
+          <source srcset="/static/img/LadyDisMinesLogo.webp" type="image/webp">
+          <img src="/static/img/LadyDisMinesLogo.png"
+               class="site-logo-image"
+               alt="Lady Di's Mines classic Minesweeper logo"
+               title="Lady Di's Mines classic 90s Minesweeper theme"
+               width="120"
+               height="80">
+        </picture>
         <span class="logo-text">Minesweeper.org</span>
       </a>
       <!-- Mega menu nav (modern skins) -->
@@ -342,6 +370,7 @@
         <!-- Leaderboard + Quests: direct links -->
         <a href="/leaderboard" class="mega-direct {% if mode=='leaderboard' %}active{% endif %}">{{ t.nav_leaderboard }}</a>
         <a href="/quests" class="mega-direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
+        <a href="/blog" class="mega-direct {% if mode=='blog' %}active{% endif %}">{{ t.nav_blog }}</a>
 
       </nav>
       <div class="auth-area">
@@ -439,7 +468,27 @@
   <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
   <aside id="mobile-drawer" class="mobile-drawer" aria-label="Navigation" aria-hidden="true">
     <div class="drawer-top">
-      <a href="/" class="logo" onclick="closeDrawer()"><span class="logo-text">Minesweeper.org</span></a>
+      <a href="/" class="logo" onclick="closeDrawer()">
+        <picture class="site-logo-picture site-logo-master">
+          <source srcset="/static/img/minesweeper-org-logo.webp" type="image/webp">
+          <img src="/static/img/minesweeper-org-logo.png"
+               class="site-logo-image"
+               alt="Minesweeper.org logo with minesweeper tiles, a smiling bomb mascot, and a red flag"
+               title="Minesweeper.org - free online minesweeper and puzzle games"
+               width="865"
+               height="582">
+        </picture>
+        <picture class="site-logo-picture site-logo-classic">
+          <source srcset="/static/img/LadyDisMinesLogo.webp" type="image/webp">
+          <img src="/static/img/LadyDisMinesLogo.png"
+               class="site-logo-image"
+               alt="Lady Di's Mines classic Minesweeper logo"
+               title="Lady Di's Mines classic 90s Minesweeper theme"
+               width="120"
+               height="80">
+        </picture>
+        <span class="logo-text">Minesweeper.org</span>
+      </a>
       <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">✕</button>
     </div>
     <nav class="drawer-nav">
@@ -494,6 +543,7 @@
       </details>
       <a href="/leaderboard" class="drawer-link drawer-link--direct {% if mode=='leaderboard' %}active{% endif %}">{{ t.nav_leaderboard }}</a>
       <a href="/quests" class="drawer-link drawer-link--direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
+      <a href="/blog" class="drawer-link drawer-link--direct {% if mode=='blog' %}active{% endif %}">{{ t.nav_blog }}</a>
     </nav>
     <div class="drawer-theme">
       <div class="drawer-theme-label">{{ t.nav_theme }}</div>
