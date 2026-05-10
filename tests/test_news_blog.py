@@ -7,6 +7,7 @@ def test_news_link_and_logo_render_on_homepage(client):
     assert "/static/img/minesweeper-org-logo.png" in r.text
     assert "Lady Di's Mines classic Minesweeper logo" in r.text
     assert "Minesweeper.org logo with minesweeper tiles" in r.text
+    assert '<span class="logo-text">Minesweeper.org</span>' not in r.text
 
 
 def test_blog_index_is_presented_as_news(client):

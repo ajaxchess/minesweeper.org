@@ -69,8 +69,8 @@ header {
 .site-logo-picture {
   display: block;
   flex: 0 0 auto;
-  width: 48px;
-  height: 42px;
+  width: 120px;
+  height: 52px;
 }
 .site-logo-image {
   display: block;
@@ -4151,8 +4151,6 @@ html[data-skin="classic"] .site-logo-classic {
   height: 48px;
 }
 
-html[data-skin="classic"] .logo-text { display: none; }
-
 /* ── Classic CSS variables ───────────────────────────────────────────────── */
 html[data-skin="classic"] {
   --bg:          #ffffff;
@@ -5500,11 +5498,6 @@ body.drawer-open { overflow: hidden; }
   /* Auth button and user menu move into the drawer at this breakpoint */
   .auth-btn.login-btn { display: none; }
   .user-menu          { display: none; }
-}
-
-/* ── Narrow: hide logo text, keep icon ───────────────────────────────────── */
-@media (max-width: 480px) {
-  .logo-text { display: none; }
 }
 
 /* ── PvP sub-page links ──────────────────────────────────────────────────── */
