@@ -6,6 +6,12 @@ Your country flag is the flag of your home country and that will still display i
 There will be a new database field, the 2026 fan flag, which is selected among the 48 teams in the cup.
 You can set this in your profile or on any of the pages in the 2026worldcup tree
 
+There's a little ambiguity in this document.  Each country is playing games in the world cup.  We want to keep everyone up-to-date on how those games are going.
+So the https://minesweeper.org/2026worldcup will have all the latest world cup news.  What games are coming up.  What scores have happened already.  Which teams
+are winning their groups.  We will be providing that data and that will update the content for the main page and the teams page.
+
+There is also a fan event where fans play Tametsi.  The site will track how many games the fans win and will have leaderboards for fans and for country.
+
 So 
 minesweeper.org/2026worldcup
 minesweeper.org/2026worldcup/algeria
@@ -28,7 +34,8 @@ Whenever you flag a mine, the flag icon will be the fan flag of your selected wo
 The Tametsi rules will be:  There will be a white number which is the total number of mines on that row or column.  Above or to the left will be a green number which is the number of mines
 that have not yet been flagged on that row or column.  Above and to the left of the board will be a count of the number of unflagged mines in the part of the board with the primary or secondary color.
 There will be a starting x on the top left of the board.
-You can also select a Tametsi hard board and you will get a board of 30x18 with 99 mines.  This should also be no guess.
+You can also select a Tametsi hard board and you will get a board of 30x18 with 99 mines.  This should also be no guess. Hard will have the top 9 rows be the primary color and the bottom 9 rows be the secondary
+color for that team.
 
 For example:
 Canada upper 5 rows will be in Red (FF0000) and the bottom 4 rows will be in White (FFFFFF).
