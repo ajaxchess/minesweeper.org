@@ -713,6 +713,7 @@ class UserProfile(Base):
     country       = Column(String(8),    nullable=True)
     pvp_elo       = Column(Integer, default=1200, nullable=False)
     created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    wc2026_fan    = Column(String(16), name="2026_world_cup_fan_flag", nullable=True)
 
 # ── Server Stats model (hourly snapshots) ─────────────────────────────────────
 class ServerStats(Base):
@@ -1388,6 +1389,8 @@ def _apply_migrations():
         ("user_profiles",         "pref_on_lose", "VARCHAR(16) NOT NULL DEFAULT 'summary'"),
         # Country selection using FIFA codes (added 2026-05-08)
         ("user_profiles",         "country",      "VARCHAR(8) NULL"),
+        # 2026 FIFA World Cup fan team (added 2026-05-10)
+        ("user_profiles",         "2026_world_cup_fan_flag", "VARCHAR(16) NULL"),
         # game_replays — Phase 1 analytics instrumentation (added 2026-05-05)
         ("game_replays", "outcome",          "VARCHAR(16) NOT NULL DEFAULT 'win'"),
         ("game_replays", "bbbv",             "INT NULL"),

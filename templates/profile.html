@@ -105,6 +105,25 @@
           <span id="country-msg" class="setting-msg"></span>
         </div>
       </div>
+      <div class="setting-row setting-row-wc2026">
+        <div class="setting-info">
+          <span class="setting-name">⚽ World Cup 2026</span>
+          <span class="setting-desc">Which team are you cheering for?</span>
+        </div>
+        <div class="country-edit">
+          <img id="wc2026-flag"
+               src="/static/img/country-flags/{{ wc2026_fan }}.png"
+               alt=""
+               style="width:20px;height:14px;object-fit:cover;vertical-align:middle;border-radius:2px;display:{{ 'inline' if wc2026_fan else 'none' }};" />
+          <select id="wc2026-select" class="favorite-game-select" onchange="saveWC2026Fan()">
+            <option value="">— none —</option>
+            {% for code, name in wc2026_teams %}
+            <option value="{{ code }}"{% if wc2026_fan == code %} selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+          </select>
+          <span id="wc2026-msg" class="setting-msg"></span>
+        </div>
+      </div>
       <div class="setting-row setting-row-about">
         <div class="setting-info">
           <span class="setting-name">About</span>
@@ -1034,6 +1053,37 @@ async function saveCountry() {
       method:  'POST',
       headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
       body:    JSON.stringify({ country: sel.value || null }),
+    });
+    msg.textContent = res.ok ? 'Saved!' : 'Could not save.';
+    setTimeout(() => { msg.textContent = ''; }, 2000);
+  } catch {
+    msg.textContent = 'Network error.';
+  }
+}
+
+// ── World Cup 2026 ────────────────────────────────────────────────────────────
+(function() {
+  const sel  = document.getElementById('wc2026-select');
+  const flag = document.getElementById('wc2026-flag');
+  function updateFlag(code) {
+    if (code) {
+      flag.src = '/static/img/country-flags/' + code + '.png';
+      flag.style.display = 'inline';
+    } else {
+      flag.style.display = 'none';
+    }
+  }
+  sel.addEventListener('change', () => updateFlag(sel.value));
+})();
+
+async function saveWC2026Fan() {
+  const sel = document.getElementById('wc2026-select');
+  const msg = document.getElementById('wc2026-msg');
+  try {
+    const res = await fetch('/api/profile/wc2026-fan', {
+      method:  'POST',
+      headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+      body:    JSON.stringify({ team: sel.value || null }),
     });
     msg.textContent = res.ok ? 'Saved!' : 'Could not save.';
     setTimeout(() => { msg.textContent = ''; }, 2000);

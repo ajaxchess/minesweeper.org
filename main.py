@@ -3256,6 +3256,8 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "about_text":    profile.about_text    if profile else "",
         "country":       profile.country       if profile else "",
         "countries":     ALL_COUNTRIES,
+        "wc2026_teams":  WC2026_TEAMS,
+        "wc2026_fan":    profile.wc2026_fan    if profile else "",
         "fp_photos":     db.query(FifteenPuzzlePhoto).filter_by(user_email=user["email"]).order_by(FifteenPuzzlePhoto.created_at.desc()).all(),
         "fp_limit":      getattr(profile, "puzzle_storage_limit", 32) if profile else 32,
         "jigsaw_saves":  db.query(JigsawSavedGame).filter_by(user_email=user["email"]).order_by(JigsawSavedGame.updated_at.desc()).all(),
@@ -5572,6 +5574,57 @@ def update_about(payload: AboutTextUpdate, request: Request, db: Session = Depen
     return {"ok": True}
 
 
+# ── 2026 FIFA World Cup teams ─────────────────────────────────────────────────
+WC2026_TEAMS: list[tuple[str, str]] = [
+    ("dz",     "Algeria"),
+    ("ar",     "Argentina"),
+    ("au",     "Australia"),
+    ("at",     "Austria"),
+    ("be",     "Belgium"),
+    ("ba",     "Bosnia & Herzegovina"),
+    ("br",     "Brazil"),
+    ("ca",     "Canada"),
+    ("cv",     "Cape Verde"),
+    ("co",     "Colombia"),
+    ("hr",     "Croatia"),
+    ("cz",     "Czechia"),
+    ("cd",     "DR Congo"),
+    ("ec",     "Ecuador"),
+    ("eg",     "Egypt"),
+    ("gb-eng", "England"),
+    ("fr",     "France"),
+    ("de",     "Germany"),
+    ("gh",     "Ghana"),
+    ("ht",     "Haiti"),
+    ("ir",     "Iran"),
+    ("iq",     "Iraq"),
+    ("ci",     "Ivory Coast"),
+    ("jp",     "Japan"),
+    ("jo",     "Jordan"),
+    ("mx",     "Mexico"),
+    ("ma",     "Morocco"),
+    ("nl",     "Netherlands"),
+    ("nz",     "New Zealand"),
+    ("no",     "Norway"),
+    ("pa",     "Panama"),
+    ("py",     "Paraguay"),
+    ("pt",     "Portugal"),
+    ("sa",     "Saudi Arabia"),
+    ("gb-sct", "Scotland"),
+    ("sn",     "Senegal"),
+    ("za",     "South Africa"),
+    ("kr",     "South Korea"),
+    ("es",     "Spain"),
+    ("se",     "Sweden"),
+    ("ch",     "Switzerland"),
+    ("tn",     "Tunisia"),
+    ("tr",     "Türkiye"),
+    ("uy",     "Uruguay"),
+    ("us",     "USA"),
+    ("uz",     "Uzbekistan"),
+]
+VALID_WC2026_CODES: frozenset[str] = frozenset(code for code, _ in WC2026_TEAMS)
+
 VALID_COUNTRIES = VALID_COUNTRY_CODES
 
 class CountryUpdate(BaseModel):
@@ -5589,6 +5642,25 @@ def update_country(payload: CountryUpdate, request: Request, db: Session = Depen
     if code and code not in VALID_COUNTRIES:
         return JSONResponse({"error": "Invalid country code"}, status_code=400)
     profile.country = code
+    db.commit()
+    return {"ok": True}
+
+
+class WC2026FanUpdate(BaseModel):
+    team: Optional[str] = None
+
+@app.post("/api/profile/wc2026-fan")
+def update_wc2026_fan(payload: WC2026FanUpdate, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+    if not profile:
+        return JSONResponse({"error": "Profile not found"}, status_code=404)
+    code = (payload.team or "").strip().lower() or None
+    if code and code not in VALID_WC2026_CODES:
+        return JSONResponse({"error": "Invalid team code"}, status_code=400)
+    profile.wc2026_fan = code
     db.commit()
     return {"ok": True}
 
