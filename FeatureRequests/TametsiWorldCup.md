@@ -1,4 +1,4 @@
-There are 48 teams in the 2026 world cup.  I want to make a Tametsi World Cup page.
+There are 48 teams in the 2026 world cup.  I want to make a Tametsi 2026 World Cup Celebration page.
 
 There will be a new database field, the 2026 fan flag, which is selected among the 48 teams in the cup.
 You can set this in your profile or on any of the pages in the 2026worldcup tree
