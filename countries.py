@@ -1,10 +1,14 @@
 """
-countries.py — ISO 3166-1 alpha-2 country master list for minesweeper.org.
+countries.py — country and player-region master list for minesweeper.org.
 
 Each entry: (alpha2_code, display_name)  — codes are lowercase.
 Includes all 249 officially assigned ISO 3166-1 codes plus Kosovo (XK),
 which is widely used by flagcdn.com, Google, and most flag libraries
 even though it is not yet formally assigned by ISO.
+
+Also includes a small set of player-expected constituent-country flags using
+ISO 3166-2-style region codes. These are not sovereign-state ISO 3166-1
+country codes, but they are important profile choices for sports/gaming users.
 
 Flags are stored at: static/img/country-flags/<code>.png
 Flag source:         https://flagcdn.com/w40/<code>.png  (40 px wide)
@@ -79,6 +83,7 @@ COUNTRIES: list[tuple[str, str]] = [
     ("ec", "Ecuador"),
     ("eg", "Egypt"),
     ("sv", "El Salvador"),
+    ("gb-eng", "England"),
     ("gq", "Equatorial Guinea"),
     ("er", "Eritrea"),
     ("ee", "Estonia"),
@@ -177,6 +182,7 @@ COUNTRIES: list[tuple[str, str]] = [
     ("nf", "Norfolk Island"),
     ("kp", "North Korea"),
     ("mk", "North Macedonia"),
+    ("gb-nir", "Northern Ireland"),
     ("mp", "Northern Mariana Islands"),
     ("no", "Norway"),
     ("om", "Oman"),
@@ -208,6 +214,7 @@ COUNTRIES: list[tuple[str, str]] = [
     ("sm", "San Marino"),
     ("st", "São Tomé and Príncipe"),
     ("sa", "Saudi Arabia"),
+    ("gb-sct", "Scotland"),
     ("sn", "Senegal"),
     ("rs", "Serbia"),
     ("sc", "Seychelles"),
@@ -256,6 +263,7 @@ COUNTRIES: list[tuple[str, str]] = [
     ("ve", "Venezuela"),
     ("vn", "Vietnam"),
     ("vi", "Virgin Islands (U.S.)"),
+    ("gb-wls", "Wales"),
     ("wf", "Wallis and Futuna"),
     ("eh", "Western Sahara"),
     ("ye", "Yemen"),

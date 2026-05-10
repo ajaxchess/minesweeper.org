@@ -1,10 +1,11 @@
 """
-download_country_flags.py — Download 40px-wide flag PNGs for all countries.
+download_country_flags.py — Download 40px-wide flag PNGs for profile choices.
 
 Run once from the repo root:
     python download_country_flags.py
 
-Source:  https://flagcdn.com  (free, high quality, ISO 3166-1 alpha-2 codes)
+Source:  https://flagcdn.com  (free, high quality, ISO 3166-1 alpha-2 codes
+         plus supported region codes such as gb-eng, gb-sct, gb-wls, gb-nir)
 Size:    w40  — 40 px wide, proportional height (~27 px for most flags)
 Output:  static/img/country-flags/<code>.png
 
