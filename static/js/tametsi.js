@@ -556,7 +556,6 @@ async function loadLeaderboard() {
             content.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
             return;
         }
-        const medals = ['🥇', '🥈', '🥉'];
         const rows = data.map((s, i) => {
             const nameCell = s.profile_url
                 ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
@@ -567,8 +566,8 @@ async function loadLeaderboard() {
                 ? `${m}:${((ms % 60000) / 1000).toFixed(3).padStart(6, '0')}`
                 : (ms / 1000).toFixed(3) + 's';
             const bbbvs = (s.bbbv && ms > 0) ? (s.bbbv / (ms / 1000)).toFixed(2) : '—';
-            return `<tr class="${i < 3 ? 'top-' + (i + 1) : ''}">
-                <td class="lb-rank">${medals[i] ?? i + 1}</td>
+            return `<tr class="${i % 2 === 1 ? 'lb-even' : ''}">
+                <td class="lb-rank">${i + 1}</td>
                 <td class="lb-name">${nameCell}</td>
                 <td class="lb-time">${timeStr}</td>
                 <td class="lb-stat">${s.bbbv ?? '—'}</td>

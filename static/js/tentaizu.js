@@ -355,10 +355,9 @@ async function loadLeaderboard() {
             return;
         }
 
-        const medals = ['🥇', '🥈', '🥉'];
         const rows = data.map((s, i) => `
-            <tr class="${i < 3 ? 'top-' + (i + 1) : ''}">
-                <td class="lb-rank">${medals[i] || i + 1}</td>
+            <tr class="${i % 2 === 1 ? 'lb-even' : ''}">
+                <td class="lb-rank">${i + 1}</td>
                 <td class="lb-name">${s.profile_url ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>` : esc(s.name)}</td>
                 <td class="lb-time">${fmtTime(s.time_secs)}</td>
             </tr>`).join('');

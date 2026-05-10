@@ -379,7 +379,6 @@
         el.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
         return;
       }
-      const medals = ['🥇', '🥈', '🥉'];
       const rows = data.map((s, i) => {
         const nameCell = s.profile_url
           ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
@@ -395,8 +394,8 @@
           hashCell = `<td class="lb-hash"><a href="/variants/replay/?${rp}" class="lb-replay-link" title="${esc(s.board_hash)}">${short}</a></td>`;
         }
         return `
-        <tr class="${i < 3 ? 'top-' + (i + 1) : ''}">
-          <td class="lb-rank">${medals[i] || '#' + (i + 1)}</td>
+        <tr class="${i % 2 === 1 ? 'lb-even' : ''}">
+          <td class="lb-rank">${i + 1}</td>
           <td class="lb-name">${nameCell}</td>
           <td class="lb-time">${fmtTime(s)}</td>
           <td class="lb-board">${s.rows}×${s.cols}</td>

@@ -34,8 +34,8 @@
     "logo": {
       "@type": "ImageObject",
       "url": "https://minesweeper.org/static/img/minesweeper-org-logo.png",
-      "width": 960,
-      "height": 349,
+      "width": 1200,
+      "height": 226,
       "caption": "Minesweeper.org logo with minesweeper tiles, a smiling bomb mascot, and a red flag"
     }
   },
@@ -101,8 +101,11 @@
   </article>
 
   <nav class="blog-post-nav" aria-label="Post navigation">
-    <a href="/blog" class="blog-post-nav-link blog-post-nav-index">All News</a>
     <div class="blog-post-nav-pager">
+      <a href="/blog" class="blog-post-nav-card blog-post-nav-index" rel="home">
+        <span class="blog-post-nav-label">All News</span>
+        <strong>Read more stories</strong>
+      </a>
       {% if older_post %}
       <a href="/blog/{{ older_post.slug }}" class="blog-post-nav-card blog-post-nav-prev" rel="prev">
         <span class="blog-post-nav-label">Previous Post</span>

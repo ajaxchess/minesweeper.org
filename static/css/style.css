@@ -3,6 +3,7 @@
 
 :root {
   --bg:          #1a1a2e;
+  --page-edge:   color-mix(in srgb, var(--bg) 88%, #000 12%);
   --surface:     #16213e;
   --surface2:    #0f3460;
   --accent:      #e94560;
@@ -192,7 +193,18 @@ nav a.active { background: var(--accent); color: #fff; }
 }
 
 /* ── Layout ──────────────────────────────────────────────────────────────── */
-main { flex: 1; padding: 0.25rem 0.5rem; }
+main {
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+  background:
+    linear-gradient(
+      90deg,
+      var(--page-edge) 0,
+      var(--bg) min(6vw, 72px),
+      var(--bg) calc(100% - min(6vw, 72px)),
+      var(--page-edge) 100%
+    );
+}
 
 .game-wrapper {
   display: flex;
@@ -1285,16 +1297,9 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
   color: var(--text);
 }
 
-.lb-table .top-1 td { color: #FFD700; }
-.lb-table .top-2 td { color: #C0C0C0; }
-.lb-table .top-3 td { color: #CD7F32; }
-
-.lb-table .top-1, .lb-table .top-2, .lb-table .top-3 {
-  background: rgba(255,255,255,0.03);
-}
-
 /* Alternating row stripe */
-.lb-table tbody tr.lb-even:not([class*="top-"]) {
+.lb-table tbody tr:nth-child(even),
+.lb-table tbody tr.lb-even {
   background: rgba(255,255,255,0.04);
 }
 
@@ -1323,9 +1328,6 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
 }
 .lb-profile-link:hover { text-decoration-style: solid; }
 .lb-stat { font-family: var(--font-mono); font-size: 0.9rem; color: var(--text-dim); text-align: right; }
-.lb-table .top-1 .lb-stat,
-.lb-table .top-2 .lb-stat,
-.lb-table .top-3 .lb-stat { color: inherit; }
 
 /* Stat column headers — dashed underline signals they're hoverable */
 .lb-th-stat {
@@ -3607,20 +3609,12 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   font-size: 0.9rem;
   min-width: 0;
 }
-.blog-post-nav-link {
-  color: var(--accent2);
-  text-decoration: none;
-  overflow-wrap: break-word;
-}
-.blog-post-nav-link:hover { text-decoration: underline; }
 .blog-post-nav-index {
-  display: inline-flex;
-  margin-bottom: 1rem;
   font-weight: 700;
 }
 .blog-post-nav-pager {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.85rem;
   min-width: 0;
 }
@@ -3658,12 +3652,13 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   word-break: normal;
 }
 .blog-post-nav-next { text-align: right; }
+.blog-post-nav-index { text-align: left; }
 .blog-post-nav-disabled {
   color: var(--text-muted, #888);
   opacity: 0.72;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 760px) {
   .blog-post-nav-pager { grid-template-columns: 1fr; }
   .blog-post-nav-next { text-align: left; }
 }
@@ -7342,16 +7337,13 @@ html[data-skin="light"] .lb-table thead th {
   color: #374151;
   border-bottom-color: rgba(0,0,0,0.12);
 }
-html[data-skin="light"] .lb-table tbody tr:not([class*="top-"]) { color: #1f2937; }
-html[data-skin="light"] .lb-table tbody tr.lb-even:not([class*="top-"]) {
+html[data-skin="light"] .lb-table tbody tr { color: #1f2937; }
+html[data-skin="light"] .lb-table tbody tr.lb-even,
+html[data-skin="light"] .lb-table tbody tr:nth-child(even) {
   background: rgba(0,0,0,0.04);
 }
 html[data-skin="light"] .lb-stat { color: #4b5563; }
 html[data-skin="light"] .lb-hash a { color: var(--accent); }
-html[data-skin="light"] .lb-table .top-1 { background: rgba(255,215,0,0.12); }
-html[data-skin="light"] .lb-table .top-2 { background: rgba(192,192,192,0.14); }
-html[data-skin="light"] .lb-table .top-3 { background: rgba(205,127,50,0.10); }
-
 /* Light mode — Quests page: dark boxes on white page background */
 html[data-skin="light"] .quest-section {
   background: #1e2840;

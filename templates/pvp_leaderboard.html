@@ -63,7 +63,6 @@
 
 {% block scripts %}
 <script>
-const MEDALS = ['🥇','🥈','🥉'];
 const SEASON_ORIGIN_YEAR  = 2026;
 const SEASON_ORIGIN_MONTH = 3;
 
@@ -123,8 +122,8 @@ async function loadPvpLb() {
       return;
     }
     body.innerHTML = data.map((r, i) => `
-      <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
-        <td class="lb-rank">${MEDALS[i] ?? i + 1}</td>
+      <tr class="${i % 2 === 1 ? 'lb-even' : ''}">
+        <td class="lb-rank">${i + 1}</td>
         <td class="lb-name">${esc(r.winner_name || 'Anonymous')}</td>
         <td class="lb-time">${fmtTime(r.elapsed_ms)}</td>
         <td class="lb-name" style="color:var(--text-dim)">${esc(r.loser_name || '—')}</td>

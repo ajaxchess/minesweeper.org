@@ -73,10 +73,8 @@
       </thead>
       <tbody>
         {% for s in scores %}
-        <tr class="{% if s.rank == 1 %}top-1{% elif s.rank == 2 %}top-2{% elif s.rank == 3 %}top-3{% endif %}">
-          <td class="lb-rank">
-            {% if s.rank == 1 %}🥇{% elif s.rank == 2 %}🥈{% elif s.rank == 3 %}🥉{% else %}{{ s.rank }}{% endif %}
-          </td>
+        <tr class="{% if loop.index is even %}lb-even{% endif %}">
+          <td class="lb-rank">{{ s.rank }}</td>
           <td class="lb-name">{{ s.name }}</td>
           <td class="lb-time">{{ s.time }}</td>
           <td class="lb-board">{{ s.board }}</td>

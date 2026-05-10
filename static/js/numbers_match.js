@@ -509,7 +509,6 @@ async function loadLeaderboard() {
             return;
         }
 
-        const medals = ['🥇', '🥈', '🥉'];
         const rows = data.map((s, i) => {
             const nameHtml = s.profile_url
                 ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${esc(s.name)}</a>`
@@ -518,8 +517,8 @@ async function loadLeaderboard() {
                 ? `<span class="fi fi-${esc(s.country.toLowerCase())}"></span> `
                 : '';
             return `
-                <tr class="${i < 3 ? 'top-' + (i + 1) : ''}">
-                    <td class="lb-rank">${medals[i] || i + 1}</td>
+                <tr class="${i % 2 === 1 ? 'lb-even' : ''}">
+                    <td class="lb-rank">${i + 1}</td>
                     <td class="lb-name">${flag}${nameHtml}</td>
                     <td class="lb-score">${s.score}</td>
                     <td class="lb-time">${fmtTime(s.time_secs)}</td>

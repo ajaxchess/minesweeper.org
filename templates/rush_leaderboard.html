@@ -54,8 +54,6 @@
 
 {% block scripts %}
 <script>
-const MEDALS = ['🥇','🥈','🥉'];
-
 function fmtTime(s) {
   const m = Math.floor(s / 60);
   const sec = s % 60;
@@ -80,8 +78,8 @@ async function loadScores(mode) {
     }
 
     body.innerHTML = data.map((s, i) => `
-      <tr class="${i < 3 ? 'top-' + (i+1) : ''}">
-        <td class="lb-rank">${MEDALS[i] ?? '#' + (i+1)}</td>
+      <tr class="${i % 2 === 1 ? 'lb-even' : ''}">
+        <td class="lb-rank">${i + 1}</td>
         <td class="lb-name">${(s.country ? `<img src="/static/img/country-flags/${s.country}.png" class="lb-flag" alt="">` : '') + (s.profile_url ? `<a href="${escHtml(s.profile_url)}" class="lb-profile-link">${escHtml(s.name)}</a>` : escHtml(s.name))}</td>
         <td class="lb-score">${s.score}</td>
         <td class="lb-score">${s.cleared_mines ?? '—'} mines</td>

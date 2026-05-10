@@ -34,7 +34,7 @@ async function loadScores() {
     }
 
     tbody.innerHTML = rows.map((r, i) => {
-      const rank     = i < 3 ? ['🥇','🥈','🥉'][i] : i + 1;
+      const rank     = i + 1;
       const flag     = r.country ? `<img src="/static/img/country-flags/${r.country}.png" class="lb-flag" alt="">` : '';
       const name     = flag + (r.profile_url
         ? `<a href="${r.profile_url}" style="color:var(--accent2);">${escHtml(r.name)}</a>`
@@ -44,7 +44,7 @@ async function loadScores() {
       const boardLink= `<a href="/other/sudoku/board/${r.full_hash}" title="Replay this board"
                            style="color:var(--text-dim);font-family:monospace;font-size:0.8rem;">${r.board_hash}</a>`;
       const date     = r.created_at || '';
-      return `<tr>
+      return `<tr class="${i % 2 === 1 ? 'lb-even' : ''}">
         <td style="text-align:center;">${rank}</td>
         <td>${name}</td>
         <td style="text-align:right;">${time}</td>

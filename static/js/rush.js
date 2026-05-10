@@ -1057,11 +1057,10 @@ async function loadRushLeaderboard(mode) {
       return;
     }
 
-    const medals = ['🥇','🥈','🥉'];
     const isCustom = mode === 'custom';
     const trs = rows.map((s, i) => {
-      const cls  = i < 3 ? `top-${i+1}` : '';
-      const rank = medals[i] || `#${i+1}`;
+      const cls  = i % 2 === 1 ? 'lb-even' : '';
+      const rank = i + 1;
       const time = fmtTime(s.time_secs);
       const paramsCell = isCustom
         ? `<td class="lb-score" style="font-size:0.8rem;opacity:0.8">${s.cols}cols · ${s.density != null ? Math.round(s.density * s.cols) : '?'} mines/row</td>`
