@@ -230,6 +230,8 @@ export default function GameScreen({ navigation }) {
   const flagCount = flagged ? flagged.reduce((sum, v) => sum + v, 0) : 0;
   const minesLeft = mines - flagCount;
 
+  const smileyFace = won ? '😎' : over ? '😵' : started ? '😮' : '🙂';
+
   let statusText;
   if (won)          statusText = '🎉 You win!';
   else if (over)    statusText = '💥 Game over';
@@ -275,7 +277,8 @@ export default function GameScreen({ navigation }) {
           )}
         </View>
 
-        <TouchableOpacity style={styles.optionBtn} onPress={handleNewGame}>
+        <TouchableOpacity style={[styles.optionBtn, styles.newGameBtn]} onPress={handleNewGame}>
+          <Text style={{ fontSize: 16 }}>{smileyFace}</Text>
           <Text style={{ color: theme.accent, fontSize: 13, fontWeight: '600' }}>New Game</Text>
         </TouchableOpacity>
       </View>
@@ -380,7 +383,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 12, paddingVertical: 6, borderBottomWidth: 1,
   },
-  optionBtn: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6 },
+  optionBtn:   { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6 },
+  newGameBtn:  { flexDirection: 'row', alignItems: 'center', gap: 5 },
   statusCenter: { alignItems: 'center', gap: 2 },
   mineCount:    { fontSize: 15, fontWeight: '700' },
   statusText:   { fontSize: 12 },
