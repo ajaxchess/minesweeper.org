@@ -22,6 +22,7 @@ from database import PvpResult, UserProfile, SessionLocal
 
 import settings as site_settings
 from breadcrumbs import get_breadcrumbs as _get_breadcrumbs
+from quest_catalog import quest_config
 
 duel_router = APIRouter()
 
@@ -37,6 +38,7 @@ BOT_NAMES = {
     "hard":   "🤖 Bot (Hard)",
 }
 templates   = Jinja2Templates(directory="templates")
+templates.env.globals["quest_config"]         = quest_config
 templates.env.globals["DEFAULT_SKIN"]         = site_settings.DEFAULT_SKIN
 
 # ── WebSocket connection logger ───────────────────────────────────────────────
