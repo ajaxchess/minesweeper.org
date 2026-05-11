@@ -5751,6 +5751,250 @@ html[data-skin="classic"] .mobile-drawer .drawer-summary:hover {
   text-align: center;
 }
 
+.puzzle-nav-logo {
+  --logo-a: #2563eb;
+  --logo-b: #7dd3fc;
+  --logo-c: #ffffff;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border: 1px solid color-mix(in srgb, var(--logo-a) 52%, #ffffff);
+  border-radius: 7px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.65), rgba(255,255,255,0) 35%),
+    linear-gradient(145deg, var(--logo-a), var(--logo-b));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.72),
+    0 1px 3px rgba(15,23,42,0.18);
+  overflow: hidden;
+}
+
+.puzzle-nav-logo::before,
+.puzzle-nav-logo::after {
+  content: "";
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.mega-card.active .puzzle-nav-logo {
+  border-color: rgba(255,255,255,0.82);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.72),
+    0 0 0 1px rgba(255,255,255,0.28);
+}
+
+.puzzle-nav-logo-tentaizu {
+  --logo-a: #1d4ed8;
+  --logo-b: #0f172a;
+}
+.puzzle-nav-logo-tentaizu::before {
+  width: 18px;
+  height: 18px;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.36) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.36) 1px, transparent 1px);
+  background-size: 6px 6px;
+}
+.puzzle-nav-logo-tentaizu::after {
+  width: 8px;
+  height: 8px;
+  background: #facc15;
+  clip-path: polygon(50% 0, 62% 35%, 100% 35%, 69% 57%, 82% 100%, 50% 74%, 18% 100%, 31% 57%, 0 35%, 38% 35%);
+}
+
+.puzzle-nav-logo-mosaic {
+  --logo-a: #7c3aed;
+  --logo-b: #22d3ee;
+}
+.puzzle-nav-logo-mosaic::before {
+  inset: 4px;
+  background:
+    linear-gradient(90deg, transparent 31%, rgba(255,255,255,0.84) 31% 38%, transparent 38% 62%, rgba(255,255,255,0.84) 62% 69%, transparent 69%),
+    linear-gradient(transparent 31%, rgba(255,255,255,0.84) 31% 38%, transparent 38% 62%, rgba(255,255,255,0.84) 62% 69%, transparent 69%);
+}
+.puzzle-nav-logo-mosaic::after {
+  inset: 5px;
+  background:
+    linear-gradient(90deg, #f8fafc 0 33%, transparent 33% 66%, #f8fafc 66%),
+    linear-gradient(#f8fafc 0 33%, transparent 33% 66%, #f8fafc 66%);
+  opacity: 0.45;
+}
+
+.puzzle-nav-logo-tametsi {
+  --logo-a: #0f766e;
+  --logo-b: #34d399;
+}
+.puzzle-nav-logo-tametsi::before {
+  inset: 5px;
+  border-top: 3px solid #fff;
+  border-bottom: 3px solid rgba(255,255,255,0.82);
+  transform: skewX(-14deg);
+}
+.puzzle-nav-logo-tametsi::after {
+  width: 6px;
+  height: 6px;
+  right: 5px;
+  top: 5px;
+  border-radius: 50%;
+  background: #fde68a;
+  box-shadow: -9px 9px 0 rgba(15,23,42,0.28);
+}
+
+.puzzle-nav-logo-numbers-match {
+  --logo-a: #be123c;
+  --logo-b: #fb7185;
+}
+.puzzle-nav-logo-numbers-match::before,
+.puzzle-nav-logo-numbers-match::after {
+  width: 10px;
+  height: 10px;
+  border-radius: 4px;
+  background: #fff;
+  color: #be123c;
+  font-size: 8px;
+  font-weight: 900;
+  line-height: 10px;
+  text-align: center;
+}
+.puzzle-nav-logo-numbers-match::before {
+  content: "7";
+  left: 4px;
+  top: 4px;
+}
+.puzzle-nav-logo-numbers-match::after {
+  content: "7";
+  right: 4px;
+  bottom: 4px;
+}
+
+.puzzle-nav-logo-15-puzzle {
+  --logo-a: #334155;
+  --logo-b: #94a3b8;
+}
+.puzzle-nav-logo-15-puzzle::before {
+  inset: 4px;
+  background:
+    linear-gradient(90deg, transparent 47%, rgba(15,23,42,0.35) 47% 53%, transparent 53%),
+    linear-gradient(transparent 47%, rgba(15,23,42,0.35) 47% 53%, transparent 53%),
+    #f8fafc;
+  border-radius: 3px;
+}
+.puzzle-nav-logo-15-puzzle::after {
+  content: "15";
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #0f172a;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.puzzle-nav-logo-2048 {
+  --logo-a: #ea580c;
+  --logo-b: #facc15;
+}
+.puzzle-nav-logo-2048::before {
+  content: "2048";
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 6px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+}
+
+.puzzle-nav-logo-2048-hexagon {
+  --logo-a: #0891b2;
+  --logo-b: #67e8f9;
+}
+.puzzle-nav-logo-2048-hexagon::before {
+  width: 16px;
+  height: 14px;
+  background: rgba(255,255,255,0.92);
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+}
+.puzzle-nav-logo-2048-hexagon::after {
+  content: "2";
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #0891b2;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.puzzle-nav-logo-mahjong-solitaire {
+  --logo-a: #047857;
+  --logo-b: #a7f3d0;
+}
+.puzzle-nav-logo-mahjong-solitaire::before,
+.puzzle-nav-logo-mahjong-solitaire::after {
+  width: 10px;
+  height: 14px;
+  border-radius: 3px;
+  background: #fff;
+  border: 1px solid rgba(15,23,42,0.22);
+}
+.puzzle-nav-logo-mahjong-solitaire::before {
+  left: 5px;
+  top: 5px;
+  transform: rotate(-8deg);
+}
+.puzzle-nav-logo-mahjong-solitaire::after {
+  right: 5px;
+  top: 5px;
+  transform: rotate(8deg);
+}
+
+.puzzle-nav-logo-jigsaw {
+  --logo-a: #7e22ce;
+  --logo-b: #f0abfc;
+}
+.puzzle-nav-logo-jigsaw::before {
+  width: 16px;
+  height: 15px;
+  background: #fff;
+  clip-path: polygon(0 0, 42% 0, 42% 28%, 58% 28%, 58% 0, 100% 0, 100% 42%, 74% 42%, 74% 58%, 100% 58%, 100% 100%, 0 100%, 0 58%, 26% 58%, 26% 42%, 0 42%);
+}
+
+.puzzle-nav-logo-schulte-grid {
+  --logo-a: #4338ca;
+  --logo-b: #818cf8;
+}
+.puzzle-nav-logo-schulte-grid::before {
+  content: "1";
+  left: 5px;
+  top: 4px;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 900;
+}
+.puzzle-nav-logo-schulte-grid::after {
+  content: "9";
+  right: 5px;
+  bottom: 4px;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.puzzle-nav-logo-sudoku {
+  --logo-a: #0f172a;
+  --logo-b: #64748b;
+}
+.puzzle-nav-logo-sudoku::before {
+  inset: 4px;
+  background:
+    linear-gradient(90deg, transparent 29%, rgba(255,255,255,0.8) 29% 35%, transparent 35% 64%, rgba(255,255,255,0.8) 64% 70%, transparent 70%),
+    linear-gradient(transparent 29%, rgba(255,255,255,0.8) 29% 35%, transparent 35% 64%, rgba(255,255,255,0.8) 64% 70%, transparent 70%);
+  border: 1px solid rgba(255,255,255,0.82);
+  border-radius: 2px;
+}
+
 .mega-card-text {
   display: flex;
   flex-direction: column;
@@ -6164,6 +6408,12 @@ body.drawer-open { overflow: hidden; }
 }
 .drawer-link:hover  { background: var(--surface2); color: var(--text); }
 .drawer-link.active { background: var(--accent); color: #fff; }
+
+.drawer-puzzle-logo {
+  width: 1.45rem;
+  height: 1.45rem;
+  flex: 0 0 1.45rem;
+}
 
 .drawer-link--direct {
   font-weight: 600;

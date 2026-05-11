@@ -204,7 +204,7 @@ def test_puzzles_dropdown_lists_all_puzzle_games(client):
     assert 'href="/puzzles"' in r.text
     for game in PUZZLE_GAMES:
         assert f'href="{game["play_path"]}"' in r.text
-        assert f">{game['icon']}<" in r.text or f">{game['icon']} " in r.text
+        assert f"puzzle-nav-logo-{game['slug']}" in r.text
 
 
 def test_all_supported_languages_render_core_pages(client):
