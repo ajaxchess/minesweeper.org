@@ -13,6 +13,43 @@ const WC_ADJ_COLORS = [
     '#424242',  // 8
 ];
 
+// ── 3BV computation ───────────────────────────────────────────────────────────
+function wcComputeBBBV(mineLayout, rows, cols, adjArr) {
+    const total = rows * cols;
+    const mineSet = new Set(mineLayout.map(([r, c]) => r * cols + c));
+    const coveredByOpening = new Uint8Array(total);
+    const visitedZero = new Uint8Array(total);
+    let bbbv = 0;
+
+    for (let idx = 0; idx < total; idx++) {
+        if (mineSet.has(idx) || adjArr[idx] !== 0 || visitedZero[idx]) continue;
+        bbbv++;
+        const queue = [idx];
+        visitedZero[idx] = 1;
+        coveredByOpening[idx] = 1;
+        let qi = 0;
+        while (qi < queue.length) {
+            const cur = queue[qi++];
+            const r = Math.floor(cur / cols), c = cur % cols;
+            for (const [nr, nc] of wcNeighbors(r, c, rows, cols)) {
+                const ni = nr * cols + nc;
+                if (mineSet.has(ni)) continue;
+                coveredByOpening[ni] = 1;
+                if (adjArr[ni] === 0 && !visitedZero[ni]) {
+                    visitedZero[ni] = 1;
+                    queue.push(ni);
+                }
+            }
+        }
+    }
+
+    for (let idx = 0; idx < total; idx++) {
+        if (!mineSet.has(idx) && adjArr[idx] > 0 && !coveredByOpening[idx]) bbbv++;
+    }
+
+    return bbbv;
+}
+
 function wcNeighbors(r, c, rows, cols) {
     const out = [];
     for (let dr = -1; dr <= 1; dr++)
@@ -38,8 +75,9 @@ function wcBuildAdj(mineLayout, rows, cols) {
 }
 
 // ── Touch handler ─────────────────────────────────────────────────────────────
-function wcAddTouch(el, onTap, onLongPress) {
+function wcAddTouch(el, onTap, onLongPress, onDoubleTap) {
     let timer = null, moved = false, sx, sy;
+    let lastTap = 0;
     el.addEventListener('touchstart', e => {
         if (e.touches.length > 1) { clearTimeout(timer); timer = null; return; }
         e.preventDefault();
@@ -56,7 +94,17 @@ function wcAddTouch(el, onTap, onLongPress) {
     }, { passive: true });
     el.addEventListener('touchend', e => {
         e.preventDefault();
-        if (timer) { clearTimeout(timer); timer = null; if (!moved) onTap(); }
+        if (timer) {
+            clearTimeout(timer); timer = null;
+            if (!moved) {
+                if (onDoubleTap) {
+                    const now = Date.now();
+                    if (now - lastTap < 300) { lastTap = 0; onDoubleTap(); return; }
+                    lastTap = now;
+                }
+                onTap();
+            }
+        }
     }, { passive: false });
     el.addEventListener('touchcancel', () => { clearTimeout(timer); timer = null; });
 }
@@ -75,6 +123,8 @@ function wcMountBoard(wrap) {
     // game starts when cell 0 is clicked; auto-detect if a board was already started
     let started = board.cells.some(s => s === 'revealed');
     let timerInterval = null, elapsedSec = 0;
+    let leftClicks = 0, rightClicks = 0;
+    let bbbv = wcComputeBBBV(board.mine_layout, board.rows, board.cols, adj);
 
     // ── DOM skeleton ──────────────────────────────────────────────────────────
     wrap.innerHTML = '';
@@ -259,8 +309,9 @@ function wcMountBoard(wrap) {
                 el.dataset.idx = idx;
                 renderCell(el, idx);
                 el.addEventListener('click',       () => handleReveal(idx));
+                el.addEventListener('dblclick',    () => handleChord(idx));
                 el.addEventListener('contextmenu', e => { e.preventDefault(); handleFlag(idx); });
-                wcAddTouch(el, () => handleReveal(idx), () => handleFlag(idx));
+                wcAddTouch(el, () => handleReveal(idx), () => handleFlag(idx), () => handleChord(idx));
                 grid.appendChild(el);
             }
         }
@@ -299,6 +350,7 @@ function wcMountBoard(wrap) {
         if (busy || board.is_solved) return;
         if (!started && idx !== 0) return;   // gate: only top-left starts the game
         if (board.cells[idx] !== 'hidden') return;
+        leftClicks++;
         busy = true;
         try {
             const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/reveal`, {
@@ -324,6 +376,7 @@ function wcMountBoard(wrap) {
     async function handleFlag(idx) {
         if (busy || board.is_solved || !started) return;
         if (board.cells[idx] === 'revealed' || board.cells[idx] === 'exploded') return;
+        rightClicks++;
         busy = true;
         try {
             const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/flag`, {
@@ -340,6 +393,40 @@ function wcMountBoard(wrap) {
         }
     }
 
+    async function handleChord(idx) {
+        if (busy || board.is_solved || !started) return;
+        if (localStorage.getItem('chording') === 'false') return;
+        if (board.cells[idx] !== 'revealed') return;
+        const n = adj[idx];
+        if (n <= 0) return;
+        const r = Math.floor(idx / board.cols), c = idx % board.cols;
+        const nbs = wcNeighbors(r, c, board.rows, board.cols);
+        const flagCount = nbs.filter(([nr, nc]) => board.cells[nr * board.cols + nc] === 'flagged').length;
+        if (flagCount !== n) return;
+        const toReveal = nbs
+            .map(([nr, nc]) => nr * board.cols + nc)
+            .filter(ni => board.cells[ni] === 'hidden');
+        if (toReveal.length === 0) return;
+        busy = true;
+        leftClicks += toReveal.length;
+        try {
+            for (const ni of toReveal) {
+                const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/reveal`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idx: ni }),
+                });
+                if (!res.ok) break;
+                const data = await res.json();
+                applyBoardUpdate(data);
+                if (data.hit_mine) { stopTimer(); showExplosionBanner(); return; }
+            }
+            checkAutoSolve();
+        } finally {
+            busy = false;
+        }
+    }
+
     function checkAutoSolve() {
         if (board.primary_remaining === 0 &&
             board.secondary_remaining === 0 &&
@@ -349,10 +436,16 @@ function wcMountBoard(wrap) {
     }
 
     async function doSolve() {
+        const totalClicks = leftClicks + rightClicks;
         const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/solve`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ time_ms: Math.round(elapsedSec * 1000) }),
+            body: JSON.stringify({
+                time_ms:      Math.round(elapsedSec * 1000),
+                bbbv:         bbbv,
+                left_clicks:  leftClicks,
+                right_clicks: rightClicks,
+            }),
         });
         if (!res.ok) {
             const data = await res.json().catch(() => ({}));
@@ -368,6 +461,9 @@ function wcMountBoard(wrap) {
         const elapsed = elapsedSec;
         const m = Math.floor(elapsed / 60), s = Math.floor(elapsed % 60);
         const timeStr = elapsed > 0 ? ` in ${m}:${String(s).padStart(2,'0')}` : '';
+        const totalClicks = leftClicks + rightClicks;
+        const effPct = totalClicks > 0 ? ((bbbv / totalClicks) * 100).toFixed(1) : '—';
+
         msgBanner.className = 'wc-msg-banner wc-msg-solved';
         msgBanner.innerHTML = '';
 
@@ -376,7 +472,8 @@ function wcMountBoard(wrap) {
         info.innerHTML = `<div class="wc-solved-trophy">🏆</div>
             <strong>Board Solved${timeStr}!</strong><br>
             +${result.flags_correct} flags &nbsp;+${result.solve_bonus} bonus
-            = <strong>${result.total_points} pts</strong> for your team`;
+            = <strong>${result.total_points} pts</strong> for your team
+            <div class="wc-solved-stats">3BV: ${bbbv} &nbsp;|&nbsp; Clicks: ${totalClicks} &nbsp;|&nbsp; Efficiency: ${effPct}%</div>`;
 
         const btn = document.createElement('button');
         btn.className = 'wc-try-again-btn';
@@ -401,6 +498,8 @@ function wcMountBoard(wrap) {
         const data = await res.json();
         board = data;
         ({ mineSet, adj } = wcBuildAdj(board.mine_layout, board.rows, board.cols));
+        bbbv = wcComputeBBBV(board.mine_layout, board.rows, board.cols, adj);
+        leftClicks = 0; rightClicks = 0;
         started = false;
         elapsedSec = 0;
         stopTimer();
@@ -579,6 +678,7 @@ function wcMountBoard(wrap) {
 }
 .wc-solved-trophy { font-size: 2rem; }
 .wc-solved-text { line-height: 1.5; }
+.wc-solved-stats { margin-top: .3rem; font-size: .8rem; color: var(--text-dim); }
     `;
     document.head.appendChild(s);
 }());

@@ -408,7 +408,8 @@ async def sitemap(request: Request):
     return templates.TemplateResponse(
         "sitemap.xml",
         {"request": request, "today": date.today().isoformat(),
-         "blog_posts": BLOG_POSTS, "sitemap_langs": sorted(REAL_LANGS)},
+         "blog_posts": BLOG_POSTS, "sitemap_langs": sorted(REAL_LANGS),
+         "wc2026_countries": WC2026_COUNTRIES},
         media_type="application/xml",
     )
 
@@ -8149,7 +8150,10 @@ class WC2026FlagPayload(BaseModel):
     idx: int
 
 class WC2026SolvePayload(BaseModel):
-    time_ms: int | None = None
+    time_ms:      Optional[int] = None
+    bbbv:         Optional[int] = None
+    left_clicks:  Optional[int] = None
+    right_clicks: Optional[int] = None
 
 
 @app.post("/api/wc2026/board/{slug}/{difficulty}/reveal")

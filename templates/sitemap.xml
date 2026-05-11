@@ -447,6 +447,23 @@
   </url>
 
 
+  <!-- ── 2026 World Cup ──────────────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/2026worldcup</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  {% for _c in wc2026_countries %}
+  <url>
+    <loc>https://minesweeper.org/2026worldcup/{{ _c.slug }}</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  {% endfor %}
+
   <!-- ── Localised variants (path-prefix i18n, real languages only) ─────────── -->
   {% set _seo_pages = [
     {"path": "",              "freq": "weekly",  "pri": "0.9"},
