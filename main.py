@@ -34,6 +34,7 @@ from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
 from starlette.config import Config
 from translations import get_lang, get_t, SUPPORTED_LANGS, REAL_LANGS
+from game_catalog import LEADERBOARD_GROUPS
 import settings as site_settings
 import logging
 import psutil
@@ -976,6 +977,7 @@ async def leaderboard_page(request: Request):
         "request": request, "mode": "leaderboard",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
+        "leaderboard_groups": LEADERBOARD_GROUPS,
     })
 
 @app.get("/archive", response_class=HTMLResponse)

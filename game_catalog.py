@@ -389,6 +389,206 @@ PUZZLE_BY_CANONICAL_PATH: dict[str, dict[str, object]] = {
     str(game["canonical_path"]): game for game in PUZZLE_GAMES
 }
 
+LEADERBOARD_GROUPS: list[dict[str, object]] = [
+    {
+        "section": "Minesweeper",
+        "items": [
+            {
+                "title": "Classic Minesweeper",
+                "description": "Beginner, Intermediate, Expert, Custom, and Evil NG boards with daily, season, and all-time views.",
+                "href": "/leaderboard?game=classic",
+                "play_href": "/",
+                "badge": "Full leaderboard",
+            },
+            {
+                "title": "Rush",
+                "description": "Timed wave-clearing scores for Easy, Normal, and Hard Rush modes.",
+                "href": "/rush/leaderboard",
+                "play_href": "/rush",
+                "badge": "All-time scores",
+            },
+            {
+                "title": "PvP Best Times",
+                "description": "Fastest head-to-head PvP finishes.",
+                "href": "/pvp/leaderboard",
+                "play_href": "/pvp",
+                "badge": "PvP",
+            },
+            {
+                "title": "PvP Ratings",
+                "description": "Elo-style rankings for competitive PvP players.",
+                "href": "/pvp/rankings",
+                "play_href": "/pvp",
+                "badge": "Rankings",
+            },
+        ],
+    },
+    {
+        "section": "Variants",
+        "items": [
+            {
+                "title": "Cylinder",
+                "description": "Horizontal-wrap Minesweeper leaderboards by difficulty.",
+                "href": "/leaderboard?game=cylinder",
+                "play_href": "/cylinder",
+                "badge": "Full leaderboard",
+            },
+            {
+                "title": "Toroid",
+                "description": "All-edge-wrap Minesweeper leaderboards by difficulty.",
+                "href": "/leaderboard?game=toroid",
+                "play_href": "/toroid",
+                "badge": "Full leaderboard",
+            },
+            {
+                "title": "Hexsweeper",
+                "description": "Hex-grid Minesweeper leaderboards by difficulty.",
+                "href": "/leaderboard?game=hex",
+                "play_href": "/hexsweeper",
+                "badge": "Full leaderboard",
+            },
+            {
+                "title": "Worldsweeper",
+                "description": "Minesweeper on polyhedral worlds.",
+                "href": "/worldsweeper/leaderboard",
+                "play_href": "/worldsweeper",
+                "badge": "Variant",
+            },
+            {
+                "title": "Cubesweeper",
+                "description": "Cube-face Minesweeper records.",
+                "href": "/cubesweeper/leaderboard",
+                "play_href": "/cubesweeper",
+                "badge": "Variant",
+            },
+            {
+                "title": "Mobiussweeper",
+                "description": "Minesweeper on a twisted Mobius surface.",
+                "href": "/mobiussweeper/leaderboard",
+                "play_href": "/mobiussweeper",
+                "badge": "Variant",
+            },
+            {
+                "title": "Nonosweeper",
+                "description": "Daily nonogram-meets-Minesweeper leaderboard on the game page.",
+                "href": "/nonosweeper#nn-lb-section",
+                "play_href": "/nonosweeper",
+                "badge": "Daily board",
+            },
+            {
+                "title": "Board Replay",
+                "description": "Board-specific replay scores for exact shared board hashes.",
+                "href": "/variants/replay/?rows=9&cols=9&mines=10",
+                "play_href": "/variants/replay/?rows=9&cols=9&mines=10",
+                "badge": "Board-specific",
+            },
+            {
+                "title": "Minesweeper Chess",
+                "description": "Partner chess variant; play links are listed here so the full games catalog is represented.",
+                "href": "/minesweeperchess",
+                "play_href": "/minesweeperchess",
+                "badge": "Partner game",
+            },
+        ],
+    },
+    {
+        "section": "Puzzles",
+        "items": [
+            {
+                "title": "Tentaizu Daily",
+                "description": "Daily star-chart logic puzzle leaderboard.",
+                "href": "/tentaizu#tz-lb-section",
+                "play_href": "/tentaizu",
+                "badge": "Daily puzzle",
+            },
+            {
+                "title": "Tentaizu Easy",
+                "description": "Smaller 5x5 Tentaizu daily leaderboard.",
+                "href": "/tentaizu/easy-5x5-6#tz-lb-section",
+                "play_href": "/tentaizu/easy-5x5-6",
+                "badge": "Daily puzzle",
+            },
+            {
+                "title": "Mosaic Daily",
+                "description": "Daily Mosaic logic puzzle leaderboard.",
+                "href": "/mosaic/standard#ms-lb-section",
+                "play_href": "/mosaic/standard",
+                "badge": "Daily puzzle",
+            },
+            {
+                "title": "Mosaic Easy",
+                "description": "Easy Mosaic daily leaderboard.",
+                "href": "/mosaic#ms-lb-section",
+                "play_href": "/mosaic",
+                "badge": "Daily puzzle",
+            },
+            {
+                "title": "Tametsi",
+                "description": "Daily row-and-column logic leaderboard on the game page.",
+                "href": "/tametsi#tmt-lb-section",
+                "play_href": "/tametsi",
+                "badge": "Daily puzzle",
+            },
+            {
+                "title": "Numbers Match",
+                "description": "Daily number-pair clearing leaderboard.",
+                "href": "/numbers-match#nm-lb-section",
+                "play_href": "/numbers-match",
+                "badge": "Daily puzzle",
+            },
+            {
+                "title": "15-Puzzle",
+                "description": "Sliding tile puzzle leaderboards by grid size.",
+                "href": "/other/15puzzle/leaderboard",
+                "play_href": "/other/15puzzle/daily",
+                "badge": "Puzzle",
+            },
+            {
+                "title": "2048",
+                "description": "Classic 2048 daily and all-time scoreboards.",
+                "href": "/other/2048/leaderboard",
+                "play_href": "/other/2048/daily",
+                "badge": "Puzzle",
+            },
+            {
+                "title": "2048 Hexagon",
+                "description": "Hex-grid 2048 leaderboards.",
+                "href": "/other/2048hex/leaderboard",
+                "play_href": "/other/2048hex/play",
+                "badge": "Puzzle",
+            },
+            {
+                "title": "Mahjong Solitaire",
+                "description": "Daily tile-matching leaderboard.",
+                "href": "/other/mahjong/leaderboard",
+                "play_href": "/other/mahjong/daily",
+                "badge": "Puzzle",
+            },
+            {
+                "title": "Jigsaw Puzzle",
+                "description": "Daily jigsaw leaderboards across puzzle sizes.",
+                "href": "/other/jigsaw/leaderboard",
+                "play_href": "/other/jigsaw/daily",
+                "badge": "Puzzle",
+            },
+            {
+                "title": "Schulte Grid",
+                "description": "Visual scanning speed leaderboards by board size.",
+                "href": "/other/schulte/leaderboard",
+                "play_href": "/other/schulte/play",
+                "badge": "Puzzle",
+            },
+            {
+                "title": "Sudoku",
+                "description": "Daily and difficulty-based Sudoku leaderboards.",
+                "href": "/other/sudoku/scores",
+                "play_href": "/other/sudoku/daily",
+                "badge": "Puzzle",
+            },
+        ],
+    },
+]
+
 
 def game_title(game: dict[str, object], lang: str = "en") -> str:
     """Return the catalog title. Fun languages intentionally keep English names."""

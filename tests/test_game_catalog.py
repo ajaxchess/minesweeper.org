@@ -1,7 +1,9 @@
 import pytest
+from html import escape
 
 from game_catalog import (
     FUN_LANGS,
+    LEADERBOARD_GROUPS,
     PUZZLE_GAMES,
     build_redirect_map,
     game_title,
@@ -75,3 +77,32 @@ def test_redirect_map_covers_legacy_puzzle_urls():
     assert redirects["/mosaic"] == "/puzzles/mosaic"
     assert redirects["/other/2048/daily"] == "/puzzles/2048"
     assert redirects["/other/jigsaw/daily"] == "/puzzles/jigsaw"
+
+
+def test_leaderboard_catalog_has_required_fields():
+    titles = set()
+    for group in LEADERBOARD_GROUPS:
+        assert group["section"]
+        assert group["items"]
+        for item in group["items"]:
+            missing = {"title", "description", "href", "play_href", "badge"} - set(item)
+            assert not missing, f"{item.get('title', '<unknown>')} missing {sorted(missing)}"
+            assert item["title"] not in titles
+            assert str(item["href"]).startswith("/")
+            assert str(item["play_href"]).startswith("/")
+            titles.add(item["title"])
+
+
+def test_leaderboard_page_lists_all_catalog_entries(client):
+    r = client.get("/leaderboard")
+    assert r.status_code == 200
+    assert "Your Leaderboard Snapshot" in r.text or "Save your personal leaderboard story" in r.text
+    assert "Top 3 From Around The Site" in r.text
+    assert "CHAMPION_BOARDS" in r.text
+    assert "Hexsweeper" in r.text
+    assert "All Leaderboards" in r.text
+    for group in LEADERBOARD_GROUPS:
+        assert group["section"] in r.text
+        for item in group["items"]:
+            assert item["title"] in r.text
+            assert escape(item["href"], quote=True) in r.text
