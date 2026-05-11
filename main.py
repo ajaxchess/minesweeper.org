@@ -163,9 +163,11 @@ async def add_security_headers(request: Request, call_next):
             " https://*.doubleclick.net"
             " https://www.googletagmanager.com"
             " https://www.google-analytics.com"
+            " https://flagcdn.com"
         ),
         # 'self' covers same-origin WebSockets (wss://minesweeper.org/ws/…)
         # Broad Google/AdSense domains — bidding partners use many subdomains
+        # adtrafficquality.google is Google's SODAR viewability/fraud system (not a *.google.com subdomain)
         (
             "connect-src 'self'"
             " https://www.google-analytics.com"
@@ -175,6 +177,7 @@ async def add_security_headers(request: Request, call_next):
             " https://*.google.com"
             " https://*.googleadservices.com"
             " https://*.googlevideo.com"
+            " https://*.adtrafficquality.google"
         ),
         # AdSense renders ad creatives inside iframes from these domains
         "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
