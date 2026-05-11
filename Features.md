@@ -14,6 +14,8 @@ List of active features
   purged at midnight UTC daily. Registered user scores are retained permanently.
 
 ──────────────────────────────────────────────────────────────────────────────
+F99 Tametsi Bootcamp
+
 F98 Minesweeper Bootcamp
 
 F97 Tametsi 2026 World Cup celebration
