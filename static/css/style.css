@@ -6009,6 +6009,10 @@ body.drawer-open { overflow: hidden; }
   border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
+.drawer-theme-group .drawer-theme {
+  border-top: 0;
+  padding: 0.75rem;
+}
 .drawer-theme-label {
   font-size: 0.72rem;
   font-weight: 600;

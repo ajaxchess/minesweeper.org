@@ -3,6 +3,7 @@ from html import escape
 
 from game_catalog import (
     FUN_LANGS,
+    LANGUAGE_OPTIONS,
     LEADERBOARD_GROUPS,
     PUZZLE_GAMES,
     build_redirect_map,
@@ -10,6 +11,7 @@ from game_catalog import (
     localized_action_path,
     localized_game_path,
 )
+from translations import SUPPORTED_LANGS
 
 
 pytestmark = pytest.mark.usefixtures("client")
@@ -148,3 +150,53 @@ def test_leaderboard_page_lists_all_catalog_entries(client):
         for item in group["items"]:
             assert item["title"] in r.text
             assert escape(item["href"], quote=True) in r.text
+
+
+def test_leaderboard_page_represents_every_puzzle_game(client):
+    titles = {
+        item["title"]
+        for group in LEADERBOARD_GROUPS
+        for item in group["items"]
+        if group["section"] == "Puzzles"
+    }
+    joined_titles = " ".join(titles)
+    for game in PUZZLE_GAMES:
+        assert game["title"] in joined_titles
+        assert game["play_path"] or game["primary_href"]
+
+    r = client.get("/leaderboard")
+    assert r.status_code == 200
+    for title in titles:
+        assert title in r.text
+
+
+def test_puzzles_dropdown_lists_all_puzzle_games(client):
+    r = client.get("/")
+    assert r.status_code == 200
+    assert "All Puzzles" in r.text
+    assert 'href="/puzzles"' in r.text
+    for href in [
+        "/tentaizu",
+        "/tentaizu/easy-5x5-6",
+        "/mosaic/standard",
+        "/mosaic",
+        "/tametsi",
+        "/numbers-match",
+        "/other/15puzzle",
+        "/other/2048",
+        "/other/2048hex",
+        "/other/mahjong",
+        "/other/jigsaw",
+        "/other/schulte",
+        "/other/sudoku",
+    ]:
+        assert f'href="{href}"' in r.text
+
+
+def test_all_supported_languages_render_core_pages(client):
+    assert {option["code"] for option in LANGUAGE_OPTIONS} <= SUPPORTED_LANGS
+    for lang in sorted(SUPPORTED_LANGS - {"en"}):
+        for path in ["/", "/leaderboard", "/puzzles"]:
+            r = client.get(f"/{lang}{path}")
+            assert r.status_code == 200, f"{lang}{path}"
+            assert f'<html lang="{lang}">' in r.text

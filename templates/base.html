@@ -18,7 +18,7 @@
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
 
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=58" />
+  <link rel="stylesheet" href="/static/css/style.css?v=59" />
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
     // Resolve the "default" auto-theme: special-day override takes priority,
@@ -322,6 +322,10 @@
           <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">{{ t.nav_puzzles }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
+              <a href="/puzzles" class="mega-card {% if mode=='puzzles' %}active{% endif %}">
+                <span class="mega-icon">▦</span>
+                <span class="mega-card-text"><strong>{{ t.nav_all_puzzles }}</strong><span>{{ t.nav_sub_all_puzzles }}</span></span>
+              </a>
               <a href="/tentaizu" class="mega-card {% if mode=='tentaizu' %}active{% endif %}">
                 <span class="mega-icon">📅</span>
                 <span class="mega-card-text"><strong>{{ t.nav_tentaizu_daily }}</strong><span>{{ t.nav_sub_tentaizu_daily }}</span></span>
@@ -348,19 +352,45 @@
                 <span class="mega-icon">📖</span>
                 <span class="mega-card-text"><strong>{{ t.nav_mosaic_howto }}</strong><span>{{ t.nav_sub_mosaic_howto }}</span></span>
               </a>
-            </div>
-            <div class="mega-col">
               <a href="/tametsi" class="mega-card {% if mode=='tametsi' %}active{% endif %}">
-                <span class="mega-icon">🔀</span>
+                <span class="mega-icon">⌁</span>
                 <span class="mega-card-text"><strong>{{ t.nav_tametsi_daily }}</strong><span>{{ t.nav_sub_tametsi_daily }}</span></span>
               </a>
+            </div>
+            <div class="mega-col">
               <a href="/numbers-match" class="mega-card {% if mode=='numbers-match' %}active{% endif %}">
                 <span class="mega-icon">🔢</span>
                 <span class="mega-card-text"><strong>{{ t.nav_numbers_match }}</strong><span>{{ t.nav_sub_numbers_match }}</span></span>
               </a>
-              <a href="/other" class="mega-card {% if mode=='other' %}active{% endif %}">
-                <span class="mega-icon">🧩</span>
-                <span class="mega-card-text"><strong>{{ t.nav_other }}</strong><span>{{ t.nav_sub_other }}</span></span>
+              <a href="/other/15puzzle" class="mega-card {% if request.url.path.startswith('/other/15puzzle') %}active{% endif %}">
+                <span class="mega-icon">15</span>
+                <span class="mega-card-text"><strong>15-Puzzle</strong><span>Sliding tile puzzle</span></span>
+              </a>
+              <a href="/other/2048" class="mega-card {% if request.url.path.startswith('/other/2048') %}active{% endif %}">
+                <span class="mega-icon">2048</span>
+                <span class="mega-card-text"><strong>2048</strong><span>Number-merging puzzle</span></span>
+              </a>
+            </div>
+            <div class="mega-col">
+              <a href="/other/2048hex" class="mega-card {% if request.url.path.startswith('/other/2048hex') %}active{% endif %}">
+                <span class="mega-icon">⬡</span>
+                <span class="mega-card-text"><strong>2048 Hexagon</strong><span>Six-direction 2048</span></span>
+              </a>
+              <a href="/other/mahjong" class="mega-card {% if request.url.path.startswith('/other/mahjong') %}active{% endif %}">
+                <span class="mega-icon">MJ</span>
+                <span class="mega-card-text"><strong>Mahjong Solitaire</strong><span>Tile-matching solitaire</span></span>
+              </a>
+              <a href="/other/jigsaw" class="mega-card {% if request.url.path.startswith('/other/jigsaw') %}active{% endif %}">
+                <span class="mega-icon">Jig</span>
+                <span class="mega-card-text"><strong>Jigsaw Puzzle</strong><span>Daily image puzzle</span></span>
+              </a>
+              <a href="/other/schulte" class="mega-card {% if request.url.path.startswith('/other/schulte') %}active{% endif %}">
+                <span class="mega-icon">◫</span>
+                <span class="mega-card-text"><strong>Schulte Grid</strong><span>Visual scanning puzzle</span></span>
+              </a>
+              <a href="/other/sudoku" class="mega-card {% if request.url.path.startswith('/other/sudoku') %}active{% endif %}">
+                <span class="mega-icon">9</span>
+                <span class="mega-card-text"><strong>Sudoku</strong><span>Classic number logic</span></span>
               </a>
             </div>
           </div>
@@ -388,10 +418,10 @@
           </div>
         </div>
         {%- set _lc = lang if lang is defined else 'en' -%}
-        {%- set _ll = {'en':'EN','de':'DE','fr':'FR','es':'ES','pt':'PT','it':'IT','pl':'PL','ru':'RU','uk':'UK','zh':'ZH','zh-hant':'繁體','ja':'JA','ko':'KO','th':'TH','tl':'TL','pgl':'PGL','eo':'EO'} -%}
+        {%- set _ll = {'en':'EN','de':'DE','fr':'FR','es':'ES','pt':'PT','it':'IT','pl':'PL','ru':'RU','uk':'UK','zh':'ZH','zh-hant':'繁體','ja':'JA','ko':'KO','th':'TH','tl':'TL','pgl':'PGL','eo':'EO','tlh':'TLH'} -%}
         <div class="lang-picker" id="lang-picker">
           <button class="lang-picker-btn" type="button" onclick="toggleLangPicker(event)" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">
-            <img src="/static/img/flags/{{ _lc }}.png" class="lang-flag" width="20" height="14" alt="{{ _lc }}">
+            <img src="/static/img/flags/{{ 'pgl' if _lc == 'tlh' else _lc }}.png" class="lang-flag" width="20" height="14" alt="{{ _lc }}">
             <span>{{ _ll.get(_lc, _lc | upper) }}</span>
             <span class="lang-caret">▾</span>
           </button>
@@ -420,13 +450,14 @@
               ('th',      'TH',   'ไทย'),
               ('tl',      'TL',   'Filipino'),
               ('pgl',     'PGL',  'Pig Latin'),
-              ('eo',      'EO',   'Esperanto')
+              ('eo',      'EO',   'Esperanto'),
+              ('tlh',     'TLH',  'Klingon')
             ] %}
             <button class="lang-option{{ ' lang-current' if _lc == code }}"
                     data-lang-search-text="{{ (label ~ ' ' ~ name ~ ' ' ~ code) | lower }}"
                     onclick="doSetLang('{{ code }}','{{ request.url.path }}')"
                     role="option" aria-selected="{{ 'true' if _lc == code else 'false' }}">
-              <img src="/static/img/flags/{{ code }}.png" class="lang-flag" width="20" height="14" alt="{{ label }}">
+              <img src="/static/img/flags/{{ 'pgl' if code == 'tlh' else code }}.png" class="lang-flag" width="20" height="14" alt="{{ label }}">
               <span class="lang-opt-code">{{ label }}</span>
               <span class="lang-opt-name">{{ name }}</span>
             </button>
@@ -505,6 +536,20 @@
       {% endif %}
     </div>
     <nav class="drawer-nav">
+      <details class="drawer-group drawer-theme-group">
+        <summary class="drawer-summary">{{ t.nav_theme }}</summary>
+        <div class="drawer-theme drawer-links">
+          <div class="drawer-theme-grid">
+            <button class="drawer-theme-btn" data-theme-btn="default"  onclick="setTheme('default')">🌓<br><span>{{ t.nav_theme_auto }}</span></button>
+            <button class="drawer-theme-btn" data-theme-btn="dark"     onclick="setTheme('dark')">🌑<br><span>{{ t.nav_theme_dark }}</span></button>
+            <button class="drawer-theme-btn" data-theme-btn="light"    onclick="setTheme('light')">☀️<br><span>{{ t.nav_theme_light }}</span></button>
+            <button class="drawer-theme-btn" data-theme-btn="tentaizu" onclick="setTheme('tentaizu')">⭐<br><span>Starfield</span></button>
+            <button class="drawer-theme-btn" data-theme-btn="flower"   onclick="setTheme('flower')">🌸<br><span>{{ t.nav_theme_flower }}</span></button>
+            <button class="drawer-theme-btn" data-theme-btn="classic"  onclick="setTheme('classic')">🟦<br><span>{{ t.nav_theme_classic }}</span></button>
+            <button class="drawer-theme-btn" data-theme-btn="mexico"   onclick="setTheme('mexico')">🪅<br><span>{{ t.nav_theme_mexico }}</span></button>
+          </div>
+        </div>
+      </details>
       <details class="drawer-group"{% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %} open{% endif %}>
         <summary class="drawer-summary">💣 {{ t.nav_play }}</summary>
         <div class="drawer-links">
@@ -543,33 +588,29 @@
           <a href="/variants/board-generator" class="drawer-link {% if mode=='board-generator' %}active{% endif %}">🔧 {{ t.nav_board_generator }}</a>
         </div>
       </details>
-      <details class="drawer-group"{% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' %} open{% endif %}>
+      <details class="drawer-group"{% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' or request.url.path.startswith('/puzzles') %} open{% endif %}>
         <summary class="drawer-summary">🧩 {{ t.nav_puzzles }}</summary>
         <div class="drawer-links">
+          <a href="/puzzles" class="drawer-link {% if mode=='puzzles' %}active{% endif %}">▦ {{ t.nav_all_puzzles }}</a>
           <a href="/tentaizu" class="drawer-link {% if mode=='tentaizu' %}active{% endif %}">📅 {{ t.nav_tentaizu_daily }}</a>
           <a href="/tentaizu/easy-5x5-6" class="drawer-link">⭐ {{ t.nav_tentaizu_easy }}</a>
           <a href="/mosaic/standard" class="drawer-link {% if mode=='mosaic' %}active{% endif %}">🟫 {{ t.nav_mosaic_daily }}</a>
           <a href="/mosaic" class="drawer-link {% if mode=='mosaic-easy' %}active{% endif %}">⭐ {{ t.nav_mosaic_easy }}</a>
           <a href="/tametsi" class="drawer-link {% if mode=='tametsi' %}active{% endif %}">🔀 {{ t.nav_tametsi_daily }}</a>
-          <a href="/other" class="drawer-link {% if mode=='other' %}active{% endif %}">🧩 {{ t.nav_other }}</a>
+          <a href="/numbers-match" class="drawer-link {% if mode=='numbers-match' %}active{% endif %}">🔢 {{ t.nav_numbers_match }}</a>
+          <a href="/other/15puzzle" class="drawer-link {% if request.url.path.startswith('/other/15puzzle') %}active{% endif %}">15 15-Puzzle</a>
+          <a href="/other/2048" class="drawer-link {% if request.url.path.startswith('/other/2048') %}active{% endif %}">2048</a>
+          <a href="/other/2048hex" class="drawer-link {% if request.url.path.startswith('/other/2048hex') %}active{% endif %}">⬡ 2048 Hexagon</a>
+          <a href="/other/mahjong" class="drawer-link {% if request.url.path.startswith('/other/mahjong') %}active{% endif %}">MJ Mahjong Solitaire</a>
+          <a href="/other/jigsaw" class="drawer-link {% if request.url.path.startswith('/other/jigsaw') %}active{% endif %}">Jig Jigsaw Puzzle</a>
+          <a href="/other/schulte" class="drawer-link {% if request.url.path.startswith('/other/schulte') %}active{% endif %}">◫ Schulte Grid</a>
+          <a href="/other/sudoku" class="drawer-link {% if request.url.path.startswith('/other/sudoku') %}active{% endif %}">9 Sudoku</a>
         </div>
       </details>
       <a href="/leaderboard" class="drawer-link drawer-link--direct {% if mode=='leaderboard' %}active{% endif %}">{{ t.nav_leaderboard }}</a>
       <a href="/quests" class="drawer-link drawer-link--direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
       <a href="/blog" class="drawer-link drawer-link--direct {% if mode=='blog' %}active{% endif %}">{{ t.nav_blog }}</a>
     </nav>
-    <div class="drawer-theme">
-      <div class="drawer-theme-label">{{ t.nav_theme }}</div>
-      <div class="drawer-theme-grid">
-        <button class="drawer-theme-btn" data-theme-btn="default"  onclick="setTheme('default')">🌓<br><span>{{ t.nav_theme_auto }}</span></button>
-        <button class="drawer-theme-btn" data-theme-btn="dark"     onclick="setTheme('dark')">🌑<br><span>{{ t.nav_theme_dark }}</span></button>
-        <button class="drawer-theme-btn" data-theme-btn="light"    onclick="setTheme('light')">☀️<br><span>{{ t.nav_theme_light }}</span></button>
-        <button class="drawer-theme-btn" data-theme-btn="tentaizu" onclick="setTheme('tentaizu')">⭐<br><span>Starfield</span></button>
-        <button class="drawer-theme-btn" data-theme-btn="flower"   onclick="setTheme('flower')">🌸<br><span>{{ t.nav_theme_flower }}</span></button>
-        <button class="drawer-theme-btn" data-theme-btn="classic"  onclick="setTheme('classic')">🟦<br><span>{{ t.nav_theme_classic }}</span></button>
-        <button class="drawer-theme-btn" data-theme-btn="mexico"   onclick="setTheme('mexico')">🪅<br><span>{{ t.nav_theme_mexico }}</span></button>
-      </div>
-    </div>
   </aside>
 
   {% if solstice_banner() %}
@@ -822,6 +863,14 @@
     if (btn)     { btn.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
     document.body.classList.remove('drawer-open');
   }
+  document.querySelectorAll('#mobile-drawer details.drawer-group').forEach(function(group) {
+    group.addEventListener('toggle', function() {
+      if (!group.open) return;
+      document.querySelectorAll('#mobile-drawer details.drawer-group[open]').forEach(function(other) {
+        if (other !== group) other.open = false;
+      });
+    });
+  });
   </script>
   {% block scripts %}{% endblock %}
   {% if user %}

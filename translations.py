@@ -1,4 +1,4 @@
-"""UI string translations for EN, EO, DE, ES, TH, PGL, UK, FR, KO, JA, ZH, ZH-HANT, PL, TL, RU, PT, IT."""
+"""UI string translations for EN, EO, DE, ES, TH, PGL, TLH, UK, FR, KO, JA, ZH, ZH-HANT, PL, TL, RU, PT, IT."""
 
 TRANSLATIONS: dict[str, dict[str, str]] = {
     "en": {
@@ -257,6 +257,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Mega-nav trigger labels
         "nav_play":             "Play",
         "nav_puzzles":          "Puzzles",
+        "nav_all_puzzles":      "All Puzzles",
+        "nav_sub_all_puzzles":  "Browse every puzzle game",
         "nav_more":             "More",
         # Mega-nav card titles (previously hardcoded)
         "nav_vs_bot":           "Vs Bot",
@@ -12629,8 +12631,13 @@ REAL_LANGS: frozenset = frozenset({
 # Novelty languages — path-prefix routing works but no hreflang or sitemap entries.
 # Add new fun languages here as their translations are added.
 FUN_LANGS: frozenset = frozenset({
-    "eo", "pgl",
+    "eo", "pgl", "tlh",
 })
+
+# Klingon is routeable as a novelty/fun locale. Until a vetted Klingon glossary
+# is available, it intentionally inherits English UI strings so every page works
+# without broken/mixed labels.
+TRANSLATIONS.setdefault("tlh", TRANSLATIONS["en"].copy())
 
 # All routeable language codes (real + fun + "en")
 SUPPORTED_LANGS: frozenset = frozenset(TRANSLATIONS.keys())
