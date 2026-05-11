@@ -535,7 +535,48 @@ function wcMountBoard(wrap) {
         setTimeout(() => { if (msgBanner.textContent === text) msgBanner.style.display = 'none'; }, 4000);
     }
 
+    // Called on page load when the board is visually complete (all mines flagged) but
+    // is_solved is false — the /solve API call was lost (network drop or navigation away).
+    async function checkOrphanedSolve() {
+        if (board.is_solved ||
+            board.primary_remaining !== 0 ||
+            board.secondary_remaining !== 0 ||
+            board.cells.filter(s => s === 'flagged').length !== board.mines) return;
+        started = true;
+        try {
+            const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/solve`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ time_ms: null, bbbv, left_clicks: 0, right_clicks: 0 }),
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showSolvedBanner(data);
+            } else {
+                showOrphanedBanner();
+            }
+        } catch (_) {
+            showOrphanedBanner();
+        }
+    }
+
+    function showOrphanedBanner() {
+        msgBanner.className = 'wc-msg-banner wc-msg-solved';
+        msgBanner.innerHTML = '';
+        const info = document.createElement('div');
+        info.className = 'wc-solved-text';
+        info.innerHTML = '<strong>✅ Board complete!</strong>';
+        const btn = document.createElement('button');
+        btn.className = 'wc-try-again-btn';
+        btn.textContent = '🎲 Play Again';
+        btn.addEventListener('click', () => playNewBoard(btn));
+        msgBanner.append(info, btn);
+        msgBanner.style.display = 'flex';
+        board.is_solved = true;
+    }
+
     renderBoard();
+    checkOrphanedSolve();
 }
 
 // ── CSS injected once ─────────────────────────────────────────────────────────
