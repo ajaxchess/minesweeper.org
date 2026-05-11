@@ -3083,9 +3083,35 @@ def _blog_post_meta(post: dict) -> dict:
 _BLOG_INDEX = [_blog_post_meta(p) for p in BLOG_POSTS]
 _BLOG_BY_SLUG = {p["slug"]: p for p in _BLOG_INDEX}
 
-# Pre-render all blog posts at startup — no file I/O during requests.
-# Using os.path.abspath(__file__) anchors to main.py's directory regardless
-# of the process working directory.
+
+@app.get("/blog", response_class=HTMLResponse)
+async def blog_index(request: Request):
+    return templates.TemplateResponse("blog_index.html", {
+        "request": request, "mode": "blog",
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+        "posts": _BLOG_INDEX,
+    })
+
+
+def _parse_front_matter(raw: str) -> tuple[dict, str]:
+    """Extract YAML front matter from markdown. Returns (meta dict, body text)."""
+    import re
+    meta = {}
+    # Strip UTF-8 BOM if present
+    raw = raw.lstrip("\ufeff")
+    # Normalise line endings
+    raw = raw.replace("\r\n", "\n").replace("\r", "\n")
+    m = re.match(r"^---\n(.*?\n)---\n", raw, re.DOTALL)
+    if m:
+        for line in m.group(1).splitlines():
+            if ":" in line:
+                key, _, val = line.partition(":")
+                meta[key.strip()] = val.strip().strip('"').strip("'")
+        raw = raw[m.end():].lstrip("\n")
+    return meta, raw
+
+
 import markdown as _md_lib
 
 def _preload_blog() -> tuple[dict, dict]:
@@ -3116,34 +3142,6 @@ def _preload_blog() -> tuple[dict, dict]:
     return html_map, fm_map
 
 _BLOG_HTML, _BLOG_FM = _preload_blog()
-
-
-@app.get("/blog", response_class=HTMLResponse)
-async def blog_index(request: Request):
-    return templates.TemplateResponse("blog_index.html", {
-        "request": request, "mode": "blog",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "posts": _BLOG_INDEX,
-    })
-
-
-def _parse_front_matter(raw: str) -> tuple[dict, str]:
-    """Extract YAML front matter from markdown. Returns (meta dict, body text)."""
-    import re
-    meta = {}
-    # Strip UTF-8 BOM if present
-    raw = raw.lstrip("\ufeff")
-    # Normalise line endings
-    raw = raw.replace("\r\n", "\n").replace("\r", "\n")
-    m = re.match(r"^---\n(.*?\n)---\n", raw, re.DOTALL)
-    if m:
-        for line in m.group(1).splitlines():
-            if ":" in line:
-                key, _, val = line.partition(":")
-                meta[key.strip()] = val.strip().strip('"').strip("'")
-        raw = raw[m.end():].lstrip("\n")
-    return meta, raw
 
 
 def _make_absolute_url(request: Request, url: str) -> str:
