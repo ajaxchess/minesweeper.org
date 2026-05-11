@@ -1305,6 +1305,27 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
   justify-content: flex-end;
 }
 
+.lb-signin-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 116px;
+  min-height: 40px;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-control);
+  border: 1px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 92%, #ffffff), var(--accent));
+  color: #ffffff !important;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.16);
+}
+
+.lb-signin-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.2);
+}
+
 .lb-showcase {
   display: flex;
   flex-direction: column;

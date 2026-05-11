@@ -1,5 +1,8 @@
 import pytest
+import re
 from html import escape
+from pathlib import Path
+from urllib.parse import urlsplit
 
 from game_catalog import (
     FUN_LANGS,
@@ -155,6 +158,25 @@ def test_leaderboard_page_lists_all_catalog_entries(client):
         for item in group["items"]:
             assert item["title"] in r.text
             assert escape(item["href"], quote=True) in r.text
+
+
+def test_leaderboard_full_board_links_resolve(client):
+    template = Path("templates/leaderboard.html").read_text(encoding="utf-8")
+    js_links = re.findall(r"leaderboard: '([^']+)'", template)
+    catalog_links = [item["href"] for group in LEADERBOARD_GROUPS for item in group["items"]]
+    links = list(dict.fromkeys(catalog_links + js_links))
+    assert links
+
+    bad = []
+    for href in links:
+        parsed = urlsplit(href)
+        path = parsed.path or "/"
+        target = path + (f"?{parsed.query}" if parsed.query else "")
+        response = client.get(target, follow_redirects=True)
+        if response.status_code >= 400:
+            bad.append((href, response.status_code))
+
+    assert not bad
 
 
 def test_leaderboard_page_represents_every_puzzle_game(client):
