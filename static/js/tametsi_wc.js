@@ -425,12 +425,18 @@ function wcMountBoard(wrap) {
     position: relative;
     overflow: hidden;
 }
-.wc-cell-hidden:hover { filter: brightness(1.15); }
-.wc-cell-hidden:active { filter: brightness(0.9); }
+.wc-cell-hidden {
+    /* dim zone color so white zones become clearly visible as unclicked */
+    filter: brightness(0.82);
+}
+.wc-cell-hidden:hover  { filter: brightness(0.95); }
+.wc-cell-hidden:active { filter: brightness(0.70); }
 .wc-cell-revealed {
-    background: var(--card-bg, #fff);
-    border-color: var(--border, #ddd);
+    /* neutral page color — always distinct from zone colors in all themes */
+    background: var(--cell-rev, #c8c8c8);
+    border-color: var(--border, #aaa);
     font-size: .8rem;
+    cursor: default;
 }
 .wc-cell-flagged { cursor: default; }
 .wc-flag-img {
