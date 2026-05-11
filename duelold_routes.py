@@ -14,10 +14,12 @@ from duel import (
 )
 import settings as site_settings
 from breadcrumbs import get_breadcrumbs as _get_breadcrumbs
+from quest_catalog import quest_config
 
 duelold_router = APIRouter()
 
 templates = Jinja2Templates(directory="templates")
+templates.env.globals["quest_config"]          = quest_config
 templates.env.globals["DEFAULT_SKIN"]          = site_settings.DEFAULT_SKIN
 templates.env.globals["active_skin"]           = site_settings.active_skin
 templates.env.globals["solstice_banner"]       = site_settings.solstice_banner
