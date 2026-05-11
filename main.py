@@ -6613,6 +6613,60 @@ def admin_hscleaning(
         .all()
     )
 
+    # Resolve a display time for each flagged score.
+    # Groups lookups by table so we only hit each table once.
+    _TIME_FIELDS = {
+        "scores":                  ("time_ms", "time_secs"),
+        "rush_scores":             ("time_secs",),
+        "tentaizu_scores":         ("time_secs",),
+        "tentaizu_easy_scores":    ("time_secs",),
+        "mosaic_scores":           ("time_secs",),
+        "mosaic_easy_scores":      ("time_secs",),
+        "mosaic_custom_scores":    ("time_secs",),
+        "cylinder_scores":         ("time_secs",),
+        "toroid_scores":           ("time_secs",),
+        "replay_scores":           ("time_secs",),
+        "hexsweeper_scores":       ("time_secs",),
+        "nonosweeper_scores":      ("time_secs",),
+        "numbers_match_scores":    ("time_secs",),
+        "globesweeper_scores":     ("time_ms",),
+        "cubesweeper_scores":      ("time_ms",),
+        "mobiussweeper_scores":    ("time_ms",),
+        "fifteen_puzzle_scores":   ("time_ms",),
+        "game_2048_scores":        ("time_ms",),
+        "game_2048hex_scores":     ("time_ms",),
+        "schulte_grid_scores":     ("time_ms",),
+        "sudoku_scores":           ("time_ms",),
+        "mahjong_scores":          ("time_ms",),
+        "jigsaw_scores":           ("time_ms",),
+        "tametsi_scores":          ("time_ms",),
+        "wc2026_scores":           ("solve_time_ms",),
+    }
+    def _fmt_flagged_time(table_name: str, score_id: int) -> str:
+        fields = _TIME_FIELDS.get(table_name)
+        if not fields:
+            return "—"
+        cols = ", ".join(fields)
+        row = db.execute(
+            text(f"SELECT {cols} FROM {table_name} WHERE id = :id"),
+            {"id": score_id}
+        ).fetchone()
+        if not row:
+            return "—"
+        for i, field in enumerate(fields):
+            val = row[i]
+            if val is None:
+                continue
+            if "ms" in field:
+                return f"{val / 1000:.3f}s"
+            return f"{val:.3f}s"
+        return "—"
+
+    flagged_times = {
+        f.id: _fmt_flagged_time(f.table_name, f.score_id)
+        for f in flagged_scores
+    }
+
     return templates.TemplateResponse("admin_hscleaning.html", {
         "request": request,
         "user": user,
@@ -6627,6 +6681,7 @@ def admin_hscleaning(
         "hash_scores": hash_scores,
         "valid_modes": sorted(valid_modes),
         "flagged_scores": flagged_scores,
+        "flagged_times":  flagged_times,
         "page": page,
         "total_daily": total_daily,
         "total_pages": total_pages,

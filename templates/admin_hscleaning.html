@@ -36,6 +36,7 @@
           <th>Game / Table</th>
           <th>Score ID</th>
           <th>Name</th>
+          <th>Time</th>
           <th>Flagged At</th>
           <th>Actions</th>
         </tr>
@@ -47,6 +48,7 @@
           <td style="font-size:0.85rem;">{{ f.table_name }}</td>
           <td style="font-size:0.85rem;">{{ f.score_id }}</td>
           <td><strong>{{ f.name }}</strong></td>
+          <td style="font-size:0.85rem;white-space:nowrap;">{{ flagged_times[f.id] }}</td>
           <td style="font-size:0.8rem;white-space:nowrap;">{{ f.flagged_at.strftime("%Y-%m-%d %H:%M") }}</td>
           <td style="white-space:nowrap;display:flex;gap:0.4rem;">
             <form method="post" action="/admin/hscleaning/flagged/{{ f.id }}/delete"
