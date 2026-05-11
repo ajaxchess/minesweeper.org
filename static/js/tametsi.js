@@ -198,16 +198,20 @@ function refreshCell(idx) {
 }
 
 // ── Touch handler ─────────────────────────────────────────────────────────────
-function addTouchHandlers(el, onTap, onLongPress) {
-    let timer = null, moved = false, sx, sy;
+const TMT_LONG_PRESS_MS = 500;
+const TMT_DOUBLE_TAP_MS = 300;
+
+function addTouchHandlers(el, onTap, onLongPress, onDoubleTap) {
+    let timer = null, moved = false, sx, sy, lastTapAt = 0;
     el.addEventListener('touchstart', e => {
         if (e.touches.length > 1) { clearTimeout(timer); timer = null; return; }
         e.preventDefault();
         moved = false;
         sx = e.touches[0].clientX; sy = e.touches[0].clientY;
-        timer = setTimeout(() => { timer = null; if (!moved) onLongPress(); }, 500);
+        timer = setTimeout(() => { timer = null; if (!moved) onLongPress(); }, TMT_LONG_PRESS_MS);
     }, { passive: false });
     el.addEventListener('touchmove', e => {
+        if (e.touches.length > 1) { clearTimeout(timer); timer = null; return; }
         if (!timer) return;
         if (Math.abs(e.touches[0].clientX - sx) > 10 ||
             Math.abs(e.touches[0].clientY - sy) > 10) {
@@ -215,8 +219,21 @@ function addTouchHandlers(el, onTap, onLongPress) {
         }
     }, { passive: true });
     el.addEventListener('touchend', e => {
+        if (e.touches.length > 0) { clearTimeout(timer); timer = null; return; }
         e.preventDefault();
-        if (timer) { clearTimeout(timer); timer = null; if (!moved) onTap(); }
+        if (timer) {
+            clearTimeout(timer); timer = null;
+            if (!moved) {
+                const now = Date.now();
+                if (onDoubleTap && now - lastTapAt < TMT_DOUBLE_TAP_MS) {
+                    lastTapAt = 0;
+                    onDoubleTap();
+                } else {
+                    lastTapAt = now;
+                    onTap();
+                }
+            }
+        }
     }, { passive: false });
     el.addEventListener('touchcancel', () => { clearTimeout(timer); timer = null; });
 }
@@ -290,7 +307,8 @@ function renderBoard() {
             renderCellEl(el, idx);
             el.addEventListener('click',       () => handleClick(idx));
             el.addEventListener('contextmenu', e => { e.preventDefault(); handleRightClick(idx); });
-            addTouchHandlers(el, () => handleClick(idx), () => handleRightClick(idx));
+            el.addEventListener('dblclick',    () => handleChord(idx));
+            addTouchHandlers(el, () => handleClick(idx), () => handleRightClick(idx), () => handleChord(idx));
             grid.appendChild(el);
         }
     }
@@ -380,6 +398,47 @@ function handleRightClick(idx) {
     updateHintEls();
     updateMineCounter();
     if (G.started) checkWin();
+}
+
+function handleChord(idx) {
+    if (G.over || G.won || !G.started) return;
+    if (localStorage.getItem('chording') === 'false') return;
+    const cell = G.cells[idx];
+    if (cell.state !== 'revealed') return;
+    const n = G.adj[idx];
+    if (n <= 0) return;
+
+    const r = Math.floor(idx / G.cols);
+    const c = idx % G.cols;
+    const nbs = neighbors(r, c, G.rows, G.cols);
+    const flagCount = nbs.filter(([nr, nc]) => G.cells[nr * G.cols + nc].state === 'flagged').length;
+    if (flagCount !== n) return;
+
+    let hitMine = false;
+    for (const [nr, nc] of nbs) {
+        const ni = nr * G.cols + nc;
+        const s = G.cells[ni].state;
+        if (s !== 'hidden' && s !== 'question') continue;
+        if (G.mineSet.has(ni)) {
+            G.cells[ni].state = 'exploded';
+            hitMine = true;
+            refreshCell(ni);
+        } else {
+            floodFill(ni);
+        }
+    }
+
+    if (hitMine) {
+        G.over = true;
+        stopTimer();
+        revealAllAfterLoss();
+        showOverlay('lose');
+        return;
+    }
+    recomputeRemaining();
+    updateHintEls();
+    updateMineCounter();
+    checkWin();
 }
 
 function revealAllAfterLoss() {
