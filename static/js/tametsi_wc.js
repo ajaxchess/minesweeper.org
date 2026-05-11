@@ -453,7 +453,32 @@ function wcMountBoard(wrap) {
             return;
         }
         const data = await res.json();
-        if (data.ok) showSolvedBanner(data);
+        if (data.ok) { showSolvedBanner(data); refreshLeaderboard(); }
+    }
+
+    async function refreshLeaderboard() {
+        const wrap = document.getElementById('wcc-lb-wrap');
+        if (!wrap) return;
+        try {
+            const res = await fetch(`/api/wc2026/leaderboard/country/${country}`);
+            if (!res.ok) return;
+            const rows = await res.json();
+            if (!rows.length) return;
+            wrap.innerHTML = `
+                <table class="wc-lb-table">
+                  <thead><tr><th>#</th><th>Player</th><th>Fan of</th><th>Points</th><th>Best Time</th></tr></thead>
+                  <tbody>${rows.map((r, i) => `
+                    <tr>
+                      <td>${i + 1}</td>
+                      <td>${r.display_name}</td>
+                      <td><img src="https://flagcdn.com/w20/${r.fan_flag_img}.png"
+                               style="vertical-align:middle;margin-right:4px;">${r.fan_flag_name}</td>
+                      <td><strong>${r.points}</strong></td>
+                      <td style="color:var(--text-dim);font-size:.85rem;">${r.best_time || '—'}</td>
+                    </tr>`).join('')}
+                  </tbody>
+                </table>`;
+        } catch (_) { /* silently ignore — stale data on failure is acceptable */ }
     }
 
     function showSolvedBanner(result) {
@@ -552,8 +577,10 @@ function wcMountBoard(wrap) {
             const data = await res.json();
             if (data.ok) {
                 showSolvedBanner(data);
+                refreshLeaderboard();
             } else {
                 showOrphanedBanner();
+                refreshLeaderboard();
             }
         } catch (_) {
             showOrphanedBanner();

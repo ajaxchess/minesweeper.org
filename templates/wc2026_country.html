@@ -151,20 +151,19 @@
   </section>
 
   <!-- ── Country leaderboard ────────────────────────────────────────────── -->
-  <section class="wcc-section">
+  <section class="wcc-section" id="wcc-lb-section">
     <h2>🏅 {{ country.name }} Fan Leaderboard</h2>
+    <div id="wcc-lb-wrap">
     {% if country_lb %}
     <table class="wc-lb-table">
       <thead><tr><th>#</th><th>Player</th><th>Fan of</th><th>Points</th><th>Best Time</th></tr></thead>
-      <tbody>
+      <tbody id="wcc-lb-tbody">
       {% for row in country_lb %}
       <tr>
         <td>{{ loop.index }}</td>
         <td>{{ row.display_name }}</td>
         <td>
-          {% for c in wc2026_teams if c.slug == row.fan_flag %}
-          <img src="https://flagcdn.com/w20/{{ c.flag }}.png" style="vertical-align:middle;margin-right:4px;">{{ c.name }}
-          {% endfor %}
+          <img src="https://flagcdn.com/w20/{{ row.fan_flag_img }}.png" style="vertical-align:middle;margin-right:4px;">{{ row.fan_flag_name }}
         </td>
         <td><strong>{{ row.points }}</strong></td>
         <td style="color:var(--text-dim);font-size:.85rem;">{{ row.best_time or '—' }}</td>
@@ -173,8 +172,9 @@
       </tbody>
     </table>
     {% else %}
-    <p class="wc-empty">No scores for this country yet. Be the first!</p>
+    <p class="wc-empty" id="wcc-lb-empty">No scores for this country yet. Be the first!</p>
     {% endif %}
+    </div>
   </section>
 
   <div style="margin-top:2rem;">

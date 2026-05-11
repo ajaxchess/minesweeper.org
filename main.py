@@ -8186,8 +8186,18 @@ def _country_leaderboard(slug: str, db: Session, limit: int = 20) -> list:
         s = ms / 1000
         m = int(s // 60)
         return f"{m}:{s % 60:06.3f}" if m else f"{s % 60:.3f}s"
-    return [{"display_name": r.display_name, "fan_flag": r.fan_flag,
-             "points": r.pts, "best_time": fmt_time(r.best_ms)} for r in rows]
+    result = []
+    for r in rows:
+        ci = WC2026_BY_SLUG.get(r.fan_flag, {})
+        result.append({
+            "display_name":  r.display_name,
+            "fan_flag":      r.fan_flag,
+            "fan_flag_img":  ci.get("flag", r.fan_flag),
+            "fan_flag_name": ci.get("name", r.fan_flag),
+            "points":        r.pts,
+            "best_time":     fmt_time(r.best_ms),
+        })
+    return result
 
 
 def _fan_country_leaderboard(db: Session, limit: int = 20) -> list:
