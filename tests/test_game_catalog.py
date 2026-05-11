@@ -23,6 +23,7 @@ REQUIRED_FIELDS = {
     "category",
     "section",
     "title",
+    "icon",
     "description",
     "canonical_path",
     "play_path",
@@ -146,6 +147,9 @@ def test_leaderboard_page_lists_all_catalog_entries(client):
     assert "CHAMPION_BOARDS" in r.text
     assert "Hexsweeper" in r.text
     assert "All Leaderboards" in r.text
+    for period in ["daily", "weekly", "monthly", "season", "yearly", "alltime"]:
+        assert f'data-period="{period}"' in r.text
+        assert f'data-showcase-period="{period}"' in r.text
     for group in LEADERBOARD_GROUPS:
         assert group["section"] in r.text
         for item in group["items"]:
@@ -176,22 +180,9 @@ def test_puzzles_dropdown_lists_all_puzzle_games(client):
     assert r.status_code == 200
     assert "All Puzzles" in r.text
     assert 'href="/puzzles"' in r.text
-    for href in [
-        "/tentaizu",
-        "/tentaizu/easy-5x5-6",
-        "/mosaic/standard",
-        "/mosaic",
-        "/tametsi",
-        "/numbers-match",
-        "/other/15puzzle",
-        "/other/2048",
-        "/other/2048hex",
-        "/other/mahjong",
-        "/other/jigsaw",
-        "/other/schulte",
-        "/other/sudoku",
-    ]:
-        assert f'href="{href}"' in r.text
+    for game in PUZZLE_GAMES:
+        assert f'href="{game["play_path"]}"' in r.text
+        assert f">{game['icon']}<" in r.text or f">{game['icon']} " in r.text
 
 
 def test_all_supported_languages_render_core_pages(client):

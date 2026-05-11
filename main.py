@@ -34,7 +34,7 @@ from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
 from starlette.config import Config
 from translations import get_lang, get_t, SUPPORTED_LANGS, REAL_LANGS
-from game_catalog import LEADERBOARD_GROUPS
+from game_catalog import LEADERBOARD_GROUPS, PUZZLE_GAMES
 from quest_catalog import quest_config
 import settings as site_settings
 import logging
@@ -108,6 +108,25 @@ def get_season_range(season_num: int):
 def current_season_num() -> int:
     today = date.today()
     return (today.year - SEASON_ORIGIN_YEAR) * 12 + (today.month - SEASON_ORIGIN_MONTH) + 1
+
+def get_period_range(period: str, target: Optional[date] = None, season_num: Optional[int] = None):
+    """Return date bounds for finite leaderboard periods."""
+    target = target or date.today()
+    if period == "daily":
+        return target, target + timedelta(days=1)
+    if period == "weekly":
+        start = target - timedelta(days=target.weekday())
+        return start, start + timedelta(days=7)
+    if period == "monthly":
+        start = target.replace(day=1)
+        end = date(start.year + 1, 1, 1) if start.month == 12 else date(start.year, start.month + 1, 1)
+        return start, end
+    if period == "yearly":
+        start = date(target.year, 1, 1)
+        return start, date(target.year + 1, 1, 1)
+    if period == "season":
+        return get_season_range(season_num) if season_num and season_num >= 1 else get_season_range(current_season_num())
+    return None, None
 
 # ── Request counter (for hourly stats) ───────────────────────────────────────
 _req_lock  = threading.Lock()
@@ -266,6 +285,7 @@ from breadcrumbs import get_breadcrumbs as _get_breadcrumbs
 
 templates.env.globals["get_breadcrumbs"] = _get_breadcrumbs
 templates.env.globals["quest_config"] = quest_config
+templates.env.globals["puzzle_games"] = PUZZLE_GAMES
 
 # ── Language-prefix middleware ────────────────────────────────────────────────
 # Registered last → runs outermost (first) for every request.
@@ -1383,7 +1403,7 @@ def get_scores(mode: GameMode, no_guess: bool = False,
                season_num: Optional[int] = Query(None),
                db: Session = Depends(get_db),
                response: Response = None):
-    if period not in ("daily", "season", "alltime"):
+    if period not in ("daily", "weekly", "monthly", "season", "yearly", "alltime"):
         period = "daily"
 
     if response:
@@ -1401,22 +1421,16 @@ def get_scores(mode: GameMode, no_guess: bool = False,
     q = db.query(Score).filter(Score.mode == mode, ng_filter)
     q = exclude_flagged(q, Score, db)
 
-    if period == "daily":
+    if period in ("daily", "weekly", "monthly", "season", "yearly"):
         try:
             target = date.fromisoformat(score_date) if score_date else date.today()
         except ValueError:
             target = date.today()
-        q = q.filter(Score.created_at >= target, Score.created_at < target + timedelta(days=1))
-        top = q.order_by(sort_key.asc(), Score.created_at.asc()).limit(15).all()
-        return _enrich_with_profiles(top, db)
-
-    if period == "season":
-        if season_num and season_num >= 1:
-            s_start, s_end = get_season_range(season_num)
-            q = q.filter(Score.created_at >= s_start, Score.created_at < s_end)
-        else:
-            today = date.today()
-            q = q.filter(Score.created_at >= today.replace(day=1))
+        p_start, p_end = get_period_range(period, target, season_num)
+        q = q.filter(Score.created_at >= p_start, Score.created_at < p_end)
+        if period == "daily":
+            top = q.order_by(sort_key.asc(), Score.created_at.asc()).limit(15).all()
+            return _enrich_with_profiles(top, db)
 
     # season / alltime: fetch generously, then deduplicate to best per player
     raw = q.order_by(sort_key.asc(), Score.created_at.asc()).limit(500).all()
@@ -3680,7 +3694,7 @@ def get_cylinder_scores(cyl_mode: str, no_guess: bool = False, period: str = "al
                         db: Session = Depends(get_db)):
     if cyl_mode not in CYLINDER_MODES_VALID:
         raise HTTPException(status_code=400, detail="Invalid mode")
-    if period not in ("daily", "season", "alltime"):
+    if period not in ("daily", "weekly", "monthly", "season", "yearly", "alltime"):
         period = "alltime"
 
     sort_key = case(
@@ -3696,22 +3710,16 @@ def get_cylinder_scores(cyl_mode: str, no_guess: bool = False, period: str = "al
     q = db.query(CylinderScore).filter(CylinderScore.cyl_mode == cyl_mode, ng_filter)
     q = exclude_flagged(q, CylinderScore, db)
 
-    if period == "daily":
+    if period in ("daily", "weekly", "monthly", "season", "yearly"):
         try:
             target = date.fromisoformat(score_date) if score_date else date.today()
         except ValueError:
             target = date.today()
-        q = q.filter(CylinderScore.created_at >= target, CylinderScore.created_at < target + timedelta(days=1))
-        top = q.order_by(sort_key.asc(), CylinderScore.created_at.asc()).limit(15).all()
-        return _enrich_with_profiles(top, db)
-
-    if period == "season":
-        if season_num and season_num >= 1:
-            s_start, s_end = get_season_range(season_num)
-            q = q.filter(CylinderScore.created_at >= s_start, CylinderScore.created_at < s_end)
-        else:
-            today = date.today()
-            q = q.filter(CylinderScore.created_at >= today.replace(day=1))
+        p_start, p_end = get_period_range(period, target, season_num)
+        q = q.filter(CylinderScore.created_at >= p_start, CylinderScore.created_at < p_end)
+        if period == "daily":
+            top = q.order_by(sort_key.asc(), CylinderScore.created_at.asc()).limit(15).all()
+            return _enrich_with_profiles(top, db)
 
     raw = q.order_by(sort_key.asc(), CylinderScore.created_at.asc()).limit(500).all()
     seen: set = set()
@@ -3849,7 +3857,7 @@ def get_toroid_scores(tor_mode: str, no_guess: bool = False, period: str = "allt
                       db: Session = Depends(get_db)):
     if tor_mode not in TOROID_MODES_VALID:
         raise HTTPException(status_code=400, detail="Invalid mode")
-    if period not in ("daily", "season", "alltime"):
+    if period not in ("daily", "weekly", "monthly", "season", "yearly", "alltime"):
         period = "alltime"
 
     sort_key = case(
@@ -3865,22 +3873,16 @@ def get_toroid_scores(tor_mode: str, no_guess: bool = False, period: str = "allt
     q = db.query(ToroidScore).filter(ToroidScore.tor_mode == tor_mode, ng_filter)
     q = exclude_flagged(q, ToroidScore, db)
 
-    if period == "daily":
+    if period in ("daily", "weekly", "monthly", "season", "yearly"):
         try:
             target = date.fromisoformat(score_date) if score_date else date.today()
         except ValueError:
             target = date.today()
-        q = q.filter(ToroidScore.created_at >= target, ToroidScore.created_at < target + timedelta(days=1))
-        top = q.order_by(sort_key.asc(), ToroidScore.created_at.asc()).limit(15).all()
-        return _enrich_with_profiles(top, db)
-
-    if period == "season":
-        if season_num and season_num >= 1:
-            s_start, s_end = get_season_range(season_num)
-            q = q.filter(ToroidScore.created_at >= s_start, ToroidScore.created_at < s_end)
-        else:
-            today = date.today()
-            q = q.filter(ToroidScore.created_at >= today.replace(day=1))
+        p_start, p_end = get_period_range(period, target, season_num)
+        q = q.filter(ToroidScore.created_at >= p_start, ToroidScore.created_at < p_end)
+        if period == "daily":
+            top = q.order_by(sort_key.asc(), ToroidScore.created_at.asc()).limit(15).all()
+            return _enrich_with_profiles(top, db)
 
     raw = q.order_by(sort_key.asc(), ToroidScore.created_at.asc()).limit(500).all()
     seen: set = set()
@@ -4024,7 +4026,7 @@ def get_hex_scores(hex_mode: str, period: str = "alltime",
                    db: Session = Depends(get_db)):
     if hex_mode not in HEX_MODES_VALID:
         raise HTTPException(status_code=400, detail="Invalid mode")
-    if period not in ("daily", "season", "alltime"):
+    if period not in ("daily", "weekly", "monthly", "season", "yearly", "alltime"):
         period = "alltime"
 
     sort_key = case(
@@ -4035,23 +4037,17 @@ def get_hex_scores(hex_mode: str, period: str = "alltime",
     q = db.query(HexsweeperScore).filter(HexsweeperScore.hex_mode == hex_mode)
     q = exclude_flagged(q, HexsweeperScore, db)
 
-    if period == "daily":
+    if period in ("daily", "weekly", "monthly", "season", "yearly"):
         try:
             target = date.fromisoformat(score_date) if score_date else date.today()
         except ValueError:
             target = date.today()
-        q = q.filter(HexsweeperScore.created_at >= target,
-                     HexsweeperScore.created_at < target + timedelta(days=1))
-        top = q.order_by(sort_key.asc(), HexsweeperScore.created_at.asc()).limit(15).all()
-        return _enrich_with_profiles(top, db)
-
-    if period == "season":
-        if season_num and season_num >= 1:
-            s_start, s_end = get_season_range(season_num)
-            q = q.filter(HexsweeperScore.created_at >= s_start, HexsweeperScore.created_at < s_end)
-        else:
-            today = date.today()
-            q = q.filter(HexsweeperScore.created_at >= today.replace(day=1))
+        p_start, p_end = get_period_range(period, target, season_num)
+        q = q.filter(HexsweeperScore.created_at >= p_start,
+                     HexsweeperScore.created_at < p_end)
+        if period == "daily":
+            top = q.order_by(sort_key.asc(), HexsweeperScore.created_at.asc()).limit(15).all()
+            return _enrich_with_profiles(top, db)
 
     raw = q.order_by(sort_key.asc(), HexsweeperScore.created_at.asc()).limit(500).all()
     seen: set = set()
@@ -4610,31 +4606,24 @@ def get_pvp_leaderboard(period: str = "alltime",
                         submode: Optional[str] = Query(None),
                         db: Session = Depends(get_db)):
     """Return best PvP games ranked by winner's time (fastest first)."""
-    if period not in ("daily", "season", "alltime"):
+    if period not in ("daily", "weekly", "monthly", "season", "yearly", "alltime"):
         period = "alltime"
 
     q = db.query(PvpResult)
     if submode in ("standard", "quick"):
         q = q.filter(PvpResult.submode == submode)
 
-    if period == "daily":
+    if period in ("daily", "weekly", "monthly", "season", "yearly"):
         try:
             target = date.fromisoformat(score_date) if score_date else date.today()
         except ValueError:
             target = date.today()
-        q = q.filter(PvpResult.created_at >= target,
-                     PvpResult.created_at < target + timedelta(days=1))
-        rows = q.order_by(PvpResult.elapsed_ms.asc()).limit(15).all()
-        return [r.to_dict() for r in rows]
-
-    if period == "season":
-        if season_num and season_num >= 1:
-            s_start, s_end = get_season_range(season_num)
-            q = q.filter(PvpResult.created_at >= s_start,
-                         PvpResult.created_at < s_end)
-        else:
-            today = date.today()
-            q = q.filter(PvpResult.created_at >= today.replace(day=1))
+        p_start, p_end = get_period_range(period, target, season_num)
+        q = q.filter(PvpResult.created_at >= p_start,
+                     PvpResult.created_at < p_end)
+        if period == "daily":
+            rows = q.order_by(PvpResult.elapsed_ms.asc()).limit(15).all()
+            return [r.to_dict() for r in rows]
 
     # Best game per winner (dedup by winner_email or winner_name)
     raw = q.order_by(PvpResult.elapsed_ms.asc()).limit(500).all()
@@ -4658,7 +4647,7 @@ def get_pvp_rankings(period: str = "alltime",
                      db: Session = Depends(get_db),
                      response: Response = None):
     """Return players ranked by number of PvP wins."""
-    if period not in ("daily", "season", "alltime"):
+    if period not in ("daily", "weekly", "monthly", "season", "yearly", "alltime"):
         period = "alltime"
     if response:
         response.headers["Cache-Control"] = "public, max-age=60"
@@ -4667,22 +4656,14 @@ def get_pvp_rankings(period: str = "alltime",
     if submode in ("standard", "quick"):
         q = q.filter(PvpResult.submode == submode)
 
-    if period == "daily":
+    if period in ("daily", "weekly", "monthly", "season", "yearly"):
         try:
             target = date.fromisoformat(score_date) if score_date else date.today()
         except ValueError:
             target = date.today()
-        q = q.filter(PvpResult.created_at >= target,
-                     PvpResult.created_at < target + timedelta(days=1))
-
-    elif period == "season":
-        if season_num and season_num >= 1:
-            s_start, s_end = get_season_range(season_num)
-            q = q.filter(PvpResult.created_at >= s_start,
-                         PvpResult.created_at < s_end)
-        else:
-            today = date.today()
-            q = q.filter(PvpResult.created_at >= today.replace(day=1))
+        p_start, p_end = get_period_range(period, target, season_num)
+        q = q.filter(PvpResult.created_at >= p_start,
+                     PvpResult.created_at < p_end)
 
     rows = q.all()
 

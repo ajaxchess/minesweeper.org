@@ -53,20 +53,25 @@
     <div class="lb-showcase-head">
       <p class="lb-kicker">Champions across Minesweeper.org</p>
       <h2 id="lb-showcase-title" class="lb-section-title">Top 3 From Around The Site</h2>
-      <p>Choose a time period and category to see leaders from different games, variants, and puzzles.</p>
+      <p>Scan the top three across every scored game, variant, puzzle, and event from one place.</p>
     </div>
 
     <div class="lb-showcase-controls" aria-label="Leaderboard showcase filters">
       <div class="lb-showcase-filter" role="group" aria-label="Time period">
-        <button class="lb-showcase-btn active" data-showcase-period="daily">Today</button>
+        <button class="lb-showcase-btn active" data-showcase-period="daily">Daily</button>
+        <button class="lb-showcase-btn" data-showcase-period="weekly">Weekly</button>
+        <button class="lb-showcase-btn" data-showcase-period="monthly">Monthly</button>
         <button class="lb-showcase-btn" data-showcase-period="season">Season</button>
+        <button class="lb-showcase-btn" data-showcase-period="yearly">Yearly</button>
         <button class="lb-showcase-btn" data-showcase-period="alltime">All Time</button>
       </div>
       <div class="lb-showcase-filter" role="group" aria-label="Leaderboard category">
-        <button class="lb-showcase-btn active" data-showcase-category="featured">Featured</button>
+        <button class="lb-showcase-btn active" data-showcase-category="all">All</button>
         <button class="lb-showcase-btn" data-showcase-category="minesweeper">Minesweeper</button>
         <button class="lb-showcase-btn" data-showcase-category="variants">Variants</button>
+        <button class="lb-showcase-btn" data-showcase-category="puzzles">Puzzles</button>
         <button class="lb-showcase-btn" data-showcase-category="pvp">PvP</button>
+        <button class="lb-showcase-btn" data-showcase-category="events">Events</button>
       </div>
     </div>
 
@@ -81,13 +86,21 @@
       <h2 id="lb-main-board-title" class="lb-section-title">Detailed Leaderboard</h2>
     </div>
 
-  <!-- Game selector -->
-  <div class="lb-game-toggle" role="group" aria-label="Game variant">
-    <button class="lb-game-btn active" data-game="classic">Classic</button>
-    <button class="lb-game-btn" data-game="cylinder">Cylinder</button>
-    <button class="lb-game-btn" data-game="toroid">Toroid</button>
-    <button class="lb-game-btn" data-game="hex">Hexsweeper</button>
+  <div class="lb-decision-tree" aria-label="Detailed leaderboard choices">
+  <div class="lb-choice-row" role="group" aria-label="Category">
+    <button class="lb-choice-btn active" data-category="minesweeper">Minesweeper</button>
+    <button class="lb-choice-btn" data-category="variants">Variants</button>
+    <button class="lb-choice-btn" data-category="puzzles">Puzzles</button>
+    <button class="lb-choice-btn" data-category="pvp">PvP</button>
   </div>
+
+  <div class="lb-game-toggle lb-choice-row" role="group" aria-label="Leaderboard">
+    <button class="lb-game-btn active" data-game="classic" data-category="minesweeper">Classic</button>
+    <button class="lb-game-btn" data-game="cylinder" data-category="variants">Cylinder</button>
+    <button class="lb-game-btn" data-game="toroid" data-category="variants">Toroid</button>
+    <button class="lb-game-btn" data-game="hex" data-category="variants">Hexsweeper</button>
+  </div>
+  <p class="lb-directory-only-note">Use the All Leaderboards cards below for this category; each card opens the fastest available board for that game.</p>
 
   <div class="lb-tabs" id="lb-mode-tabs" role="tablist">
     <button class="lb-tab active" data-mode="beginner"     role="tab">{{ t.nav_beginner }}</button>
@@ -104,8 +117,12 @@
 
   <div class="lb-period-toggle" role="group" aria-label="Time period">
     <button class="lb-period-btn active" data-period="daily">Daily</button>
+    <button class="lb-period-btn"        data-period="weekly">Weekly</button>
+    <button class="lb-period-btn"        data-period="monthly">Monthly</button>
     <button class="lb-period-btn"        data-period="season" id="season-btn">Season 1</button>
+    <button class="lb-period-btn"        data-period="yearly">Yearly</button>
     <button class="lb-period-btn"        data-period="alltime">All Time</button>
+  </div>
   </div>
 
   <div id="lb-date-wrap" class="lb-sub-picker">
@@ -133,7 +150,7 @@
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_bbbv_tip }}">3BV</th>
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_bbbv_s_tip }}">3BV/s</th>
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_eff_tip }}">Eff</th>
-          <th>Hash</th>
+          <th>Board</th>
         </tr>
       </thead>
       <tbody id="lb-body">
@@ -202,96 +219,80 @@ function seasonLabel(n) {
 }
 
 const TODAY_STR = new Date().toISOString().slice(0, 10); // UTC date YYYY-MM-DD
+const SHOWCASE_PERIODS = ['daily', 'weekly', 'monthly', 'season', 'yearly', 'alltime'];
+
+function periodParams(period, supported = SHOWCASE_PERIODS) {
+  const effective = supported.includes(period) ? period : (period === 'alltime' ? 'alltime' : 'daily');
+  const params = new URLSearchParams({ period: effective });
+  if (['daily', 'weekly', 'monthly', 'yearly'].includes(effective)) params.set('date', TODAY_STR);
+  if (effective === 'season') params.set('season_num', computeCurrentSeason());
+  return params.toString();
+}
+
+function scoreApi(path, mode, opts = {}) {
+  const supported = opts.supported || SHOWCASE_PERIODS;
+  return period => `${path}/${mode}?${periodParams(period, supported)}${opts.noGuess === false ? '&no_guess=false' : ''}`;
+}
+
+function staticBoard(title, category, leaderboard, play, note = 'Open the full leaderboard for this game.') {
+  return { title, category, metric: 'link', periods: SHOWCASE_PERIODS, leaderboard, play, note };
+}
 
 const CHAMPION_BOARDS = [
-  {
-    title: 'Classic Beginner',
-    category: 'minesweeper',
-    featured: true,
-    metric: 'time',
-    periods: ['daily', 'season', 'alltime'],
-    api: period => `/api/scores/beginner?no_guess=false&period=${period}${period === 'daily' ? `&date=${TODAY_STR}` : ''}${period === 'season' ? `&season_num=${computeCurrentSeason()}` : ''}`,
-    leaderboard: '/leaderboard?game=classic&mode=beginner',
-    play: '/',
-  },
-  {
-    title: 'Classic Expert',
-    category: 'minesweeper',
-    featured: true,
-    metric: 'time',
-    periods: ['daily', 'season', 'alltime'],
-    api: period => `/api/scores/expert?no_guess=false&period=${period}${period === 'daily' ? `&date=${TODAY_STR}` : ''}${period === 'season' ? `&season_num=${computeCurrentSeason()}` : ''}`,
-    leaderboard: '/leaderboard?game=classic&mode=expert',
-    play: '/expert',
-  },
-  {
-    title: 'Rush Hard',
-    category: 'minesweeper',
-    featured: true,
-    metric: 'score',
-    periods: ['daily', 'alltime'],
-    api: period => `/api/rush-scores/hard?alltime=${period === 'alltime'}`,
-    leaderboard: '/rush/leaderboard',
-    play: '/rush',
-  },
-  {
-    title: 'Cylinder Easy',
-    category: 'variants',
-    featured: true,
-    metric: 'time',
-    periods: ['daily', 'season', 'alltime'],
-    api: period => `/api/cylinder-scores/easy?no_guess=false&period=${period}${period === 'daily' ? `&date=${TODAY_STR}` : ''}${period === 'season' ? `&season_num=${computeCurrentSeason()}` : ''}`,
-    leaderboard: '/leaderboard?game=cylinder',
-    play: '/cylinder',
-  },
-  {
-    title: 'Toroid Easy',
-    category: 'variants',
-    featured: true,
-    metric: 'time',
-    periods: ['daily', 'season', 'alltime'],
-    api: period => `/api/toroid-scores/easy?no_guess=false&period=${period}${period === 'daily' ? `&date=${TODAY_STR}` : ''}${period === 'season' ? `&season_num=${computeCurrentSeason()}` : ''}`,
-    leaderboard: '/leaderboard?game=toroid',
-    play: '/toroid',
-  },
-  {
-    title: 'Hexsweeper Easy',
-    category: 'variants',
-    featured: true,
-    metric: 'time',
-    periods: ['daily', 'season', 'alltime'],
-    api: period => `/api/hexsweeper-scores/beginner?period=${period}${period === 'daily' ? `&date=${TODAY_STR}` : ''}${period === 'season' ? `&season_num=${computeCurrentSeason()}` : ''}`,
-    leaderboard: '/leaderboard?game=hex',
-    play: '/hexsweeper',
-  },
-  {
-    title: 'PvP Wins',
-    category: 'pvp',
-    featured: true,
-    metric: 'wins',
-    periods: ['daily', 'season', 'alltime'],
-    api: period => `/api/pvp/rankings?period=${period}${period === 'daily' ? `&date=${TODAY_STR}` : ''}${period === 'season' ? `&season_num=${computeCurrentSeason()}` : ''}`,
-    leaderboard: '/pvp/rankings',
-    play: '/pvp',
-  },
-  {
-    title: 'PvP Best Times',
-    category: 'pvp',
-    featured: false,
-    metric: 'pvp-time',
-    periods: ['daily', 'season', 'alltime'],
-    api: period => `/api/pvp/leaderboard?period=${period}${period === 'daily' ? `&date=${TODAY_STR}` : ''}${period === 'season' ? `&season_num=${computeCurrentSeason()}` : ''}`,
-    leaderboard: '/pvp/leaderboard',
-    play: '/pvp',
-  },
+  { title: 'Classic Beginner', category: 'minesweeper', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/scores', 'beginner', { noGuess: false }), leaderboard: '/leaderboard?game=classic&mode=beginner', play: '/' },
+  { title: 'Classic Intermediate', category: 'minesweeper', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/scores', 'intermediate', { noGuess: false }), leaderboard: '/leaderboard?game=classic&mode=intermediate', play: '/intermediate' },
+  { title: 'Classic Expert', category: 'minesweeper', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/scores', 'expert', { noGuess: false }), leaderboard: '/leaderboard?game=classic&mode=expert', play: '/expert' },
+  { title: 'Classic Custom', category: 'minesweeper', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/scores', 'custom', { noGuess: false }), leaderboard: '/leaderboard?game=classic&mode=custom', play: '/custom' },
+  { title: 'Evil No-Guess', category: 'minesweeper', metric: 'time', periods: SHOWCASE_PERIODS, api: period => `/api/scores/evil?${periodParams(period)}&no_guess=true`, leaderboard: '/leaderboard?game=classic&mode=evil&no_guess=true', play: '/evil' },
+  { title: 'Rush Easy', category: 'minesweeper', metric: 'score', periods: SHOWCASE_PERIODS, api: period => `/api/rush-scores/easy?alltime=${period !== 'daily'}`, leaderboard: '/rush/leaderboard', play: '/rush' },
+  { title: 'Rush Normal', category: 'minesweeper', metric: 'score', periods: SHOWCASE_PERIODS, api: period => `/api/rush-scores/normal?alltime=${period !== 'daily'}`, leaderboard: '/rush/leaderboard', play: '/rush' },
+  { title: 'Rush Hard', category: 'minesweeper', metric: 'score', periods: SHOWCASE_PERIODS, api: period => `/api/rush-scores/hard?alltime=${period !== 'daily'}`, leaderboard: '/rush/leaderboard', play: '/rush' },
+  { title: 'Cylinder Easy', category: 'variants', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/cylinder-scores', 'easy', { noGuess: false }), leaderboard: '/leaderboard?game=cylinder&mode=easy', play: '/cylinder' },
+  { title: 'Cylinder Intermediate', category: 'variants', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/cylinder-scores', 'intermediate', { noGuess: false }), leaderboard: '/leaderboard?game=cylinder&mode=intermediate', play: '/cylinder/intermediate' },
+  { title: 'Cylinder Expert', category: 'variants', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/cylinder-scores', 'expert', { noGuess: false }), leaderboard: '/leaderboard?game=cylinder&mode=expert', play: '/cylinder/expert' },
+  { title: 'Toroid Easy', category: 'variants', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/toroid-scores', 'easy', { noGuess: false }), leaderboard: '/leaderboard?game=toroid&mode=easy', play: '/toroid' },
+  { title: 'Toroid Intermediate', category: 'variants', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/toroid-scores', 'intermediate', { noGuess: false }), leaderboard: '/leaderboard?game=toroid&mode=intermediate', play: '/toroid/intermediate' },
+  { title: 'Toroid Expert', category: 'variants', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/toroid-scores', 'expert', { noGuess: false }), leaderboard: '/leaderboard?game=toroid&mode=expert', play: '/toroid/expert' },
+  { title: 'Hexsweeper Easy', category: 'variants', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/hexsweeper-scores', 'beginner'), leaderboard: '/leaderboard?game=hex&mode=beginner', play: '/hexsweeper' },
+  { title: 'Hexsweeper Intermediate', category: 'variants', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/hexsweeper-scores', 'intermediate'), leaderboard: '/leaderboard?game=hex&mode=intermediate', play: '/hexsweeper/intermediate' },
+  { title: 'Hexsweeper Expert', category: 'variants', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/hexsweeper-scores', 'expert'), leaderboard: '/leaderboard?game=hex&mode=expert', play: '/hexsweeper/expert' },
+  { title: 'Worldsweeper', category: 'variants', metric: 'time', periods: SHOWCASE_PERIODS, api: period => `/api/worldsweeper-scores/beginner?${periodParams(period, ['daily', 'alltime'])}`, leaderboard: '/worldsweeper/leaderboard', play: '/worldsweeper' },
+  { title: 'Cubesweeper', category: 'variants', metric: 'time', periods: SHOWCASE_PERIODS, api: period => `/api/cubesweeper-scores/beginner?${periodParams(period, ['daily', 'alltime'])}`, leaderboard: '/cubesweeper/leaderboard', play: '/cubesweeper' },
+  { title: 'Mobiussweeper', category: 'variants', metric: 'time', periods: SHOWCASE_PERIODS, api: period => `/api/mobiussweeper-scores/beginner?${periodParams(period, ['daily', 'alltime'])}`, leaderboard: '/mobiussweeper/leaderboard', play: '/mobiussweeper' },
+  staticBoard('Nonosweeper', 'variants', '/nonosweeper#nn-lb-section', '/nonosweeper'),
+  staticBoard('Board Replay', 'variants', '/variants/replay/?rows=9&cols=9&mines=10', '/variants/replay/?rows=9&cols=9&mines=10'),
+  staticBoard('Minesweeper Chess', 'variants', '/minesweeperchess', '/minesweeperchess', 'Partner game. Open the game page to play.'),
+  { title: 'PvP Wins', category: 'pvp', metric: 'wins', periods: SHOWCASE_PERIODS, api: period => `/api/pvp/rankings?${periodParams(period)}`, leaderboard: '/pvp/rankings', play: '/pvp' },
+  { title: 'PvP Best Times', category: 'pvp', metric: 'pvp-time', periods: SHOWCASE_PERIODS, api: period => `/api/pvp/leaderboard?${periodParams(period)}`, leaderboard: '/pvp/leaderboard', play: '/pvp' },
+  staticBoard('PvP Bot', 'pvp', '/pvp/bot', '/pvp/bot', 'Practice mode. Play the bot to sharpen up before live PvP.'),
+  staticBoard('Private Duel', 'pvp', '/duel', '/duel', 'Private rooms are played by link, then saved in your account history.'),
+  staticBoard('World Cup 2026 Countries', 'events', '/2026worldcup', '/2026worldcup'),
+  staticBoard('World Cup 2026 Individuals', 'events', '/2026worldcup', '/2026worldcup'),
+  staticBoard('Tentaizu Daily', 'puzzles', '/tentaizu#tz-lb-section', '/tentaizu'),
+  staticBoard('Tentaizu Easy', 'puzzles', '/tentaizu/easy-5x5-6#tz-lb-section', '/tentaizu/easy-5x5-6'),
+  staticBoard('Mosaic Daily', 'puzzles', '/mosaic/standard#ms-lb-section', '/mosaic/standard'),
+  staticBoard('Mosaic Easy', 'puzzles', '/mosaic#ms-lb-section', '/mosaic'),
+  staticBoard('Mosaic Custom Boards', 'puzzles', '/mosaic/custom/', '/mosaic/custom/'),
+  staticBoard('Tametsi', 'puzzles', '/tametsi#tmt-lb-section', '/tametsi'),
+  staticBoard('Numbers Match', 'puzzles', '/numbers-match#nm-lb-section', '/numbers-match'),
+  staticBoard('15-Puzzle', 'puzzles', '/other/15puzzle/leaderboard', '/other/15puzzle/daily'),
+  staticBoard('2048', 'puzzles', '/other/2048/leaderboard', '/other/2048/daily'),
+  staticBoard('2048 Hexagon', 'puzzles', '/other/2048hex/leaderboard', '/other/2048hex/play'),
+  staticBoard('Mahjong Solitaire', 'puzzles', '/other/mahjong/leaderboard', '/other/mahjong/daily'),
+  staticBoard('Jigsaw Puzzle', 'puzzles', '/other/jigsaw/leaderboard', '/other/jigsaw/daily'),
+  staticBoard('Schulte Grid', 'puzzles', '/other/schulte/leaderboard', '/other/schulte/play'),
+  staticBoard('Sudoku', 'puzzles', '/other/sudoku/scores', '/other/sudoku/daily'),
 ];
 
 let showcasePeriod = 'daily';
-let showcaseCategory = 'featured';
+let showcaseCategory = 'all';
 
 function periodLabel(period) {
   if (period === 'daily') return 'Today';
+  if (period === 'weekly') return 'This Week';
+  if (period === 'monthly') return 'This Month';
   if (period === 'season') return `Season ${computeCurrentSeason()}`;
+  if (period === 'yearly') return 'This Year';
   return 'All Time';
 }
 
@@ -322,7 +323,7 @@ function championCardShell(board, index) {
       </div>
       <div class="lb-champion-card-body"><div class="lb-showcase-loading">Loading...</div></div>
       <div class="lb-directory-actions">
-        <a href="${escHtml(board.leaderboard)}" class="lb-directory-primary">Full Leaderboard</a>
+        <a href="${escHtml(board.leaderboard)}" class="lb-directory-primary">View Board</a>
         <a href="${escHtml(board.play)}" class="lb-directory-secondary">Play</a>
       </div>
     </article>`;
@@ -354,12 +355,16 @@ async function loadChampionShowcase() {
   if (!grid) return;
   const boards = CHAMPION_BOARDS.filter(board =>
     board.periods.includes(showcasePeriod) &&
-    (showcaseCategory === 'featured' ? board.featured : board.category === showcaseCategory)
+    (showcaseCategory === 'all' || board.category === showcaseCategory)
   );
   grid.innerHTML = boards.map(championCardShell).join('');
   await Promise.all(boards.map(async (board, index) => {
     const card = grid.querySelector(`[data-champion-card="${index}"] .lb-champion-card-body`);
     if (!card) return;
+    if (!board.api) {
+      card.innerHTML = `<p class="lb-champion-empty">${escHtml(board.note || 'Open this leaderboard to see the current board.')}</p>`;
+      return;
+    }
     try {
       const response = await fetch(board.api(showcasePeriod), { cache: 'no-store' });
       const rows = response.ok ? await response.json() : [];
@@ -450,9 +455,9 @@ const GAME_DEFAULT_MODE = {
 
 const GAME_DEFAULT_PERIOD = {
   classic:  'daily',
-  cylinder: 'alltime',
-  toroid:   'alltime',
-  hex:      'alltime',
+  cylinder: 'daily',
+  toroid:   'daily',
+  hex:      'daily',
 };
 
 const GAME_BACK_LINKS = {
@@ -481,9 +486,11 @@ let currentNoGuess = false;
 let currentPeriod  = 'daily';
 let currentDate    = TODAY_STR;
 let currentSeason  = computeCurrentSeason();
+let currentCategory = 'minesweeper';
 
 function fmtTime(s) {
-  if (s.time_ms != null) return (s.time_ms / 1000).toFixed(3) + 's';
+  const precision = window.matchMedia && window.matchMedia('(max-width: 640px)').matches ? 1 : 3;
+  if (s.time_ms != null) return (s.time_ms / 1000).toFixed(precision) + 's';
   return s.time_secs + 's';
 }
 
@@ -502,7 +509,7 @@ function fmtEff(bbbv, leftClicks, chordClicks) {
 }
 
 function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function isCustomMode() {
@@ -573,8 +580,14 @@ async function loadScores(mode, noGuess, period, game) {
     noteText = currentDate === TODAY_STR
       ? 'Today\'s scores — resets at midnight UTC.'
       : `Scores from ${currentDate}.`;
+  } else if (currentPeriod === 'weekly') {
+    noteText = 'This week\'s best score per player.';
+  } else if (currentPeriod === 'monthly') {
+    noteText = 'This month\'s best score per player.';
   } else if (currentPeriod === 'season') {
     noteText = `${seasonLabel(currentSeason)} — best score per player.`;
+  } else if (currentPeriod === 'yearly') {
+    noteText = 'This year\'s best score per player.';
   } else {
     noteText = 'All-time records — best score per player.';
   }
@@ -588,7 +601,10 @@ async function loadScores(mode, noGuess, period, game) {
       const emptyMsg = currentPeriod === 'daily' && currentDate !== TODAY_STR
                        ? `No scores recorded for ${currentDate}.`
                      : currentPeriod === 'daily'   ? 'No scores yet today — be the first!'
+                     : currentPeriod === 'weekly'  ? 'No scores yet this week — be the first!'
+                     : currentPeriod === 'monthly' ? 'No scores yet this month — be the first!'
                      : currentPeriod === 'season'  ? 'No scores yet this season — be the first!'
+                     : currentPeriod === 'yearly'  ? 'No scores yet this year — be the first!'
                      :                               'No all-time scores yet — be the first!';
       body.innerHTML = `<tr><td colspan="${tableColspan()}" class="lb-empty">${emptyMsg}</td></tr>`;
       return;
@@ -609,8 +625,7 @@ async function loadScores(mode, noGuess, period, game) {
           hash: s.board_hash, date: s.created_at,
           mode: currentMode, game,
         });
-        const short = s.board_hash.slice(0, 8) + '…';
-        hashCell = `<td class="lb-hash"><a href="/variants/replay/?${rp}" class="lb-replay-link" title="${escHtml(s.board_hash)}">${short}</a></td>`;
+        hashCell = `<td class="lb-hash"><a href="/variants/replay/?${rp}" class="lb-replay-link" title="${escHtml(s.board_hash)}">Link</a></td>`;
       }
       return `
         <tr class="${i % 2 === 1 ? 'lb-even' : ''}">
@@ -719,9 +734,42 @@ document.querySelectorAll('.lb-period-btn').forEach(btn => {
 
 // ── Date picker & season selector ────────────────────────────────────────────
 function setPeriodUI(period) {
-  document.getElementById('lb-date-wrap').style.display   = period === 'daily'  ? '' : 'none';
+  document.getElementById('lb-date-wrap').style.display   = ['daily', 'weekly', 'monthly', 'yearly'].includes(period) ? '' : 'none';
   document.getElementById('lb-season-wrap').style.display = period === 'season' ? '' : 'none';
 }
+
+function setDetailedCategory(category) {
+  currentCategory = category;
+  document.querySelectorAll('[data-category]').forEach(btn => {
+    if (btn.classList.contains('lb-choice-btn')) btn.classList.toggle('active', btn.dataset.category === category);
+  });
+  document.querySelectorAll('.lb-game-btn').forEach(btn => {
+    btn.hidden = btn.dataset.category !== category;
+  });
+  const firstGame = document.querySelector(`.lb-game-btn[data-category="${category}"]`);
+  if (!firstGame) {
+    document.querySelector('.lb-main-board').classList.add('lb-main-board--directory-only');
+    return;
+  }
+  document.querySelector('.lb-main-board').classList.remove('lb-main-board--directory-only');
+  firstGame.click();
+}
+
+function syncDetailedCategoryForGame(game) {
+  const btn = document.querySelector(`.lb-game-btn[data-game="${game}"]`);
+  const category = btn ? btn.dataset.category : 'minesweeper';
+  currentCategory = category;
+  document.querySelectorAll('.lb-choice-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.category === category);
+  });
+  document.querySelectorAll('.lb-game-btn').forEach(b => {
+    b.hidden = b.dataset.category !== category;
+  });
+}
+
+document.querySelectorAll('.lb-choice-btn').forEach(btn => {
+  btn.addEventListener('click', () => setDetailedCategory(btn.dataset.category));
+});
 
 // Populate season dropdown (Season 1 … current)
 function buildSeasonSelect() {
@@ -780,7 +828,7 @@ const initialGame   = ['classic','cylinder','toroid','hex'].includes(params.get(
                       ? params.get('game') : 'classic';
 const initialMode   = params.get('mode')     || GAME_DEFAULT_MODE[initialGame];
 const initialNG     = params.get('no_guess') === 'true';
-const initialPeriod = (['daily','season','alltime'].includes(params.get('period'))
+const initialPeriod = (['daily','weekly','monthly','season','yearly','alltime'].includes(params.get('period'))
                        ? params.get('period') : GAME_DEFAULT_PERIOD[initialGame]);
 
 // Apply date / season from URL
@@ -790,6 +838,7 @@ if (params.get('season_num')) { currentSeason = parseInt(params.get('season_num'
                                 buildSeasonSelect(); }
 
 // Apply game selector
+syncDetailedCategoryForGame(initialGame);
 if (initialGame !== 'classic') {
   document.querySelectorAll('.lb-game-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.game === initialGame);

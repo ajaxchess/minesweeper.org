@@ -326,73 +326,15 @@
                 <span class="mega-icon">▦</span>
                 <span class="mega-card-text"><strong>{{ t.nav_all_puzzles }}</strong><span>{{ t.nav_sub_all_puzzles }}</span></span>
               </a>
-              <a href="/tentaizu" class="mega-card {% if mode=='tentaizu' %}active{% endif %}">
-                <span class="mega-icon">📅</span>
-                <span class="mega-card-text"><strong>{{ t.nav_tentaizu_daily }}</strong><span>{{ t.nav_sub_tentaizu_daily }}</span></span>
-              </a>
-              <a href="/tentaizu/easy-5x5-6" class="mega-card">
-                <span class="mega-icon">⭐</span>
-                <span class="mega-card-text"><strong>{{ t.nav_tentaizu_easy }}</strong><span>{{ t.nav_sub_tentaizu_easy }}</span></span>
-              </a>
-              <a href="/tentaizu/how-to-play" class="mega-card {% if mode=='tentaizu-howto' %}active{% endif %}">
-                <span class="mega-icon">📖</span>
-                <span class="mega-card-text"><strong>{{ t.nav_tentaizu_howto }}</strong><span>{{ t.nav_sub_tentaizu_howto }}</span></span>
-              </a>
             </div>
-            <div class="mega-col">
-              <a href="/mosaic/standard" class="mega-card {% if mode=='mosaic' %}active{% endif %}">
-                <span class="mega-icon">🟫</span>
-                <span class="mega-card-text"><strong>{{ t.nav_mosaic_daily }}</strong><span>{{ t.nav_sub_mosaic_daily }}</span></span>
+            {% for game in puzzle_games %}
+              {% if loop.index0 % 4 == 0 %}<div class="mega-col">{% endif %}
+              <a href="{{ game.play_path }}" class="mega-card {% if mode == game.mode or request.url.path.startswith(game.play_path) or request.url.path.startswith(game.canonical_path) %}active{% endif %}">
+                <span class="mega-icon">{{ game.icon }}</span>
+                <span class="mega-card-text"><strong>{{ game.title }}</strong><span>{{ t[game.desc_key] if game.desc_key is defined else game.description }}</span></span>
               </a>
-              <a href="/mosaic" class="mega-card {% if mode=='mosaic-easy' %}active{% endif %}">
-                <span class="mega-icon">⭐</span>
-                <span class="mega-card-text"><strong>{{ t.nav_mosaic_easy }}</strong><span>{{ t.nav_sub_mosaic_easy }}</span></span>
-              </a>
-              <a href="/mosaic/how-to-play" class="mega-card {% if mode=='mosaic-howto' %}active{% endif %}">
-                <span class="mega-icon">📖</span>
-                <span class="mega-card-text"><strong>{{ t.nav_mosaic_howto }}</strong><span>{{ t.nav_sub_mosaic_howto }}</span></span>
-              </a>
-              <a href="/tametsi" class="mega-card {% if mode=='tametsi' %}active{% endif %}">
-                <span class="mega-icon">⌁</span>
-                <span class="mega-card-text"><strong>{{ t.nav_tametsi_daily }}</strong><span>{{ t.nav_sub_tametsi_daily }}</span></span>
-              </a>
-            </div>
-            <div class="mega-col">
-              <a href="/numbers-match" class="mega-card {% if mode=='numbers-match' %}active{% endif %}">
-                <span class="mega-icon">🔢</span>
-                <span class="mega-card-text"><strong>{{ t.nav_numbers_match }}</strong><span>{{ t.nav_sub_numbers_match }}</span></span>
-              </a>
-              <a href="/other/15puzzle" class="mega-card {% if request.url.path.startswith('/other/15puzzle') %}active{% endif %}">
-                <span class="mega-icon">15</span>
-                <span class="mega-card-text"><strong>15-Puzzle</strong><span>Sliding tile puzzle</span></span>
-              </a>
-              <a href="/other/2048" class="mega-card {% if request.url.path.startswith('/other/2048') %}active{% endif %}">
-                <span class="mega-icon">2048</span>
-                <span class="mega-card-text"><strong>2048</strong><span>Number-merging puzzle</span></span>
-              </a>
-            </div>
-            <div class="mega-col">
-              <a href="/other/2048hex" class="mega-card {% if request.url.path.startswith('/other/2048hex') %}active{% endif %}">
-                <span class="mega-icon">⬡</span>
-                <span class="mega-card-text"><strong>2048 Hexagon</strong><span>Six-direction 2048</span></span>
-              </a>
-              <a href="/other/mahjong" class="mega-card {% if request.url.path.startswith('/other/mahjong') %}active{% endif %}">
-                <span class="mega-icon">MJ</span>
-                <span class="mega-card-text"><strong>Mahjong Solitaire</strong><span>Tile-matching solitaire</span></span>
-              </a>
-              <a href="/other/jigsaw" class="mega-card {% if request.url.path.startswith('/other/jigsaw') %}active{% endif %}">
-                <span class="mega-icon">Jig</span>
-                <span class="mega-card-text"><strong>Jigsaw Puzzle</strong><span>Daily image puzzle</span></span>
-              </a>
-              <a href="/other/schulte" class="mega-card {% if request.url.path.startswith('/other/schulte') %}active{% endif %}">
-                <span class="mega-icon">◫</span>
-                <span class="mega-card-text"><strong>Schulte Grid</strong><span>Visual scanning puzzle</span></span>
-              </a>
-              <a href="/other/sudoku" class="mega-card {% if request.url.path.startswith('/other/sudoku') %}active{% endif %}">
-                <span class="mega-icon">9</span>
-                <span class="mega-card-text"><strong>Sudoku</strong><span>Classic number logic</span></span>
-              </a>
-            </div>
+              {% if loop.index0 % 4 == 3 or loop.last %}</div>{% endif %}
+            {% endfor %}
           </div>
         </div>
 
@@ -592,19 +534,9 @@
         <summary class="drawer-summary">🧩 {{ t.nav_puzzles }}</summary>
         <div class="drawer-links">
           <a href="/puzzles" class="drawer-link {% if mode=='puzzles' %}active{% endif %}">▦ {{ t.nav_all_puzzles }}</a>
-          <a href="/tentaizu" class="drawer-link {% if mode=='tentaizu' %}active{% endif %}">📅 {{ t.nav_tentaizu_daily }}</a>
-          <a href="/tentaizu/easy-5x5-6" class="drawer-link">⭐ {{ t.nav_tentaizu_easy }}</a>
-          <a href="/mosaic/standard" class="drawer-link {% if mode=='mosaic' %}active{% endif %}">🟫 {{ t.nav_mosaic_daily }}</a>
-          <a href="/mosaic" class="drawer-link {% if mode=='mosaic-easy' %}active{% endif %}">⭐ {{ t.nav_mosaic_easy }}</a>
-          <a href="/tametsi" class="drawer-link {% if mode=='tametsi' %}active{% endif %}">🔀 {{ t.nav_tametsi_daily }}</a>
-          <a href="/numbers-match" class="drawer-link {% if mode=='numbers-match' %}active{% endif %}">🔢 {{ t.nav_numbers_match }}</a>
-          <a href="/other/15puzzle" class="drawer-link {% if request.url.path.startswith('/other/15puzzle') %}active{% endif %}">15 15-Puzzle</a>
-          <a href="/other/2048" class="drawer-link {% if request.url.path.startswith('/other/2048') %}active{% endif %}">2048</a>
-          <a href="/other/2048hex" class="drawer-link {% if request.url.path.startswith('/other/2048hex') %}active{% endif %}">⬡ 2048 Hexagon</a>
-          <a href="/other/mahjong" class="drawer-link {% if request.url.path.startswith('/other/mahjong') %}active{% endif %}">MJ Mahjong Solitaire</a>
-          <a href="/other/jigsaw" class="drawer-link {% if request.url.path.startswith('/other/jigsaw') %}active{% endif %}">Jig Jigsaw Puzzle</a>
-          <a href="/other/schulte" class="drawer-link {% if request.url.path.startswith('/other/schulte') %}active{% endif %}">◫ Schulte Grid</a>
-          <a href="/other/sudoku" class="drawer-link {% if request.url.path.startswith('/other/sudoku') %}active{% endif %}">9 Sudoku</a>
+          {% for game in puzzle_games %}
+          <a href="{{ game.play_path }}" class="drawer-link {% if mode == game.mode or request.url.path.startswith(game.play_path) or request.url.path.startswith(game.canonical_path) %}active{% endif %}">{{ game.icon }} {{ game.title }}</a>
+          {% endfor %}
         </div>
       </details>
       <a href="/leaderboard" class="drawer-link drawer-link--direct {% if mode=='leaderboard' %}active{% endif %}">{{ t.nav_leaderboard }}</a>
