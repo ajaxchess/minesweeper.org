@@ -2932,6 +2932,17 @@ async def mobile_nmmobile(request: Request):
 # excerpt: one-sentence summary shown on the index page
 BLOG_POSTS = [
     {
+        "slug":          "down-with-interstitials",
+        "file":          "blog/down-with-interstitials.md",
+        "title":         "Down with Interstitials!",
+        "date":          "2026-05-10",
+        "datePublished": "2026-05-10T00:00:00Z",
+        "image":         "/static/img/roadblocks.jpg",
+        "excerpt":       "Interstitials are full-screen ads that ambush you the moment you finish "
+                         "a game and want to start another. We don't have them — on the site or "
+                         "the app. Finish a game and go again, immediately.",
+    },
+    {
         "slug":          "taking-the-show-on-the-road",
         "file":          "blog/taking-the-show-on-the-road.md",
         "title":         "Taking the Show on the Road",
