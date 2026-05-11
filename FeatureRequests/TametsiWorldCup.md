@@ -229,3 +229,225 @@ Then the biggest fans individual leaderboard.
 The countries get the points depending on what team you set on that day.  So Bill can set his fan flag as Canada on June 1st and play easy and hard games to earn 400 points for Canada.
 Suppose Canada doesn't make it into the knockout phase.  On June 27th Bill changes his fan flag to Mexico.  Each Tametsi game won will need a database field for the fan flag set at time won.
 If no flag is set, no points are earned.  Once you set your flag, you should have a notice at the top of every world cup page that says You are a fan of <fan flag>!
+
+---
+
+## Requirements Clarifications (2026-05-10 Q&A)
+
+**Scoring mechanics**
+- "Uncover a mine" means *flagging* a mine. Standard Tametsi game-over rules still apply.
+- Points are awarded only when a board is **solved** (not on each individual flag), to avoid revealing whether a flag is correct or incorrect during play.
+- Easy board (15×9, 20 mines): 1 pt per correctly flagged mine + 20 pts solve bonus = 40 pts max per game.
+- Hard board (30×18, 99 mines): 1 pt per correctly flagged mine + 50 pts solve bonus = 149 pts max per game.
+- Points are attributed to the fan flag the user had set **at the time of solve**.
+- If no fan flag is set, no points are earned.
+
+**Match score updates**
+- Real-world match results (scores, status changes from Scheduled → Final) will be updated via an **admin UI** — a developer or admin edits the records manually.
+
+**Board state persistence**
+- Board state (which cells are revealed/flagged) is saved **per user per country per difficulty** to the database.
+- When a returning user visits a country page, they resume their in-progress board.
+- The board's mine layout is stored alongside the state so the same board is always presented to the same user.
+
+**Timezone**
+- A new `timezone` column (`VARCHAR(64) NULL`) will be added to `user_profiles`.
+- Match times default to CDT (as listed in the schedule) for logged-out or timezone-unset users.
+- Logged-in users can set their timezone on the profile page; match times display in that timezone.
+
+**Banner and fan notice scope**
+- Both the "You are a fan of X!" banner and the "Set your fan flag" prompt appear **only within `/2026worldcup/*` pages**, not sitewide.
+- Three cases on any WC page:
+  1. Logged in, fan flag set → "🏆 You are a fan of [flag image] [Country]!"
+  2. Logged in, no fan flag → "Set your fan flag to earn points for your team!" (links to profile or inline setter)
+  3. Not logged in → "Log in to set your fan flag and compete!"
+
+**Individual leaderboard**
+- "Biggest fans" ranked by **total cumulative points** (all correctly flagged mines + solve bonuses) across all WC Tametsi games.
+
+**URL slugs (FIFA-style ASCII)**
+
+| Display name      | URL slug                |
+|-------------------|-------------------------|
+| Bosnia & Herz.    | bosnia-and-herzegovina  |
+| Cape Verde        | cape-verde              |
+| Curaçao           | curacao                 |
+| Czech Republic    | czech-republic          |
+| DR Congo          | dr-congo                |
+| Ivory Coast       | ivory-coast             |
+| New Zealand       | new-zealand             |
+| Saudi Arabia      | saudi-arabia            |
+| Scotland          | scotland                |
+| South Africa      | south-africa            |
+| South Korea       | south-korea             |
+| Türkiye           | turkey                  |
+| USA               | usa                     |
+| England           | england                 |
+| All others        | lowercase, hyphens      |
+
+---
+
+## Implementation Plan — F97 Tametsi 2026 World Cup Celebration
+
+### Phase 1 — Static data layer
+
+Create `wc2026_data.py` in the repo root. Contains:
+
+- `WC2026_COUNTRIES` — list of dicts, one per country:
+  ```
+  { slug, name, flag_code, primary_hex, secondary_hex, group, is_ottawa_signatory }
+  ```
+  `flag_code` is the flagcdn.com code (e.g. `gb-eng`, `gb-sct`, `us`, `mx`).
+- `WC2026_MATCHES` — list of dicts from the schedule:
+  ```
+  { group, date_iso, team1_slug, team2_slug, time_cdt, city, score1, score2, status }
+  ```
+  Seeded from the schedule table in this document; `score1`/`score2` start as `None`, `status` starts as `"scheduled"`.
+- `WC2026_STADIUMS` — dict keyed by city name with lat/lon/stadium name.
+- Helper lookups: `WC2026_BY_SLUG`, `WC2026_BY_GROUP`.
+
+### Phase 2 — Database migrations
+
+New columns and tables (added via `_apply_migrations()` in `database_template.py`):
+
+**`user_profiles` — new column**
+- `timezone VARCHAR(64) NULL` — user's preferred IANA timezone string (e.g. `America/Chicago`)
+
+**New table: `wc2026_matches`**
+```sql
+CREATE TABLE wc2026_matches (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  group_name VARCHAR(8),
+  match_date DATE,
+  team1_slug VARCHAR(32),
+  team2_slug VARCHAR(32),
+  time_cdt   VARCHAR(16),
+  city       VARCHAR(64),
+  score1     TINYINT NULL,
+  score2     TINYINT NULL,
+  status     VARCHAR(16) DEFAULT 'scheduled'
+);
+```
+Seeded from `wc2026_data.py` on first run if table is empty.
+
+**New table: `wc2026_board_states`**
+```sql
+CREATE TABLE wc2026_board_states (
+  id           INT AUTO_INCREMENT PRIMARY KEY,
+  email        VARCHAR(255),
+  country_slug VARCHAR(32),
+  difficulty   ENUM('easy','hard'),
+  mine_layout  TEXT,        -- JSON list of mine positions (indices)
+  cell_state   TEXT,        -- JSON list: 'hidden'|'revealed'|'flagged' per cell
+  is_solved    TINYINT(1) DEFAULT 0,
+  started_at   DATETIME,
+  solved_at    DATETIME NULL,
+  UNIQUE KEY uq_board (email, country_slug, difficulty)
+);
+```
+
+**New table: `wc2026_scores`**
+```sql
+CREATE TABLE wc2026_scores (
+  id           INT AUTO_INCREMENT PRIMARY KEY,
+  email        VARCHAR(255),
+  country_slug VARCHAR(32),
+  difficulty   ENUM('easy','hard'),
+  fan_flag     VARCHAR(16),   -- fan flag set at time of solve
+  flags_correct TINYINT,      -- number of mines correctly flagged
+  solve_bonus  TINYINT,       -- 20 (easy) or 50 (hard)
+  total_points SMALLINT,
+  solved_at    DATETIME
+);
+```
+
+### Phase 3 — Board generation (server-side)
+
+Create `wc2026_board.py`:
+
+- `generate_no_guess_board(cols, rows, mines, seed)` — generates a mine layout that is solvable without guessing. Adapts the existing Tametsi no-guess generation algorithm (or uses a constraint-satisfaction approach). Returns a list of mine-position indices.
+- `seed = f"{country_slug}_{difficulty}_{email}"` — deterministic per user per country so resuming gives the same board.
+- `get_or_create_board(db, email, country_slug, difficulty)` — checks `wc2026_board_states`; creates and persists a new board if none exists; returns the board record.
+
+Easy board: 15 cols × 9 rows, 20 mines, top 5 rows = primary color, bottom 4 = secondary. **No-guess required.**
+Hard board: 30 cols × 18 rows, 99 mines, top 9 rows = primary, bottom 9 = secondary. **No-guess required.**
+
+### Phase 4 — API endpoints
+
+All under `/api/wc2026/`:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET`  | `/api/wc2026/board/{slug}/{difficulty}` | Return board state for logged-in user |
+| `POST` | `/api/wc2026/board/{slug}/{difficulty}/reveal` | Reveal a cell; return updated state |
+| `POST` | `/api/wc2026/board/{slug}/{difficulty}/flag` | Toggle flag on a cell; return updated state |
+| `POST` | `/api/wc2026/board/{slug}/{difficulty}/solve` | Called when board is solved; award points, write `wc2026_scores` row |
+| `GET`  | `/api/wc2026/leaderboard/countries` | Top countries by total fan points |
+| `GET`  | `/api/wc2026/leaderboard/individuals` | Top individual players by total points |
+| `GET`  | `/api/wc2026/leaderboard/country/{slug}` | Leaderboard for fans of a specific country |
+
+### Phase 5 — Admin interface
+
+Page: `/admin/wc2026-matches` (existing admin auth required).
+
+- Table listing all 48 matches with current score/status.
+- Inline editable score fields + status dropdown (scheduled / in_progress / final).
+- Submit updates to `wc2026_matches` table.
+- No external API dependency — all manual.
+
+### Phase 6 — Templates
+
+**`/2026worldcup` (main page)**
+- Top: welcome + how-to-play
+- Fan banner (logged-in with flag / set-flag prompt / login prompt)
+- 12 group sections, each with country flag cards (flag image + country name + clickable link to country page)
+- Country leaderboard: top 20 countries by total fan points (flag + name + points)
+- Individual leaderboard: top 20 players by total points (avatar/name + fan flag + points)
+
+**`/2026worldcup/{slug}` (country page)**
+- Country header: large flag, country name, group, primary/secondary color swatches
+- Ottawa Treaty status (✅ Signatory / ❌ Non-signatory) with Wikipedia link
+- Group table: all countries in this group, W/D/L/Pts once matches begin
+- Match schedule for this country (upcoming + results), times in user's timezone
+- Fan banner (same logic as main page)
+- Tametsi board section:
+  - Easy/Hard toggle
+  - "Log in to play" message if not logged in
+  - "Set your fan flag to play" if logged in but no fan flag
+  - Live Tametsi board (WC color mode) if eligible to play
+  - Fan flag inline setter (dropdown + save) on the page itself
+- Country leaderboard: top fans of this country by total points
+
+### Phase 7 — Navigation
+
+- Add "🏆 2026" link to the main nav in `base.html` pointing to `/2026worldcup`.
+- The nav item could be hidden after a configurable cutoff date (or left as a permanent archive).
+
+### Phase 8 — Profile page additions
+
+- Add timezone selector to the existing profile settings (IANA timezone list, e.g. via a `<select>` with common zones).
+- Save via existing `POST /api/profile/...` pattern or a new `POST /api/profile/timezone` endpoint.
+- Store in `user_profiles.timezone`.
+
+### Phase 9 — Tametsi JS (WC mode)
+
+The World Cup boards use a variant of the existing Tametsi renderer. Additions needed in `tametsi.js` or a new `tametsi_wc.js`:
+
+- Cell background colours driven by `primary_hex` / `secondary_hex` based on row index.
+- Two additional zone counters displayed above/left of board: unflagged mines in primary zone, unflagged mines in secondary zone, styled in the respective colours.
+- Flag icon replaced with the user's fan team flag PNG (`/static/img/country-flags/{fan_flag}.png`) when a flag is placed.
+- Board state fetched from and saved to the API endpoints (Phase 4) rather than localStorage.
+- On solve: call the `/solve` API endpoint to award points; show a celebratory message with points earned.
+
+### Suggested build order
+
+1. Phase 1 — `wc2026_data.py` (pure Python, no DB dependency, enables all other work)
+2. Phase 2 — DB migrations (unblocks board + scoring work)
+3. Phase 3 — Board generation (can be unit-tested independently)
+4. Phase 4 — API endpoints (depends on 2 + 3)
+5. Phase 6 — Templates, main page first (skeleton, no live boards yet)
+6. Phase 9 — Tametsi WC JS (depends on 4 + 5 skeleton)
+7. Phase 5 — Admin UI (can be done in parallel with 6/9)
+8. Phase 7 — Nav link (trivial, do alongside Phase 6)
+9. Phase 8 — Timezone (depends on Phase 2 migration)
+10. Full integration test: set fan flag → visit country → play board → check leaderboard
