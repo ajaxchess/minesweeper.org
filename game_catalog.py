@@ -421,6 +421,27 @@ LEADERBOARD_GROUPS: list[dict[str, object]] = [
                 "play_href": "/pvp",
                 "badge": "Rankings",
             },
+            {
+                "title": "PvP Bot",
+                "description": "Practice head-to-head Minesweeper against the computer before joining live PvP.",
+                "href": "/pvp/bot",
+                "play_href": "/pvp/bot",
+                "badge": "Practice",
+            },
+            {
+                "title": "Private Duel",
+                "description": "Create a private head-to-head room and share the link with another player.",
+                "href": "/duel",
+                "play_href": "/duel",
+                "badge": "Private match",
+            },
+            {
+                "title": "World Cup 2026",
+                "description": "Country and individual Minesweeper standings for the 2026 World Cup event.",
+                "href": "/2026worldcup",
+                "play_href": "/2026worldcup",
+                "badge": "Event",
+            },
         ],
     },
     {
@@ -453,6 +474,13 @@ LEADERBOARD_GROUPS: list[dict[str, object]] = [
                 "href": "/worldsweeper/leaderboard",
                 "play_href": "/worldsweeper",
                 "badge": "Variant",
+            },
+            {
+                "title": "Globesweeper",
+                "description": "The classic globe-style route, preserved as the familiar doorway into Worldsweeper.",
+                "href": "/globesweeper/leaderboard",
+                "play_href": "/globesweeper",
+                "badge": "Classic route",
             },
             {
                 "title": "Cubesweeper",
@@ -521,6 +549,13 @@ LEADERBOARD_GROUPS: list[dict[str, object]] = [
                 "href": "/mosaic#ms-lb-section",
                 "play_href": "/mosaic",
                 "badge": "Daily puzzle",
+            },
+            {
+                "title": "Mosaic Custom Boards",
+                "description": "Custom Mosaic boards with board-specific score tracking.",
+                "href": "/mosaic/custom/",
+                "play_href": "/mosaic/custom/",
+                "badge": "Custom boards",
             },
             {
                 "title": "Tametsi",

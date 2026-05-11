@@ -93,6 +93,48 @@ def test_leaderboard_catalog_has_required_fields():
             titles.add(item["title"])
 
 
+def test_leaderboard_catalog_features_all_playable_game_families():
+    expected_titles = {
+        "Classic Minesweeper",
+        "Rush",
+        "PvP Best Times",
+        "PvP Ratings",
+        "PvP Bot",
+        "Private Duel",
+        "World Cup 2026",
+        "Cylinder",
+        "Toroid",
+        "Hexsweeper",
+        "Worldsweeper",
+        "Globesweeper",
+        "Cubesweeper",
+        "Mobiussweeper",
+        "Nonosweeper",
+        "Board Replay",
+        "Minesweeper Chess",
+        "Tentaizu Daily",
+        "Tentaizu Easy",
+        "Mosaic Daily",
+        "Mosaic Easy",
+        "Mosaic Custom Boards",
+        "Tametsi",
+        "Numbers Match",
+        "15-Puzzle",
+        "2048",
+        "2048 Hexagon",
+        "Mahjong Solitaire",
+        "Jigsaw Puzzle",
+        "Schulte Grid",
+        "Sudoku",
+    }
+    titles = {
+        item["title"]
+        for group in LEADERBOARD_GROUPS
+        for item in group["items"]
+    }
+    assert expected_titles <= titles
+
+
 def test_leaderboard_page_lists_all_catalog_entries(client):
     r = client.get("/leaderboard")
     assert r.status_code == 200
