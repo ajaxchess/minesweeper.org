@@ -3139,7 +3139,7 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
     if not post:
         from fastapi.responses import Response
         return Response(status_code=404)
-    raw = open(post["file"], encoding="utf-8").read()
+    raw = open(os.path.join(os.path.dirname(__file__), post["file"]), encoding="utf-8").read()
     front_matter, body = _parse_front_matter(raw)
     # Strip the H1 title line — it's rendered by the template
     lines = body.splitlines()
