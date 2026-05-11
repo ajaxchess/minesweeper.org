@@ -3083,6 +3083,40 @@ def _blog_post_meta(post: dict) -> dict:
 _BLOG_INDEX = [_blog_post_meta(p) for p in BLOG_POSTS]
 _BLOG_BY_SLUG = {p["slug"]: p for p in _BLOG_INDEX}
 
+# Pre-render all blog posts at startup — no file I/O during requests.
+# Using os.path.abspath(__file__) anchors to main.py's directory regardless
+# of the process working directory.
+import markdown as _md_lib
+
+def _preload_blog() -> tuple[dict, dict]:
+    """Read, parse, and render all blog posts at startup.
+    Returns (html_by_slug, front_matter_by_slug).
+    Missing files are logged and produce None entries.
+    """
+    _base = os.path.dirname(os.path.abspath(__file__))
+    html_map: dict = {}
+    fm_map: dict = {}
+    for post in BLOG_POSTS:
+        slug = post["slug"]
+        path = os.path.join(_base, post["file"])
+        try:
+            with open(path, encoding="utf-8") as _f:
+                raw = _f.read()
+        except OSError as _e:
+            print(f"[BLOG] WARNING: could not read {path}: {_e}", flush=True)
+            html_map[slug] = None
+            fm_map[slug] = {}
+            continue
+        front_matter, body = _parse_front_matter(raw)
+        lines = body.splitlines()
+        if lines and lines[0].startswith("# "):
+            lines = lines[1:]
+        html_map[slug] = _md_lib.markdown("\n".join(lines), extensions=["extra", "sane_lists"])
+        fm_map[slug] = front_matter
+    return html_map, fm_map
+
+_BLOG_HTML, _BLOG_FM = _preload_blog()
+
 
 @app.get("/blog", response_class=HTMLResponse)
 async def blog_index(request: Request):
@@ -3134,21 +3168,15 @@ def _webp_if_exists(image_url: str) -> str:
 
 @app.get("/blog/{slug}", response_class=HTMLResponse)
 async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
-    import markdown as md_lib
     post = _BLOG_BY_SLUG.get(slug)
     if not post:
         from fastapi.responses import Response
         return Response(status_code=404)
-    raw = open(os.path.join(os.path.dirname(__file__), post["file"]), encoding="utf-8").read()
-    front_matter, body = _parse_front_matter(raw)
-    # Strip the H1 title line — it's rendered by the template
-    lines = body.splitlines()
-    if lines and lines[0].startswith("# "):
-        lines = lines[1:]
-    html_content = md_lib.markdown(
-        "\n".join(lines),
-        extensions=["extra", "sane_lists"],
-    )
+    html_content = _BLOG_HTML.get(slug)
+    if html_content is None:
+        from fastapi.responses import Response
+        return Response(status_code=404)
+    front_matter = _BLOG_FM.get(slug, {})
     date_published = (
         front_matter.get("datePublished")
         or post.get("datePublished")
