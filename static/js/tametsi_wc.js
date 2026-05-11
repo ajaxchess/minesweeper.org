@@ -351,6 +351,7 @@ function wcMountBoard(wrap) {
     async function doSolve() {
         const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/solve`, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
         });
         if (!res.ok) {
             const data = await res.json().catch(() => ({}));
@@ -390,7 +391,7 @@ function wcMountBoard(wrap) {
         btn.addEventListener('click', async () => {
             btn.disabled = true;
             btn.textContent = 'Resetting…';
-            const r = await fetch(`/api/wc2026/board/${country}/${difficulty}/reset`, { method: 'POST' });
+            const r = await fetch(`/api/wc2026/board/${country}/${difficulty}/reset`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
             if (r.ok) location.reload();
             else { btn.disabled = false; btn.textContent = '↩ Try Again'; }
         });
