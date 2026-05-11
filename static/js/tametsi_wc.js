@@ -352,6 +352,7 @@ function wcMountBoard(wrap) {
         const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/solve`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ time_ms: Math.round(elapsedSec * 1000) }),
         });
         if (!res.ok) {
             const data = await res.json().catch(() => ({}));

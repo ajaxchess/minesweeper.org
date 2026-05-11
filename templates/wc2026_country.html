@@ -155,7 +155,7 @@
     <h2>🏅 {{ country.name }} Fan Leaderboard</h2>
     {% if country_lb %}
     <table class="wc-lb-table">
-      <thead><tr><th>#</th><th>Player</th><th>Fan of</th><th>Points</th></tr></thead>
+      <thead><tr><th>#</th><th>Player</th><th>Fan of</th><th>Points</th><th>Best Time</th></tr></thead>
       <tbody>
       {% for row in country_lb %}
       <tr>
@@ -167,6 +167,7 @@
           {% endfor %}
         </td>
         <td><strong>{{ row.points }}</strong></td>
+        <td style="color:var(--text-dim);font-size:.85rem;">{{ row.best_time or '—' }}</td>
       </tr>
       {% endfor %}
       </tbody>

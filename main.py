@@ -8017,6 +8017,7 @@ def _country_leaderboard(slug: str, db: Session, limit: int = 20) -> list:
             WC2026Score.display_name,
             WC2026Score.fan_flag,
             func.sum(WC2026Score.total_points).label("pts"),
+            func.min(WC2026Score.solve_time_ms).label("best_ms"),
         )
         .filter(WC2026Score.country_slug == slug)
         .group_by(WC2026Score.email, WC2026Score.display_name, WC2026Score.fan_flag)
@@ -8024,7 +8025,13 @@ def _country_leaderboard(slug: str, db: Session, limit: int = 20) -> list:
         .limit(limit)
         .all()
     )
-    return [{"display_name": r.display_name, "fan_flag": r.fan_flag, "points": r.pts} for r in rows]
+    def fmt_time(ms):
+        if ms is None: return None
+        s = ms / 1000
+        m = int(s // 60)
+        return f"{m}:{s % 60:06.3f}" if m else f"{s % 60:.3f}s"
+    return [{"display_name": r.display_name, "fan_flag": r.fan_flag,
+             "points": r.pts, "best_time": fmt_time(r.best_ms)} for r in rows]
 
 
 def _fan_country_leaderboard(db: Session, limit: int = 20) -> list:
@@ -8139,6 +8146,9 @@ class WC2026RevealPayload(BaseModel):
 class WC2026FlagPayload(BaseModel):
     idx: int
 
+class WC2026SolvePayload(BaseModel):
+    time_ms: int | None = None
+
 
 @app.post("/api/wc2026/board/{slug}/{difficulty}/reveal")
 def wc2026_reveal(slug: str, difficulty: str, payload: WC2026RevealPayload,
@@ -8239,7 +8249,7 @@ def wc2026_flag(slug: str, difficulty: str, payload: WC2026FlagPayload,
 
 
 @app.post("/api/wc2026/board/{slug}/{difficulty}/solve")
-def wc2026_solve(slug: str, difficulty: str,
+def wc2026_solve(slug: str, difficulty: str, payload: WC2026SolvePayload,
                  request: Request, db: Session = Depends(get_db)):
     """Called by the client when it detects all mines flagged correctly."""
     if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
@@ -8282,6 +8292,7 @@ def wc2026_solve(slug: str, difficulty: str,
         fan_flag=profile.wc2026_fan,
         flags_correct=flags_correct,
         solve_bonus=solve_bonus,
+        solve_time_ms=payload.time_ms,
         total_points=total_points,
     ))
     db.commit()

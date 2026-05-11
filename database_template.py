@@ -764,6 +764,7 @@ class WC2026Score(Base):
     flags_correct  = Column(Integer,     nullable=False)
     solve_bonus    = Column(Integer,     nullable=False)
     total_points   = Column(Integer,     nullable=False)
+    solve_time_ms  = Column(Integer,     nullable=True)
     solved_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -1478,7 +1479,8 @@ def _apply_migrations():
         ("game_replays", "client_type",      "VARCHAR(32) NOT NULL DEFAULT 'na'"),
         ("game_replays", "guest_token",      "VARCHAR(36) NULL"),
         ("game_replays", "score_id",         "INT NULL"),
-        ("wc2026_board_states", "play_count", "INT NOT NULL DEFAULT 0"),
+        ("wc2026_board_states", "play_count",   "INT NOT NULL DEFAULT 0"),
+        ("wc2026_scores",       "solve_time_ms", "INT NULL"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:
