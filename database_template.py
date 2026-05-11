@@ -742,6 +742,7 @@ class WC2026BoardState(Base):
     mine_layout  = Column(Text, nullable=False)   # JSON list of [r,c] mine positions
     cell_state   = Column(Text, nullable=False)   # JSON list of per-cell state strings
     is_solved    = Column(Boolean, default=False, nullable=False)
+    play_count   = Column(Integer, default=0, nullable=False, server_default='0')
     started_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     solved_at    = Column(DateTime, nullable=True)
 
@@ -1477,6 +1478,7 @@ def _apply_migrations():
         ("game_replays", "client_type",      "VARCHAR(32) NOT NULL DEFAULT 'na'"),
         ("game_replays", "guest_token",      "VARCHAR(36) NULL"),
         ("game_replays", "score_id",         "INT NULL"),
+        ("wc2026_board_states", "play_count", "INT NOT NULL DEFAULT 0"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:

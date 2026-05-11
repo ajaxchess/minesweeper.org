@@ -120,7 +120,9 @@
       {% elif board_easy and board_easy.is_solved %}
       <div class="wcc-solved-msg">
         ✅ Easy board solved! Check the leaderboard to see your points.
-        <br><a href="/2026worldcup/{{ country.slug }}" class="wcc-replay-link">Play another country</a>
+        <br>
+        <button class="wcc-play-again-btn" onclick="wcPlayAgain(this,'{{ country.slug }}','easy')">🎲 Play Again</button>
+        <a href="/2026worldcup/{{ country.slug }}" class="wcc-replay-link">Play another country</a>
       </div>
       {% endif %}
     </div>
@@ -139,6 +141,8 @@
       {% elif board_hard and board_hard.is_solved %}
       <div class="wcc-solved-msg">
         ✅ Hard board solved! Check the leaderboard to see your points.
+        <br>
+        <button class="wcc-play-again-btn" onclick="wcPlayAgain(this,'{{ country.slug }}','hard')">🎲 Play Again</button>
       </div>
       {% endif %}
     </div>
@@ -185,6 +189,14 @@ function switchDiff(d) {
   document.getElementById('btn-easy').classList.toggle('active', d === 'easy');
   document.getElementById('btn-hard').classList.toggle('active', d === 'hard');
 }
+async function wcPlayAgain(btn, country, difficulty) {
+  btn.disabled = true; btn.textContent = 'Loading…';
+  const r = await fetch(`/api/wc2026/board/${country}/${difficulty}/new`, {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+  });
+  if (r.ok) location.reload();
+  else { btn.disabled = false; btn.textContent = '🎲 Play Again'; }
+}
 async function wcSetFan(slug) {
   if (!slug) return;
   const r = await fetch('/api/wc2026/set-fan', {
@@ -225,6 +237,8 @@ async function wcSetFan(slug) {
 .wcc-diff-btn.active { background:var(--accent);color:#fff;border-color:var(--accent); }
 .wcc-solved-msg { padding:1.2rem;background:rgba(0,180,0,.1);border:1px solid rgba(0,180,0,.3);border-radius:8px;text-align:center; }
 .wcc-replay-link { display:inline-block;margin-top:.5rem;color:var(--accent); }
+.wcc-play-again-btn { display:inline-block;margin-top:.5rem;margin-right:.6rem;background:var(--accent);color:#fff;border:none;border-radius:6px;padding:.3rem .8rem;cursor:pointer;font-size:.9rem; }
+.wcc-play-again-btn:disabled { opacity:.6;cursor:default; }
 .wc-lb-table { width:100%;border-collapse:collapse;font-size:.9rem; }
 .wc-lb-table th,.wc-lb-table td { padding:.4rem .6rem;border-bottom:1px solid var(--border);text-align:left; }
 .wc-lb-table th { font-weight:600;color:var(--text-dim);font-size:.8rem; }

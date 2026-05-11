@@ -7954,7 +7954,7 @@ from wc2026_data import (
     WC2026_COUNTRIES, WC2026_BY_SLUG, WC2026_BY_GROUP,
     WC2026_GROUPS, VALID_WC2026_SLUGS, WC2026_EASY, WC2026_HARD,
 )
-from wc2026_board import get_or_create_board, board_to_dict
+from wc2026_board import get_or_create_board, board_to_dict, _make_board
 from database import WC2026Match, WC2026BoardState, WC2026Score
 import json as _json
 
@@ -8306,6 +8306,43 @@ def wc2026_reset(slug: str, difficulty: str,
         db.delete(row)
         db.commit()
     return {"ok": True}
+
+
+@app.post("/api/wc2026/board/{slug}/{difficulty}/new")
+def wc2026_new_game(slug: str, difficulty: str,
+                    request: Request, db: Session = Depends(get_db)):
+    """Generate the next random board for this user+country+difficulty after a solve."""
+    if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
+        raise HTTPException(status_code=400, detail="Invalid params")
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Login required"}, status_code=401)
+
+    row = (db.query(WC2026BoardState)
+             .filter_by(email=user["email"], country_slug=slug, difficulty=difficulty)
+             .first())
+
+    new_play_count = (getattr(row, "play_count", 0) or 0) + 1 if row else 0
+    mines_json, cells_json = _make_board(user["email"], slug, difficulty, new_play_count)
+
+    if row:
+        row.mine_layout = mines_json
+        row.cell_state  = cells_json
+        row.is_solved   = False
+        row.solved_at   = None
+        row.play_count  = new_play_count
+        row.started_at  = datetime.now(timezone.utc)
+    else:
+        row = WC2026BoardState(
+            email=user["email"], country_slug=slug, difficulty=difficulty,
+            mine_layout=mines_json, cell_state=cells_json,
+            is_solved=False, play_count=new_play_count,
+            started_at=datetime.now(timezone.utc),
+        )
+        db.add(row)
+    db.commit()
+    db.refresh(row)
+    return board_to_dict(row)
 
 
 # ── API: leaderboards ─────────────────────────────────────────────────────────

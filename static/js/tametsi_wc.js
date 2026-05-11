@@ -368,16 +368,45 @@ function wcMountBoard(wrap) {
         const m = Math.floor(elapsed / 60), s = Math.floor(elapsed % 60);
         const timeStr = elapsed > 0 ? ` in ${m}:${String(s).padStart(2,'0')}` : '';
         msgBanner.className = 'wc-msg-banner wc-msg-solved';
-        msgBanner.innerHTML = `
-            <div class="wc-solved-trophy">🏆</div>
-            <div class="wc-solved-text">
-                <strong>Board Solved${timeStr}!</strong><br>
-                +${result.flags_correct} flags &nbsp;+${result.solve_bonus} bonus
-                = <strong>${result.total_points} pts</strong> for your team
-            </div>
-        `;
+        msgBanner.innerHTML = '';
+
+        const info = document.createElement('div');
+        info.className = 'wc-solved-text';
+        info.innerHTML = `<div class="wc-solved-trophy">🏆</div>
+            <strong>Board Solved${timeStr}!</strong><br>
+            +${result.flags_correct} flags &nbsp;+${result.solve_bonus} bonus
+            = <strong>${result.total_points} pts</strong> for your team`;
+
+        const btn = document.createElement('button');
+        btn.className = 'wc-try-again-btn';
+        btn.textContent = '🎲 Play Again';
+        btn.addEventListener('click', () => playNewBoard(btn));
+
+        msgBanner.append(info, btn);
         msgBanner.style.display = 'flex';
         board.is_solved = true;
+    }
+
+    async function playNewBoard(btn) {
+        if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+        const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/new`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        });
+        if (!res.ok) {
+            if (btn) { btn.disabled = false; btn.textContent = '🎲 Play Again'; }
+            return;
+        }
+        const data = await res.json();
+        board = data;
+        ({ mineSet, adj } = wcBuildAdj(board.mine_layout, board.rows, board.cols));
+        started = false;
+        elapsedSec = 0;
+        stopTimer();
+        timerEl.textContent = '0:00';
+        timerEl.style.display = 'none';
+        msgBanner.style.display = 'none';
+        renderBoard();
     }
 
     function showExplosionBanner() {

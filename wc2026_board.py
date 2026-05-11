@@ -16,9 +16,9 @@ from tametsi_generator import generate_board
 from wc2026_data import WC2026_EASY, WC2026_HARD
 
 
-def _seed_for(email: str, country_slug: str, difficulty: str) -> int:
-    """Deterministic seed: same user + country + difficulty always yields same board."""
-    raw = f"wc2026:{email}:{country_slug}:{difficulty}"
+def _seed_for(email: str, country_slug: str, difficulty: str, play_count: int = 0) -> int:
+    """Deterministic seed: same user + country + difficulty + play_count → same board."""
+    raw = f"wc2026:{email}:{country_slug}:{difficulty}:{play_count}"
     return int(hashlib.md5(raw.encode()).hexdigest(), 16) & 0xFFFF_FFFF
 
 
@@ -26,10 +26,10 @@ def _spec(difficulty: str) -> dict:
     return WC2026_EASY if difficulty == "easy" else WC2026_HARD
 
 
-def _make_board(email: str, country_slug: str, difficulty: str):
+def _make_board(email: str, country_slug: str, difficulty: str, play_count: int = 0):
     """Generate a no-guess board and return (mine_layout_json, cell_state_json)."""
     spec = _spec(difficulty)
-    rng  = random.Random(_seed_for(email, country_slug, difficulty))
+    rng  = random.Random(_seed_for(email, country_slug, difficulty, play_count))
     board = generate_board(spec["rows"], spec["cols"], spec["mines"], rng=rng)
     mines_json = json.dumps(sorted([r, c] for r, c in board.mines))
     total = spec["rows"] * spec["cols"]
