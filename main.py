@@ -35,6 +35,7 @@ from auth import oauth, get_current_user, set_session_user, clear_session, SECRE
 from starlette.config import Config
 from translations import get_lang, get_t, SUPPORTED_LANGS, REAL_LANGS
 from game_catalog import LEADERBOARD_GROUPS
+from quest_catalog import quest_config
 import settings as site_settings
 import logging
 import psutil
@@ -264,6 +265,7 @@ templates.env.filters['autolink'] = _autolink
 from breadcrumbs import get_breadcrumbs as _get_breadcrumbs
 
 templates.env.globals["get_breadcrumbs"] = _get_breadcrumbs
+templates.env.globals["quest_config"] = quest_config
 
 # ── Language-prefix middleware ────────────────────────────────────────────────
 # Registered last → runs outermost (first) for every request.

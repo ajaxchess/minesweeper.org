@@ -11,6 +11,7 @@ from game_catalog import (
     localized_action_path,
     localized_game_path,
 )
+from quest_catalog import DAILY_QUESTS, SEASONAL_QUESTS, quest_config
 from translations import SUPPORTED_LANGS
 
 
@@ -196,7 +197,47 @@ def test_puzzles_dropdown_lists_all_puzzle_games(client):
 def test_all_supported_languages_render_core_pages(client):
     assert {option["code"] for option in LANGUAGE_OPTIONS} <= SUPPORTED_LANGS
     for lang in sorted(SUPPORTED_LANGS - {"en"}):
-        for path in ["/", "/leaderboard", "/puzzles"]:
+        for path in ["/", "/leaderboard", "/puzzles", "/quests"]:
             r = client.get(f"/{lang}{path}")
             assert r.status_code == 200, f"{lang}{path}"
             assert f'<html lang="{lang}">' in r.text
+
+
+def test_quest_catalog_has_required_fields():
+    for quest in DAILY_QUESTS:
+        assert {"id", "label_key", "icon", "link", "target"} <= set(quest)
+    for quest in SEASONAL_QUESTS:
+        assert {"id", "label_key", "icon", "type", "key"} <= set(quest)
+        if quest["type"] == "count":
+            assert "target" in quest
+
+
+def test_quests_page_uses_rendered_config(client):
+    r = client.get("/quests")
+    assert r.status_code == 200
+    assert "window.QUEST_CONFIG" in r.text
+    assert "questsGetState" in r.text
+    config = quest_config({
+        "quest_daily_tentaizu": "Clear the daily Tentaizu puzzle",
+        "quest_daily_easy_win": "Win Easy Minesweeper",
+        "quest_daily_rush_5": "Clear 5 mines on Rush mode",
+        "quest_season_tentaizu_10": "Clear 10 daily Tentaizu puzzles",
+        "quest_season_intermediate_win": "Win Intermediate Minesweeper",
+        "quest_season_rush_100": "Clear 100 mines on Rush mode",
+        "quest_play": "Play",
+        "quest_complete": "Complete!",
+        "quest_not_complete": "Not yet completed",
+        "quest_unlocked": "Unlocked!",
+        "quest_days": "days",
+        "quest_reward_reason_streak": "20-day daily quest streak",
+        "quest_reward_reason_season": "10 daily quests this season",
+        "quest_toast_reward_unlocked": "Reward unlocked! Ads disabled — {reason}.",
+        "quest_toast_daily_tentaizu": "Daily quest complete! Tentaizu puzzle cleared.",
+        "quest_toast_daily_easy": "Daily quest complete! Easy Minesweeper won.",
+        "quest_toast_daily_rush": "Daily quest complete! 5 Rush mines cleared.",
+        "quest_toast_season_tentaizu": "Seasonal quest complete! 10 Tentaizu puzzles cleared!",
+        "quest_toast_season_intermediate": "Seasonal quest complete! Intermediate Minesweeper won!",
+        "quest_toast_season_rush": "Seasonal quest complete! 100 Rush mines cleared!",
+    })
+    for quest in config["daily"] + config["seasonal"]:
+        assert quest["id"] in r.text

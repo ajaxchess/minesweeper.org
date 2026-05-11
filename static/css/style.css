@@ -3585,20 +3585,27 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   max-width: 860px;
   margin: 0 auto;
   padding: 1.5rem 1rem 3rem;
+  --quest-success: #2e7d32;
+  --quest-success-strong: #43a047;
+  --quest-success-text: #ffffff;
+  --quest-panel-bg: var(--surface);
+  --quest-card-bg: var(--surface2);
+  --quest-muted: var(--text-dim);
 }
 .quests-title {
   font-size: 1.8rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
+  color: var(--text);
 }
 .quests-subtitle {
-  color: var(--text-muted, #888);
+  color: var(--quest-muted);
   margin-bottom: 1.5rem;
   font-size: 0.95rem;
 }
 .q-reward-banner {
-  background: linear-gradient(135deg, var(--accent2), #2e7d32);
-  color: #fff;
+  background: var(--quest-success);
+  color: var(--quest-success-text);
   padding: 0.7rem 1.2rem;
   border-radius: 8px;
   margin-bottom: 1.5rem;
@@ -3607,13 +3614,16 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   align-items: center;
   gap: 0.5rem;
 }
+.q-reward-banner[hidden] {
+  display: none;
+}
 .quests-layout {
   display: grid;
   gap: 2rem;
 }
 .quest-section {
-  background: var(--card-bg, #1e1e1e);
-  border-radius: 12px;
+  background: var(--quest-panel-bg);
+  border-radius: 8px;
   padding: 1.25rem 1.5rem;
   border: 1px solid var(--border);
 }
@@ -3627,21 +3637,22 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   font-size: 1.1rem;
   font-weight: 700;
   margin: 0;
+  color: var(--text);
 }
 .quest-section-meta {
   font-size: 0.8rem;
-  color: var(--text-muted, #888);
+  color: var(--quest-muted);
 }
 .quest-section-note {
   font-size: 0.82rem;
-  color: var(--text-muted, #888);
+  color: var(--quest-muted);
   margin: 0 0 1rem;
 }
 .quest-card {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: var(--bg);
+  background: var(--quest-card-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.85rem 1rem;
@@ -3649,11 +3660,21 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
 }
 .quest-card:last-child { margin-bottom: 0; }
 .quest-card-done {
-  border-color: #2e7d32;
-  background: color-mix(in srgb, #2e7d32 10%, var(--bg));
+  border-color: var(--quest-success);
+  background: color-mix(in srgb, var(--quest-success) 10%, var(--quest-card-bg));
 }
 .quest-card-icon {
-  font-size: 1.6rem;
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0;
   flex-shrink: 0;
 }
 .quest-card-body {
@@ -3664,6 +3685,7 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   font-size: 0.95rem;
   font-weight: 600;
   margin-bottom: 0.4rem;
+  color: var(--text);
 }
 .quest-progress-bar {
   background: var(--border);
@@ -3677,18 +3699,19 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   background: var(--accent2);
   border-radius: 99px;
   transition: width 0.4s ease;
+  width: 0%;
 }
 .quest-card-done .quest-progress-fill {
-  background: #43a047;
+  background: var(--quest-success-strong);
 }
 .quest-progress-text {
   font-size: 0.78rem;
-  color: var(--text-muted, #888);
+  color: var(--quest-muted);
 }
 .quest-play-btn {
   display: inline-block;
-  background: var(--accent2);
-  color: #111;
+  background: var(--accent);
+  color: #fff;
   text-decoration: none;
   padding: 0.4rem 0.9rem;
   border-radius: 6px;
@@ -3705,17 +3728,30 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   display: flex;
   align-items: flex-start;
   gap: 1rem;
-  background: var(--bg);
+  background: var(--quest-card-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.85rem 1rem;
   margin-bottom: 0.75rem;
 }
 .q-reward-card:last-child { margin-bottom: 0; }
-.q-reward-icon { font-size: 1.6rem; flex-shrink: 0; }
+.q-reward-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--quest-success);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  flex-shrink: 0;
+}
 .q-reward-body { flex: 1; min-width: 0; }
-.q-reward-label { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.2rem; }
-.q-reward-desc  { font-size: 0.82rem; color: var(--text-muted, #888); margin-bottom: 0.5rem; }
+.q-reward-label { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.2rem; color: var(--text); }
+.q-reward-desc  { font-size: 0.82rem; color: var(--quest-muted); margin-bottom: 0.5rem; }
 
 /* Toast notification */
 .quest-toast {
@@ -3723,8 +3759,8 @@ html[data-skin="classic"] .bot-lobby-tips li { color: #000; }
   bottom: 1.5rem;
   left: 50%;
   transform: translateX(-50%) translateY(120%);
-  background: #1b5e20;
-  color: #fff;
+  background: var(--quest-success);
+  color: var(--quest-success-text);
   padding: 0.7rem 1.25rem;
   border-radius: 8px;
   font-size: 0.9rem;
@@ -4900,15 +4936,32 @@ html[data-skin="classic"] .quest-card {
   background: #ffffff;
   border: 1px solid #808080;
 }
+html[data-skin="classic"] .q-reward-card {
+  background: #ffffff;
+  border: 1px solid #808080;
+  border-radius: 0;
+}
 html[data-skin="classic"] .quest-card-done {
   background: #e8f5e9;
   border-color: #2e7d32;
 }
-html[data-skin="classic"] .quest-card-label { color: #000000; }
+html[data-skin="classic"] .quest-card-icon,
+html[data-skin="classic"] .q-reward-icon {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #808080;
+  border-bottom: 2px solid #808080;
+  border-radius: 0;
+  color: #000080;
+}
+html[data-skin="classic"] .quest-card-label,
+html[data-skin="classic"] .q-reward-label { color: #000000; }
 html[data-skin="classic"] .quest-section-hdr h2 { color: #000000; }
 html[data-skin="classic"] .quest-section-meta,
 html[data-skin="classic"] .quest-section-note,
-html[data-skin="classic"] .quest-progress-text { color: #444444; }
+html[data-skin="classic"] .quest-progress-text,
+html[data-skin="classic"] .q-reward-desc { color: #444444; }
 html[data-skin="classic"] .quest-progress-bar { background: #c0c0c0; }
 html[data-skin="classic"] .quests-subtitle { color: #444444; }
 html[data-skin="classic"] a { color: #ff3300; }
@@ -7666,25 +7719,6 @@ html[data-skin="light"] .lb-table tbody tr:nth-child(even) {
 }
 html[data-skin="light"] .lb-stat { color: #4b5563; }
 html[data-skin="light"] .lb-hash a { color: var(--accent); }
-/* Light mode — Quests page: dark boxes on white page background */
-html[data-skin="light"] .quest-section {
-  background: #1e2840;
-  border-color: #3a5278;
-}
-html[data-skin="light"] .quest-section-hdr h2 { color: #e0e0e0; }
-html[data-skin="light"] .quest-section-meta,
-html[data-skin="light"] .quest-section-note  { color: #8892a4; }
-html[data-skin="light"] .quest-card,
-html[data-skin="light"] .q-reward-card {
-  background: #1a1a2e;
-  border-color: #3a5278;
-}
-html[data-skin="light"] .quest-card-label,
-html[data-skin="light"] .q-reward-label { color: #e0e0e0; }
-html[data-skin="light"] .quest-progress-bar { background: #3a5278; }
-html[data-skin="light"] .quest-progress-text,
-html[data-skin="light"] .q-reward-desc { color: #8892a4; }
-
 /* ══════════════════════════════════════════════════════════════════════════════
    F50  Flower Garden — Night theme  (data-skin="flower")
    ══════════════════════════════════════════════════════════════════════════════ */

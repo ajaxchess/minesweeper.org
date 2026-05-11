@@ -1,103 +1,113 @@
 {% extends "base.html" %}
 
-{% block title %}Quests — minesweeper.org{% endblock %}
-{% block description %}Complete daily and monthly quests in Minesweeper. Track your streak, earn rewards, and get ads disabled for your dedication.{% endblock %}
+{% block title %}{{ t.quests_meta_title }}{% endblock %}
+{% block description %}{{ t.quests_meta_desc }}{% endblock %}
 {% block canonical %}https://minesweeper.org/quests{% endblock %}
 {% block og_url %}https://minesweeper.org/quests{% endblock %}
-{% block og_title %}Minesweeper Quests{% endblock %}
-{% block og_description %}Complete daily and monthly Minesweeper quests. Earn a 20-day streak or finish 10 quests in a season to disable ads.{% endblock %}
+{% block og_title %}{{ t.quests_og_title }}{% endblock %}
+{% block og_description %}{{ t.quests_og_desc }}{% endblock %}
 
 {% block content %}
 <div class="quests-page">
 
-  <h1 class="quests-title">Quests</h1>
-  <p class="quests-subtitle">Complete quests to earn rewards. Progress is saved in your browser.</p>
+  <h1 class="quests-title">{{ t.quests_title }}</h1>
+  <p class="quests-subtitle">{{ t.quests_subtitle }}</p>
 
-  <!-- Reward status banner -->
-  <div id="q-reward-banner" class="q-reward-banner" style="display:none">
-    🎁 <strong>Reward active:</strong> Ads are disabled — keep it up!
+  <div id="q-reward-banner" class="q-reward-banner" hidden>
+    <strong>{{ t.quests_reward_active }}</strong>
+    <span>{{ t.quests_reward_active_desc }}</span>
   </div>
 
   <div class="quests-layout">
-
-    <!-- Daily Quest -->
     <section class="quest-section">
       <div class="quest-section-hdr">
-        <h2>Daily Quest</h2>
+        <h2>{{ t.quests_daily_title }}</h2>
         <span id="q-daily-meta" class="quest-section-meta"></span>
       </div>
-      <p class="quest-section-note">One quest per day, rotates every 24 hours.</p>
+      <p class="quest-section-note">{{ t.quests_daily_note }}</p>
       <div id="q-daily-card"></div>
     </section>
 
-    <!-- Seasonal Quests -->
     <section class="quest-section">
       <div class="quest-section-hdr">
-        <h2>Seasonal Quests</h2>
+        <h2>{{ t.quests_seasonal_title }}</h2>
         <span id="q-season-meta" class="quest-section-meta"></span>
       </div>
-      <p class="quest-section-note">All three are active for the whole month. Progress carries over day to day.</p>
+      <p class="quest-section-note">{{ t.quests_seasonal_note }}</p>
       <div id="q-seasonal-cards"></div>
     </section>
 
-    <!-- Rewards -->
     <section class="quest-section quest-section-rewards">
       <div class="quest-section-hdr">
-        <h2>Rewards</h2>
+        <h2>{{ t.quests_rewards_title }}</h2>
       </div>
-      <p class="quest-section-note">Earn either reward to disable ads on this device.</p>
+      <p class="quest-section-note">{{ t.quests_rewards_note }}</p>
 
       <div class="q-reward-card">
-        <div class="q-reward-icon">🔥</div>
+        <div class="q-reward-icon">20</div>
         <div class="q-reward-body">
-          <div class="q-reward-label">20-Day Daily Quest Streak</div>
-          <div class="q-reward-desc">Complete your daily quest on 20 consecutive days.</div>
+          <div class="q-reward-label">{{ t.quests_streak_reward_title }}</div>
+          <div class="q-reward-desc">{{ t.quests_streak_reward_desc }}</div>
           <div class="quest-progress-bar">
-            <div id="q-streak-fill" class="quest-progress-fill" style="width:0%"></div>
+            <div id="q-streak-fill" class="quest-progress-fill"></div>
           </div>
-          <div id="q-streak-text" class="quest-progress-text">0 / 20 days</div>
+          <div id="q-streak-text" class="quest-progress-text"></div>
         </div>
       </div>
 
       <div class="q-reward-card">
-        <div class="q-reward-icon">📆</div>
+        <div class="q-reward-icon">10</div>
         <div class="q-reward-body">
-          <div class="q-reward-label">10 Daily Quests This Season</div>
-          <div class="q-reward-desc">Complete your daily quest on any 10 days this month.</div>
+          <div class="q-reward-label">{{ t.quests_season_reward_title }}</div>
+          <div class="q-reward-desc">{{ t.quests_season_reward_desc }}</div>
           <div class="quest-progress-bar">
-            <div id="q-season-fill" class="quest-progress-fill" style="width:0%"></div>
+            <div id="q-season-fill" class="quest-progress-fill"></div>
           </div>
-          <div id="q-season-text" class="quest-progress-text">0 / 10 days</div>
+          <div id="q-season-text" class="quest-progress-text"></div>
         </div>
       </div>
     </section>
-
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
+  const config = window.QUEST_CONFIG || {};
+  const copy = config.copy || {};
+  const rewards = config.rewards || {};
+  const streakTarget = rewards.streakTarget || 20;
+  const seasonTarget = rewards.seasonTarget || 10;
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, function(ch) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+    });
+  }
+
+  function copyText(key) {
+    return copy[key] || '';
+  }
 
   function questCardHTML(icon, label, link, progress, target, completed) {
-    const pct      = Math.min(100, Math.round(progress / target * 100));
+    const pct = Math.min(100, Math.round(progress / target * 100));
     const doneClass = completed ? ' quest-card-done' : '';
-    const progText  = target === 1
-      ? (completed ? 'Complete! ✅' : 'Not yet completed')
-      : `${progress} / ${target}${completed ? ' ✅' : ''}`;
+    const progText = target === 1
+      ? (completed ? copyText('complete') : copyText('notComplete'))
+      : `${progress} / ${target}${completed ? ' ' + copyText('complete') : ''}`;
     const btn = (link && !completed)
-      ? `<a class="quest-play-btn" href="${link}">Play →</a>`
+      ? `<a class="quest-play-btn" href="${escapeHtml(link)}">${escapeHtml(copyText('play'))} &rarr;</a>`
       : '';
     return `
       <div class="quest-card${doneClass}">
-        <div class="quest-card-icon">${icon}</div>
+        <div class="quest-card-icon">${escapeHtml(icon)}</div>
         <div class="quest-card-body">
-          <div class="quest-card-label">${label}</div>
+          <div class="quest-card-label">${escapeHtml(label)}</div>
           <div class="quest-progress-bar">
             <div class="quest-progress-fill" style="width:${pct}%"></div>
           </div>
-          <div class="quest-progress-text">${progText}</div>
+          <div class="quest-progress-text">${escapeHtml(progText)}</div>
         </div>
         ${btn}
       </div>`;
@@ -106,43 +116,35 @@ document.addEventListener('DOMContentLoaded', () => {
   function render() {
     const s = window.questsGetState();
 
-    // Reward banner
-    document.getElementById('q-reward-banner').style.display = s.ads_disabled ? 'flex' : 'none';
+    document.getElementById('q-reward-banner').hidden = !s.ads_disabled;
 
-    // Daily meta
     const dateLabel = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
     document.getElementById('q-daily-meta').textContent = dateLabel;
 
-    // Daily card
     const dd = s.daily;
-    const isRush = dd.def.id === 'rush_5_mines';
-    const dailyProgress = isRush ? dd.rush_progress : (dd.completed ? 1 : 0);
+    const dailyProgress = dd.def.id === 'rush_5_mines' ? dd.rush_progress : (dd.completed ? 1 : 0);
     document.getElementById('q-daily-card').innerHTML =
-      questCardHTML(dd.def.icon, dd.def.label, dd.def.link, dailyProgress, isRush ? 5 : 1, dd.completed);
+      questCardHTML(dd.def.icon, dd.def.label, dd.def.link, dailyProgress, dd.def.target || 1, dd.completed);
 
-    // Season meta
     const [year, mon] = s.month.split('-');
     document.getElementById('q-season-meta').textContent =
       new Date(year, mon - 1).toLocaleString(undefined, { month: 'long', year: 'numeric' });
 
-    // Seasonal cards
-    document.getElementById('q-seasonal-cards').innerHTML = s.seasonal.map(q => {
+    document.getElementById('q-seasonal-cards').innerHTML = s.seasonal.map(function(q) {
       const progress = q.def.type === 'count' ? q.value : (q.completed ? 1 : 0);
-      const target   = q.def.type === 'count' ? q.def.target : 1;
+      const target = q.def.type === 'count' ? q.def.target : 1;
       return questCardHTML(q.def.icon, q.def.label, null, progress, target, q.completed);
     }).join('');
 
-    // Streak reward
-    const streakPct = Math.min(100, Math.round(s.streak / 20 * 100));
+    const streakPct = Math.min(100, Math.round(s.streak / streakTarget * 100));
     document.getElementById('q-streak-fill').style.width = streakPct + '%';
     document.getElementById('q-streak-text').textContent =
-      s.streak >= 20 ? '✅ Unlocked!' : `${s.streak} / 20 days`;
+      s.streak >= streakTarget ? copyText('unlocked') : `${s.streak} / ${streakTarget} ${copyText('days')}`;
 
-    // Season reward
-    const seasonPct = Math.min(100, Math.round(s.season_days / 10 * 100));
+    const seasonPct = Math.min(100, Math.round(s.season_days / seasonTarget * 100));
     document.getElementById('q-season-fill').style.width = seasonPct + '%';
     document.getElementById('q-season-text').textContent =
-      s.season_days >= 10 ? '✅ Unlocked!' : `${s.season_days} / 10 days`;
+      s.season_days >= seasonTarget ? copyText('unlocked') : `${s.season_days} / ${seasonTarget} ${copyText('days')}`;
   }
 
   window._renderQuests = render;
