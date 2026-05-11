@@ -115,7 +115,7 @@
            data-fan-flag-img="{{ wc_fan_country.flag if wc_fan_country else '' }}"
            data-primary="{{ country.primary }}"
            data-secondary="{{ country.secondary }}"
-           data-board="{{ board_easy | tojson }}">
+           data-board='{{ board_easy | tojson }}'>
       </div>
       {% elif board_easy and board_easy.is_solved %}
       <div class="wcc-solved-msg">
@@ -134,7 +134,7 @@
            data-fan-flag-img="{{ wc_fan_country.flag if wc_fan_country else '' }}"
            data-primary="{{ country.primary }}"
            data-secondary="{{ country.secondary }}"
-           data-board="{{ board_hard | tojson }}">
+           data-board='{{ board_hard | tojson }}'>
       </div>
       {% elif board_hard and board_hard.is_solved %}
       <div class="wcc-solved-msg">
