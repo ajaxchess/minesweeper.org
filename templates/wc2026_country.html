@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% block title %}{{ country.name }} — 2026 World Cup — minesweeper.org{% endblock %}
+{% block description %}Play Tametsi in {{ country.name }}'s World Cup colors and earn points for your team.{% endblock %}
+
+{% block content %}
+<div class="wc-wrapper">
+
+  <!-- ── Fan banner ─────────────────────────────────────────────────────── -->
+  {% if user and wc_fan_country %}
+  <div class="wc-fan-banner wc-fan-set">
+    <img src="https://flagcdn.com/w40/{{ wc_fan_country.flag }}.png" class="wc-ban-flag" alt="{{ wc_fan_country.name }}">
+    🏆 You are a fan of <strong>{{ wc_fan_country.name }}</strong>!
+  </div>
+  {% elif user %}
+  <div class="wc-fan-banner wc-fan-unset">
+    ⚽ Set your fan flag to earn points:
+    <select id="wc-fan-select" onchange="wcSetFan(this.value)"
+            style="margin-left:.6rem;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:.2rem .5rem;">
+      <option value="">— pick a team —</option>
+      {% for c in wc2026_teams | sort(attribute='name') %}
+      <option value="{{ c.slug }}">{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% else %}
+  <div class="wc-fan-banner wc-fan-guest">
+    ⚽ <a href="/login">Log in</a> to set your fan flag and compete!
+  </div>
+  {% endif %}
+
+  <!-- ── Country header ─────────────────────────────────────────────────── -->
+  <div class="wcc-header" style="--wc-primary:{{ country.primary }};--wc-secondary:{{ country.secondary }};">
+    <div class="wcc-color-bar">
+      <div class="wcc-bar-top"></div>
+      <div class="wcc-bar-bot"></div>
+    </div>
+    <img src="https://flagcdn.com/w80/{{ country.flag }}.png" class="wcc-flag" alt="{{ country.name }}">
+    <div class="wcc-info">
+      <h1 class="wcc-name">{{ country.name }}</h1>
+      <span class="wcc-group-badge">Group {{ country.group }}</span>
+      {% if country.ottawa %}
+      <span class="wcc-treaty wcc-signatory" title="Signatory to the Ottawa Treaty (Mine Ban)">
+        ✅ <a href="https://en.wikipedia.org/wiki/Ottawa_Treaty" target="_blank" rel="noopener">Ottawa Treaty</a> signatory
+      </span>
+      {% else %}
+      <span class="wcc-treaty wcc-non-signatory" title="Has not signed the Ottawa Treaty">
+        ❌ Not an <a href="https://en.wikipedia.org/wiki/Ottawa_Treaty" target="_blank" rel="noopener">Ottawa Treaty</a> signatory
+      </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Group matches ──────────────────────────────────────────────────── -->
+  <section class="wcc-section">
+    <h2>Group {{ country.group }} Schedule</h2>
+    {% if matches %}
+    <table class="wc-lb-table">
+      <thead><tr><th>Date (CDT)</th><th>Match</th><th>Score</th><th>Status</th><th>City</th></tr></thead>
+      <tbody>
+      {% for m in matches %}
+      <tr {% if m.team1_slug == country.slug or m.team2_slug == country.slug %}class="wcc-own-match"{% endif %}>
+        <td style="white-space:nowrap;">{{ m.date }}<br><small style="color:var(--text-dim);">{{ m.time_cdt }} CDT</small></td>
+        <td>
+          <img src="https://flagcdn.com/w20/{{ m.team1.get('flag','') }}.png" style="vertical-align:middle;margin-right:4px;">
+          {{ m.team1.get('name', m.team1_slug) }}
+          <span style="color:var(--text-dim);margin:0 .3rem;">vs</span>
+          <img src="https://flagcdn.com/w20/{{ m.team2.get('flag','') }}.png" style="vertical-align:middle;margin-right:4px;">
+          {{ m.team2.get('name', m.team2_slug) }}
+        </td>
+        <td style="text-align:center;">
+          {% if m.score1 is not none and m.score2 is not none %}
+          <strong>{{ m.score1 }} – {{ m.score2 }}</strong>
+          {% else %}
+          —
+          {% endif %}
+        </td>
+        <td>
+          {% if m.status == 'final' %}<span class="wc-status-final">Final</span>
+          {% elif m.status == 'in_progress' %}<span class="wc-status-live">🔴 Live</span>
+          {% else %}<span class="wc-status-sched">Scheduled</span>{% endif %}
+        </td>
+        <td style="color:var(--text-dim);font-size:.85rem;">{{ m.city }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="wc-empty">No matches found.</p>
+    {% endif %}
+  </section>
+
+  <!-- ── Tametsi board ──────────────────────────────────────────────────── -->
+  <section class="wcc-section">
+    <h2>🎯 Tametsi Fan Challenge</h2>
+
+    {% if not user %}
+    <div class="wcc-play-gate"><a href="/login">Log in</a> to play the Tametsi fan challenge and earn points for your team.</div>
+    {% elif not wc_fan %}
+    <div class="wcc-play-gate">Set your fan flag above to play!</div>
+    {% else %}
+
+    <!-- Difficulty toggle -->
+    <div class="wcc-diff-toggle" id="diff-toggle">
+      <button id="btn-easy" class="wcc-diff-btn active" onclick="switchDiff('easy')">Easy (15×9, 20 mines)</button>
+      <button id="btn-hard" class="wcc-diff-btn"        onclick="switchDiff('hard')">Hard (30×18, 99 mines)</button>
+    </div>
+
+    <!-- Board containers -->
+    <div id="wc-board-easy">
+      {% if board_easy and not board_easy.is_solved %}
+      <div id="wc-tmt-easy" class="wc-tmt-wrap"
+           data-country="{{ country.slug }}"
+           data-difficulty="easy"
+           data-fan-flag="{{ wc_fan }}"
+           data-fan-flag-img="{{ wc_fan_country.flag if wc_fan_country else '' }}"
+           data-primary="{{ country.primary }}"
+           data-secondary="{{ country.secondary }}"
+           data-board="{{ board_easy | tojson }}">
+      </div>
+      {% elif board_easy and board_easy.is_solved %}
+      <div class="wcc-solved-msg">
+        ✅ Easy board solved! Check the leaderboard to see your points.
+        <br><a href="/2026worldcup/{{ country.slug }}" class="wcc-replay-link">Play another country</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <div id="wc-board-hard" style="display:none;">
+      {% if board_hard and not board_hard.is_solved %}
+      <div id="wc-tmt-hard" class="wc-tmt-wrap"
+           data-country="{{ country.slug }}"
+           data-difficulty="hard"
+           data-fan-flag="{{ wc_fan }}"
+           data-fan-flag-img="{{ wc_fan_country.flag if wc_fan_country else '' }}"
+           data-primary="{{ country.primary }}"
+           data-secondary="{{ country.secondary }}"
+           data-board="{{ board_hard | tojson }}">
+      </div>
+      {% elif board_hard and board_hard.is_solved %}
+      <div class="wcc-solved-msg">
+        ✅ Hard board solved! Check the leaderboard to see your points.
+      </div>
+      {% endif %}
+    </div>
+
+    {% endif %}
+  </section>
+
+  <!-- ── Country leaderboard ────────────────────────────────────────────── -->
+  <section class="wcc-section">
+    <h2>🏅 {{ country.name }} Fan Leaderboard</h2>
+    {% if country_lb %}
+    <table class="wc-lb-table">
+      <thead><tr><th>#</th><th>Player</th><th>Fan of</th><th>Points</th></tr></thead>
+      <tbody>
+      {% for row in country_lb %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ row.display_name }}</td>
+        <td>
+          {% for c in wc2026_teams if c.slug == row.fan_flag %}
+          <img src="https://flagcdn.com/w20/{{ c.flag }}.png" style="vertical-align:middle;margin-right:4px;">{{ c.name }}
+          {% endfor %}
+        </td>
+        <td><strong>{{ row.points }}</strong></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="wc-empty">No scores for this country yet. Be the first!</p>
+    {% endif %}
+  </section>
+
+  <div style="margin-top:2rem;">
+    <a href="/2026worldcup" style="color:var(--accent);">← All countries</a>
+  </div>
+
+</div>
+
+<script>
+function switchDiff(d) {
+  document.getElementById('wc-board-easy').style.display = d === 'easy' ? '' : 'none';
+  document.getElementById('wc-board-hard').style.display = d === 'hard' ? '' : 'none';
+  document.getElementById('btn-easy').classList.toggle('active', d === 'easy');
+  document.getElementById('btn-hard').classList.toggle('active', d === 'hard');
+}
+async function wcSetFan(slug) {
+  if (!slug) return;
+  const r = await fetch('/api/wc2026/set-fan', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({team: slug}),
+  });
+  if (r.ok) location.reload();
+}
+</script>
+
+<style>
+.wc-wrapper { max-width:900px;margin:0 auto;padding:1.5rem 1rem 4rem; }
+.wc-fan-banner { display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;border-radius:8px;margin-bottom:1.5rem;font-size:.95rem; }
+.wc-fan-set  { background:rgba(0,180,0,.12);border:1px solid rgba(0,180,0,.3); }
+.wc-fan-unset{ background:rgba(255,180,0,.12);border:1px solid rgba(255,180,0,.3); }
+.wc-fan-guest{ background:rgba(100,100,100,.1);border:1px solid var(--border); }
+.wc-ban-flag { width:30px;border-radius:2px; }
+.wcc-header { display:flex;align-items:center;gap:1.2rem;padding:1.2rem;background:var(--card-bg);border:1px solid var(--border);border-radius:10px;margin-bottom:1.5rem; }
+.wcc-color-bar { width:12px;height:60px;border-radius:4px;overflow:hidden;flex-shrink:0;display:flex;flex-direction:column; }
+.wcc-bar-top { flex:5;background:var(--wc-primary); }
+.wcc-bar-bot { flex:4;background:var(--wc-secondary); }
+.wcc-flag { width:70px;border-radius:3px;flex-shrink:0; }
+.wcc-info { display:flex;flex-direction:column;gap:.3rem; }
+.wcc-name  { margin:0;font-size:1.6rem; }
+.wcc-group-badge { display:inline-block;background:var(--accent);color:#fff;border-radius:4px;padding:.1rem .5rem;font-size:.8rem;width:fit-content; }
+.wcc-treaty { font-size:.85rem; }
+.wcc-treaty a { color:inherit;text-decoration:underline; }
+.wcc-section { margin-top:2rem; }
+.wcc-section h2 { border-bottom:1px solid var(--border);padding-bottom:.4rem;margin-bottom:.8rem; }
+.wcc-own-match { background:rgba(var(--accent-rgb),.06); }
+.wc-status-final { color:var(--text-dim); font-size:.85rem; }
+.wc-status-live  { color:#e03;font-size:.85rem;font-weight:600; }
+.wc-status-sched { color:var(--text-dim);font-size:.85rem; }
+.wcc-play-gate { padding:1rem;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;color:var(--text-dim); }
+.wcc-diff-toggle { display:flex;gap:.6rem;margin-bottom:1rem; }
+.wcc-diff-btn { padding:.4rem 1rem;border:1px solid var(--border);border-radius:6px;background:var(--card-bg);color:var(--text);cursor:pointer;font-size:.9rem;transition:background .15s; }
+.wcc-diff-btn.active { background:var(--accent);color:#fff;border-color:var(--accent); }
+.wcc-solved-msg { padding:1.2rem;background:rgba(0,180,0,.1);border:1px solid rgba(0,180,0,.3);border-radius:8px;text-align:center; }
+.wcc-replay-link { display:inline-block;margin-top:.5rem;color:var(--accent); }
+.wc-lb-table { width:100%;border-collapse:collapse;font-size:.9rem; }
+.wc-lb-table th,.wc-lb-table td { padding:.4rem .6rem;border-bottom:1px solid var(--border);text-align:left; }
+.wc-lb-table th { font-weight:600;color:var(--text-dim);font-size:.8rem; }
+.wc-empty { color:var(--text-dim);font-style:italic; }
+.wc-tmt-wrap { margin-top:.5rem; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/tametsi_wc.js"></script>
+{% endblock %}

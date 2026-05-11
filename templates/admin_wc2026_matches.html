@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}WC2026 Match Admin — minesweeper.org{% endblock %}
+{% block content %}
+<div style="max-width:960px;margin:2rem auto;padding:0 1rem;">
+  <h1 style="margin-bottom:1.5rem;">⚽ 2026 World Cup — Match Results</h1>
+  <p style="color:var(--text-dim);margin-bottom:1.5rem;">
+    Update scores and status for each group-stage match. Points are awarded to
+    fans based on their fan flag at the time of their Tametsi solve — this table
+    only affects the match-schedule display on country pages.
+  </p>
+
+  <div id="save-msg" style="display:none;padding:.5rem 1rem;background:var(--green-dim);border-radius:6px;margin-bottom:1rem;color:var(--text-bright);"></div>
+
+  <table style="width:100%;border-collapse:collapse;font-size:.9rem;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--border);">
+        <th style="text-align:left;padding:.5rem;">Group</th>
+        <th style="text-align:left;padding:.5rem;">Date</th>
+        <th style="text-align:left;padding:.5rem;">Match</th>
+        <th style="text-align:center;padding:.5rem;">Score</th>
+        <th style="text-align:center;padding:.5rem;">Status</th>
+        <th style="text-align:center;padding:.5rem;">Save</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for m in matches %}
+    {% set t1 = by_slug.get(m.team1_slug, {}) %}
+    {% set t2 = by_slug.get(m.team2_slug, {}) %}
+    <tr data-id="{{ m.id }}" style="border-bottom:1px solid var(--border);">
+      <td style="padding:.4rem .5rem;">{{ m.group_name }}</td>
+      <td style="padding:.4rem .5rem;white-space:nowrap;">{{ m.match_date }}</td>
+      <td style="padding:.4rem .5rem;">
+        <img src="https://flagcdn.com/w20/{{ t1.get('flag','') }}.png" style="vertical-align:middle;margin-right:4px;">
+        {{ t1.get('name', m.team1_slug) }}
+        <span style="color:var(--text-dim);margin:0 .3rem;">vs</span>
+        <img src="https://flagcdn.com/w20/{{ t2.get('flag','') }}.png" style="vertical-align:middle;margin-right:4px;">
+        {{ t2.get('name', m.team2_slug) }}
+      </td>
+      <td style="text-align:center;padding:.4rem .5rem;">
+        <input type="number" min="0" max="30" class="score-input s1" value="{{ m.score1 if m.score1 is not none else '' }}"
+               style="width:3rem;text-align:center;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:.2rem;">
+        –
+        <input type="number" min="0" max="30" class="score-input s2" value="{{ m.score2 if m.score2 is not none else '' }}"
+               style="width:3rem;text-align:center;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:.2rem;">
+      </td>
+      <td style="text-align:center;padding:.4rem .5rem;">
+        <select class="status-select" style="background:var(--input-bg);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:.2rem .4rem;">
+          <option value="scheduled"   {% if m.status == 'scheduled'   %}selected{% endif %}>Scheduled</option>
+          <option value="in_progress" {% if m.status == 'in_progress' %}selected{% endif %}>Live</option>
+          <option value="final"       {% if m.status == 'final'       %}selected{% endif %}>Final</option>
+        </select>
+      </td>
+      <td style="text-align:center;padding:.4rem .5rem;">
+        <button class="save-btn" onclick="saveMatch(this)"
+                style="background:var(--accent);color:#fff;border:none;border-radius:4px;padding:.25rem .7rem;cursor:pointer;font-size:.85rem;">
+          Save
+        </button>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+async function saveMatch(btn) {
+  const row    = btn.closest('tr');
+  const id     = parseInt(row.dataset.id);
+  const s1raw  = row.querySelector('.s1').value.trim();
+  const s2raw  = row.querySelector('.s2').value.trim();
+  const status = row.querySelector('.status-select').value;
+  const body   = {
+    match_id: id,
+    score1: s1raw !== '' ? parseInt(s1raw) : null,
+    score2: s2raw !== '' ? parseInt(s2raw) : null,
+    status,
+  };
+  btn.disabled = true;
+  const r = await fetch('/api/admin/wc2026/update-match', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  });
+  btn.disabled = false;
+  const msg = document.getElementById('save-msg');
+  if (r.ok) {
+    msg.textContent = '✓ Saved';
+    msg.style.display = 'block';
+    setTimeout(() => { msg.style.display = 'none'; }, 2000);
+  } else {
+    msg.textContent = '✗ Error saving';
+    msg.style.display = 'block';
+  }
+}
+</script>
+{% endblock %}

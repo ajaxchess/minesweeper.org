@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}2026 FIFA World Cup Celebration — minesweeper.org{% endblock %}
+{% block description %}Play Tametsi in the 2026 FIFA World Cup colors. Pick your team, flag mines, and earn points for your country.{% endblock %}
+
+{% block content %}
+<div class="wc-wrapper">
+
+  <!-- ── Fan banner ─────────────────────────────────────────────────────── -->
+  {% if user and wc_fan_country %}
+  <div class="wc-fan-banner wc-fan-set">
+    <img src="https://flagcdn.com/w40/{{ wc_fan_country.flag }}.png" class="wc-ban-flag" alt="{{ wc_fan_country.name }}">
+    🏆 You are a fan of <strong>{{ wc_fan_country.name }}</strong>! Your Tametsi wins earn points for your team.
+  </div>
+  {% elif user %}
+  <div class="wc-fan-banner wc-fan-unset">
+    ⚽ Set your fan flag to earn points for your team!
+    <select id="wc-fan-select" onchange="wcSetFan(this.value)"
+            style="margin-left:.6rem;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:.2rem .5rem;">
+      <option value="">— pick a team —</option>
+      {% for c in wc2026_teams | sort(attribute='name') %}
+      <option value="{{ c.slug }}">{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% else %}
+  <div class="wc-fan-banner wc-fan-guest">
+    ⚽ <a href="/login">Log in</a> to set your fan flag and earn points for your team!
+  </div>
+  {% endif %}
+
+  <!-- ── Hero ───────────────────────────────────────────────────────────── -->
+  <div class="wc-hero">
+    <h1 class="wc-hero-title">⚽ 2026 FIFA World Cup</h1>
+    <p class="wc-hero-sub">Celebrate the World Cup by playing Tametsi in your team's colors.</p>
+    <div class="wc-how-to">
+      <h2>How to play</h2>
+      <ul>
+        <li>Pick a country below and play Tametsi on a board in their colors.</li>
+        <li>Log in and set your <strong>fan flag</strong> to earn points.</li>
+        <li>Each correctly flagged mine earns <strong>1 point</strong> for your team.</li>
+        <li>Solving the board earns a <strong>bonus</strong> (20 pts easy · 50 pts hard).</li>
+        <li>Points are awarded at solve time — flags stay secret until the board is done!</li>
+        <li>You can change your fan flag any time; new solves count for your current team.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Groups grid ────────────────────────────────────────────────────── -->
+  {% for g in group_list %}
+  {% set countries = groups[g] %}
+  <section class="wc-group">
+    <h2 class="wc-group-title">Group {{ g }}</h2>
+    <div class="wc-country-grid">
+      {% for c in countries %}
+      <a href="/2026worldcup/{{ c.slug }}" class="wc-country-card"
+         style="--wc-primary:{{ c.primary }};--wc-secondary:{{ c.secondary }};">
+        <div class="wc-card-swatch">
+          <div class="wc-swatch-top"></div>
+          <div class="wc-swatch-bot"></div>
+        </div>
+        <img src="https://flagcdn.com/w40/{{ c.flag }}.png" class="wc-card-flag" alt="{{ c.name }}">
+        <span class="wc-card-name">{{ c.name }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+
+  <!-- ── Country leaderboard ────────────────────────────────────────────── -->
+  <section class="wc-lb-section">
+    <h2>🌍 Country Standings</h2>
+    {% if country_lb %}
+    <table class="wc-lb-table">
+      <thead><tr><th>#</th><th>Country</th><th>Points</th></tr></thead>
+      <tbody>
+      {% for row in country_lb %}
+      {% set c = row.country if row.country is defined else {} %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>
+          {% set cc = namespace(data=none) %}
+          {% for co in wc2026_teams if co.slug == row.slug %}{% set cc.data = co %}{% endfor %}
+          {% if cc.data %}
+          <img src="https://flagcdn.com/w20/{{ cc.data.flag }}.png" style="vertical-align:middle;margin-right:6px;">
+          <a href="/2026worldcup/{{ row.slug }}">{{ row.name }}</a>
+          {% else %}
+          {{ row.name }}
+          {% endif %}
+        </td>
+        <td><strong>{{ row.points }}</strong></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="wc-empty">No scores yet — be the first to play!</p>
+    {% endif %}
+  </section>
+
+  <!-- ── Individual leaderboard ─────────────────────────────────────────── -->
+  <section class="wc-lb-section">
+    <h2>🏅 Biggest Fans</h2>
+    {% if individual_lb %}
+    <table class="wc-lb-table">
+      <thead><tr><th>#</th><th>Player</th><th>Fan of</th><th>Points</th></tr></thead>
+      <tbody>
+      {% for row in individual_lb %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ row.display_name }}</td>
+        <td>
+          {% if row.fan_country %}
+          <img src="https://flagcdn.com/w20/{{ row.fan_country.flag }}.png" style="vertical-align:middle;margin-right:4px;">
+          {{ row.fan_country.name }}
+          {% endif %}
+        </td>
+        <td><strong>{{ row.points }}</strong></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="wc-empty">No scores yet — be the first to play!</p>
+    {% endif %}
+  </section>
+
+</div>
+
+<script>
+async function wcSetFan(slug) {
+  if (!slug) return;
+  const r = await fetch('/api/wc2026/set-fan', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({team: slug}),
+  });
+  if (r.ok) location.reload();
+}
+</script>
+
+<style>
+.wc-wrapper { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.wc-fan-banner { display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;border-radius:8px;margin-bottom:1.5rem;font-size:.95rem; }
+.wc-fan-set    { background: rgba(0,180,0,.12); border:1px solid rgba(0,180,0,.3); }
+.wc-fan-unset  { background: rgba(255,180,0,.12); border:1px solid rgba(255,180,0,.3); }
+.wc-fan-guest  { background: rgba(100,100,100,.1); border:1px solid var(--border); }
+.wc-ban-flag   { width:30px; border-radius:2px; }
+.wc-hero { text-align:center; margin-bottom:2rem; }
+.wc-hero-title { font-size:2rem; margin-bottom:.4rem; }
+.wc-hero-sub   { color:var(--text-dim); font-size:1.05rem; }
+.wc-how-to { text-align:left; display:inline-block; background:var(--card-bg); border:1px solid var(--border); border-radius:8px; padding:1rem 1.4rem; margin-top:1rem; }
+.wc-how-to h2 { font-size:1rem; margin:0 0 .5rem; }
+.wc-how-to ul  { margin:0; padding-left:1.4rem; }
+.wc-how-to li  { margin:.25rem 0; font-size:.9rem; color:var(--text-dim); }
+.wc-group      { margin-bottom:2rem; }
+.wc-group-title { font-size:1.1rem; border-bottom:1px solid var(--border); padding-bottom:.4rem; margin-bottom:.8rem; }
+.wc-country-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:.7rem; }
+.wc-country-card { display:flex; flex-direction:column; align-items:center; gap:.4rem; padding:.7rem .5rem;
+  background:var(--card-bg); border:1px solid var(--border); border-radius:8px;
+  text-decoration:none; color:var(--text); transition:transform .15s,box-shadow .15s; }
+.wc-country-card:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,.25); }
+.wc-card-swatch { width:40px; height:20px; border-radius:3px; overflow:hidden; display:flex; flex-direction:column; }
+.wc-swatch-top { flex:1; background:var(--wc-primary); }
+.wc-swatch-bot { flex:1; background:var(--wc-secondary); }
+.wc-card-flag  { width:40px; border-radius:2px; }
+.wc-card-name  { font-size:.8rem; text-align:center; }
+.wc-lb-section { margin-top:2.5rem; }
+.wc-lb-section h2 { margin-bottom:.8rem; }
+.wc-lb-table { width:100%; border-collapse:collapse; font-size:.9rem; }
+.wc-lb-table th, .wc-lb-table td { padding:.4rem .6rem; border-bottom:1px solid var(--border); text-align:left; }
+.wc-lb-table th { font-weight:600; color:var(--text-dim); font-size:.8rem; }
+.wc-empty { color:var(--text-dim); font-style:italic; }
+</style>
+{% endblock %}

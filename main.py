@@ -7941,3 +7941,426 @@ def mvs_static(path: str):
     if not os.path.isfile(resolved):
         raise HTTPException(status_code=404, detail="Not found")
     return FileResponse(resolved)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# F97 — 2026 FIFA World Cup Celebration
+# ═══════════════════════════════════════════════════════════════════════════════
+
+from wc2026_data import (
+    WC2026_COUNTRIES, WC2026_BY_SLUG, WC2026_BY_GROUP,
+    WC2026_GROUPS, VALID_WC2026_SLUGS, WC2026_EASY, WC2026_HARD,
+)
+from wc2026_board import get_or_create_board, board_to_dict
+from database import WC2026Match, WC2026BoardState, WC2026Score
+import json as _json
+
+
+def _wc_fan_banner(user, db: Session) -> dict:
+    """Return fan-flag context for WC pages."""
+    if not user:
+        return {"wc_fan": None, "wc_fan_country": None}
+    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+    fan = profile.wc2026_fan if profile else None
+    country = WC2026_BY_SLUG.get(fan) if fan else None
+    return {"wc_fan": fan, "wc_fan_country": country}
+
+
+def _wc_matches_for_country(slug: str, db: Session) -> list:
+    rows = (
+        db.query(WC2026Match)
+        .filter(
+            (WC2026Match.team1_slug == slug) | (WC2026Match.team2_slug == slug)
+        )
+        .order_by(WC2026Match.match_date, WC2026Match.time_cdt)
+        .all()
+    )
+    result = []
+    for r in rows:
+        result.append({
+            "id": r.id, "group": r.group_name,
+            "date": r.match_date, "time_cdt": r.time_cdt, "city": r.city,
+            "team1": WC2026_BY_SLUG.get(r.team1_slug, {}),
+            "team2": WC2026_BY_SLUG.get(r.team2_slug, {}),
+            "team1_slug": r.team1_slug, "team2_slug": r.team2_slug,
+            "score1": r.score1, "score2": r.score2, "status": r.status,
+        })
+    return result
+
+
+def _wc_group_matches(group: str, db: Session) -> list:
+    rows = (
+        db.query(WC2026Match)
+        .filter(WC2026Match.group_name == group)
+        .order_by(WC2026Match.match_date, WC2026Match.time_cdt)
+        .all()
+    )
+    result = []
+    for r in rows:
+        result.append({
+            "id": r.id, "date": r.match_date, "time_cdt": r.time_cdt, "city": r.city,
+            "team1": WC2026_BY_SLUG.get(r.team1_slug, {}),
+            "team2": WC2026_BY_SLUG.get(r.team2_slug, {}),
+            "team1_slug": r.team1_slug, "team2_slug": r.team2_slug,
+            "score1": r.score1, "score2": r.score2, "status": r.status,
+        })
+    return result
+
+
+def _country_leaderboard(slug: str, db: Session, limit: int = 20) -> list:
+    rows = (
+        db.query(
+            WC2026Score.email,
+            WC2026Score.display_name,
+            WC2026Score.fan_flag,
+            func.sum(WC2026Score.total_points).label("pts"),
+        )
+        .filter(WC2026Score.country_slug == slug)
+        .group_by(WC2026Score.email, WC2026Score.display_name, WC2026Score.fan_flag)
+        .order_by(func.sum(WC2026Score.total_points).desc())
+        .limit(limit)
+        .all()
+    )
+    return [{"display_name": r.display_name, "fan_flag": r.fan_flag, "points": r.pts} for r in rows]
+
+
+def _fan_country_leaderboard(db: Session, limit: int = 20) -> list:
+    rows = (
+        db.query(
+            WC2026Score.fan_flag,
+            func.sum(WC2026Score.total_points).label("pts"),
+        )
+        .group_by(WC2026Score.fan_flag)
+        .order_by(func.sum(WC2026Score.total_points).desc())
+        .limit(limit)
+        .all()
+    )
+    result = []
+    for r in rows:
+        country = WC2026_BY_SLUG.get(r.fan_flag, {})
+        result.append({"slug": r.fan_flag, "name": country.get("name", r.fan_flag),
+                        "flag": country.get("flag", r.fan_flag), "points": r.pts})
+    return result
+
+
+def _individual_leaderboard(db: Session, limit: int = 20) -> list:
+    rows = (
+        db.query(
+            WC2026Score.email,
+            WC2026Score.display_name,
+            WC2026Score.fan_flag,
+            func.sum(WC2026Score.total_points).label("pts"),
+        )
+        .group_by(WC2026Score.email, WC2026Score.display_name, WC2026Score.fan_flag)
+        .order_by(func.sum(WC2026Score.total_points).desc())
+        .limit(limit)
+        .all()
+    )
+    return [{"display_name": r.display_name, "fan_flag": r.fan_flag,
+             "fan_country": WC2026_BY_SLUG.get(r.fan_flag, {}), "points": r.pts}
+            for r in rows]
+
+
+# ── Page routes ───────────────────────────────────────────────────────────────
+
+@app.get("/2026worldcup", response_class=HTMLResponse)
+def wc2026_main(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    t    = get_t(request)
+    fan_ctx   = _wc_fan_banner(user, db)
+    groups    = {g: WC2026_BY_GROUP[g] for g in WC2026_GROUPS}
+    country_lb = _fan_country_leaderboard(db)
+    individual_lb = _individual_leaderboard(db)
+    return templates.TemplateResponse("wc2026_main.html", {
+        "request": request, "user": user, "t": t,
+        "mode": "wc2026",
+        "groups": groups,
+        "group_list": WC2026_GROUPS,
+        "country_lb": country_lb,
+        "individual_lb": individual_lb,
+        "wc2026_teams": WC2026_COUNTRIES,
+        **fan_ctx,
+    })
+
+
+@app.get("/2026worldcup/{slug}", response_class=HTMLResponse)
+def wc2026_country(slug: str, request: Request, db: Session = Depends(get_db)):
+    if slug not in VALID_WC2026_SLUGS:
+        raise HTTPException(status_code=404, detail="Country not found")
+    user    = get_current_user(request)
+    t       = get_t(request)
+    country = WC2026_BY_SLUG[slug]
+    fan_ctx = _wc_fan_banner(user, db)
+    matches = _wc_matches_for_country(slug, db)
+    group_countries = WC2026_BY_GROUP.get(country["group"], [])
+    country_lb = _country_leaderboard(slug, db)
+
+    board_easy = board_hard = None
+    if user and fan_ctx["wc_fan"]:
+        profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+        if profile:
+            board_easy = board_to_dict(get_or_create_board(db, user["email"], slug, "easy"))
+            board_hard = board_to_dict(get_or_create_board(db, user["email"], slug, "hard"))
+
+    return templates.TemplateResponse("wc2026_country.html", {
+        "request": request, "user": user, "t": t,
+        "mode": "wc2026",
+        "country": country,
+        "matches": matches,
+        "group_countries": group_countries,
+        "country_lb": country_lb,
+        "board_easy": board_easy,
+        "board_hard": board_hard,
+        "wc2026_teams": WC2026_COUNTRIES,
+        **fan_ctx,
+    })
+
+
+# ── API: board state ──────────────────────────────────────────────────────────
+
+@app.get("/api/wc2026/board/{slug}/{difficulty}")
+def wc2026_get_board(slug: str, difficulty: str,
+                     request: Request, db: Session = Depends(get_db)):
+    if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
+        raise HTTPException(status_code=400, detail="Invalid params")
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Login required"}, status_code=401)
+    row = get_or_create_board(db, user["email"], slug, difficulty)
+    return board_to_dict(row)
+
+
+class WC2026RevealPayload(BaseModel):
+    idx: int
+
+class WC2026FlagPayload(BaseModel):
+    idx: int
+
+
+@app.post("/api/wc2026/board/{slug}/{difficulty}/reveal")
+def wc2026_reveal(slug: str, difficulty: str, payload: WC2026RevealPayload,
+                  request: Request, db: Session = Depends(get_db)):
+    if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
+        raise HTTPException(status_code=400, detail="Invalid params")
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Login required"}, status_code=401)
+
+    row = (db.query(WC2026BoardState)
+             .filter_by(email=user["email"], country_slug=slug, difficulty=difficulty)
+             .first())
+    if not row or row.is_solved:
+        return JSONResponse({"error": "No active board"}, status_code=400)
+
+    spec   = WC2026_EASY if difficulty == "easy" else WC2026_HARD
+    cells  = _json.loads(row.cell_state)
+    mines  = {tuple(m) for m in _json.loads(row.mine_layout)}
+    rows, cols = spec["rows"], spec["cols"]
+    idx    = payload.idx
+
+    if idx < 0 or idx >= rows * cols:
+        return JSONResponse({"error": "Out of range"}, status_code=400)
+    if cells[idx] != "hidden":
+        return board_to_dict(row)
+
+    r, c = divmod(idx, cols)
+    if (r, c) in mines:
+        cells[idx] = "exploded"
+        row.cell_state = _json.dumps(cells)
+        db.commit()
+        return {**board_to_dict(row), "hit_mine": True}
+
+    # BFS flood-reveal
+    from collections import deque
+    queue = deque([(r, c)])
+    adj_cache = {}
+    def adj_count(rr, cc):
+        if (rr, cc) not in adj_cache:
+            adj_cache[(rr, cc)] = sum(
+                1 for dr in (-1,0,1) for dc in (-1,0,1)
+                if (dr or dc) and 0 <= rr+dr < rows and 0 <= cc+dc < cols
+                and (rr+dr, cc+dc) in mines
+            )
+        return adj_cache[(rr, cc)]
+
+    visited = set()
+    while queue:
+        rr, cc = queue.popleft()
+        ii = rr * cols + cc
+        if (rr, cc) in visited or cells[ii] != "hidden":
+            continue
+        visited.add((rr, cc))
+        cells[ii] = "revealed"
+        if adj_count(rr, cc) == 0:
+            for dr in (-1,0,1):
+                for dc in (-1,0,1):
+                    nr, nc = rr+dr, cc+dc
+                    if (dr or dc) and 0 <= nr < rows and 0 <= nc < cols:
+                        if cells[nr*cols+nc] == "hidden":
+                            queue.append((nr, nc))
+
+    row.cell_state = _json.dumps(cells)
+    db.commit()
+    return {**board_to_dict(row), "hit_mine": False}
+
+
+@app.post("/api/wc2026/board/{slug}/{difficulty}/flag")
+def wc2026_flag(slug: str, difficulty: str, payload: WC2026FlagPayload,
+                request: Request, db: Session = Depends(get_db)):
+    if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
+        raise HTTPException(status_code=400, detail="Invalid params")
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Login required"}, status_code=401)
+
+    row = (db.query(WC2026BoardState)
+             .filter_by(email=user["email"], country_slug=slug, difficulty=difficulty)
+             .first())
+    if not row or row.is_solved:
+        return JSONResponse({"error": "No active board"}, status_code=400)
+
+    spec  = WC2026_EASY if difficulty == "easy" else WC2026_HARD
+    cells = _json.loads(row.cell_state)
+    idx   = payload.idx
+    if idx < 0 or idx >= spec["rows"] * spec["cols"]:
+        return JSONResponse({"error": "Out of range"}, status_code=400)
+
+    if cells[idx] == "hidden":
+        cells[idx] = "flagged"
+    elif cells[idx] == "flagged":
+        cells[idx] = "hidden"
+
+    row.cell_state = _json.dumps(cells)
+    db.commit()
+    return board_to_dict(row)
+
+
+@app.post("/api/wc2026/board/{slug}/{difficulty}/solve")
+def wc2026_solve(slug: str, difficulty: str,
+                 request: Request, db: Session = Depends(get_db)):
+    """Called by the client when it detects all mines flagged correctly."""
+    if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
+        raise HTTPException(status_code=400, detail="Invalid params")
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Login required"}, status_code=401)
+
+    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+    if not profile or not profile.wc2026_fan:
+        return JSONResponse({"error": "No fan flag set"}, status_code=400)
+
+    row = (db.query(WC2026BoardState)
+             .filter_by(email=user["email"], country_slug=slug, difficulty=difficulty)
+             .first())
+    if not row or row.is_solved:
+        return JSONResponse({"error": "Already solved or not found"}, status_code=400)
+
+    spec   = WC2026_EASY if difficulty == "easy" else WC2026_HARD
+    cells  = _json.loads(row.cell_state)
+    mines  = {tuple(m) for m in _json.loads(row.mine_layout)}
+    cols   = spec["cols"]
+
+    # Verify: every mine must be flagged, no non-mine flagged
+    flagged_positions = {divmod(i, cols) for i, s in enumerate(cells) if s == "flagged"}
+    if flagged_positions != mines:
+        return JSONResponse({"error": "Board not correctly solved"}, status_code=400)
+
+    flags_correct = len(mines)
+    solve_bonus   = spec["solve_bonus"]
+    total_points  = flags_correct + solve_bonus
+
+    row.is_solved = True
+    row.solved_at = datetime.now(timezone.utc)
+    db.add(WC2026Score(
+        email=user["email"],
+        display_name=profile.display_name,
+        country_slug=slug,
+        difficulty=difficulty,
+        fan_flag=profile.wc2026_fan,
+        flags_correct=flags_correct,
+        solve_bonus=solve_bonus,
+        total_points=total_points,
+    ))
+    db.commit()
+    return {"ok": True, "flags_correct": flags_correct,
+            "solve_bonus": solve_bonus, "total_points": total_points}
+
+
+# ── API: leaderboards ─────────────────────────────────────────────────────────
+
+@app.get("/api/wc2026/leaderboard/countries")
+def wc2026_lb_countries(db: Session = Depends(get_db)):
+    return _fan_country_leaderboard(db, limit=48)
+
+
+@app.get("/api/wc2026/leaderboard/individuals")
+def wc2026_lb_individuals(db: Session = Depends(get_db)):
+    return _individual_leaderboard(db, limit=50)
+
+
+@app.get("/api/wc2026/leaderboard/country/{slug}")
+def wc2026_lb_country(slug: str, db: Session = Depends(get_db)):
+    if slug not in VALID_WC2026_SLUGS:
+        raise HTTPException(status_code=404)
+    return _country_leaderboard(slug, db, limit=20)
+
+
+# ── API: fan flag inline setter ───────────────────────────────────────────────
+
+class WC2026FanSet(BaseModel):
+    team: str
+
+@app.post("/api/wc2026/set-fan")
+def wc2026_set_fan(payload: WC2026FanSet, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Login required"}, status_code=401)
+    code = (payload.team or "").strip().lower() or None
+    if code and code not in VALID_WC2026_SLUGS:
+        return JSONResponse({"error": "Invalid team"}, status_code=400)
+    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+    if not profile:
+        return JSONResponse({"error": "Profile not found"}, status_code=404)
+    profile.wc2026_fan = code
+    db.commit()
+    return {"ok": True, "team": code,
+            "country": WC2026_BY_SLUG.get(code) if code else None}
+
+
+# ── Admin: match score management ────────────────────────────────────────────
+
+@app.get("/admin/wc2026-matches", response_class=HTMLResponse)
+def wc2026_admin_matches(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_admin(request, user)
+    matches = (db.query(WC2026Match)
+               .order_by(WC2026Match.match_date, WC2026Match.time_cdt)
+               .all())
+    return templates.TemplateResponse("admin_wc2026_matches.html", {
+        "request": request, "user": user, "mode": "admin",
+        "matches": matches,
+        "by_slug": WC2026_BY_SLUG,
+    })
+
+
+class WC2026MatchUpdate(BaseModel):
+    match_id: int
+    score1: Optional[int] = None
+    score2: Optional[int] = None
+    status: str
+
+@app.post("/api/admin/wc2026/update-match")
+def wc2026_admin_update_match(payload: WC2026MatchUpdate,
+                               request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_admin(request, user)
+    if payload.status not in ("scheduled", "in_progress", "final"):
+        return JSONResponse({"error": "Invalid status"}, status_code=400)
+    row = db.query(WC2026Match).filter(WC2026Match.id == payload.match_id).first()
+    if not row:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    row.score1  = payload.score1
+    row.score2  = payload.score2
+    row.status  = payload.status
+    db.commit()
+    return {"ok": True}

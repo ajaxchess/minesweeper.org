@@ -714,6 +714,60 @@ class UserProfile(Base):
     pvp_elo       = Column(Integer, default=1200, nullable=False)
     created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     wc2026_fan    = Column(String(16), name="2026_world_cup_fan_flag", nullable=True)
+    timezone      = Column(String(64), nullable=True)
+
+# ── WC2026 match results (admin-managed) ──────────────────────────────────────
+class WC2026Match(Base):
+    __tablename__ = "wc2026_matches"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    group_name = Column(String(8),  nullable=False, index=True)
+    match_date = Column(String(10), nullable=False)   # YYYY-MM-DD
+    team1_slug = Column(String(32), nullable=False)
+    team2_slug = Column(String(32), nullable=False)
+    time_cdt   = Column(String(8),  nullable=False)   # HH:MM
+    city       = Column(String(64), nullable=False)
+    score1     = Column(Integer, nullable=True)
+    score2     = Column(Integer, nullable=True)
+    status     = Column(String(16), nullable=False, server_default="scheduled")
+
+# ── WC2026 Tametsi board states (per user, per country, per difficulty) ───────
+class WC2026BoardState(Base):
+    __tablename__ = "wc2026_board_states"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    email        = Column(String(256), nullable=False, index=True)
+    country_slug = Column(String(32),  nullable=False)
+    difficulty   = Column(String(8),   nullable=False)  # 'easy' | 'hard'
+    mine_layout  = Column(Text, nullable=False)   # JSON list of [r,c] mine positions
+    cell_state   = Column(Text, nullable=False)   # JSON list of per-cell state strings
+    is_solved    = Column(Boolean, default=False, nullable=False)
+    started_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    solved_at    = Column(DateTime, nullable=True)
+
+    __table_args__ = (
+        Index("ix_wc2026_board_states_email_country_diff",
+              "email", "country_slug", "difficulty", unique=True),
+    )
+
+# ── WC2026 Tametsi completed game scores ─────────────────────────────────────
+class WC2026Score(Base):
+    __tablename__ = "wc2026_scores"
+
+    id             = Column(Integer, primary_key=True, index=True)
+    email          = Column(String(256), nullable=False, index=True)
+    display_name   = Column(String(32),  nullable=False)
+    country_slug   = Column(String(32),  nullable=False)
+    difficulty     = Column(String(8),   nullable=False)
+    fan_flag       = Column(String(16),  nullable=False)   # fan team at time of solve
+    flags_correct  = Column(Integer,     nullable=False)
+    solve_bonus    = Column(Integer,     nullable=False)
+    total_points   = Column(Integer,     nullable=False)
+    solved_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_wc2026_scores_fan_flag", "fan_flag"),
+    )
 
 # ── Server Stats model (hourly snapshots) ─────────────────────────────────────
 class ServerStats(Base):
@@ -1305,6 +1359,25 @@ _BOT_PROFILES = [
     {"email": "bot-hard@bot.minesweeper.org",   "display_name": "🤖 Bot (Hard)",   "pvp_elo": 1400},
 ]
 
+def _seed_wc2026_matches(conn):
+    """Seed wc2026_matches from WC2026_MATCHES_SEED if the table is empty."""
+    count = conn.execute(text("SELECT COUNT(*) FROM wc2026_matches")).scalar()
+    if count:
+        return
+    from wc2026_data import WC2026_MATCHES_SEED
+    for m in WC2026_MATCHES_SEED:
+        conn.execute(
+            text(
+                "INSERT INTO wc2026_matches "
+                "(group_name, match_date, team1_slug, team2_slug, time_cdt, city, status) "
+                "VALUES (:g, :d, :t1, :t2, :tc, :ci, 'scheduled')"
+            ),
+            {"g": m["group"], "d": m["date"], "t1": m["team1"],
+             "t2": m["team2"], "tc": m["time_cdt"], "ci": m["city"]},
+        )
+    conn.commit()
+
+
 def _seed_bot_profiles():
     """Create UserProfile rows for the three bots if they don't already exist."""
     db = SessionLocal()
@@ -1391,6 +1464,8 @@ def _apply_migrations():
         ("user_profiles",         "country",      "VARCHAR(8) NULL"),
         # 2026 FIFA World Cup fan team (added 2026-05-10)
         ("user_profiles",         "2026_world_cup_fan_flag", "VARCHAR(16) NULL"),
+        # 2026 World Cup celebration — timezone preference (added 2026-05-10)
+        ("user_profiles",         "timezone",      "VARCHAR(64) NULL"),
         # game_replays — Phase 1 analytics instrumentation (added 2026-05-05)
         ("game_replays", "outcome",          "VARCHAR(16) NOT NULL DEFAULT 'win'"),
         ("game_replays", "bbbv",             "INT NULL"),
@@ -1417,6 +1492,9 @@ def _apply_migrations():
                 conn.execute(text(f"ALTER TABLE `{table}` ADD COLUMN `{column}` {col_def}"))
                 conn.commit()
         _create_phase1_indexes(conn)
+
+        # wc2026 tables (added 2026-05-10) — created via create_all, no ALTER needed
+        _seed_wc2026_matches(conn)
 
         # Extend game_history.mode ENUM to include 'tametsi'
         col_type = conn.execute(
