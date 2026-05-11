@@ -130,10 +130,12 @@ smoke_test() {
     return 0
 }
 
-smoke_test "Home"     "/"         "minesweeper" || SMOKE_FAILED=1
-smoke_test "PvP"      "/pvp/bot"  "PvP Minesweeper" || SMOKE_FAILED=1
-smoke_test "Duel"     "/duel"     "Minesweeper" || SMOKE_FAILED=1
-smoke_test "Tentaizu" "/tentaizu" "Tentaizu" || SMOKE_FAILED=1
+smoke_test "Home"            "/"                              "minesweeper"            || SMOKE_FAILED=1
+smoke_test "PvP"             "/pvp/bot"                       "PvP Minesweeper"        || SMOKE_FAILED=1
+smoke_test "Duel"            "/duel"                          "Minesweeper"            || SMOKE_FAILED=1
+smoke_test "Tentaizu"        "/tentaizu"                      "Tentaizu"               || SMOKE_FAILED=1
+smoke_test "Blog index"      "/blog"                          "Minesweeper.org News"   || SMOKE_FAILED=1
+smoke_test "Blog post"       "/blog/down-with-interstitials"  "Interstitials"          || SMOKE_FAILED=1
 
 # ── Handle smoke test outcome ─────────────────────────────────────────────────
 if [ "$SMOKE_FAILED" = "1" ]; then
