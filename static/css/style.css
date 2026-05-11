@@ -1105,7 +1105,7 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
 
 /* ── Leaderboard ─────────────────────────────────────────────────────────── */
 .lb-wrapper {
-  max-width: 1000px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 0.75rem 1rem;
   display: flex;
@@ -1376,8 +1376,8 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
 
 .lb-showcase-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.65rem;
 }
 
 .lb-showcase-loading,
@@ -1387,26 +1387,39 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
 }
 
 .lb-champion-card {
-  min-height: 232px;
+  min-height: 178px;
   background: var(--surface);
   border: 1px solid var(--control-border);
   border-radius: var(--radius-card);
-  padding: 0.95rem;
+  padding: 0.72rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.55rem;
 }
 
 .lb-champion-card-head {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.35rem;
+}
+
+.lb-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.lb-card-level {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .lb-champion-card h3 {
   margin: 0;
   color: var(--text);
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   line-height: 1.25;
 }
 
@@ -1420,7 +1433,7 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.3rem;
 }
 
 .lb-champion-list li {
@@ -1428,12 +1441,12 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
   grid-template-columns: 28px minmax(0, 1fr) auto;
   gap: 0.5rem;
   align-items: center;
-  min-height: 34px;
+  min-height: 28px;
 }
 
 .lb-champion-rank {
   width: 28px;
-  height: 28px;
+  height: 24px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
@@ -1550,10 +1563,13 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
 .lb-directory-actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
   gap: 0.45rem;
+  margin-top: auto;
 }
 
-.lb-directory-actions a {
+.lb-directory-actions a,
+.lb-directory-actions button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1563,6 +1579,8 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
   font-size: 0.82rem;
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .lb-directory-primary {

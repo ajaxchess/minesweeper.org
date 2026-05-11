@@ -67,7 +67,7 @@
       <div class="lb-showcase-filter" role="group" aria-label="Leaderboard category">
         <button class="lb-showcase-btn active" data-showcase-category="all">All</button>
         <button class="lb-showcase-btn" data-showcase-category="minesweeper">Minesweeper</button>
-        <button class="lb-showcase-btn" data-showcase-category="variants">Variants</button>
+        <button class="lb-showcase-btn" data-showcase-category="rush">Rush</button>
         <button class="lb-showcase-btn" data-showcase-category="puzzles">Puzzles</button>
         <button class="lb-showcase-btn" data-showcase-category="pvp">PvP</button>
         <button class="lb-showcase-btn" data-showcase-category="events">Events</button>
@@ -79,6 +79,31 @@
     </div>
   </section>
 
+  <section class="lb-main-board lb-platform-board" aria-labelledby="lb-platform-board-title">
+    <div class="lb-directory-head">
+      <p class="lb-kicker">Full board</p>
+      <h2 id="lb-platform-board-title" class="lb-section-title">Detailed Leaderboard</h2>
+      <p id="lb-platform-board-subtitle">Choose any Full Board button above to inspect that leaderboard here.</p>
+    </div>
+    <div class="lb-table-wrap">
+      <table class="lb-table" id="lb-platform-table">
+        <thead>
+          <tr>
+            <th>{{ t.lb_col_rank }}</th>
+            <th>{{ t.lb_col_name }}</th>
+            <th>Result</th>
+            <th>Board</th>
+            <th>{{ t.lb_col_date }}</th>
+          </tr>
+        </thead>
+        <tbody id="lb-platform-body">
+          <tr><td colspan="5" class="lb-empty">Pick a leaderboard above.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="lb-legacy-board" hidden>
   <section class="lb-main-board" aria-labelledby="lb-main-board-title">
     <div class="lb-directory-head">
       <p class="lb-kicker">Full board</p>
@@ -196,6 +221,7 @@
     </div>
     {% endfor %}
   </section>
+  </div>
 
 </div>
 {% endblock %}
@@ -300,6 +326,11 @@ function championName(row) {
 }
 
 function championMetric(row, metric) {
+  if (row.metric_value != null) {
+    if (metric === 'score') return `${row.metric_value} pts`;
+    if (metric === 'wins') return `${row.metric_value} wins`;
+    return `${(row.metric_value / 1000).toFixed(1)}s`;
+  }
   if (metric === 'score') return `${row.score ?? 0} pts`;
   if (metric === 'wins') return `${row.wins ?? 0} win${row.wins === 1 ? '' : 's'}${row.elo ? ` · ${row.elo} Elo` : ''}`;
   if (metric === 'pvp-time') {
@@ -314,16 +345,18 @@ function championFlag(row) {
 }
 
 function championCardShell(board, index) {
+  const level = board.level ? `<span class="lb-card-level">${escHtml(board.level)}</span>` : '';
+  const badgePeriod = board.category === 'events' ? 'alltime' : showcasePeriod;
   return `
     <article class="lb-champion-card" data-champion-card="${index}">
       <div class="lb-champion-card-head">
-        <span class="lb-directory-badge">${escHtml(periodLabel(showcasePeriod))}</span>
+        <div class="lb-card-meta"><span class="lb-directory-badge">${escHtml(periodLabel(badgePeriod))}</span>${level}</div>
         <h3>${escHtml(board.title)}</h3>
       </div>
       <div class="lb-champion-card-body"><div class="lb-showcase-loading">Loading...</div></div>
       <div class="lb-directory-actions">
-        <a href="${escHtml(board.leaderboard)}" class="lb-directory-primary">View Board</a>
-        <a href="${escHtml(board.play)}" class="lb-directory-secondary">Play</a>
+        <button type="button" class="lb-directory-primary lb-full-board-btn" data-board-id="${escHtml(board.id || '')}">Full Leaderboard</button>
+        <a href="${escHtml(board.play_href || board.play)}" class="lb-directory-secondary">Play</a>
       </div>
     </article>`;
 }
@@ -352,26 +385,68 @@ function renderChampionRows(rows, board) {
 async function loadChampionShowcase() {
   const grid = document.getElementById('lb-showcase-grid');
   if (!grid) return;
-  const boards = CHAMPION_BOARDS.filter(board =>
-    board.periods.includes(showcasePeriod) &&
-    (showcaseCategory === 'all' || board.category === showcaseCategory)
-  );
+  const params = new URLSearchParams({ period: showcasePeriod, category: showcaseCategory, date: TODAY_STR });
+  if (showcasePeriod === 'season') params.set('season_num', computeCurrentSeason());
+  grid.innerHTML = '<div class="lb-showcase-loading">Loading champions...</div>';
+  let boards = [];
+  try {
+    const response = await fetch(`/api/leaderboards/cards?${params}`, { cache: 'no-store' });
+    boards = response.ok ? await response.json() : [];
+  } catch {
+    boards = [];
+  }
+  if (!boards.length) {
+    grid.innerHTML = '<div class="lb-champion-empty">No leaderboards found for this filter.</div>';
+    return;
+  }
   grid.innerHTML = boards.map(championCardShell).join('');
-  await Promise.all(boards.map(async (board, index) => {
+  boards.forEach((board, index) => {
     const card = grid.querySelector(`[data-champion-card="${index}"] .lb-champion-card-body`);
     if (!card) return;
-    if (!board.api) {
-      card.innerHTML = `<p class="lb-champion-empty">${escHtml(board.note || 'Open this leaderboard to see the current board.')}</p>`;
+    card.innerHTML = renderChampionRows(Array.isArray(board.rows) ? board.rows : [], board);
+  });
+  grid.querySelectorAll('.lb-full-board-btn').forEach(btn => {
+    btn.addEventListener('click', () => loadPlatformBoard(btn.dataset.boardId));
+  });
+  if (!document.body.dataset.lbPlatformLoaded) {
+    document.body.dataset.lbPlatformLoaded = '1';
+    const first = grid.querySelector('.lb-full-board-btn');
+    if (first) loadPlatformBoard(first.dataset.boardId);
+  }
+}
+
+async function loadPlatformBoard(boardId) {
+  if (!boardId) return;
+  const body = document.getElementById('lb-platform-body');
+  const subtitle = document.getElementById('lb-platform-board-subtitle');
+  if (!body) return;
+  const params = new URLSearchParams({ period: showcasePeriod, date: TODAY_STR, limit: '15' });
+  if (showcasePeriod === 'season') params.set('season_num', computeCurrentSeason());
+  body.innerHTML = '<tr><td colspan="5" class="lb-loading">Loading...</td></tr>';
+  try {
+    const response = await fetch(`/api/leaderboards/${encodeURIComponent(boardId)}?${params}`, { cache: 'no-store' });
+    const board = response.ok ? await response.json() : null;
+    if (!board) throw new Error('bad response');
+    if (subtitle) subtitle.textContent = `${board.title}${board.level ? ` - ${board.level}` : ''} - ${periodLabel(showcasePeriod)}`;
+    if (!board.rows.length) {
+      body.innerHTML = '<tr><td colspan="5" class="lb-empty">No scores yet for this leaderboard.</td></tr>';
       return;
     }
-    try {
-      const response = await fetch(board.api(showcasePeriod), { cache: 'no-store' });
-      const rows = response.ok ? await response.json() : [];
-      card.innerHTML = renderChampionRows(Array.isArray(rows) ? rows : [], board);
-    } catch {
-      card.innerHTML = '<p class="lb-champion-empty">Could not load this board.</p>';
-    }
-  }));
+    body.innerHTML = board.rows.map(row => {
+      const name = row.profile_url
+        ? `<a href="${escHtml(row.profile_url)}" class="lb-profile-link">${championFlag(row)}${escHtml(row.name)}</a>`
+        : `${championFlag(row)}${escHtml(row.name)}`;
+      return `<tr>
+        <td class="lb-rank">${row.rank}</td>
+        <td class="lb-name">${name}</td>
+        <td class="lb-time">${escHtml(championMetric(row, board.metric))}</td>
+        <td class="lb-board">${escHtml(row.board || '-')}</td>
+        <td class="lb-date">${escHtml(row.created_at || '-')}</td>
+      </tr>`;
+    }).join('');
+  } catch {
+    body.innerHTML = '<tr><td colspan="5" class="lb-empty">Could not load this leaderboard.</td></tr>';
+  }
 }
 
 function bindShowcaseControls() {

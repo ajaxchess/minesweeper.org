@@ -35,6 +35,7 @@ from auth import oauth, get_current_user, set_session_user, clear_session, SECRE
 from starlette.config import Config
 from translations import get_lang, get_t, SUPPORTED_LANGS, REAL_LANGS
 from game_catalog import LEADERBOARD_GROUPS, PUZZLE_GAMES
+from leaderboard_platform import leaderboard_cards, leaderboard_catalog, leaderboard_rows
 from quest_catalog import quest_config
 import settings as site_settings
 import logging
@@ -1002,6 +1003,53 @@ async def leaderboard_page(request: Request):
         "lang": get_lang(request), "t": get_t(request),
         "leaderboard_groups": LEADERBOARD_GROUPS,
     })
+
+
+@app.get("/api/leaderboards/catalog")
+def api_leaderboards_catalog(response: Response = None):
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=300"
+    return leaderboard_catalog()
+
+
+@app.get("/api/leaderboards/cards")
+def api_leaderboards_cards(
+    period: str = "daily",
+    category: str = "all",
+    score_date: Optional[str] = Query(None, alias="date"),
+    season_num: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+    response: Response = None,
+):
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=60"
+    try:
+        target = date.fromisoformat(score_date) if score_date else date.today()
+    except ValueError:
+        target = date.today()
+    return leaderboard_cards(db, period=period, category=category, target=target, season_num=season_num, limit=3)
+
+
+@app.get("/api/leaderboards/{leaderboard_id}")
+def api_leaderboard_rows(
+    leaderboard_id: str,
+    period: str = "daily",
+    score_date: Optional[str] = Query(None, alias="date"),
+    season_num: Optional[int] = Query(None),
+    limit: int = Query(15, ge=1, le=50),
+    db: Session = Depends(get_db),
+    response: Response = None,
+):
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=60"
+    try:
+        target = date.fromisoformat(score_date) if score_date else date.today()
+    except ValueError:
+        target = date.today()
+    try:
+        return leaderboard_rows(db, leaderboard_id, period=period, target=target, season_num=season_num, limit=limit)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Leaderboard not found")
 
 @app.get("/archive", response_class=HTMLResponse)
 async def archive_index(request: Request, db: Session = Depends(get_db)):

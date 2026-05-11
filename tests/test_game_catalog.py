@@ -14,6 +14,7 @@ from game_catalog import (
     localized_action_path,
     localized_game_path,
 )
+from leaderboard_platform import LEADERBOARD_SPECS, SPECS_BY_ID
 from quest_catalog import DAILY_QUESTS, SEASONAL_QUESTS, quest_config
 from translations import SUPPORTED_LANGS
 
@@ -195,6 +196,37 @@ def test_leaderboard_page_represents_every_puzzle_game(client):
     assert r.status_code == 200
     for title in titles:
         assert title in r.text
+
+
+def test_normalized_leaderboard_catalog_covers_major_categories(client):
+    assert SPECS_BY_ID
+    categories = {spec.category for spec in LEADERBOARD_SPECS}
+    assert {"minesweeper", "rush", "puzzles", "pvp", "events"} <= categories
+    assert any(spec.group == "Cylinder" and spec.category == "minesweeper" for spec in LEADERBOARD_SPECS)
+    assert any(spec.group == "Toroid" and spec.category == "minesweeper" for spec in LEADERBOARD_SPECS)
+    assert any(spec.category == "rush" for spec in LEADERBOARD_SPECS)
+    assert "pvp-wins" in SPECS_BY_ID
+    assert "wc2026-individuals" in SPECS_BY_ID
+
+    r = client.get("/api/leaderboards/catalog")
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data) == len(LEADERBOARD_SPECS)
+    assert data == sorted(data, key=lambda item: item["popularity"])
+
+
+def test_normalized_leaderboard_cards_endpoint_returns_every_card(client):
+    r = client.get("/api/leaderboards/cards?period=daily")
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data) == len(LEADERBOARD_SPECS)
+    first = data[0]
+    assert {"id", "title", "category", "group", "level", "period", "metric", "play_href", "full_href", "rows"} <= set(first)
+    assert isinstance(first["rows"], list)
+
+    puzzles = client.get("/api/leaderboards/cards?category=puzzles&period=daily").json()
+    assert puzzles
+    assert {card["category"] for card in puzzles} == {"puzzles"}
 
 
 def test_puzzles_dropdown_lists_all_puzzle_games(client):
