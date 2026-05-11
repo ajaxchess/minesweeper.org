@@ -765,6 +765,9 @@ class WC2026Score(Base):
     solve_bonus    = Column(Integer,     nullable=False)
     total_points   = Column(Integer,     nullable=False)
     solve_time_ms  = Column(Integer,     nullable=True)
+    bbbv           = Column(Integer,     nullable=True)
+    left_clicks    = Column(Integer,     nullable=True)
+    right_clicks   = Column(Integer,     nullable=True)
     solved_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -1267,6 +1270,8 @@ class TametsiScore(Base):
     guest_token = Column(String(36), nullable=True, index=True)
     time_ms     = Column(Integer, nullable=False)
     bbbv        = Column(Integer, nullable=False)
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
     client_type = Column(String(32), nullable=False, server_default="na")
     created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -1479,8 +1484,13 @@ def _apply_migrations():
         ("game_replays", "client_type",      "VARCHAR(32) NOT NULL DEFAULT 'na'"),
         ("game_replays", "guest_token",      "VARCHAR(36) NULL"),
         ("game_replays", "score_id",         "INT NULL"),
-        ("wc2026_board_states", "play_count",   "INT NOT NULL DEFAULT 0"),
+        ("wc2026_board_states", "play_count",    "INT NOT NULL DEFAULT 0"),
         ("wc2026_scores",       "solve_time_ms", "INT NULL"),
+        ("wc2026_scores",       "bbbv",          "INT NULL"),
+        ("wc2026_scores",       "left_clicks",   "INT NULL"),
+        ("wc2026_scores",       "right_clicks",  "INT NULL"),
+        ("tametsi_scores",      "left_clicks",   "INT NULL"),
+        ("tametsi_scores",      "right_clicks",  "INT NULL"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:

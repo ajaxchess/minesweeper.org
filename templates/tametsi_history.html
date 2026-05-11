@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Tametsi History — minesweeper.org{% endblock %}
+{% block description %}Your personal Tametsi game history across all modes.{% endblock %}
+
+{% block content %}
+<div class="th-wrap">
+
+  <h1 class="th-title">🎯 Tametsi History</h1>
+
+  <!-- Mode filter tabs -->
+  <div class="lb-tabs" id="th-tabs" role="tablist">
+    <button class="lb-tab active" data-mode="all">All</button>
+    <button class="lb-tab" data-mode="beginner">Beginner</button>
+    <button class="lb-tab" data-mode="intermediate">Intermediate</button>
+    <button class="lb-tab" data-mode="expert">Expert</button>
+    <button class="lb-tab" data-mode="wc_easy">WC Easy</button>
+    <button class="lb-tab" data-mode="wc_hard">WC Hard</button>
+  </div>
+
+  <!-- Summary line -->
+  <div id="th-summary" class="th-summary"></div>
+
+  <!-- Table -->
+  <div class="th-table-wrap">
+    <table class="th-table" id="th-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Date</th>
+          <th>Mode</th>
+          <th class="th-num">3BV</th>
+          <th class="th-num">Clicks</th>
+          <th class="th-num">Efficiency</th>
+          <th class="th-num">Time</th>
+        </tr>
+      </thead>
+      <tbody id="th-tbody">
+        <tr><td colspan="7" class="th-loading">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="th-pagination" id="th-pagination"></div>
+
+</div>
+
+<style>
+.th-wrap { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.th-title { margin-bottom: 1.2rem; font-size: 1.6rem; }
+.th-summary { color: var(--text-dim); font-size: .85rem; margin: .6rem 0 .8rem; min-height: 1.2em; }
+.th-table-wrap { overflow-x: auto; }
+.th-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.th-table th, .th-table td { padding: .4rem .6rem; border-bottom: 1px solid var(--border); text-align: left; }
+.th-table th { font-weight: 600; color: var(--text-dim); font-size: .8rem; white-space: nowrap; }
+.th-num { text-align: right !important; }
+.th-table td.th-num { text-align: right; }
+.th-table tbody tr:hover { background: rgba(var(--accent-rgb), .04); }
+.th-loading { text-align: center; color: var(--text-dim); padding: 2rem 0 !important; }
+.th-empty   { text-align: center; color: var(--text-dim); font-style: italic; padding: 2rem 0 !important; }
+.th-badge { display: inline-block; font-size: .75rem; padding: .1rem .4rem; border-radius: 3px;
+            background: rgba(var(--accent-rgb),.12); color: var(--accent); white-space: nowrap; }
+.th-badge-wc { background: rgba(255,180,0,.15); color: #b88000; }
+.th-daily-dot { color: var(--accent); font-size: .7rem; vertical-align: super; }
+.th-pagination { display: flex; gap: .4rem; align-items: center; justify-content: center;
+                 margin-top: 1.2rem; flex-wrap: wrap; }
+.th-page-btn { padding: .3rem .7rem; border: 1px solid var(--border); border-radius: 5px;
+               background: var(--card-bg); color: var(--text); cursor: pointer; font-size: .85rem; }
+.th-page-btn:disabled { opacity: .4; cursor: default; }
+.th-page-btn.active  { background: var(--accent); color: #fff; border-color: var(--accent); }
+.th-page-info { color: var(--text-dim); font-size: .85rem; }
+</style>
+
+<script>
+(function () {
+  const MODE_LABELS = {
+    all: 'All', beginner: 'Beginner', intermediate: 'Intermediate',
+    expert: 'Expert', wc_easy: 'WC Easy', wc_hard: 'WC Hard',
+  };
+
+  let currentMode = 'all';
+  let currentPage = 1;
+  let totalPages  = 1;
+  let totalGames  = 0;
+
+  function fmtTime(ms) {
+    if (ms == null) return '—';
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    return `${m}:${String(s % 60).padStart(2, '0')}`;
+  }
+
+  function fmtEff(bbbv, lc, rc) {
+    const total = (lc ?? 0) + (rc ?? 0);
+    if (!bbbv || !total) return '—';
+    return (bbbv / total * 100).toFixed(1) + '%';
+  }
+
+  function fmtClicks(lc, rc) {
+    const total = (lc ?? 0) + (rc ?? 0);
+    return total ? total : '—';
+  }
+
+  function modeBadge(mode, countrySlug) {
+    const label = MODE_LABELS[mode] || mode;
+    const cls   = mode.startsWith('wc_') ? 'th-badge th-badge-wc' : 'th-badge';
+    const extra = countrySlug ? ` <span style="color:var(--text-dim);font-size:.75rem;">(${countrySlug})</span>` : '';
+    return `<span class="${cls}">${label}</span>${extra}`;
+  }
+
+  async function load() {
+    const tbody   = document.getElementById('th-tbody');
+    const summary = document.getElementById('th-summary');
+    tbody.innerHTML = '<tr><td colspan="7" class="th-loading">Loading…</td></tr>';
+    summary.textContent = '';
+
+    const res  = await fetch(`/api/tametsi/history?mode=${currentMode}&page=${currentPage}`);
+    if (!res.ok) {
+      tbody.innerHTML = '<tr><td colspan="7" class="th-empty">Could not load history.</td></tr>';
+      return;
+    }
+    const data = await res.json();
+    totalPages = data.pages;
+    totalGames = data.total;
+    currentPage = data.page;
+
+    if (!data.games.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="th-empty">No games found.</td></tr>';
+      summary.textContent = '0 games';
+      renderPagination();
+      return;
+    }
+
+    summary.textContent = `${totalGames} game${totalGames === 1 ? '' : 's'}`;
+
+    const offset = (currentPage - 1) * 50;
+    tbody.innerHTML = data.games.map((g, i) => {
+      const n       = offset + i + 1;
+      const daily   = g.is_daily ? '<sup class="th-daily-dot" title="Daily puzzle">★</sup>' : '';
+      const clicks  = fmtClicks(g.left_clicks, g.right_clicks);
+      const eff     = fmtEff(g.bbbv, g.left_clicks, g.right_clicks);
+      const bbbv    = g.bbbv ?? '—';
+      const time    = fmtTime(g.time_ms);
+      return `<tr>
+        <td style="color:var(--text-dim);font-size:.8rem;">${n}</td>
+        <td style="white-space:nowrap;font-size:.82rem;color:var(--text-dim);">${g.date}</td>
+        <td>${modeBadge(g.mode, g.country_slug)}${daily}</td>
+        <td class="th-num">${bbbv}</td>
+        <td class="th-num">${clicks}</td>
+        <td class="th-num">${eff}</td>
+        <td class="th-num">${time}</td>
+      </tr>`;
+    }).join('');
+
+    renderPagination();
+  }
+
+  function renderPagination() {
+    const el = document.getElementById('th-pagination');
+    if (totalPages <= 1) { el.innerHTML = ''; return; }
+
+    const parts = [];
+    parts.push(`<button class="th-page-btn" onclick="goPage(${currentPage - 1})"
+      ${currentPage <= 1 ? 'disabled' : ''}>← Prev</button>`);
+    parts.push(`<span class="th-page-info">Page ${currentPage} of ${totalPages}</span>`);
+    parts.push(`<button class="th-page-btn" onclick="goPage(${currentPage + 1})"
+      ${currentPage >= totalPages ? 'disabled' : ''}>Next →</button>`);
+    el.innerHTML = parts.join('');
+  }
+
+  window.goPage = function (p) {
+    currentPage = p;
+    load();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Tab clicks
+  document.getElementById('th-tabs').addEventListener('click', e => {
+    const btn = e.target.closest('.lb-tab');
+    if (!btn) return;
+    document.querySelectorAll('#th-tabs .lb-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentMode = btn.dataset.mode;
+    currentPage = 1;
+    load();
+  });
+
+  load();
+}());
+</script>
+{% endblock %}

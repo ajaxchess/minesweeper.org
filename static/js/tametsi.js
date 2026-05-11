@@ -79,6 +79,8 @@ function makeState(data, level, isDaily) {
         timer:         null,
         level,
         isDaily,
+        leftClicks:  0,
+        rightClicks: 0,
     };
 }
 
@@ -355,6 +357,7 @@ function handleClick(idx) {
         // Only (0,0) is clickable before the game begins
         if (r !== 0 || c !== 0) return;
         G.started = true;
+        G.leftClicks++;
         startTimer();
         floodFill(0);
 
@@ -369,6 +372,8 @@ function handleClick(idx) {
     }
 
     if (cell.state !== 'hidden' && cell.state !== 'question') return;
+
+    G.leftClicks++;
 
     if (G.mineSet.has(idx)) {
         cell.state = 'exploded';
@@ -388,6 +393,8 @@ function handleRightClick(idx) {
     if (G.over || G.won) return;
     const cell = G.cells[idx];
     if (cell.state === 'revealed') return;
+
+    G.rightClicks++;
 
     if      (cell.state === 'hidden')   cell.state = 'flagged';
     else if (cell.state === 'flagged')  cell.state = 'question';
@@ -560,12 +567,14 @@ async function saveScore(autoName, timeMs) {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body:    JSON.stringify({
-                board_hash: G.board_hash,
-                level:      G.level,
-                is_daily:   G.isDaily,
+                board_hash:   G.board_hash,
+                level:        G.level,
+                is_daily:     G.isDaily,
                 name,
-                time_ms:    Math.round(timeMs ?? G.elapsedMs),
-                bbbv:       G.bbbv,
+                time_ms:      Math.round(timeMs ?? G.elapsedMs),
+                bbbv:         G.bbbv,
+                left_clicks:  G.leftClicks,
+                right_clicks: G.rightClicks,
             }),
         });
         if (r.ok) {

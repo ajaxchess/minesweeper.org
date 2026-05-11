@@ -54,21 +54,44 @@
     </div>
   </div>
 
-  <!-- ── Minesweeper Bootcamp ── -->
+  <!-- ── Bootcamp ── -->
   <div class="profile-recent" id="bootcamp-section">
-    <h2 class="section-title">🏋️ Minesweeper Bootcamp</h2>
+    <h2 class="section-title">🏋️ Bootcamp</h2>
 
-    <div class="lb-tabs" role="tablist" id="bc-tabs">
-      <button class="lb-tab active" data-bc="beginner">Beginner</button>
-      <button class="lb-tab" data-bc="beginner_ng">Beginner NG</button>
-      <button class="lb-tab" data-bc="intermediate">Intermediate</button>
-      <button class="lb-tab" data-bc="intermediate_ng">Intermediate NG</button>
-      <button class="lb-tab" data-bc="expert">Expert</button>
-      <button class="lb-tab" data-bc="expert_ng">Expert NG</button>
+    <!-- Top-level game toggle -->
+    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.9rem;" id="bc-game-toggle">
+      <button class="lb-tab active" data-game="ms" onclick="switchBootcampGame('ms')">Minesweeper</button>
+      <button class="lb-tab"        data-game="tmt" onclick="switchBootcampGame('tmt')">Tametsi</button>
+      <a href="/tametsi/history" style="margin-left:auto;font-size:.82rem;color:var(--accent);">📋 History</a>
     </div>
 
-    <div id="bc-content" style="margin-top:0.75rem;">
-      <p style="color:var(--text-dim);font-size:0.9rem;">Loading…</p>
+    <!-- Minesweeper sub-tabs -->
+    <div id="bc-ms-tabs">
+      <div class="lb-tabs" role="tablist" id="bc-tabs">
+        <button class="lb-tab active" data-bc="beginner">Beginner</button>
+        <button class="lb-tab" data-bc="beginner_ng">Beginner NG</button>
+        <button class="lb-tab" data-bc="intermediate">Intermediate</button>
+        <button class="lb-tab" data-bc="intermediate_ng">Intermediate NG</button>
+        <button class="lb-tab" data-bc="expert">Expert</button>
+        <button class="lb-tab" data-bc="expert_ng">Expert NG</button>
+      </div>
+      <div id="bc-content" style="margin-top:0.75rem;">
+        <p style="color:var(--text-dim);font-size:0.9rem;">Loading…</p>
+      </div>
+    </div>
+
+    <!-- Tametsi sub-tabs (hidden by default) -->
+    <div id="bc-tmt-tabs" style="display:none;">
+      <div class="lb-tabs" role="tablist" id="bc-tmt-mode-tabs">
+        <button class="lb-tab active" data-tmt="beginner">Beginner</button>
+        <button class="lb-tab" data-tmt="intermediate">Intermediate</button>
+        <button class="lb-tab" data-tmt="expert">Expert</button>
+        <button class="lb-tab" data-tmt="wc_easy">WC Easy</button>
+        <button class="lb-tab" data-tmt="wc_hard">WC Hard</button>
+      </div>
+      <div id="bc-tmt-content" style="margin-top:0.75rem;">
+        <p style="color:var(--text-dim);font-size:0.9rem;">Loading…</p>
+      </div>
     </div>
   </div>
 
@@ -734,9 +757,11 @@ document.querySelectorAll('.lb-tab').forEach(btn => {
 
 loadStats();
 
-// ── Minesweeper Bootcamp ──────────────────────────────────────────────────────
+// ── Bootcamp (Minesweeper + Tametsi) ─────────────────────────────────────────
 let bcData = null;
 let bcCharts = [];
+let tmtBcData = null;
+let tmtBcCharts = [];
 
 const BC_LABELS = {
   beginner:        'Beginner',
@@ -881,6 +906,141 @@ document.getElementById('bc-tabs').addEventListener('click', e => {
   btn.classList.add('active');
   if (bcData) renderBootcamp(btn.dataset.bc);
 });
+
+// ── Tametsi Bootcamp ──────────────────────────────────────────────────────────
+const TMT_BC_LABELS = {
+  beginner: 'Beginner', intermediate: 'Intermediate', expert: 'Expert',
+  wc_easy: 'WC Easy', wc_hard: 'WC Hard',
+};
+
+async function loadTametsiBootcamp() {
+  try {
+    const res = await fetch('/api/profile/tametsi-bootcamp');
+    tmtBcData = await res.json();
+    renderTametsiBootcamp('beginner');
+  } catch (e) {
+    document.getElementById('bc-tmt-content').innerHTML =
+      `<p style="color:var(--text-dim);font-size:0.9rem;">Could not load Tametsi bootcamp data.</p>`;
+  }
+}
+
+function renderTametsiBootcamp(mode) {
+  const content = document.getElementById('bc-tmt-content');
+  tmtBcCharts.forEach(c => c.destroy());
+  tmtBcCharts = [];
+
+  const data = tmtBcData?.[mode];
+  if (!data || data.length === 0) {
+    content.innerHTML = `<p style="color:var(--text-dim);font-size:0.9rem;">No games recorded for ${TMT_BC_LABELS[mode]} yet.</p>`;
+    return;
+  }
+
+  const times = data.map(g => g.ms != null ? +(g.ms / 1000).toFixed(3) : null);
+  const cps   = data.map(g => {
+    const clicks = (g.lc || 0) + (g.rc || 0);
+    return clicks > 0 && g.ms > 0 ? +(clicks / (g.ms / 1000)).toFixed(2) : null;
+  });
+  const eff = data.map(g => {
+    const clicks = (g.lc || 0) + (g.rc || 0);
+    return g.bbbv && clicks > 0 ? Math.round(g.bbbv / clicks * 100) : null;
+  });
+
+  const validTimes = times.filter(t => t > 0);
+  const bestTime   = validTimes.length ? Math.min(...validTimes).toFixed(3) : '—';
+  const avgTime    = validTimes.length ? (validTimes.reduce((a, b) => a + b, 0) / validTimes.length).toFixed(1) : '—';
+  const validCps   = cps.filter(c => c !== null);
+  const avgCps     = validCps.length ? (validCps.reduce((a, b) => a + b, 0) / validCps.length).toFixed(2) : '—';
+  const validEff   = eff.filter(e => e !== null);
+  const avgEff     = validEff.length ? Math.round(validEff.reduce((a, b) => a + b, 0) / validEff.length) + '%' : '—';
+
+  content.innerHTML = `
+    <div class="bc-summary">
+      <span class="bc-stat"><strong>${data.length}</strong> games</span>
+      <span class="bc-sep">·</span>
+      <span class="bc-stat">Best <strong>${bestTime}s</strong></span>
+      <span class="bc-sep">·</span>
+      <span class="bc-stat">Avg <strong>${avgTime}s</strong></span>
+      <span class="bc-sep">·</span>
+      <span class="bc-stat">Avg CPS <strong>${avgCps}</strong></span>
+      <span class="bc-sep">·</span>
+      <span class="bc-stat">Avg eff <strong>${avgEff}</strong></span>
+    </div>
+    <div class="bc-charts-grid" style="margin-top:0.75rem;">
+      <div class="bc-chart-box">
+        <div class="bc-chart-title">Time (seconds)</div>
+        <canvas id="tmt-chart-time"></canvas>
+      </div>
+      <div class="bc-chart-box">
+        <div class="bc-chart-title">Clicks / second</div>
+        <canvas id="tmt-chart-cps"></canvas>
+      </div>
+      <div class="bc-chart-box">
+        <div class="bc-chart-title">Efficiency (%)</div>
+        <canvas id="tmt-chart-eff"></canvas>
+      </div>
+    </div>
+  `;
+
+  const cs      = getComputedStyle(document.documentElement);
+  const accent  = cs.getPropertyValue('--accent').trim()  || '#4caf50';
+  const accent2 = cs.getPropertyValue('--accent2').trim() || '#2196f3';
+  const textDim = cs.getPropertyValue('--text-dim').trim() || '#888';
+  const border  = cs.getPropertyValue('--border').trim()  || '#333';
+  const labels  = data.map((_, i) => i + 1);
+  const ptRadius = data.length > 50 ? 1 : 3;
+
+  function makeChart(id, label, color, chartData, suffix) {
+    return new Chart(document.getElementById(id), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label, data: chartData,
+          borderColor: color, backgroundColor: color + '22',
+          fill: true, tension: 0.3, pointRadius: ptRadius,
+          pointHoverRadius: 5, spanGaps: true,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        animation: { duration: 300 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => `Game ${items[0].label}`,
+              label: (item) => `${item.dataset.label}: ${item.raw ?? '—'}${suffix}`,
+            },
+          },
+        },
+        scales: {
+          x: { ticks: { color: textDim, maxTicksLimit: 10 }, grid: { color: border + '44' } },
+          y: { ticks: { color: textDim },                    grid: { color: border + '44' } },
+        },
+      },
+    });
+  }
+
+  tmtBcCharts.push(makeChart('tmt-chart-time', 'Time (s)', accent2,   times, 's'));
+  tmtBcCharts.push(makeChart('tmt-chart-cps',  'CPS',      accent,    cps,   ''));
+  tmtBcCharts.push(makeChart('tmt-chart-eff',  'Eff %',    '#f0a500', eff,   '%'));
+}
+
+document.getElementById('bc-tmt-mode-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('[data-tmt]');
+  if (!btn) return;
+  document.querySelectorAll('#bc-tmt-mode-tabs .lb-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (tmtBcData) renderTametsiBootcamp(btn.dataset.tmt);
+});
+
+function switchBootcampGame(game) {
+  document.querySelectorAll('#bc-game-toggle .lb-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector(`#bc-game-toggle [data-game="${game}"]`).classList.add('active');
+  document.getElementById('bc-ms-tabs').style.display  = game === 'ms'  ? '' : 'none';
+  document.getElementById('bc-tmt-tabs').style.display = game === 'tmt' ? '' : 'none';
+  if (game === 'tmt' && !tmtBcData) loadTametsiBootcamp();
+}
 
 loadBootcamp();
 

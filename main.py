@@ -5400,6 +5400,62 @@ def profile_bootcamp(request: Request, db: Session = Depends(get_db)):
     return _build_bootcamp(user["email"], db)
 
 
+def _build_tametsi_bootcamp(email: str, db: Session) -> dict:
+    """Last 100 solved Tametsi games per mode for Bootcamp charts."""
+    result = {}
+    for level in ("beginner", "intermediate", "expert"):
+        rows = (
+            db.query(TametsiScore)
+            .filter(TametsiScore.user_email == email, TametsiScore.level == level)
+            .order_by(TametsiScore.created_at.desc())
+            .limit(100)
+            .all()
+        )
+        if not rows:
+            result[level] = None
+            continue
+        rows = list(reversed(rows))
+        result[level] = [
+            {
+                "ms":   r.time_ms,
+                "bbbv": r.bbbv,
+                "lc":   r.left_clicks,
+                "rc":   r.right_clicks,
+            }
+            for r in rows
+        ]
+    for key, difficulty in (("wc_easy", "easy"), ("wc_hard", "hard")):
+        rows = (
+            db.query(WC2026Score)
+            .filter(WC2026Score.email == email, WC2026Score.difficulty == difficulty)
+            .order_by(WC2026Score.solved_at.desc())
+            .limit(100)
+            .all()
+        )
+        if not rows:
+            result[key] = None
+            continue
+        rows = list(reversed(rows))
+        result[key] = [
+            {
+                "ms":   r.solve_time_ms,
+                "bbbv": r.bbbv,
+                "lc":   r.left_clicks,
+                "rc":   r.right_clicks,
+            }
+            for r in rows
+        ]
+    return result
+
+
+@app.get("/api/profile/tametsi-bootcamp")
+def profile_tametsi_bootcamp(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    return _build_tametsi_bootcamp(user["email"], db)
+
+
 @app.get("/api/profile/stats")
 def profile_stats(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
@@ -7707,12 +7763,14 @@ def tametsi_load_board(board_hash: str, db: Session = Depends(get_db)):
 
 
 class TametsiScoreSubmit(BaseModel):
-    board_hash: str = Field(..., min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
-    level:      str = Field(..., pattern=r"^(beginner|intermediate|expert)$")
-    is_daily:   bool
-    name:       str = Field(..., min_length=1, max_length=32)
-    time_ms:    int = Field(..., ge=1, le=9_999_999)
-    bbbv:       int = Field(..., ge=1, le=10_000)
+    board_hash:   str = Field(..., min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
+    level:        str = Field(..., pattern=r"^(beginner|intermediate|expert)$")
+    is_daily:     bool
+    name:         str = Field(..., min_length=1, max_length=32)
+    time_ms:      int = Field(..., ge=1, le=9_999_999)
+    bbbv:         int = Field(..., ge=1, le=10_000)
+    left_clicks:  Optional[int] = None
+    right_clicks: Optional[int] = None
 
     @field_validator("name")
     @classmethod
@@ -7753,15 +7811,17 @@ def submit_tametsi_score(
 
     client_type = get_client_type(request)
     entry = TametsiScore(
-        board_hash  = payload.board_hash,
-        level       = payload.level,
-        is_daily    = payload.is_daily,
-        name        = payload.name,
-        user_email  = user["email"] if user else None,
-        guest_token = guest_token,
-        time_ms     = payload.time_ms,
-        bbbv        = payload.bbbv,
-        client_type = client_type,
+        board_hash   = payload.board_hash,
+        level        = payload.level,
+        is_daily     = payload.is_daily,
+        name         = payload.name,
+        user_email   = user["email"] if user else None,
+        guest_token  = guest_token,
+        time_ms      = payload.time_ms,
+        bbbv         = payload.bbbv,
+        left_clicks  = payload.left_clicks,
+        right_clicks = payload.right_clicks,
+        client_type  = client_type,
     )
     db.add(entry)
 
@@ -7840,6 +7900,103 @@ def tametsi_leaderboard_board(board_hash: str, db: Session = Depends(get_db)):
         .all()
     )
     return _enrich_with_profiles(top, db)
+
+
+# ── Tametsi History ──────────────────────────────────────────────────────────
+
+_TAMETSI_HISTORY_MODES = {"all", "beginner", "intermediate", "expert", "wc_easy", "wc_hard"}
+_TAMETSI_HISTORY_PAGE_SIZE = 50
+
+
+@app.get("/api/tametsi/history")
+def tametsi_history_api(
+    request: Request,
+    mode: str = "all",
+    page: int = 1,
+    db: Session = Depends(get_db),
+):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Login required"}, status_code=401)
+    if mode not in _TAMETSI_HISTORY_MODES:
+        return JSONResponse({"error": "Invalid mode"}, status_code=400)
+    page = max(1, page)
+
+    email = user["email"]
+    rows = []
+
+    if mode in ("all", "beginner", "intermediate", "expert"):
+        levels = (
+            ["beginner", "intermediate", "expert"] if mode == "all"
+            else [mode]
+        )
+        q = (
+            db.query(TametsiScore)
+            .filter(TametsiScore.user_email == email, TametsiScore.level.in_(levels))
+            .all()
+        )
+        for r in q:
+            rows.append({
+                "source":       "tametsi",
+                "mode":         r.level,
+                "date":         r.created_at.strftime("%Y-%m-%d %H:%M") if r.created_at else "",
+                "time_ms":      r.time_ms,
+                "bbbv":         r.bbbv,
+                "left_clicks":  r.left_clicks,
+                "right_clicks": r.right_clicks,
+                "is_daily":     r.is_daily,
+                "country_slug": None,
+                "sort_key":     r.created_at,
+            })
+
+    if mode in ("all", "wc_easy", "wc_hard"):
+        difficulties = (
+            ["easy", "hard"] if mode == "all"
+            else ["easy" if mode == "wc_easy" else "hard"]
+        )
+        q = (
+            db.query(WC2026Score)
+            .filter(WC2026Score.email == email, WC2026Score.difficulty.in_(difficulties))
+            .all()
+        )
+        for r in q:
+            rows.append({
+                "source":       "wc2026",
+                "mode":         f"wc_{r.difficulty}",
+                "date":         r.solved_at.strftime("%Y-%m-%d %H:%M") if r.solved_at else "",
+                "time_ms":      r.solve_time_ms,
+                "bbbv":         r.bbbv,
+                "left_clicks":  r.left_clicks,
+                "right_clicks": r.right_clicks,
+                "is_daily":     False,
+                "country_slug": r.country_slug,
+                "sort_key":     r.solved_at,
+            })
+
+    rows.sort(key=lambda x: x["sort_key"] or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
+    for r in rows:
+        del r["sort_key"]
+
+    total = len(rows)
+    pages = max(1, (total + _TAMETSI_HISTORY_PAGE_SIZE - 1) // _TAMETSI_HISTORY_PAGE_SIZE)
+    page  = min(page, pages)
+    start = (page - 1) * _TAMETSI_HISTORY_PAGE_SIZE
+    games = rows[start: start + _TAMETSI_HISTORY_PAGE_SIZE]
+
+    return {"games": games, "total": total, "page": page, "pages": pages}
+
+
+@app.get("/tametsi/history", response_class=HTMLResponse)
+def tametsi_history_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse("/login", status_code=302)
+    return templates.TemplateResponse("tametsi_history.html", {
+        "request": request,
+        "user":    user,
+        "t":       get_t(request),
+        "mode":    "tametsi",
+    })
 
 
 # ── Numbers Match ─────────────────────────────────────────────────────────────
@@ -8295,6 +8452,9 @@ def wc2026_solve(slug: str, difficulty: str, payload: WC2026SolvePayload,
         flags_correct=flags_correct,
         solve_bonus=solve_bonus,
         solve_time_ms=payload.time_ms,
+        bbbv=payload.bbbv,
+        left_clicks=payload.left_clicks,
+        right_clicks=payload.right_clicks,
         total_points=total_points,
     ))
     db.commit()
