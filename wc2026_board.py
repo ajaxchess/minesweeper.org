@@ -32,9 +32,9 @@ def _make_board(email: str, country_slug: str, difficulty: str):
     rng  = random.Random(_seed_for(email, country_slug, difficulty))
     board = generate_board(spec["rows"], spec["cols"], spec["mines"], rng=rng)
     mines_json = json.dumps(sorted([r, c] for r, c in board.mines))
-    total      = spec["rows"] * spec["cols"]
-    # cell 0 (top-left) starts revealed; all others hidden
-    cells      = ["revealed"] + ["hidden"] * (total - 1)
+    total = spec["rows"] * spec["cols"]
+    # all cells start hidden; the JS reveals cell 0 on first click (start-gate)
+    cells = ["hidden"] * total
     cells_json = json.dumps(cells)
     return mines_json, cells_json
 

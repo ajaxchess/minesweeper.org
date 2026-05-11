@@ -8289,6 +8289,25 @@ def wc2026_solve(slug: str, difficulty: str,
             "solve_bonus": solve_bonus, "total_points": total_points}
 
 
+@app.post("/api/wc2026/board/{slug}/{difficulty}/reset")
+def wc2026_reset(slug: str, difficulty: str,
+                 request: Request, db: Session = Depends(get_db)):
+    """Delete the board state so a fresh board is generated on next page load."""
+    if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
+        raise HTTPException(status_code=400, detail="Invalid params")
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Login required"}, status_code=401)
+
+    row = (db.query(WC2026BoardState)
+             .filter_by(email=user["email"], country_slug=slug, difficulty=difficulty)
+             .first())
+    if row and not row.is_solved:
+        db.delete(row)
+        db.commit()
+    return {"ok": True}
+
+
 # ── API: leaderboards ─────────────────────────────────────────────────────────
 
 @app.get("/api/wc2026/leaderboard/countries")

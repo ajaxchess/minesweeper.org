@@ -72,6 +72,9 @@ function wcMountBoard(wrap) {
     let board = JSON.parse(wrap.dataset.board);
     let { mineSet, adj } = wcBuildAdj(board.mine_layout, board.rows, board.cols);
     let busy = false;
+    // game starts when cell 0 is clicked; auto-detect if a board was already started
+    let started = board.cells.some(s => s === 'revealed');
+    let timerInterval = null, elapsedSec = 0;
 
     // ── DOM skeleton ──────────────────────────────────────────────────────────
     wrap.innerHTML = '';
@@ -81,6 +84,12 @@ function wcMountBoard(wrap) {
     const zoneBar = document.createElement('div');
     zoneBar.className = 'wc-zone-bar';
     wrap.appendChild(zoneBar);
+
+    const timerEl = document.createElement('div');
+    timerEl.className = 'wc-timer';
+    timerEl.textContent = '0:00';
+    timerEl.style.display = started ? '' : 'none';
+    wrap.appendChild(timerEl);
 
     const grid = document.createElement('div');
     grid.className = 'wc-tmt-grid';
@@ -92,6 +101,23 @@ function wcMountBoard(wrap) {
     msgBanner.id = `${uid}-msg`;
     msgBanner.style.display = 'none';
     wrap.appendChild(msgBanner);
+
+    // ── Timer ─────────────────────────────────────────────────────────────────
+    function startTimer() {
+        if (timerInterval) return;
+        timerEl.style.display = '';
+        const t0 = Date.now() - elapsedSec * 1000;
+        timerInterval = setInterval(() => {
+            elapsedSec = (Date.now() - t0) / 1000;
+            const m = Math.floor(elapsedSec / 60);
+            const s = Math.floor(elapsedSec % 60);
+            timerEl.textContent = `${m}:${String(s).padStart(2, '0')}`;
+        }, 500);
+    }
+    function stopTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
 
     // ── Zone bar ──────────────────────────────────────────────────────────────
     function updateZoneBar() {
@@ -132,6 +158,12 @@ function wcMountBoard(wrap) {
             case 'hidden':
                 el.classList.add('wc-cell-hidden');
                 el.style.background = zoneColor;
+                if (!started && idx === 0) {
+                    el.classList.add('wc-cell-start');
+                    el.textContent = '▶';
+                    el.style.color = contrastColor(zoneColor);
+                    el.style.filter = 'none';
+                }
                 break;
 
             case 'flagged':
@@ -265,6 +297,7 @@ function wcMountBoard(wrap) {
     // ── Interaction ───────────────────────────────────────────────────────────
     async function handleReveal(idx) {
         if (busy || board.is_solved) return;
+        if (!started && idx !== 0) return;   // gate: only top-left starts the game
         if (board.cells[idx] !== 'hidden') return;
         busy = true;
         try {
@@ -275,9 +308,11 @@ function wcMountBoard(wrap) {
             });
             if (!res.ok) return;
             const data = await res.json();
+            if (!started) { started = true; startTimer(); }
             applyBoardUpdate(data);
             if (data.hit_mine) {
-                showMsg('💥 Oops — you clicked a mine! You can still flag the rest and solve.', 'wc-msg-warn');
+                stopTimer();
+                showExplosionBanner();
             } else {
                 checkAutoSolve();
             }
@@ -287,7 +322,7 @@ function wcMountBoard(wrap) {
     }
 
     async function handleFlag(idx) {
-        if (busy || board.is_solved) return;
+        if (busy || board.is_solved || !started) return;
         if (board.cells[idx] === 'revealed' || board.cells[idx] === 'exploded') return;
         busy = true;
         try {
@@ -327,17 +362,40 @@ function wcMountBoard(wrap) {
     }
 
     function showSolvedBanner(result) {
+        stopTimer();
+        const elapsed = elapsedSec;
+        const m = Math.floor(elapsed / 60), s = Math.floor(elapsed % 60);
+        const timeStr = elapsed > 0 ? ` in ${m}:${String(s).padStart(2,'0')}` : '';
         msgBanner.className = 'wc-msg-banner wc-msg-solved';
         msgBanner.innerHTML = `
             <div class="wc-solved-trophy">🏆</div>
             <div class="wc-solved-text">
-                <strong>Board Solved!</strong><br>
+                <strong>Board Solved${timeStr}!</strong><br>
                 +${result.flags_correct} flags &nbsp;+${result.solve_bonus} bonus
                 = <strong>${result.total_points} pts</strong> for your team
             </div>
         `;
         msgBanner.style.display = 'flex';
         board.is_solved = true;
+    }
+
+    function showExplosionBanner() {
+        msgBanner.className = 'wc-msg-banner wc-msg-warn';
+        msgBanner.innerHTML = '';
+        const txt = document.createElement('span');
+        txt.textContent = '💥 Mine hit! ';
+        const btn = document.createElement('button');
+        btn.className = 'wc-try-again-btn';
+        btn.textContent = '↩ Try Again';
+        btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            btn.textContent = 'Resetting…';
+            const r = await fetch(`/api/wc2026/board/${country}/${difficulty}/reset`, { method: 'POST' });
+            if (r.ok) location.reload();
+            else { btn.disabled = false; btn.textContent = '↩ Try Again'; }
+        });
+        msgBanner.append(txt, btn);
+        msgBanner.style.display = 'flex';
     }
 
     function showMsg(text, cls) {
@@ -376,6 +434,12 @@ function wcMountBoard(wrap) {
 .wc-zone-label { opacity: .8; font-weight: 400; }
 .wc-zone-count { font-size: 1rem; }
 .wc-flag-count { color: var(--text-dim); font-size: .85rem; }
+.wc-timer {
+    font-size: .85rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-dim);
+    margin-bottom: .3rem;
+}
 
 .wc-tmt-grid {
     display: grid;
@@ -463,7 +527,20 @@ function wcMountBoard(wrap) {
     background: rgba(255,160,0,.15);
     border: 1px solid rgba(255,160,0,.4);
     color: var(--text);
+    gap: .6rem;
+    align-items: center;
 }
+.wc-try-again-btn {
+    background: var(--accent, #4a90d9);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: .25rem .7rem;
+    cursor: pointer;
+    font-size: .85rem;
+    white-space: nowrap;
+}
+.wc-try-again-btn:disabled { opacity: .6; cursor: default; }
 .wc-msg-solved {
     background: rgba(0,180,0,.12);
     border: 1px solid rgba(0,180,0,.35);
