@@ -1678,6 +1678,38 @@ def puzzles_mosaic_redirect(request: Request):
 def puzzles_numbers_match_redirect(request: Request):
     return RedirectResponse("/numbers-match", status_code=301)
 
+@app.get("/puzzles/15puzzle", response_class=HTMLResponse)
+def puzzles_15puzzle_redirect(request: Request):
+    return RedirectResponse("/other/15puzzle", status_code=301)
+
+@app.get("/puzzles/2048", response_class=HTMLResponse)
+def puzzles_2048_redirect(request: Request):
+    return RedirectResponse("/other/2048", status_code=301)
+
+@app.get("/puzzles/2048hex", response_class=HTMLResponse)
+def puzzles_2048hex_redirect(request: Request):
+    return RedirectResponse("/other/2048hex", status_code=301)
+
+@app.get("/puzzles/mahjong", response_class=HTMLResponse)
+def puzzles_mahjong_redirect(request: Request):
+    return RedirectResponse("/other/mahjong", status_code=301)
+
+@app.get("/puzzles/jigsaw", response_class=HTMLResponse)
+def puzzles_jigsaw_redirect(request: Request):
+    return RedirectResponse("/other/jigsaw", status_code=301)
+
+@app.get("/puzzles/schulte", response_class=HTMLResponse)
+def puzzles_schulte_redirect(request: Request):
+    return RedirectResponse("/other/schulte", status_code=301)
+
+@app.get("/puzzles/schulte-grid", response_class=HTMLResponse)
+def puzzles_schulte_grid_redirect(request: Request):
+    return RedirectResponse("/other/schulte", status_code=301)
+
+@app.get("/puzzles/sudoku", response_class=HTMLResponse)
+def puzzles_sudoku_redirect(request: Request):
+    return RedirectResponse("/other/sudoku", status_code=301)
+
 @app.get("/other", response_class=HTMLResponse)
 def other_hub_redirect(request: Request):
     return RedirectResponse("/puzzles", status_code=301)
