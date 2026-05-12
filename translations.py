@@ -1913,6 +1913,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "about_tech_p": "La retejo estas desegnita por esti rapida, malpeza, kaj alirebla. Ĝi funkcias sur labortablaj kaj porteblaj retumiloj sen postuli iujn ajn elŝutojn aŭ kromaĵojn.",
         "about_back_play": "← Ludi Minesweeper",
         "about_back_history": "Reteja Historio →",
+
+        "team_title": "Renkontu la Teamon",
+        "team_page_title": "Renkontu la Teamon — minesweeper.org",
+        "team_page_desc": "Renkontu la teamon malantaŭ minesweeper.org — Richard Cross kaj Honey la maskoto.",
+        "team_richard_h2": "Richard Cross — Fondinto",
+        "team_richard_p1": "Richard Cross estas kunfondinto kaj CFO de <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a>, programara konsultejo specialiĝanta pri ttteja disvolvo. Li havas MBA kun Honoro de la University of Chicago Booth School of Business (koncentriĝoj en Entreprenenureco kaj Ekonomiko), Ph.D. en Fiziko de la University of Wisconsin-Madison, kaj bakalaŭrajn diplomojn en Fiziko kaj Ekonomiko de la Louisiana State University.",
+        "team_richard_p2": "Lia financa kariero ampleksas kvantuman komercan subtenon ĉe Bank of America, energian kaj infrastrukturan financon ĉe AEP Energy, kaj jardek kiel Ĉefa Instruista Asistanto por Entreprenenura Financo kaj Privata Akcio ĉe la University of Chicago. Lia teknika kariero kuras paralele: reteja fidindeca inĝenierado, DevOps, kaj nuba arkitekturo ĉe Bank of America, HERE Technologies kaj Truepill, kun atestoj en AWS SysOps, Cisco CCST Networking kaj Six Sigma.",
+        "team_richard_p3": "Richard ankaŭ estas kunverkisto de 72 publikaĵoj kun la ZEUS Collaboration ĉe DESY en Hamburgo. Li unue lanĉis Minesweeper.org en 1999 kaj <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a> en 2007, kaj nun alportas la Vibe Coding aliron al ttteja disvolvo.",
+        "team_honey_h2": "Honey — Maskoto",
+        "team_honey_p1": "Honey estas la oficiala maskoto de minesweeper.org. Ŝi kontrolas ĉiun funkcion antaŭ ol ĝi estas publikigita kaj ankoraŭ ne eksplodigis eĉ unu mino — natura talento, aŭ eble ŝi simple evitas klaki ion ajn.",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Ludi la Honey-puzlon →</a>",
+        "team_back_about": "← Pri ni",
     },
 
     "de": {
@@ -2795,6 +2807,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "about_tech_p": "Die Website ist auf Schnelligkeit, Leichtgewichtigkeit und Barrierefreiheit ausgelegt. Sie funktioniert auf Desktop- und Mobilbrowsern, ohne dass Downloads oder Plugins erforderlich sind.",
         "about_back_play": "← Minesweeper spielen",
         "about_back_history": "Website-Geschichte →",
+
+        "team_title": "Das Team",
+        "team_page_title": "Das Team — minesweeper.org",
+        "team_page_desc": "Lernen Sie das Team hinter minesweeper.org kennen — Richard Cross und Honey, das Maskottchen.",
+        "team_richard_h2": "Richard Cross — Gründer",
+        "team_richard_p1": "Richard Cross ist Mitgründer und CFO von <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a>, einer Softwareberatung mit Schwerpunkt Webentwicklung. Er besitzt einen MBA mit Auszeichnung von der University of Chicago Booth School of Business (Schwerpunkte Entrepreneurship und Economics), einen Ph.D. in Physik von der University of Wisconsin-Madison sowie Bachelor-Abschlüsse in Physik und Economics von der Louisiana State University.",
+        "team_richard_p2": "Seine Finanzkarriere umfasst die Unterstützung des quantitativen Handels bei Bank of America, Energie- und Infrastrukturfinanzierung bei AEP Energy sowie ein Jahrzehnt als leitender Lehrbeauftragter für Unternehmerfinanzierung und Private Equity an der University of Chicago. Parallel dazu verlief seine technische Karriere: Site-Reliability-Engineering, DevOps und Cloud-Architektur bei Bank of America, HERE Technologies und Truepill, mit Zertifizierungen in AWS SysOps, Cisco CCST Networking und Six Sigma.",
+        "team_richard_p3": "Richard ist zudem Mitautor von 72 Publikationen der ZEUS Collaboration am DESY in Hamburg. Er startete Minesweeper.org erstmals 1999 und <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a> im Jahr 2007 und bringt nun den Vibe-Coding-Ansatz in die Webentwicklung.",
+        "team_honey_h2": "Honey — Maskottchen",
+        "team_honey_p1": "Honey ist das offizielle Maskottchen von minesweeper.org. Sie prüft jedes Feature vor der Veröffentlichung und hat bis heute keine einzige Mine zur Explosion gebracht — natürliches Talent, oder vielleicht vermeidet sie es einfach, auf irgendetwas zu klicken.",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Honey-Puzzle spielen →</a>",
+        "team_back_about": "← Über uns",
     },
 
     "es": {
@@ -4324,6 +4348,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         'about_tech_p': "เว็บไซต์ได้รับการออกแบบให้รวดเร็ว เบา และเข้าถึงได้ ทำงานบนเบราว์เซอร์เดสก์ท็อปและมือถือโดยไม่ต้องดาวน์โหลดหรือติดตั้งปลั๊กอินใดๆ",
         'about_back_play': "← เล่นการกวาดทุ่นระเบิด",
         'about_back_history': "ประวัติเว็บไซต์ →",
+
+        "team_title": "พบกับทีมงาน",
+        "team_page_title": "พบกับทีมงาน — minesweeper.org",
+        "team_page_desc": "พบกับทีมงานเบื้องหลัง minesweeper.org — Richard Cross และ Honey มาสคอตประจำเว็บไซต์",
+        "team_richard_h2": "Richard Cross — ผู้ก่อตั้ง",
+        "team_richard_p1": "Richard Cross คือผู้ร่วมก่อตั้งและ CFO ของ <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a> บริษัทที่ปรึกษาด้านซอฟต์แวร์ที่เชี่ยวชาญด้านการพัฒนาเว็บ เขาสำเร็จการศึกษา MBA เกียรตินิยมจาก University of Chicago Booth School of Business (สาขาวิชาเอกด้านการประกอบการและเศรษฐศาสตร์) ปริญญาเอก Ph.D. สาขาฟิสิกส์จาก University of Wisconsin-Madison และปริญญาตรีด้านฟิสิกส์และเศรษฐศาสตร์จาก Louisiana State University",
+        "team_richard_p2": "อาชีพด้านการเงินของเขาครอบคลุมการสนับสนุนการซื้อขายเชิงปริมาณที่ Bank of America การเงินด้านพลังงานและโครงสร้างพื้นฐานที่ AEP Energy และทศวรรษในฐานะผู้ช่วยสอนหลักด้านการเงินเพื่อการประกอบการและการลงทุนเอกชนที่ University of Chicago อาชีพด้านเทคนิคของเขาดำเนินไปควบคู่กัน ได้แก่ วิศวกรรมความน่าเชื่อถือของไซต์ DevOps และสถาปัตยกรรมคลาวด์ที่ Bank of America, HERE Technologies และ Truepill พร้อมใบรับรอง AWS SysOps, Cisco CCST Networking และ Six Sigma",
+        "team_richard_p3": "Richard ยังเป็นผู้ร่วมเขียนบทความวิจัย 72 ฉบับร่วมกับ ZEUS Collaboration ที่ DESY ในเมืองฮัมบูร์ก เขาเปิดตัว Minesweeper.org เป็นครั้งแรกในปี 1999 และ <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a> ในปี 2007 และปัจจุบันกำลังนำแนวทาง Vibe Coding มาใช้ในการพัฒนาเว็บ",
+        "team_honey_h2": "Honey — มาสคอต",
+        "team_honey_p1": "Honey คือมาสคอตอย่างเป็นทางการของ minesweeper.org เธอตรวจสอบทุกฟีเจอร์ก่อนที่จะเผยแพร่ และยังไม่เคยจุดชนวนทุ่นระเบิดแม้แต่ลูกเดียว ไม่รู้ว่าเป็นพรสวรรค์โดยธรรมชาติ หรือแค่ไม่ยอมคลิกอะไรเลย",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">เล่นจิ๊กซอว์ Honey →</a>",
+        "team_back_about": "← เกี่ยวกับเรา",
     },
 
     "pgl": {
@@ -5073,6 +5109,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "about_tech_p": "Ethay itesay isway esignedday otay ebay astfay, ightweightlay, andway accessibleway. Itway orksway onway esktopday andway obilmay owsersbray ithoutway equiringtray anyway ownloadsday orway uginspay.",
         "about_back_play": "← Ayplay Inesweepermay",
         "about_back_history": "Itesay Istoryhay →",
+
+        "team_title": "Meet the Crew",
+        "team_page_title": "Meet the Crew — minesweeper.org",
+        "team_page_desc": "Meet the scallywags behind minesweeper.org — Richard Cross and Honey the ship's mascot, arrr!",
+        "team_richard_h2": "Richard Cross — Cap'n Founder",
+        "team_richard_p1": "Richard Cross be the co-founder and CFO of <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a>, a software consultancy that specializes in web plunderin', arrr! He be holdin' an MBA with Honors from the University of Chicago Booth School of Business (concentrations in Entrepreneurship and Economics), a Ph.D. in Physics from the University of Wisconsin-Madison, and undergraduate degrees in Physics and Economics from Louisiana State University, shiver me timbers!",
+        "team_richard_p2": "His finance voyage spans quantitative trading support at Bank of America, energy and infrastructure finance at AEP Energy, and a decade as Head Teaching Assistant for Entrepreneurial Finance and Private Equity at the University of Chicago, yo ho ho! His technical journey runs in parallel, matey: site reliability engineering, DevOps, and cloud architecture at Bank of America, HERE Technologies, and Truepill, with certifications in AWS SysOps, Cisco CCST Networking, and Six Sigma — a fine haul of credentials, arrr!",
+        "team_richard_p3": "Richard be also a co-author on 72 publications with the ZEUS Collaboration at DESY in Hamburg, blimey! He first launched Minesweeper.org in 1999 and <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a> in 2007, and now be bringin' the Vibe Coding approach to web development, arrr!",
+        "team_honey_h2": "Honey — Ship's Mascot",
+        "team_honey_p1": "Honey be the official mascot of minesweeper.org, arrr! She reviews every feature before it ships and has yet to detonate a single mine, blow me down — natural talent, or maybe she just avoids clicking anything, the clever landlubber!",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Play the Honey jigsaw puzzle, matey →</a>",
+        "team_back_about": "← Back to the About waters",
     },
 
     "uk": {
@@ -5841,6 +5889,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         'about_tech_p': "Сайт розроблено швидким, легким та доступним. Він працює в настільних та мобільних браузерах без потреби в будь-яких завантаженнях чи плагінах.",
         'about_back_play': "← Грати в Сапера",
         'about_back_history': "Історія Сайту →",
+
+        "team_title": "Познайомтеся з командою",
+        "team_page_title": "Познайомтеся з командою — minesweeper.org",
+        "team_page_desc": "Познайомтеся з командою minesweeper.org — Richard Cross та талісман Honey.",
+        "team_richard_h2": "Richard Cross — Засновник",
+        "team_richard_p1": "Richard Cross — співзасновник і CFO компанії <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a>, консалтингової компанії у сфері програмного забезпечення, що спеціалізується на веб-розробці. Він має ступінь MBA з відзнакою University of Chicago Booth School of Business (спеціалізації: підприємництво та економіка), Ph.D. з фізики University of Wisconsin-Madison, а також ступені бакалавра з фізики та економіки Louisiana State University.",
+        "team_richard_p2": "Його фінансова кар'єра охоплює підтримку кількісного трейдингу в Bank of America, фінансування енергетики та інфраструктури в AEP Energy, а також десятиліття на посаді головного асистента викладача з підприємницьких фінансів і прямих інвестицій в University of Chicago. Його технічна кар'єра розвивається паралельно: інженерія надійності сайтів, DevOps і хмарна архітектура в Bank of America, HERE Technologies і Truepill, з сертифікатами AWS SysOps, Cisco CCST Networking і Six Sigma.",
+        "team_richard_p3": "Richard також є співавтором 72 публікацій разом із ZEUS Collaboration у DESY в Гамбурзі. Вперше він запустив Minesweeper.org у 1999 році та <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a> у 2007 році, а тепер впроваджує підхід Vibe Coding у веб-розробку.",
+        "team_honey_h2": "Honey — Талісман",
+        "team_honey_p1": "Honey — офіційний талісман minesweeper.org. Вона перевіряє кожну функцію перед випуском і ще жодного разу не підірвала жодної міни — природний талант, або вона просто уникає натискати будь-що.",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Зіграйте в пазл із Honey →</a>",
+        "team_back_about": "← Про нас",
     },
 
     "fr": {
@@ -6589,6 +6649,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "about_tech_p": "Le site est conçu pour être rapide, léger et accessible. Il fonctionne sur les navigateurs de bureau et mobiles sans nécessiter de téléchargements ou de plugins.",
         "about_back_play": "← Jouer au Démineur",
         "about_back_history": "Historique du site →",
+
+        "team_title": "L'équipe",
+        "team_page_title": "L'équipe — minesweeper.org",
+        "team_page_desc": "Découvrez l'équipe derrière minesweeper.org — Richard Cross et Honey la mascotte.",
+        "team_richard_h2": "Richard Cross — Fondateur",
+        "team_richard_p1": "Richard Cross est cofondateur et CFO de <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a>, un cabinet de conseil en logiciels spécialisé dans le développement web. Il est titulaire d'un MBA avec mention de l'University of Chicago Booth School of Business (spécialisations en Entrepreneuriat et Économie), d'un Ph.D. en Physique de l'University of Wisconsin-Madison, et de licences en Physique et Économie de la Louisiana State University.",
+        "team_richard_p2": "Sa carrière en finance couvre le soutien au trading quantitatif chez Bank of America, la finance de l'énergie et des infrastructures chez AEP Energy, et une décennie en tant que principal assistant enseignant pour la Finance entrepreneuriale et le Private Equity à l'University of Chicago. Sa carrière technique se déroule en parallèle : ingénierie de la fiabilité des sites, DevOps et architecture cloud chez Bank of America, HERE Technologies et Truepill, avec des certifications en AWS SysOps, Cisco CCST Networking et Six Sigma.",
+        "team_richard_p3": "Richard est également coauteur de 72 publications avec la ZEUS Collaboration au DESY à Hambourg. Il a lancé Minesweeper.org pour la première fois en 1999 et <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a> en 2007, et apporte désormais l'approche Vibe Coding au développement web.",
+        "team_honey_h2": "Honey — Mascotte",
+        "team_honey_p1": "Honey est la mascotte officielle de minesweeper.org. Elle passe en revue chaque fonctionnalité avant sa mise en ligne et n'a encore fait exploser aucune mine — talent naturel, ou peut-être évite-t-elle simplement de cliquer sur quoi que ce soit.",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Jouer au puzzle Honey →</a>",
+        "team_back_about": "← À propos",
     },
 
     "ko": {
@@ -7355,6 +7427,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "about_tech_p": "이 사이트는 빠르고 가볍고 접근 가능하도록 설계되었습니다. 다운로드나 플러그인 없이 데스크탑 및 모바일 브라우저에서 작동합니다.",
         "about_back_play": "← 지뢰찾기 플레이",
         "about_back_history": "사이트 역사 →",
+
+        "team_title": "팀 소개",
+        "team_page_title": "팀 소개 — minesweeper.org",
+        "team_page_desc": "minesweeper.org 뒤에 있는 팀을 만나보세요 — Richard Cross와 마스코트 Honey.",
+        "team_richard_h2": "Richard Cross — 창립자",
+        "team_richard_p1": "Richard Cross는 웹 개발을 전문으로 하는 소프트웨어 컨설팅 회사 <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a>의 공동 창립자이자 CFO입니다. 그는 University of Chicago Booth School of Business에서 MBA(기업가 정신 및 경제학 전공)를 우등으로 취득하고, University of Wisconsin-Madison에서 물리학 Ph.D.를, Louisiana State University에서 물리학 및 경제학 학사 학위를 취득했습니다.",
+        "team_richard_p2": "그의 금융 경력은 Bank of America에서의 퀀트 트레이딩 지원, AEP Energy에서의 에너지 및 인프라 금융, 그리고 University of Chicago에서 기업가적 금융 및 사모펀드 수석 조교로 10년간 근무한 것을 포함합니다. 기술 경력도 병행하여 Bank of America, HERE Technologies, Truepill에서 사이트 신뢰성 엔지니어링, DevOps, 클라우드 아키텍처를 담당했으며, AWS SysOps, Cisco CCST Networking, Six Sigma 자격증을 보유하고 있습니다.",
+        "team_richard_p3": "Richard는 또한 함부르크 DESY의 ZEUS Collaboration과 함께 72편의 논문을 공동 저술했습니다. 1999년에 Minesweeper.org를 처음 출시하고 2007년에 <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a>을 출시했으며, 이제 Vibe Coding 접근 방식을 웹 개발에 도입하고 있습니다.",
+        "team_honey_h2": "Honey — 마스코트",
+        "team_honey_p1": "Honey는 minesweeper.org의 공식 마스코트입니다. 출시 전에 모든 기능을 검토하며 지금까지 단 한 개의 지뢰도 폭발시킨 적이 없습니다 — 타고난 재능인지, 아니면 그냥 아무것도 클릭하지 않는 것인지 모르겠습니다.",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Honey 직소 퍼즐 플레이 →</a>",
+        "team_back_about": "← 소개 페이지로",
     },
 
     "ja": {
@@ -8201,6 +8285,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "about_tech_p": "このサイトは高速で軽量、かつアクセスしやすいように設計されています。ダウンロードやプラグインを必要とせず、デスクトップとモバイルのブラウザで動作します。",
         "about_back_play": "← マインスイーパーをプレイ",
         "about_back_history": "サイトの歴史 →",
+
+        "team_title": "チームを紹介",
+        "team_page_title": "チームを紹介 — minesweeper.org",
+        "team_page_desc": "minesweeper.orgを支えるチームをご紹介します — Richard Crossとマスコットのhoney。",
+        "team_richard_h2": "Richard Cross — 創設者",
+        "team_richard_p1": "Richard Crossは<a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a>の共同創設者兼CFOです。同社はウェブ開発を専門とするソフトウェアコンサルタント会社です。彼はUniversity of Chicago Booth School of BusinessでMBAを優秀な成績で取得（起業家精神と経済学を専攻）、University of Wisconsin-MadisonでPhysicsのPh.D.を取得、Louisiana State UniversityでPhysicsとEconomicsの学士号を取得しています。",
+        "team_richard_p2": "彼の金融キャリアは、Bank of Americaでの定量的取引サポート、AEP Energyでのエネルギー・インフラ金融、そしてUniversity of Chicagoでの起業家金融とプライベートエクイティの主任ティーチングアシスタントとして10年間にわたる実績を含みます。技術キャリアもそれと並行して続いており、Bank of America、HERE Technologies、Truepillでのサイト信頼性エンジニアリング、DevOps、クラウドアーキテクチャを担当し、AWS SysOps、Cisco CCST Networking、Six Sigmaの認定資格を保有しています。",
+        "team_richard_p3": "RichardはハンブルクのDESYにおけるZEUS Collaborationでの72本の論文の共著者でもあります。1999年にMinesweeper.orgを初めて立ち上げ、2007年に<a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a>を立ち上げ、現在はVibe Codingアプローチをウェブ開発に取り入れています。",
+        "team_honey_h2": "Honey — マスコット",
+        "team_honey_p1": "Honeyはminesweeper.orgの公式マスコットです。リリース前にすべての機能を確認しており、これまで一度も地雷を爆発させたことがありません — 天性の才能なのか、それとも単純に何もクリックしないようにしているだけなのか。",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Honeyのジグソーパズルで遊ぶ →</a>",
+        "team_back_about": "← アバウトに戻る",
     },
     "zh": {
         # Nav
@@ -8951,6 +9047,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         'about_tech_p': "本网站设计为快速、轻量且易于访问。它可在桌面和移动浏览器上运行，无需任何下载或插件。",
         'about_back_play': "← 玩扫雷",
         'about_back_history': "网站历史 →",
+
+        "team_title": "认识团队",
+        "team_page_title": "认识团队 — minesweeper.org",
+        "team_page_desc": "认识 minesweeper.org 背后的团队 — Richard Cross 和吉祥物 Honey。",
+        "team_richard_h2": "Richard Cross — 创始人",
+        "team_richard_p1": "Richard Cross 是 <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a> 的联合创始人兼 CFO，这是一家专注于网页开发的软件咨询公司。他以优异成绩获得 University of Chicago Booth School of Business 的 MBA 学位（主修创业学和经济学），并持有 University of Wisconsin-Madison 的物理学 Ph.D. 学位，以及 Louisiana State University 的物理学和经济学双学士学位。",
+        "team_richard_p2": "他的金融职业生涯涵盖在 Bank of America 的量化交易支持、在 AEP Energy 的能源与基础设施融资，以及在 University of Chicago 担任创业金融与私募股权首席助教长达十年。他的技术职业生涯与此并行：在 Bank of America、HERE Technologies 和 Truepill 从事站点可靠性工程、DevOps 和云架构工作，并持有 AWS SysOps、Cisco CCST Networking 和 Six Sigma 认证。",
+        "team_richard_p3": "Richard 还是汉堡 DESY 的 ZEUS Collaboration 72 篇论文的共同作者。他于 1999 年首次推出 Minesweeper.org，并于 2007 年推出 <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a>，现正将 Vibe Coding 方法引入网页开发领域。",
+        "team_honey_h2": "Honey — 吉祥物",
+        "team_honey_p1": "Honey 是 minesweeper.org 的官方吉祥物。她在每个功能上线前都会逐一审查，且至今未引爆过任何一颗地雷——也许是天生的本领，也许她只是从不轻易点击任何东西。",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">来玩 Honey 拼图游戏 →</a>",
+        "team_back_about": "← 关于我们",
     },
     "zh-hant": {
         # Nav
@@ -9701,6 +9809,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         'about_tech_p': "本網站設計為快速、輕量且易於存取。它可在桌面和行動瀏覽器上執行，無需任何下載或外掛程式。",
         'about_back_play': "← 玩踩地雷",
         'about_back_history': "網站歷史 →",
+
+        "team_title": "認識團隊",
+        "team_page_title": "認識團隊 — minesweeper.org",
+        "team_page_desc": "認識 minesweeper.org 背後的團隊 — Richard Cross 和吉祥物 Honey。",
+        "team_richard_h2": "Richard Cross — 創辦人",
+        "team_richard_p1": "Richard Cross 是 <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a> 的聯合創辦人兼 CFO，這是一家專注於網頁開發的軟體顧問公司。他以優異成績取得 University of Chicago Booth School of Business 的 MBA 學位（主修創業學與經濟學），並持有 University of Wisconsin-Madison 的物理學 Ph.D. 學位，以及 Louisiana State University 的物理學與經濟學雙學士學位。",
+        "team_richard_p2": "他的金融職業生涯涵蓋在 Bank of America 的量化交易支援、在 AEP Energy 的能源與基礎設施融資，以及在 University of Chicago 擔任創業金融與私募股權首席助教長達十年。他的技術職業生涯與此並行：在 Bank of America、HERE Technologies 和 Truepill 從事網站可靠性工程、DevOps 和雲端架構工作，並持有 AWS SysOps、Cisco CCST Networking 和 Six Sigma 認證。",
+        "team_richard_p3": "Richard 亦是漢堡 DESY 的 ZEUS Collaboration 72 篇論文的共同作者。他於 1999 年首次推出 Minesweeper.org，並於 2007 年推出 <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a>，現正將 Vibe Coding 方法引入網頁開發領域。",
+        "team_honey_h2": "Honey — 吉祥物",
+        "team_honey_p1": "Honey 是 minesweeper.org 的官方吉祥物。她在每項功能上線前都會逐一審查，且至今從未引爆過任何一顆地雷——也許是天生的本領，也許她只是從不輕易點擊任何東西。",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">來玩 Honey 拼圖遊戲 →</a>",
+        "team_back_about": "← 關於我們",
     },
     "pl": {
         # Nav
@@ -10451,6 +10571,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "about_tech_p": "Strona jest zaprojektowana tak, aby była szybka, lekka i dostępna. Działa na przeglądarkach stacjonarnych i mobilnych bez konieczności pobierania lub instalowania wtyczek.",
         "about_back_play": "← Graj w sapera",
         "about_back_history": "Historia strony →",
+
+        "team_title": "Poznaj Zespół",
+        "team_page_title": "Poznaj Zespół — minesweeper.org",
+        "team_page_desc": "Poznaj zespół stojący za minesweeper.org — Richard Cross i Honey, maskotka.",
+        "team_richard_h2": "Richard Cross — Założyciel",
+        "team_richard_p1": "Richard Cross jest współzałożycielem i CFO firmy <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a>, konsultingu programistycznego specjalizującego się w tworzeniu stron internetowych. Posiada tytuł MBA z wyróżnieniem University of Chicago Booth School of Business (specjalizacje: Przedsiębiorczość i Ekonomia), doktorat z fizyki na University of Wisconsin-Madison oraz tytuły licencjata z fizyki i ekonomii na Louisiana State University.",
+        "team_richard_p2": "Jego kariera finansowa obejmuje wsparcie handlu ilościowego w Bank of America, finansowanie energetyczne i infrastrukturalne w AEP Energy oraz dekadę jako główny asystent dydaktyczny ds. finansowania przedsiębiorczości i private equity na University of Chicago. Równolegle przebiega jego kariera techniczna: inżynieria niezawodności witryn, DevOps i architektura chmurowa w Bank of America, HERE Technologies i Truepill, z certyfikatami AWS SysOps, Cisco CCST Networking i Six Sigma.",
+        "team_richard_p3": "Richard jest także współautorem 72 publikacji z ZEUS Collaboration w DESY w Hamburgu. Po raz pierwszy uruchomił Minesweeper.org w 1999 roku oraz <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a> w 2007 roku, a teraz wprowadza podejście Vibe Coding do tworzenia stron internetowych.",
+        "team_honey_h2": "Honey — Maskotka",
+        "team_honey_p1": "Honey jest oficjalną maskotką minesweeper.org. Sprawdza każdą funkcję przed jej wdrożeniem i jak dotąd nie wysadziła ani jednej miny — naturalny talent, a może po prostu unika klikania czegokolwiek.",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Zagraj w puzzle Honey →</a>",
+        "team_back_about": "← O nas",
     },
 
     "tl": {
@@ -11217,6 +11349,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         'about_tech_p': "Ang site ay dinisenyo na maging mabilis, magaan, at naa-access. Gumagana ito sa desktop at mobile browser nang hindi nangangailangan ng anumang pag-download o plugin.",
         'about_back_play': "← Maglaro ng Minesweeper",
         'about_back_history': "Kasaysayan ng Site →",
+
+        "team_title": "Makilala ang Koponan",
+        "team_page_title": "Makilala ang Koponan — minesweeper.org",
+        "team_page_desc": "Makilala ang koponan sa likod ng minesweeper.org — si Richard Cross at si Honey na maskot.",
+        "team_richard_h2": "Richard Cross — Tagapagtatag",
+        "team_richard_p1": "Si Richard Cross ang kapwa tagapagtatag at CFO ng <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a>, isang software consultancy na espesyalista sa web development. Mayroon siyang MBA na may Karangalan mula sa University of Chicago Booth School of Business (may konsentrasyon sa Entrepreneurship at Economics), Ph.D. sa Physics mula sa University of Wisconsin-Madison, at mga undergraduate na degree sa Physics at Economics mula sa Louisiana State University.",
+        "team_richard_p2": "Ang kanyang karera sa pananalapi ay sumasaklaw sa suporta ng quantitative trading sa Bank of America, financing ng enerhiya at imprastraktura sa AEP Energy, at isang dekada bilang Punong Teaching Assistant para sa Entrepreneurial Finance at Private Equity sa University of Chicago. Ang kanyang teknikal na karera ay tumatakbo nang magkatulad: site reliability engineering, DevOps, at cloud architecture sa Bank of America, HERE Technologies, at Truepill, na may mga sertipikasyon sa AWS SysOps, Cisco CCST Networking, at Six Sigma.",
+        "team_richard_p3": "Si Richard ay isa ring kapwa may-akda ng 72 na publikasyon kasama ang ZEUS Collaboration sa DESY sa Hamburg. Unang inilunsad niya ang Minesweeper.org noong 1999 at ang <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a> noong 2007, at ngayon ay inilalapat ang Vibe Coding na diskarte sa web development.",
+        "team_honey_h2": "Honey — Maskot",
+        "team_honey_p1": "Si Honey ang opisyal na maskot ng minesweeper.org. Sinusuri niya ang bawat feature bago ito ilabas at wala pa siyang nasabog na isang minahan — likas na talento, o baka iniiwasan lang niya ang mag-click ng kahit ano.",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Laruin ang Honey jigsaw puzzle →</a>",
+        "team_back_about": "← Tungkol Sa",
     },
 
     "ru": {
@@ -11968,6 +12112,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         'about_tech_p': "Сайт разработан быстрым, лёгким и доступным. Он работает в настольных и мобильных браузерах без каких-либо загрузок или плагинов.",
         'about_back_play': "← Играть в Сапёра",
         'about_back_history': "История Сайта →",
+
+        "team_title": "Познакомьтесь с командой",
+        "team_page_title": "Познакомьтесь с командой — minesweeper.org",
+        "team_page_desc": "Познакомьтесь с командой minesweeper.org — Richard Cross и талисман Honey.",
+        "team_richard_h2": "Richard Cross — Основатель",
+        "team_richard_p1": "Richard Cross — сооснователь и CFO компании <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a>, консалтинговой фирмы в области программного обеспечения, специализирующейся на веб-разработке. Он имеет степень MBA с отличием University of Chicago Booth School of Business (специализации: предпринимательство и экономика), Ph.D. по физике University of Wisconsin-Madison, а также степени бакалавра по физике и экономике Louisiana State University.",
+        "team_richard_p2": "Его финансовая карьера охватывает поддержку количественного трейдинга в Bank of America, финансирование энергетики и инфраструктуры в AEP Energy, а также десятилетие в роли главного ассистента преподавателя по предпринимательским финансам и прямым инвестициям в University of Chicago. Его техническая карьера развивается параллельно: инженерия надёжности сайтов, DevOps и облачная архитектура в Bank of America, HERE Technologies и Truepill, с сертификатами AWS SysOps, Cisco CCST Networking и Six Sigma.",
+        "team_richard_p3": "Richard также является соавтором 72 публикаций совместно с ZEUS Collaboration в DESY в Гамбурге. Впервые он запустил Minesweeper.org в 1999 году и <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a> в 2007 году, а теперь привносит подход Vibe Coding в веб-разработку.",
+        "team_honey_h2": "Honey — Талисман",
+        "team_honey_p1": "Honey — официальный талисман minesweeper.org. Она проверяет каждую функцию перед выпуском и ещё ни разу не подорвала ни одной мины — природный талант, или она просто избегает нажимать что-либо.",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Сыграйте в пазл с Honey →</a>",
+        "team_back_about": "← О нас",
     },
 
     "pt": {
@@ -12719,6 +12875,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "about_tech_p": "O site é projetado para ser rápido, leve e acessível. Funciona em navegadores desktop e móveis sem exigir downloads ou plugins.",
         "about_back_play": "← Jogar Campo Minado",
         "about_back_history": "Histórico do site →",
+
+        "team_title": "Conheça a Equipe",
+        "team_page_title": "Conheça a Equipe — minesweeper.org",
+        "team_page_desc": "Conheça a equipe por trás do minesweeper.org — Richard Cross e Honey, a mascote.",
+        "team_richard_h2": "Richard Cross — Fundador",
+        "team_richard_p1": "Richard Cross é cofundador e CFO da <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a>, uma consultoria de software especializada em desenvolvimento web. Ele possui MBA com Honras pela University of Chicago Booth School of Business (com concentrações em Empreendedorismo e Economia), Ph.D. em Física pela University of Wisconsin-Madison, e graduações em Física e Economia pela Louisiana State University.",
+        "team_richard_p2": "Sua carreira nas finanças abrange suporte a negociação quantitativa no Bank of America, finanças de energia e infraestrutura na AEP Energy, e uma década como Principal Assistente de Ensino de Finanças Empreendedoras e Private Equity na University of Chicago. Sua carreira técnica corre em paralelo: engenharia de confiabilidade de sites, DevOps e arquitetura em nuvem no Bank of America, HERE Technologies e Truepill, com certificações em AWS SysOps, Cisco CCST Networking e Six Sigma.",
+        "team_richard_p3": "Richard também é coautor de 72 publicações com a ZEUS Collaboration no DESY em Hamburgo. Ele lançou o Minesweeper.org pela primeira vez em 1999 e o <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a> em 2007, e agora traz a abordagem Vibe Coding ao desenvolvimento web.",
+        "team_honey_h2": "Honey — Mascote",
+        "team_honey_p1": "Honey é a mascote oficial do minesweeper.org. Ela revisa cada funcionalidade antes do lançamento e ainda não detonou uma única mina — talento natural, ou talvez ela simplesmente evite clicar em qualquer coisa.",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Jogue o quebra-cabeça da Honey →</a>",
+        "team_back_about": "← Sobre",
     },
 
     "it": {
@@ -13470,6 +13638,18 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "about_tech_p": "Il sito è progettato per essere veloce, leggero e accessibile. Funziona su browser desktop e mobile senza richiedere download o plugin.",
         "about_back_play": "← Gioca a Minesweeper",
         "about_back_history": "Cronologia del sito →",
+
+        "team_title": "Il Team",
+        "team_page_title": "Il Team — minesweeper.org",
+        "team_page_desc": "Scopri il team dietro minesweeper.org — Richard Cross e Honey, la mascotte.",
+        "team_richard_h2": "Richard Cross — Fondatore",
+        "team_richard_p1": "Richard Cross è cofondatore e CFO di <a href=\"https://regis.consulting\" target=\"_blank\" rel=\"noopener\">Regis Consulting</a>, una società di consulenza software specializzata nello sviluppo web. Ha conseguito un MBA con lode presso la University of Chicago Booth School of Business (concentrazioni in Imprenditorialità ed Economia), un Ph.D. in Fisica presso la University of Wisconsin-Madison e lauree triennali in Fisica ed Economia presso la Louisiana State University.",
+        "team_richard_p2": "La sua carriera finanziaria comprende il supporto al trading quantitativo presso Bank of America, la finanza energetica e infrastrutturale presso AEP Energy e un decennio come Capo Assistente Didattico per la Finanza Imprenditoriale e il Private Equity all'University of Chicago. La sua carriera tecnica procede in parallelo: site reliability engineering, DevOps e architettura cloud presso Bank of America, HERE Technologies e Truepill, con certificazioni in AWS SysOps, Cisco CCST Networking e Six Sigma.",
+        "team_richard_p3": "Richard è anche coautore di 72 pubblicazioni con la ZEUS Collaboration al DESY di Amburgo. Ha lanciato per la prima volta Minesweeper.org nel 1999 e <a href=\"https://ajaxchess.com\" target=\"_blank\" rel=\"noopener\">AjaxChess.com</a> nel 2007, e ora porta l'approccio Vibe Coding allo sviluppo web.",
+        "team_honey_h2": "Honey — Mascotte",
+        "team_honey_p1": "Honey è la mascotte ufficiale di minesweeper.org. Esamina ogni funzionalità prima del rilascio e non ha ancora fatto esplodere una singola mina — talento naturale, o forse evita semplicemente di cliccare su qualsiasi cosa.",
+        "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Gioca al puzzle di Honey →</a>",
+        "team_back_about": "← Chi siamo",
     },
 }
 
