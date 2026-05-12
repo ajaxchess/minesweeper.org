@@ -6930,7 +6930,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_rush":         "\u30e9\u30c3\u30b7\u30e5",
         "nav_variants":     "\u30d0\u30ea\u30a2\u30f3\u30c8",
         "nav_quests":       "\u30af\u30a8\u30b9\u30c8",
-        "nav_how_to_play":  "\u9045\u3073\u65b9",
+        "nav_how_to_play":  "\u904a\u3073\u65b9",
         # Auth
         "auth_sign_out":      "\u30ed\u30b0\u30a2\u30a6\u30c8",
         "auth_sign_in":       "\u30ed\u30b0\u30a4\u30f3",
