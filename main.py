@@ -8211,6 +8211,49 @@ def tametsi_history_page(request: Request, db: Session = Depends(get_db)):
     })
 
 
+@app.get("/api/tametsi/replay/{replay_id}")
+def get_tametsi_replay(replay_id: int, db: Session = Depends(get_db)):
+    import json as _json
+    replay = db.get(GameReplay, replay_id)
+    if not replay or not replay.mode or not replay.mode.startswith("tametsi-"):
+        raise HTTPException(status_code=404, detail="Replay not found")
+    board = db.get(TametsiBoard, replay.board_hash) if replay.board_hash else None
+    return {
+        "id":               replay.id,
+        "mode":             replay.mode,
+        "rows":             replay.rows,
+        "cols":             replay.cols,
+        "mines":            replay.mines,
+        "board_hash":       replay.board_hash,
+        "time_ms":          replay.time_ms,
+        "outcome":          replay.outcome,
+        "bbbv":             replay.bbbv,
+        "left_clicks":      replay.left_clicks,
+        "right_clicks":     replay.right_clicks,
+        "chord_clicks":     replay.chord_clicks,
+        "cells_revealed":   replay.cells_revealed,
+        "cells_total_safe": replay.cells_total_safe,
+        "created_at":       replay.created_at.isoformat() if replay.created_at else None,
+        "log":              _json.loads(replay.log_json) if replay.log_json else [],
+        "board_data":       board.board_data if board else None,
+    }
+
+
+@app.get("/tametsi/replay/{replay_id}", response_class=HTMLResponse)
+def tametsi_replay_page(replay_id: int, request: Request, db: Session = Depends(get_db)):
+    replay = db.get(GameReplay, replay_id)
+    if not replay or not replay.mode or not replay.mode.startswith("tametsi-"):
+        raise HTTPException(status_code=404, detail="Replay not found")
+    return templates.TemplateResponse("tametsi_replay.html", {
+        "request":   request,
+        "user":      get_current_user(request),
+        "t":         get_t(request),
+        "replay_id": replay_id,
+        "mode":      replay.mode,
+        "outcome":   replay.outcome,
+    })
+
+
 # ── Numbers Match ─────────────────────────────────────────────────────────────
 
 @app.get("/numbers-match", response_class=HTMLResponse)

@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}Tametsi Replay #{{ replay_id }} — minesweeper.org{% endblock %}
+{% block description %}Watch a replay of a Tametsi puzzle solve.{% endblock %}
+
+{% block content %}
+<style>
+/* ── Tametsi grid styles (shared with main game) ─────────────────────────── */
+#tmt-board-wrap {
+  position: relative; display: inline-block;
+  overflow-x: auto; max-width: 100%;
+}
+#tmt-grid {
+  display: grid;
+  grid-template-columns: auto repeat(var(--tmt-cols, 9), var(--tmt-cell-size, 32px));
+  gap: 2px; width: fit-content; padding: 4px;
+}
+.tmt-corner {}
+.tmt-col-hint {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end;
+  padding: 2px 0 5px; font-size: 0.65rem; font-weight: 700;
+  width: var(--tmt-cell-size, 32px); line-height: 1.4; gap: 1px;
+  border-radius: 3px;
+}
+.tmt-col-hint .tmt-remaining { display: block; text-align: center; color: #4caf50; }
+.tmt-col-hint .tmt-total    { display: block; text-align: center; color: var(--text-dim); }
+.tmt-col-hint.satisfied .tmt-remaining { opacity: 0.35; }
+.tmt-col-hint.satisfied { background: rgba(76,175,80,0.08); }
+.tmt-row-hint {
+  display: flex; flex-direction: row;
+  align-items: center; justify-content: flex-end;
+  gap: 2px; padding: 0 4px 0 0; font-size: 0.65rem; font-weight: 700;
+  height: var(--tmt-cell-size, 32px); white-space: nowrap; border-radius: 3px;
+}
+.tmt-row-hint .tmt-remaining { color: #4caf50; }
+.tmt-row-hint .tmt-total    { color: var(--text-dim); }
+.tmt-row-hint.satisfied .tmt-remaining { opacity: 0.35; }
+.tmt-row-hint.satisfied { background: rgba(76,175,80,0.08); }
+.tmt-cell {
+  width: var(--tmt-cell-size, 32px); height: var(--tmt-cell-size, 32px);
+  display: flex; align-items: center; justify-content: center;
+  user-select: none; border-radius: 3px; box-sizing: border-box;
+  font-size: 0.8rem; font-weight: 700; border: 1px solid var(--cell-border);
+  cursor: default;
+}
+.tmt-cell.tmt-hidden        { background: var(--cell-hidden); }
+.tmt-cell.tmt-revealed      { background: var(--cell-rev); border-color: #0d1520; font-size: 0.75rem; }
+.tmt-cell.tmt-flagged       { background: var(--cell-hidden); }
+.tmt-cell.tmt-question      { background: var(--cell-hidden); color: var(--text-dim); }
+.tmt-cell.tmt-exploded      { background: #c62828; border-color: #ff1744; font-size: 1rem; }
+.tmt-cell.tmt-mine-revealed { background: var(--cell-rev); border-color: #0d1520; }
+.tmt-cell.tmt-wrong-flag    { background: #c62828; border-color: #ff1744; font-size: 0.7rem; }
+.tmt-loading, .tmt-error { padding: 2rem; text-align: center; color: var(--text-dim); font-size: 0.9rem; }
+
+/* ── Replay controls ─────────────────────────────────────────────────────── */
+.tmt-r-header {
+  text-align: center; margin-bottom: 1rem;
+}
+.tmt-r-header h1 {
+  font-size: 1.35rem; margin: 0 0 0.3rem;
+}
+.tmt-r-header .tmt-r-back {
+  font-size: 0.85rem; color: var(--accent); text-decoration: none;
+}
+.tmt-r-header .tmt-r-back:hover { text-decoration: underline; }
+
+.tmt-r-stats {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 0.5rem 1.4rem; font-size: 0.85rem; color: var(--text-dim);
+  margin-bottom: 1rem;
+}
+.tmt-r-stats span strong { color: var(--text); }
+
+.tmt-r-controls {
+  display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: center; gap: 0.5rem; margin-bottom: 0.75rem;
+}
+.tmt-r-play-btn, .tmt-r-restart-btn {
+  padding: 0.35rem 1rem; border-radius: 6px; border: none;
+  font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  background: var(--accent); color: #fff; transition: opacity 0.15s;
+}
+.tmt-r-play-btn:hover, .tmt-r-restart-btn:hover { opacity: 0.85; }
+.tmt-r-restart-btn { background: var(--surface2); color: var(--text-dim); }
+
+.tmt-r-speed-btn {
+  padding: 0.25rem 0.6rem; border-radius: 4px; border: 1px solid var(--border);
+  font-size: 0.8rem; cursor: pointer; background: var(--card-bg); color: var(--text-dim);
+  transition: background 0.12s, color 0.12s;
+}
+.tmt-r-speed-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.tmt-r-timer-wrap {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.85rem; color: var(--text-dim);
+}
+#tmt-r-timer { font-variant-numeric: tabular-nums; color: var(--text); font-weight: 600; }
+
+.tmt-r-scrubber-row {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin-bottom: 0.75rem; max-width: 600px; margin-left: auto; margin-right: auto;
+}
+#tmt-r-scrubber {
+  flex: 1; accent-color: var(--accent); cursor: pointer; height: 4px;
+}
+.tmt-r-dur { font-size: 0.8rem; color: var(--text-dim); white-space: nowrap; }
+</style>
+
+<div style="max-width:700px;margin:0 auto;padding:1.5rem 1rem 4rem;">
+
+  <div class="tmt-r-header">
+    <a href="/tametsi" class="tmt-r-back">← Back to Tametsi</a>
+    <h1 id="tmt-r-title">Loading replay…</h1>
+  </div>
+
+  <!-- Stats row -->
+  <div class="tmt-r-stats">
+    <span>Time: <strong id="tmt-r-duration">—</strong></span>
+    <span>3BV: <strong id="tmt-r-bbbv">—</strong></span>
+    <span>Clicks: <strong id="tmt-r-clicks">—</strong></span>
+    <span>Efficiency: <strong id="tmt-r-eff">—</strong></span>
+    <span>Cells: <strong id="tmt-r-revealed">—</strong></span>
+  </div>
+
+  <!-- Playback controls -->
+  <div class="tmt-r-controls">
+    <button class="tmt-r-play-btn" id="tmt-r-play-btn">▶ Play</button>
+    <button class="tmt-r-restart-btn" id="tmt-r-restart-btn">⏮ Restart</button>
+    <div style="display:flex;gap:0.3rem;align-items:center;">
+      <span style="font-size:0.8rem;color:var(--text-dim);">Speed:</span>
+      <button class="tmt-r-speed-btn" data-speed="0.5">0.5×</button>
+      <button class="tmt-r-speed-btn active" data-speed="1">1×</button>
+      <button class="tmt-r-speed-btn" data-speed="2">2×</button>
+      <button class="tmt-r-speed-btn" data-speed="4">4×</button>
+    </div>
+    <div class="tmt-r-timer-wrap">
+      <span id="tmt-r-timer">0.0s</span>
+    </div>
+  </div>
+
+  <!-- Timeline scrubber -->
+  <div class="tmt-r-scrubber-row">
+    <span style="font-size:0.8rem;color:var(--text-dim);">0s</span>
+    <input type="range" id="tmt-r-scrubber" min="0" max="1000" value="0">
+    <span class="tmt-r-dur" id="tmt-r-duration-end">—</span>
+  </div>
+
+  <!-- Board -->
+  <div style="text-align:center;">
+    <div id="tmt-board-wrap" style="display:inline-block;">
+      <div id="tmt-grid" data-replay-id="{{ replay_id }}">
+        <div class="tmt-loading">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/tametsi_replay.js"></script>
+<script>
+// Mirror duration label to end of scrubber
+document.addEventListener('DOMContentLoaded', () => {
+  const durEl = document.getElementById('tmt-r-duration');
+  const endEl = document.getElementById('tmt-r-duration-end');
+  const observer = new MutationObserver(() => { if (endEl) endEl.textContent = durEl.textContent; });
+  if (durEl) observer.observe(durEl, { characterData: true, childList: true, subtree: true });
+});
+</script>
+{% endblock %}

@@ -81,6 +81,9 @@ function makeState(data, level, isDaily) {
         isDaily,
         leftClicks:  0,
         rightClicks: 0,
+        chordClicks: 0,
+        rewindLog:   [],
+        rewindSent:  false,
     };
 }
 
@@ -140,6 +143,43 @@ function updateMineCounter() {
     G.minesLeft = G.mines - flagged;
     const el = document.getElementById('tmt-mines-left');
     if (el) el.textContent = G.minesLeft;
+}
+
+// ── Replay logging ────────────────────────────────────────────────────────────
+function tmt_rewindRecord(type, idx) {
+    if (!G || G.startTime == null) return;
+    const t_ms = Math.round(performance.now() - G.startTime);
+    G.rewindLog.push([t_ms, type, Math.floor(idx / G.cols), idx % G.cols]);
+}
+
+async function tmt_rewindSave(outcome, scoreId) {
+    if (!G || G.rewindSent) return;
+    G.rewindSent = true;
+    const payload = JSON.stringify({
+        rows:             G.rows,
+        cols:             G.cols,
+        mines:            G.mines,
+        board_hash:       G.board_hash,
+        no_guess:         true,
+        mode:             'tametsi-' + G.level,
+        time_ms:          Math.round(G.elapsedMs),
+        outcome,
+        bbbv:             G.bbbv,
+        left_clicks:      G.leftClicks,
+        right_clicks:     G.rightClicks,
+        chord_clicks:     G.chordClicks,
+        cells_revealed:   G.cells.filter(c => c.state === 'revealed').length,
+        cells_total_safe: G.rows * G.cols - G.mines,
+        score_id:         scoreId ?? null,
+        log:              G.rewindLog,
+    });
+    try {
+        await fetch('/api/rewind', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    payload,
+        });
+    } catch {}
 }
 
 // ── Cell rendering ────────────────────────────────────────────────────────────
@@ -359,6 +399,7 @@ function handleClick(idx) {
         G.started = true;
         G.leftClicks++;
         startTimer();
+        G.rewindLog.push([0, 'l', 0, 0]);
         floodFill(0);
 
         // Flip instruction hints
@@ -373,6 +414,7 @@ function handleClick(idx) {
 
     if (cell.state !== 'hidden' && cell.state !== 'question') return;
 
+    tmt_rewindRecord('l', idx);
     G.leftClicks++;
 
     if (G.mineSet.has(idx)) {
@@ -381,6 +423,7 @@ function handleClick(idx) {
         stopTimer();
         refreshCell(idx);
         revealAllAfterLoss();
+        tmt_rewindSave('loss', null);
         showOverlay('lose');
         return;
     }
@@ -394,6 +437,7 @@ function handleRightClick(idx) {
     const cell = G.cells[idx];
     if (cell.state === 'revealed') return;
 
+    tmt_rewindRecord('r', idx);
     G.rightClicks++;
 
     if      (cell.state === 'hidden')   cell.state = 'flagged';
@@ -421,6 +465,9 @@ function handleChord(idx) {
     const flagCount = nbs.filter(([nr, nc]) => G.cells[nr * G.cols + nc].state === 'flagged').length;
     if (flagCount !== n) return;
 
+    tmt_rewindRecord('c', idx);
+    G.chordClicks++;
+
     let hitMine = false;
     for (const [nr, nc] of nbs) {
         const ni = nr * G.cols + nc;
@@ -439,6 +486,7 @@ function handleChord(idx) {
         G.over = true;
         stopTimer();
         revealAllAfterLoss();
+        tmt_rewindSave('loss', null);
         showOverlay('lose');
         return;
     }
@@ -578,9 +626,11 @@ async function saveScore(autoName, timeMs) {
             }),
         });
         if (r.ok) {
+            const data = await r.json();
             localStorage.setItem('tmt_name', name);
             if (btn) btn.textContent = '✓ Saved!';
             if (scoreMsg) { scoreMsg.style.display = ''; scoreMsg.textContent = `✅ Score saved for ${esc(name)}!`; }
+            tmt_rewindSave('win', data.id || null);
             loadLeaderboard();
         } else {
             if (btn) { btn.disabled = false; btn.textContent = 'Error — retry'; }
