@@ -169,9 +169,9 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
   <div class="h2k-subnav">
     <a href="/other">Other Puzzles</a>
     <span>›</span>
-    <a href="/other/2048hex/leaderboard">🏆 Leaderboard</a>
+    <a href="/other/2048hex/leaderboard">🏆 {{ t.nav_leaderboard }}</a>
     <span>·</span>
-    <a href="/other/2048hex/how-to-play">How to Play</a>
+    <a href="/other/2048hex/how-to-play">{{ t.nav_how_to_play }}</a>
     <span>·</span>
     <a href="/other/2048/daily">2048 Classic</a>
   </div>
@@ -225,7 +225,7 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
 
   <div class="h2k-controls">
     <button class="h2k-btn" id="hex2k-reset">New Game</button>
-    <a href="/other/2048hex/leaderboard" class="h2k-btn" style="text-decoration:none;">🏆 Leaderboard</a>
+    <a href="/other/2048hex/leaderboard" class="h2k-btn" style="text-decoration:none;">🏆 {{ t.nav_leaderboard }}</a>
   </div>
 
   <div id="hex2k-win-msg">
@@ -235,7 +235,7 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
   <div id="hex2k-over-msg">💥 No moves left — game over!</div>
 
   <div id="hex2k-score-form">
-    <strong style="font-size:0.95rem;">Submit Your Score</strong>
+    <strong style="font-size:0.95rem;">{{ t.common_submit_score_h }}</strong>
     <label>
       <span>Your name</span>
       <input type="text" id="hex2k-name" maxlength="32" placeholder="Your name"
@@ -246,13 +246,13 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
     <input type="hidden" id="hex2k-score-val"        value="0">
     <input type="hidden" id="hex2k-fours-val"        value="0">
     <input type="hidden" id="hex2k-moves-to-win-val" value="">
-    <button class="h2k-btn" id="hex2k-submit" style="align-self:flex-start;">Submit</button>
+    <button class="h2k-btn" id="hex2k-submit" style="align-self:flex-start;">{{ t.common_submit }}</button>
   </div>
   <div id="hex2k-score-msg" style="display:none;color:var(--accent2);font-size:0.9rem;"></div>
 
   <!-- How to play -->
   <div class="h2k-howto">
-    <h2>How to Play</h2>
+    <h2>{{ t.nav_how_to_play }}</h2>
     <p>
       The board is a hexagonal grid of 19 circles — 18 playable tiles and one fixed
       <strong>stone</strong> in the center. Tiles slide in <strong>6 directions</strong>

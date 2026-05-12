@@ -43,7 +43,7 @@
       <p>Sign In to keep personal bests, leaderboard placements, and top-three finishes in your account Stats area.</p>
     </div>
     <div class="lb-personal-actions">
-      <a href="/auth/login?next=/leaderboard" class="lb-signin-cta">Sign In</a>
+      <a href="/auth/login?next=/leaderboard" class="lb-signin-cta">{{ t.auth_sign_in }}</a>
     </div>
     {% endif %}
   </section>
@@ -212,8 +212,8 @@
           </div>
           <p>{{ item.description }}</p>
           <div class="lb-directory-actions">
-            <a href="{{ item.href }}" class="lb-directory-primary">Leaderboard</a>
-            <a href="{{ item.play_href }}" class="lb-directory-secondary">Play</a>
+            <a href="{{ item.href }}" class="lb-directory-primary">{{ t.nav_leaderboard }}</a>
+            <a href="{{ item.play_href }}" class="lb-directory-secondary">{{ t.common_play }}</a>
           </div>
         </article>
         {% endfor %}

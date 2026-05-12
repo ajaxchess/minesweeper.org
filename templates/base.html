@@ -425,7 +425,7 @@
           </div>
         </div>
         {% else %}
-          <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="auth-btn login-btn">Sign In</a>
+          <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="auth-btn login-btn">{{ t.auth_sign_in }}</a>
         {% endif %}
         <!-- Hamburger: mobile only (non-classic skins) -->
         <button class="hamburger-btn" id="hamburger-btn" onclick="toggleDrawer()" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-drawer">
@@ -474,7 +474,7 @@
       </div>
       <a href="/auth/logout" class="drawer-auth-link" onclick="closeDrawer()">{{ t.auth_sign_out }}</a>
       {% else %}
-      <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="drawer-auth-signin" onclick="closeDrawer()">Sign In</a>
+      <a href="/auth/login?next={{ (request.state.original_path if request.state.original_path is defined else request.url.path) | urlencode }}" class="drawer-auth-signin" onclick="closeDrawer()">{{ t.auth_sign_in }}</a>
       {% endif %}
     </div>
     <nav class="drawer-nav">

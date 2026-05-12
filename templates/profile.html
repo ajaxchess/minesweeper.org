@@ -107,7 +107,7 @@
         <div class="display-name-edit">
           <input id="display-name-input" type="text" maxlength="32"
                  value="{{ user.display_name }}" autocomplete="off" />
-          <button id="display-name-save" onclick="saveDisplayName()">Save</button>
+          <button id="display-name-save" onclick="saveDisplayName()">{{ t.common_save }}</button>
           <span id="display-name-msg" class="setting-msg"></span>
         </div>
       </div>
@@ -235,7 +235,7 @@
                     placeholder="Tell other players about yourself…">{{ about_text or '' }}</textarea>
           <div class="about-footer">
             <span id="about-chars" class="setting-desc"></span>
-            <button id="about-save" onclick="saveAbout()">Save</button>
+            <button id="about-save" onclick="saveAbout()">{{ t.common_save }}</button>
             <span id="about-msg" class="setting-msg"></span>
           </div>
         </div>
@@ -284,14 +284,14 @@
           <div id="public-url-row" style="display:none; margin-top:0.5rem;">
             <span class="setting-desc">Your public link:</span>
             <a id="public-url-link" href="#" target="_blank" class="public-url-link"></a>
-            <button class="copy-btn" onclick="copyPublicUrl()">Copy</button>
+            <button class="copy-btn" onclick="copyPublicUrl()">{{ t.duel_copy }}</button>
             <span id="copy-msg" class="setting-msg"></span>
           </div>
           <div id="vanity-row" style="display:none; margin-top:0.5rem;">
             <span class="setting-desc">Vanity URL: minesweeper.org/u/</span>
             <input id="vanity-input" type="text" maxlength="32" placeholder="ajaxchess"
                    autocomplete="off" style="width:140px;" />
-            <button class="copy-btn" onclick="saveVanitySlug()">Save</button>
+            <button class="copy-btn" onclick="saveVanitySlug()">{{ t.common_save }}</button>
             <span id="vanity-msg" class="setting-msg"></span>
           </div>
         </div>
@@ -437,7 +437,7 @@
         <div style="font-size:0.72rem;color:var(--text-dim);">{{ p.photo_mode }} · {{ p.created_at.strftime("%Y-%m-%d") }}</div>
         <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
           <a href="/other/15puzzle/photo/{{ p.board_hash }}?mode={{ p.photo_mode }}"
-             style="font-size:0.75rem;color:var(--accent2);">Play</a>
+             style="font-size:0.75rem;color:var(--accent2);">{{ t.common_play }}</a>
           <button onclick="fpDeletePhoto('{{ p.board_hash }}')"
                   style="font-size:0.75rem;background:none;border:none;color:var(--text-dim);cursor:pointer;padding:0;">Delete</button>
         </div>

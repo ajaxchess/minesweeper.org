@@ -125,7 +125,7 @@
          target="_blank" rel="noopener noreferrer">📷 Wikimedia Commons</a>
     </div>
     <nav class="ws-nav-links">
-      <a href="/cubesweeper/leaderboard" class="ws-lb">Leaderboard</a>
+      <a href="/cubesweeper/leaderboard" class="ws-lb">{{ t.nav_leaderboard }}</a>
       {% if mode != 'beginner' %}&nbsp;|&nbsp;<a href="/cubesweeper">{{ t['nav_beginner'] }}</a>{% endif %}
       {% if mode != 'intermediate' %}&nbsp;|&nbsp;<a href="/cubesweeper/intermediate">{{ t['nav_intermediate'] }}</a>{% endif %}
       {% if mode != 'expert' %}&nbsp;|&nbsp;<a href="/cubesweeper/expert">{{ t['nav_expert'] }}</a>{% endif %}
@@ -184,7 +184,7 @@
   </div>
 
   <div class="info-section">
-    <h2>How to Play</h2>
+    <h2>{{ t.nav_how_to_play }}</h2>
     <ul>
       <li><strong>Drag</strong> the cube to rotate it and inspect any face.</li>
       <li><strong>Left-click</strong> a cell to reveal it. Empty cells (0) auto-expand through all connected empty neighbours, including across face boundaries.</li>

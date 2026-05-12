@@ -1162,6 +1162,16 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p2":     '<a href="/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner" target="_blank" rel="noopener">Play the Honey jigsaw puzzle →</a>',
         "team_back_about":   "← About",
 
+        "common_gallery": "Gallery",
+        "common_play": "Play",
+        "common_save": "Save",
+        "common_connecting": "Connecting…",
+        "common_waiting_opponent": "Waiting for opponent…",
+        "common_play_today_puzzle": "Play Today’s Puzzle →",
+        "common_submit_score_h": "Submit Your Score",
+        "common_submit": "Submit",
+        "common_daily_puzzle": "Daily Puzzle",
+
     },
 
     "eo": {
@@ -1436,7 +1446,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_cylinder":         "Cylinder",
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
-        "nav_board_generator":  "Board Generator",
+        "nav_board_generator": "Tabulan Generatoro",
         "nav_blog":             "Blog",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
@@ -1925,6 +1935,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honey estas la oficiala maskoto de minesweeper.org. Ŝi kontrolas ĉiun funkcion antaŭ ol ĝi estas publikigita kaj ankoraŭ ne eksplodigis eĉ unu mino — natura talento, aŭ eble ŝi simple evitas klaki ion ajn.",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Ludi la Honey-puzlon →</a>",
         "team_back_about": "← Pri ni",
+
+        "fp_play_today": "Ludi Hodaŭ",
+        "fp_submit_btn": "Sendi Rezulton",
+        "fp_play_daily": "Ludi ĉiutagan enigmon",
+        "common_gallery": "Galerio",
+        "common_play": "Ludi",
+        "common_save": "Konservi",
+        "common_connecting": "Konektante…",
+        "common_waiting_opponent": "Atendante kontraŭulon…",
+        "common_play_today_puzzle": "Ludi Hodaŭan Enigmon →",
+        "common_submit_score_h": "Sendi Vian Rezulton",
+        "common_submit": "Sendi",
+        "common_daily_puzzle": "Ĉiutaga enigmo",
     },
 
     "de": {
@@ -2819,6 +2842,16 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honey ist das offizielle Maskottchen von minesweeper.org. Sie prüft jedes Feature vor der Veröffentlichung und hat bis heute keine einzige Mine zur Explosion gebracht — natürliches Talent, oder vielleicht vermeidet sie es einfach, auf irgendetwas zu klicken.",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Honey-Puzzle spielen →</a>",
         "team_back_about": "← Über uns",
+
+        "common_gallery": "Galerie",
+        "common_play": "Spielen",
+        "common_save": "Speichern",
+        "common_connecting": "Verbinde…",
+        "common_waiting_opponent": "Warte auf Gegner…",
+        "common_play_today_puzzle": "Heutiges Rätsel spielen →",
+        "common_submit_score_h": "Ergebnis einreichen",
+        "common_submit": "Absenden",
+        "common_daily_puzzle": "Tagesrätsel",
     },
 
     "es": {
@@ -3021,7 +3054,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_cylinder":         "Cylinder",
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
-        "nav_board_generator":  "Board Generator",
+        "nav_board_generator": "Generador de tablero",
         "nav_blog":             "Blog",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
@@ -3580,6 +3613,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1":     "Honey es la mascota oficial de minesweeper.org. Revisa cada función antes de que se publique y aún no ha detonado una sola mina — talento natural, o quizás simplemente evita hacer clic en cualquier cosa.",
         "team_honey_p2":     '<a href="/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner" target="_blank" rel="noopener">Jugar al puzzle de Honey →</a>',
         "team_back_about":   "← Acerca de",
+
+        "fp_play_today": "Jugar hoy",
+        "fp_submit_btn": "Enviar puntuación",
+        "fp_play_daily": "Jugar el puzzle diario",
+        "common_gallery": "Galería",
+        "common_play": "Jugar",
+        "common_save": "Guardar",
+        "common_connecting": "Conectando…",
+        "common_waiting_opponent": "Esperando al oponente…",
+        "common_play_today_puzzle": "Jugar el puzzle de hoy →",
+        "common_submit_score_h": "Envía tu puntuación",
+        "common_submit": "Enviar",
+        "common_daily_puzzle": "Puzzle diario",
     },
 
     "th": {
@@ -3856,7 +3902,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_cylinder":         "Cylinder",
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
-        "nav_board_generator":  "Board Generator",
+        "nav_board_generator": "ตัวสร้างบอร์ด",
         "nav_blog":             "Blog",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
@@ -4360,6 +4406,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honey คือมาสคอตอย่างเป็นทางการของ minesweeper.org เธอตรวจสอบทุกฟีเจอร์ก่อนที่จะเผยแพร่ และยังไม่เคยจุดชนวนทุ่นระเบิดแม้แต่ลูกเดียว ไม่รู้ว่าเป็นพรสวรรค์โดยธรรมชาติ หรือแค่ไม่ยอมคลิกอะไรเลย",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">เล่นจิ๊กซอว์ Honey →</a>",
         "team_back_about": "← เกี่ยวกับเรา",
+
+        "fp_play_today": "เล่นวันนี้",
+        "fp_submit_btn": "ส่งคะแนน",
+        "fp_play_daily": "เล่นปริศนารายวัน",
+        "common_gallery": "แกลเลอรี",
+        "common_play": "เล่น",
+        "common_save": "บันทึก",
+        "common_connecting": "กำลังเชื่อมต่อ…",
+        "common_waiting_opponent": "รอคู่ต่อสู้…",
+        "common_play_today_puzzle": "เล่นปริศนาวันนี้ →",
+        "common_submit_score_h": "ส่งคะแนนของคุณ",
+        "common_submit": "ส่ง",
+        "common_daily_puzzle": "ปริศนารายวัน",
     },
 
     "pgl": {
@@ -4636,7 +4695,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_cylinder":         "Cylinder",
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
-        "nav_board_generator":  "Board Generator",
+        "nav_board_generator": "Plank Chart Maker",
         "nav_blog":             "Blog",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
@@ -5121,6 +5180,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honey be the official mascot of minesweeper.org, arrr! She reviews every feature before it ships and has yet to detonate a single mine, blow me down — natural talent, or maybe she just avoids clicking anything, the clever landlubber!",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Play the Honey jigsaw puzzle, matey →</a>",
         "team_back_about": "← Back to the About waters",
+
+        "fp_play_today": "Sail Today, Matey",
+        "fp_submit_btn": "Send Yer Score",
+        "fp_play_daily": "Play the Daily Puzzle, Arrr",
+        "common_gallery": "Treasure Gallery",
+        "common_play": "Play",
+        "common_save": "Stash It",
+        "common_connecting": "Droppin’ Anchor…",
+        "common_waiting_opponent": "Waitin’ fer yer foe…",
+        "common_play_today_puzzle": "Play Today’s Puzzle →",
+        "common_submit_score_h": "Submit Yer Score, Arrr",
+        "common_submit": "Send It",
+        "common_daily_puzzle": "Daily Puzzle, Arrr",
     },
 
     "uk": {
@@ -5397,7 +5469,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_cylinder":         "Cylinder",
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
-        "nav_board_generator":  "Board Generator",
+        "nav_board_generator": "Генератор полів",
         "nav_blog":             "Blog",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
@@ -5901,6 +5973,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honey — офіційний талісман minesweeper.org. Вона перевіряє кожну функцію перед випуском і ще жодного разу не підірвала жодної міни — природний талант, або вона просто уникає натискати будь-що.",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Зіграйте в пазл із Honey →</a>",
         "team_back_about": "← Про нас",
+
+        "fp_play_today": "Грати сьогодні",
+        "fp_submit_btn": "Надіслати результат",
+        "fp_play_daily": "Грати щоденний пазл",
+        "common_gallery": "Галерея",
+        "common_play": "Грати",
+        "common_save": "Зберегти",
+        "common_connecting": "Підключення…",
+        "common_waiting_opponent": "Очікування суперника…",
+        "common_play_today_puzzle": "Грати сьогоднішній пазл →",
+        "common_submit_score_h": "Надішліть свій результат",
+        "common_submit": "Надіслати",
+        "common_daily_puzzle": "Щоденна головоломка",
     },
 
     "fr": {
@@ -6103,7 +6188,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_cylinder":         "Cylinder",
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
-        "nav_board_generator":  "Board Generator",
+        "nav_board_generator": "Générateur de grille",
         "nav_blog":             "Blog",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
@@ -6661,6 +6746,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honey est la mascotte officielle de minesweeper.org. Elle passe en revue chaque fonctionnalité avant sa mise en ligne et n'a encore fait exploser aucune mine — talent naturel, ou peut-être évite-t-elle simplement de cliquer sur quoi que ce soit.",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Jouer au puzzle Honey →</a>",
         "team_back_about": "← À propos",
+
+        "fp_play_today": "Jouer aujourd’hui",
+        "fp_submit_btn": "Soumettre le score",
+        "fp_play_daily": "Jouer le puzzle du jour",
+        "common_gallery": "Galerie",
+        "common_play": "Jouer",
+        "common_save": "Enregistrer",
+        "common_connecting": "Connexion…",
+        "common_waiting_opponent": "En attente de l’adversaire…",
+        "common_play_today_puzzle": "Jouer le puzzle du jour →",
+        "common_submit_score_h": "Soumettre votre score",
+        "common_submit": "Envoyer",
+        "common_daily_puzzle": "Puzzle du jour",
     },
 
     "ko": {
@@ -6935,7 +7033,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_cylinder":         "Cylinder",
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
-        "nav_board_generator":  "Board Generator",
+        "nav_board_generator": "보드 생성기",
         "nav_blog":             "Blog",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
@@ -7439,6 +7537,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honey는 minesweeper.org의 공식 마스코트입니다. 출시 전에 모든 기능을 검토하며 지금까지 단 한 개의 지뢰도 폭발시킨 적이 없습니다 — 타고난 재능인지, 아니면 그냥 아무것도 클릭하지 않는 것인지 모르겠습니다.",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Honey 직소 퍼즐 플레이 →</a>",
         "team_back_about": "← 소개 페이지로",
+
+        "fp_play_today": "오늘 플레이",
+        "fp_submit_btn": "점수 제출",
+        "fp_play_daily": "오늘의 퍼즘 플레이",
+        "common_gallery": "걤러리",
+        "common_play": "플레이",
+        "common_save": "저장",
+        "common_connecting": "연결 중…",
+        "common_waiting_opponent": "상대방을 기다리는 중…",
+        "common_play_today_puzzle": "오늘의 퍼즘 플레이 →",
+        "common_submit_score_h": "점수를 제출하세요",
+        "common_submit": "제출",
+        "common_daily_puzzle": "데일리 퍼즘",
     },
 
     "ja": {
@@ -7713,7 +7824,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_cylinder":         "Cylinder",
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
-        "nav_board_generator":  "Board Generator",
+        "nav_board_generator": "ボードジェネレーター",
         "nav_blog":             "Blog",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
@@ -8297,6 +8408,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honeyはminesweeper.orgの公式マスコットです。リリース前にすべての機能を確認しており、これまで一度も地雷を爆発させたことがありません — 天性の才能なのか、それとも単純に何もクリックしないようにしているだけなのか。",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Honeyのジグソーパズルで遊ぶ →</a>",
         "team_back_about": "← アバウトに戻る",
+
+        "fp_play_today": "今日プレイ",
+        "fp_submit_btn": "スコアを送信",
+        "fp_play_daily": "デイリーパズルをプレイ",
+        "common_gallery": "ギャラリー",
+        "common_play": "プレイ",
+        "common_save": "保存",
+        "common_connecting": "接続中…",
+        "common_waiting_opponent": "対戦相手を待っています…",
+        "common_play_today_puzzle": "今日のパズルをプレイ →",
+        "common_submit_score_h": "スコアを送信する",
+        "common_submit": "送信",
+        "common_daily_puzzle": "デイリーパズル",
     },
     "zh": {
         # Nav
@@ -8570,7 +8694,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_cylinder":         "Cylinder",
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
-        "nav_board_generator":  "Board Generator",
+        "nav_board_generator": "棋盘生成器",
         "nav_blog":             "Blog",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
@@ -9059,6 +9183,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honey 是 minesweeper.org 的官方吉祥物。她在每个功能上线前都会逐一审查，且至今未引爆过任何一颗地雷——也许是天生的本领，也许她只是从不轻易点击任何东西。",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">来玩 Honey 拼图游戏 →</a>",
         "team_back_about": "← 关于我们",
+
+        "fp_play_today": "今日挑战",
+        "fp_submit_btn": "提交成绩",
+        "fp_play_daily": "挑战每日谜题",
+        "common_gallery": "图库",
+        "common_play": "开始",
+        "common_save": "保存",
+        "common_connecting": "连接中…",
+        "common_waiting_opponent": "等待对手…",
+        "common_play_today_puzzle": "挑战今日谜题 →",
+        "common_submit_score_h": "提交您的成绩",
+        "common_submit": "提交",
+        "common_daily_puzzle": "每日谜题",
     },
     "zh-hant": {
         # Nav
@@ -9332,7 +9469,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_cylinder":         "Cylinder",
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
-        "nav_board_generator":  "Board Generator",
+        "nav_board_generator": "棋盤產生器",
         "nav_blog":             "Blog",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
@@ -9821,6 +9958,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honey 是 minesweeper.org 的官方吉祥物。她在每項功能上線前都會逐一審查，且至今從未引爆過任何一顆地雷——也許是天生的本領，也許她只是從不輕易點擊任何東西。",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">來玩 Honey 拼圖遊戲 →</a>",
         "team_back_about": "← 關於我們",
+
+        "fp_play_today": "今日挑戰",
+        "fp_submit_btn": "提交成績",
+        "fp_play_daily": "挑戰每日謎題",
+        "common_gallery": "圖庫",
+        "common_play": "開始",
+        "common_save": "儲存",
+        "common_connecting": "連線中…",
+        "common_waiting_opponent": "等待對手…",
+        "common_play_today_puzzle": "挑戰今日謎題 →",
+        "common_submit_score_h": "提交您的成績",
+        "common_submit": "提交",
+        "common_daily_puzzle": "每日謎題",
     },
     "pl": {
         # Nav
@@ -10094,7 +10244,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_cylinder":         "Cylinder",
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
-        "nav_board_generator":  "Board Generator",
+        "nav_board_generator": "Generator planszy",
         "nav_blog":             "Blog",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
@@ -10583,6 +10733,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honey jest oficjalną maskotką minesweeper.org. Sprawdza każdą funkcję przed jej wdrożeniem i jak dotąd nie wysadziła ani jednej miny — naturalny talent, a może po prostu unika klikania czegokolwiek.",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Zagraj w puzzle Honey →</a>",
         "team_back_about": "← O nas",
+
+        "fp_play_today": "Graj dziś",
+        "fp_submit_btn": "Wyślij wynik",
+        "fp_play_daily": "Graj w dzienną uładankę",
+        "common_gallery": "Galeria",
+        "common_play": "Graj",
+        "common_save": "Zapisz",
+        "common_connecting": "Łączenie…",
+        "common_waiting_opponent": "Oczekiwanie na przeciwnika…",
+        "common_play_today_puzzle": "Graj w dzisiejszą uładankę →",
+        "common_submit_score_h": "Prześlij swój wynik",
+        "common_submit": "Wyślij",
+        "common_daily_puzzle": "Dzienna uładanka",
     },
 
     "tl": {
@@ -10857,7 +11020,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_cylinder":         "Cylinder",
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
-        "nav_board_generator":  "Board Generator",
+        "nav_board_generator": "Board Generator",
         "nav_blog":             "Blog",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
@@ -11361,6 +11524,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Si Honey ang opisyal na maskot ng minesweeper.org. Sinusuri niya ang bawat feature bago ito ilabas at wala pa siyang nasabog na isang minahan — likas na talento, o baka iniiwasan lang niya ang mag-click ng kahit ano.",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Laruin ang Honey jigsaw puzzle →</a>",
         "team_back_about": "← Tungkol Sa",
+
+        "fp_play_today": "Maglaro Ngayon",
+        "fp_submit_btn": "Isumite ang Iskor",
+        "fp_play_daily": "Maglaro ng araw-araw na palaisipan",
+        "common_gallery": "Galería",
+        "common_play": "Maglaro",
+        "common_save": "I-save",
+        "common_connecting": "Kumukonekta…",
+        "common_waiting_opponent": "Naghihintay sa kalaban…",
+        "common_play_today_puzzle": "Laruin ang Palaisipan Ngayon →",
+        "common_submit_score_h": "Isumite ang Iyong Iskor",
+        "common_submit": "Isumite",
+        "common_daily_puzzle": "Araw-araw na Palaisipan",
     },
 
     "ru": {
@@ -12124,6 +12300,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honey — официальный талисман minesweeper.org. Она проверяет каждую функцию перед выпуском и ещё ни разу не подорвала ни одной мины — природный талант, или она просто избегает нажимать что-либо.",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Сыграйте в пазл с Honey →</a>",
         "team_back_about": "← О нас",
+
+        "fp_play_today": "Играть сегодня",
+        "fp_submit_btn": "Отправить результат",
+        "fp_play_daily": "Играть в ежедневную головоломку",
+        "common_gallery": "Галерея",
+        "common_play": "Играть",
+        "common_save": "Сохранить",
+        "common_connecting": "Подключение…",
+        "common_waiting_opponent": "Ожидание соперника…",
+        "common_play_today_puzzle": "Играть в сегодняшнюю головоломку →",
+        "common_submit_score_h": "Отправьте свой результат",
+        "common_submit": "Отправить",
+        "common_daily_puzzle": "Ежедневная головоломка",
     },
 
     "pt": {
@@ -12887,6 +13076,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honey é a mascote oficial do minesweeper.org. Ela revisa cada funcionalidade antes do lançamento e ainda não detonou uma única mina — talento natural, ou talvez ela simplesmente evite clicar em qualquer coisa.",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Jogue o quebra-cabeça da Honey →</a>",
         "team_back_about": "← Sobre",
+
+        "fp_play_today": "Jogar hoje",
+        "fp_submit_btn": "Enviar pontuação",
+        "fp_play_daily": "Jogar o puzzle diário",
+        "common_gallery": "Galeria",
+        "common_play": "Jogar",
+        "common_save": "Guardar",
+        "common_connecting": "A ligar…",
+        "common_waiting_opponent": "À espera do adversário…",
+        "common_play_today_puzzle": "Jogar o puzzle de hoje →",
+        "common_submit_score_h": "Envie a sua pontuação",
+        "common_submit": "Enviar",
+        "common_daily_puzzle": "Puzzle diário",
     },
 
     "it": {
@@ -13650,6 +13852,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "team_honey_p1": "Honey è la mascotte ufficiale di minesweeper.org. Esamina ogni funzionalità prima del rilascio e non ha ancora fatto esplodere una singola mina — talento naturale, o forse evita semplicemente di cliccare su qualsiasi cosa.",
         "team_honey_p2": "<a href=\"/other/jigsaw/daily?img=HoneyBridal.jpg&diff=beginner\" target=\"_blank\" rel=\"noopener\">Gioca al puzzle di Honey →</a>",
         "team_back_about": "← Chi siamo",
+
+        "fp_play_today": "Gioca oggi",
+        "fp_submit_btn": "Invia punteggio",
+        "fp_play_daily": "Gioca al puzzle giornaliero",
+        "common_gallery": "Galleria",
+        "common_play": "Gioca",
+        "common_save": "Salva",
+        "common_connecting": "Connessione…",
+        "common_waiting_opponent": "In attesa dell’avversario…",
+        "common_play_today_puzzle": "Gioca al puzzle di oggi →",
+        "common_submit_score_h": "Invia il tuo punteggio",
+        "common_submit": "Invia",
+        "common_daily_puzzle": "Puzzle quotidiano",
     },
 }
 

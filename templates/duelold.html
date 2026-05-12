@@ -49,20 +49,20 @@
   <!-- ── Mode selector ── -->
   <div class="duel-mode-tabs">
     {% if mode in ('pvp', 'pvp-bot') %}
-    <a href="/pvp?m=standard" class="duel-mode-tab {% if mode == 'pvp' and submode == 'standard' %}active{% endif %}">Standard</a>
+    <a href="/pvp?m=standard" class="duel-mode-tab {% if mode == 'pvp' and submode == 'standard' %}active{% endif %}">{{ t.archive_standard }}</a>
     <a href="/pvp?m=quick"    class="duel-mode-tab {% if mode == 'pvp' and submode == 'quick' %}active{% endif %}">⚡ Quick</a>
     <a href="/pvp/bot"        class="duel-mode-tab {% if mode == 'pvp-bot' %}active{% endif %}">🤖 vs Bot</a>
     <a href="/pvp/leaderboard" class="duel-mode-tab">🏆 Leaderboard</a>
     <a href="/pvp/rankings"    class="duel-mode-tab">👑 Rankings</a>
     {% else %}
-    <a href="/duelold?m=standard" class="duel-mode-tab {% if submode == 'standard' %}active{% endif %}">Standard</a>
+    <a href="/duelold?m=standard" class="duel-mode-tab {% if submode == 'standard' %}active{% endif %}">{{ t.archive_standard }}</a>
     <a href="/duelold?m=quick"    class="duel-mode-tab {% if submode == 'quick' %}active{% endif %}">⚡ Quick</a>
     {% endif %}
   </div>
 
   <!-- ── Status bar ── -->
   <div class="duel-status-bar">
-    <div id="duel-status" class="duel-status-msg">Connecting…</div>
+    <div id="duel-status" class="duel-status-msg">{{ t.common_connecting }}</div>
 
     {% if is_creator %}
     <div id="share-box" class="share-box" style="display:none">
@@ -147,7 +147,7 @@
       </div>
       <div class="duel-board-wrap">
         <div id="opp-board" data-rows="{{ rows }}" data-cols="{{ cols }}"></div>
-        <div id="opp-board-waiting" class="opp-board-waiting">Waiting for opponent…</div>
+        <div id="opp-board-waiting" class="opp-board-waiting">{{ t.common_waiting_opponent }}</div>
       </div>
     </div>
 

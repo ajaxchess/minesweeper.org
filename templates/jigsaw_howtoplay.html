@@ -43,7 +43,7 @@
     <div class="jhtp-subnav">
       <a href="/other">Other Puzzles</a>
       <span>›</span>
-      <a href="/other/jigsaw/daily">Daily Puzzle</a>
+      <a href="/other/jigsaw/daily">{{ t.common_daily_puzzle }}</a>
     </div>
   </div>
 
@@ -81,13 +81,13 @@
       <li><strong>Timer</strong> — starts on your first piece interaction.</li>
       <li><strong>Pause</strong> — stops the timer. Signed-in users can close the page and resume later.</li>
       <li><strong>Restart</strong> — resets the puzzle with the same image and difficulty.</li>
-      <li><strong>Gallery</strong> — browse and start puzzles from other images.</li>
+      <li><strong>{{ t.common_gallery }}</strong> — browse and start puzzles from other images.</li>
       <li><strong>Mute</strong> — toggles the snap sound effect.</li>
     </ul>
   </div>
 
   <div class="jhtp-section">
-    <h2>Daily Puzzle</h2>
+    <h2>{{ t.common_daily_puzzle }}</h2>
     <p>One image is selected each day, the same for every player. The puzzle resets at midnight UTC. Completion times are recorded on the daily leaderboard — separately for each difficulty level.</p>
     <p>Guest scores are accepted but cleared at midnight UTC. Registered user scores are retained permanently.</p>
   </div>
@@ -98,7 +98,7 @@
   </div>
 
   <div style="text-align:center;">
-    <a href="/other/jigsaw/daily" style="display:inline-block;padding:0.55rem 1.4rem;background:var(--accent2);color:#fff;border-radius:6px;text-decoration:none;font-weight:700;">Play Today's Puzzle</a>
+    <a href="/other/jigsaw/daily" style="display:inline-block;padding:0.55rem 1.4rem;background:var(--accent2);color:#fff;border-radius:6px;text-decoration:none;font-weight:700;">{{ t.common_play_today_puzzle }}</a>
   </div>
 </div>
 {% endblock %}
