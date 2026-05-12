@@ -1662,6 +1662,22 @@ def puzzles_hub(request: Request):
         "lang": get_lang(request), "t": get_t(request),
     })
 
+@app.get("/puzzles/tametsi", response_class=HTMLResponse)
+def puzzles_tametsi_redirect(request: Request):
+    return RedirectResponse("/tametsi", status_code=301)
+
+@app.get("/puzzles/tentaizu", response_class=HTMLResponse)
+def puzzles_tentaizu_redirect(request: Request):
+    return RedirectResponse("/tentaizu", status_code=301)
+
+@app.get("/puzzles/mosaic", response_class=HTMLResponse)
+def puzzles_mosaic_redirect(request: Request):
+    return RedirectResponse("/mosaic", status_code=301)
+
+@app.get("/puzzles/numbers-match", response_class=HTMLResponse)
+def puzzles_numbers_match_redirect(request: Request):
+    return RedirectResponse("/numbers-match", status_code=301)
+
 @app.get("/other", response_class=HTMLResponse)
 def other_hub_redirect(request: Request):
     return RedirectResponse("/puzzles", status_code=301)
