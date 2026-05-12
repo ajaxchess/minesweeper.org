@@ -93,14 +93,14 @@
 
   <!-- Period tabs -->
   <div class="t2k-lb-tabs">
-    <a class="t2k-lb-tab" id="tab-today">📅 Today</a>
-    <a class="t2k-lb-tab" id="tab-all">🏅 All Time</a>
+    <a class="t2k-lb-tab" id="tab-today">{{ t.t2k_tab_today }}</a>
+    <a class="t2k-lb-tab" id="tab-all">{{ t.t2k_tab_alltime }}</a>
   </div>
 
   <!-- Sort tabs -->
   <div class="t2k-lb-tabs">
-    <a class="t2k-lb-tab" id="tab-score">🏆 Best Score</a>
-    <a class="t2k-lb-tab" id="tab-moves">🎯 Fewest Moves to 2048</a>
+    <a class="t2k-lb-tab" id="tab-score">{{ t.t2k_tab_best_score }}</a>
+    <a class="t2k-lb-tab" id="tab-moves">{{ t.t2k_tab_fewest_moves }}</a>
   </div>
 
   <h2 id="lb-heading" style="font-size:1rem;color:var(--accent2);margin-top:0.5rem;margin-bottom:1rem;"></h2>
@@ -114,8 +114,8 @@
           <th>{{ t['t2k_score'] }}</th>
           <th>{{ t['fp_moves'] }}</th>
           <th>{{ t['lb_col_time'] }}</th>
-          <th>4s Spawned</th>
-          <th>Moves to 2048</th>
+          <th>{{ t.t2k_th_4s_spawned }}</th>
+          <th>{{ t.t2k_th_moves }}</th>
           <th>{{ t['lb_col_date'] }}</th>
         </tr>
       </thead>

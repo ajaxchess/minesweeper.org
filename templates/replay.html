@@ -84,9 +84,9 @@
     <!-- Board setup form -->
     <div class="replay-setup">
       <div class="replay-preset-btns">
-        <button class="replay-preset-btn" data-rows="9"  data-cols="9"  data-mines="10">Beginner</button>
-        <button class="replay-preset-btn" data-rows="16" data-cols="16" data-mines="40">Intermediate</button>
-        <button class="replay-preset-btn" data-rows="16" data-cols="30" data-mines="99">Expert</button>
+        <button class="replay-preset-btn" data-rows="9"  data-cols="9"  data-mines="10">{{ t.nav_beginner }}</button>
+        <button class="replay-preset-btn" data-rows="16" data-cols="16" data-mines="40">{{ t.nav_intermediate }}</button>
+        <button class="replay-preset-btn" data-rows="16" data-cols="30" data-mines="99">{{ t.nav_expert }}</button>
       </div>
       <div class="replay-setup-row">
         <label class="replay-setup-label">Rows <input  type="number" id="setup-rows"  min="5" max="30"  value="9"></label>
@@ -130,7 +130,7 @@
     <div class="tz-lb-section" style="width:100%;max-width:600px">
       <div class="tz-lb-title" id="replay-lb-title">🏆 Board High Scores — Standard</div>
       <div id="replay-lb-content">
-        <div class="lb-loading">Loading…</div>
+        <div class="lb-loading">{{ t.common_loading }}</div>
       </div>
       <div id="replay-first-score"></div>
     </div>

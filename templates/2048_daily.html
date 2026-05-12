@@ -227,7 +227,7 @@
     <div>{{ t['fp_time'] }} <span id="t2k-time">0.0</span>s</div>
     <div>{{ t['fp_moves'] }} <span id="t2k-moves">0</span></div>
     <div>4s: <span id="t2k-fours">0</span></div>
-    <div id="t2k-removed-wrap" style="display:none;">Removed: <span id="t2k-removed">0</span></div>
+    <div id="t2k-removed-wrap" style="display:none;">{{ t.t2k_removed }} <span id="t2k-removed">0</span></div>
   </div>
 
   <div id="t2k-board"></div>
@@ -251,7 +251,7 @@
 
   <div class="t2k-controls">
     <button class="t2k-btn" id="t2k-reset">{{ t['fp_new_game'] }}</button>
-    <button class="t2k-btn" id="t2k-undo">↩ Undo</button>
+    <button class="t2k-btn" id="t2k-undo">{{ t.t2k_undo }}</button>
     <a href="/other/2048/leaderboard" class="t2k-btn" style="text-decoration:none;">🏆 {{ t['nav_leaderboard'] }}</a>
   </div>
 
@@ -309,7 +309,7 @@
 
   <!-- Settings -->
   <details class="t2k-settings">
-    <summary>Settings</summary>
+    <summary>{{ t.t2k_settings }}</summary>
     <label class="t2k-setting-row">
       <input type="checkbox" id="t2k-vanish-toggle">
       <span>Tile Vanish Mode — tiles disappear when they reach a set value <em>(not high score eligible)</em></span>

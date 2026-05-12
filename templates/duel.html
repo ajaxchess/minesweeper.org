@@ -50,13 +50,13 @@
   <div class="duel-mode-tabs">
     {% if mode in ('pvp', 'pvp-bot', 'pvp-beta', 'pvp-bot-beta') %}
     <a href="/pvp?m=standard" class="duel-mode-tab {% if mode in ('pvp', 'pvp-beta') and submode == 'standard' %}active{% endif %}">{{ t.archive_standard }}</a>
-    <a href="/pvp?m=quick"    class="duel-mode-tab {% if mode in ('pvp', 'pvp-beta') and submode == 'quick' %}active{% endif %}">⚡ Quick</a>
-    <a href="/pvp/bot"        class="duel-mode-tab {% if mode in ('pvp-bot', 'pvp-bot-beta') %}active{% endif %}">🤖 vs Bot</a>
+    <a href="/pvp?m=quick"    class="duel-mode-tab {% if mode in ('pvp', 'pvp-beta') and submode == 'quick' %}active{% endif %}">{{ t.duel_quick }}</a>
+    <a href="/pvp/bot"        class="duel-mode-tab {% if mode in ('pvp-bot', 'pvp-bot-beta') %}active{% endif %}">{{ t.duel_vs_bot }}</a>
     <a href="/pvp/leaderboard" class="duel-mode-tab">🏆 Leaderboard</a>
     <a href="/pvp/rankings"    class="duel-mode-tab">👑 Rankings</a>
     {% else %}
     <a href="/duel?m=standard" class="duel-mode-tab {% if submode == 'standard' %}active{% endif %}">{{ t.archive_standard }}</a>
-    <a href="/duel?m=quick"    class="duel-mode-tab {% if submode == 'quick' %}active{% endif %}">⚡ Quick</a>
+    <a href="/duel?m=quick"    class="duel-mode-tab {% if submode == 'quick' %}active{% endif %}">{{ t.duel_quick }}</a>
     {% endif %}
   </div>
 
@@ -98,7 +98,7 @@
       <span class="score-sub" id="my-pct" style="color:var(--text-dim)">0%</span>
       {% endif %}
     </div>
-    <div class="duel-vs">VS</div>
+    <div class="duel-vs">{{ t.duel_vs }}</div>
     <div class="duel-player-score opp" id="opp-score-box">
       <span class="score-label" id="opp-score-label">{{ t.duel_opponent }}</span>
       <span class="score-value" id="opp-score">0</span>
@@ -177,7 +177,7 @@
     <div id="duel-chat-log" class="duel-chat-log"></div>
     <div class="duel-chat-input-row">
       <input id="duel-chat-input" type="text" placeholder="Message your opponent…" maxlength="200" autocomplete="off">
-      <button class="duel-chat-send-btn" onclick="sendChat()">Send</button>
+      <button class="duel-chat-send-btn" onclick="sendChat()">{{ t.duel_send }}</button>
     </div>
   </div>
   {% endif %}

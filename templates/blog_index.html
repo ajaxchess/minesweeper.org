@@ -49,11 +49,11 @@
         </div>
         <h2 class="blog-card-title">{{ post.title }}</h2>
         <p class="blog-card-excerpt">{{ post.excerpt }}</p>
-        <span class="blog-card-read-more">Read more →</span>
+        <span class="blog-card-read-more">{{ t.blog_read_more }}</span>
       </a>
     </article>
     {% else %}
-    <p class="blog-empty">No posts yet — check back soon.</p>
+    <p class="blog-empty">{{ t.blog_no_posts }}</p>
     {% endfor %}
   </div>
 

@@ -103,29 +103,29 @@
   <nav class="blog-post-nav" aria-label="Post navigation">
     <div class="blog-post-nav-pager">
       <a href="/blog" class="blog-post-nav-card blog-post-nav-index" rel="home">
-        <span class="blog-post-nav-label">All News</span>
-        <strong>Read more stories</strong>
+        <span class="blog-post-nav-label">{{ t.blog_all_news }}</span>
+        <strong>{{ t.blog_read_more_stories }}</strong>
       </a>
       {% if older_post %}
       <a href="/blog/{{ older_post.slug }}" class="blog-post-nav-card blog-post-nav-prev" rel="prev">
-        <span class="blog-post-nav-label">Previous Post</span>
+        <span class="blog-post-nav-label">{{ t.blog_prev_post }}</span>
         <strong>{{ older_post.title }}</strong>
       </a>
       {% else %}
       <span class="blog-post-nav-card blog-post-nav-disabled">
-        <span class="blog-post-nav-label">Previous Post</span>
-        <strong>You're at the first post</strong>
+        <span class="blog-post-nav-label">{{ t.blog_prev_post }}</span>
+        <strong>{{ t.blog_first_post }}</strong>
       </span>
       {% endif %}
       {% if newer_post %}
       <a href="/blog/{{ newer_post.slug }}" class="blog-post-nav-card blog-post-nav-next" rel="next">
-        <span class="blog-post-nav-label">Next Post</span>
+        <span class="blog-post-nav-label">{{ t.blog_next_post }}</span>
         <strong>{{ newer_post.title }}</strong>
       </a>
       {% else %}
       <span class="blog-post-nav-card blog-post-nav-disabled">
-        <span class="blog-post-nav-label">Next Post</span>
-        <strong>You're reading the latest post</strong>
+        <span class="blog-post-nav-label">{{ t.blog_next_post }}</span>
+        <strong>{{ t.blog_latest_post }}</strong>
       </span>
       {% endif %}
     </div>
@@ -133,7 +133,7 @@
 
   <!-- Comments section -->
   <section class="blog-comments">
-    <h2 class="blog-comments-title">Comments</h2>
+    <h2 class="blog-comments-title">{{ t.blog_comments }}</h2>
 
     {% if comments %}
     <div class="blog-comments-list">
@@ -148,18 +148,18 @@
       {% endfor %}
     </div>
     {% else %}
-    <p class="blog-comments-empty">No comments yet. Be the first!</p>
+    <p class="blog-comments-empty">{{ t.blog_no_comments }}</p>
     {% endif %}
 
     {% if user %}
     <div class="blog-comment-form-wrap">
-      <h3 class="blog-comment-form-title">Leave a comment</h3>
+      <h3 class="blog-comment-form-title">{{ t.blog_leave_comment }}</h3>
       <form id="blog-comment-form" class="blog-comment-form">
         <textarea id="blog-comment-body" class="blog-comment-textarea" rows="4"
-                  placeholder="Write your comment here…" maxlength="2000" required></textarea>
+                  placeholder="{{ t.blog_comment_placeholder }}" maxlength="2000" required></textarea>
         <div class="blog-comment-form-footer">
           <span class="blog-comment-as">Commenting as <strong>{{ user.display_name or user.name }}</strong></span>
-          <button type="submit" class="blog-comment-submit">Post Comment</button>
+          <button type="submit" class="blog-comment-submit">{{ t.blog_post_comment }}</button>
         </div>
         <div id="blog-comment-msg" class="blog-comment-msg" style="display:none"></div>
       </form>
@@ -197,12 +197,12 @@ document.getElementById('blog-comment-form').addEventListener('submit', async fu
     const data = await r.json();
     if (r.ok) {
       document.getElementById('blog-comment-body').value = '';
-      btn.textContent = 'Post Comment';
+      btn.textContent = '{{ t.blog_post_comment }}';
       btn.disabled = false;
       msg.textContent = '✅ ' + data.message;
       msg.className = 'blog-comment-msg blog-comment-msg-ok';
     } else {
-      btn.textContent = 'Post Comment';
+      btn.textContent = '{{ t.blog_post_comment }}';
       btn.disabled = false;
       msg.textContent = '❌ ' + (data.detail || 'Could not submit comment.');
       msg.className = 'blog-comment-msg blog-comment-msg-err';
