@@ -3401,6 +3401,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "countries":     ALL_COUNTRIES,
         "wc2026_teams":  WC2026_TEAMS,
         "wc2026_fan":    profile.wc2026_fan    if profile else "",
+        "pref_tz":       profile.timezone       if profile else "",
         "fp_photos":     db.query(FifteenPuzzlePhoto).filter_by(user_email=user["email"]).order_by(FifteenPuzzlePhoto.created_at.desc()).all(),
         "fp_limit":      getattr(profile, "puzzle_storage_limit", 32) if profile else 32,
         "jigsaw_saves":  db.query(JigsawSavedGame).filter_by(user_email=user["email"]).order_by(JigsawSavedGame.updated_at.desc()).all(),
@@ -5827,6 +5828,54 @@ def update_wc2026_fan(payload: WC2026FanUpdate, request: Request, db: Session = 
     if code and code not in VALID_WC2026_CODES:
         return JSONResponse({"error": "Invalid team code"}, status_code=400)
     profile.wc2026_fan = code
+    db.commit()
+    return {"ok": True}
+
+
+# Valid IANA timezone strings accepted from the profile form
+_VALID_TIMEZONES: frozenset = frozenset({
+    # Americas
+    "America/New_York", "America/Chicago", "America/Denver",
+    "America/Los_Angeles", "America/Anchorage", "Pacific/Honolulu",
+    "America/Phoenix", "America/Toronto", "America/Vancouver",
+    "America/Mexico_City", "America/Sao_Paulo",
+    "America/Argentina/Buenos_Aires", "America/Bogota", "America/Lima",
+    "America/Santiago", "America/Caracas", "America/Halifax",
+    # Europe
+    "Europe/London", "Europe/Dublin", "Europe/Lisbon",
+    "Europe/Paris", "Europe/Berlin", "Europe/Amsterdam",
+    "Europe/Madrid", "Europe/Rome", "Europe/Warsaw",
+    "Europe/Kyiv", "Europe/Moscow", "Europe/Istanbul",
+    "Europe/Athens", "Europe/Stockholm", "Europe/Helsinki",
+    "Europe/Bucharest", "Europe/Prague", "Europe/Budapest",
+    # Africa / Middle East
+    "Africa/Cairo", "Africa/Nairobi", "Africa/Lagos",
+    "Africa/Johannesburg", "Asia/Dubai", "Asia/Riyadh", "Asia/Jerusalem",
+    # Asia / Pacific
+    "Asia/Karachi", "Asia/Kolkata", "Asia/Colombo",
+    "Asia/Dhaka", "Asia/Yangon", "Asia/Bangkok",
+    "Asia/Singapore", "Asia/Shanghai", "Asia/Hong_Kong",
+    "Asia/Taipei", "Asia/Tokyo", "Asia/Seoul",
+    "Australia/Perth", "Australia/Darwin", "Australia/Adelaide",
+    "Australia/Sydney", "Australia/Brisbane", "Pacific/Auckland",
+    "Pacific/Fiji", "Pacific/Guam",
+})
+
+class TimezoneUpdate(BaseModel):
+    timezone: str = ""
+
+@app.post("/api/profile/timezone")
+def update_timezone(payload: TimezoneUpdate, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    tz = (payload.timezone or "").strip() or None
+    if tz and tz not in _VALID_TIMEZONES:
+        return JSONResponse({"error": "Invalid timezone"}, status_code=400)
+    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+    if not profile:
+        return JSONResponse({"error": "Profile not found"}, status_code=404)
+    profile.timezone = tz
     db.commit()
     return {"ok": True}
 
@@ -8288,7 +8337,28 @@ def _wc_fan_banner(user, db: Session) -> dict:
     return {"wc_fan": fan, "wc_fan_country": country}
 
 
-def _wc_matches_for_country(slug: str, db: Session) -> list:
+_WC_CDT = ZoneInfo("America/Chicago")  # all published match times are CDT
+
+def _localize_match(match_date: str, time_cdt: str, user_tz_str: Optional[str]) -> dict:
+    """Return localized date/time/label for a WC match given an IANA tz string."""
+    if not user_tz_str:
+        return {"date_local": match_date, "time_local": time_cdt, "tz_label": "CDT"}
+    try:
+        user_tz = ZoneInfo(user_tz_str)
+        h, m = map(int, time_cdt.split(":"))
+        y, mo, d = map(int, match_date.split("-"))
+        dt = datetime(y, mo, d, h, m, tzinfo=_WC_CDT).astimezone(user_tz)
+        return {
+            "date_local": dt.strftime("%Y-%m-%d"),
+            "time_local": dt.strftime("%H:%M"),
+            "tz_label":   dt.strftime("%Z"),
+        }
+    except Exception:
+        return {"date_local": match_date, "time_local": time_cdt, "tz_label": "CDT"}
+
+
+def _wc_matches_for_country(slug: str, db: Session,
+                             user_tz_str: Optional[str] = None) -> list:
     rows = (
         db.query(WC2026Match)
         .filter(
@@ -8306,11 +8376,13 @@ def _wc_matches_for_country(slug: str, db: Session) -> list:
             "team2": WC2026_BY_SLUG.get(r.team2_slug, {}),
             "team1_slug": r.team1_slug, "team2_slug": r.team2_slug,
             "score1": r.score1, "score2": r.score2, "status": r.status,
+            **_localize_match(r.match_date, r.time_cdt, user_tz_str),
         })
     return result
 
 
-def _wc_group_matches(group: str, db: Session) -> list:
+def _wc_group_matches(group: str, db: Session,
+                      user_tz_str: Optional[str] = None) -> list:
     rows = (
         db.query(WC2026Match)
         .filter(WC2026Match.group_name == group)
@@ -8325,6 +8397,7 @@ def _wc_group_matches(group: str, db: Session) -> list:
             "team2": WC2026_BY_SLUG.get(r.team2_slug, {}),
             "team1_slug": r.team1_slug, "team2_slug": r.team2_slug,
             "score1": r.score1, "score2": r.score2, "status": r.status,
+            **_localize_match(r.match_date, r.time_cdt, user_tz_str),
         })
     return result
 
@@ -8430,13 +8503,14 @@ def wc2026_country(slug: str, request: Request, db: Session = Depends(get_db)):
     t       = get_t(request)
     country = WC2026_BY_SLUG[slug]
     fan_ctx = _wc_fan_banner(user, db)
-    matches = _wc_matches_for_country(slug, db)
+    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first() if user else None
+    user_tz = getattr(profile, "timezone", None) if profile else None
+    matches = _wc_matches_for_country(slug, db, user_tz)
     group_countries = WC2026_BY_GROUP.get(country["group"], [])
     country_lb = _country_leaderboard(slug, db)
 
     board_easy = board_hard = None
     if user and fan_ctx["wc_fan"]:
-        profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
         if profile:
             board_easy = board_to_dict(get_or_create_board(db, user["email"], slug, "easy"))
             board_hard = board_to_dict(get_or_create_board(db, user["email"], slug, "hard"))
@@ -8451,6 +8525,7 @@ def wc2026_country(slug: str, request: Request, db: Session = Depends(get_db)):
         "board_easy": board_easy,
         "board_hard": board_hard,
         "wc2026_teams": WC2026_COUNTRIES,
+        "user_tz": user_tz,
         **fan_ctx,
     })
 

@@ -147,6 +147,84 @@
           <span id="wc2026-msg" class="setting-msg"></span>
         </div>
       </div>
+      <div class="setting-row setting-row-tz">
+        <div class="setting-info">
+          <span class="setting-name">🕐 Timezone</span>
+          <span class="setting-desc">Used to display World Cup match times in your local time.</span>
+        </div>
+        <div class="country-edit">
+          <select id="tz-select" class="favorite-game-select" onchange="saveTimezone()">
+            <option value="">— use default (CDT) —</option>
+            <optgroup label="Americas">
+              <option value="America/New_York"{% if pref_tz == 'America/New_York' %} selected{% endif %}>Eastern (New York)</option>
+              <option value="America/Chicago"{% if pref_tz == 'America/Chicago' %} selected{% endif %}>Central (Chicago)</option>
+              <option value="America/Denver"{% if pref_tz == 'America/Denver' %} selected{% endif %}>Mountain (Denver)</option>
+              <option value="America/Los_Angeles"{% if pref_tz == 'America/Los_Angeles' %} selected{% endif %}>Pacific (Los Angeles)</option>
+              <option value="America/Phoenix"{% if pref_tz == 'America/Phoenix' %} selected{% endif %}>Arizona (no DST)</option>
+              <option value="America/Anchorage"{% if pref_tz == 'America/Anchorage' %} selected{% endif %}>Alaska</option>
+              <option value="Pacific/Honolulu"{% if pref_tz == 'Pacific/Honolulu' %} selected{% endif %}>Hawaii</option>
+              <option value="America/Toronto"{% if pref_tz == 'America/Toronto' %} selected{% endif %}>Toronto</option>
+              <option value="America/Vancouver"{% if pref_tz == 'America/Vancouver' %} selected{% endif %}>Vancouver</option>
+              <option value="America/Halifax"{% if pref_tz == 'America/Halifax' %} selected{% endif %}>Halifax (Atlantic)</option>
+              <option value="America/Mexico_City"{% if pref_tz == 'America/Mexico_City' %} selected{% endif %}>Mexico City</option>
+              <option value="America/Bogota"{% if pref_tz == 'America/Bogota' %} selected{% endif %}>Bogotá (Colombia)</option>
+              <option value="America/Lima"{% if pref_tz == 'America/Lima' %} selected{% endif %}>Lima (Peru)</option>
+              <option value="America/Caracas"{% if pref_tz == 'America/Caracas' %} selected{% endif %}>Caracas (Venezuela)</option>
+              <option value="America/Santiago"{% if pref_tz == 'America/Santiago' %} selected{% endif %}>Santiago (Chile)</option>
+              <option value="America/Sao_Paulo"{% if pref_tz == 'America/Sao_Paulo' %} selected{% endif %}>São Paulo (Brazil)</option>
+              <option value="America/Argentina/Buenos_Aires"{% if pref_tz == 'America/Argentina/Buenos_Aires' %} selected{% endif %}>Buenos Aires</option>
+            </optgroup>
+            <optgroup label="Europe">
+              <option value="Europe/London"{% if pref_tz == 'Europe/London' %} selected{% endif %}>London (UK)</option>
+              <option value="Europe/Dublin"{% if pref_tz == 'Europe/Dublin' %} selected{% endif %}>Dublin</option>
+              <option value="Europe/Lisbon"{% if pref_tz == 'Europe/Lisbon' %} selected{% endif %}>Lisbon</option>
+              <option value="Europe/Paris"{% if pref_tz == 'Europe/Paris' %} selected{% endif %}>Paris / Berlin / Rome</option>
+              <option value="Europe/Madrid"{% if pref_tz == 'Europe/Madrid' %} selected{% endif %}>Madrid</option>
+              <option value="Europe/Warsaw"{% if pref_tz == 'Europe/Warsaw' %} selected{% endif %}>Warsaw (Poland)</option>
+              <option value="Europe/Prague"{% if pref_tz == 'Europe/Prague' %} selected{% endif %}>Prague</option>
+              <option value="Europe/Budapest"{% if pref_tz == 'Europe/Budapest' %} selected{% endif %}>Budapest</option>
+              <option value="Europe/Bucharest"{% if pref_tz == 'Europe/Bucharest' %} selected{% endif %}>Bucharest</option>
+              <option value="Europe/Athens"{% if pref_tz == 'Europe/Athens' %} selected{% endif %}>Athens</option>
+              <option value="Europe/Kyiv"{% if pref_tz == 'Europe/Kyiv' %} selected{% endif %}>Kyiv (Ukraine)</option>
+              <option value="Europe/Istanbul"{% if pref_tz == 'Europe/Istanbul' %} selected{% endif %}>Istanbul</option>
+              <option value="Europe/Moscow"{% if pref_tz == 'Europe/Moscow' %} selected{% endif %}>Moscow</option>
+              <option value="Europe/Stockholm"{% if pref_tz == 'Europe/Stockholm' %} selected{% endif %}>Stockholm</option>
+              <option value="Europe/Helsinki"{% if pref_tz == 'Europe/Helsinki' %} selected{% endif %}>Helsinki</option>
+            </optgroup>
+            <optgroup label="Africa / Middle East">
+              <option value="Africa/Lagos"{% if pref_tz == 'Africa/Lagos' %} selected{% endif %}>Lagos (Nigeria)</option>
+              <option value="Africa/Cairo"{% if pref_tz == 'Africa/Cairo' %} selected{% endif %}>Cairo (Egypt)</option>
+              <option value="Africa/Nairobi"{% if pref_tz == 'Africa/Nairobi' %} selected{% endif %}>Nairobi (Kenya)</option>
+              <option value="Africa/Johannesburg"{% if pref_tz == 'Africa/Johannesburg' %} selected{% endif %}>Johannesburg</option>
+              <option value="Asia/Jerusalem"{% if pref_tz == 'Asia/Jerusalem' %} selected{% endif %}>Jerusalem</option>
+              <option value="Asia/Riyadh"{% if pref_tz == 'Asia/Riyadh' %} selected{% endif %}>Riyadh (Saudi Arabia)</option>
+              <option value="Asia/Dubai"{% if pref_tz == 'Asia/Dubai' %} selected{% endif %}>Dubai (UAE)</option>
+            </optgroup>
+            <optgroup label="Asia / Pacific">
+              <option value="Asia/Karachi"{% if pref_tz == 'Asia/Karachi' %} selected{% endif %}>Karachi (Pakistan)</option>
+              <option value="Asia/Kolkata"{% if pref_tz == 'Asia/Kolkata' %} selected{% endif %}>Kolkata / Mumbai (India)</option>
+              <option value="Asia/Colombo"{% if pref_tz == 'Asia/Colombo' %} selected{% endif %}>Colombo (Sri Lanka)</option>
+              <option value="Asia/Dhaka"{% if pref_tz == 'Asia/Dhaka' %} selected{% endif %}>Dhaka (Bangladesh)</option>
+              <option value="Asia/Yangon"{% if pref_tz == 'Asia/Yangon' %} selected{% endif %}>Yangon (Myanmar)</option>
+              <option value="Asia/Bangkok"{% if pref_tz == 'Asia/Bangkok' %} selected{% endif %}>Bangkok (Thailand)</option>
+              <option value="Asia/Singapore"{% if pref_tz == 'Asia/Singapore' %} selected{% endif %}>Singapore / Kuala Lumpur</option>
+              <option value="Asia/Shanghai"{% if pref_tz == 'Asia/Shanghai' %} selected{% endif %}>Shanghai / Beijing (China)</option>
+              <option value="Asia/Hong_Kong"{% if pref_tz == 'Asia/Hong_Kong' %} selected{% endif %}>Hong Kong</option>
+              <option value="Asia/Taipei"{% if pref_tz == 'Asia/Taipei' %} selected{% endif %}>Taipei (Taiwan)</option>
+              <option value="Asia/Seoul"{% if pref_tz == 'Asia/Seoul' %} selected{% endif %}>Seoul (South Korea)</option>
+              <option value="Asia/Tokyo"{% if pref_tz == 'Asia/Tokyo' %} selected{% endif %}>Tokyo (Japan)</option>
+              <option value="Australia/Perth"{% if pref_tz == 'Australia/Perth' %} selected{% endif %}>Perth (Western Australia)</option>
+              <option value="Australia/Adelaide"{% if pref_tz == 'Australia/Adelaide' %} selected{% endif %}>Adelaide</option>
+              <option value="Australia/Sydney"{% if pref_tz == 'Australia/Sydney' %} selected{% endif %}>Sydney / Melbourne</option>
+              <option value="Australia/Brisbane"{% if pref_tz == 'Australia/Brisbane' %} selected{% endif %}>Brisbane (no DST)</option>
+              <option value="Pacific/Auckland"{% if pref_tz == 'Pacific/Auckland' %} selected{% endif %}>Auckland (New Zealand)</option>
+              <option value="Pacific/Fiji"{% if pref_tz == 'Pacific/Fiji' %} selected{% endif %}>Fiji</option>
+              <option value="Pacific/Guam"{% if pref_tz == 'Pacific/Guam' %} selected{% endif %}>Guam</option>
+            </optgroup>
+          </select>
+          <span id="tz-msg" class="setting-msg"></span>
+        </div>
+      </div>
       <div class="setting-row setting-row-about">
         <div class="setting-info">
           <span class="setting-name">About</span>
@@ -1244,6 +1322,23 @@ async function saveWC2026Fan() {
       method:  'POST',
       headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
       body:    JSON.stringify({ team: sel.value || null }),
+    });
+    msg.textContent = res.ok ? 'Saved!' : 'Could not save.';
+    setTimeout(() => { msg.textContent = ''; }, 2000);
+  } catch {
+    msg.textContent = 'Network error.';
+  }
+}
+
+// ── Timezone ──────────────────────────────────────────────────────────────────
+async function saveTimezone() {
+  const sel = document.getElementById('tz-select');
+  const msg = document.getElementById('tz-msg');
+  try {
+    const res = await fetch('/api/profile/timezone', {
+      method:  'POST',
+      headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+      body:    JSON.stringify({ timezone: sel.value || '' }),
     });
     msg.textContent = res.ok ? 'Saved!' : 'Could not save.';
     setTimeout(() => { msg.textContent = ''; }, 2000);
