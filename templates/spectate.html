@@ -17,13 +17,13 @@
   <!-- ── Score strip ── -->
   <div class="duel-scoreboard">
     <div class="duel-player-score" id="p1-score-box">
-      <span class="score-label" id="p1-name">Player 1</span>
+      <span class="score-label" id="p1-name">{{ t.duel_player1 }}</span>
       <span class="score-value" id="p1-score">0</span>
       <span class="score-sub" id="p1-tiles">0 tiles</span>
     </div>
     <div class="duel-vs">VS</div>
     <div class="duel-player-score opp" id="p2-score-box">
-      <span class="score-label" id="p2-name">Player 2</span>
+      <span class="score-label" id="p2-name">{{ t.duel_player2 }}</span>
       <span class="score-value" id="p2-score">0</span>
       <span class="score-sub" id="p2-tiles">0 tiles</span>
     </div>
@@ -39,7 +39,7 @@
   <div class="duel-boards-row">
 
     <div class="duel-board-col">
-      <div class="duel-board-col-label" id="p1-board-label">⚔️ Player 1</div>
+      <div class="duel-board-col-label" id="p1-board-label">⚔️ {{ t.duel_player1 }}</div>
       <div class="duel-board-wrap">
         <div id="board-p1"
              data-game-id="{{ game_id }}"
@@ -53,7 +53,7 @@
     </div>
 
     <div class="duel-board-col">
-      <div class="duel-board-col-label" id="p2-board-label">⚔️ Player 2</div>
+      <div class="duel-board-col-label" id="p2-board-label">⚔️ {{ t.duel_player2 }}</div>
       <div class="duel-board-wrap">
         <div id="board-p2" data-rows="{{ rows }}" data-cols="{{ cols }}"></div>
         <div id="spec-overlay-p2" class="duel-overlay" style="display:none"></div>
@@ -68,7 +68,7 @@
     <div id="duel-chat-log" class="duel-chat-log"></div>
     <div class="duel-chat-input-row">
       <input id="duel-chat-input" type="text" placeholder="Send a message as spectator…" maxlength="200" autocomplete="off">
-      <button class="duel-chat-send-btn" onclick="sendChat()">Send</button>
+      <button class="duel-chat-send-btn" onclick="sendChat()">{{ t.duel_send }}</button>
     </div>
   </div>
 

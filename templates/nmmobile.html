@@ -132,12 +132,12 @@
         <div id="nm-score-form" style="display:none">
           <input id="nm-name-input" type="text" maxlength="32"
                  placeholder="Your name" autocomplete="nickname">
-          <button id="nm-save-btn">Save Score</button>
+          <button id="nm-save-btn">{{ t.common_save_score }}</button>
         </div>
         <div id="nm-score-msg" style="display:none"></div>
         <div class="nm-overlay-btns">
-          <button id="nm-overlay-daily">📅 New Daily</button>
-          <button id="nm-overlay-random">🎲 Play Again</button>
+          <button id="nm-overlay-daily">📅 {{ t.common_new_daily }}</button>
+          <button id="nm-overlay-random">🎲 {{ t.common_play_again }}</button>
         </div>
       </div>
     </div>
@@ -146,7 +146,7 @@
     <div id="nm-lb-section" style="display:none">
       <div class="nm-lb-title">🏆 Today's Leaderboard</div>
       <div id="nm-lb-content">
-        <div class="lb-loading">Loading…</div>
+        <div class="lb-loading">{{ t.lb_loading }}</div>
       </div>
     </div>
 

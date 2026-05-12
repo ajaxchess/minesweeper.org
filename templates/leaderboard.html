@@ -57,25 +57,25 @@
 
     <div class="lb-showcase-controls" aria-label="Leaderboard showcase filters">
       <div class="lb-showcase-filter" role="group" aria-label="Time period">
-        <button class="lb-showcase-btn active" data-showcase-period="daily">Daily</button>
-        <button class="lb-showcase-btn" data-showcase-period="weekly">Weekly</button>
-        <button class="lb-showcase-btn" data-showcase-period="monthly">Monthly</button>
-        <button class="lb-showcase-btn" data-showcase-period="season">Season</button>
-        <button class="lb-showcase-btn" data-showcase-period="yearly">Yearly</button>
-        <button class="lb-showcase-btn" data-showcase-period="alltime">All Time</button>
+        <button class="lb-showcase-btn active" data-showcase-period="daily">{{ t.lb_period_daily }}</button>
+        <button class="lb-showcase-btn" data-showcase-period="weekly">{{ t.lb_period_weekly }}</button>
+        <button class="lb-showcase-btn" data-showcase-period="monthly">{{ t.lb_period_monthly }}</button>
+        <button class="lb-showcase-btn" data-showcase-period="season">{{ t.lb_period_season }}</button>
+        <button class="lb-showcase-btn" data-showcase-period="yearly">{{ t.lb_period_yearly }}</button>
+        <button class="lb-showcase-btn" data-showcase-period="alltime">{{ t.lb_period_alltime }}</button>
       </div>
       <div class="lb-showcase-filter" role="group" aria-label="Leaderboard category">
-        <button class="lb-showcase-btn active" data-showcase-category="all">All</button>
+        <button class="lb-showcase-btn active" data-showcase-category="all">{{ t.lb_cat_all }}</button>
         <button class="lb-showcase-btn" data-showcase-category="minesweeper">Minesweeper</button>
         <button class="lb-showcase-btn" data-showcase-category="rush">Rush</button>
-        <button class="lb-showcase-btn" data-showcase-category="puzzles">Puzzles</button>
+        <button class="lb-showcase-btn" data-showcase-category="puzzles">{{ t.nav_puzzles }}</button>
         <button class="lb-showcase-btn" data-showcase-category="pvp">PvP</button>
-        <button class="lb-showcase-btn" data-showcase-category="events">Events</button>
+        <button class="lb-showcase-btn" data-showcase-category="events">{{ t.lb_cat_events }}</button>
       </div>
     </div>
 
     <div id="lb-showcase-grid" class="lb-showcase-grid" aria-live="polite">
-      <div class="lb-showcase-loading">Loading champions...</div>
+      <div class="lb-showcase-loading">{{ t.lb_loading_champions }}</div>
     </div>
   </section>
 
@@ -91,13 +91,13 @@
           <tr>
             <th>{{ t.lb_col_rank }}</th>
             <th>{{ t.lb_col_name }}</th>
-            <th>Result</th>
-            <th>Board</th>
+            <th>{{ t.lb_col_result }}</th>
+            <th>{{ t.lb_col_board }}</th>
             <th>{{ t.lb_col_date }}</th>
           </tr>
         </thead>
         <tbody id="lb-platform-body">
-          <tr><td colspan="5" class="lb-empty">Pick a leaderboard above.</td></tr>
+          <tr><td colspan="5" class="lb-empty">{{ t.lb_pick_above }}</td></tr>
         </tbody>
       </table>
     </div>

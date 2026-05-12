@@ -58,7 +58,7 @@
     <div class="game-info">
       <div class="mode-row">
         <div class="mode-badge">🍩 Toroid</div>
-        <button id="noguess-toggle" onclick="torToggleNoGuess()" title="Generate boards that require no guessing">No Guess</button>
+        <button id="noguess-toggle" onclick="torToggleNoGuess()" title="Generate boards that require no guessing">{{ t.common_no_guess }}</button>
       </div>
 
       <!-- Difficulty tabs -->
@@ -71,8 +71,8 @@
 
       {% if mode == 'toroid-custom' %}
       <form id="toroid-custom-form" class="custom-form">
-        <label>Rows  <input type="number" id="t-rows"  value="10" min="5" max="30"></label>
-        <label>Cols  <input type="number" id="t-cols"  value="10" min="5" max="50"></label>
+        <label>{{ t.common_rows }}  <input type="number" id="t-rows"  value="10" min="5" max="30"></label>
+        <label>{{ t.common_cols }}  <input type="number" id="t-cols"  value="10" min="5" max="50"></label>
         <label>Mines <input type="number" id="t-mines" value="10" min="1" max="999"></label>
         <button type="submit">Start</button>
       </form>
@@ -115,7 +115,7 @@
       {% set mode_label = {'toroid-beginner': 'Easy', 'toroid-intermediate': 'Medium', 'toroid-expert': 'Hard', 'toroid-custom': 'Custom'}[mode] %}
       <div class="tz-lb-title" id="tor-lb-title">🏆 Today's Best — {{ mode_label }}</div>
       <div id="tor-lb-content">
-        <div class="lb-loading">Loading…</div>
+        <div class="lb-loading">{{ t.lb_loading }}</div>
       </div>
     </div>
 

@@ -24,38 +24,38 @@
   <nav class="tz-breadcrumb" aria-label="Breadcrumb">
     <a href="/">Minesweeper</a>
     <span aria-hidden="true">›</span>
-    <span>Contact Us</span>
+    <span>{{ t.contact_title }}</span>
   </nav>
 
-  <h1 class="tz-content-h1">Contact Us</h1>
+  <h1 class="tz-content-h1">{{ t.contact_title }}</h1>
   <p class="tz-content-lead">
     Have a question, found a bug, or want to share feedback about Minesweeper.org?
     We'd love to hear from you.
   </p>
 
   <section class="tz-section">
-    <h2>Get in Touch</h2>
+    <h2>{{ t.contact_get_in_touch }}</h2>
 
     {% if submitted %}
-    <p style="color:var(--accent2);font-weight:600;">Thanks! Your message has been sent. We'll be in touch.</p>
+    <p style="color:var(--accent2);font-weight:600;">{{ t.contact_success }}</p>
     {% else %}
     <form method="post" action="/contact" style="display:flex;flex-direction:column;gap:0.85rem;max-width:520px;">
       <label>
-        <span style="display:block;font-size:0.85rem;margin-bottom:0.25rem;">Name</span>
+        <span style="display:block;font-size:0.85rem;margin-bottom:0.25rem;">{{ t.contact_name }}</span>
         <input type="text" name="name" required maxlength="128"
                style="width:100%;padding:0.45rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);">
       </label>
       <label>
-        <span style="display:block;font-size:0.85rem;margin-bottom:0.25rem;">Email</span>
+        <span style="display:block;font-size:0.85rem;margin-bottom:0.25rem;">{{ t.contact_email }}</span>
         <input type="email" name="email" required maxlength="256"
                style="width:100%;padding:0.45rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);">
       </label>
       <label>
-        <span style="display:block;font-size:0.85rem;margin-bottom:0.25rem;">Message</span>
+        <span style="display:block;font-size:0.85rem;margin-bottom:0.25rem;">{{ t.contact_message }}</span>
         <textarea name="message" required maxlength="4000" rows="6"
                   style="width:100%;padding:0.45rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);resize:vertical;"></textarea>
       </label>
-      <button type="submit" class="btn" style="align-self:flex-start;">Send Message</button>
+      <button type="submit" class="btn" style="align-self:flex-start;">{{ t.contact_send }}</button>
     </form>
     {% endif %}
 
@@ -71,7 +71,7 @@
   </section>
 
   <section class="tz-section">
-    <h2>What to Contact Us About</h2>
+    <h2>{{ t.contact_what_about }}</h2>
     <ul>
       <li><strong>Bug reports</strong> — Something not working as expected? Let us know.</li>
       <li><strong>Feature requests</strong> — Have an idea for a new game mode, variant, or improvement? We're always open to suggestions.</li>
