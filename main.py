@@ -1682,6 +1682,10 @@ def puzzles_numbers_match_redirect(request: Request):
 def puzzles_15puzzle_redirect(request: Request):
     return RedirectResponse("/other/15puzzle", status_code=301)
 
+@app.get("/puzzles/15-puzzle", response_class=HTMLResponse)
+def puzzles_15_puzzle_redirect(request: Request):
+    return RedirectResponse("/other/15puzzle", status_code=301)
+
 @app.get("/puzzles/2048", response_class=HTMLResponse)
 def puzzles_2048_redirect(request: Request):
     return RedirectResponse("/other/2048", status_code=301)
@@ -1690,8 +1694,16 @@ def puzzles_2048_redirect(request: Request):
 def puzzles_2048hex_redirect(request: Request):
     return RedirectResponse("/other/2048hex", status_code=301)
 
+@app.get("/puzzles/2048-hexagon", response_class=HTMLResponse)
+def puzzles_2048_hexagon_redirect(request: Request):
+    return RedirectResponse("/other/2048hex", status_code=301)
+
 @app.get("/puzzles/mahjong", response_class=HTMLResponse)
 def puzzles_mahjong_redirect(request: Request):
+    return RedirectResponse("/other/mahjong", status_code=301)
+
+@app.get("/puzzles/mahjong-solitaire", response_class=HTMLResponse)
+def puzzles_mahjong_solitaire_redirect(request: Request):
     return RedirectResponse("/other/mahjong", status_code=301)
 
 @app.get("/puzzles/jigsaw", response_class=HTMLResponse)
