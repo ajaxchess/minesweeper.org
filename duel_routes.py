@@ -174,6 +174,7 @@ async def pvp_lobby(request: Request, m: Optional[str] = None):
 async def pvp_bot_lobby(request: Request):
     return templates.TemplateResponse("pvp_bot_lobby.html", {
         "request": request,
+        "mode":    "pvp-bot",
         "user":    get_current_user(request),
         "lang":    get_lang(request), "t": get_t(request),
     })

@@ -237,10 +237,10 @@
 
         <!-- PvP -->
         <div class="mega-group" id="mg-pvp">
-          <button class="mega-trigger {% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %}active{% endif %}" onclick="toggleMega(event,'mg-pvp')" aria-haspopup="true" aria-expanded="false">PvP ▾</button>
+          <button class="mega-trigger {% if mode in ['pvp','pvp-beta','duel','pvp-leaderboard','pvp-rankings','pvp-bot','pvp-bot-beta'] %}active{% endif %}" onclick="toggleMega(event,'mg-pvp')" aria-haspopup="true" aria-expanded="false">PvP ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
-              <a href="/pvp" class="mega-card {% if mode=='pvp' %}active{% endif %}">
+              <a href="/pvp" class="mega-card {% if mode in ('pvp','pvp-beta') %}active{% endif %}">
                 <span class="mega-icon">🎮</span>
                 <span class="mega-card-text"><strong>{{ t.nav_pvp }}</strong><span>{{ t.nav_sub_pvp }}</span></span>
               </a>
@@ -248,7 +248,7 @@
                 <span class="mega-icon">⚔️</span>
                 <span class="mega-card-text"><strong>{{ t.nav_duel }}</strong><span>{{ t.nav_sub_duel }}</span></span>
               </a>
-              <a href="/pvp/bot" class="mega-card {% if mode=='pvp-bot' %}active{% endif %}">
+              <a href="/pvp/bot" class="mega-card {% if mode in ('pvp-bot','pvp-bot-beta') %}active{% endif %}">
                 <span class="mega-icon">🤖</span>
                 <span class="mega-card-text"><strong>{{ t.nav_vs_bot }}</strong><span>{{ t.nav_sub_vs_bot }}</span></span>
               </a>
@@ -505,12 +505,12 @@
           <a href="/how-to-play" class="drawer-link {% if mode in ['how-to-play','rush-howto'] %}active{% endif %}">❓ {{ t.nav_how_to_play }}</a>
         </div>
       </details>
-      <details class="drawer-group"{% if mode in ['pvp','duel','pvp-leaderboard','pvp-rankings','pvp-bot'] %} open{% endif %}>
+      <details class="drawer-group"{% if mode in ['pvp','pvp-beta','duel','pvp-leaderboard','pvp-rankings','pvp-bot','pvp-bot-beta'] %} open{% endif %}>
         <summary class="drawer-summary">🎮 PvP</summary>
         <div class="drawer-links">
-          <a href="/pvp" class="drawer-link {% if mode=='pvp' %}active{% endif %}">🎮 {{ t.nav_pvp }}</a>
+          <a href="/pvp" class="drawer-link {% if mode in ('pvp','pvp-beta') %}active{% endif %}">🎮 {{ t.nav_pvp }}</a>
           <a href="/duel" class="drawer-link {% if mode=='duel' %}active{% endif %}">⚔️ {{ t.nav_duel }}</a>
-          <a href="/pvp/bot" class="drawer-link {% if mode=='pvp-bot' %}active{% endif %}">🤖 {{ t.nav_vs_bot }}</a>
+          <a href="/pvp/bot" class="drawer-link {% if mode in ('pvp-bot','pvp-bot-beta') %}active{% endif %}">🤖 {{ t.nav_vs_bot }}</a>
           <a href="/pvp/leaderboard" class="drawer-link {% if mode=='pvp-leaderboard' %}active{% endif %}">🏆 {{ t.nav_pvp_leaderboard }}</a>
           <a href="/pvp/rankings" class="drawer-link {% if mode=='pvp-rankings' %}active{% endif %}">👑 {{ t.nav_elo_rankings }}</a>
         </div>
