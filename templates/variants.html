@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Minesweeper Variants — Play Different Modes | minesweeper.org{% endblock %}
+{% block title %}{{ t.variants_title }} | minesweeper.org{% endblock %}
 {% block description %}Explore Minesweeper variants: Cylinder (wraps horizontally), Toroid (wraps all sides), and more. Free to play, no download required.{% endblock %}
 {% block canonical %}https://minesweeper.org/variants{% endblock %}
 {% block og_url %}https://minesweeper.org/variants{% endblock %}
 {% block og_type %}game{% endblock %}
-{% block og_title %}Minesweeper Variants — Play Different Modes{% endblock %}
+{% block og_title %}{{ t.variants_title }}{% endblock %}
 {% block og_description %}Explore Minesweeper variants: Cylinder (wraps horizontally), Toroid (wraps all sides), and more. Free to play.{% endblock %}
 
 {% block content %}
@@ -17,14 +17,10 @@
 
     <div class="variant-card">
       <div class="variant-card-icon">🔄</div>
-      <h2 class="variant-card-title">Cylinder</h2>
-      <p class="variant-card-desc">
-        The board wraps horizontally — the left and right edges are connected.
-        A mine near the right edge affects cells on the left, and vice versa.
-        Numbers reflect this wrap, making every row a loop.
-      </p>
+      <h2 class="variant-card-title">{{ t.nav_sub_cylinder }}</h2>
+      <p class="variant-card-desc">{{ t.var_cylinder_desc }}</p>
       <div class="variant-card-example">
-        <span class="example-label">Example row with one mine:</span>
+        <span class="example-label">{{ t.var_cylinder_example_lbl }}</span>
         <div class="example-row">
           <span class="ex-cell ex-mine">💣</span>
           <span class="ex-cell ex-num" style="color:#1976D2">1</span>
@@ -32,52 +28,44 @@
           <span class="ex-cell ex-empty"></span>
           <span class="ex-cell ex-num" style="color:#1976D2">1</span>
         </div>
-        <span class="example-label">↩ edges connect ↪</span>
+        <span class="example-label">{{ t.var_cylinder_edges_lbl }}</span>
       </div>
       <div class="variant-card-links">
         <a href="/cylinder"              class="variant-play-btn">{{ t.hex_easy }}</a>
         <a href="/cylinder/intermediate" class="variant-play-btn">{{ t.hex_medium }}</a>
         <a href="/cylinder/expert"       class="variant-play-btn">{{ t.hex_hard }}</a>
-        <a href="/cylinder/custom"       class="variant-play-btn variant-play-btn-outline">Custom</a>
+        <a href="/cylinder/custom"       class="variant-play-btn variant-play-btn-outline">{{ t.hex_custom }}</a>
       </div>
     </div>
 
     <div class="variant-card">
       <div class="variant-card-icon">🍩</div>
-      <h2 class="variant-card-title">Toroid</h2>
-      <p class="variant-card-desc">
-        The board wraps on all sides — left↔right and top↔bottom edges are connected.
-        Like playing on the surface of a donut: every cell always has exactly 8 neighbors,
-        even in the corners.
-      </p>
+      <h2 class="variant-card-title">{{ t.nav_sub_toroid }}</h2>
+      <p class="variant-card-desc">{{ t.var_toroid_desc }}</p>
       <div class="variant-card-example">
-        <span class="example-label">Example corner with one mine:</span>
+        <span class="example-label">{{ t.var_toroid_example_lbl }}</span>
         <div class="example-row">
           <span class="ex-cell ex-mine">💣</span>
           <span class="ex-cell ex-num" style="color:#1976D2">1</span>
           <span class="ex-cell ex-empty"></span>
           <span class="ex-cell ex-num" style="color:#1976D2">1</span>
         </div>
-        <span class="example-label">↕ all edges connect ↔</span>
+        <span class="example-label">{{ t.var_toroid_edges_lbl }}</span>
       </div>
       <div class="variant-card-links">
         <a href="/toroid"              class="variant-play-btn">{{ t.hex_easy }}</a>
         <a href="/toroid/intermediate" class="variant-play-btn">{{ t.hex_medium }}</a>
         <a href="/toroid/expert"       class="variant-play-btn">{{ t.hex_hard }}</a>
-        <a href="/toroid/custom"       class="variant-play-btn variant-play-btn-outline">Custom</a>
+        <a href="/toroid/custom"       class="variant-play-btn variant-play-btn-outline">{{ t.hex_custom }}</a>
       </div>
     </div>
 
     <div class="variant-card">
       <div class="variant-card-icon">⬡</div>
-      <h2 class="variant-card-title">Hexsweeper</h2>
-      <p class="variant-card-desc">
-        Minesweeper on a hexagonal board — each cell has exactly 6 neighbours instead of 8.
-        The board is shaped as a large hexagon. Pick beginner (61 cells), medium (127 cells),
-        or hard (271 cells), or create a custom size.
-      </p>
+      <h2 class="variant-card-title">{{ t.nav_hexsweeper }}</h2>
+      <p class="variant-card-desc">{{ t.var_hex_desc }}</p>
       <div class="variant-card-example">
-        <span class="example-label">Each hex has 6 neighbours:</span>
+        <span class="example-label">{{ t.var_hex_example_lbl }}</span>
         <div class="example-row" style="letter-spacing:0.1em">
           <span class="ex-cell ex-empty" style="font-size:1.4rem">⬡</span>
           <span class="ex-cell ex-mine"  style="font-size:1.4rem">⬡</span>
@@ -88,18 +76,14 @@
         <a href="/hexsweeper"              class="variant-play-btn">{{ t.hex_easy }}</a>
         <a href="/hexsweeper/intermediate" class="variant-play-btn">{{ t.hex_medium }}</a>
         <a href="/hexsweeper/expert"       class="variant-play-btn">{{ t.hex_hard }}</a>
-        <a href="/hexsweeper/custom"       class="variant-play-btn variant-play-btn-outline">Custom</a>
+        <a href="/hexsweeper/custom"       class="variant-play-btn variant-play-btn-outline">{{ t.hex_custom }}</a>
       </div>
     </div>
 
     <div class="variant-card">
       <div class="variant-card-icon">🔨</div>
-      <h2 class="variant-card-title">Board Generator</h2>
-      <p class="variant-card-desc">
-        Design your own board by clicking cells to place mines. See the board hash, 3BV difficulty
-        for all three topologies, and get a shareable link. You can also export the layout as a
-        Mosaic puzzle and challenge friends to solve it.
-      </p>
+      <h2 class="variant-card-title">{{ t.var_gen_title }}</h2>
+      <p class="variant-card-desc">{{ t.var_gen_desc }}</p>
       <div class="variant-card-links">
         <a href="/variants/board-generator" class="variant-play-btn">{{ t.variants_open_generator }}</a>
       </div>
@@ -107,16 +91,12 @@
 
     <div class="variant-card">
       <div class="variant-card-icon">🔁</div>
-      <h2 class="variant-card-title">Board Replay</h2>
-      <p class="variant-card-desc">
-        Play any specific board by its hash — the exact same mine layout, every time.
-        Switch between Standard, Cylinder, and Toroid on the same board and compare your
-        times with friends. Scores are tracked per board, separate from the global leaderboard.
-      </p>
+      <h2 class="variant-card-title">{{ t.var_replay_title }}</h2>
+      <p class="variant-card-desc">{{ t.var_replay_desc }}</p>
       <div class="variant-card-links">
-        <a href="/variants/replay/?rows=9&cols=9&mines=10"    class="variant-play-btn">Beginner</a>
-        <a href="/variants/replay/?rows=16&cols=16&mines=40"  class="variant-play-btn">Intermediate</a>
-        <a href="/variants/replay/?rows=16&cols=30&mines=99"  class="variant-play-btn">Expert</a>
+        <a href="/variants/replay/?rows=9&cols=9&mines=10"    class="variant-play-btn">{{ t.hex_easy }}</a>
+        <a href="/variants/replay/?rows=16&cols=16&mines=40"  class="variant-play-btn">{{ t.hex_medium }}</a>
+        <a href="/variants/replay/?rows=16&cols=30&mines=99"  class="variant-play-btn">{{ t.hex_hard }}</a>
       </div>
     </div>
 
