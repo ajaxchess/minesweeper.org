@@ -66,7 +66,7 @@
         <a href="/cylinder"              class="variant-tab {% if mode == 'cylinder-beginner'     %}active{% endif %}">{{ t.hex_easy }}</a>
         <a href="/cylinder/intermediate" class="variant-tab {% if mode == 'cylinder-intermediate' %}active{% endif %}">{{ t.hex_medium }}</a>
         <a href="/cylinder/expert"       class="variant-tab {% if mode == 'cylinder-expert'       %}active{% endif %}">{{ t.hex_hard }}</a>
-        <a href="/cylinder/custom"       class="variant-tab {% if mode == 'cylinder-custom'       %}active{% endif %}">Custom</a>
+        <a href="/cylinder/custom"       class="variant-tab {% if mode == 'cylinder-custom'       %}active{% endif %}">{{ t.hex_custom }}</a>
       </div>
 
       {% if mode == 'cylinder-custom' %}
@@ -91,7 +91,7 @@
       </div>
     </div>
 
-    <div class="cylinder-wrap-label">↩ left &amp; right edges connect ↪</div>
+    <div class="cylinder-wrap-label">↩ {{ t.nav_sub_cylinder }} ↪</div>
 
     <div class="variant-board-wrap variant-board-wrap--cylinder">
       <div id="board"
@@ -104,16 +104,19 @@
     </div>
 
     <p class="instructions">
-      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
-      <strong>Right-click</strong> to flag &nbsp;|&nbsp;
-      <strong>🙂</strong> to reset &nbsp;|&nbsp;
-      <em>Columns wrap around!</em>
+      <strong>{{ t.game_left_click }}</strong> {{ t.game_to_reveal }} &nbsp;|&nbsp;
+      <strong>{{ t.game_right_click }}</strong> {{ t.game_to_flag }} &nbsp;|&nbsp;
+      <strong>🙂</strong> {{ t.game_to_reset }} &nbsp;|&nbsp;
+      <em>{{ t.cyl_wrap_note }}</em>
     </p>
 
     <!-- Leaderboard -->
     <div class="tz-lb-section" style="width:100%;max-width:600px">
-      {% set mode_label = {'cylinder-beginner': 'Easy', 'cylinder-intermediate': 'Medium', 'cylinder-expert': 'Hard', 'cylinder-custom': 'Custom'}[mode] %}
-      <div class="tz-lb-title" id="cyl-lb-title">🏆 Today's Best — {{ mode_label }}</div>
+      {% if mode == 'cylinder-beginner' %}{% set mode_label = t.hex_easy %}
+      {% elif mode == 'cylinder-intermediate' %}{% set mode_label = t.hex_medium %}
+      {% elif mode == 'cylinder-expert' %}{% set mode_label = t.hex_hard %}
+      {% else %}{% set mode_label = t.hex_custom %}{% endif %}
+      <div class="tz-lb-title" id="cyl-lb-title">{{ t.hex_lb_today }} — {{ mode_label }}</div>
       <div id="cyl-lb-content">
         <div class="lb-loading">{{ t.lb_loading }}</div>
       </div>
@@ -123,49 +126,49 @@
     <div class="info-body" style="width:100%;max-width:600px;margin-top:1.5rem">
 
       <div class="info-section">
-        <h2>What is Cylinder Minesweeper?</h2>
-        <p>Cylinder Minesweeper is a twist on classic Minesweeper where the board is wrapped horizontally — the left edge connects directly to the right edge, forming a cylinder. Every cell still follows the standard rules: numbered clues count all adjacent mines, but cells on the left or right border treat the opposite edge as their neighbor.</p>
-        <p>The result is a seamless, edge-free playing field along the horizontal axis. There are no dead corners on the sides — the board curves around, opening up new logical chains that don't exist on a flat grid.</p>
+        <h2>{{ t.cyl_about_title }}</h2>
+        <p>{{ t.cyl_about_p1 | safe }}</p>
+        <p>{{ t.cyl_about_p2 | safe }}</p>
       </div>
 
       <div class="info-section">
         <h2>{{ t.nav_how_to_play }}</h2>
         <ul>
-          <li><strong>Left-click</strong> a cell to reveal it. If it's empty (0), all connected empty cells auto-expand.</li>
-          <li><strong>Right-click</strong> to place a flag (🚩) on a suspected mine. Right-click again for a question mark (❓), then once more to clear.</li>
-          <li><strong>Double-click</strong> a revealed number to chord — if the correct number of flags are placed around it, all remaining neighbors are revealed at once.</li>
-          <li>The 😊 button starts a fresh game. Your timer begins on your first click.</li>
-          <li>Remember: <strong>left and right edges connect.</strong> A cell in the leftmost column neighbors the rightmost column, and vice versa.</li>
+          <li>{{ t.cyl_htp_li1 | safe }}</li>
+          <li>{{ t.cyl_htp_li2 | safe }}</li>
+          <li>{{ t.cyl_htp_li3 | safe }}</li>
+          <li>{{ t.cyl_htp_li4 | safe }}</li>
+          <li>{{ t.cyl_htp_li5 | safe }}</li>
         </ul>
       </div>
 
       <div class="info-section">
         <h2>{{ t.common_difficulty_levels }}</h2>
         <ul>
-          <li><strong>Easy —</strong> 9×9 board, 10 mines. Ideal for learning how the horizontal wrap affects adjacent cells.</li>
-          <li><strong>Medium —</strong> 16×16 board, 40 mines. The wrap becomes a meaningful factor in deduction chains.</li>
-          <li><strong>Hard —</strong> 16×30 board, 99 mines. High mine density with wrapping neighbors makes every number count.</li>
-          <li><strong>Custom —</strong> Set your own rows, columns, and mine count for a personalized challenge.</li>
+          <li>{{ t.cyl_diff_easy | safe }}</li>
+          <li>{{ t.cyl_diff_medium | safe }}</li>
+          <li>{{ t.cyl_diff_hard | safe }}</li>
+          <li>{{ t.cyl_diff_custom | safe }}</li>
         </ul>
       </div>
 
       <div class="info-section">
-        <h2>Strategy Tips</h2>
+        <h2>{{ t.cyl_strategy_title }}</h2>
         <ul>
-          <li><strong>Watch the edges.</strong> A number in column 0 or the last column has neighbors on both sides of the board. Don't treat edge cells as having fewer neighbors — they have the same eight as any interior cell.</li>
-          <li><strong>Use the wrap to your advantage.</strong> A constraint on the right edge and one on the left edge may share hidden cells through the wrap, enabling subset deductions you'd never see on a flat board.</li>
-          <li><strong>No Guess mode</strong> generates boards that are always logically solvable — no coin-flip situations. Enable it for a pure logic challenge.</li>
-          <li><strong>Chord efficiently.</strong> Once you've flagged all mines around a number, double-click to reveal the rest in one move and keep your 3BV/s high.</li>
-          <li><strong>Open in the middle.</strong> Your first click is always safe. Clicking near the center maximizes the chance of a large auto-expand cascade.</li>
+          <li>{{ t.cyl_strat_li1 | safe }}</li>
+          <li>{{ t.cyl_strat_li2 | safe }}</li>
+          <li>{{ t.cyl_strat_li3 | safe }}</li>
+          <li>{{ t.cyl_strat_li4 | safe }}</li>
+          <li>{{ t.cyl_strat_li5 | safe }}</li>
         </ul>
       </div>
 
       <div class="info-section">
-        <h2>Cylinder vs. Other Variants</h2>
+        <h2>{{ t.cyl_vs_title }}</h2>
         <ul>
-          <li><strong>Classic Minesweeper —</strong> flat grid, hard edges on all four sides.</li>
-          <li><strong>Cylinder —</strong> left and right edges connect; top and bottom remain fixed borders.</li>
-          <li><strong><a href="/toroid">Toroid Minesweeper</a> —</strong> all four edges connect (left↔right and top↔bottom), forming a donut shape with no borders at all.</li>
+          <li>{{ t.cyl_vs_li1 | safe }}</li>
+          <li>{{ t.cyl_vs_li2 | safe }}</li>
+          <li>{{ t.cyl_vs_li3 | safe }}</li>
         </ul>
       </div>
 
