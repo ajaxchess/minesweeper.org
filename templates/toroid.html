@@ -66,7 +66,7 @@
         <a href="/toroid"              class="variant-tab {% if mode == 'toroid-beginner'     %}active{% endif %}">{{ t.hex_easy }}</a>
         <a href="/toroid/intermediate" class="variant-tab {% if mode == 'toroid-intermediate' %}active{% endif %}">{{ t.hex_medium }}</a>
         <a href="/toroid/expert"       class="variant-tab {% if mode == 'toroid-expert'       %}active{% endif %}">{{ t.hex_hard }}</a>
-        <a href="/toroid/custom"       class="variant-tab {% if mode == 'toroid-custom'       %}active{% endif %}">Custom</a>
+        <a href="/toroid/custom"       class="variant-tab {% if mode == 'toroid-custom'       %}active{% endif %}">{{ t.hex_custom }}</a>
       </div>
 
       {% if mode == 'toroid-custom' %}
@@ -91,7 +91,7 @@
       </div>
     </div>
 
-    <div class="toroid-wrap-label">↕ all edges connect ↔</div>
+    <div class="toroid-wrap-label">↕ {{ t.tor_wrap_note }} ↔</div>
 
     <div class="variant-board-wrap variant-board-wrap--toroid">
       <div id="board"
@@ -104,16 +104,19 @@
     </div>
 
     <p class="instructions">
-      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
-      <strong>Right-click</strong> to flag &nbsp;|&nbsp;
-      <strong>🙂</strong> to reset &nbsp;|&nbsp;
-      <em>All edges wrap around!</em>
+      <strong>{{ t.game_left_click }}</strong> {{ t.game_to_reveal }} &nbsp;|&nbsp;
+      <strong>{{ t.game_right_click }}</strong> {{ t.game_to_flag }} &nbsp;|&nbsp;
+      <strong>🙂</strong> {{ t.game_to_reset }} &nbsp;|&nbsp;
+      <em>{{ t.tor_wrap_note }}</em>
     </p>
 
     <!-- Leaderboard -->
     <div class="tz-lb-section" style="width:100%;max-width:600px">
-      {% set mode_label = {'toroid-beginner': 'Easy', 'toroid-intermediate': 'Medium', 'toroid-expert': 'Hard', 'toroid-custom': 'Custom'}[mode] %}
-      <div class="tz-lb-title" id="tor-lb-title">🏆 Today's Best — {{ mode_label }}</div>
+      {% if mode == 'toroid-beginner' %}{% set mode_label = t.hex_easy %}
+      {% elif mode == 'toroid-intermediate' %}{% set mode_label = t.hex_medium %}
+      {% elif mode == 'toroid-expert' %}{% set mode_label = t.hex_hard %}
+      {% else %}{% set mode_label = t.hex_custom %}{% endif %}
+      <div class="tz-lb-title" id="tor-lb-title">{{ t.hex_lb_today }} — {{ mode_label }}</div>
       <div id="tor-lb-content">
         <div class="lb-loading">{{ t.lb_loading }}</div>
       </div>
@@ -123,49 +126,49 @@
     <div class="info-body" style="width:100%;max-width:600px;margin-top:1.5rem">
 
       <div class="info-section">
-        <h2>What is Toroid Minesweeper?</h2>
-        <p>Toroid Minesweeper is a variant of classic Minesweeper played on a surface that wraps in every direction — the left edge connects to the right edge and the top edge connects to the bottom edge. Mathematically this forms a torus (donut shape), which is why it's called a toroid.</p>
-        <p>The consequence is that there are no borders anywhere on the board. Every single cell has exactly eight neighbors, including cells that appear to be in a corner or along an edge. This eliminates the easier deductions that border cells provide in classic Minesweeper, making the game consistently more demanding from start to finish.</p>
+        <h2>{{ t.tor_about_title }}</h2>
+        <p>{{ t.tor_about_p1 | safe }}</p>
+        <p>{{ t.tor_about_p2 | safe }}</p>
       </div>
 
       <div class="info-section">
         <h2>{{ t.nav_how_to_play }}</h2>
         <ul>
-          <li><strong>Left-click</strong> a cell to reveal it. Empty cells (0) auto-expand through all connected empty neighbors, wrapping across edges as needed.</li>
-          <li><strong>Right-click</strong> to cycle a cell through flag (🚩), question mark (❓), and unmarked states.</li>
-          <li><strong>Double-click</strong> a revealed number to chord — if the right number of flags surround it, all remaining neighbors are revealed at once.</li>
-          <li>The 😊 button resets to a fresh board. Your timer starts on your first click.</li>
-          <li>Remember: <strong>all four edges connect.</strong> A cell in the top-left corner neighbors cells in the top-right, bottom-left, and bottom-right corners.</li>
+          <li>{{ t.tor_htp_li1 | safe }}</li>
+          <li>{{ t.tor_htp_li2 | safe }}</li>
+          <li>{{ t.tor_htp_li3 | safe }}</li>
+          <li>{{ t.tor_htp_li4 | safe }}</li>
+          <li>{{ t.tor_htp_li5 | safe }}</li>
         </ul>
       </div>
 
       <div class="info-section">
         <h2>{{ t.common_difficulty_levels }}</h2>
         <ul>
-          <li><strong>Easy —</strong> 9×9 board, 10 mines. A good starting point for getting used to full-wrap logic.</li>
-          <li><strong>Medium —</strong> 16×16 board, 40 mines. The uniform neighbor count starts to make deduction significantly harder than classic Medium.</li>
-          <li><strong>Hard —</strong> 16×30 board, 99 mines. Dense mine placement with no border relief — a serious challenge even for experienced players.</li>
-          <li><strong>Custom —</strong> Set your own rows, columns, and mine count for a fully tailored game.</li>
+          <li>{{ t.tor_diff_easy | safe }}</li>
+          <li>{{ t.tor_diff_medium | safe }}</li>
+          <li>{{ t.tor_diff_hard | safe }}</li>
+          <li>{{ t.tor_diff_custom | safe }}</li>
         </ul>
       </div>
 
       <div class="info-section">
-        <h2>Strategy Tips</h2>
+        <h2>{{ t.tor_strategy_title }}</h2>
         <ul>
-          <li><strong>Forget the edges.</strong> Every cell has eight neighbors. Don't look for easy border deductions — they don't exist here. Treat every cell identically.</li>
-          <li><strong>Corner connections matter.</strong> A cell that appears to be in the top-right corner neighbors cells in the bottom-left region through the wrap. Track these cross-board constraints carefully.</li>
-          <li><strong>Cross-edge subsets.</strong> Two numbered cells on opposite sides of the board may share hidden neighbors through the wrap, enabling subset eliminations that are invisible on a flat grid.</li>
-          <li><strong>No Guess mode</strong> generates boards that are always logically solvable without any guessing. Use it to focus purely on deduction.</li>
-          <li><strong>Chord for speed.</strong> Once a number's mines are all flagged, double-click to reveal all remaining neighbors in one move and improve your 3BV/s.</li>
+          <li>{{ t.tor_strat_li1 | safe }}</li>
+          <li>{{ t.tor_strat_li2 | safe }}</li>
+          <li>{{ t.tor_strat_li3 | safe }}</li>
+          <li>{{ t.tor_strat_li4 | safe }}</li>
+          <li>{{ t.tor_strat_li5 | safe }}</li>
         </ul>
       </div>
 
       <div class="info-section">
-        <h2>Toroid vs. Other Variants</h2>
+        <h2>{{ t.tor_vs_title }}</h2>
         <ul>
-          <li><strong>Classic Minesweeper —</strong> flat grid with hard borders on all four sides; corner and edge cells have fewer neighbors.</li>
-          <li><strong><a href="/cylinder">Cylinder Minesweeper</a> —</strong> left and right edges connect, but top and bottom remain fixed borders.</li>
-          <li><strong>Toroid —</strong> all four edges connect (left↔right and top↔bottom); no borders, no corners, every cell has exactly eight neighbors.</li>
+          <li>{{ t.tor_vs_li1 | safe }}</li>
+          <li>{{ t.tor_vs_li2 | safe }}</li>
+          <li>{{ t.tor_vs_li3 | safe }}</li>
         </ul>
       </div>
 
