@@ -73,8 +73,8 @@
       <form id="toroid-custom-form" class="custom-form">
         <label>{{ t.common_rows }}  <input type="number" id="t-rows"  value="10" min="5" max="30"></label>
         <label>{{ t.common_cols }}  <input type="number" id="t-cols"  value="10" min="5" max="50"></label>
-        <label>Mines <input type="number" id="t-mines" value="10" min="1" max="999"></label>
-        <button type="submit">Start</button>
+        <label>{{ t.common_mines }} <input type="number" id="t-mines" value="10" min="1" max="999"></label>
+        <button type="submit">{{ t.common_start }}</button>
       </form>
       {% endif %}
 
@@ -129,7 +129,7 @@
       </div>
 
       <div class="info-section">
-        <h2>How to Play</h2>
+        <h2>{{ t.nav_how_to_play }}</h2>
         <ul>
           <li><strong>Left-click</strong> a cell to reveal it. Empty cells (0) auto-expand through all connected empty neighbors, wrapping across edges as needed.</li>
           <li><strong>Right-click</strong> to cycle a cell through flag (🚩), question mark (❓), and unmarked states.</li>
@@ -140,7 +140,7 @@
       </div>
 
       <div class="info-section">
-        <h2>Difficulty Levels</h2>
+        <h2>{{ t.common_difficulty_levels }}</h2>
         <ul>
           <li><strong>Easy —</strong> 9×9 board, 10 mines. A good starting point for getting used to full-wrap logic.</li>
           <li><strong>Medium —</strong> 16×16 board, 40 mines. The uniform neighbor count starts to make deduction significantly harder than classic Medium.</li>

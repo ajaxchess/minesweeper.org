@@ -10,8 +10,8 @@
 
 {% block content %}
 <div class="variants-page">
-  <h1 class="variants-title">Minesweeper Variants</h1>
-  <p class="variants-subtitle">Twist on the classic — same mines, different rules.</p>
+  <h1 class="variants-title">{{ t.variants_title }}</h1>
+  <p class="variants-subtitle">{{ t.variants_subtitle }}</p>
 
   <div class="variants-grid">
 
@@ -101,7 +101,7 @@
         Mosaic puzzle and challenge friends to solve it.
       </p>
       <div class="variant-card-links">
-        <a href="/variants/board-generator" class="variant-play-btn">Open Generator</a>
+        <a href="/variants/board-generator" class="variant-play-btn">{{ t.variants_open_generator }}</a>
       </div>
     </div>
 

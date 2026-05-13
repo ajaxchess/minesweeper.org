@@ -1226,6 +1226,22 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_col_board": "Board",
         "lb_pick_above": "Pick a leaderboard above.",
         "lb_loading_champions": "Loading champions...",
+        "common_start": "Start",
+        "common_mines": "Mines",
+        "common_difficulty_levels": "Difficulty Levels",
+        "common_replay_daily": "Replay Daily",
+        "common_new_random": "New Random",
+        "tz_solved": "Solved!",
+        "tz_highlight_errors": "Highlight Errors",
+        "tz_today_best": "Today's Best Times",
+        "tz_about_easy": "About Easy Mode",
+        "tz_today_puzzle": "Today's Puzzle",
+        "tz_past_puzzles": "Past Puzzles",
+        "tz_play_now": "Play Now",
+        "theme_starfield": "Starfield",
+        "variants_title": "Minesweeper Variants",
+        "variants_subtitle": "Play minesweeper in exciting new ways!",
+        "variants_open_generator": "Open Generator",
 
     },
 
@@ -2065,6 +2081,26 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Leaderboard misc
         "lb_pick_above":        "Elektu rekordtabelon supre.",
         "lb_loading_champions": "Ŝarĝante ĉampionojn…",
+        # Common form / button labels
+        "common_start":             "Komencu",
+        "common_mines":             "Minoj",
+        "common_difficulty_levels": "Malfacilecaj Niveloj",
+        "common_replay_daily":      "Reludi Ĉiutagan",
+        "common_new_random":        "Nova Hazarda",
+        # Tentaizu overlay / labels
+        "tz_solved":            "Solvita!",
+        "tz_highlight_errors":  "Reliefi Erarojn",
+        "tz_today_best":        "Hodiaŭaj Plej Bonaj Tempoj",
+        "tz_about_easy":        "Pri la Facila Reĝimo",
+        "tz_today_puzzle":      "Hodiaŭa Enigmo",
+        "tz_past_puzzles":      "Pasintaj Enigmoj",
+        "tz_play_now":          "Ludu Nun →",
+        # Theme name
+        "theme_starfield":      "Stelkampo",
+        # Variants page
+        "variants_title":       "Minesweeper-Variantoj",
+        "variants_subtitle":    "Tordo al la klasikaĵo — samaj minoj, malsamaj reguloj.",
+        "variants_open_generator": "Malfermu Generatoron",
     },
 
     "de": {
@@ -3031,6 +3067,26 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Leaderboard misc
         "lb_pick_above":         "Wähle oben eine Bestenliste.",
         "lb_loading_champions":  "Champions werden geladen…",
+        # Common form / button labels
+        "common_start":             "Start",
+        "common_mines":             "Minen",
+        "common_difficulty_levels": "Schwierigkeitsstufen",
+        "common_replay_daily":      "Tägliches Puzzle wiederholen",
+        "common_new_random":        "Neues Zufallspuzzle",
+        # Tentaizu overlay / labels
+        "tz_solved":            "Gelöst!",
+        "tz_highlight_errors":  "Fehler hervorheben",
+        "tz_today_best":        "Heutige Bestzeiten",
+        "tz_about_easy":        "Über den Einfach-Modus",
+        "tz_today_puzzle":      "Das heutige Rätsel",
+        "tz_past_puzzles":      "Vergangene Rätsel",
+        "tz_play_now":          "Jetzt spielen →",
+        # Theme name
+        "theme_starfield":      "Sternenhimmel",
+        # Variants page
+        "variants_title":       "Minesweeper-Varianten",
+        "variants_subtitle":    "Variation des Klassikers — gleiche Minen, andere Regeln.",
+        "variants_open_generator": "Öffne Generator",
     },
 
     "es": {
@@ -3867,6 +3923,26 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Leaderboard misc
         "lb_pick_above":        "Elige una clasificación arriba.",
         "lb_loading_champions": "Cargando campeones…",
+        # Common form / button labels
+        "common_start":             "Iniciar",
+        "common_mines":             "Minas",
+        "common_difficulty_levels": "Niveles de dificultad",
+        "common_replay_daily":      "Repetir diario",
+        "common_new_random":        "Nuevo aleatorio",
+        # Tentaizu overlay / labels
+        "tz_solved":            "¡Resuelto!",
+        "tz_highlight_errors":  "Resaltar errores",
+        "tz_today_best":        "Mejores tiempos de hoy",
+        "tz_about_easy":        "Sobre el modo fácil",
+        "tz_today_puzzle":      "El puzzle de hoy",
+        "tz_past_puzzles":      "Puzzles anteriores",
+        "tz_play_now":          "Jugar ahora →",
+        # Theme name
+        "theme_starfield":      "Campo de estrellas",
+        # Variants page
+        "variants_title":       "Variantes de Buscaminas",
+        "variants_subtitle":    "Un giro al clásico — mismas minas, reglas diferentes.",
+        "variants_open_generator": "Abrir generador",
     },
 
     "th": {
@@ -4715,6 +4791,22 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_col_board": "บอร์ด",
         "lb_pick_above": "เลือกกระดานผู้นำด้านบน",
         "lb_loading_champions": "กำลังโหลดแชมเปี้ยน...",
+        "common_start": "เริ่ม",
+        "common_mines": "ระเบิด",
+        "common_difficulty_levels": "ระดับความยาก",
+        "common_replay_daily": "เล่นซ้ำรายวัน",
+        "common_new_random": "สุ่มใหม่",
+        "tz_solved": "สำเร็จแล้ว!",
+        "tz_highlight_errors": "ไฮไลต์ข้อผิดพลาด",
+        "tz_today_best": "เวลาที่ดีที่สุดวันนี้",
+        "tz_about_easy": "เกี่ยวกับโหมดง่าย",
+        "tz_today_puzzle": "ปริศนาวันนี้",
+        "tz_past_puzzles": "ปริศนาที่ผ่านมา",
+        "tz_play_now": "เล่นเลย",
+        "theme_starfield": "ท้องฟ้าดาว",
+        "variants_title": "รูปแบบต่างๆ ของ Minesweeper",
+        "variants_subtitle": "เล่น Minesweeper ในรูปแบบที่น่าตื่นเต้นใหม่ๆ!",
+        "variants_open_generator": "เปิดตัวสร้าง",
     },
 
     "pgl": {
@@ -5544,6 +5636,26 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_col_board": "Oardbay",
         "lb_pick_above": "Ickpay away eaderboardlay aboveway.",
         "lb_loading_champions": "Oadinglay ampionschay...",
+        # Common UI — new keys
+        "common_start":             "Artstay",
+        "common_mines":             "Inesmay",
+        "common_difficulty_levels": "Ifficultyday Evelslay",
+        "common_replay_daily":      "Eplayray Ailyday",
+        "common_new_random":        "Ewnay Andomray",
+        # Tentaizu (tz) page
+        "tz_solved":           "Olvedsay!",
+        "tz_highlight_errors": "Ighlighthay Errorswway",
+        "tz_today_best":       "Oday'stay Estbay Imestay",
+        "tz_about_easy":       "Aboutway Easeway Odemay",
+        "tz_today_puzzle":     "Oday'stay Uzzlepay",
+        "tz_past_puzzles":     "Astpay Uzzlespay",
+        "tz_play_now":         "Ayplay Ownay →",
+        # Theme names
+        "theme_starfield":     "Arfieldsay",
+        # Variants page
+        "variants_title":          "Inesweepermay Ariantsvay",
+        "variants_subtitle":       "Isttway onway ethay assicalclay — amesay inesmay, ifferentday ulesray.",
+        "variants_open_generator": "Openway Eneratorgay",
     },
 
     "uk": {
@@ -6392,6 +6504,23 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_col_board": "Поле",
         "lb_pick_above": "Оберіть таблицю лідерів вище.",
         "lb_loading_champions": "Завантаження чемпіонів…",
+        # New shared UI keys
+        "common_start":             "Почати",
+        "common_mines":             "Міни",
+        "common_difficulty_levels": "Рівні складності",
+        "common_replay_daily":      "Повторити щоденну",
+        "common_new_random":        "Нова випадкова",
+        "tz_solved":                "Вирішено!",
+        "tz_highlight_errors":      "Підсвітити помилки",
+        "tz_today_best":            "Найкращі часи сьогодні",
+        "tz_about_easy":            "Про простий режим",
+        "tz_today_puzzle":          "Сьогоднішня головоломка",
+        "tz_past_puzzles":          "Минулі головоломки",
+        "tz_play_now":              "Грати зараз →",
+        "theme_starfield":          "Зоряне поле",
+        "variants_title":           "Варіанти Сапера",
+        "variants_subtitle":        "Поворот на класику — ті самі міни, інші правила.",
+        "variants_open_generator":  "Відкрити генератор",
     },
 
     "fr": {
@@ -7227,6 +7356,26 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Leaderboard misc
         "lb_pick_above":        "Choisissez un classement ci-dessus.",
         "lb_loading_champions": "Chargement des champions…",
+        # Common form / button labels
+        "common_start":             "Démarrer",
+        "common_mines":             "Mines",
+        "common_difficulty_levels": "Niveaux de difficulté",
+        "common_replay_daily":      "Rejouer le quotidien",
+        "common_new_random":        "Nouveau aléatoire",
+        # Tentaizu overlay / labels
+        "tz_solved":            "Résolu !",
+        "tz_highlight_errors":  "Mettre les erreurs en évidence",
+        "tz_today_best":        "Meilleurs temps du jour",
+        "tz_about_easy":        "À propos du mode facile",
+        "tz_today_puzzle":      "Le puzzle du jour",
+        "tz_past_puzzles":      "Puzzles passés",
+        "tz_play_now":          "Jouer maintenant →",
+        # Theme name
+        "theme_starfield":      "Champ d'étoiles",
+        # Variants page
+        "variants_title":       "Variantes du Démineur",
+        "variants_subtitle":    "Une touche au classique — mêmes mines, règles différentes.",
+        "variants_open_generator": "Ouvrir le générateur",
     },
 
     "ko": {
@@ -8073,6 +8222,26 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_col_board": "보드",
         "lb_pick_above": "위에서 리더보드를 선택하세요.",
         "lb_loading_champions": "챔피언 불러오는 중...",
+        # Common UI — new keys
+        "common_start":             "시작",
+        "common_mines":             "지뢰",
+        "common_difficulty_levels": "난이도",
+        "common_replay_daily":      "오늘 다시 플레이",
+        "common_new_random":        "새 랜덤",
+        # Tentaizu (tz) page
+        "tz_solved":           "완료!",
+        "tz_highlight_errors": "오류 강조",
+        "tz_today_best":       "오늘의 최고 기록",
+        "tz_about_easy":       "쉬운 모드 소개",
+        "tz_today_puzzle":     "오늘의 퍼즐",
+        "tz_past_puzzles":     "이전 퍼즐",
+        "tz_play_now":         "지금 플레이 →",
+        # Theme names
+        "theme_starfield":     "별빛 하늘",
+        # Variants page
+        "variants_title":          "지뢰찾기 변형",
+        "variants_subtitle":       "클래식에 변화를 — 같은 지뢰, 다른 규칙.",
+        "variants_open_generator": "생성기 열기",
     },
 
     "ja": {
@@ -8999,6 +9168,26 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_col_board": "ボード",
         "lb_pick_above": "上からランキングを選んでください。",
         "lb_loading_champions": "チャンピオンを読み込み中...",
+        # Common UI — new keys
+        "common_start":             "スタート",
+        "common_mines":             "地雷",
+        "common_difficulty_levels": "難易度レベル",
+        "common_replay_daily":      "今日のパズルを再挑戦",
+        "common_new_random":        "新しいランダム",
+        # Tentaizu (tz) page
+        "tz_solved":           "クリア！",
+        "tz_highlight_errors": "エラーをハイライト",
+        "tz_today_best":       "今日のベストタイム",
+        "tz_about_easy":       "イージーモードについて",
+        "tz_today_puzzle":     "今日のパズル",
+        "tz_past_puzzles":     "過去のパズル",
+        "tz_play_now":         "今すぐプレイ →",
+        # Theme names
+        "theme_starfield":     "星空",
+        # Variants page
+        "variants_title":          "マインスイーパーバリアント",
+        "variants_subtitle":       "クラシックにひねりを — 同じ地雷、違うルール。",
+        "variants_open_generator": "ジェネレーターを開く",
     },
     "zh": {
         # Nav
@@ -9829,6 +10018,23 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_col_board": "棋盘",
         "lb_pick_above": "请在上方选择排行榜。",
         "lb_loading_champions": "正在加载冠军…",
+        # New shared UI keys
+        "common_start":             "开始",
+        "common_mines":             "地雷",
+        "common_difficulty_levels": "难度级别",
+        "common_replay_daily":      "重玩每日",
+        "common_new_random":        "新随机",
+        "tz_solved":                "完成！",
+        "tz_highlight_errors":      "高亮错误",
+        "tz_today_best":            "今日最佳时间",
+        "tz_about_easy":            "关于简单模式",
+        "tz_today_puzzle":          "今日谜题",
+        "tz_past_puzzles":          "历史谜题",
+        "tz_play_now":              "立即游戏 →",
+        "theme_starfield":          "星空",
+        "variants_title":           "扫雷变体",
+        "variants_subtitle":        "经典的变奏——相同的地雷，不同的规则。",
+        "variants_open_generator":  "打开生成器",
     },
     "zh-hant": {
         # Nav
@@ -10659,6 +10865,23 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_col_board": "棋盤",
         "lb_pick_above": "請在上方選擇排行榜。",
         "lb_loading_champions": "正在載入冠軍…",
+        # New shared UI keys
+        "common_start":             "開始",
+        "common_mines":             "地雷",
+        "common_difficulty_levels": "難度級別",
+        "common_replay_daily":      "重玩每日",
+        "common_new_random":        "新隨機",
+        "tz_solved":                "完成！",
+        "tz_highlight_errors":      "標亮錯誤",
+        "tz_today_best":            "今日最佳時間",
+        "tz_about_easy":            "關於簡單模式",
+        "tz_today_puzzle":          "今日謎題",
+        "tz_past_puzzles":          "歷史謎題",
+        "tz_play_now":              "立即遊玩 →",
+        "theme_starfield":          "星空",
+        "variants_title":           "掃雷變體",
+        "variants_subtitle":        "經典的變奏——相同的地雷，不同的規則。",
+        "variants_open_generator":  "開啟生成器",
     },
     "pl": {
         # Nav
@@ -11489,6 +11712,22 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_col_board": "Plansza",
         "lb_pick_above": "Wybierz tabelę wyników powyżej.",
         "lb_loading_champions": "Ładowanie mistrzów...",
+        "common_start": "Start",
+        "common_mines": "Miny",
+        "common_difficulty_levels": "Poziomy trudności",
+        "common_replay_daily": "Odtwórz dzienny",
+        "common_new_random": "Nowa losowa",
+        "tz_solved": "Rozwiązano!",
+        "tz_highlight_errors": "Podświetl błędy",
+        "tz_today_best": "Najlepsze czasy dnia",
+        "tz_about_easy": "O trybie łatwym",
+        "tz_today_puzzle": "Dzisiejsza układanka",
+        "tz_past_puzzles": "Poprzednie układanki",
+        "tz_play_now": "Zagraj teraz",
+        "theme_starfield": "Gwiaździste niebo",
+        "variants_title": "Warianty Minera",
+        "variants_subtitle": "Zagraj w minesweepera na nowe sposoby!",
+        "variants_open_generator": "Otwórz generator",
     },
 
     "tl": {
@@ -12335,6 +12574,23 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_col_board": "Board",
         "lb_pick_above": "Pumili ng talaan sa itaas.",
         "lb_loading_champions": "Naglo-load ng mga kampeon…",
+        # New shared UI keys
+        "common_start":             "Simulan",
+        "common_mines":             "Mga Mina",
+        "common_difficulty_levels": "Mga Antas ng Kahirapan",
+        "common_replay_daily":      "I-replay ang Araw-araw",
+        "common_new_random":        "Bagong Random",
+        "tz_solved":                "Nasolve!",
+        "tz_highlight_errors":      "I-highlight ang Mga Error",
+        "tz_today_best":            "Pinakamahusay na Oras Ngayon",
+        "tz_about_easy":            "Tungkol sa Madaling Mode",
+        "tz_today_puzzle":          "Puzzle Ngayon",
+        "tz_past_puzzles":          "Mga Nakaraang Puzzle",
+        "tz_play_now":              "Maglaro Na →",
+        "theme_starfield":          "Bituin",
+        "variants_title":           "Mga Variant ng Minesweeper",
+        "variants_subtitle":        "Twist sa klasiko — parehong mga mina, iba't ibang patakaran.",
+        "variants_open_generator":  "Buksan ang Generator",
     },
 
     "ru": {
@@ -13166,6 +13422,22 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_col_board": "Поле",
         "lb_pick_above": "Выберите таблицу лидеров выше.",
         "lb_loading_champions": "Загрузка чемпионов...",
+        "common_start": "Старт",
+        "common_mines": "Мины",
+        "common_difficulty_levels": "Уровни сложности",
+        "common_replay_daily": "Повторить ежедневное",
+        "common_new_random": "Новое случайное",
+        "tz_solved": "Решено!",
+        "tz_highlight_errors": "Подсветить ошибки",
+        "tz_today_best": "Лучшие результаты дня",
+        "tz_about_easy": "О лёгком режиме",
+        "tz_today_puzzle": "Сегодняшняя головоломка",
+        "tz_past_puzzles": "Прошлые головоломки",
+        "tz_play_now": "Играть",
+        "theme_starfield": "Звёздное поле",
+        "variants_title": "Варианты Сапёра",
+        "variants_subtitle": "Играйте в сапёр совершенно по-новому!",
+        "variants_open_generator": "Открыть генератор",
     },
 
     "pt": {
@@ -13997,6 +14269,22 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_col_board": "Tabuleiro",
         "lb_pick_above": "Escolha um placar acima.",
         "lb_loading_champions": "Carregando campeões...",
+        "common_start": "Iniciar",
+        "common_mines": "Minas",
+        "common_difficulty_levels": "Níveis de dificuldade",
+        "common_replay_daily": "Repetir diário",
+        "common_new_random": "Novo aleatório",
+        "tz_solved": "Resolvido!",
+        "tz_highlight_errors": "Destacar erros",
+        "tz_today_best": "Melhores tempos de hoje",
+        "tz_about_easy": "Sobre o modo fácil",
+        "tz_today_puzzle": "Puzzle de hoje",
+        "tz_past_puzzles": "Puzzles anteriores",
+        "tz_play_now": "Jogar agora",
+        "theme_starfield": "Campo estrelado",
+        "variants_title": "Variantes do Campo Minado",
+        "variants_subtitle": "Jogue campo minado de formas novas e emocionantes!",
+        "variants_open_generator": "Abrir gerador",
     },
 
     "it": {
@@ -14828,6 +15116,26 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_col_board": "Griglia",
         "lb_pick_above": "Scegli una classifica sopra.",
         "lb_loading_champions": "Caricamento campioni...",
+        # Common UI — new keys
+        "common_start":             "Avvia",
+        "common_mines":             "Mine",
+        "common_difficulty_levels": "Livelli di difficoltà",
+        "common_replay_daily":      "Rigioca giornaliero",
+        "common_new_random":        "Nuovo casuale",
+        # Tentaizu (tz) page
+        "tz_solved":          "Risolto!",
+        "tz_highlight_errors": "Evidenzia errori",
+        "tz_today_best":      "I migliori tempi di oggi",
+        "tz_about_easy":      "Informazioni sulla modalità facile",
+        "tz_today_puzzle":    "Il puzzle di oggi",
+        "tz_past_puzzles":    "Puzzle precedenti",
+        "tz_play_now":        "Gioca ora →",
+        # Theme names
+        "theme_starfield":    "Campo stellare",
+        # Variants page
+        "variants_title":          "Varianti di Campo Minato",
+        "variants_subtitle":       "Un tocco al classico — stesse mine, regole diverse.",
+        "variants_open_generator": "Apri generatore",
     },
 }
 

@@ -73,8 +73,8 @@
       <form id="cylinder-custom-form" class="custom-form">
         <label>{{ t.common_rows }}  <input type="number" id="c-rows"  value="10" min="5" max="30"></label>
         <label>{{ t.common_cols }}  <input type="number" id="c-cols"  value="10" min="5" max="50"></label>
-        <label>Mines <input type="number" id="c-mines" value="10" min="1" max="999"></label>
-        <button type="submit">Start</button>
+        <label>{{ t.common_mines }} <input type="number" id="c-mines" value="10" min="1" max="999"></label>
+        <button type="submit">{{ t.common_start }}</button>
       </form>
       {% endif %}
 
@@ -129,7 +129,7 @@
       </div>
 
       <div class="info-section">
-        <h2>How to Play</h2>
+        <h2>{{ t.nav_how_to_play }}</h2>
         <ul>
           <li><strong>Left-click</strong> a cell to reveal it. If it's empty (0), all connected empty cells auto-expand.</li>
           <li><strong>Right-click</strong> to place a flag (🚩) on a suspected mine. Right-click again for a question mark (❓), then once more to clear.</li>
@@ -140,7 +140,7 @@
       </div>
 
       <div class="info-section">
-        <h2>Difficulty Levels</h2>
+        <h2>{{ t.common_difficulty_levels }}</h2>
         <ul>
           <li><strong>Easy —</strong> 9×9 board, 10 mines. Ideal for learning how the horizontal wrap affects adjacent cells.</li>
           <li><strong>Medium —</strong> 16×16 board, 40 mines. The wrap becomes a meaningful factor in deduction chains.</li>

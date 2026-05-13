@@ -26,21 +26,21 @@
     your solving approach on puzzles you've already solved.
   </p>
 
-  <a href="/tentaizu" class="tz-play-cta">Play Today's Puzzle →</a>
+  <a href="/tentaizu" class="tz-play-cta">{{ t.tz_today_puzzle }} →</a>
 
   <section class="tz-section">
-    <h2>Today's Puzzle</h2>
+    <h2>{{ t.tz_today_puzzle }}</h2>
     <div class="tz-archive-featured">
       <a href="/tentaizu" class="tz-archive-today-card">
         <span class="tz-archive-date-label">{{ today }}</span>
-        <span class="tz-archive-today-text">🔢 Today's Puzzle</span>
-        <span class="tz-archive-cta">Play Now →</span>
+        <span class="tz-archive-today-text">🔢 {{ t.tz_today_puzzle }}</span>
+        <span class="tz-archive-cta">{{ t.tz_play_now }} →</span>
       </a>
     </div>
   </section>
 
   <section class="tz-section">
-    <h2>Past Puzzles</h2>
+    <h2>{{ t.tz_past_puzzles }}</h2>
     <p class="tz-archive-note">
       Puzzles are generated from the date — every date produces the same unique
       puzzle for all players worldwide. Each puzzle has its own permanent leaderboard,
@@ -85,7 +85,7 @@
     </a>
     <a href="/tentaizu/how-to-play" class="tz-subnav-card">
       <span class="tz-subnav-icon">📖</span>
-      <strong>How to Play</strong>
+      <strong>{{ t.nav_how_to_play }}</strong>
       <span>Rules &amp; walkthrough</span>
     </a>
     <a href="/tentaizu/strategy" class="tz-subnav-card">

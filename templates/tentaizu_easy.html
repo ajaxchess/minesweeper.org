@@ -41,7 +41,7 @@
           <button id="tz-potd-btn" class="tz-mode-btn">📅 Daily</button>
           <button id="tz-random-btn" class="tz-mode-btn">🎲 Random</button>
         </div>
-        <button id="highlight-errors-toggle" onclick="toggleHighlightErrors()" title="Highlight incorrectly placed flags and safe marks">Highlight Errors</button>
+        <button id="highlight-errors-toggle" onclick="toggleHighlightErrors()" title="Highlight incorrectly placed flags and safe marks">{{ t.tz_highlight_errors }}</button>
       </div>
       <div class="stat-row">
         <div class="stat" title="Flags placed / total mines">
@@ -63,15 +63,15 @@
 
       <!-- Win overlay -->
       <div id="tz-overlay">
-        <div class="tz-overlay-title">🎉 Solved!</div>
+        <div class="tz-overlay-title">🎉 {{ t.tz_solved }}</div>
         <div class="tz-overlay-time">Time: <strong id="tz-win-time">0:00</strong></div>
         <div id="tz-score-form" class="overlay-score-form" style="display:none">
           <input id="tz-name-input" type="text" maxlength="32" placeholder="Your name" autocomplete="nickname">
-          <button id="tz-save-btn">Save Score</button>
+          <button id="tz-save-btn">{{ t.common_save_score }}</button>
         </div>
         <div class="tz-overlay-btns">
-          <button id="tz-overlay-potd" class="tz-btn-potd">📅 Replay Daily</button>
-          <button id="tz-overlay-random" class="tz-btn-random">🎲 New Random</button>
+          <button id="tz-overlay-potd" class="tz-btn-potd">📅 {{ t.common_replay_daily }}</button>
+          <button id="tz-overlay-random" class="tz-btn-random">🎲 {{ t.common_new_random }}</button>
         </div>
       </div>
     </div>
@@ -95,9 +95,9 @@
 
     <!-- Leaderboard -->
     <div id="tz-lb-section" class="tz-lb-section">
-      <div id="tz-lb-title" class="tz-lb-title">🏆 Today's Best Times</div>
+      <div id="tz-lb-title" class="tz-lb-title">🏆 {{ t.tz_today_best }}</div>
       <div id="tz-lb-content">
-        <div class="lb-loading">Loading…</div>
+        <div class="lb-loading">{{ t.lb_loading }}</div>
       </div>
       <div id="tz-prev-days" class="tz-prev-days"></div>
     </div>
@@ -123,7 +123,7 @@
 
   <div class="tz-landing-grid">
     <section class="tz-section">
-      <h2>About Easy Mode</h2>
+      <h2>{{ t.tz_about_easy }}</h2>
       <p>
         Tentaizu Easy is a 5×5 grid with exactly 6 hidden mines — a gentler introduction to
         the Tentaizu format. All the same rules apply: numbered clues show how many mines
