@@ -8317,7 +8317,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "profile_play_now":     "\u4eca\u3059\u3050\u30d7\u30ec\u30a4 \u2192",
         "profile_no_recent":    "\u307e\u3060\u8a18\u9332\u3055\u308c\u305f\u30b2\u30fc\u30e0\u304c\u3042\u308a\u307e\u305b\u3093\u3002",
         # Help
-        "help_title": "\u30de\u30a4\u30f3\u30b9\u30a4\u30fc\u30d1\u30fc\u306e\u9045\u3073\u65b9",
+        "help_title": "\u30de\u30a4\u30f3\u30b9\u30a4\u30fc\u30d1\u30fc\u306e\u904a\u3073\u65b9",
         # Footer
         "footer": "Python &amp; FastAPI\u3067<a href=\"https://regis.consulting\">Regis Consulting</a>\u304c\u5236\u4f5c",
         # Language switcher
