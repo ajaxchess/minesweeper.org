@@ -4807,6 +4807,14 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "variants_title": "รูปแบบต่างๆ ของ Minesweeper",
         "variants_subtitle": "เล่น Minesweeper ในรูปแบบที่น่าตื่นเต้นใหม่ๆ!",
         "variants_open_generator": "เปิดตัวสร้าง",
+        "meta_kw_beginner": "minesweeper ออนไลน์, เล่น minesweeper ฟรี, minesweeper ระดับเริ่มต้น, เกม minesweeper ฟรี",
+        "meta_kw_intermediate": "minesweeper ระดับกลาง, minesweeper ออนไลน์, เล่น minesweeper, minesweeper ฟรี",
+        "meta_kw_expert": "minesweeper ระดับผู้เชี่ยวชาญ, minesweeper ยาก, minesweeper ออนไลน์, เล่น minesweeper, minesweeper ฟรี",
+        "meta_kw_leaderboard": "minesweeper ลีดเดอร์บอร์ด, minesweeper คะแนนสูงสุด, minesweeper เวลาดีที่สุด, minesweeper สถิติ, minesweeper เร็วที่สุด",
+        "meta_kw_howtoplay": "วิธีเล่น minesweeper, คู่มือ minesweeper, กลยุทธ์ minesweeper, เทคนิค minesweeper, กฎ minesweeper, รูปแบบ minesweeper, minesweeper แบบไม่เดา",
+        "meta_kw_pvp": "minesweeper pvp, minesweeper แข่งขัน, minesweeper จัดอันดับ, minesweeper elo, minesweeper จับคู่, minesweeper ปะทะ",
+        "meta_kw_strategy": "กลยุทธ์ minesweeper, เทคนิค minesweeper, รูปแบบ minesweeper, minesweeper chording, รูปแบบ minesweeper 1-2-x, คู่มือ minesweeper, วิธีเก่งขึ้นใน minesweeper",
+        "meta_kw_tentaizu": "tentaizu, ปริศนา tentaizu, tentaizu ประจำวัน, tentaizu ออนไลน์, tentaizu ฟรี, ปริศนาตรรกะทุ่นระเบิด, ปริศนาตรรกะประจำวัน, ปริศนาตัวเลข, minesweeper รูปแบบอื่น",
     },
 
     "pgl": {
@@ -8242,6 +8250,14 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "variants_title":          "지뢰찾기 변형",
         "variants_subtitle":       "클래식에 변화를 — 같은 지뢰, 다른 규칙.",
         "variants_open_generator": "생성기 열기",
+        "meta_kw_beginner": "minesweeper 온라인, minesweeper 무료 플레이, minesweeper 초급, 무료 minesweeper 게임",
+        "meta_kw_intermediate": "minesweeper 중급, minesweeper 온라인, minesweeper 플레이, 무료 minesweeper",
+        "meta_kw_expert": "minesweeper 고급, minesweeper 어렵게, minesweeper 온라인, minesweeper 플레이, 무료 minesweeper",
+        "meta_kw_leaderboard": "minesweeper 리더보드, minesweeper 최고 점수, minesweeper 최고 기록, minesweeper 기록, 가장 빠른 minesweeper",
+        "meta_kw_howtoplay": "minesweeper 하는 방법, minesweeper 가이드, minesweeper 전략, minesweeper 팁, minesweeper 규칙, minesweeper 패턴, 노 게스 minesweeper",
+        "meta_kw_pvp": "minesweeper pvp, 경쟁 minesweeper, minesweeper 랭크전, minesweeper elo, minesweeper 매치메이킹, minesweeper 대전",
+        "meta_kw_strategy": "minesweeper 전략, minesweeper 팁, minesweeper 패턴, minesweeper 코딩, minesweeper 1-2-x 패턴, minesweeper 가이드, minesweeper 잘하는 방법",
+        "meta_kw_tentaizu": "tentaizu, tentaizu 퍼즐, 매일 tentaizu, tentaizu 온라인, tentaizu 무료, 지뢰 논리 퍼즐, 매일 논리 퍼즐, 숫자 퍼즐, minesweeper 변형",
     },
 
     "ja": {
@@ -9188,6 +9204,14 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "variants_title":          "マインスイーパーバリアント",
         "variants_subtitle":       "クラシックにひねりを — 同じ地雷、違うルール。",
         "variants_open_generator": "ジェネレーターを開く",
+        "meta_kw_beginner": "minesweeper オンライン, minesweeper 無料プレイ, minesweeper 初級, 無料 minesweeper ゲーム",
+        "meta_kw_intermediate": "minesweeper 中級, minesweeper オンライン, minesweeper プレイ, 無料 minesweeper",
+        "meta_kw_expert": "minesweeper 上級, minesweeper 難しい, minesweeper オンライン, minesweeper プレイ, 無料 minesweeper",
+        "meta_kw_leaderboard": "minesweeper リーダーボード, minesweeper ハイスコア, minesweeper ベストタイム, minesweeper 記録, 最速 minesweeper",
+        "meta_kw_howtoplay": "minesweeper の遊び方, minesweeper ガイド, minesweeper 戦略, minesweeper コツ, minesweeper ルール, minesweeper パターン, ノーゲス minesweeper",
+        "meta_kw_pvp": "minesweeper pvp, 競技 minesweeper, minesweeper ランク戦, minesweeper elo, minesweeper マッチメイキング, minesweeper 対戦",
+        "meta_kw_strategy": "minesweeper 戦略, minesweeper コツ, minesweeper パターン, minesweeper コーディング, minesweeper 1-2-x パターン, minesweeper ガイド, minesweeper を上達する方法",
+        "meta_kw_tentaizu": "tentaizu, tentaizu パズル, 毎日 tentaizu, tentaizu オンライン, tentaizu 無料, 地雷論理パズル, 毎日論理パズル, 数字パズル, minesweeper バリアント",
     },
     "zh": {
         # Nav
@@ -10035,6 +10059,14 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "variants_title":           "扫雷变体",
         "variants_subtitle":        "经典的变奏——相同的地雷，不同的规则。",
         "variants_open_generator":  "打开生成器",
+        "meta_kw_beginner": "minesweeper在线, 免费玩minesweeper, minesweeper初级, 免费扫雷游戏",
+        "meta_kw_intermediate": "minesweeper中级, minesweeper在线, 玩minesweeper, 免费minesweeper",
+        "meta_kw_expert": "minesweeper高级, minesweeper困难, minesweeper在线, 玩minesweeper, 免费minesweeper",
+        "meta_kw_leaderboard": "minesweeper排行榜, minesweeper最高分, minesweeper最佳时间, minesweeper记录, 最快minesweeper",
+        "meta_kw_howtoplay": "如何玩minesweeper, minesweeper指南, minesweeper策略, minesweeper技巧, minesweeper规则, minesweeper模式, 无猜测minesweeper",
+        "meta_kw_pvp": "minesweeper pvp, 竞技minesweeper, minesweeper排名赛, minesweeper elo, minesweeper匹配, minesweeper对战",
+        "meta_kw_strategy": "minesweeper策略, minesweeper技巧, minesweeper模式, minesweeper双击技巧, minesweeper 1-2-x模式, minesweeper指南, 如何提高minesweeper水平",
+        "meta_kw_tentaizu": "tentaizu, tentaizu谜题, 每日tentaizu, tentaizu在线, 免费tentaizu, 地雷逻辑谜题, 每日逻辑谜题, 数字谜题, minesweeper变体",
     },
     "zh-hant": {
         # Nav
@@ -10882,6 +10914,14 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "variants_title":           "掃雷變體",
         "variants_subtitle":        "經典的變奏——相同的地雷，不同的規則。",
         "variants_open_generator":  "開啟生成器",
+        "meta_kw_beginner": "minesweeper線上, 免費玩minesweeper, minesweeper初級, 免費踩地雷遊戲",
+        "meta_kw_intermediate": "minesweeper中級, minesweeper線上, 玩minesweeper, 免費minesweeper",
+        "meta_kw_expert": "minesweeper高級, minesweeper困難, minesweeper線上, 玩minesweeper, 免費minesweeper",
+        "meta_kw_leaderboard": "minesweeper排行榜, minesweeper最高分, minesweeper最佳時間, minesweeper紀錄, 最快minesweeper",
+        "meta_kw_howtoplay": "如何玩minesweeper, minesweeper指南, minesweeper策略, minesweeper技巧, minesweeper規則, minesweeper模式, 無猜測minesweeper",
+        "meta_kw_pvp": "minesweeper pvp, 競技minesweeper, minesweeper排名賽, minesweeper elo, minesweeper配對, minesweeper對戰",
+        "meta_kw_strategy": "minesweeper策略, minesweeper技巧, minesweeper模式, minesweeper雙擊技巧, minesweeper 1-2-x模式, minesweeper指南, 如何提升minesweeper水準",
+        "meta_kw_tentaizu": "tentaizu, tentaizu謎題, 每日tentaizu, tentaizu線上, 免費tentaizu, 地雷邏輯謎題, 每日邏輯謎題, 數字謎題, minesweeper變體",
     },
     "pl": {
         # Nav
@@ -12591,6 +12631,14 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "variants_title":           "Mga Variant ng Minesweeper",
         "variants_subtitle":        "Twist sa klasiko — parehong mga mina, iba't ibang patakaran.",
         "variants_open_generator":  "Buksan ang Generator",
+        "meta_kw_beginner": "minesweeper online, laruin ang minesweeper nang libre, minesweeper para sa mga baguhan, libreng laro ng minesweeper",
+        "meta_kw_intermediate": "minesweeper intermediate, minesweeper online, laruin ang minesweeper, libreng minesweeper",
+        "meta_kw_expert": "minesweeper expert, mahirap na minesweeper, minesweeper online, laruin ang minesweeper, libreng minesweeper",
+        "meta_kw_leaderboard": "minesweeper leaderboard, pinakamataas na marka sa minesweeper, pinakamabilis na oras sa minesweeper, rekord sa minesweeper, pinakamabilis na minesweeper",
+        "meta_kw_howtoplay": "paano laruin ang minesweeper, gabay sa minesweeper, estratehiya sa minesweeper, mga tips sa minesweeper, mga patakaran ng minesweeper, mga pattern ng minesweeper, minesweeper na walang hula",
+        "meta_kw_pvp": "minesweeper pvp, kompetitibong minesweeper, minesweeper ranked, minesweeper elo, minesweeper matchmaking, minesweeper laban",
+        "meta_kw_strategy": "estratehiya sa minesweeper, mga tips sa minesweeper, mga pattern ng minesweeper, minesweeper chording, pattern na minesweeper 1-2-x, gabay sa minesweeper, paano mapabuti ang laro ng minesweeper",
+        "meta_kw_tentaizu": "tentaizu, palaisipan ng tentaizu, araw-araw na tentaizu, tentaizu online, libreng tentaizu, logic puzzle ng minahan, araw-araw na logic puzzle, number puzzle, uri ng minesweeper",
     },
 
     "ru": {
