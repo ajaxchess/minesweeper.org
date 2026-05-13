@@ -329,7 +329,7 @@
             </div>
             {% for game in puzzle_games %}
               {% if loop.index0 % 4 == 0 %}<div class="mega-col">{% endif %}
-              <a href="{{ game.play_path }}" class="mega-card {% if mode == game.mode or request.url.path.startswith(game.play_path) or request.url.path.startswith(game.canonical_path) %}active{% endif %}">
+              <a href="{{ game.play_path }}" class="mega-card {% if request.url.path == game.play_path or request.url.path.startswith(game.play_path + '/') %}active{% endif %}">
                 <span class="mega-icon puzzle-nav-logo puzzle-nav-logo-{{ game.slug }}" aria-hidden="true"></span>
                 <span class="mega-card-text"><strong>{{ game.title }}</strong><span>{{ t[game.nav_desc_key] if game.nav_desc_key is defined else (t[game.desc_key] if game.desc_key is defined else game.description) }}</span></span>
               </a>
@@ -535,7 +535,7 @@
         <div class="drawer-links">
           <a href="/puzzles" class="drawer-link {% if mode=='puzzles' %}active{% endif %}">▦ {{ t.nav_all_puzzles }}</a>
           {% for game in puzzle_games %}
-          <a href="{{ game.play_path }}" class="drawer-link {% if mode == game.mode or request.url.path.startswith(game.play_path) or request.url.path.startswith(game.canonical_path) %}active{% endif %}">
+          <a href="{{ game.play_path }}" class="drawer-link {% if request.url.path == game.play_path or request.url.path.startswith(game.play_path + '/') %}active{% endif %}">
             <span class="puzzle-nav-logo drawer-puzzle-logo puzzle-nav-logo-{{ game.slug }}" aria-hidden="true"></span>
             <span>{{ game.title }}</span>
           </a>
