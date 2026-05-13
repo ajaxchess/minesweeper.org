@@ -12,6 +12,7 @@ from datetime import date, timedelta
 from typing import Any, Literal
 
 from sqlalchemy import case, func, select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from database import (
@@ -277,6 +278,21 @@ def _row_dict(row: Any, spec: LeaderboardSpec, rank: int, urls: dict[str, str], 
     }
 
 
+def _empty_rows_response(spec: LeaderboardSpec, period: Period) -> dict[str, Any]:
+    return {
+        "id": spec.id,
+        "title": spec.title,
+        "category": spec.category,
+        "group": spec.group,
+        "level": spec.level_label,
+        "period": period,
+        "metric": spec.metric,
+        "play_href": spec.play_href,
+        "full_href": spec.full_href,
+        "rows": [],
+    }
+
+
 def _profile_maps_for_emails(emails: list[str], db: Session) -> tuple[dict[str, str], dict[str, str]]:
     if not emails:
         return {}, {}
@@ -448,7 +464,11 @@ def leaderboard_rows(
     query = _exclude_flagged(query, spec.model, db)
     query = _order_query(query, spec)
 
-    raw = query.limit(max(limit * 12, 60)).all()
+    try:
+        raw = query.limit(max(limit * 12, 60)).all()
+    except SQLAlchemyError:
+        db.rollback()
+        return _empty_rows_response(spec, clean_period)
     seen: set[str] = set()
     rows: list[Any] = []
     for row in raw:
