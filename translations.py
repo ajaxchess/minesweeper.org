@@ -2010,7 +2010,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # About page
         "about_title": "Pri",
         "about_page_title": "Pri — minesweeper.org",
-        "about_page_desc": "Pri minesweeper.org — senpaga reta minesweeper-ludo kun sen-divena reĝimo, plurludanta dvobatoj, ĉiutagaj kvestoj, kaj omaĝo al Diana, Princino de Kimrujo.",
+        "about_page_desc": "Pri minesweeper.org — senpaga reta minesweeper-ludo kun sen-divena reĝimo, minbalailo, plurludanta dvobatoj, ĉiutagaj kvestoj, kaj omaĝo al Diana, Princino de Kimrujo.",
         "about_intro_p1": "Minesweeper.org estas senpaga reta minesweeper-ludo konstruita por ludantoj de ĉiuj kapabloniveloj. Ĉu vi estas unuafoja ludanto lernanta la bazojn aŭ sperta rapidkuristo persekutanta tabeltempon, ĉi tiu retejo ofertas klasikan ludadon kune kun modernaj funkcioj kiel realtempaj plurludantaj dvobatoj, ĉiutagaj kvestoj, kaj puzlovarioj kiujn vi ne trovos aliloke.",
         "about_intro_p2": 'La retejo estas konstruita kaj prizorgata de Richard Cross, fondinto de <a href="https://regis.consulting" target="_blank" rel="noopener">Regis Consulting</a>, programara konsultejo specialiĝanta pri tettejevoluo. Minesweeper.org estas konstruita de nulo uzante Python, FastAPI, kaj modernajn retteknologiojn — neniaj ŝablonoj, neniaj klonoj. Ĉiu ludreĝimo, ĉiu funkcio, kaj ĉiu kodlinio estas originala laboro.',
         "about_diff_h2": "Kio Diferencas Ĉi Tiun Retejon",
