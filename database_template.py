@@ -1494,6 +1494,11 @@ def _apply_migrations():
         # mahjong_scores device tracking — added after initial deploy (F1.8)
         ("mahjong_scores",      "device_type",   "VARCHAR(20) NULL"),
         ("mahjong_scores",      "device_id",     "VARCHAR(36) NULL"),
+        # fifteen_puzzle_scores grid_size — added in F73 after table existed (F62)
+        ("fifteen_puzzle_scores", "grid_size",   "VARCHAR(8) NOT NULL DEFAULT '4x4'"),
+        # game_2048_scores analytics fields — added in F22 after table existed (F22 initial)
+        ("game_2048_scores",    "fours_spawned", "INT NULL"),
+        ("game_2048_scores",    "moves_to_2048", "INT NULL"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:
