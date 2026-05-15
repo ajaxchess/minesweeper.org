@@ -347,8 +347,15 @@ async function loadLeaderboard() {
     el.innerHTML = '<div class="lb-loading">Loading…</div>';
 
     try {
-        const r    = await fetch(`/api/tentaizu-scores/${G.puzzleId}`);
-        const data = await r.json();
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 10000);
+        let r, data;
+        try {
+            r    = await fetch(`/api/tentaizu-scores/${G.puzzleId}`, { signal: ctrl.signal });
+            data = await r.json();
+        } finally {
+            clearTimeout(tid);
+        }
 
         if (!data.length) {
             el.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';

@@ -329,8 +329,15 @@ async function loadLeaderboard() {
         : `${G.scoreApi}/${G.seedStr}`;
 
     try {
-        const r    = await fetch(lbUrl);
-        const data = await r.json();
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 10000);
+        let r, data;
+        try {
+            r    = await fetch(lbUrl, { signal: ctrl.signal });
+            data = await r.json();
+        } finally {
+            clearTimeout(tid);
+        }
 
         if (!data.length) {
             el.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';

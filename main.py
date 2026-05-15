@@ -24,6 +24,7 @@ from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, Ten
 from tametsi_generator import (
     generate_daily as _tametsi_generate_daily,
     generate_board as _tametsi_generate_board,
+    daily_rng as _tametsi_daily_rng,
     LEVELS as _TAMETSI_LEVELS,
 )
 from numbers_match_generator import generate_daily as _nm_generate_daily
@@ -786,7 +787,12 @@ def generate_tametsi_dailies(date_str: str = None):
                 logger.info(f"generate_tametsi_dailies: {level} {date_str} already exists.")
                 continue
 
-            board = _tametsi_generate_daily(level, date_str)
+            rows, cols, num_mines = _TAMETSI_LEVELS[level]
+            board = _tametsi_generate_board(
+                rows, cols, num_mines,
+                rng=_tametsi_daily_rng(level, date_str),
+                max_attempts=50_000,
+            )
 
             if not db.get(TametsiBoard, board.board_hash):
                 db.add(TametsiBoard(
@@ -7946,20 +7952,39 @@ def tametsi_daily(level: str, db: Session = Depends(get_db)):
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     daily = db.query(TametsiDaily).filter_by(puzzle_date=date_str, level=level).first()
     if not daily:
-        board = _tametsi_generate_daily(level, date_str)
-        if not db.get(TametsiBoard, board.board_hash):
-            db.add(TametsiBoard(
-                board_hash = board.board_hash,
-                rows       = board.rows,
-                cols       = board.cols,
-                mines      = len(board.mines),
-                bbbv       = board.bbbv,
-                board_data = board.board_data,
-            ))
-        daily = TametsiDaily(puzzle_date=date_str, level=level, board_hash=board.board_hash)
-        db.add(daily)
-        db.commit()
-        db.refresh(daily)
+        # Use a low attempt limit on the hot path so the worker thread is not blocked
+        # for >1 s. The startup thread and cron job handle proper generation with full
+        # MAX_ATTEMPTS. If this quick attempt fails, return 503 so the client retries.
+        rows, cols, num_mines = _TAMETSI_LEVELS[level]
+        try:
+            board = _tametsi_generate_board(
+                rows, cols, num_mines,
+                rng=_tametsi_daily_rng(level, date_str),
+                max_attempts=200,
+            )
+        except RuntimeError as e:
+            logger.error(f"tametsi_daily on-request generation failed: {e}")
+            raise HTTPException(status_code=503, detail="Daily puzzle not yet available; please retry shortly.")
+        try:
+            if not db.get(TametsiBoard, board.board_hash):
+                db.add(TametsiBoard(
+                    board_hash = board.board_hash,
+                    rows       = board.rows,
+                    cols       = board.cols,
+                    mines      = len(board.mines),
+                    bbbv       = board.bbbv,
+                    board_data = board.board_data,
+                ))
+            daily = TametsiDaily(puzzle_date=date_str, level=level, board_hash=board.board_hash)
+            db.add(daily)
+            db.commit()
+            db.refresh(daily)
+        except Exception:
+            db.rollback()
+            # Another worker committed first; re-query to get what was stored.
+            daily = db.query(TametsiDaily).filter_by(puzzle_date=date_str, level=level).first()
+            if not daily:
+                raise HTTPException(status_code=503, detail="Daily puzzle temporarily unavailable.")
     return _tametsi_board_response(db.get(TametsiBoard, daily.board_hash))
 
 

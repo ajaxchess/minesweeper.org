@@ -40,9 +40,15 @@ async function fetchBoard(level, isDaily, hash) {
     if (hash)         url = `/api/tametsi/board/${hash}`;
     else if (isDaily) url = `/api/tametsi/daily/${level}`;
     else              url = `/api/tametsi/random/${level}`;
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 15000);
+    try {
+        const r = await fetch(url, { signal: ctrl.signal });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+    } finally {
+        clearTimeout(tid);
+    }
 }
 
 // ── State initialisation ──────────────────────────────────────────────────────
@@ -667,9 +673,16 @@ async function loadLeaderboard() {
         : `/api/tametsi/leaderboard/board/${G.board_hash}`;
 
     try {
-        const r = await fetch(url);
-        if (!r.ok) throw new Error(r.status);
-        const data = await r.json();
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 10000);
+        let r, data;
+        try {
+            r = await fetch(url, { signal: ctrl.signal });
+            if (!r.ok) throw new Error(r.status);
+            data = await r.json();
+        } finally {
+            clearTimeout(tid);
+        }
         if (!Array.isArray(data) || !data.length) {
             content.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
             return;
