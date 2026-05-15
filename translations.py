@@ -5877,6 +5877,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_bbbv_s_tip":           "3BV per second. Represents speed of completing the game. The higher the better.",
         "lb_eff_tip":              "Efficiency is calculated by dividing solved 3BV by the amount of clicks performed. The fewer clicks you spend, the higher the efficiency.",
         "lb_bbbv_link_title":      "Learn about 3BV",
+        "nav_worldsweeper":       "Worldsweeper",
+        "nav_cubesweeper":        "CubeSweeper",
+        "nav_mobiussweeper":      "MobiusSweeper",
+        "nav_nonosweeper":        "Onosweepernay",
+        "nav_minesweeperchess":   "Inesweepermay Esschay",
         # Hexsweeper nav
         "nav_hexsweeper":         "Hexsweeper",
         "nav_sub_hexsweeper":     "Exhay oardbay, 6 eighboursnay",
