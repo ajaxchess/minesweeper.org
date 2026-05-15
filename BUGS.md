@@ -1,3 +1,23 @@
+B32 Tametsi, Evil NG, Custom, and 2026 World Cup pages show English SEO content for non-English locales
+   Templates tametsi.html, evil.html, custom.html, and wc2026_main.html had hardcoded English
+   title/description/keywords with no translation keys — all non-English locale URLs returned
+   identical English meta content, causing Bing/Google to flag them as duplicates.
+   Fixed by: adding meta_title_*, meta_desc_*, meta_kw_* keys to all 17 locales in translations.py
+   and updating templates to use {{ t.meta_title_* }} etc.
+
+B31 /beginner URL returns the beginner game page instead of redirecting to /
+   Google Search Console flagged https://minesweeper.org/beginner as a "Duplicate, Google chose
+   different canonical than user" issue because it served the same content as / but had its own URL.
+   Fixed by: adding a 301 redirect from /beginner to / in main.py.
+
+B30 Mosaic game pages (standard, how-to-play) show English SEO content for non-English locales
+   mosaic.html and mosaic_howto.html had hardcoded English title/description/keywords.
+   Google Search Console flagged /uk/mosaic/how-to-play and /es/mosaic/standard as
+   "Duplicate, Google chose different canonical than user".
+   Fixed by: adding meta_title_mosaic, meta_desc_mosaic, meta_kw_mosaic, meta_title_mosaic_howto,
+   meta_desc_mosaic_howto, meta_kw_mosaic_howto to all 17 locales in translations.py and updating
+   both templates to use translation keys.
+
 B29 Blog post <title> tags too long for Bing Webmaster Tools (>70 chars)
    Posts with long titles (e.g. "Nonosweeper's No Guess Mode: Every Puzzle,
    Solvable by Logic Alone") had " — minesweeper.org Blog" appended unconditionally,

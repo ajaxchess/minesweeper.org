@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}How to Play Mosaic — Rules, Controls & Strategy | minesweeper.org{% endblock %}
-{% block description %}How to play Mosaic (Fill-a-Pix): rules, controls, and a step-by-step guide. Learn the 3×3 neighbourhood rule and how to crack every clue without guessing.{% endblock %}
-{% block keywords %}<meta name="keywords" content="how to play mosaic, mosaic puzzle rules, fill-a-pix rules, mosaic tutorial, mosaic instructions, mosaic strategy, learn mosaic puzzle">{% endblock %}
+{% block title %}{{ t.meta_title_mosaic_howto }}{% endblock %}
+{% block description %}{{ t.meta_desc_mosaic_howto }}{% endblock %}
+{% block keywords %}<meta name="keywords" content="{{ t.meta_kw_mosaic_howto }}">{% endblock %}
 {% block canonical %}https://minesweeper.org/mosaic/how-to-play{% endblock %}
 {% block og_url %}https://minesweeper.org/mosaic/how-to-play{% endblock %}
-{% block og_title %}How to Play Mosaic — Rules, Controls & Strategy{% endblock %}
-{% block og_description %}Complete guide to Mosaic rules and controls. Learn the 3×3 neighborhood rule, how to read clues, and the strategies that crack every puzzle without guessing.{% endblock %}
+{% block og_title %}{{ t.meta_title_mosaic_howto | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ t.meta_desc_mosaic_howto }}{% endblock %}
 {% block og_image %}https://minesweeper.org/static/img/og-mosaic.png{% endblock %}
 {% block tw_image %}https://minesweeper.org/static/img/og-mosaic.png{% endblock %}
 

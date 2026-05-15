@@ -1,18 +1,19 @@
 {% extends "base.html" %}
 
 {% if mode == 'beginner' %}
-  {% set _title = "MobiusSweeper — Beginner | minesweeper.org" %}
+  {% set _diff  = t.nav_beginner %}
   {% set _desc  = "Play MobiusSweeper — minesweeper on a rotating 3D Möbius strip. Beginner: 4×40 strip, 160 cells, 16 mines. Free to play, no download required." %}
   {% set _canon = "https://minesweeper.org/mobiussweeper" %}
 {% elif mode == 'intermediate' %}
-  {% set _title = "MobiusSweeper — Intermediate | minesweeper.org" %}
+  {% set _diff  = t.nav_intermediate %}
   {% set _desc  = "Play MobiusSweeper — minesweeper on a rotating 3D Möbius strip. Intermediate: 8×80 strip, 640 cells, 64 mines. Free to play, no download required." %}
   {% set _canon = "https://minesweeper.org/mobiussweeper/intermediate" %}
 {% else %}
-  {% set _title = "MobiusSweeper — Expert | minesweeper.org" %}
+  {% set _diff  = t.nav_expert %}
   {% set _desc  = "Play MobiusSweeper — minesweeper on a rotating 3D Möbius strip. Expert: 16×160 strip, 2560 cells, 256 mines. Free to play, no download required." %}
   {% set _canon = "https://minesweeper.org/mobiussweeper/expert" %}
 {% endif %}
+{% set _title = "MobiusSweeper — " ~ _diff ~ " | minesweeper.org" %}
 
 {% block keywords %}<meta name="keywords" content="mobiussweeper, möbius minesweeper, 3D minesweeper, minesweeper on a möbius strip, minesweeper online, play minesweeper, free minesweeper">{% endblock %}
 {% block title %}{{ _title }}{% endblock %}

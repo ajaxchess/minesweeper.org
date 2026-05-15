@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Mosaic — Free Daily Logic Puzzle | minesweeper.org{% endblock %}
-{% block description %}Play Mosaic free online — fill cells black so every number matches the count of black cells in its 3×3 neighborhood. New puzzle every day.{% endblock %}
-{% block keywords %}<meta name="keywords" content="mosaic puzzle, fill-a-pix, mosaic logic puzzle, daily mosaic, mosaic online, minesweeper mosaic, number fill puzzle">{% endblock %}
+{% block title %}{{ t.meta_title_mosaic }}{% endblock %}
+{% block description %}{{ t.meta_desc_mosaic }}{% endblock %}
+{% block keywords %}<meta name="keywords" content="{{ t.meta_kw_mosaic }}">{% endblock %}
 {% block canonical %}https://minesweeper.org/mosaic/standard{% endblock %}
 {% block og_url %}https://minesweeper.org/mosaic/standard{% endblock %}
 {% block og_type %}game{% endblock %}
-{% block og_title %}Mosaic — Free Daily Logic Puzzle{% endblock %}
-{% block og_description %}Fill cells black so every number matches the count of black cells in its 3×3 neighborhood. New puzzle every day — no guessing required.{% endblock %}
+{% block og_title %}{{ t.meta_title_mosaic | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ t.meta_desc_mosaic }}{% endblock %}
 {% block og_image %}https://minesweeper.org/static/img/og-mosaic.png{% endblock %}
-{% block tw_title %}Mosaic — Free Daily Logic Puzzle{% endblock %}
-{% block tw_description %}Fill cells black so every number matches the count of black cells in its 3×3 neighborhood. New daily puzzle.{% endblock %}
+{% block tw_title %}{{ t.meta_title_mosaic | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block tw_description %}{{ t.meta_desc_mosaic }}{% endblock %}
 {% block tw_image %}https://minesweeper.org/static/img/og-mosaic.png{% endblock %}
 
 {% block jsonld %}

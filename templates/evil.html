@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Evil NG Minesweeper — 20×30, 130 Mines, No-Guess | minesweeper.org{% endblock %}
-{% block description %}Evil NG: the hardest Minesweeper mode. 20×30 board, 130 mines, No-Guess only. Every board is fully solvable by logic — no coin flips. Global high scores.{% endblock %}
-{% block keywords %}<meta name="keywords" content="evil minesweeper, hard minesweeper, no-guess minesweeper, minesweeper 20x30, minesweeper 130 mines">{% endblock %}
+{% block title %}{{ t.meta_title_evil }}{% endblock %}
+{% block description %}{{ t.meta_desc_evil }}{% endblock %}
+{% block keywords %}<meta name="keywords" content="{{ t.meta_kw_evil }}">{% endblock %}
 {% block canonical %}https://minesweeper.org/evil{% endblock %}
 {% block og_url %}https://minesweeper.org/evil{% endblock %}
 {% block og_type %}game{% endblock %}
-{% block og_title %}Evil NG Minesweeper — 20×30, 130 Mines{% endblock %}
-{% block og_description %}The hardest Minesweeper mode: 20×30 board, 130 mines, No-Guess only. Every board solvable by logic. Global high scores.{% endblock %}
+{% block og_title %}{{ t.meta_title_evil | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ t.meta_desc_evil }}{% endblock %}
 
 {% block content %}
 <div class="game-wrapper">

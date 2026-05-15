@@ -917,6 +917,10 @@ async def set_lang(request: Request, lang: str = "en", next: Optional[str] = Non
     return response
 
 
+@app.get("/beginner", response_class=HTMLResponse)
+async def beginner_redirect():
+    return RedirectResponse(url="/", status_code=301)
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {
@@ -3208,11 +3212,13 @@ _BLOG_BY_SLUG = {p["slug"]: p for p in _BLOG_INDEX}
 
 @app.get("/blog", response_class=HTMLResponse)
 async def blog_index(request: Request):
+    lang = get_lang(request)
     return templates.TemplateResponse("blog_index.html", {
         "request": request, "mode": "blog",
         "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
+        "lang": lang, "t": get_t(request),
         "posts": _BLOG_INDEX,
+        "noindex": lang != "en",
     })
 
 
@@ -3309,6 +3315,7 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
         "date_modified":  date_modified,
         "comments":       comments,
         "page_title":     post["title"] + " — minesweeper.org News" if len(post["title"]) + len(" — minesweeper.org News") <= 60 else post["title"],
+        "noindex":        get_lang(request) != "en",
     })
 
 
@@ -3454,10 +3461,12 @@ async def links_page(request: Request):
 
 @app.get("/info/3bv", response_class=HTMLResponse)
 async def info_3bv_page(request: Request):
+    lang = get_lang(request)
     return templates.TemplateResponse("info_3bv.html", {
         "request": request,
         "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
+        "lang": lang, "t": get_t(request),
+        "noindex": lang != "en",
     })
 
 

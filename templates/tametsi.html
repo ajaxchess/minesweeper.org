@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Tametsi — Free Online Logic Puzzle | Minesweeper + Nonogram Hybrid{% endblock %}
-{% block description %}Play Tametsi free online — Minesweeper meets Nonogram. Use adjacency and row/column clues to find all mines. Every board is no-guess solvable.{% endblock %}
-{% block keywords %}<meta name="keywords" content="tametsi, tametsi game, tametsi puzzle, minesweeper nonogram, logic puzzle, no-guess minesweeper, minesweeper hybrid, daily logic puzzle, nonogram minesweeper">{% endblock %}
+{% block title %}{{ t.meta_title_tametsi }}{% endblock %}
+{% block description %}{{ t.meta_desc_tametsi }}{% endblock %}
+{% block keywords %}<meta name="keywords" content="{{ t.meta_kw_tametsi }}">{% endblock %}
 {% block canonical %}https://minesweeper.org/tametsi{% endblock %}
 {% block og_url %}https://minesweeper.org/tametsi{% endblock %}
 {% block og_type %}game{% endblock %}
-{% block og_title %}Tametsi — Free Online Logic Puzzle | minesweeper.org{% endblock %}
-{% block og_description %}Minesweeper meets Nonogram. Use row, column, and adjacency clues to find all mines — every board guaranteed no-guess solvable. Daily puzzles + infinite random boards.{% endblock %}
+{% block og_title %}{{ t.meta_title_tametsi | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ t.meta_desc_tametsi }}{% endblock %}
 {% block og_image %}https://minesweeper.org/static/img/og-default.png{% endblock %}
-{% block tw_title %}Tametsi — Free Online Logic Puzzle | minesweeper.org{% endblock %}
+{% block tw_title %}{{ t.meta_title_tametsi | replace(" | minesweeper.org", "") }}{% endblock %}
 {% block tw_description %}Minesweeper meets Nonogram. Row/column mine counts plus adjacency clues — every board is no-guess solvable. Daily puzzles on Beginner, Intermediate, and Expert.{% endblock %}
 {% block tw_image %}https://minesweeper.org/static/img/og-default.png{% endblock %}
 
