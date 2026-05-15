@@ -42,8 +42,8 @@
 {% endblock %}
 
 {% block content %}
-{% if mode in ('pvp', 'pvp-beta') %}<h1 class="tz-page-h1">PvP Minesweeper — Real-Time Matchmaking</h1>
-{% else %}<h1 class="tz-page-h1">Minesweeper 1v1 Duel — Challenge a Friend</h1>{% endif %}
+{% if mode in ('pvp', 'pvp-beta') %}<h1 class="tz-page-h1">{{ t.pvp_match_h1 }}</h1>
+{% else %}<h1 class="tz-page-h1">{{ t.duel_h1 }}</h1>{% endif %}
 <div class="duel-wrapper">
 
   <!-- ── Mode selector ── -->
