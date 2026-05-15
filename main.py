@@ -4287,9 +4287,10 @@ class WorldsweeperScoreSubmit(BaseModel):
     t_param:     int           = Field(..., ge=1, le=75)
     face_count:  int           = Field(..., ge=12, le=752)
     mines:       int           = Field(..., ge=1, le=750)
-    bbbv:        Optional[int] = Field(None, ge=1, le=9999)
-    left_clicks: Optional[int] = Field(None, ge=1, le=99999)
-    board_hash:  Optional[str] = Field(None, max_length=128)
+    bbbv:         Optional[int] = Field(None, ge=1, le=9999)
+    left_clicks:  Optional[int] = Field(None, ge=1, le=99999)
+    chord_clicks: Optional[int] = Field(None, ge=0, le=99999)
+    board_hash:   Optional[str] = Field(None, max_length=128)
 
     @field_validator("name")
     @classmethod
@@ -4327,11 +4328,12 @@ def submit_world_score(payload: WorldsweeperScoreSubmit, request: Request, db: S
         t_param     = payload.t_param,
         face_count  = payload.face_count,
         mines       = payload.mines,
-        bbbv        = payload.bbbv,
-        left_clicks = payload.left_clicks,
-        board_hash  = payload.board_hash,
-        guest_token = guest_token,
-        client_type = get_client_type(request),
+        bbbv         = payload.bbbv,
+        left_clicks  = payload.left_clicks,
+        chord_clicks = payload.chord_clicks,
+        board_hash   = payload.board_hash,
+        guest_token  = guest_token,
+        client_type  = get_client_type(request),
     )
     db.add(entry)
     db.commit()
@@ -4446,9 +4448,10 @@ class CubesweeperScoreSubmit(BaseModel):
     time_ms:     int           = Field(..., ge=1, le=7_200_000)
     mines:       int           = Field(..., ge=1)
     no_guess:    bool          = False
-    bbbv:        Optional[int] = Field(None, ge=1, le=999999)
-    left_clicks: Optional[int] = Field(None, ge=0, le=9999999)
-    board_hash:  Optional[str] = Field(None, max_length=512)
+    bbbv:         Optional[int] = Field(None, ge=1, le=999999)
+    left_clicks:  Optional[int] = Field(None, ge=0, le=9999999)
+    chord_clicks: Optional[int] = Field(None, ge=0, le=99999)
+    board_hash:   Optional[str] = Field(None, max_length=512)
 
     @field_validator("name")
     @classmethod
@@ -4486,11 +4489,12 @@ def submit_cube_score(payload: CubesweeperScoreSubmit, request: Request, db: Ses
         time_ms     = payload.time_ms,
         mines       = payload.mines,
         no_guess    = payload.no_guess,
-        bbbv        = payload.bbbv,
-        left_clicks = payload.left_clicks,
-        board_hash  = payload.board_hash,
-        guest_token = guest_token,
-        client_type = get_client_type(request),
+        bbbv         = payload.bbbv,
+        left_clicks  = payload.left_clicks,
+        chord_clicks = payload.chord_clicks,
+        board_hash   = payload.board_hash,
+        guest_token  = guest_token,
+        client_type  = get_client_type(request),
     )
     db.add(entry)
     db.commit()
@@ -4610,9 +4614,10 @@ class MobiussweeperScoreSubmit(BaseModel):
     time_ms:     int           = Field(..., ge=1, le=7_200_000)
     mines:       int           = Field(..., ge=1)
     no_guess:    bool          = False
-    bbbv:        Optional[int] = Field(None, ge=1, le=999999)
-    left_clicks: Optional[int] = Field(None, ge=0, le=9999999)
-    board_hash:  Optional[str] = Field(None, max_length=512)
+    bbbv:         Optional[int] = Field(None, ge=1, le=999999)
+    left_clicks:  Optional[int] = Field(None, ge=0, le=9999999)
+    chord_clicks: Optional[int] = Field(None, ge=0, le=99999)
+    board_hash:   Optional[str] = Field(None, max_length=512)
 
     @field_validator("name")
     @classmethod
@@ -4652,11 +4657,12 @@ def submit_mobius_score(payload: MobiussweeperScoreSubmit, request: Request, db:
         time_ms     = payload.time_ms,
         mines       = payload.mines,
         no_guess    = payload.no_guess,
-        bbbv        = payload.bbbv,
-        left_clicks = payload.left_clicks,
-        board_hash  = payload.board_hash,
-        guest_token = guest_token,
-        client_type = get_client_type(request),
+        bbbv         = payload.bbbv,
+        left_clicks  = payload.left_clicks,
+        chord_clicks = payload.chord_clicks,
+        board_hash   = payload.board_hash,
+        guest_token  = guest_token,
+        client_type  = get_client_type(request),
     )
     db.add(entry)
     db.commit()

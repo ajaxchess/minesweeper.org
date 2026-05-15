@@ -501,8 +501,9 @@ class GlobesweeperScore(Base):
     t_param    = Column(Integer, nullable=False)       # Goldberg T value (e.g. 1, 3, 7, 25)
     face_count = Column(Integer, nullable=False)       # 10*T+2
     mines      = Column(Integer, nullable=False)
-    bbbv        = Column(Integer, nullable=True)        # 3BV of the solved board
-    left_clicks = Column(Integer, nullable=True)        # non-rotation left clicks
+    bbbv         = Column(Integer, nullable=True)        # 3BV of the solved board
+    left_clicks  = Column(Integer, nullable=True)        # non-rotation left clicks
+    chord_clicks = Column(Integer, nullable=True)        # chord (auto-reveal) clicks
     board_hash = Column(String(128), nullable=True)
     guest_token = Column(String(36), nullable=True, index=True)
     client_type = Column(String(32), nullable=False, server_default="na")
@@ -544,8 +545,9 @@ class CubesweeperScore(Base):
     time_ms     = Column(Integer, nullable=False)
     mines       = Column(Integer, nullable=False)
     no_guess    = Column(Boolean, default=False, nullable=False)
-    bbbv        = Column(Integer, nullable=True)
-    left_clicks = Column(Integer, nullable=True)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
     board_hash  = Column(String(512), nullable=True)
     guest_token = Column(String(36), nullable=True, index=True)
     client_type = Column(String(32), nullable=False, server_default="na")
@@ -588,8 +590,9 @@ class MobiussweeperScore(Base):
     time_ms     = Column(Integer, nullable=False)
     mines       = Column(Integer, nullable=False)
     no_guess    = Column(Boolean, default=False, nullable=False)
-    bbbv        = Column(Integer, nullable=True)
-    left_clicks = Column(Integer, nullable=True)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
     board_hash  = Column(String(512), nullable=True)
     guest_token = Column(String(36), nullable=True, index=True)
     client_type = Column(String(32), nullable=False, server_default="na")
@@ -1499,6 +1502,10 @@ def _apply_migrations():
         # game_2048_scores analytics fields — added in F22 after table existed (F22 initial)
         ("game_2048_scores",    "fours_spawned", "INT NULL"),
         ("game_2048_scores",    "moves_to_2048", "INT NULL"),
+        # chord_clicks for 3D sweeper variants — JS tracked but backend never stored
+        ("globesweeper_scores",  "chord_clicks", "INT NULL"),
+        ("cubesweeper_scores",   "chord_clicks", "INT NULL"),
+        ("mobiussweeper_scores", "chord_clicks", "INT NULL"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:
