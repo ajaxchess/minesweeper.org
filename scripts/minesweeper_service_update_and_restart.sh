@@ -87,13 +87,10 @@ fi
 
 git reset --hard "$LAST_GOOD"
 
-# Only rebuild static assets if JS or CSS files changed between commits.
-if git diff --name-only "$LOCAL_COMMIT" "$LAST_GOOD" -- static/js/ static/css/ | grep -qE '\.(js|css)$'; then
-    echo "Static assets changed — building..."
-    bash "$REPO_DIR/scripts/build_assets.sh" || echo "Warning: asset build failed (continuing)"
-else
-    echo "Static assets unchanged — skipping build."
-fi
+# Always rebuild static assets after git reset --hard, because the reset always
+# restores the unminified source files from git regardless of whether JS/CSS changed.
+echo "Building static assets..."
+bash "$REPO_DIR/scripts/build_assets.sh" || echo "Warning: asset build failed (continuing)"
 
 echo "Installing/updating Python dependencies..."
 "$VENV_DIR/bin/pip" install -r "$REPO_DIR/requirements.txt" --quiet || echo "Warning: pip install failed"
