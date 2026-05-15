@@ -1491,6 +1491,9 @@ def _apply_migrations():
         ("wc2026_scores",       "right_clicks",  "INT NULL"),
         ("tametsi_scores",      "left_clicks",   "INT NULL"),
         ("tametsi_scores",      "right_clicks",  "INT NULL"),
+        # mahjong_scores device tracking — added after initial deploy (F1.8)
+        ("mahjong_scores",      "device_type",   "VARCHAR(20) NULL"),
+        ("mahjong_scores",      "device_id",     "VARCHAR(36) NULL"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:
