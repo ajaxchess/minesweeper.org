@@ -1,22 +1,20 @@
 {% extends "base.html" %}
 
 {% if mode == 'toroid-beginner' %}
-  {% set _title = "Toroid Minesweeper — Easy | minesweeper.org" %}
-  {% set _desc  = "Play Toroid Minesweeper — all edges wrap (left <-> right, top <-> bottom), like a donut. Easy: 9×9, 10 mines. Free to play, no download required." %}
+  {% set _diff  = t.nav_beginner %}
   {% set _canon = "https://minesweeper.org/toroid" %}
 {% elif mode == 'toroid-intermediate' %}
-  {% set _title = "Toroid Minesweeper — Medium | minesweeper.org" %}
-  {% set _desc  = "Play Toroid Minesweeper — all edges wrap: left↔right and top↔bottom. Medium mode: " ~ rows ~ "×" ~ cols ~ " board with " ~ mines ~ " mines." %}
+  {% set _diff  = t.nav_intermediate %}
   {% set _canon = "https://minesweeper.org/toroid/intermediate" %}
 {% elif mode == 'toroid-expert' %}
-  {% set _title = "Toroid Minesweeper — Hard | minesweeper.org" %}
-  {% set _desc  = "Play Toroid Minesweeper — all edges wrap: left↔right and top↔bottom. Hard mode: " ~ rows ~ "×" ~ cols ~ " board with " ~ mines ~ " mines." %}
+  {% set _diff  = t.nav_expert %}
   {% set _canon = "https://minesweeper.org/toroid/expert" %}
 {% else %}
-  {% set _title = "Toroid Minesweeper — Custom | minesweeper.org" %}
-  {% set _desc  = "Play Toroid Minesweeper with a custom board size. All edges wrap around." %}
+  {% set _diff  = t.nav_custom %}
   {% set _canon = "https://minesweeper.org/toroid/custom" %}
 {% endif %}
+{% set _title = t.meta_title_toroid ~ " — " ~ _diff ~ " | minesweeper.org" %}
+{% set _desc  = t.meta_desc_toroid %}
 
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}

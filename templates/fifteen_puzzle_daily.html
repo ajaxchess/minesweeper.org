@@ -4,14 +4,13 @@
 {% set _gl    = grid_label or "4×4" %}
 {% set _is4x4 = (_gs == "4x4") %}
 {% if _is4x4 %}
-  {% set _title = "15-Puzzle — Daily | minesweeper.org" %}
-  {% set _desc  = "Play today's daily 15-puzzle on minesweeper.org. Slide 15 numbered tiles into order. Same puzzle for every player, resets at midnight UTC." %}
+  {% set _title = t.meta_title_fifteen_puzzle %}
   {% set _canon = "https://minesweeper.org/other/15puzzle/daily" %}
 {% else %}
-  {% set _title = "15-Puzzle " + _gl + " — Daily | minesweeper.org" %}
-  {% set _desc  = "Play today's daily " + _gl + " sliding-tile puzzle. Same board for every player, resets at midnight UTC." %}
+  {% set _title = t.meta_title_fifteen_puzzle ~ " " ~ _gl %}
   {% set _canon = "https://minesweeper.org/other/15puzzle/" + _gs %}
 {% endif %}
+{% set _desc = t.meta_desc_fifteen_puzzle %}
 
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}

@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Nonosweeper — Minesweeper meets Nonogram | minesweeper.org{% endblock %}
-{% block description %}Nonosweeper: use row and column nonogram clues to locate the mines, then reveal every safe cell without triggering a single one.{% endblock %}
-{% block keywords %}<meta name="keywords" content="nonosweeper, nonogram minesweeper, picross minesweeper, logic puzzle, daily puzzle">{% endblock %}
+{% block title %}{{ t.meta_title_nonosweeper }}{% endblock %}
+{% block description %}{{ t.meta_desc_nonosweeper }}{% endblock %}
+{% block keywords %}<meta name="keywords" content="{{ t.meta_kw_nonosweeper }}">{% endblock %}
 {% block canonical %}https://minesweeper.org/nonosweeper{% endblock %}
 {% block og_url %}https://minesweeper.org/nonosweeper{% endblock %}
 {% block og_type %}game{% endblock %}

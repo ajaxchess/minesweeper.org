@@ -215,6 +215,7 @@ async def pvp_leaderboard_page(request: Request):
         "mode":    "pvp-leaderboard",
         "user":    get_current_user(request),
         "lang":    get_lang(request), "t": get_t(request),
+        "noindex": get_lang(request) != "en",
     })
 
 # ── Page: PvP Rankings ────────────────────────────────────────────────────────
@@ -225,6 +226,7 @@ async def pvp_rankings_page(request: Request):
         "mode":    "pvp-rankings",
         "user":    get_current_user(request),
         "lang":    get_lang(request), "t": get_t(request),
+        "noindex": get_lang(request) != "en",
     })
 
 # ── WebSocket: PvP matchmaking ────────────────────────────────────────────────

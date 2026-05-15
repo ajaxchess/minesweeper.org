@@ -1,22 +1,20 @@
 {% extends "base.html" %}
 
 {% if mode == 'beginner' %}
-  {% set _title = "CubeSweeper — Beginner | minesweeper.org" %}
-  {% set _desc  = "Play CubeSweeper — minesweeper on a rotating 3D cube. Beginner: 9×9 per face, 486 cells, 60 mines. Free to play, no download required." %}
+  {% set _diff  = t.nav_beginner %}
   {% set _canon = "https://minesweeper.org/cubesweeper" %}
 {% elif mode == 'intermediate' %}
-  {% set _title = "CubeSweeper — Intermediate | minesweeper.org" %}
-  {% set _desc  = "Play CubeSweeper — minesweeper on a rotating 3D cube. Intermediate: 16×16 per face, 1536 cells, 240 mines. Free to play, no download required." %}
+  {% set _diff  = t.nav_intermediate %}
   {% set _canon = "https://minesweeper.org/cubesweeper/intermediate" %}
 {% elif mode == 'expert' %}
-  {% set _title = "CubeSweeper — Expert | minesweeper.org" %}
-  {% set _desc  = "Play CubeSweeper — minesweeper on a rotating 3D cube. Expert: 30×30 per face, 5400 cells, 1050 mines. A marathon board. Free to play, no download required." %}
+  {% set _diff  = t.nav_expert %}
   {% set _canon = "https://minesweeper.org/cubesweeper/expert" %}
 {% else %}
-  {% set _title = "CubeSweeper — Custom | minesweeper.org" %}
-  {% set _desc  = "Play CubeSweeper with a custom grid size — minesweeper on a rotating 3D cube." %}
+  {% set _diff  = t.nav_custom %}
   {% set _canon = "https://minesweeper.org/cubesweeper/custom" %}
 {% endif %}
+{% set _title = t.meta_title_cubesweeper ~ " — " ~ _diff ~ " | minesweeper.org" %}
+{% set _desc  = t.meta_desc_cubesweeper %}
 
 {% block keywords %}<meta name="keywords" content="cubesweeper, cube minesweeper, 3D minesweeper, minesweeper on a cube, minesweeper online, play minesweeper, free minesweeper">{% endblock %}
 {% block title %}{{ _title }}{% endblock %}

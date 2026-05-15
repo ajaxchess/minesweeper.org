@@ -3022,6 +3022,7 @@ async def team_page(request: Request):
         "request": request, "mode": "team",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
+        "noindex": get_lang(request) != "en",
     })
 
 
@@ -3478,6 +3479,7 @@ async def board_generator_page(request: Request):
         "request": request, "mode": "board-generator",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
+        "noindex": get_lang(request) != "en",
     })
 
 
@@ -7325,6 +7327,7 @@ def jigsaw_generator_page(request: Request, db: Session = Depends(get_db)):
         "t":       get_t(request),
         "photos":  photos,
         "limit":   limit,
+        "noindex": get_lang(request) != "en",
     })
 
 

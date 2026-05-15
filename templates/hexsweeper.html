@@ -1,22 +1,23 @@
 {% extends "base.html" %}
 
 {% if mode == 'hex-beginner' %}
-  {% set _title = "Hexsweeper — Easy | minesweeper.org" %}
+  {% set _diff  = t.nav_beginner %}
   {% set _desc  = t["meta_desc_hexsweeper_beginner"] %}
   {% set _canon = "https://minesweeper.org/hexsweeper" %}
 {% elif mode == 'hex-intermediate' %}
-  {% set _title = "Hexsweeper — Medium | minesweeper.org" %}
+  {% set _diff  = t.nav_intermediate %}
   {% set _desc  = t["meta_desc_hexsweeper_intermediate"] %}
   {% set _canon = "https://minesweeper.org/hexsweeper/intermediate" %}
 {% elif mode == 'hex-expert' %}
-  {% set _title = "Hexsweeper — Hard | minesweeper.org" %}
+  {% set _diff  = t.nav_expert %}
   {% set _desc  = t["meta_desc_hexsweeper_expert"] %}
   {% set _canon = "https://minesweeper.org/hexsweeper/expert" %}
 {% else %}
-  {% set _title = "Hexsweeper — Custom | minesweeper.org" %}
+  {% set _diff  = t.nav_custom %}
   {% set _desc  = t["meta_desc_hexsweeper_custom"] %}
   {% set _canon = "https://minesweeper.org/hexsweeper/custom" %}
 {% endif %}
+{% set _title = t.meta_title_hexsweeper ~ " — " ~ _diff ~ " | minesweeper.org" %}
 
 {% block keywords %}<meta name="keywords" content="hexsweeper, hex minesweeper, hexagonal minesweeper, minesweeper, minesweeper online, play minesweeper, free minesweeper">{% endblock %}
 {% block title %}{{ _title }}{% endblock %}

@@ -1,26 +1,23 @@
 {% extends "base.html" %}
 
 {% if mode == 'dodecahedron' %}
-  {% set _title = "Worldsweeper — Dodecahedron | minesweeper.org" %}
-  {% set _desc  = "Play Worldsweeper on a dodecahedron — 12 pentagonal faces, 2 mines. The easiest Worldsweeper board. Free to play, no download required." %}
+  {% set _diff  = "Dodecahedron" %}
   {% set _canon = "https://minesweeper.org/worldsweeper/dodecahedron" %}
 {% elif mode == 'beginner' %}
-  {% set _title = "Worldsweeper — Beginner | minesweeper.org" %}
-  {% set _desc  = "Play Worldsweeper — minesweeper on a rotating 3D globe. Beginner: 32 faces, 4 mines. Free to play, no download required." %}
+  {% set _diff  = t.nav_beginner %}
   {% set _canon = "https://minesweeper.org/worldsweeper" %}
 {% elif mode == 'intermediate' %}
-  {% set _title = "Worldsweeper — Intermediate | minesweeper.org" %}
-  {% set _desc  = "Play Worldsweeper — minesweeper on a rotating 3D globe. Intermediate: 72 faces, 8 mines." %}
+  {% set _diff  = t.nav_intermediate %}
   {% set _canon = "https://minesweeper.org/worldsweeper/intermediate" %}
 {% elif mode == 'expert' %}
-  {% set _title = "Worldsweeper — Expert | minesweeper.org" %}
-  {% set _desc  = "Play Worldsweeper — minesweeper on a rotating 3D globe. Expert: 252 faces, 50 mines." %}
+  {% set _diff  = t.nav_expert %}
   {% set _canon = "https://minesweeper.org/worldsweeper/expert" %}
 {% else %}
-  {% set _title = "Worldsweeper — Custom | minesweeper.org" %}
-  {% set _desc  = "Play Worldsweeper with a custom Goldberg polyhedron — minesweeper on a 3D rotating globe." %}
+  {% set _diff  = t.nav_custom %}
   {% set _canon = "https://minesweeper.org/worldsweeper/custom" %}
 {% endif %}
+{% set _title = t.meta_title_worldsweeper ~ " — " ~ _diff ~ " | minesweeper.org" %}
+{% set _desc  = t.meta_desc_worldsweeper %}
 
 {% block keywords %}<meta name="keywords" content="worldsweeper, world sweeper, globesweeper, globe minesweeper, 3D minesweeper, minesweeper, minesweeper online, play minesweeper, free minesweeper">{% endblock %}
 {% block title %}{{ _title }}{% endblock %}
