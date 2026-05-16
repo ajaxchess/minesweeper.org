@@ -530,6 +530,672 @@
     <a href="/custom">Jouer Personnalisé</a>
   </div>
 
+{% elif lang == 'ja' %}
+
+  <h1 class="lb-title">マインスイーパーの遊び方</h1>
+
+  <div class="help-section">
+    <h2>目的</h2>
+    <p>地雷を爆発させずにすべての安全なセルを開いてボードをクリアしましょう。すべての地雷に旗を立て、すべての安全なマスを開くと勝利です。</p>
+  </div>
+
+  <div class="help-section">
+    <h2>操作方法</h2>
+    <ul>
+      <li><strong>左クリック</strong> — セルを開く。</li>
+      <li><strong>右クリック</strong> — 地雷があると思うセルに旗を立てる、または外す。</li>
+      <li><strong>開いた数字を左クリック</strong>（コード）— 隣接する旗の数が正しければ、残りの隣接セルをすべて自動で開く。</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>数字について</h2>
+    <p>開いたセルには数字が表示され、隣接する最大8セルに含まれる地雷の数を示します。</p>
+    <ul>
+      <li>空白セルは地雷の隣接なし — 隣のセルは自動で開かれます。</li>
+      <li>数字を使って、どの非表示セルが安全でどれが地雷かを推測してください。</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>旗</h2>
+    <p>非表示セルを右クリックして旗（🚩）を立て、地雷としてマークします。ヘッダーの地雷カウンターは旗を立てるたびに減ります。旗を立てたセルを右クリックすると旗を外せます。</p>
+  </div>
+
+  <div class="help-section">
+    <h2>勝敗</h2>
+    <ul>
+      <li><strong>勝利</strong> — 地雷以外のすべてのセルが開かれた状態。</li>
+      <li><strong>敗北</strong> — 地雷のセルをクリック。盤面がすべての地雷位置を表示します。</li>
+    </ul>
+    <p>最初のクリックは常に安全 — 地雷は最初の手の後に配置されます。</p>
+  </div>
+
+  <div class="help-section">
+    <h2>難易度</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>レベル</th><th>盤面</th><th>地雷</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>初級</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>中級</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>上級</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>カスタム</td><td>お好みで</td><td>お好みで</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>ヒント</h2>
+    <ul>
+      <li>中央近くから始める — より多くの隣接セルで手がかりが得られます。</li>
+      <li>数字と非表示の隣接セル数が同じ場合、すべて地雷です — すべてに旗を立てましょう。</li>
+      <li>数字と旗を立てた隣接セル数が同じ場合、残りの非表示セルはすべて安全です — 開きましょう。</li>
+      <li>旗が正しく立てられたら、コードクリックを使ってエリアを素早くクリアしましょう。</li>
+      <li>詰まったら、確率の低い角や端で推測しましょう。</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← 初級を遊ぶ</a>
+    <a href="/intermediate">中級を遊ぶ</a>
+    <a href="/expert">上級を遊ぶ</a>
+    <a href="/custom">カスタムを遊ぶ</a>
+  </div>
+
+{% elif lang == 'ko' %}
+
+  <h1 class="lb-title">마인스위퍼 플레이 방법</h1>
+
+  <div class="help-section">
+    <h2>목표</h2>
+    <p>지뢰를 터뜨리지 않고 모든 안전한 셀을 열어 보드를 클리어하세요. 모든 지뢰에 깃발을 꽂고 모든 안전한 칸을 열면 승리합니다.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>조작법</h2>
+    <ul>
+      <li><strong>왼쪽 클릭</strong> — 셀 열기.</li>
+      <li><strong>오른쪽 클릭</strong> — 지뢰가 있다고 생각하는 셀에 깃발 설치/제거.</li>
+      <li><strong>숫자가 표시된 셀 왼쪽 클릭</strong> (코드) — 인접한 깃발 수가 맞으면 나머지 이웃 셀을 자동으로 모두 열기.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>숫자</h2>
+    <p>열린 셀은 인접한 최대 8개의 셀 중 지뢰가 있는 개수를 표시합니다.</p>
+    <ul>
+      <li>빈 셀은 인접한 지뢰가 없음 — 이웃 셀이 자동으로 열립니다.</li>
+      <li>숫자를 이용해 어느 숨겨진 셀이 안전하고 어느 셀에 지뢰가 있는지 추론하세요.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>깃발</h2>
+    <p>숨겨진 셀을 오른쪽 클릭하여 깃발(🚩)을 설치하면 지뢰로 표시됩니다. 깃발을 설치할 때마다 헤더의 지뢰 카운터가 감소합니다. 깃발이 설치된 셀을 오른쪽 클릭하면 깃발을 제거합니다.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>승패</h2>
+    <ul>
+      <li><strong>승리</strong> — 지뢰가 아닌 모든 셀이 열린 상태.</li>
+      <li><strong>패배</strong> — 지뢰가 있는 셀을 클릭. 보드가 모든 지뢰 위치를 표시합니다.</li>
+    </ul>
+    <p>첫 번째 클릭은 항상 안전합니다 — 지뢰는 첫 번째 이동 후에 배치됩니다.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>난이도</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>레벨</th><th>보드</th><th>지뢰</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>초급</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>중급</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>전문가</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>사용자 정의</td><td>선택</td><td>선택</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>팁</h2>
+    <ul>
+      <li>중앙 근처에서 시작하세요 — 더 많은 이웃 셀로 작업할 수 있습니다.</li>
+      <li>숫자가 숨겨진 이웃 수와 같으면 모두 지뢰입니다 — 모두 깃발을 꽂으세요.</li>
+      <li>숫자가 깃발 꽂힌 이웃 수와 같으면 나머지 숨겨진 이웃은 모두 안전합니다 — 열어보세요.</li>
+      <li>깃발이 올바르게 설치되면 코드 클릭으로 해당 영역을 빠르게 클리어하세요.</li>
+      <li>막히면 확률이 낮은 모서리나 가장자리에서 추측하세요.</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← 초급 플레이</a>
+    <a href="/intermediate">중급 플레이</a>
+    <a href="/expert">전문가 플레이</a>
+    <a href="/custom">사용자 정의 플레이</a>
+  </div>
+
+{% elif lang == 'zh' %}
+
+  <h1 class="lb-title">如何玩扫雷</h1>
+
+  <div class="help-section">
+    <h2>目标</h2>
+    <p>通过揭开所有安全格子来清除棋盘，而不引爆任何地雷。标记每个地雷并揭开每个安全格子即可获胜。</p>
+  </div>
+
+  <div class="help-section">
+    <h2>操作</h2>
+    <ul>
+      <li><strong>左键单击</strong> — 揭开一个格子。</li>
+      <li><strong>右键单击</strong> — 在认为有地雷的格子上放置或移除旗子。</li>
+      <li><strong>左键单击已揭开的数字</strong>（和弦）— 如果相邻旗子数量正确，自动揭开所有剩余邻格。</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>数字</h2>
+    <p>每个揭开的格子显示一个数字，表示其最多8个相邻格子中含有地雷的数量。</p>
+    <ul>
+      <li>空白格没有相邻地雷 — 其邻格会自动揭开。</li>
+      <li>利用数字推断哪些隐藏格是安全的，哪些含有地雷。</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>旗子</h2>
+    <p>右键单击隐藏格放置旗子（🚩）将其标记为地雷。每放一个旗子，顶部地雷计数器减少。右键单击已标记格子可移除旗子。</p>
+  </div>
+
+  <div class="help-section">
+    <h2>胜负</h2>
+    <ul>
+      <li><strong>胜利</strong> — 所有非地雷格子都已揭开。</li>
+      <li><strong>失败</strong> — 点击了含有地雷的格子。棋盘会显示所有地雷位置。</li>
+    </ul>
+    <p>第一次点击始终安全 — 地雷在第一次行动后才放置。</p>
+  </div>
+
+  <div class="help-section">
+    <h2>难度</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>等级</th><th>棋盘</th><th>地雷</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>初级</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>中级</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>专家</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>自定义</td><td>您的选择</td><td>您的选择</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>技巧</h2>
+    <ul>
+      <li>从中心附近开始 — 可以获得更多相邻格子来分析。</li>
+      <li>当数字等于其隐藏邻格数量时，它们都是地雷 — 全部标旗。</li>
+      <li>当数字等于其已标旗邻格数量时，所有剩余隐藏邻格都安全 — 揭开它们。</li>
+      <li>旗子放置正确后使用和弦点击快速清除区域。</li>
+      <li>如果陷入僵局，在概率较低的角落或边缘做出有把握的猜测。</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← 初级</a>
+    <a href="/intermediate">中级</a>
+    <a href="/expert">专家</a>
+    <a href="/custom">自定义</a>
+  </div>
+
+{% elif lang == 'zh-hant' %}
+
+  <h1 class="lb-title">如何玩踩地雷</h1>
+
+  <div class="help-section">
+    <h2>目標</h2>
+    <p>揭開所有安全格子清除棋盤，而不引爆任何地雷。標記每個地雷並揭開每個安全格子即可獲勝。</p>
+  </div>
+
+  <div class="help-section">
+    <h2>操作</h2>
+    <ul>
+      <li><strong>左鍵點擊</strong> — 揭開一個格子。</li>
+      <li><strong>右鍵點擊</strong> — 在認為有地雷的格子上放置或移除旗子。</li>
+      <li><strong>左鍵點擊已揭開的數字</strong>（和弦）— 如果相鄰旗子數量正確，自動揭開所有剩餘鄰格。</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>數字</h2>
+    <p>每個揭開的格子顯示一個數字，表示其最多8個相鄰格子中含有地雷的數量。</p>
+    <ul>
+      <li>空白格沒有相鄰地雷 — 其鄰格會自動揭開。</li>
+      <li>利用數字推斷哪些隱藏格是安全的，哪些含有地雷。</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>旗子</h2>
+    <p>右鍵點擊隱藏格放置旗子（🚩）將其標記為地雷。每放一個旗子，頂部地雷計數器減少。右鍵點擊已標記格子可移除旗子。</p>
+  </div>
+
+  <div class="help-section">
+    <h2>勝負</h2>
+    <ul>
+      <li><strong>勝利</strong> — 所有非地雷格子都已揭開。</li>
+      <li><strong>失敗</strong> — 點擊了含有地雷的格子。棋盤會顯示所有地雷位置。</li>
+    </ul>
+    <p>第一次點擊始終安全 — 地雷在第一次行動後才放置。</p>
+  </div>
+
+  <div class="help-section">
+    <h2>難度</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>等級</th><th>棋盤</th><th>地雷</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>初級</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>中級</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>專家</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>自訂</td><td>您的選擇</td><td>您的選擇</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>技巧</h2>
+    <ul>
+      <li>從中心附近開始 — 可以獲得更多相鄰格子來分析。</li>
+      <li>當數字等於其隱藏鄰格數量時，它們都是地雷 — 全部標旗。</li>
+      <li>當數字等於其已標旗鄰格數量時，所有剩餘隱藏鄰格都安全 — 揭開它們。</li>
+      <li>旗子放置正確後使用和弦點擊快速清除區域。</li>
+      <li>如果陷入僵局，在概率較低的角落或邊緣做出有把握的猜測。</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← 初級</a>
+    <a href="/intermediate">中級</a>
+    <a href="/expert">專家</a>
+    <a href="/custom">自訂</a>
+  </div>
+
+{% elif lang == 'pl' %}
+
+  <h1 class="lb-title">Jak grać w Minera</h1>
+
+  <div class="help-section">
+    <h2>Cel</h2>
+    <p>Oczyść planszę odkrywając wszystkie bezpieczne pola bez wysadzenia żadnej miny. Oznacz każdą minę i odkryj każde bezpieczne pole, aby wygrać.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Sterowanie</h2>
+    <ul>
+      <li><strong>Lewy przycisk myszy</strong> — Odkryj pole.</li>
+      <li><strong>Prawy przycisk myszy</strong> — Postaw lub usuń flagę na polu, które według ciebie zawiera minę.</li>
+      <li><strong>Lewy przycisk na odkrytą liczbę</strong> (akord) — Jeśli postawiono prawidłową liczbę sąsiednich flag, automatycznie odkryj wszystkich pozostałych sąsiadów.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Liczby</h2>
+    <p>Każde odkryte pole pokazuje liczbę wskazującą, ile z jego do 8 sąsiednich pól zawiera miny.</p>
+    <ul>
+      <li>Puste pole nie ma sąsiadów z minami — jego sąsiedzi są odkrywani automatycznie.</li>
+      <li>Używaj liczb, aby wywnioskować, które ukryte pola są bezpieczne, a które zawierają miny.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Flagi</h2>
+    <p>Kliknij prawym przyciskiem myszy ukryte pole, aby postawić flagę (🚩) oznaczającą je jako minę. Licznik min w nagłówku zmniejsza się z każdą postawioną flagą. Kliknij prawym przyciskiem oznaczone pole, aby usunąć flagę.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Wygrana i Przegrana</h2>
+    <ul>
+      <li><strong>Wygrana</strong> — Wszystkie pola bez miny są odkryte.</li>
+      <li><strong>Przegrana</strong> — Klikasz pole zawierające minę. Plansza odkrywa wszystkie lokalizacje min.</li>
+    </ul>
+    <p>Pierwsze kliknięcie jest zawsze bezpieczne — miny są umieszczane po pierwszym ruchu.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Poziomy Trudności</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>Poziom</th><th>Plansza</th><th>Miny</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Początkujący</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>Średni</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>Ekspert</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>Własny</td><td>twój wybór</td><td>twój wybór</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>Wskazówki</h2>
+    <ul>
+      <li>Zacznij blisko centrum — daje ci więcej sąsiadów do pracy.</li>
+      <li>Gdy liczba jest równa liczbie ukrytych sąsiadów, wszystkie są minami — oznacz je wszystkie.</li>
+      <li>Gdy liczba jest równa liczbie oznaczonych sąsiadów, wszyscy pozostali ukryci sąsiedzi są bezpieczni — odkryj ich.</li>
+      <li>Użyj kliknięcia akordowego, aby szybko oczyścić obszary po prawidłowym ustawieniu flag.</li>
+      <li>Jeśli utkniesz, dokonaj przemyślanego strzału w narożniku lub na krawędzi, gdzie prawdopodobieństwo jest niższe.</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← Graj (Początkujący)</a>
+    <a href="/intermediate">Graj (Średni)</a>
+    <a href="/expert">Graj (Ekspert)</a>
+    <a href="/custom">Graj (Własny)</a>
+  </div>
+
+{% elif lang == 'ru' %}
+
+  <h1 class="lb-title">Как играть в Сапёра</h1>
+
+  <div class="help-section">
+    <h2>Цель</h2>
+    <p>Расчистите поле, открыв все безопасные клетки, не взорвав ни одной мины. Отметьте каждую мину и откройте каждую безопасную клетку, чтобы победить.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Управление</h2>
+    <ul>
+      <li><strong>Левый клик</strong> — Открыть клетку.</li>
+      <li><strong>Правый клик</strong> — Поставить или убрать флажок на клетке, которая, по вашему мнению, содержит мину.</li>
+      <li><strong>Левый клик на открытое число</strong> (аккорд) — Если расставлено верное количество соседних флажков, автоматически открыть все оставшиеся соседние клетки.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Цифры</h2>
+    <p>Каждая открытая клетка показывает число, указывающее, сколько из её до 8 соседних клеток содержат мины.</p>
+    <ul>
+      <li>Пустая клетка не имеет соседей-мин — её соседи открываются автоматически.</li>
+      <li>Используйте цифры для определения, какие скрытые клетки безопасны, а какие содержат мины.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Флажки</h2>
+    <p>Правый клик по скрытой клетке ставит флажок (🚩), помечая её как мину. Счётчик мин в заголовке уменьшается с каждым флажком. Правый клик по отмеченной клетке убирает флажок.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Победа и Поражение</h2>
+    <ul>
+      <li><strong>Победа</strong> — Все клетки без мин открыты.</li>
+      <li><strong>Поражение</strong> — Вы нажали на клетку с миной. Поле показывает все позиции мин.</li>
+    </ul>
+    <p>Первый клик всегда безопасен — мины расставляются после вашего первого хода.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Уровни Сложности</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>Уровень</th><th>Поле</th><th>Мины</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Начинающий</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>Средний</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>Эксперт</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>Свой</td><td>ваш выбор</td><td>ваш выбор</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>Советы</h2>
+    <ul>
+      <li>Начинайте ближе к центру — там больше соседних клеток для анализа.</li>
+      <li>Если число равно количеству скрытых соседей, все они — мины — отметьте флажками все.</li>
+      <li>Если число равно количеству соседей с флажками, все остальные скрытые соседи безопасны — откройте их.</li>
+      <li>Используйте аккорд-клик для быстрой расчистки зон после правильной расстановки флажков.</li>
+      <li>Если застряли, делайте обоснованное предположение в углу или на краю, где вероятность ниже.</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← Играть (Начинающий)</a>
+    <a href="/intermediate">Играть (Средний)</a>
+    <a href="/expert">Играть (Эксперт)</a>
+    <a href="/custom">Играть (Свой)</a>
+  </div>
+
+{% elif lang == 'pt' %}
+
+  <h1 class="lb-title">Como Jogar Campo Minado</h1>
+
+  <div class="help-section">
+    <h2>Objetivo</h2>
+    <p>Limpe o tabuleiro revelando todas as células seguras sem detonar nenhuma mina. Marque cada mina e descubra cada quadrado seguro para ganhar.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Controles</h2>
+    <ul>
+      <li><strong>Clique esquerdo</strong> — Revelar uma célula.</li>
+      <li><strong>Clique direito</strong> — Colocar ou remover uma bandeira em uma célula que acredita conter uma mina.</li>
+      <li><strong>Clique esquerdo em um número revelado</strong> (acorde) — Se o número correto de bandeiras adjacentes estiver colocado, revela automaticamente todos os vizinhos restantes.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Os Números</h2>
+    <p>Cada célula revelada mostra um número indicando quantas das suas até 8 células vizinhas contêm minas.</p>
+    <ul>
+      <li>Uma célula em branco não tem vizinhos com minas — seus vizinhos são revelados automaticamente.</li>
+      <li>Use os números para deduzir quais células ocultas são seguras e quais contêm minas.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Bandeiras</h2>
+    <p>Clique com o botão direito em uma célula oculta para colocar uma bandeira (🚩) marcando-a como mina. O contador de minas no cabeçalho diminui com cada bandeira colocada. Clique com o botão direito em uma célula marcada para remover a bandeira.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Vencer e Perder</h2>
+    <ul>
+      <li><strong>Vencer</strong> — Todas as células sem mina são reveladas.</li>
+      <li><strong>Perder</strong> — Você clica em uma célula com mina. O tabuleiro revela todas as posições das minas.</li>
+    </ul>
+    <p>O primeiro clique é sempre seguro — as minas são colocadas após seu primeiro movimento.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Níveis de Dificuldade</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>Nível</th><th>Tabuleiro</th><th>Minas</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Iniciante</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>Intermediário</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>Especialista</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>Personalizado</td><td>sua escolha</td><td>sua escolha</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>Dicas</h2>
+    <ul>
+      <li>Comece perto do centro — isso lhe dá mais vizinhos para trabalhar.</li>
+      <li>Quando um número é igual à contagem de seus vizinhos ocultos, todos eles são minas — marque todos.</li>
+      <li>Quando um número é igual à contagem de seus vizinhos marcados, todos os vizinhos ocultos restantes são seguros — revele-os.</li>
+      <li>Use o clique de acorde para limpar rapidamente áreas quando as bandeiras estiverem corretamente colocadas.</li>
+      <li>Se travar, faça um palpite calculado em um canto ou borda onde a probabilidade seja menor.</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← Jogar Iniciante</a>
+    <a href="/intermediate">Jogar Intermediário</a>
+    <a href="/expert">Jogar Especialista</a>
+    <a href="/custom">Jogar Personalizado</a>
+  </div>
+
+{% elif lang == 'it' %}
+
+  <h1 class="lb-title">Come Giocare a Campo Minato</h1>
+
+  <div class="help-section">
+    <h2>Obiettivo</h2>
+    <p>Svuota il campo rivelando tutte le celle sicure senza far esplodere nessuna mina. Segna ogni mina e scopri ogni quadrato sicuro per vincere.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Controlli</h2>
+    <ul>
+      <li><strong>Clic sinistro</strong> — Rivelare una cella.</li>
+      <li><strong>Clic destro</strong> — Posizionare o rimuovere una bandiera su una cella che ritieni contenga una mina.</li>
+      <li><strong>Clic sinistro su un numero rivelato</strong> (accordo) — Se è posizionato il numero corretto di bandiere adiacenti, rivela automaticamente tutti i vicini rimanenti.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>I Numeri</h2>
+    <p>Ogni cella rivelata mostra un numero che indica quante delle sue fino a 8 celle vicine contengono mine.</p>
+    <ul>
+      <li>Una cella vuota ha zero mine vicine — i suoi vicini vengono rivelati automaticamente.</li>
+      <li>Usa i numeri per dedurre quali celle nascoste sono sicure e quali contengono mine.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Bandiere</h2>
+    <p>Clicca con il tasto destro su una cella nascosta per posizionare una bandiera (🚩) contrassegnandola come mina. Il contatore delle mine nell'intestazione diminuisce con ogni bandiera posizionata. Clicca con il tasto destro su una cella contrassegnata per rimuovere la bandiera.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Vincere e Perdere</h2>
+    <ul>
+      <li><strong>Vittoria</strong> — Tutte le celle non-minare sono rivelate.</li>
+      <li><strong>Sconfitta</strong> — Clicchi su una cella contenente una mina. Il campo rivela tutte le posizioni delle mine.</li>
+    </ul>
+    <p>Il primo clic è sempre sicuro — le mine vengono posizionate dopo la tua prima mossa.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Livelli di Difficoltà</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>Livello</th><th>Campo</th><th>Mine</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Principiante</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>Intermedio</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>Esperto</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>Personalizzato</td><td>tua scelta</td><td>tua scelta</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>Consigli</h2>
+    <ul>
+      <li>Inizia vicino al centro — ti dà più vicini con cui lavorare.</li>
+      <li>Quando un numero è uguale al conteggio dei suoi vicini nascosti, tutti sono mine — segna tutti.</li>
+      <li>Quando un numero è uguale al conteggio dei suoi vicini segnati, tutti i vicini nascosti rimanenti sono sicuri — rivelali.</li>
+      <li>Usa il clic a accordo per svuotare rapidamente le aree una volta che le bandiere sono posizionate correttamente.</li>
+      <li>Se sei bloccato, fai un'ipotesi ragionata in un angolo o un bordo dove la probabilità è più bassa.</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← Gioca Principiante</a>
+    <a href="/intermediate">Gioca Intermedio</a>
+    <a href="/expert">Gioca Esperto</a>
+    <a href="/custom">Gioca Personalizzato</a>
+  </div>
+
+{% elif lang == 'tl' %}
+
+  <h1 class="lb-title">Paano Maglaro ng Minesweeper</h1>
+
+  <div class="help-section">
+    <h2>Layunin</h2>
+    <p>Linisin ang board sa pamamagitan ng pag-reveal ng lahat ng ligtas na cell nang hindi nagpapasabog ng anumang mina. I-flag ang bawat mina at alisan ng takip ang bawat ligtas na parisukat para manalo.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Mga Kontrol</h2>
+    <ul>
+      <li><strong>Kaliwa-click</strong> — Mag-reveal ng cell.</li>
+      <li><strong>Kanan-click</strong> — Maglagay o mag-alis ng bandila sa cell na sa tingin mo ay may mina.</li>
+      <li><strong>Kaliwa-click sa isang revealed na numero</strong> (chord) — Kung nalagyan ng tamang bilang ng mga katabing bandila, awtomatikong i-reveal ang lahat ng natitirang kapitbahay.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Ang mga Numero</h2>
+    <p>Ang bawat revealed na cell ay nagpapakita ng numero na nagpapahiwatig kung ilang sa hanggang 8 katabing cell nito ang naglalaman ng mina.</p>
+    <ul>
+      <li>Ang blangkong cell ay walang katabing mina — ang mga kapitbahay nito ay awtomatikong nire-reveal.</li>
+      <li>Gamitin ang mga numero para malaman kung aling mga nakatagong cell ang ligtas at alin ang naglalaman ng mina.</li>
+    </ul>
+  </div>
+
+  <div class="help-section">
+    <h2>Mga Bandila</h2>
+    <p>Kanan-click ang nakatagong cell para maglagay ng bandila (🚩) na nagtatanda nito bilang mina. Ang counter ng mina sa header ay bumababa sa bawat bandilang nilalagay. Kanan-click ang may bandilang cell para tanggalin ang bandila.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Panalo at Talo</h2>
+    <ul>
+      <li><strong>Panalo</strong> — Lahat ng cell na hindi mina ay nare-reveal na.</li>
+      <li><strong>Talo</strong> — Na-click mo ang cell na may mina. Ipinapakita ng board ang lahat ng lokasyon ng mina.</li>
+    </ul>
+    <p>Ang unang click ay palaging ligtas — ang mga mina ay inilalagay pagkatapos ng iyong unang galaw.</p>
+  </div>
+
+  <div class="help-section">
+    <h2>Mga Antas ng Kahirapan</h2>
+    <table class="help-table">
+      <thead>
+        <tr><th>Antas</th><th>Board</th><th>Mina</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Baguhan</td><td>10 × 10</td><td>10</td></tr>
+        <tr><td>Katamtaman</td><td>16 × 16</td><td>40</td></tr>
+        <tr><td>Eksperto</td><td>16 × 30</td><td>99</td></tr>
+        <tr><td>Custom</td><td>iyong pagpili</td><td>iyong pagpili</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="help-section">
+    <h2>Mga Tip</h2>
+    <ul>
+      <li>Magsimula malapit sa gitna — nagbibigay ito ng mas maraming kapitbahay na pwedeng gamitin.</li>
+      <li>Kapag ang isang numero ay katumbas ng bilang ng mga nakatagong kapitbahay nito, lahat sila ay mina — i-flag silang lahat.</li>
+      <li>Kapag ang isang numero ay katumbas ng bilang ng mga may bandilang kapitbahay nito, lahat ng natitirang nakatagong kapitbahay ay ligtas — i-reveal ang mga ito.</li>
+      <li>Gamitin ang chord click para mabilis na linisin ang mga lugar kapag tama na ang pagkakalagay ng mga bandila.</li>
+      <li>Kung naipit ka, gumawa ng educated guess sa isang sulok o gilid kung saan mas mababa ang posibilidad.</li>
+    </ul>
+  </div>
+
+  <div class="lb-back">
+    <a href="/">← Laruin ang Baguhan</a>
+    <a href="/intermediate">Laruin ang Katamtaman</a>
+    <a href="/expert">Laruin ang Eksperto</a>
+    <a href="/custom">Laruin ang Custom</a>
+  </div>
+
 {% else %}
 
   <h1 class="lb-title">How to Play Minesweeper</h1>
