@@ -9,14 +9,14 @@
   {% if user and wc_fan_country %}
   <div class="wc-fan-banner wc-fan-set">
     <img src="https://flagcdn.com/w40/{{ wc_fan_country.flag }}.png" class="wc-ban-flag" alt="{{ wc_fan_country.name }}">
-    🏆 You are a fan of <strong>{{ wc_fan_country.name }}</strong>! Your Tametsi wins earn points for your team.
+    {{ t.wc_fan_of }} <strong>{{ wc_fan_country.name }}</strong>! {{ t.wc_earn_points }}
   </div>
   {% elif user %}
   <div class="wc-fan-banner wc-fan-unset">
-    ⚽ Set your fan flag to earn points for your team!
+    {{ t.wc_set_fan_cta }}
     <select id="wc-fan-select" onchange="wcSetFan(this.value)"
             style="margin-left:.6rem;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:.2rem .5rem;">
-      <option value="">— pick a team —</option>
+      <option value="">{{ t.wc_pick_team }}</option>
       {% for c in wc2026_teams | sort(attribute='name') %}
       <option value="{{ c.slug }}">{{ c.name }}</option>
       {% endfor %}
@@ -24,23 +24,23 @@
   </div>
   {% else %}
   <div class="wc-fan-banner wc-fan-guest">
-    ⚽ <a href="/auth/login?next=/2026worldcup">Log in</a> to set your fan flag and earn points for your team!
+    ⚽ <a href="/auth/login?next=/2026worldcup">{{ t.wc_login }}</a> {{ t.wc_fan_guest_main }}
   </div>
   {% endif %}
 
   <!-- ── Hero ───────────────────────────────────────────────────────────── -->
   <div class="wc-hero">
     <h1 class="wc-hero-title">{{ t.wc2026_h1 }}</h1>
-    <p class="wc-hero-sub">Celebrate the World Cup by playing Tametsi in your team's colors.</p>
+    <p class="wc-hero-sub">{{ t.wc_hero_sub }}</p>
     <div class="wc-how-to">
-      <h2>How to play</h2>
+      <h2>{{ t.wc_how_to_play }}</h2>
       <ul>
-        <li>Pick a country below and play Tametsi on a board in their colors.</li>
-        <li>Log in and set your <strong>fan flag</strong> to earn points.</li>
-        <li>Each correctly flagged mine earns <strong>1 point</strong> for your team.</li>
-        <li>Solving the board earns a <strong>bonus</strong> (20 pts easy · 50 pts hard).</li>
-        <li>Points are awarded at solve time — flags stay secret until the board is done!</li>
-        <li>You can change your fan flag any time; new solves count for your current team.</li>
+        <li>{{ t.wc_howto_li1 }}</li>
+        <li>{{ t.wc_howto_li2 | safe }}</li>
+        <li>{{ t.wc_howto_li3 | safe }}</li>
+        <li>{{ t.wc_howto_li4 | safe }}</li>
+        <li>{{ t.wc_howto_li5 }}</li>
+        <li>{{ t.wc_howto_li6 }}</li>
       </ul>
     </div>
   </div>
@@ -49,7 +49,7 @@
   {% for g in group_list %}
   {% set countries = groups[g] %}
   <section class="wc-group">
-    <h2 class="wc-group-title">Group {{ g }}</h2>
+    <h2 class="wc-group-title">{{ t.wc_group }} {{ g }}</h2>
     <div class="wc-country-grid">
       {% for c in countries %}
       <a href="/2026worldcup/{{ c.slug }}" class="wc-country-card"
@@ -68,10 +68,10 @@
 
   <!-- ── Country leaderboard ────────────────────────────────────────────── -->
   <section class="wc-lb-section">
-    <h2>🌍 Country Standings</h2>
+    <h2>{{ t.wc_country_standings }}</h2>
     {% if country_lb %}
     <table class="wc-lb-table">
-      <thead><tr><th>#</th><th>Country</th><th>Points</th></tr></thead>
+      <thead><tr><th>#</th><th>{{ t.wc_th_country }}</th><th>{{ t.wc_th_points }}</th></tr></thead>
       <tbody>
       {% for row in country_lb %}
       {% set c = row.country if row.country is defined else {} %}
@@ -93,16 +93,16 @@
       </tbody>
     </table>
     {% else %}
-    <p class="wc-empty">No scores yet — be the first to play!</p>
+    <p class="wc-empty">{{ t.wc_no_scores }}</p>
     {% endif %}
   </section>
 
   <!-- ── Individual leaderboard ─────────────────────────────────────────── -->
   <section class="wc-lb-section">
-    <h2>🏅 Biggest Fans</h2>
+    <h2>{{ t.wc_biggest_fans }}</h2>
     {% if individual_lb %}
     <table class="wc-lb-table">
-      <thead><tr><th>#</th><th>Player</th><th>Fan of</th><th>Points</th></tr></thead>
+      <thead><tr><th>#</th><th>{{ t.wc_th_player }}</th><th>{{ t.wc_th_fan_of }}</th><th>{{ t.wc_th_points }}</th></tr></thead>
       <tbody>
       {% for row in individual_lb %}
       <tr>
@@ -120,7 +120,7 @@
       </tbody>
     </table>
     {% else %}
-    <p class="wc-empty">No scores yet — be the first to play!</p>
+    <p class="wc-empty">{{ t.wc_no_scores }}</p>
     {% endif %}
   </section>
 

@@ -1,20 +1,16 @@
 {% extends "base.html" %}
 
-{% set _title = "Schulte Grid Leaderboard | minesweeper.org" %}
-{% set _desc  = "Daily and all-time Schulte Grid leaderboards — fastest times across all six modes and eight board sizes." %}
-{% set _canon = "https://minesweeper.org/other/schulte/leaderboard" %}
-
-{% block title %}{{ _title }}{% endblock %}
-{% block description %}{{ _desc }}{% endblock %}
-{% block canonical %}{{ _canon }}{% endblock %}
-{% block og_url %}{{ _canon }}{% endblock %}
-{% block og_title %}Schulte Grid Leaderboard{% endblock %}
-{% block og_description %}{{ _desc }}{% endblock %}
+{% block title %}{{ t.schulte_lb_title }}{% endblock %}
+{% block description %}{{ t.schulte_lb_desc }}{% endblock %}
+{% block canonical %}https://minesweeper.org/other/schulte/leaderboard{% endblock %}
+{% block og_url %}https://minesweeper.org/other/schulte/leaderboard{% endblock %}
+{% block og_title %}{{ t.schulte_lb_title }}{% endblock %}
+{% block og_description %}{{ t.schulte_lb_desc }}{% endblock %}
 
 {% block content %}
 <div class="lb-wrap">
 
-  <h1 class="tz-page-h1">Schulte Grid Leaderboard</h1>
+  <h1 class="tz-page-h1">{{ t.schulte_page_h1 }} — {{ t.nav_leaderboard }}</h1>
 
   <div style="text-align:center;margin-bottom:1.5rem;">
     <a href="/other/schulte/play" class="btn" style="margin:0.25rem;">Play</a>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ country.name }} — 2026 World Cup — minesweeper.org{% endblock %}
+{% block title %}{{ country.name }} — {{ t.wc_country_title_suffix }}{% endblock %}
 {% block description %}Play Tametsi in {{ country.name }}'s World Cup colors and earn points for your team.{% endblock %}
 
 {% block content %}
@@ -9,14 +9,14 @@
   {% if user and wc_fan_country %}
   <div class="wc-fan-banner wc-fan-set">
     <img src="https://flagcdn.com/w40/{{ wc_fan_country.flag }}.png" class="wc-ban-flag" alt="{{ wc_fan_country.name }}">
-    🏆 You are a fan of <strong>{{ wc_fan_country.name }}</strong>!
+    {{ t.wc_fan_of }} <strong>{{ wc_fan_country.name }}</strong>!
   </div>
   {% elif user %}
   <div class="wc-fan-banner wc-fan-unset">
-    ⚽ Set your fan flag to earn points:
+    {{ t.wc_set_fan_prompt }}
     <select id="wc-fan-select" onchange="wcSetFan(this.value)"
             style="margin-left:.6rem;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:.2rem .5rem;">
-      <option value="">— pick a team —</option>
+      <option value="">{{ t.wc_pick_team }}</option>
       {% for c in wc2026_teams | sort(attribute='name') %}
       <option value="{{ c.slug }}">{{ c.name }}</option>
       {% endfor %}
@@ -24,7 +24,7 @@
   </div>
   {% else %}
   <div class="wc-fan-banner wc-fan-guest">
-    ⚽ <a href="/auth/login?next=/2026worldcup/{{ country.slug }}">Log in</a> to set your fan flag and compete!
+    ⚽ <a href="/auth/login?next=/2026worldcup/{{ country.slug }}">{{ t.wc_login }}</a> {{ t.wc_fan_guest_country }}
   </div>
   {% endif %}
 
@@ -52,10 +52,10 @@
 
   <!-- ── Group matches ──────────────────────────────────────────────────── -->
   <section class="wcc-section">
-    <h2>Group {{ country.group }} Schedule</h2>
+    <h2>{{ t.wc_group }} {{ country.group }} {{ t.wc_schedule }}</h2>
     {% if matches %}
     <table class="wc-lb-table">
-      <thead><tr><th>Date{% if user_tz %} <span style="font-weight:400;font-size:.8rem;">({{ user_tz }})</span>{% else %} (CDT){% endif %}</th><th>Match</th><th>Score</th><th>Status</th><th>City</th></tr></thead>
+      <thead><tr><th>{{ t.wc_th_date }}{% if user_tz %} <span style="font-weight:400;font-size:.8rem;">({{ user_tz }})</span>{% endif %}</th><th>{{ t.wc_th_match }}</th><th>{{ t.wc_th_score }}</th><th>{{ t.wc_th_status }}</th><th>{{ t.wc_th_city }}</th></tr></thead>
       <tbody>
       {% for m in matches %}
       <tr {% if m.team1_slug == country.slug or m.team2_slug == country.slug %}class="wcc-own-match"{% endif %}>
@@ -75,9 +75,9 @@
           {% endif %}
         </td>
         <td>
-          {% if m.status == 'final' %}<span class="wc-status-final">Final</span>
-          {% elif m.status == 'in_progress' %}<span class="wc-status-live">🔴 Live</span>
-          {% else %}<span class="wc-status-sched">Scheduled</span>{% endif %}
+          {% if m.status == 'final' %}<span class="wc-status-final">{{ t.wc_status_final }}</span>
+          {% elif m.status == 'in_progress' %}<span class="wc-status-live">{{ t.wc_status_live }}</span>
+          {% else %}<span class="wc-status-sched">{{ t.wc_status_sched }}</span>{% endif %}
         </td>
         <td style="color:var(--text-dim);font-size:.85rem;">{{ m.city }}</td>
       </tr>
@@ -91,18 +91,18 @@
 
   <!-- ── Tametsi board ──────────────────────────────────────────────────── -->
   <section class="wcc-section">
-    <h2>🎯 Tametsi Fan Challenge</h2>
+    <h2>{{ t.wc_challenge_title }}</h2>
 
     {% if not user %}
-    <div class="wcc-play-gate"><a href="/auth/login?next=/2026worldcup/{{ country.slug }}">Log in</a> to play the Tametsi fan challenge and earn points for your team.</div>
+    <div class="wcc-play-gate"><a href="/auth/login?next=/2026worldcup/{{ country.slug }}">{{ t.wc_login }}</a> {{ t.wc_play_login_gate }}</div>
     {% elif not wc_fan %}
-    <div class="wcc-play-gate">Set your fan flag above to play!</div>
+    <div class="wcc-play-gate">{{ t.wc_play_flag_gate }}</div>
     {% else %}
 
     <!-- Difficulty toggle -->
     <div class="wcc-diff-toggle" id="diff-toggle">
-      <button id="btn-easy" class="wcc-diff-btn active" onclick="switchDiff('easy')">Easy (15×9, 20 mines)</button>
-      <button id="btn-hard" class="wcc-diff-btn"        onclick="switchDiff('hard')">Hard (30×18, 99 mines)</button>
+      <button id="btn-easy" class="wcc-diff-btn active" onclick="switchDiff('easy')">{{ t.wc_diff_easy }}</button>
+      <button id="btn-hard" class="wcc-diff-btn"        onclick="switchDiff('hard')">{{ t.wc_diff_hard }}</button>
     </div>
 
     <!-- Board containers -->
@@ -119,10 +119,10 @@
       </div>
       {% elif board_easy and board_easy.is_solved %}
       <div class="wcc-solved-msg">
-        ✅ Easy board solved! Check the leaderboard to see your points.
+        {{ t.wc_solved_easy }}
         <br>
-        <button class="wcc-play-again-btn" onclick="wcPlayAgain(this,'{{ country.slug }}','easy')">🎲 Play Again</button>
-        <a href="/2026worldcup/{{ country.slug }}" class="wcc-replay-link">Play another country</a>
+        <button class="wcc-play-again-btn" onclick="wcPlayAgain(this,'{{ country.slug }}','easy')">{{ t.wc_play_again }}</button>
+        <a href="/2026worldcup/{{ country.slug }}" class="wcc-replay-link">{{ t.wc_play_another }}</a>
       </div>
       {% endif %}
     </div>
@@ -140,9 +140,9 @@
       </div>
       {% elif board_hard and board_hard.is_solved %}
       <div class="wcc-solved-msg">
-        ✅ Hard board solved! Check the leaderboard to see your points.
+        {{ t.wc_solved_hard }}
         <br>
-        <button class="wcc-play-again-btn" onclick="wcPlayAgain(this,'{{ country.slug }}','hard')">🎲 Play Again</button>
+        <button class="wcc-play-again-btn" onclick="wcPlayAgain(this,'{{ country.slug }}','hard')">{{ t.wc_play_again }}</button>
       </div>
       {% endif %}
     </div>
@@ -152,11 +152,11 @@
 
   <!-- ── Country leaderboard ────────────────────────────────────────────── -->
   <section class="wcc-section" id="wcc-lb-section">
-    <h2>🏅 {{ country.name }} Fan Leaderboard</h2>
+    <h2>🏅 {{ country.name }} {{ t.wc_country_lb_suffix }}</h2>
     <div id="wcc-lb-wrap">
     {% if country_lb %}
     <table class="wc-lb-table">
-      <thead><tr><th>#</th><th>Player</th><th>Fan of</th><th>Points</th><th>Best Time</th></tr></thead>
+      <thead><tr><th>#</th><th>{{ t.wc_th_player }}</th><th>{{ t.wc_th_fan_of }}</th><th>{{ t.wc_th_points }}</th><th>{{ t.wc_th_best_time }}</th></tr></thead>
       <tbody id="wcc-lb-tbody">
       {% for row in country_lb %}
       <tr>
@@ -172,13 +172,13 @@
       </tbody>
     </table>
     {% else %}
-    <p class="wc-empty" id="wcc-lb-empty">No scores for this country yet. Be the first!</p>
+    <p class="wc-empty" id="wcc-lb-empty">{{ t.wc_country_no_scores }}</p>
     {% endif %}
     </div>
   </section>
 
   <div style="margin-top:2rem;">
-    <a href="/2026worldcup" style="color:var(--accent);">← All countries</a>
+    <a href="/2026worldcup" style="color:var(--accent);">{{ t.wc_back_all_countries }}</a>
   </div>
 
 </div>

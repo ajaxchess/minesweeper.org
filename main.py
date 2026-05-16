@@ -8580,6 +8580,7 @@ def wc2026_main(request: Request, db: Session = Depends(get_db)):
     individual_lb = _individual_leaderboard(db)
     return templates.TemplateResponse("wc2026_main.html", {
         "request": request, "user": user, "t": t,
+        "lang": get_lang(request),
         "mode": "wc2026",
         "groups": groups,
         "group_list": WC2026_GROUPS,
@@ -8612,6 +8613,7 @@ def wc2026_country(slug: str, request: Request, db: Session = Depends(get_db)):
 
     return templates.TemplateResponse("wc2026_country.html", {
         "request": request, "user": user, "t": t,
+        "lang": get_lang(request),
         "mode": "wc2026",
         "country": country,
         "matches": matches,
