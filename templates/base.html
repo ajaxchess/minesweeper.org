@@ -581,7 +581,8 @@
   </div>
 
   <footer>
-    <p>© 2026 Minesweeper.org &mdash; {{ t.footer | safe }} &mdash; <a href="/about">{{ t.footer_about }}</a> &mdash; <a href="/history">{{ t.footer_history }}</a> &mdash; <a href="/contact">{{ t.footer_contact }}</a> &mdash; <a href="/privacy">{{ t.footer_privacy }}</a> &mdash; <a href="/terms">{{ t.footer_terms }}</a> &mdash; <a href="/blog">{{ t.nav_blog }}</a> &mdash; <a href="/links">{{ t.nav_links_label }}</a> &mdash; <a href="https://www.linkedin.com/company/minesweeper-org" target="_blank" rel="noopener">LinkedIn</a></p>
+    {%- set _fp = ("/" + lang) if (lang is defined and lang != "en") else "" -%}
+    <p>© 2026 Minesweeper.org &mdash; {{ t.footer | safe }} &mdash; <a href="{{ _fp }}/about">{{ t.footer_about }}</a> &mdash; <a href="{{ _fp }}/history">{{ t.footer_history }}</a> &mdash; <a href="{{ _fp }}/contact">{{ t.footer_contact }}</a> &mdash; <a href="{{ _fp }}/privacy">{{ t.footer_privacy }}</a> &mdash; <a href="{{ _fp }}/terms">{{ t.footer_terms }}</a> &mdash; <a href="{{ _fp }}/blog">{{ t.nav_blog }}</a> &mdash; <a href="{{ _fp }}/links">{{ t.nav_links_label }}</a> &mdash; <a href="https://www.linkedin.com/company/minesweeper-org" target="_blank" rel="noopener">LinkedIn</a></p>
   </footer>
 
   <!-- Translations available to all page scripts -->
