@@ -10725,8 +10725,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tz_subnav_easy_title":    "\u304b\u3093\u305f\u3093 5\u00d75",
         "tz_subnav_easy_desc":     "\u521d\u5fc3\u8005\u30e2\u30fc\u30c9 \u2014 5\u00d75\u30b0\u30ea\u30c3\u30c9\u3001\u5730\u96f7\uff16\u500b",
         # Mega-nav trigger labels
-        "nav_play":             "Play",
-        "nav_puzzles":          "Puzzles",
+        "nav_play":             "遊ぶ",
+        "nav_puzzles":          "パズル",
         "nav_more":             "More",
         # Mega-nav card titles (previously hardcoded)
         "nav_vs_bot":           "Vs Bot",
@@ -10744,7 +10744,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_toroid":           "Toroid",
         "nav_replay":           "Replay",
         "nav_board_generator": "ボードジェネレーター",
-        "nav_blog":             "Blog",
+        "nav_blog":             "ブログ",
         "nav_links_label":      "Links",
         # Mega-nav card subtitles
         "nav_sub_beginner": "9×9 · 地雷10個",
@@ -11895,8 +11895,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tz_subnav_easy_title":    "\u7b80\u5355 5\u00d75",
         "tz_subnav_easy_desc":     "\u521d\u5b66\u8005\u6a21\u5f0f \u2014 5\u00d75\u7f51\u683c\uff0c6\u4e2a\u5730\u96f7",
         # Mega-nav trigger labels
-        "nav_play":             "Play",
-        "nav_puzzles":          "Puzzles",
+        "nav_play":             "游玩",
+        "nav_puzzles":          "谜题",
         "nav_more":             "More",
         # Mega-nav card titles (previously hardcoded)
         "nav_vs_bot":           "Vs Bot",
@@ -13014,8 +13014,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tz_subnav_easy_title":    "\u7c21\u55ae 5\u00d75",
         "tz_subnav_easy_desc":     "\u521d\u5b78\u8005\u6a21\u5f0f \u2014 5\u00d75\u7db2\u683c\uff0c6\u500b\u5730\u96f7",
         # Mega-nav trigger labels
-        "nav_play":             "Play",
-        "nav_puzzles":          "Puzzles",
+        "nav_play":             "遊玩",
+        "nav_puzzles":          "謎題",
         "nav_more":             "More",
         # Mega-nav card titles (previously hardcoded)
         "nav_vs_bot":           "Vs Bot",
