@@ -39,3 +39,16 @@ def test_404_returns_html(client):
     assert r.status_code == 404
     # Custom 404 template should render, not a bare JSON response
     assert "html" in r.headers.get("content-type", "").lower()
+
+
+def test_legacy_login_redirects_to_auth_login(client):
+    r = client.get("/login?next=/2026worldcup/scotland", follow_redirects=False)
+    assert r.status_code == 302
+    assert r.headers["location"] == "/auth/login?next=/2026worldcup/scotland"
+
+
+def test_world_cup_scotland_uses_auth_login(client):
+    r = client.get("/2026worldcup/scotland")
+    assert r.status_code == 200
+    assert 'href="/login' not in r.text
+    assert 'href="/auth/login?next=/2026worldcup/scotland"' in r.text

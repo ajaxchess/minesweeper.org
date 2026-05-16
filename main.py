@@ -1,5 +1,6 @@
 from datetime import date, timedelta, datetime, timezone
 from zoneinfo import ZoneInfo
+from urllib.parse import quote
 import uuid
 import re
 import subprocess
@@ -1091,6 +1092,13 @@ async def archive_index(request: Request, db: Session = Depends(get_db)):
     })
 
 # ── Auth routes ───────────────────────────────────────────────────────────────
+
+@app.get("/login")
+def legacy_login_redirect(request: Request):
+    next_url = request.query_params.get("next", "/")
+    if not next_url.startswith("/") or next_url.startswith("//"):
+        next_url = "/"
+    return RedirectResponse(f"/auth/login?next={quote(next_url, safe='/')}", status_code=302)
 
 @app.get("/auth/login")
 async def login(request: Request):

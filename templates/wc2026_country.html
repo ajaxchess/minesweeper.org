@@ -24,7 +24,7 @@
   </div>
   {% else %}
   <div class="wc-fan-banner wc-fan-guest">
-    ⚽ <a href="/login">Log in</a> to set your fan flag and compete!
+    ⚽ <a href="/auth/login?next=/2026worldcup/{{ country.slug }}">Log in</a> to set your fan flag and compete!
   </div>
   {% endif %}
 
@@ -94,7 +94,7 @@
     <h2>🎯 Tametsi Fan Challenge</h2>
 
     {% if not user %}
-    <div class="wcc-play-gate"><a href="/login">Log in</a> to play the Tametsi fan challenge and earn points for your team.</div>
+    <div class="wcc-play-gate"><a href="/auth/login?next=/2026worldcup/{{ country.slug }}">Log in</a> to play the Tametsi fan challenge and earn points for your team.</div>
     {% elif not wc_fan %}
     <div class="wcc-play-gate">Set your fan flag above to play!</div>
     {% else %}
