@@ -176,6 +176,7 @@ async def add_security_headers(request: Request, call_next):
             " https://www.googletagmanager.com"
             " https://cdn.jsdelivr.net"
             " https://fundingchoicesmessages.google.com"
+            " https://*.adtrafficquality.google"
         ),
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
