@@ -1413,6 +1413,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
 
         # H1 headings (injected)
         "ms_howto_h1": "How to Play Mosaic",
+        "ms_custom_h1": "Mosaic — Custom Board",
+        "ms_replay_h1": "Mosaic Replay",
         "tz_howto_h1": "How to Play Tentaizu",
         "tz_strategy_h1": "Tentaizu Strategy Guide",
         "rush_page_h1": "Minesweeper Rush — Play Free Online",
@@ -2495,6 +2497,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "cyl_about_p2": "La rezulto estas senjunta, senlima ludkampo laŭ la horizontala akso. Ne estas mortaj anguloj ĉe la flankoj — la tabulo kurbas ĉirkaŭe, malfermante novajn logikajn ĉenojn kiuj ne ekzistas sur plata krado.",
         # H1 headings (injected)
         "ms_howto_h1": "Kiel Ludi Mozaikon",
+        "ms_custom_h1": "Mozaiko — Propra Tabulo",
+        "ms_replay_h1": "Mozaiko Ripeto",
         "tz_howto_h1": "Kiel Ludi Tentaizun",
         "tz_strategy_h1": "Tentaizu Strategia Gvidlibro",
         "rush_page_h1": "Minesweeper Rush — Ludu Senpage Rete",
@@ -3710,6 +3714,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "cyl_about_p2": "Das Ergebnis ist ein nahtloses, kantenfreies Spielfeld entlang der horizontalen Achse. Es gibt keine toten Ecken an den Seiten — das Spielfeld wölbt sich herum und eröffnet neue logische Ketten, die auf einem flachen Raster nicht existieren.",
         # H1 headings (injected)
         "ms_howto_h1": "Mosaik-Spielanleitung",
+        "ms_custom_h1": "Mosaik — Eigenes Board",
+        "ms_replay_h1": "Mosaik Wiedergabe",
         "tz_howto_h1": "Tentaizu-Spielanleitung",
         "tz_strategy_h1": "Tentaizu Strategie-Guide",
         "rush_page_h1": "Minesweeper Rush — Kostenlos Online Spielen",
@@ -4838,6 +4844,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "cyl_about_p2": "El resultado es un campo de juego continuo y sin bordes a lo largo del eje horizontal. No hay esquinas muertas en los lados — el tablero se curva alrededor, abriendo nuevas cadenas lógicas que no existen en una cuadrícula plana.",
         # H1 headings (injected)
         "ms_howto_h1": "Cómo Jugar Mosaico",
+        "ms_custom_h1": "Mosaico — Tablero Propio",
+        "ms_replay_h1": "Repetición de Mosaico",
         "tz_howto_h1": "Cómo Jugar Tentaizu",
         "tz_strategy_h1": "Guía de Estrategia Tentaizu",
         "rush_page_h1": "Minesweeper Rush — Juega Gratis en Línea",
@@ -5980,6 +5988,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_title_hexsweeper":       "Hexsweeper",
         # H1 headings (injected)
         "ms_howto_h1": "วิธีเล่น Mosaic",
+        "ms_custom_h1": "โมเสก — กระดานเองเอง",
+        "ms_replay_h1": "เล่นซ้ำ Mosaic",
         "tz_howto_h1": "วิธีเล่น Tentaizu",
         "tz_strategy_h1": "คู่มือกลยุทธ์ Tentaizu",
         "rush_page_h1": "Minesweeper Rush — เล่นฟรีออนไลน์",
@@ -7111,6 +7121,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "cyl_about_p2": "Ethay esultray isway away eamlesssay, edge-eefray ayingplay ieldfay alongway ethay orizontalhay axisway. Erethay areway onay eadday ornerscay onway ethay idessay — ethay oardbay urvescay aroundway, openingway upway ewnay ogicallay ainschay atthay onday'tway existway onway away atflay idgray.",
         # H1 headings (injected)
         "ms_howto_h1": "Owhay otay Ayplay Osaicmay",
+        "ms_custom_h1": "Osaicmay — Ustomcay Oardbay",
+        "ms_replay_h1": "Osaicmay Eplayray",
         "tz_howto_h1": "Owhay otay Ayplay Entaizutay",
         "tz_strategy_h1": "Entaizutay Ategystray Ideguay",
         "rush_page_h1": "Inesweepermay Ushray — Ayplay Eefray Onlineay",
@@ -8205,6 +8217,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "cyl_about_p2": "Результат — безшовне ігрове поле без країв вздовж горизонтальної осі. На боках немає мертвих кутів — поле вигинається, відкриваючи нові логічні ланцюжки, яких не існує на плоскій сітці.",
         # H1 headings (injected)
         "ms_howto_h1": "Як грати в Мозаїку",
+        "ms_custom_h1": "Мозаїка — Власна дошка",
+        "ms_replay_h1": "Повтор Мозаїки",
         "tz_howto_h1": "Як грати в Тентайзу",
         "tz_strategy_h1": "Посібник зі стратегії Тентайзу",
         "rush_page_h1": "Minesweeper Rush — Грайте Безкоштовно Онлайн",
@@ -9330,6 +9344,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "cyl_about_p2": "Le résultat est un terrain de jeu continu et sans bord le long de l'axe horizontal. Il n'y a pas d'angles morts sur les côtés — le plateau s'incurve, ouvrant de nouvelles chaînes logiques qui n'existent pas sur une grille plate.",
         # H1 headings (injected)
         "ms_howto_h1": "Comment Jouer à Mosaïque",
+        "ms_custom_h1": "Mosaïque — Grille Perso",
+        "ms_replay_h1": "Rejouer Mosaïque",
         "tz_howto_h1": "Comment Jouer à Tentaizu",
         "tz_strategy_h1": "Guide de Stratégie Tentaizu",
         "rush_page_h1": "Minesweeper Rush — Jouer Gratuitement en Ligne",
@@ -10474,6 +10490,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_title_hexsweeper":       "Hexsweeper",
         # H1 headings (injected)
         "ms_howto_h1": "모자이크 하는 법",
+        "ms_custom_h1": "모자이크 — 사용자 보드",
+        "ms_replay_h1": "모자이크 다시보기",
         "tz_howto_h1": "텐타이즈 하는 법",
         "tz_strategy_h1": "텐타이즈 전략 가이드",
         "rush_page_h1": "Minesweeper Rush — 무료 온라인 플레이",
@@ -11698,6 +11716,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_title_hexsweeper":       "Hexsweeper",
         # H1 headings (injected)
         "ms_howto_h1": "モザイクの遥び方",
+        "ms_custom_h1": "モザイク — カスタムボード",
+        "ms_replay_h1": "モザイク リプレイ",
         "tz_howto_h1": "天体図の遥び方",
         "tz_strategy_h1": "天体図 攻略ガイド",
         "rush_page_h1": "Minesweeper Rush — 無料オンラインプレイ",
@@ -12788,6 +12808,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_title_hexsweeper":       "Hexsweeper",
         # H1 headings (injected)
         "ms_howto_h1": "马赛克玩法教程",
+        "ms_custom_h1": "马赛克 — 自定义棋盘",
+        "ms_replay_h1": "马赛克回放",
         "tz_howto_h1": "天体图玩法教程",
         "tz_strategy_h1": "天体图攻略指南",
         "rush_page_h1": "Minesweeper Rush — 免费在线游玩",
@@ -13919,6 +13941,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_title_hexsweeper":       "Hexsweeper",
         # H1 headings (injected)
         "ms_howto_h1": "馬賽克玩法教學",
+        "ms_custom_h1": "馬賽克 — 自訂棋盤",
+        "ms_replay_h1": "馬賽克回放",
         "tz_howto_h1": "天體圖玩法教學",
         "tz_strategy_h1": "天體圖攻略指南",
         "rush_page_h1": "Minesweeper Rush — 免費線上游玩",
@@ -15041,6 +15065,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "cyl_about_p2": "Efektem jest bezszwowe, pozbawione krawędzi pole gry wzdłuż osi poziomej. Po bokach nie ma martwych narożników — plansza zakrzywia się, otwierając nowe łańcuchy logiczne, które nie istnieją na płaskiej siatce.",
         # H1 headings (injected)
         "ms_howto_h1": "Jak Grać w Mozaikę",
+        "ms_custom_h1": "Mozaika — Własna Plansza",
+        "ms_replay_h1": "Powtórka Mozaiki",
         "tz_howto_h1": "Jak Grać w Tentaizu",
         "tz_strategy_h1": "Poradnik Strategii Tentaizu",
         "rush_page_h1": "Minesweeper Rush — Graj Za Darmo Online",
@@ -16193,6 +16219,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_title_hexsweeper":       "Hexsweeper",
         # H1 headings (injected)
         "ms_howto_h1": "Paano Maglaro ng Mosaic",
+        "ms_custom_h1": "Mosaic — Sariling Board",
+        "ms_replay_h1": "Mosaic Replay",
         "tz_howto_h1": "Paano Maglaro ng Tentaizu",
         "tz_strategy_h1": "Gabay sa Estratehiya ng Tentaizu",
         "rush_page_h1": "Minesweeper Rush — Maglaro Nang Libre Online",
@@ -17310,6 +17338,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "cyl_about_p2": "В результате получается бесшовное игровое поле без краёв вдоль горизонтальной оси. По бокам нет мёртвых углов — поле изгибается, открывая новые логические цепочки, недоступные на плоской сетке.",
         # H1 headings (injected)
         "ms_howto_h1": "Как играть в Мозаику",
+        "ms_custom_h1": "Мозаика — Своя доска",
+        "ms_replay_h1": "Повтор Мозаики",
         "tz_howto_h1": "Как играть в Тентайзу",
         "tz_strategy_h1": "Руководство по стратегии Тентайзу",
         "rush_page_h1": "Minesweeper Rush — Играйте Бесплатно Онлайн",
@@ -18427,6 +18457,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "cyl_about_p2": "O resultado é um campo de jogo contínuo e sem bordas ao longo do eixo horizontal. Não há cantos mortos nas laterais — o tabuleiro se curva, abrindo novas cadeias lógicas que não existem em uma grade plana.",
         # H1 headings (injected)
         "ms_howto_h1": "Como Jogar Mosaico",
+        "ms_custom_h1": "Mosaico — Tabuleiro Próprio",
+        "ms_replay_h1": "Repetição de Mosaico",
         "tz_howto_h1": "Como Jogar Tentaizu",
         "tz_strategy_h1": "Guia de Estratégia Tentaizu",
         "rush_page_h1": "Minesweeper Rush — Jogue Grátis Online",
@@ -19548,6 +19580,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "cyl_about_p2": "Il risultato è un campo di gioco continuo e senza bordi lungo l'asse orizzontale. Non ci sono angoli morti sui lati — la griglia si curva attorno, aprendo nuove catene logiche che non esistono su una griglia piatta.",
         # H1 headings (injected)
         "ms_howto_h1": "Come Giocare al Mosaico",
+        "ms_custom_h1": "Mosaico — Griglia Personale",
+        "ms_replay_h1": "Replay Mosaico",
         "tz_howto_h1": "Come Giocare a Tentaizu",
         "tz_strategy_h1": "Guida alla Strategia Tentaizu",
         "rush_page_h1": "Minesweeper Rush — Gioca Gratis Online",
