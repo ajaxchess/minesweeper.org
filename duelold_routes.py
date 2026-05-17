@@ -41,8 +41,7 @@ async def duelold_lobby(request: Request, m: str = "standard"):
         rows, cols, mines = ROWS, COLS, MINES
     game      = create_game(rows=rows, cols=cols, mines=mines, submode=m)
     player_id = uuid.uuid4().hex[:8]
-    return templates.TemplateResponse("duelold.html", {
-        "request":    request,
+    return templates.TemplateResponse(request, "duelold.html", {
         "game_id":    game.game_id,
         "player_id":  player_id,
         "rows":       rows,
@@ -61,14 +60,14 @@ async def duelold_lobby(request: Request, m: str = "standard"):
 async def duelold_join(request: Request, game_id: str):
     game = get_game(game_id)
     if not game:
-        return templates.TemplateResponse("duel_error.html", {
-            "request": request, "lang": get_lang(request), "t": get_t(request),
+        return templates.TemplateResponse(request, "duel_error.html", {
+            "lang": get_lang(request), "t": get_t(request),
             "code": 404, "title": "Game not found",
             "message": "This duel has expired or never existed. Games are kept for 2 hours.",
         }, status_code=404)
     if game.finished:
-        return templates.TemplateResponse("duel_error.html", {
-            "request": request, "lang": get_lang(request), "t": get_t(request),
+        return templates.TemplateResponse(request, "duel_error.html", {
+            "lang": get_lang(request), "t": get_t(request),
             "code": 410, "title": "Game already ended",
             "message": "This duel has already finished. Start a new one!",
         }, status_code=410)
@@ -76,8 +75,7 @@ async def duelold_join(request: Request, game_id: str):
     player_id  = uuid.uuid4().hex[:8]
     is_creator = len(game.players) == 0
 
-    return templates.TemplateResponse("duelold.html", {
-        "request":    request,
+    return templates.TemplateResponse(request, "duelold.html", {
         "game_id":    game_id,
         "player_id":  player_id,
         "rows":       game.rows,

@@ -344,8 +344,9 @@ async def lang_prefix_middleware(request: Request, call_next):
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
     return templates.TemplateResponse(
+        request,
         "404.html",
-        {"request": request, "mode": "404",
+        {"mode": "404",
          "user": get_current_user(request),
          "lang": get_lang(request), "t": get_t(request)},
         status_code=404,
@@ -354,8 +355,9 @@ async def not_found_handler(request: Request, exc):
 @app.exception_handler(403)
 async def forbidden_handler(request: Request, exc):
     return templates.TemplateResponse(
+        request,
         "403.html",
-        {"request": request, "mode": "403",
+        {"mode": "403",
          "user": get_current_user(request),
          "lang": get_lang(request), "t": get_t(request)},
         status_code=403,
@@ -432,8 +434,9 @@ async def health(request: Request):
 @app.get("/sitemap.xml", include_in_schema=False)
 async def sitemap(request: Request):
     return templates.TemplateResponse(
+        request,
         "sitemap.xml",
-        {"request": request, "today": date.today().isoformat(),
+        {"today": date.today().isoformat(),
          "blog_posts": BLOG_POSTS, "sitemap_langs": sorted(REAL_LANGS),
          "wc2026_countries": WC2026_COUNTRIES},
         media_type="application/xml",
@@ -931,8 +934,8 @@ async def beginner_redirect():
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {
-        "request": request, "mode": "beginner",
+    return templates.TemplateResponse(request, "index.html", {
+        "mode": "beginner",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **GAME_MODES["beginner"]
@@ -940,8 +943,8 @@ async def index(request: Request):
 
 @app.get("/intermediate", response_class=HTMLResponse)
 async def intermediate(request: Request):
-    return templates.TemplateResponse("index.html", {
-        "request": request, "mode": "intermediate",
+    return templates.TemplateResponse(request, "index.html", {
+        "mode": "intermediate",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **GAME_MODES["intermediate"]
@@ -949,8 +952,8 @@ async def intermediate(request: Request):
 
 @app.get("/expert", response_class=HTMLResponse)
 async def expert(request: Request):
-    return templates.TemplateResponse("index.html", {
-        "request": request, "mode": "expert",
+    return templates.TemplateResponse(request, "index.html", {
+        "mode": "expert",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **GAME_MODES["expert"]
@@ -960,8 +963,8 @@ async def expert(request: Request):
 async def evil_ng(request: Request, db: Session = Depends(get_db)):
     db.add(EvilGameSession())
     db.commit()
-    return templates.TemplateResponse("evil.html", {
-        "request": request, "mode": "evil",
+    return templates.TemplateResponse(request, "evil.html", {
+        "mode": "evil",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **EVIL_NG_MODE
@@ -1003,16 +1006,16 @@ def analysis_file(path: str):
 
 @app.get("/custom", response_class=HTMLResponse)
 async def custom(request: Request):
-    return templates.TemplateResponse("custom.html", {
-        "request": request, "mode": "custom",
+    return templates.TemplateResponse(request, "custom.html", {
+        "mode": "custom",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
 
 @app.get("/leaderboard", response_class=HTMLResponse)
 async def leaderboard_page(request: Request):
-    return templates.TemplateResponse("leaderboard.html", {
-        "request": request, "mode": "leaderboard",
+    return templates.TemplateResponse(request, "leaderboard.html", {
+        "mode": "leaderboard",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "leaderboard_groups": LEADERBOARD_GROUPS,
@@ -1082,8 +1085,7 @@ async def archive_index(request: Request, db: Session = Depends(get_db)):
         if m not in seen_months:
             seen_months[m] = True
     recent_months: list = list(seen_months.keys())[:24]
-    return templates.TemplateResponse("archive_index.html", {
-        "request":       request,
+    return templates.TemplateResponse(request, "archive_index.html", {
         "mode":          "archive",
         "user":          get_current_user(request),
         "lang":          get_lang(request),
@@ -1560,8 +1562,8 @@ def get_scores(mode: GameMode, no_guess: bool = False,
 
 @app.get("/rush", response_class=HTMLResponse)
 async def rush(request: Request):
-    return templates.TemplateResponse("rush.html", {
-        "request": request, "mode": "rush",
+    return templates.TemplateResponse(request, "rush.html", {
+        "mode": "rush",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -1569,8 +1571,8 @@ async def rush(request: Request):
 
 @app.get("/rush/custom", response_class=HTMLResponse)
 async def rush_custom(request: Request):
-    return templates.TemplateResponse("rush.html", {
-        "request": request, "mode": "rush",
+    return templates.TemplateResponse(request, "rush.html", {
+        "mode": "rush",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "auto_custom": True,
@@ -1579,8 +1581,8 @@ async def rush_custom(request: Request):
 
 @app.get("/rush/how-to-play", response_class=HTMLResponse)
 async def rush_howto(request: Request):
-    return templates.TemplateResponse("rush_howto.html", {
-        "request": request, "mode": "rush-howto",
+    return templates.TemplateResponse(request, "rush_howto.html", {
+        "mode": "rush-howto",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -1655,8 +1657,8 @@ def get_rush_scores(rush_mode: str, alltime: bool = False, db: Session = Depends
 
 @app.get("/rush/leaderboard", response_class=HTMLResponse)
 async def rush_leaderboard(request: Request):
-    return templates.TemplateResponse("rush_leaderboard.html", {
-        "request": request, "mode": "rush",
+    return templates.TemplateResponse(request, "rush_leaderboard.html", {
+        "mode": "rush",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -1664,8 +1666,8 @@ async def rush_leaderboard(request: Request):
 
 @app.get("/help", response_class=HTMLResponse)
 async def help_page(request: Request):
-    return templates.TemplateResponse("help.html", {
-        "request": request, "mode": "help",
+    return templates.TemplateResponse(request, "help.html", {
+        "mode": "help",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -1673,8 +1675,8 @@ async def help_page(request: Request):
 
 @app.get("/how-to-play", response_class=HTMLResponse)
 async def how_to_play_page(request: Request):
-    return templates.TemplateResponse("howtoplay.html", {
-        "request": request, "mode": "how-to-play",
+    return templates.TemplateResponse(request, "howtoplay.html", {
+        "mode": "how-to-play",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -1682,8 +1684,8 @@ async def how_to_play_page(request: Request):
 
 @app.get("/strategy", response_class=HTMLResponse)
 async def strategy_page(request: Request):
-    return templates.TemplateResponse("strategy.html", {
-        "request": request, "mode": "strategy",
+    return templates.TemplateResponse(request, "strategy.html", {
+        "mode": "strategy",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -1691,8 +1693,8 @@ async def strategy_page(request: Request):
 
 @app.get("/contact", response_class=HTMLResponse)
 async def contact_page(request: Request, submitted: bool = False):
-    return templates.TemplateResponse("contact.html", {
-        "request": request, "mode": "contact",
+    return templates.TemplateResponse(request, "contact.html", {
+        "mode": "contact",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "submitted": submitted,
@@ -1720,8 +1722,8 @@ async def contact_submit(
 
 @app.get("/puzzles", response_class=HTMLResponse)
 def puzzles_hub(request: Request):
-    return templates.TemplateResponse("puzzles.html", {
-        "request": request, "mode": "puzzles",
+    return templates.TemplateResponse(request, "puzzles.html", {
+        "mode": "puzzles",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -1799,8 +1801,8 @@ def fifteen_puzzle_landing(request: Request):
 @app.get("/other/15puzzle/daily", response_class=HTMLResponse)
 def fifteen_puzzle_daily(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("fifteen_puzzle_daily.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "fifteen_puzzle_daily.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
@@ -1815,8 +1817,8 @@ def fifteen_puzzle_leaderboard_page(request: Request, grid: str = Query(default=
     if grid not in _VALID_GRID_SIZES:
         grid = "4x4"
     today = date.today().isoformat()
-    return templates.TemplateResponse("fifteen_puzzle_leaderboard.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "fifteen_puzzle_leaderboard.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
@@ -1826,8 +1828,8 @@ def fifteen_puzzle_leaderboard_page(request: Request, grid: str = Query(default=
 
 @app.get("/other/15puzzle/how-to-play", response_class=HTMLResponse)
 def fifteen_puzzle_howtoplay(request: Request):
-    return templates.TemplateResponse("fifteen_puzzle_howtoplay.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "fifteen_puzzle_howtoplay.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -1926,8 +1928,8 @@ def fifteen_puzzle_generator_page(request: Request, db: Session = Depends(get_db
         )
         profile = db.query(UserProfile).filter_by(email=user["email"]).first()
         limit = getattr(profile, "puzzle_storage_limit", 32) if profile else 32
-    return templates.TemplateResponse("fifteen_puzzle_generator.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "fifteen_puzzle_generator.html", {
+        "mode": "other",
         "user": user,
         "lang": get_lang(request), "t": get_t(request),
         "photos": photos,
@@ -1952,8 +1954,8 @@ def fifteen_puzzle_photo_play(request: Request, board_hash: str, mode: str = Que
         pending_review = False
     if mode not in ("tiles", "reveal"):
         mode = photo.photo_mode
-    return templates.TemplateResponse("fifteen_puzzle_daily.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "fifteen_puzzle_daily.html", {
+        "mode": "other",
         "user": user,
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
@@ -2083,8 +2085,8 @@ def fifteen_puzzle_member_generator_page(request: Request, db: Session = Depends
             .order_by(MemberPuzzle.created_at.desc())
             .all()
         )
-    return templates.TemplateResponse("fifteen_puzzle_membergenerator.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "fifteen_puzzle_membergenerator.html", {
+        "mode": "other",
         "user": user,
         "lang": get_lang(request), "t": get_t(request),
         "puzzles": puzzles,
@@ -2108,8 +2110,8 @@ def fifteen_puzzle_member_photo_play(request: Request, board_hash: str, db: Sess
         pending_review = True
     else:
         pending_review = False
-    return templates.TemplateResponse("fifteen_puzzle_daily.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "fifteen_puzzle_daily.html", {
+        "mode": "other",
         "user": user,
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
@@ -2206,8 +2208,8 @@ def fifteen_puzzle_grid_page(request: Request, grid: str):
     n = int(grid.split("x")[0])
     label = _GRID_LABELS[grid]
     today = date.today().isoformat()
-    return templates.TemplateResponse("fifteen_puzzle_daily.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "fifteen_puzzle_daily.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
@@ -2249,8 +2251,8 @@ def admin_15puzzle_photos(request: Request, db: Session = Depends(get_db)):
         .order_by(MemberPuzzle.created_at.desc())
         .all()
     )
-    return templates.TemplateResponse("admin_15puzzle_photos.html", {
-        "request": request, "user": user,
+    return templates.TemplateResponse(request, "admin_15puzzle_photos.html", {
+        "user": user,
         "lang": get_lang(request), "t": get_t(request),
         "pending_photos":   pending_photos,
         "approved_photos":  approved_photos,
@@ -2358,8 +2360,8 @@ def admin_jigsaw_photos(request: Request, db: Session = Depends(get_db)):
         .order_by(JigsawPhoto.created_at.desc())
         .all()
     )
-    return templates.TemplateResponse("admin_jigsaw_photos.html", {
-        "request": request, "user": user,
+    return templates.TemplateResponse(request, "admin_jigsaw_photos.html", {
+        "user": user,
         "lang": get_lang(request), "t": get_t(request),
         "pending": pending,
         "approved": approved,
@@ -2415,8 +2417,8 @@ def game_2048_landing(request: Request):
 @app.get("/other/2048/daily", response_class=HTMLResponse)
 def game_2048_daily(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("2048_daily.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "2048_daily.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
@@ -2426,8 +2428,8 @@ def game_2048_daily(request: Request):
 @app.get("/other/2048/leaderboard", response_class=HTMLResponse)
 def game_2048_leaderboard_page(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("2048_leaderboard.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "2048_leaderboard.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
@@ -2436,8 +2438,8 @@ def game_2048_leaderboard_page(request: Request):
 
 @app.get("/other/2048/how-to-play", response_class=HTMLResponse)
 def game_2048_howtoplay(request: Request):
-    return templates.TemplateResponse("2048_howtoplay.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "2048_howtoplay.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -2451,8 +2453,8 @@ def game_2048hex_landing(request: Request):
 @app.get("/other/2048hex/play", response_class=HTMLResponse)
 def game_2048hex_play(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("2048hex.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "2048hex.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
@@ -2461,8 +2463,8 @@ def game_2048hex_play(request: Request):
 @app.get("/other/2048hex/leaderboard", response_class=HTMLResponse)
 def game_2048hex_leaderboard(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("2048hex_leaderboard.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "2048hex_leaderboard.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
@@ -2470,8 +2472,8 @@ def game_2048hex_leaderboard(request: Request):
 
 @app.get("/other/2048hex/how-to-play", response_class=HTMLResponse)
 def game_2048hex_htp(request: Request):
-    return templates.TemplateResponse("2048hex_howtoplay.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "2048hex_howtoplay.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -2587,8 +2589,8 @@ def schulte_landing(request: Request):
 @app.get("/other/schulte/play", response_class=HTMLResponse)
 def schulte_play(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("schulte_play.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "schulte_play.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
@@ -2597,8 +2599,8 @@ def schulte_play(request: Request):
 @app.get("/other/schulte/leaderboard", response_class=HTMLResponse)
 def schulte_leaderboard_page(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("schulte_leaderboard.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "schulte_leaderboard.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
@@ -2606,8 +2608,8 @@ def schulte_leaderboard_page(request: Request):
 
 @app.get("/other/schulte/how-to-play", response_class=HTMLResponse)
 def schulte_howtoplay(request: Request):
-    return templates.TemplateResponse("schulte_howtoplay.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "schulte_howtoplay.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -2747,8 +2749,8 @@ def _sudoku_seed(difficulty: str, today: str) -> int:
 @app.get("/other/sudoku/daily", response_class=HTMLResponse)
 def sudoku_daily(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("sudoku_play.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "sudoku_play.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today, "difficulty": "daily",
@@ -2759,8 +2761,8 @@ def sudoku_daily(request: Request):
 @app.get("/other/sudoku/easy", response_class=HTMLResponse)
 def sudoku_easy(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("sudoku_play.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "sudoku_play.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today, "difficulty": "easy",
@@ -2771,8 +2773,8 @@ def sudoku_easy(request: Request):
 @app.get("/other/sudoku/medium", response_class=HTMLResponse)
 def sudoku_medium(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("sudoku_play.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "sudoku_play.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today, "difficulty": "medium",
@@ -2783,8 +2785,8 @@ def sudoku_medium(request: Request):
 @app.get("/other/sudoku/hard", response_class=HTMLResponse)
 def sudoku_hard(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("sudoku_play.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "sudoku_play.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today, "difficulty": "hard",
@@ -2795,8 +2797,8 @@ def sudoku_hard(request: Request):
 @app.get("/other/sudoku/expert", response_class=HTMLResponse)
 def sudoku_expert(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("sudoku_play.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "sudoku_play.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today, "difficulty": "expert",
@@ -2806,8 +2808,8 @@ def sudoku_expert(request: Request):
 
 @app.get("/other/sudoku/scores", response_class=HTMLResponse)
 def sudoku_scores_page(request: Request):
-    return templates.TemplateResponse("sudoku_scores.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "sudoku_scores.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
@@ -2819,8 +2821,8 @@ def sudoku_play_by_hash(board_hash: str, request: Request, db: Session = Depends
     row = db.query(SudokuScore).filter(SudokuScore.board_hash == board_hash).first()
     if not row:
         raise HTTPException(status_code=404, detail="Board not found")
-    return templates.TemplateResponse("sudoku_play.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "sudoku_play.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
@@ -3060,8 +3062,8 @@ def get_2048_histogram(puzzle_date: Optional[str] = None, db: Session = Depends(
 
 @app.get("/history", response_class=HTMLResponse)
 async def history_page(request: Request):
-    return templates.TemplateResponse("history.html", {
-        "request": request, "mode": "history",
+    return templates.TemplateResponse(request, "history.html", {
+        "mode": "history",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -3069,8 +3071,8 @@ async def history_page(request: Request):
 
 @app.get("/about", response_class=HTMLResponse)
 async def about_page(request: Request):
-    return templates.TemplateResponse("about.html", {
-        "request": request, "mode": "about",
+    return templates.TemplateResponse(request, "about.html", {
+        "mode": "about",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -3078,8 +3080,8 @@ async def about_page(request: Request):
 
 @app.get("/team", response_class=HTMLResponse)
 async def team_page(request: Request):
-    return templates.TemplateResponse("team.html", {
-        "request": request, "mode": "team",
+    return templates.TemplateResponse(request, "team.html", {
+        "mode": "team",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "noindex": get_lang(request) != "en",
@@ -3090,21 +3092,20 @@ async def team_page(request: Request):
 
 @app.get("/mobile", response_class=HTMLResponse)
 async def mobile_landing(request: Request):
-    return templates.TemplateResponse("mobile.html", {"request": request})
+    return templates.TemplateResponse(request, "mobile.html", {})
 
 @app.get("/mobile/ios", response_class=HTMLResponse)
 async def mobile_ios_landing(request: Request):
-    return templates.TemplateResponse("mobile_ios.html", {"request": request})
+    return templates.TemplateResponse(request, "mobile_ios.html", {})
 
 @app.get("/mobile/android", response_class=HTMLResponse)
 async def mobile_android_landing(request: Request):
-    return templates.TemplateResponse("mobile_android.html", {"request": request})
+    return templates.TemplateResponse(request, "mobile_android.html", {})
 
 @app.get("/mobile/nmmobile", response_class=HTMLResponse)
 async def mobile_nmmobile(request: Request):
     real_today = numbers_match_today_str()
-    return templates.TemplateResponse("nmmobile.html", {
-        "request":    request,
+    return templates.TemplateResponse(request, "nmmobile.html", {
         "user":       get_current_user(request),
         "today":      real_today,
         "real_today": real_today,
@@ -3274,8 +3275,8 @@ _BLOG_BY_SLUG = {p["slug"]: p for p in _BLOG_INDEX}
 @app.get("/blog", response_class=HTMLResponse)
 async def blog_index(request: Request):
     lang = get_lang(request)
-    return templates.TemplateResponse("blog_index.html", {
-        "request": request, "mode": "blog",
+    return templates.TemplateResponse(request, "blog_index.html", {
+        "mode": "blog",
         "user": get_current_user(request),
         "lang": lang, "t": get_t(request),
         "posts": _BLOG_INDEX,
@@ -3359,8 +3360,8 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
     post_index = next((i for i, p in enumerate(_BLOG_INDEX) if p["slug"] == slug), -1)
     newer_post = _BLOG_INDEX[post_index - 1] if post_index > 0 else None
     older_post = _BLOG_INDEX[post_index + 1] if 0 <= post_index < len(_BLOG_INDEX) - 1 else None
-    return templates.TemplateResponse("blog_post.html", {
-        "request":        request, "mode": "blog",
+    return templates.TemplateResponse(request, "blog_post.html", {
+        "mode": "blog",
         "user":           get_current_user(request),
         "lang":           get_lang(request), "t": get_t(request),
         "post":           post,
@@ -3417,8 +3418,8 @@ async def terms_of_service_redirect():
 
 @app.get("/privacy", response_class=HTMLResponse)
 async def privacy_page(request: Request):
-    return templates.TemplateResponse("privacy.html", {
-        "request": request, "mode": "privacy",
+    return templates.TemplateResponse(request, "privacy.html", {
+        "mode": "privacy",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -3426,8 +3427,8 @@ async def privacy_page(request: Request):
 
 @app.get("/piracy", response_class=HTMLResponse)
 async def piracy_page(request: Request):
-    return templates.TemplateResponse("piracy.html", {
-        "request": request, "mode": "piracy",
+    return templates.TemplateResponse(request, "piracy.html", {
+        "mode": "piracy",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -3435,8 +3436,8 @@ async def piracy_page(request: Request):
 
 @app.get("/terms", response_class=HTMLResponse)
 async def terms_page(request: Request):
-    return templates.TemplateResponse("terms.html", {
-        "request": request, "mode": "terms",
+    return templates.TemplateResponse(request, "terms.html", {
+        "mode": "terms",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -3451,8 +3452,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
     if profile and not profile.public_id:
         profile.public_id = str(uuid.uuid4())
         db.commit()
-    return templates.TemplateResponse("profile.html", {
-        "request":       request,
+    return templates.TemplateResponse(request, "profile.html", {
         "mode":          "profile",
         "user":          user,
         "public_id":     profile.public_id if profile else "",
@@ -3480,8 +3480,8 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/quests", response_class=HTMLResponse)
 async def quests_page(request: Request):
-    return templates.TemplateResponse("quests.html", {
-        "request": request, "mode": "quests",
+    return templates.TemplateResponse(request, "quests.html", {
+        "mode": "quests",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -3489,8 +3489,8 @@ async def quests_page(request: Request):
 
 @app.get("/variants", response_class=HTMLResponse)
 async def variants_page(request: Request):
-    return templates.TemplateResponse("variants.html", {
-        "request": request, "mode": "variants",
+    return templates.TemplateResponse(request, "variants.html", {
+        "mode": "variants",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -3500,8 +3500,8 @@ async def variants_page(request: Request):
 
 @app.get("/variants/replay/", response_class=HTMLResponse)
 async def replay_page(request: Request):
-    return templates.TemplateResponse("replay.html", {
-        "request": request, "mode": "replay",
+    return templates.TemplateResponse(request, "replay.html", {
+        "mode": "replay",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -3511,8 +3511,7 @@ async def replay_page(request: Request):
 
 @app.get("/links", response_class=HTMLResponse)
 async def links_page(request: Request):
-    return templates.TemplateResponse("links.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "links.html", {
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -3523,8 +3522,7 @@ async def links_page(request: Request):
 @app.get("/info/3bv", response_class=HTMLResponse)
 async def info_3bv_page(request: Request):
     lang = get_lang(request)
-    return templates.TemplateResponse("info_3bv.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "info_3bv.html", {
         "user": get_current_user(request),
         "lang": lang, "t": get_t(request),
         "noindex": lang != "en",
@@ -3535,8 +3533,8 @@ async def info_3bv_page(request: Request):
 
 @app.get("/variants/board-generator", response_class=HTMLResponse)
 async def board_generator_page(request: Request):
-    return templates.TemplateResponse("board_generator.html", {
-        "request": request, "mode": "board-generator",
+    return templates.TemplateResponse(request, "board_generator.html", {
+        "mode": "board-generator",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "noindex": get_lang(request) != "en",
@@ -3755,8 +3753,8 @@ def get_my_first_replay_score(board_hash: str, request: Request, variant: str = 
 
 @app.get("/cylinder", response_class=HTMLResponse)
 async def cylinder_beginner(request: Request):
-    return templates.TemplateResponse("cylinder.html", {
-        "request": request, "mode": "cylinder-beginner",
+    return templates.TemplateResponse(request, "cylinder.html", {
+        "mode": "cylinder-beginner",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **CYLINDER_MODES["cylinder-beginner"]
@@ -3765,8 +3763,8 @@ async def cylinder_beginner(request: Request):
 
 @app.get("/cylinder/intermediate", response_class=HTMLResponse)
 async def cylinder_intermediate(request: Request):
-    return templates.TemplateResponse("cylinder.html", {
-        "request": request, "mode": "cylinder-intermediate",
+    return templates.TemplateResponse(request, "cylinder.html", {
+        "mode": "cylinder-intermediate",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **CYLINDER_MODES["cylinder-intermediate"]
@@ -3775,8 +3773,8 @@ async def cylinder_intermediate(request: Request):
 
 @app.get("/cylinder/expert", response_class=HTMLResponse)
 async def cylinder_expert(request: Request):
-    return templates.TemplateResponse("cylinder.html", {
-        "request": request, "mode": "cylinder-expert",
+    return templates.TemplateResponse(request, "cylinder.html", {
+        "mode": "cylinder-expert",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **CYLINDER_MODES["cylinder-expert"]
@@ -3785,8 +3783,8 @@ async def cylinder_expert(request: Request):
 
 @app.get("/cylinder/custom", response_class=HTMLResponse)
 async def cylinder_custom(request: Request):
-    return templates.TemplateResponse("cylinder.html", {
-        "request": request, "mode": "cylinder-custom",
+    return templates.TemplateResponse(request, "cylinder.html", {
+        "mode": "cylinder-custom",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "rows": 10, "cols": 10, "mines": 10,
@@ -3918,8 +3916,8 @@ def get_cylinder_scores(cyl_mode: str, no_guess: bool = False, period: str = "al
 
 @app.get("/toroid", response_class=HTMLResponse)
 async def toroid_beginner(request: Request):
-    return templates.TemplateResponse("toroid.html", {
-        "request": request, "mode": "toroid-beginner",
+    return templates.TemplateResponse(request, "toroid.html", {
+        "mode": "toroid-beginner",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **TOROID_MODES["toroid-beginner"]
@@ -3928,8 +3926,8 @@ async def toroid_beginner(request: Request):
 
 @app.get("/toroid/intermediate", response_class=HTMLResponse)
 async def toroid_intermediate(request: Request):
-    return templates.TemplateResponse("toroid.html", {
-        "request": request, "mode": "toroid-intermediate",
+    return templates.TemplateResponse(request, "toroid.html", {
+        "mode": "toroid-intermediate",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **TOROID_MODES["toroid-intermediate"]
@@ -3938,8 +3936,8 @@ async def toroid_intermediate(request: Request):
 
 @app.get("/toroid/expert", response_class=HTMLResponse)
 async def toroid_expert(request: Request):
-    return templates.TemplateResponse("toroid.html", {
-        "request": request, "mode": "toroid-expert",
+    return templates.TemplateResponse(request, "toroid.html", {
+        "mode": "toroid-expert",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **TOROID_MODES["toroid-expert"]
@@ -3948,8 +3946,8 @@ async def toroid_expert(request: Request):
 
 @app.get("/toroid/custom", response_class=HTMLResponse)
 async def toroid_custom(request: Request):
-    return templates.TemplateResponse("toroid.html", {
-        "request": request, "mode": "toroid-custom",
+    return templates.TemplateResponse(request, "toroid.html", {
+        "mode": "toroid-custom",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "rows": 10, "cols": 10, "mines": 10,
@@ -4090,8 +4088,8 @@ HEXSWEEPER_MODES = {
 
 @app.get("/hexsweeper", response_class=HTMLResponse)
 async def hexsweeper_beginner(request: Request):
-    return templates.TemplateResponse("hexsweeper.html", {
-        "request": request, "mode": "hex-beginner",
+    return templates.TemplateResponse(request, "hexsweeper.html", {
+        "mode": "hex-beginner",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **HEXSWEEPER_MODES["hex-beginner"]
@@ -4100,8 +4098,8 @@ async def hexsweeper_beginner(request: Request):
 
 @app.get("/hexsweeper/intermediate", response_class=HTMLResponse)
 async def hexsweeper_intermediate(request: Request):
-    return templates.TemplateResponse("hexsweeper.html", {
-        "request": request, "mode": "hex-intermediate",
+    return templates.TemplateResponse(request, "hexsweeper.html", {
+        "mode": "hex-intermediate",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **HEXSWEEPER_MODES["hex-intermediate"]
@@ -4110,8 +4108,8 @@ async def hexsweeper_intermediate(request: Request):
 
 @app.get("/hexsweeper/expert", response_class=HTMLResponse)
 async def hexsweeper_expert(request: Request):
-    return templates.TemplateResponse("hexsweeper.html", {
-        "request": request, "mode": "hex-expert",
+    return templates.TemplateResponse(request, "hexsweeper.html", {
+        "mode": "hex-expert",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **HEXSWEEPER_MODES["hex-expert"]
@@ -4120,8 +4118,8 @@ async def hexsweeper_expert(request: Request):
 
 @app.get("/hexsweeper/custom", response_class=HTMLResponse)
 async def hexsweeper_custom(request: Request):
-    return templates.TemplateResponse("hexsweeper.html", {
-        "request": request, "mode": "hex-custom",
+    return templates.TemplateResponse(request, "hexsweeper.html", {
+        "mode": "hex-custom",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "radius": 5, "mines": 8,
@@ -4286,8 +4284,8 @@ CUSTOM_T_AB: dict[int, tuple[int, int]] = {
 @app.get("/worldsweeper", response_class=HTMLResponse)
 async def worldsweeper_beginner(request: Request):
     m = GLOBESWEEPER_MODES["beginner"]
-    return templates.TemplateResponse("worldsweeper.html", {
-        "request": request, "mode": "beginner",
+    return templates.TemplateResponse(request, "worldsweeper.html", {
+        "mode": "beginner",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **m,
@@ -4297,8 +4295,8 @@ async def worldsweeper_beginner(request: Request):
 @app.get("/worldsweeper/dodecahedron", response_class=HTMLResponse)
 async def worldsweeper_dodecahedron(request: Request):
     m = GLOBESWEEPER_MODES["dodecahedron"]
-    return templates.TemplateResponse("worldsweeper.html", {
-        "request": request, "mode": "dodecahedron",
+    return templates.TemplateResponse(request, "worldsweeper.html", {
+        "mode": "dodecahedron",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **m,
@@ -4308,8 +4306,8 @@ async def worldsweeper_dodecahedron(request: Request):
 @app.get("/worldsweeper/intermediate", response_class=HTMLResponse)
 async def worldsweeper_intermediate(request: Request):
     m = GLOBESWEEPER_MODES["intermediate"]
-    return templates.TemplateResponse("worldsweeper.html", {
-        "request": request, "mode": "intermediate",
+    return templates.TemplateResponse(request, "worldsweeper.html", {
+        "mode": "intermediate",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **m,
@@ -4319,8 +4317,8 @@ async def worldsweeper_intermediate(request: Request):
 @app.get("/worldsweeper/expert", response_class=HTMLResponse)
 async def worldsweeper_expert(request: Request):
     m = GLOBESWEEPER_MODES["expert"]
-    return templates.TemplateResponse("worldsweeper.html", {
-        "request": request, "mode": "expert",
+    return templates.TemplateResponse(request, "worldsweeper.html", {
+        "mode": "expert",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **m,
@@ -4334,8 +4332,8 @@ async def worldsweeper_custom(request: Request, t: int = 3, mines: int = 4):
     a, b = CUSTOM_T_AB[t]
     face_count = 10 * t + 2
     mines = max(1, min(mines, face_count - 1))
-    return templates.TemplateResponse("worldsweeper.html", {
-        "request": request, "mode": "custom",
+    return templates.TemplateResponse(request, "worldsweeper.html", {
+        "mode": "custom",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "a": a, "b": b, "t_param": t, "face_count": face_count, "mines": mines,
@@ -4344,8 +4342,7 @@ async def worldsweeper_custom(request: Request, t: int = 3, mines: int = 4):
 
 @app.get("/worldsweeper/leaderboard", response_class=HTMLResponse)
 async def worldsweeper_leaderboard(request: Request):
-    return templates.TemplateResponse("worldsweeper_leaderboard.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "worldsweeper_leaderboard.html", {
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -4463,8 +4460,8 @@ CUBE_MODES_VALID = {"beginner", "intermediate", "expert", "custom"}
 @app.get("/cubesweeper", response_class=HTMLResponse)
 async def cubesweeper_beginner(request: Request):
     m = CUBESWEEPER_MODES["beginner"]
-    return templates.TemplateResponse("cubesweeper.html", {
-        "request": request, "mode": "beginner",
+    return templates.TemplateResponse(request, "cubesweeper.html", {
+        "mode": "beginner",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **m,
@@ -4474,8 +4471,8 @@ async def cubesweeper_beginner(request: Request):
 @app.get("/cubesweeper/intermediate", response_class=HTMLResponse)
 async def cubesweeper_intermediate(request: Request):
     m = CUBESWEEPER_MODES["intermediate"]
-    return templates.TemplateResponse("cubesweeper.html", {
-        "request": request, "mode": "intermediate",
+    return templates.TemplateResponse(request, "cubesweeper.html", {
+        "mode": "intermediate",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **m,
@@ -4485,8 +4482,8 @@ async def cubesweeper_intermediate(request: Request):
 @app.get("/cubesweeper/expert", response_class=HTMLResponse)
 async def cubesweeper_expert(request: Request):
     m = CUBESWEEPER_MODES["expert"]
-    return templates.TemplateResponse("cubesweeper.html", {
-        "request": request, "mode": "expert",
+    return templates.TemplateResponse(request, "cubesweeper.html", {
+        "mode": "expert",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **m,
@@ -4495,8 +4492,8 @@ async def cubesweeper_expert(request: Request):
 
 @app.get("/cubesweeper/custom", response_class=HTMLResponse)
 async def cubesweeper_custom(request: Request):
-    return templates.TemplateResponse("cubesweeper.html", {
-        "request": request, "mode": "custom",
+    return templates.TemplateResponse(request, "cubesweeper.html", {
+        "mode": "custom",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "grid_size": 9, "mines": 10,
@@ -4505,8 +4502,7 @@ async def cubesweeper_custom(request: Request):
 
 @app.get("/cubesweeper/leaderboard", response_class=HTMLResponse)
 async def cubesweeper_leaderboard(request: Request):
-    return templates.TemplateResponse("cubesweeper_leaderboard.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "cubesweeper_leaderboard.html", {
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -4627,8 +4623,8 @@ MOBIUS_MODES_VALID = {"beginner", "intermediate", "expert"}
 
 @app.get("/minesweeperchess", response_class=HTMLResponse)
 async def minesweeperchess(request: Request):
-    return templates.TemplateResponse("minesweeperchess.html", {
-        "request": request, "mode": "minesweeperchess",
+    return templates.TemplateResponse(request, "minesweeperchess.html", {
+        "mode": "minesweeperchess",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "page_localized": False,
@@ -4638,8 +4634,8 @@ async def minesweeperchess(request: Request):
 @app.get("/mobiussweeper", response_class=HTMLResponse)
 async def mobiussweeper_beginner(request: Request):
     m = MOBIUSSWEEPER_MODES["beginner"]
-    return templates.TemplateResponse("mobiussweeper.html", {
-        "request": request, "mode": "beginner",
+    return templates.TemplateResponse(request, "mobiussweeper.html", {
+        "mode": "beginner",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **m,
@@ -4649,8 +4645,8 @@ async def mobiussweeper_beginner(request: Request):
 @app.get("/mobiussweeper/intermediate", response_class=HTMLResponse)
 async def mobiussweeper_intermediate(request: Request):
     m = MOBIUSSWEEPER_MODES["intermediate"]
-    return templates.TemplateResponse("mobiussweeper.html", {
-        "request": request, "mode": "intermediate",
+    return templates.TemplateResponse(request, "mobiussweeper.html", {
+        "mode": "intermediate",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **m,
@@ -4660,8 +4656,8 @@ async def mobiussweeper_intermediate(request: Request):
 @app.get("/mobiussweeper/expert", response_class=HTMLResponse)
 async def mobiussweeper_expert(request: Request):
     m = MOBIUSSWEEPER_MODES["expert"]
-    return templates.TemplateResponse("mobiussweeper.html", {
-        "request": request, "mode": "expert",
+    return templates.TemplateResponse(request, "mobiussweeper.html", {
+        "mode": "expert",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         **m,
@@ -4670,8 +4666,7 @@ async def mobiussweeper_expert(request: Request):
 
 @app.get("/mobiussweeper/leaderboard", response_class=HTMLResponse)
 async def mobiussweeper_leaderboard(request: Request):
-    return templates.TemplateResponse("mobiussweeper_leaderboard.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "mobiussweeper_leaderboard.html", {
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -4939,8 +4934,8 @@ async def tentaizu_page(request: Request, date_param: str = Query(None, alias="d
     puzzle_date = real_today
     if date_param and re.match(r"^\d{4}-\d{2}-\d{2}$", date_param):
         puzzle_date = date_param
-    return templates.TemplateResponse("tentaizu.html", {
-        "request": request, "mode": "tentaizu",
+    return templates.TemplateResponse(request, "tentaizu.html", {
+        "mode": "tentaizu",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": puzzle_date,
@@ -4950,8 +4945,8 @@ async def tentaizu_page(request: Request, date_param: str = Query(None, alias="d
 
 @app.get("/tentaizu/how-to-play", response_class=HTMLResponse)
 async def tentaizu_howto(request: Request):
-    return templates.TemplateResponse("tentaizu_howto.html", {
-        "request": request, "mode": "tentaizu-howto",
+    return templates.TemplateResponse(request, "tentaizu_howto.html", {
+        "mode": "tentaizu-howto",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -4959,8 +4954,8 @@ async def tentaizu_howto(request: Request):
 
 @app.get("/tentaizu/strategy", response_class=HTMLResponse)
 async def tentaizu_strategy(request: Request):
-    return templates.TemplateResponse("tentaizu_strategy.html", {
-        "request": request, "mode": "tentaizu-strategy",
+    return templates.TemplateResponse(request, "tentaizu_strategy.html", {
+        "mode": "tentaizu-strategy",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -4971,8 +4966,8 @@ async def tentaizu_archive(request: Request):
     from datetime import timedelta
     today = date.today()
     past_dates = [(today - timedelta(days=i)).isoformat() for i in range(1, 91)]
-    return templates.TemplateResponse("tentaizu_archive.html", {
-        "request": request, "mode": "tentaizu-archive",
+    return templates.TemplateResponse(request, "tentaizu_archive.html", {
+        "mode": "tentaizu-archive",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today.isoformat(),
@@ -4985,8 +4980,8 @@ async def tentaizu_archive(request: Request):
 @app.get("/tentaizu/easy-5x5-6", response_class=HTMLResponse)
 async def tentaizu_easy_page(request: Request):
     real_today = date.today().isoformat()
-    return templates.TemplateResponse("tentaizu_easy.html", {
-        "request": request, "mode": "tentaizu-easy",
+    return templates.TemplateResponse(request, "tentaizu_easy.html", {
+        "mode": "tentaizu-easy",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": real_today,
@@ -5000,8 +4995,8 @@ async def tentaizu_easy_permalink(request: Request, date_str: str):
     real_today = date.today().isoformat()
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
         return RedirectResponse("/tentaizu/easy-5x5-6", status_code=302)
-    return templates.TemplateResponse("tentaizu_easy.html", {
-        "request": request, "mode": "tentaizu-easy",
+    return templates.TemplateResponse(request, "tentaizu_easy.html", {
+        "mode": "tentaizu-easy",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": date_str,
@@ -5039,8 +5034,8 @@ async def tentaizu_permalink(request: Request, date_str: str):
     real_today = date.today().isoformat()
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
         return RedirectResponse("/tentaizu", status_code=302)
-    return templates.TemplateResponse("tentaizu.html", {
-        "request": request, "mode": "tentaizu",
+    return templates.TemplateResponse(request, "tentaizu.html", {
+        "mode": "tentaizu",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": date_str,
@@ -5053,8 +5048,8 @@ async def tentaizu_permalink(request: Request, date_str: str):
 
 @app.get("/mosaic", response_class=HTMLResponse)
 async def mosaic_page(request: Request, seed: str = ""):
-    return templates.TemplateResponse("mosaic_easy.html", {
-        "request": request, "mode": "mosaic",
+    return templates.TemplateResponse(request, "mosaic_easy.html", {
+        "mode": "mosaic",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
@@ -5063,8 +5058,8 @@ async def mosaic_page(request: Request, seed: str = ""):
 
 @app.get("/mosaic/how-to-play", response_class=HTMLResponse)
 async def mosaic_howto(request: Request):
-    return templates.TemplateResponse("mosaic_howto.html", {
-        "request": request, "mode": "mosaic-howto",
+    return templates.TemplateResponse(request, "mosaic_howto.html", {
+        "mode": "mosaic-howto",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -5076,8 +5071,8 @@ async def mosaic_easy_redirect(request: Request):
 
 @app.get("/mosaic/standard", response_class=HTMLResponse)
 async def mosaic_standard_page(request: Request, seed: str = ""):
-    return templates.TemplateResponse("mosaic.html", {
-        "request": request, "mode": "mosaic",
+    return templates.TemplateResponse(request, "mosaic.html", {
+        "mode": "mosaic",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
@@ -5087,8 +5082,8 @@ async def mosaic_standard_page(request: Request, seed: str = ""):
 @app.get("/mosaic/replay", response_class=HTMLResponse)
 async def mosaic_replay_page(request: Request, seed: str = "", rows: int = 9, cols: int = 9):
     cell_size = 64 if rows <= 5 else 42
-    return templates.TemplateResponse("mosaic_replay.html", {
-        "request": request, "mode": "mosaic",
+    return templates.TemplateResponse(request, "mosaic_replay.html", {
+        "mode": "mosaic",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": date.today().isoformat(),
@@ -5111,8 +5106,8 @@ async def mosaic_custom_page(
     cols      = max(3, min(20, cols))
     density   = max(0.1, min(0.6, density))
     cell_size = 64 if (rows <= 5 and cols <= 5) else (46 if rows <= 9 else 34)
-    return templates.TemplateResponse("mosaic_custom.html", {
-        "request":   request, "mode": "mosaic",
+    return templates.TemplateResponse(request, "mosaic_custom.html", {
+        "mode": "mosaic",
         "user":      get_current_user(request),
         "lang":      get_lang(request), "t": get_t(request),
         "hash":      hash,
@@ -5710,13 +5705,11 @@ async def public_profile_page(request: Request, slug: str, db: Session = Depends
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
     if not profile.is_public:
-        return templates.TemplateResponse("profile_private.html", {
-            "request": request,
+        return templates.TemplateResponse(request, "profile_private.html", {
             "display_name": profile.display_name or "This player",
             "lang": get_lang(request), "t": get_t(request),
         }, status_code=200)
-    return templates.TemplateResponse("profile_public.html", {
-        "request":       request,
+    return templates.TemplateResponse(request, "profile_public.html", {
         "mode":          "profile",
         "display_name":  profile.display_name,
         "favorite_game": profile.favorite_game or "",
@@ -6150,8 +6143,7 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     except Exception:
         alert_operations = False
 
-    return templates.TemplateResponse("admin.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "admin.html", {
         "user": user,
         "lang": get_lang(request),
         "t": get_t(request),
@@ -6231,8 +6223,7 @@ def admin_users(request: Request, db: Session = Depends(get_db)):
         ORDER BY total_games DESC
     """)).fetchall()
 
-    return templates.TemplateResponse("admin_users.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "admin_users.html", {
         "user": user,
         "lang": get_lang(request),
         "t": get_t(request),
@@ -6290,8 +6281,7 @@ def admin_kanban(request: Request):
             cards.append({"id": card_id, "description": description, "assignee": assignee})
         columns.append({"name": col_name, "cards": cards})
 
-    return templates.TemplateResponse("admin_kanban.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "admin_kanban.html", {
         "user": user,
         "t": get_t(request),
         "lang": get_lang(request),
@@ -6357,8 +6347,7 @@ def admin_operations(request: Request, db: Session = Depends(get_db)):
     chart_net_recv   = [round((r.net_delta_recv or 0) / (1024 ** 2), 2) for r in history]
     chart_requests   = [r.http_requests for r in history]
 
-    return templates.TemplateResponse("admin_operations.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "admin_operations.html", {
         "user": user,
         "lang": get_lang(request),
         "t": get_t(request),
@@ -6585,8 +6574,7 @@ def admin_web_traffic(request: Request, db: Session = Depends(get_db)):
     api_desktop      = _api_desktop
     api_unknown      = _api_unknown
 
-    return templates.TemplateResponse("admin_web_traffic.html", {
-        "request":      request,
+    return templates.TemplateResponse(request, "admin_web_traffic.html", {
         "user":         user,
         "lang":         get_lang(request),
         "t":            get_t(request),
@@ -6666,8 +6654,7 @@ def admin_blog(request: Request, db: Session = Depends(get_db)):
 
     pending  = db.query(BlogComment).filter_by(approved=False).order_by(BlogComment.created_at).all()
     approved = db.query(BlogComment).filter_by(approved=True).order_by(BlogComment.created_at.desc()).limit(50).all()
-    return templates.TemplateResponse("admin_blog.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "admin_blog.html", {
         "user": user,
         "lang": get_lang(request),
         "t": get_t(request),
@@ -6706,8 +6693,7 @@ def admin_contact(request: Request, db: Session = Depends(get_db)):
     require_admin(request, user)
     unread = db.query(ContactMessage).filter_by(read=False).order_by(ContactMessage.created_at.desc()).all()
     read   = db.query(ContactMessage).filter_by(read=True).order_by(ContactMessage.created_at.desc()).limit(50).all()
-    return templates.TemplateResponse("admin_contact.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "admin_contact.html", {
         "user": user,
         "lang": get_lang(request),
         "t": get_t(request),
@@ -6863,8 +6849,7 @@ def admin_hscleaning(
         for f in flagged_scores
     }
 
-    return templates.TemplateResponse("admin_hscleaning.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "admin_hscleaning.html", {
         "user": user,
         "lang": get_lang(request),
         "t": get_t(request),
@@ -7021,8 +7006,7 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
                 source_content = f.read()
             current_src = src
 
-    return templates.TemplateResponse("admin_analysis.html", {
-        "request":          request,
+    return templates.TemplateResponse(request, "admin_analysis.html", {
         "user":             user,
         "lang":             get_lang(request),
         "t":                get_t(request),
@@ -7175,8 +7159,8 @@ def mahjong_game_root():
 @app.get("/other/mahjong/leaderboard", response_class=HTMLResponse)
 def mahjong_leaderboard_page(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("mj_leaderboard.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "mj_leaderboard.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
         "today": today,
@@ -7185,8 +7169,8 @@ def mahjong_leaderboard_page(request: Request):
 
 @app.get("/other/mahjong/how-to-play", response_class=HTMLResponse)
 def mahjong_howtoplay_page(request: Request):
-    return templates.TemplateResponse("mj_howtoplay.html", {
-        "request": request, "mode": "other",
+    return templates.TemplateResponse(request, "mj_howtoplay.html", {
+        "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
     })
@@ -7344,8 +7328,7 @@ def jigsaw_daily_page(request: Request,
     else:
         image_name = _jigsaw_daily_image(today)
     difficulty = diff if diff in _JIGSAW_DIFFICULTIES else ""
-    return templates.TemplateResponse("jigsaw_daily.html", {
-        "request":    request,
+    return templates.TemplateResponse(request, "jigsaw_daily.html", {
         "mode":       "other",
         "user":       get_current_user(request),
         "lang":       get_lang(request),
@@ -7368,8 +7351,7 @@ def jigsaw_gallery_page(request: Request):
         )
     except OSError:
         images = []
-    return templates.TemplateResponse("jigsaw_gallery.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "jigsaw_gallery.html", {
         "mode":    "other",
         "user":    get_current_user(request),
         "lang":    get_lang(request),
@@ -7389,8 +7371,7 @@ def jigsaw_generator_page(request: Request, db: Session = Depends(get_db)):
         ).all()
         profile = db.query(UserProfile).filter_by(email=user["email"]).first()
         limit = getattr(profile, "puzzle_storage_limit", 32) if profile else 32
-    return templates.TemplateResponse("jigsaw_generator.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "jigsaw_generator.html", {
         "mode":    "other",
         "user":    user,
         "lang":    get_lang(request),
@@ -7404,8 +7385,7 @@ def jigsaw_generator_page(request: Request, db: Session = Depends(get_db)):
 @app.get("/other/jigsaw/leaderboard", response_class=HTMLResponse)
 def jigsaw_leaderboard_page(request: Request):
     today = date.today().isoformat()
-    return templates.TemplateResponse("jigsaw_leaderboard.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "jigsaw_leaderboard.html", {
         "mode":    "other",
         "user":    get_current_user(request),
         "lang":    get_lang(request),
@@ -7416,8 +7396,7 @@ def jigsaw_leaderboard_page(request: Request):
 
 @app.get("/other/jigsaw/how-to-play", response_class=HTMLResponse)
 def jigsaw_howtoplay_page(request: Request):
-    return templates.TemplateResponse("jigsaw_howtoplay.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "jigsaw_howtoplay.html", {
         "mode":    "other",
         "user":    get_current_user(request),
         "lang":    get_lang(request),
@@ -7443,8 +7422,7 @@ def jigsaw_photo_play(request: Request, board_hash: str, difficulty: str = Query
         pending_review = True
     else:
         pending_review = False
-    return templates.TemplateResponse("jigsaw_daily.html", {
-        "request":        request,
+    return templates.TemplateResponse(request, "jigsaw_daily.html", {
         "mode":           "other",
         "user":           user,
         "lang":           get_lang(request),
@@ -7882,8 +7860,7 @@ async def archive_day(
               "Server-rendered leaderboard of registered players.")
     _canon = f"https://minesweeper.org/{mode}/{date_str}/{guess_mode}"
 
-    return templates.TemplateResponse("archive_day.html", {
-        "request":      request,
+    return templates.TemplateResponse(request, "archive_day.html", {
         "mode":         mode,
         "date_str":     date_str,
         "guess_mode":   guess_mode,
@@ -7915,8 +7892,8 @@ async def nonosweeper_page(request: Request, date_param: str = Query(None, alias
         puzzle_date = date_param
     print(f"[DEBUG] nonosweeper_page puzzle_date={puzzle_date}", flush=True)
     try:
-        response = templates.TemplateResponse("nonosweeper.html", {
-            "request": request, "mode": "nonosweeper",
+        response = templates.TemplateResponse(request, "nonosweeper.html", {
+            "mode": "nonosweeper",
             "user": get_current_user(request),
             "lang": get_lang(request), "t": get_t(request),
             "today": puzzle_date,
@@ -7939,8 +7916,8 @@ async def nonosweeper_permalink(request: Request, date_str: str):
         print(f"[DEBUG] nonosweeper_permalink invalid date_str, redirecting", flush=True)
         return RedirectResponse("/nonosweeper", status_code=302)
     try:
-        response = templates.TemplateResponse("nonosweeper.html", {
-            "request": request, "mode": "nonosweeper",
+        response = templates.TemplateResponse(request, "nonosweeper.html", {
+            "mode": "nonosweeper",
             "user": get_current_user(request),
             "lang": get_lang(request), "t": get_t(request),
             "today": date_str,
@@ -7959,8 +7936,7 @@ async def nonosweeper_permalink(request: Request, date_str: str):
 
 @app.get("/tametsi", response_class=HTMLResponse)
 async def tametsi_page(request: Request):
-    return templates.TemplateResponse("tametsi.html", {
-        "request":      request,
+    return templates.TemplateResponse(request, "tametsi.html", {
         "mode":         "tametsi",
         "user":         get_current_user(request),
         "lang":         get_lang(request),
@@ -7972,8 +7948,7 @@ async def tametsi_page(request: Request):
 @app.get("/tametsi/board/{board_hash}", response_class=HTMLResponse)
 async def tametsi_board_page(request: Request, board_hash: str):
     _hash = board_hash if re.match(r"^[0-9a-f]{64}$", board_hash) else None
-    return templates.TemplateResponse("tametsi.html", {
-        "request":      request,
+    return templates.TemplateResponse(request, "tametsi.html", {
         "mode":         "tametsi",
         "user":         get_current_user(request),
         "lang":         get_lang(request),
@@ -8310,8 +8285,7 @@ def tametsi_history_page(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
     if not user:
         return RedirectResponse("/login", status_code=302)
-    return templates.TemplateResponse("tametsi_history.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "tametsi_history.html", {
         "user":    user,
         "t":       get_t(request),
         "mode":    "tametsi",
@@ -8351,8 +8325,7 @@ def tametsi_replay_page(replay_id: int, request: Request, db: Session = Depends(
     replay = db.get(GameReplay, replay_id)
     if not replay or not replay.mode or not replay.mode.startswith("tametsi-"):
         raise HTTPException(status_code=404, detail="Replay not found")
-    return templates.TemplateResponse("tametsi_replay.html", {
-        "request":   request,
+    return templates.TemplateResponse(request, "tametsi_replay.html", {
         "user":      get_current_user(request),
         "t":         get_t(request),
         "replay_id": replay_id,
@@ -8366,8 +8339,7 @@ def tametsi_replay_page(replay_id: int, request: Request, db: Session = Depends(
 @app.get("/numbers-match", response_class=HTMLResponse)
 async def numbers_match_page(request: Request):
     real_today = numbers_match_today_str()
-    return templates.TemplateResponse("numbers_match.html", {
-        "request":    request,
+    return templates.TemplateResponse(request, "numbers_match.html", {
         "mode":       "numbers-match",
         "user":       get_current_user(request),
         "lang":       get_lang(request),
@@ -8383,8 +8355,7 @@ async def numbers_match_permalink(request: Request, date_str: str):
     real_today = numbers_match_today_str()
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
         return RedirectResponse("/numbers-match", status_code=302)
-    return templates.TemplateResponse("numbers_match.html", {
-        "request":    request,
+    return templates.TemplateResponse(request, "numbers_match.html", {
         "mode":       "numbers-match",
         "user":       get_current_user(request),
         "lang":       get_lang(request),
@@ -8729,8 +8700,8 @@ def wc2026_main(request: Request, db: Session = Depends(get_db)):
     groups    = {g: WC2026_BY_GROUP[g] for g in WC2026_GROUPS}
     country_lb = _fan_country_leaderboard(db)
     individual_lb = _individual_leaderboard(db)
-    return templates.TemplateResponse("wc2026_main.html", {
-        "request": request, "user": user, "t": t,
+    return templates.TemplateResponse(request, "wc2026_main.html", {
+        "user": user, "t": t,
         "lang": get_lang(request),
         "mode": "wc2026",
         "groups": groups,
@@ -8776,8 +8747,8 @@ def wc2026_country(slug: str, request: Request, db: Session = Depends(get_db)):
                 db, None, slug, "hard", guest_token=token
             ))
 
-    return templates.TemplateResponse("wc2026_country.html", {
-        "request": request, "user": user, "t": t,
+    return templates.TemplateResponse(request, "wc2026_country.html", {
+        "user": user, "t": t,
         "lang": get_lang(request),
         "mode": "wc2026",
         "country": country,
@@ -9118,8 +9089,8 @@ def wc2026_admin_matches(request: Request, db: Session = Depends(get_db)):
     matches = (db.query(WC2026Match)
                .order_by(WC2026Match.match_date, WC2026Match.time_cdt)
                .all())
-    return templates.TemplateResponse("admin_wc2026_matches.html", {
-        "request": request, "user": user, "mode": "admin",
+    return templates.TemplateResponse(request, "admin_wc2026_matches.html", {
+        "user": user, "mode": "admin",
         "matches": matches,
         "by_slug": WC2026_BY_SLUG,
     })

@@ -94,8 +94,7 @@ async def duel_lobby(request: Request, m: str = "standard"):
         rows, cols, mines = PVP_ROWS, PVP_COLS, PVP_MINES
     game      = create_game(rows=rows, cols=cols, mines=mines, submode=m)
     player_id = uuid.uuid4().hex[:8]
-    return templates.TemplateResponse("duel.html", {
-        "request":    request,
+    return templates.TemplateResponse(request, "duel.html", {
         "game_id":    game.game_id,
         "player_id":  player_id,
         "rows":       rows,
@@ -114,21 +113,20 @@ async def duel_lobby(request: Request, m: str = "standard"):
 async def duel_join(request: Request, game_id: str):
     game = get_game(game_id)
     if not game:
-        return templates.TemplateResponse("duel_error.html", {
-            "request": request, "lang": get_lang(request), "t": get_t(request),
+        return templates.TemplateResponse(request, "duel_error.html", {
+            "lang": get_lang(request), "t": get_t(request),
             "code": 404, "title": "Game not found",
             "message": "This duel has expired or never existed. Games are kept for 2 hours.",
         }, status_code=404)
     if game.finished:
-        return templates.TemplateResponse("duel_error.html", {
-            "request": request, "lang": get_lang(request), "t": get_t(request),
+        return templates.TemplateResponse(request, "duel_error.html", {
+            "lang": get_lang(request), "t": get_t(request),
             "code": 410, "title": "Game already ended",
             "message": "This duel has already finished. Start a new one!",
         }, status_code=410)
     player_id  = uuid.uuid4().hex[:8]
     is_creator = len(game.players) == 0
-    return templates.TemplateResponse("duel.html", {
-        "request":    request,
+    return templates.TemplateResponse(request, "duel.html", {
         "game_id":    game_id,
         "player_id":  player_id,
         "rows":       game.rows,
@@ -154,8 +152,7 @@ async def pvp_lobby(request: Request, m: Optional[str] = None):
         m = "standard"
         rows, cols, mines = PVP_ROWS, PVP_COLS, PVP_MINES
     player_id = uuid.uuid4().hex[:8]
-    return templates.TemplateResponse("duel.html", {
-        "request":    request,
+    return templates.TemplateResponse(request, "duel.html", {
         "game_id":    "",
         "player_id":  player_id,
         "rows":       rows,
@@ -172,8 +169,7 @@ async def pvp_lobby(request: Request, m: Optional[str] = None):
 # ── Page: PvP vs Bot lobby (difficulty picker) ────────────────────────────────
 @duel_router.get("/pvp/bot", response_class=HTMLResponse)
 async def pvp_bot_lobby(request: Request):
-    return templates.TemplateResponse("pvp_bot_lobby.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "pvp_bot_lobby.html", {
         "mode":    "pvp-bot",
         "user":    get_current_user(request),
         "lang":    get_lang(request), "t": get_t(request),
@@ -190,8 +186,7 @@ async def pvp_bot_play(request: Request, d: str = "medium", m: str = "standard")
         m = "standard"
         rows, cols, mines = PVP_ROWS, PVP_COLS, PVP_MINES
     player_id = uuid.uuid4().hex[:8]
-    return templates.TemplateResponse("duel.html", {
-        "request":        request,
+    return templates.TemplateResponse(request, "duel.html", {
         "game_id":        "",
         "player_id":      player_id,
         "rows":           rows,
@@ -210,8 +205,7 @@ async def pvp_bot_play(request: Request, d: str = "medium", m: str = "standard")
 # ── Page: PvP Leaderboard ─────────────────────────────────────────────────────
 @duel_router.get("/pvp/leaderboard", response_class=HTMLResponse)
 async def pvp_leaderboard_page(request: Request):
-    return templates.TemplateResponse("pvp_leaderboard.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "pvp_leaderboard.html", {
         "mode":    "pvp-leaderboard",
         "user":    get_current_user(request),
         "lang":    get_lang(request), "t": get_t(request),
@@ -221,8 +215,7 @@ async def pvp_leaderboard_page(request: Request):
 # ── Page: PvP Rankings ────────────────────────────────────────────────────────
 @duel_router.get("/pvp/rankings", response_class=HTMLResponse)
 async def pvp_rankings_page(request: Request):
-    return templates.TemplateResponse("pvp_rankings.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "pvp_rankings.html", {
         "mode":    "pvp-rankings",
         "user":    get_current_user(request),
         "lang":    get_lang(request), "t": get_t(request),
@@ -783,8 +776,7 @@ async def pvpbeta_lobby(request: Request, m: str = "standard"):
         m = "standard"
         rows, cols, mines = PVP_ROWS, PVP_COLS, PVP_MINES
     player_id = uuid.uuid4().hex[:8]
-    return templates.TemplateResponse("duel.html", {
-        "request":    request,
+    return templates.TemplateResponse(request, "duel.html", {
         "game_id":    "",
         "player_id":  player_id,
         "rows":       rows,
@@ -800,8 +792,7 @@ async def pvpbeta_lobby(request: Request, m: str = "standard"):
 
 @duel_router.get("/pvpbeta/bot", response_class=HTMLResponse)
 async def pvpbeta_bot_lobby(request: Request):
-    return templates.TemplateResponse("pvpbeta_bot_lobby.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "pvpbeta_bot_lobby.html", {
         "user":    get_current_user(request),
         "lang":    get_lang(request), "t": get_t(request),
     })
@@ -815,8 +806,7 @@ async def pvpbeta_bot_play(request: Request, d: str = "medium", m: str = "standa
         m = "standard"
         rows, cols, mines = PVP_ROWS, PVP_COLS, PVP_MINES
     player_id = uuid.uuid4().hex[:8]
-    return templates.TemplateResponse("duel.html", {
-        "request":        request,
+    return templates.TemplateResponse(request, "duel.html", {
         "game_id":        "",
         "player_id":      player_id,
         "rows":           rows,
@@ -1019,15 +1009,14 @@ async def pvpbeta_bot_ws(ws: WebSocket, player_id: str,
 async def duel_watch(request: Request, game_id: str):
     game = get_game(game_id)
     if not game:
-        return templates.TemplateResponse("duel_error.html", {
-            "request": request, "lang": get_lang(request), "t": get_t(request),
+        return templates.TemplateResponse(request, "duel_error.html", {
+            "lang": get_lang(request), "t": get_t(request),
             "code": 404, "title": "Game not found",
             "message": "This duel has expired or never existed. Games are kept for 2 hours.",
         }, status_code=404)
     spec_id = uuid.uuid4().hex[:8]
     user    = get_current_user(request)
-    return templates.TemplateResponse("spectate.html", {
-        "request":  request,
+    return templates.TemplateResponse(request, "spectate.html", {
         "game_id":  game_id,
         "spec_id":  spec_id,
         "rows":     game.rows,
