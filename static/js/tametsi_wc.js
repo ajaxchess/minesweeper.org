@@ -494,11 +494,22 @@ function wcMountBoard(wrap) {
 
         const info = document.createElement('div');
         info.className = 'wc-solved-text';
+        const capNote = result.capped
+            ? `<div class="wc-solved-stats" style="color:#c62828;">Daily guest cap reached — extra points clamped to 0. Log in to keep earning.</div>`
+            : '';
+        const guestNote = (result.is_guest && !result.capped)
+            ? `<div class="wc-solved-stats">
+                <a href="/auth/login?next=${encodeURIComponent(location.pathname)}">Log in</a>
+                to claim these points and join the biggest fans leaderboard.
+              </div>`
+            : '';
         info.innerHTML = `<div class="wc-solved-trophy">🏆</div>
             <strong>Board Solved${timeStr}!</strong><br>
             +${result.flags_correct} flags &nbsp;+${result.solve_bonus} bonus
             = <strong>${result.total_points} pts</strong> for your team
-            <div class="wc-solved-stats">3BV: ${bbbv} &nbsp;|&nbsp; Clicks: ${totalClicks} &nbsp;|&nbsp; Efficiency: ${effPct}%</div>`;
+            <div class="wc-solved-stats">3BV: ${bbbv} &nbsp;|&nbsp; Clicks: ${totalClicks} &nbsp;|&nbsp; Efficiency: ${effPct}%</div>
+            ${capNote}
+            ${guestNote}`;
 
         const btn = document.createElement('button');
         btn.className = 'wc-try-again-btn';

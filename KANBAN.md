@@ -12,6 +12,7 @@
 - F84 Cinco De Mayo Theme — site default on May 5 @bill
 - F85 Canada Day Theme — site default on July 1 @bill
 - F86 Independence Day Theme — site default on July 4 @earl
+- F100 WC2026 translation backfill — `wc_guest_login_cta`, `wc_guest_pick_team_prompt`, `wc_change_team` (currently English-only, fall back via Jinja `default`)
 
 ## In Progress
 - F52 Schulte Grid — /other/schulte @richard

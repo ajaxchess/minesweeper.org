@@ -14,6 +14,15 @@ List of active features
   purged at midnight UTC daily. Registered user scores are retained permanently.
 
 ──────────────────────────────────────────────────────────────────────────────
+F100 WC2026 Translation Backfill
+  - Three keys ship with English-only `default` fallbacks from the F97 guest-play
+    work and need translations in the other 8 supported languages.
+  - Keys: `wc_guest_login_cta`, `wc_guest_pick_team_prompt`, `wc_change_team`.
+  - Files: `translations.py` (add per-language strings); fallbacks already exist
+    in `templates/wc2026_country.html` and `templates/wc2026_main.html`.
+  - Acceptance: each of the 9 languages renders the guest banner strings
+    natively (no English leakage on the WC pages when ?lang=… is set).
+
 F99 Tametsi Bootcamp
 
 F98 Minesweeper Bootcamp

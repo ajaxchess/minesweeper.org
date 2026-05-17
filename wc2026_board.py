@@ -16,9 +16,25 @@ from tametsi_generator import generate_board
 from wc2026_data import WC2026_EASY, WC2026_HARD
 
 
-def _seed_for(email: str, country_slug: str, difficulty: str, play_count: int = 0) -> int:
-    """Deterministic seed: same user + country + difficulty + play_count → same board."""
-    raw = f"wc2026:{email}:{country_slug}:{difficulty}:{play_count}"
+def _identity_key(email: str | None, guest_token: str | None) -> str:
+    """Return a stable string that uniquely identifies the player for seeding.
+
+    Exactly one of email / guest_token must be non-None. The prefix prevents
+    a guest_token that happens to look like an email from colliding with a
+    real account's seed space.
+    """
+    if email and guest_token:
+        raise ValueError("Pass either email or guest_token, not both")
+    if email:
+        return f"u:{email}"
+    if guest_token:
+        return f"g:{guest_token}"
+    raise ValueError("One of email or guest_token must be provided")
+
+
+def _seed_for(identity: str, country_slug: str, difficulty: str, play_count: int = 0) -> int:
+    """Deterministic seed: same player + country + difficulty + play_count → same board."""
+    raw = f"wc2026:{identity}:{country_slug}:{difficulty}:{play_count}"
     return int(hashlib.md5(raw.encode()).hexdigest(), 16) & 0xFFFF_FFFF
 
 
@@ -26,10 +42,22 @@ def _spec(difficulty: str) -> dict:
     return WC2026_EASY if difficulty == "easy" else WC2026_HARD
 
 
-def _make_board(email: str, country_slug: str, difficulty: str, play_count: int = 0):
-    """Generate a no-guess board and return (mine_layout_json, cell_state_json)."""
+def _make_board(
+    email: str | None,
+    country_slug: str,
+    difficulty: str,
+    play_count: int = 0,
+    *,
+    guest_token: str | None = None,
+):
+    """Generate a no-guess board and return (mine_layout_json, cell_state_json).
+
+    Pass exactly one of email / guest_token. (email-only call sites are
+    grandfathered via the positional signature; guest sites use the kwarg.)
+    """
     spec = _spec(difficulty)
-    rng  = random.Random(_seed_for(email, country_slug, difficulty, play_count))
+    identity = _identity_key(email, guest_token)
+    rng  = random.Random(_seed_for(identity, country_slug, difficulty, play_count))
     board = generate_board(spec["rows"], spec["cols"], spec["mines"], rng=rng)
     mines_json = json.dumps(sorted([r, c] for r, c in board.mines))
     total = spec["rows"] * spec["cols"]
@@ -39,21 +67,40 @@ def _make_board(email: str, country_slug: str, difficulty: str, play_count: int 
     return mines_json, cells_json
 
 
-def get_or_create_board(db: Session, email: str, country_slug: str, difficulty: str):
-    """Return the WC2026BoardState row, creating it if it doesn't exist."""
+def get_or_create_board(
+    db: Session,
+    email: str | None,
+    country_slug: str,
+    difficulty: str,
+    *,
+    guest_token: str | None = None,
+):
+    """Return the WC2026BoardState row, creating it if it doesn't exist.
+
+    Pass exactly one of email / guest_token. Logged-in callers pass email;
+    anonymous callers pass guest_token (the UUID from request.session).
+    """
     from database import WC2026BoardState  # local import avoids circular deps
 
-    row = (
-        db.query(WC2026BoardState)
-        .filter_by(email=email, country_slug=country_slug, difficulty=difficulty)
-        .first()
+    # Resolve identity once so we fail fast on bad call sites.
+    _identity_key(email, guest_token)
+
+    q = db.query(WC2026BoardState).filter_by(
+        country_slug=country_slug, difficulty=difficulty
     )
+    if email:
+        row = q.filter_by(email=email).first()
+    else:
+        row = q.filter_by(guest_token=guest_token).first()
     if row:
         return row
 
-    mines_json, cells_json = _make_board(email, country_slug, difficulty)
+    mines_json, cells_json = _make_board(
+        email, country_slug, difficulty, guest_token=guest_token
+    )
     row = WC2026BoardState(
         email=email,
+        guest_token=guest_token,
         country_slug=country_slug,
         difficulty=difficulty,
         mine_layout=mines_json,

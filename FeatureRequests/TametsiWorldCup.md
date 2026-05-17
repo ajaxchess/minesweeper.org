@@ -451,3 +451,145 @@ The World Cup boards use a variant of the existing Tametsi renderer. Additions n
 8. Phase 7 — Nav link (trivial, do alongside Phase 6)
 9. Phase 8 — Timezone (depends on Phase 2 migration)
 10. Full integration test: set fan flag → visit country → play board → check leaderboard
+
+---
+
+## Addendum — Guest Play (2026-05-16)
+
+### Motivation
+
+Today, every WC page server-side and template-side blocks non-logged-in users from playing. The current gates are at `main.py:8594-8612` (no boards generated unless `user and fan_ctx["wc_fan"]`), the `if not user: return 401` early-return in every `/api/wc2026/board/*` endpoint, and the `wcc-play-gate` block in `templates/wc2026_country.html:96-99`.
+
+We want guests to be able to play and **contribute to country scores**, with login reserved as the route to appear on the *individual* "biggest fans" leaderboard. This brings WC into line with the project's existing guest-play-then-claim convention used in the main minesweeper game and several other game variants (Score, RushScore, CylinderScore, ToroidScore, TentaizuScore, ReplayScore, ReplayScore, game_replays, nonosweeper_scores, etc.) — the WC feature is the outlier.
+
+### Product decisions (locked)
+
+- **Guests can earn country points.** Their solves write to `wc2026_scores` and roll into the country leaderboard total. The country total is the *combined* sum of guest-keyed and email-keyed rows; we do not split the column.
+- **Guests do not appear on the individual "biggest fans" leaderboard.** Logging in is the carrot. The individual leaderboard query filters to `email IS NOT NULL`.
+- **Light anti-abuse only.** A small per-IP daily cap on guest-earned WC points and a per-cookie rate limit on `/solve`. Other admin score-review channels already exist; we don't need tournament-grade defenses here.
+- **Claim on login.** When a guest logs in, all `wc2026_board_states` and `wc2026_scores` rows carrying their `guest_token` are reassigned to the new account. In-progress boards survive; earned points become "fan" points on the individual leaderboard.
+
+### Schema delta
+
+Two migrations to add via `_apply_migrations()` in `database_template.py`. Naming follows the project's existing `guest_token` convention (already present on `scores`, `rush_scores`, `cylinder_scores`, `toroid_scores`, `tentaizu_scores`, `replay_scores`, `nonosweeper_scores`, `game_replays`).
+
+```
+("wc2026_board_states", "guest_token", "VARCHAR(36) NULL")
+("wc2026_scores",       "guest_token", "VARCHAR(36) NULL")
+```
+
+The existing `email VARCHAR(256) NOT NULL` columns on both tables must become **nullable** so a row can be keyed by `guest_token` instead. This is two additional ALTERs to add to the migrations list (with idempotency check on `IS_NULLABLE`).
+
+Indexes:
+
+- Drop the existing unique index `ix_wc2026_board_states_email_country_diff` (which was `(email, country_slug, difficulty)` with `email NOT NULL`) and replace with two partial-uniqueness expressions. MySQL doesn't support partial indexes, so use one unique index that includes both candidate keys: `UNIQUE KEY (COALESCE(email, guest_token), country_slug, difficulty)` is awkward; instead, enforce uniqueness at the application layer (`get_or_create_board` already does the lookup) and keep two non-unique indexes for query speed:
+  - `INDEX ix_wc2026_board_states_email_country_diff (email, country_slug, difficulty)`
+  - `INDEX ix_wc2026_board_states_guest_country_diff (guest_token, country_slug, difficulty)`
+- Add `INDEX ix_wc2026_scores_guest_token (guest_token)` for the merge-on-login UPDATE.
+
+### Identity model
+
+Define a small helper in `main.py` (next to the existing WC helpers around line 8425):
+
+```python
+def _wc_player_identity(request: Request, db: Session):
+    """Return (email, guest_token, fan_flag). Exactly one of email/guest_token is non-None."""
+    user = get_current_user(request)
+    if user:
+        profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+        return user["email"], None, (profile.wc2026_fan if profile else None)
+    if "guest_token" not in request.session:
+        request.session["guest_token"] = str(uuid.uuid4())
+    return None, request.session["guest_token"], request.session.get("wc2026_fan")
+```
+
+This is the *only* place that needs to know about the identity disambiguation. Every WC endpoint and the page route call it instead of `get_current_user` + `profile.wc2026_fan`.
+
+### Endpoint behaviour changes
+
+All seven WC API endpoints lose their `if not user: return 401` early return. They use `_wc_player_identity` and pass either `email=` or `guest_token=` into board helpers and queries:
+
+- `GET  /api/wc2026/board/{slug}/{difficulty}` — works for guests; returns board keyed by guest_token.
+- `POST /api/wc2026/board/{slug}/{difficulty}/reveal` — same identity logic; server-side cell-state validation unchanged.
+- `POST /api/wc2026/board/{slug}/{difficulty}/flag` — same.
+- `POST /api/wc2026/board/{slug}/{difficulty}/solve` — requires a fan flag (from profile or cookie); writes `wc2026_scores` row with whichever identity. **Apply guest-only anti-abuse here** (see below).
+- `POST /api/wc2026/board/{slug}/{difficulty}/reset` — same identity logic.
+- `POST /api/wc2026/board/{slug}/{difficulty}/new` — same.
+- `POST /api/wc2026/set-fan` — for logged-in users, persist to `UserProfile.wc2026_fan` as today. For guests, persist to `request.session["wc2026_fan"]`. Same response shape.
+
+### Anti-abuse
+
+Two layers, both applied only when the identity is a guest_token:
+
+1. **Per-IP daily cap on guest WC points.** Before awarding points in `/solve`, sum the day's guest-keyed `wc2026_scores.total_points` for the requesting IP and cap at **200 points/day per IP**. Solves still complete; excess points clamp to 0. Visible message to the player so they're not silently grinding for nothing.
+2. **Per-cookie rate limit on `/solve`** via the existing `slowapi` `@limiter.limit` decorator: `5/minute` for guest solves is more than enough for any honest player and shuts down trivial scripted abuse.
+
+We deliberately skip stricter measures (cookie-age requirement, solve-time floor, etc.) — the team has existing score-review channels for genuine concerns.
+
+### Leaderboard query changes
+
+- `_country_leaderboard(slug)` already aggregates `wc2026_scores` rows by something display-name-ish. Update it to include both email-keyed and guest_token-keyed rows in the country total. Where it currently renders a player row, keep a single combined "Guest contributions" row at the bottom showing the country's guest-earned total. Detail: this is informational, not ranked among individual players.
+- `wc2026_lb_individuals` filters to `email IS NOT NULL`. No change to the rendering template.
+- `wc2026_lb_countries` sums both identities (no filter needed since we want everything counted).
+
+### Template changes (`wc2026_country.html`)
+
+Replace the three-state banner at lines 9-29 with a four-state model:
+
+1. Logged in, fan flag set → unchanged.
+2. Logged in, no fan flag → unchanged (inline selector).
+3. **Guest, fan flag set in cookie** (new) → "🏆 You're playing for [flag] [Country]! Log in to put your name on the biggest fans leaderboard." with a "Change team" link.
+4. **Guest, no fan flag** (new) → fan-flag selector inline, *same widget as case 2*; on the country page, default the selector to the current country.
+
+Replace the `wcc-play-gate` block at lines 96-99 with: render the board when fan_flag is set (regardless of identity); when no fan flag, show the selector inline above the board. No more "Log in to play" message.
+
+After a guest solves (in `tametsi_wc.js`), surface a small celebratory toast that mentions both the points earned for the country *and* the "Log in to claim and join the biggest fans leaderboard" CTA.
+
+### Merge-on-login
+
+Extend the existing guest-token claim loop in `/auth/callback` (`main.py:1131-1138`):
+
+```python
+guest_token = request.session.pop("guest_token", None)
+if guest_token:
+    for model in [Score, RushScore, CylinderScore, ToroidScore, TentaizuScore, ReplayScore]:
+        db.query(model).filter(
+            model.guest_token == guest_token,
+            model.user_email.is_(None),
+        ).update({"user_email": email}, synchronize_session=False)
+
+    # WC2026 score rows — same pattern, different column name
+    db.query(WC2026Score).filter(
+        WC2026Score.guest_token == guest_token,
+        WC2026Score.email.is_(None),
+    ).update({"email": email, "guest_token": None}, synchronize_session=False)
+
+    # WC2026 board states — conflict-aware merge
+    # If the logged-in user already has a board for the same (country_slug, difficulty),
+    # prefer it and delete the guest's. Otherwise, claim the guest row.
+    _claim_wc_boards(db, guest_token, email)
+
+    db.commit()
+```
+
+`_claim_wc_boards` selects all guest board rows, then for each: if no existing email-keyed row at `(country_slug, difficulty)`, `UPDATE` to set `email` and null `guest_token`; otherwise `DELETE` the guest row. Implemented per-row because the count is bounded (max 48 countries × 2 difficulties = 96 rows).
+
+Also clear the fan flag from session: if the user has no `UserProfile.wc2026_fan` but their session has `wc2026_fan`, copy it over.
+
+### Out of scope
+
+- Letting guests appear on the individual leaderboard under a custom handle.
+- Cross-device guest persistence (cookie is per-browser).
+- Captcha / proof-of-work on `/solve`.
+
+### Build order
+
+1. Migrations (guest_token columns + nullable email + new indexes).
+2. `wc2026_board.get_or_create_board` accepts `(email=None, guest_token=None)`.
+3. `_wc_player_identity` helper + apply across all WC endpoints.
+4. Template changes for the four-state banner and removal of the play-gate.
+5. Solve-side anti-abuse.
+6. Merge-on-login extension.
+7. Leaderboard query updates.
+8. End-to-end smoke test (anonymous → solve → leaderboard → login → claim → leaderboard).
+

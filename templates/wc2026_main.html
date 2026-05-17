@@ -22,9 +22,31 @@
       {% endfor %}
     </select>
   </div>
+  {% elif wc_fan_country %}
+  {# Guest with a fan flag set in session #}
+  <div class="wc-fan-banner wc-fan-set">
+    <img src="https://flagcdn.com/w40/{{ wc_fan_country.flag }}.png" class="wc-ban-flag" alt="{{ wc_fan_country.name }}">
+    {{ t.wc_fan_of }} <strong>{{ wc_fan_country.name }}</strong>!
+    <span style="margin-left:.6rem;font-size:.85rem;opacity:.85;">
+      <a href="/auth/login?next=/2026worldcup">{{ t.wc_login }}</a>
+      {{ t.wc_guest_login_cta | default("to claim your points and join the biggest fans leaderboard.") }}
+    </span>
+  </div>
   {% else %}
-  <div class="wc-fan-banner wc-fan-guest">
-    ⚽ <a href="/auth/login?next=/2026worldcup">{{ t.wc_login }}</a> {{ t.wc_fan_guest_main }}
+  {# Guest with no fan flag — inline picker, mirrors the logged-in-no-flag case #}
+  <div class="wc-fan-banner wc-fan-unset">
+    {{ t.wc_guest_pick_team_prompt | default("Pick a team to play for — your points count for the country!") }}
+    <select id="wc-fan-select" onchange="wcSetFan(this.value)"
+            style="margin-left:.6rem;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:.2rem .5rem;">
+      <option value="">{{ t.wc_pick_team }}</option>
+      {% for c in wc2026_teams | sort(attribute='name') %}
+      <option value="{{ c.slug }}">{{ c.name }}</option>
+      {% endfor %}
+    </select>
+    <div style="margin-top:.4rem;font-size:.8rem;opacity:.85;">
+      <a href="/auth/login?next=/2026worldcup">{{ t.wc_login }}</a>
+      {{ t.wc_guest_login_cta | default("to claim your points and join the biggest fans leaderboard.") }}
+    </div>
   </div>
   {% endif %}
 

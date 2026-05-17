@@ -734,12 +734,15 @@ class WC2026Match(Base):
     score2     = Column(Integer, nullable=True)
     status     = Column(String(16), nullable=False, server_default="scheduled")
 
-# ── WC2026 Tametsi board states (per user, per country, per difficulty) ───────
+# ── WC2026 Tametsi board states (per user OR per guest, per country, per difficulty) ──
 class WC2026BoardState(Base):
     __tablename__ = "wc2026_board_states"
 
     id           = Column(Integer, primary_key=True, index=True)
-    email        = Column(String(256), nullable=False, index=True)
+    # Exactly one of email / guest_token is non-null. Logged-in users carry an email;
+    # anonymous guests carry their session guest_token (UUID).
+    email        = Column(String(256), nullable=True, index=True)
+    guest_token  = Column(String(36),  nullable=True, index=True)
     country_slug = Column(String(32),  nullable=False)
     difficulty   = Column(String(8),   nullable=False)  # 'easy' | 'hard'
     mine_layout  = Column(Text, nullable=False)   # JSON list of [r,c] mine positions
@@ -750,8 +753,13 @@ class WC2026BoardState(Base):
     solved_at    = Column(DateTime, nullable=True)
 
     __table_args__ = (
+        # MySQL treats NULLs as distinct in UNIQUE indexes, so logged-in rows
+        # (email set, guest_token null) and guest rows (guest_token set, email null)
+        # each enforce their own uniqueness independently.
         Index("ix_wc2026_board_states_email_country_diff",
               "email", "country_slug", "difficulty", unique=True),
+        Index("ix_wc2026_board_states_guest_country_diff",
+              "guest_token", "country_slug", "difficulty", unique=True),
     )
 
 # ── WC2026 Tametsi completed game scores ─────────────────────────────────────
@@ -759,7 +767,10 @@ class WC2026Score(Base):
     __tablename__ = "wc2026_scores"
 
     id             = Column(Integer, primary_key=True, index=True)
-    email          = Column(String(256), nullable=False, index=True)
+    # Exactly one of email / guest_token is non-null at write time. On login,
+    # /auth/callback walks guest_token rows over to email (see merge-on-login).
+    email          = Column(String(256), nullable=True, index=True)
+    guest_token    = Column(String(36),  nullable=True, index=True)
     display_name   = Column(String(32),  nullable=False)
     country_slug   = Column(String(32),  nullable=False)
     difficulty     = Column(String(8),   nullable=False)
@@ -775,6 +786,7 @@ class WC2026Score(Base):
 
     __table_args__ = (
         Index("ix_wc2026_scores_fan_flag", "fan_flag"),
+        Index("ix_wc2026_scores_guest_token", "guest_token"),
     )
 
 # ── Server Stats model (hourly snapshots) ─────────────────────────────────────
@@ -1429,6 +1441,61 @@ def _create_phase1_indexes(conn):
             conn.commit()
 
 
+def _migrate_wc2026_guest_play(conn):
+    """Make WC2026 email columns nullable and add guest_token indexes.
+
+    Idempotent — uses information_schema to check current state before altering.
+    Required to support anonymous guest play on the /2026worldcup tree.
+    """
+    # 1. email must become nullable on both WC tables so a row can be keyed by
+    #    guest_token alone. ALTER MODIFY is safe to re-run, but we gate on
+    #    IS_NULLABLE so production logs aren't noisy.
+    nullable_targets = [
+        ("wc2026_board_states", "email", "VARCHAR(256) NULL"),
+        ("wc2026_scores",       "email", "VARCHAR(256) NULL"),
+    ]
+    for table, column, type_def in nullable_targets:
+        is_nullable = conn.execute(
+            text(
+                "SELECT IS_NULLABLE FROM information_schema.columns "
+                "WHERE table_schema = DATABASE() "
+                "AND table_name = :tbl AND column_name = :col"
+            ),
+            {"tbl": table, "col": column},
+        ).scalar()
+        if is_nullable == "NO":
+            conn.execute(text(
+                f"ALTER TABLE `{table}` MODIFY COLUMN `{column}` {type_def}"
+            ))
+            conn.commit()
+
+    # 2. Unique index on (guest_token, country_slug, difficulty) for boards.
+    #    NULLs are distinct in MySQL unique indexes, so this doesn't conflict
+    #    with logged-in rows where guest_token IS NULL.
+    wc_indexes = [
+        ("wc2026_board_states",
+         "ix_wc2026_board_states_guest_country_diff",
+         "CREATE UNIQUE INDEX `ix_wc2026_board_states_guest_country_diff` "
+         "ON `wc2026_board_states` (`guest_token`, `country_slug`, `difficulty`)"),
+        ("wc2026_scores",
+         "ix_wc2026_scores_guest_token",
+         "CREATE INDEX `ix_wc2026_scores_guest_token` "
+         "ON `wc2026_scores` (`guest_token`)"),
+    ]
+    for table, name, ddl in wc_indexes:
+        exists = conn.execute(
+            text(
+                "SELECT COUNT(*) FROM information_schema.statistics "
+                "WHERE table_schema = DATABASE() "
+                "AND table_name = :tbl AND index_name = :idx"
+            ),
+            {"tbl": table, "idx": name},
+        ).scalar()
+        if not exists:
+            conn.execute(text(ddl))
+            conn.commit()
+
+
 def _apply_migrations():
     """Idempotent ALTER TABLE migrations for columns added after initial deploy."""
     migrations = [
@@ -1492,6 +1559,10 @@ def _apply_migrations():
         ("wc2026_scores",       "bbbv",          "INT NULL"),
         ("wc2026_scores",       "left_clicks",   "INT NULL"),
         ("wc2026_scores",       "right_clicks",  "INT NULL"),
+        # WC2026 guest play — guests submit boards/scores under a session UUID
+        # rather than an email; merged onto the account on login (added 2026-05-16)
+        ("wc2026_board_states", "guest_token",   "VARCHAR(36) NULL"),
+        ("wc2026_scores",       "guest_token",   "VARCHAR(36) NULL"),
         ("tametsi_scores",      "left_clicks",   "INT NULL"),
         ("tametsi_scores",      "right_clicks",  "INT NULL"),
         # mahjong_scores device tracking — added after initial deploy (F1.8)
@@ -1521,6 +1592,7 @@ def _apply_migrations():
                 conn.execute(text(f"ALTER TABLE `{table}` ADD COLUMN `{column}` {col_def}"))
                 conn.commit()
         _create_phase1_indexes(conn)
+        _migrate_wc2026_guest_play(conn)
 
         # wc2026 tables (added 2026-05-10) — created via create_all, no ALTER needed
         _seed_wc2026_matches(conn)

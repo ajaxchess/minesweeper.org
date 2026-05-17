@@ -1137,7 +1137,50 @@ async def auth_callback(request: Request, db: Session = Depends(get_db)):
                     model.guest_token == guest_token,
                     model.user_email.is_(None),
                 ).update({"user_email": email}, synchronize_session=False)
+
+            # WC2026 score rows — same idea, different column name (email).
+            db.query(WC2026Score).filter(
+                WC2026Score.guest_token == guest_token,
+                WC2026Score.email.is_(None),
+            ).update(
+                {"email": email, "guest_token": None, "display_name": profile.display_name},
+                synchronize_session=False,
+            )
+
+            # WC2026 board states — conflict-aware merge. The unique key is
+            # (email, country_slug, difficulty); if the user already has a
+            # board for the same country+difficulty, prefer it and delete the
+            # guest's. Bounded at 48 countries × 2 difficulties = 96 rows.
+            guest_boards = db.query(WC2026BoardState).filter(
+                WC2026BoardState.guest_token == guest_token,
+                WC2026BoardState.email.is_(None),
+            ).all()
+            for gb in guest_boards:
+                existing = db.query(WC2026BoardState).filter_by(
+                    email=email,
+                    country_slug=gb.country_slug,
+                    difficulty=gb.difficulty,
+                ).first()
+                if existing:
+                    db.delete(gb)
+                else:
+                    gb.email = email
+                    gb.guest_token = None
+
+            # If the guest had a fan flag in the cookie but the new profile
+            # doesn't have one yet, carry it over.
+            guest_fan = request.session.pop("wc2026_fan", None)
+            if guest_fan and not profile.wc2026_fan and guest_fan in VALID_WC2026_SLUGS:
+                profile.wc2026_fan = guest_fan
+
             db.commit()
+        else:
+            # Even with no guest_token, a guest may have set a fan flag in the
+            # session before logging in — preserve it.
+            guest_fan = request.session.pop("wc2026_fan", None)
+            if guest_fan and not profile.wc2026_fan and guest_fan in VALID_WC2026_SLUGS:
+                profile.wc2026_fan = guest_fan
+                db.commit()
 
     next_url = request.session.pop("next", "/")
     return RedirectResponse(url=next_url)
@@ -8434,12 +8477,95 @@ from database import WC2026Match, WC2026BoardState, WC2026Score
 import json as _json
 
 
-def _wc_fan_banner(user, db: Session) -> dict:
-    """Return fan-flag context for WC pages."""
-    if not user:
-        return {"wc_fan": None, "wc_fan_country": None}
-    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
-    fan = profile.wc2026_fan if profile else None
+def _wc_player_identity(request: Request, db: Session) -> dict:
+    """Identify the WC player as either a logged-in user or an anonymous guest.
+
+    Returns a dict with: email (str|None), guest_token (str|None), fan_flag (str|None).
+    Exactly one of email / guest_token is non-None. The guest_token is issued
+    lazily so unauthenticated GETs of public WC pages don't churn cookies for
+    visitors who never play.
+
+    To force-issue a guest token (e.g. before a write), call `_wc_ensure_guest_token`.
+    """
+    user = get_current_user(request)
+    if user:
+        profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+        return {
+            "email":       user["email"],
+            "guest_token": None,
+            "fan_flag":    (profile.wc2026_fan if profile else None),
+            "display_name": (profile.display_name if profile else user.get("display_name", "")),
+        }
+    token = request.session.get("guest_token")  # may be None
+    return {
+        "email":        None,
+        "guest_token":  token,
+        "fan_flag":     request.session.get("wc2026_fan"),
+        "display_name": "Guest",
+    }
+
+
+def _wc_ensure_guest_token(request: Request) -> str:
+    """Ensure the request.session carries a guest_token UUID; return it.
+
+    Matches the existing project convention (see /api/scores guest fallback).
+    """
+    if "guest_token" not in request.session:
+        request.session["guest_token"] = str(uuid.uuid4())
+    return request.session["guest_token"]
+
+
+def _wc_lookup_board(db: Session, identity: dict, slug: str, difficulty: str):
+    """Look up an existing board row keyed by the player's identity.
+
+    `identity` is the dict returned by `_wc_player_identity`. Returns None if
+    no row exists (the caller decides whether to create one).
+    """
+    q = db.query(WC2026BoardState).filter_by(
+        country_slug=slug, difficulty=difficulty
+    )
+    if identity["email"]:
+        return q.filter_by(email=identity["email"]).first()
+    if identity["guest_token"]:
+        return q.filter_by(guest_token=identity["guest_token"]).first()
+    return None  # guest with no token yet → no board possible
+
+
+# Light anti-abuse: cap guest-earned WC points per cookie per UTC day.
+# Combined with the per-IP slowapi rate limit on /solve, this is the project's
+# "light defense" level — sufficient given that admin score-review channels
+# exist for genuine concerns.
+WC2026_GUEST_DAILY_POINT_CAP = 200
+
+
+def _wc_guest_points_today(db: Session, guest_token: str) -> int:
+    """Sum WC points earned by this guest_token since UTC midnight."""
+    if not guest_token:
+        return 0
+    midnight = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    total = (
+        db.query(func.coalesce(func.sum(WC2026Score.total_points), 0))
+        .filter(WC2026Score.guest_token == guest_token)
+        .filter(WC2026Score.email.is_(None))
+        .filter(WC2026Score.solved_at >= midnight)
+        .scalar()
+    )
+    return int(total or 0)
+
+
+def _wc_fan_banner(user, db: Session, request: Request | None = None) -> dict:
+    """Return fan-flag context for WC pages.
+
+    For logged-in users, the flag comes from UserProfile.wc2026_fan as before.
+    For guests, the flag is read from the session cookie (set by /api/wc2026/set-fan).
+    """
+    if user:
+        profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+        fan = profile.wc2026_fan if profile else None
+    elif request is not None:
+        fan = request.session.get("wc2026_fan")
+    else:
+        fan = None
     country = WC2026_BY_SLUG.get(fan) if fan else None
     return {"wc_fan": fan, "wc_fan_country": country}
 
@@ -8510,6 +8636,12 @@ def _wc_group_matches(group: str, db: Session,
 
 
 def _country_leaderboard(slug: str, db: Session, limit: int = 20) -> list:
+    """Top fans (logged-in) of this country, by total points.
+
+    Guest-keyed rows are excluded from this individual ranking — they roll into
+    the country's total (via _fan_country_leaderboard) but not into a per-person
+    row here. Logging in is what gets a player onto this board.
+    """
     rows = (
         db.query(
             WC2026Score.email,
@@ -8519,6 +8651,7 @@ def _country_leaderboard(slug: str, db: Session, limit: int = 20) -> list:
             func.min(WC2026Score.solve_time_ms).label("best_ms"),
         )
         .filter(WC2026Score.country_slug == slug)
+        .filter(WC2026Score.email.isnot(None))
         .group_by(WC2026Score.email, WC2026Score.display_name, WC2026Score.fan_flag)
         .order_by(func.sum(WC2026Score.total_points).desc())
         .limit(limit)
@@ -8544,6 +8677,8 @@ def _country_leaderboard(slug: str, db: Session, limit: int = 20) -> list:
 
 
 def _fan_country_leaderboard(db: Session, limit: int = 20) -> list:
+    """Total fan points per country. Includes both logged-in and guest contributions —
+    the country leaderboard is the union, since guests can earn for their team."""
     rows = (
         db.query(
             WC2026Score.fan_flag,
@@ -8563,6 +8698,9 @@ def _fan_country_leaderboard(db: Session, limit: int = 20) -> list:
 
 
 def _individual_leaderboard(db: Session, limit: int = 20) -> list:
+    """Top players overall (logged-in only — login is the carrot for the
+    individual board). Guests can still earn points for their country via
+    _fan_country_leaderboard, but they don't show up on this list."""
     rows = (
         db.query(
             WC2026Score.email,
@@ -8570,6 +8708,7 @@ def _individual_leaderboard(db: Session, limit: int = 20) -> list:
             WC2026Score.fan_flag,
             func.sum(WC2026Score.total_points).label("pts"),
         )
+        .filter(WC2026Score.email.isnot(None))
         .group_by(WC2026Score.email, WC2026Score.display_name, WC2026Score.fan_flag)
         .order_by(func.sum(WC2026Score.total_points).desc())
         .limit(limit)
@@ -8586,7 +8725,7 @@ def _individual_leaderboard(db: Session, limit: int = 20) -> list:
 def wc2026_main(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
     t    = get_t(request)
-    fan_ctx   = _wc_fan_banner(user, db)
+    fan_ctx   = _wc_fan_banner(user, db, request)
     groups    = {g: WC2026_BY_GROUP[g] for g in WC2026_GROUPS}
     country_lb = _fan_country_leaderboard(db)
     individual_lb = _individual_leaderboard(db)
@@ -8610,18 +8749,29 @@ def wc2026_country(slug: str, request: Request, db: Session = Depends(get_db)):
     user    = get_current_user(request)
     t       = get_t(request)
     country = WC2026_BY_SLUG[slug]
-    fan_ctx = _wc_fan_banner(user, db)
+    fan_ctx = _wc_fan_banner(user, db, request)
     profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first() if user else None
     user_tz = getattr(profile, "timezone", None) if profile else None
     matches = _wc_matches_for_country(slug, db, user_tz)
     group_countries = WC2026_BY_GROUP.get(country["group"], [])
     country_lb = _country_leaderboard(slug, db)
 
+    # Render boards for anyone with a fan flag — logged-in users get email-keyed
+    # boards, guests get guest_token-keyed boards. Visiting the page is enough
+    # to issue a guest token; no write happens until the player flags/reveals.
     board_easy = board_hard = None
-    if user and fan_ctx["wc_fan"]:
-        if profile:
+    if fan_ctx["wc_fan"]:
+        if user:
             board_easy = board_to_dict(get_or_create_board(db, user["email"], slug, "easy"))
             board_hard = board_to_dict(get_or_create_board(db, user["email"], slug, "hard"))
+        else:
+            token = _wc_ensure_guest_token(request)
+            board_easy = board_to_dict(get_or_create_board(
+                db, None, slug, "easy", guest_token=token
+            ))
+            board_hard = board_to_dict(get_or_create_board(
+                db, None, slug, "hard", guest_token=token
+            ))
 
     return templates.TemplateResponse("wc2026_country.html", {
         "request": request, "user": user, "t": t,
@@ -8646,10 +8796,12 @@ def wc2026_get_board(slug: str, difficulty: str,
                      request: Request, db: Session = Depends(get_db)):
     if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
         raise HTTPException(status_code=400, detail="Invalid params")
-    user = get_current_user(request)
-    if not user:
-        return JSONResponse({"error": "Login required"}, status_code=401)
-    row = get_or_create_board(db, user["email"], slug, difficulty)
+    identity = _wc_player_identity(request, db)
+    if identity["email"]:
+        row = get_or_create_board(db, identity["email"], slug, difficulty)
+    else:
+        token = _wc_ensure_guest_token(request)
+        row = get_or_create_board(db, None, slug, difficulty, guest_token=token)
     return board_to_dict(row)
 
 
@@ -8671,13 +8823,8 @@ def wc2026_reveal(slug: str, difficulty: str, payload: WC2026RevealPayload,
                   request: Request, db: Session = Depends(get_db)):
     if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
         raise HTTPException(status_code=400, detail="Invalid params")
-    user = get_current_user(request)
-    if not user:
-        return JSONResponse({"error": "Login required"}, status_code=401)
-
-    row = (db.query(WC2026BoardState)
-             .filter_by(email=user["email"], country_slug=slug, difficulty=difficulty)
-             .first())
+    identity = _wc_player_identity(request, db)
+    row = _wc_lookup_board(db, identity, slug, difficulty)
     if not row or row.is_solved:
         return JSONResponse({"error": "No active board"}, status_code=400)
 
@@ -8738,13 +8885,8 @@ def wc2026_flag(slug: str, difficulty: str, payload: WC2026FlagPayload,
                 request: Request, db: Session = Depends(get_db)):
     if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
         raise HTTPException(status_code=400, detail="Invalid params")
-    user = get_current_user(request)
-    if not user:
-        return JSONResponse({"error": "Login required"}, status_code=401)
-
-    row = (db.query(WC2026BoardState)
-             .filter_by(email=user["email"], country_slug=slug, difficulty=difficulty)
-             .first())
+    identity = _wc_player_identity(request, db)
+    row = _wc_lookup_board(db, identity, slug, difficulty)
     if not row or row.is_solved:
         return JSONResponse({"error": "No active board"}, status_code=400)
 
@@ -8765,22 +8907,24 @@ def wc2026_flag(slug: str, difficulty: str, payload: WC2026FlagPayload,
 
 
 @app.post("/api/wc2026/board/{slug}/{difficulty}/solve")
+@limiter.limit("5/minute")
 def wc2026_solve(slug: str, difficulty: str, payload: WC2026SolvePayload,
                  request: Request, db: Session = Depends(get_db)):
-    """Called by the client when it detects all mines flagged correctly."""
+    """Called by the client when it detects all mines flagged correctly.
+
+    Accepts solves from logged-in users (points credited to their email) or
+    guests with a session guest_token (points credited to the country only;
+    guest rows are excluded from the individual "biggest fans" leaderboard).
+    """
     if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
         raise HTTPException(status_code=400, detail="Invalid params")
-    user = get_current_user(request)
-    if not user:
-        return JSONResponse({"error": "Login required"}, status_code=401)
 
-    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
-    if not profile or not profile.wc2026_fan:
+    identity = _wc_player_identity(request, db)
+    fan_flag = identity["fan_flag"]
+    if not fan_flag:
         return JSONResponse({"error": "No fan flag set"}, status_code=400)
 
-    row = (db.query(WC2026BoardState)
-             .filter_by(email=user["email"], country_slug=slug, difficulty=difficulty)
-             .first())
+    row = _wc_lookup_board(db, identity, slug, difficulty)
     if not row or row.is_solved:
         return JSONResponse({"error": "Already solved or not found"}, status_code=400)
 
@@ -8798,14 +8942,25 @@ def wc2026_solve(slug: str, difficulty: str, payload: WC2026SolvePayload,
     solve_bonus   = spec["solve_bonus"]
     total_points  = flags_correct + solve_bonus
 
+    # Light defense: cap a guest cookie's daily points. The solve still completes
+    # (so the player sees their win), but excess points clamp to 0.
+    capped = False
+    if not identity["email"]:
+        already = _wc_guest_points_today(db, identity["guest_token"] or "")
+        remaining = max(0, WC2026_GUEST_DAILY_POINT_CAP - already)
+        if total_points > remaining:
+            total_points = remaining
+            capped = True
+
     row.is_solved = True
     row.solved_at = datetime.now(timezone.utc)
     db.add(WC2026Score(
-        email=user["email"],
-        display_name=profile.display_name,
+        email=identity["email"],
+        guest_token=identity["guest_token"],
+        display_name=identity["display_name"] or "Guest",
         country_slug=slug,
         difficulty=difficulty,
-        fan_flag=profile.wc2026_fan,
+        fan_flag=fan_flag,
         flags_correct=flags_correct,
         solve_bonus=solve_bonus,
         solve_time_ms=payload.time_ms,
@@ -8815,8 +8970,14 @@ def wc2026_solve(slug: str, difficulty: str, payload: WC2026SolvePayload,
         total_points=total_points,
     ))
     db.commit()
-    return {"ok": True, "flags_correct": flags_correct,
-            "solve_bonus": solve_bonus, "total_points": total_points}
+    return {
+        "ok":            True,
+        "flags_correct": flags_correct,
+        "solve_bonus":   solve_bonus,
+        "total_points":  total_points,
+        "is_guest":      not identity["email"],
+        "capped":        capped,
+    }
 
 
 @app.post("/api/wc2026/board/{slug}/{difficulty}/reset")
@@ -8825,13 +8986,8 @@ def wc2026_reset(slug: str, difficulty: str,
     """Delete the board state so a fresh board is generated on next page load."""
     if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
         raise HTTPException(status_code=400, detail="Invalid params")
-    user = get_current_user(request)
-    if not user:
-        return JSONResponse({"error": "Login required"}, status_code=401)
-
-    row = (db.query(WC2026BoardState)
-             .filter_by(email=user["email"], country_slug=slug, difficulty=difficulty)
-             .first())
+    identity = _wc_player_identity(request, db)
+    row = _wc_lookup_board(db, identity, slug, difficulty)
     if row and not row.is_solved:
         db.delete(row)
         db.commit()
@@ -8841,19 +8997,20 @@ def wc2026_reset(slug: str, difficulty: str,
 @app.post("/api/wc2026/board/{slug}/{difficulty}/new")
 def wc2026_new_game(slug: str, difficulty: str,
                     request: Request, db: Session = Depends(get_db)):
-    """Generate the next random board for this user+country+difficulty after a solve."""
+    """Generate the next random board for this player+country+difficulty after a solve."""
     if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
         raise HTTPException(status_code=400, detail="Invalid params")
-    user = get_current_user(request)
-    if not user:
-        return JSONResponse({"error": "Login required"}, status_code=401)
+    identity = _wc_player_identity(request, db)
+    # Issue a guest token if needed — a guest "Play Again" implies a write.
+    if not identity["email"] and not identity["guest_token"]:
+        identity["guest_token"] = _wc_ensure_guest_token(request)
 
-    row = (db.query(WC2026BoardState)
-             .filter_by(email=user["email"], country_slug=slug, difficulty=difficulty)
-             .first())
-
+    row = _wc_lookup_board(db, identity, slug, difficulty)
     new_play_count = (getattr(row, "play_count", 0) or 0) + 1 if row else 0
-    mines_json, cells_json = _make_board(user["email"], slug, difficulty, new_play_count)
+    mines_json, cells_json = _make_board(
+        identity["email"], slug, difficulty, new_play_count,
+        guest_token=identity["guest_token"],
+    )
 
     if row:
         row.mine_layout = mines_json
@@ -8864,7 +9021,9 @@ def wc2026_new_game(slug: str, difficulty: str,
         row.started_at  = datetime.now(timezone.utc)
     else:
         row = WC2026BoardState(
-            email=user["email"], country_slug=slug, difficulty=difficulty,
+            email=identity["email"],
+            guest_token=identity["guest_token"],
+            country_slug=slug, difficulty=difficulty,
             mine_layout=mines_json, cell_state=cells_json,
             is_solved=False, play_count=new_play_count,
             started_at=datetime.now(timezone.utc),
@@ -8901,19 +9060,35 @@ class WC2026FanSet(BaseModel):
 
 @app.post("/api/wc2026/set-fan")
 def wc2026_set_fan(payload: WC2026FanSet, request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request)
-    if not user:
-        return JSONResponse({"error": "Login required"}, status_code=401)
+    """Set the player's WC fan flag.
+
+    Logged-in users: persisted to UserProfile.wc2026_fan.
+    Guests: persisted to request.session["wc2026_fan"]. On later login, the
+    /auth/callback merge step copies it onto the new UserProfile.
+    """
     code = (payload.team or "").strip().lower() or None
     if code and code not in VALID_WC2026_SLUGS:
         return JSONResponse({"error": "Invalid team"}, status_code=400)
-    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
-    if not profile:
-        return JSONResponse({"error": "Profile not found"}, status_code=404)
-    profile.wc2026_fan = code
-    db.commit()
+
+    user = get_current_user(request)
+    if user:
+        profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first()
+        if not profile:
+            return JSONResponse({"error": "Profile not found"}, status_code=404)
+        profile.wc2026_fan = code
+        db.commit()
+    else:
+        # Guest path — store in the signed session cookie. Issue a guest_token
+        # so subsequent writes (solves, board state) carry a stable identity.
+        _wc_ensure_guest_token(request)
+        if code:
+            request.session["wc2026_fan"] = code
+        else:
+            request.session.pop("wc2026_fan", None)
+
     return {"ok": True, "team": code,
-            "country": WC2026_BY_SLUG.get(code) if code else None}
+            "country": WC2026_BY_SLUG.get(code) if code else None,
+            "is_guest": not user}
 
 
 # ── Admin: match score management ────────────────────────────────────────────
