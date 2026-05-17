@@ -346,11 +346,9 @@ export default function GameScreen({ navigation }) {
       />
 
       {/* ── AdMob banner ───────────────────────────────────────────────── */}
-      {(mode === 'beginner' || mode === 'intermediate') && (
-        <View onLayout={e => setAdHeight(e.nativeEvent.layout.height)}>
-          <AdBanner refreshKey={adRefreshKey} />
-        </View>
-      )}
+      <View onLayout={e => setAdHeight(e.nativeEvent.layout.height)}>
+        <AdBanner refreshKey={adRefreshKey} />
+      </View>
 
       {/* ── Win toast (autoSubmit + newgame mode) ──────────────────────── */}
       {/* Rendered after AdBanner so it sits on top in z-order */}
