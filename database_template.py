@@ -840,6 +840,12 @@ class WebTrafficStats(Base):
     recorded_at     = Column(DateTime, nullable=True)
 
 
+class EvilGameSession(Base):
+    __tablename__ = "evil_game_sessions"
+    id         = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+
 class BlogComment(Base):
     __tablename__ = "blog_comments"
 
