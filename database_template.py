@@ -1372,6 +1372,9 @@ class FlaggedScore(Base):
         Index("ix_flagged_scores_table_score", "table_name", "score_id", unique=True),
     )
 
+# F95 — Analyzer derived stats
+from phase2_analyzer.pipeline import GameAnalysis  # noqa: F401  registers the table
+
 
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
