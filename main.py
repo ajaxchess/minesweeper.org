@@ -8913,11 +8913,12 @@ def wc2026_flag(slug: str, difficulty: str, payload: WC2026FlagPayload,
 @limiter.limit("5/minute")
 def wc2026_solve(slug: str, difficulty: str, payload: WC2026SolvePayload,
                  request: Request, db: Session = Depends(get_db)):
-    """Called by the client when it detects all mines flagged correctly.
+    """Called by the client when it detects all non-mine cells revealed.
 
     Accepts solves from logged-in users (points credited to their email) or
     guests with a session guest_token (points credited to the country only;
     guest rows are excluded from the individual "biggest fans" leaderboard).
+    Mines that were not manually flagged are auto-flagged before saving.
     """
     if slug not in VALID_WC2026_SLUGS or difficulty not in ("easy", "hard"):
         raise HTTPException(status_code=400, detail="Invalid params")
@@ -8936,14 +8937,28 @@ def wc2026_solve(slug: str, difficulty: str, payload: WC2026SolvePayload,
     mines  = {tuple(m) for m in _json.loads(row.mine_layout)}
     cols   = spec["cols"]
 
-    # Verify: every mine must be flagged, no non-mine flagged
-    flagged_positions = {divmod(i, cols) for i, s in enumerate(cells) if s == "flagged"}
-    if flagged_positions != mines:
+    # Verify: all non-mine cells must be revealed
+    all_safe = all(
+        s == "revealed"
+        for i, s in enumerate(cells)
+        if divmod(i, cols) not in mines
+    )
+    if not all_safe:
         return JSONResponse({"error": "Board not correctly solved"}, status_code=400)
 
-    flags_correct = len(mines)
-    solve_bonus   = spec["solve_bonus"]
-    total_points  = flags_correct + solve_bonus
+    # Award points only for mines the player actually flagged; auto-flag the rest
+    flags_correct = sum(
+        1 for i, s in enumerate(cells)
+        if divmod(i, cols) in mines and s == "flagged"
+    )
+    cells = [
+        "flagged" if divmod(i, cols) in mines else s
+        for i, s in enumerate(cells)
+    ]
+    row.cell_state = _json.dumps(cells)
+
+    solve_bonus  = spec["solve_bonus"]
+    total_points = flags_correct + solve_bonus
 
     # Light defense: cap a guest cookie's daily points. The solve still completes
     # (so the player sees their win), but excess points clamp to 0.

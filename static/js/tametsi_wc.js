@@ -427,12 +427,13 @@ function wcMountBoard(wrap) {
         }
     }
 
+    function boardAllSafe() {
+        const mineSet = new Set(board.mine_layout.map(([r, c]) => r * board.cols + c));
+        return board.cells.every((state, idx) => mineSet.has(idx) || state === 'revealed');
+    }
+
     function checkAutoSolve() {
-        if (board.primary_remaining === 0 &&
-            board.secondary_remaining === 0 &&
-            board.cells.filter(s => s === 'flagged').length === board.mines) {
-            doSolve();
-        }
+        if (boardAllSafe()) doSolve();
     }
 
     async function doSolve() {
@@ -571,13 +572,11 @@ function wcMountBoard(wrap) {
         setTimeout(() => { if (msgBanner.textContent === text) msgBanner.style.display = 'none'; }, 4000);
     }
 
-    // Called on page load when the board is visually complete (all mines flagged) but
-    // is_solved is false — the /solve API call was lost (network drop or navigation away).
+    // Called on page load when the board is visually complete (all non-mine cells
+    // revealed) but is_solved is false — the /solve API call was lost (network drop
+    // or navigation away).
     async function checkOrphanedSolve() {
-        if (board.is_solved ||
-            board.primary_remaining !== 0 ||
-            board.secondary_remaining !== 0 ||
-            board.cells.filter(s => s === 'flagged').length !== board.mines) return;
+        if (board.is_solved || !boardAllSafe()) return;
         started = true;
         try {
             const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/solve`, {
