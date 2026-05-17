@@ -1,10 +1,11 @@
-# Top-level dependencies — edit this file, then regenerate the lock file with:
-#   pip-compile --generate-hashes requirements.in --output-file requirements.lock
+# Top-level dependencies — edit this file, then regenerate pinned outputs with:
+#   pip-compile --no-header --no-annotate requirements.in --output-file requirements.txt
+#   pip-compile --generate-hashes --constraint requirements.txt requirements.in --output-file requirements.lock
 #
 # Production uses requirements.txt (no hashes).
 # Staging uses requirements.lock (hash-pinned, all transitive deps).
 
-fastapi==0.115.0
+fastapi==0.136.1
 uvicorn[standard]==0.30.6
 jinja2==3.1.4
 python-multipart==0.0.27
