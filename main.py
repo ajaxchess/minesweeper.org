@@ -8749,6 +8749,9 @@ def wc2026_country(slug: str, request: Request, db: Session = Depends(get_db)):
     user    = get_current_user(request)
     t       = get_t(request)
     country = WC2026_BY_SLUG[slug]
+    # Auto-select this country as the fan flag for guests who haven't chosen one yet
+    if not user and not request.session.get("wc2026_fan"):
+        request.session["wc2026_fan"] = slug
     fan_ctx = _wc_fan_banner(user, db, request)
     profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first() if user else None
     user_tz = getattr(profile, "timezone", None) if profile else None
