@@ -7,7 +7,7 @@ import subprocess
 import os
 import hashlib
 from typing import Optional
-from fastapi import FastAPI, Request, Depends, HTTPException, Query, Response, Form, File, UploadFile
+from fastapi import FastAPI, Request, Depends, HTTPException, Query, Response, Form, File, UploadFile, BackgroundTasks
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -22,6 +22,7 @@ from countries import COUNTRIES as ALL_COUNTRIES, VALID_COUNTRY_CODES
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, get_db, init_db, SessionLocal
+from phase2_analyzer import analyze_replay_async
 from tametsi_generator import (
     generate_daily as _tametsi_generate_daily,
     generate_board as _tametsi_generate_board,
@@ -1446,7 +1447,7 @@ class RewindSubmit(BaseModel):
 
 @app.post("/api/rewind", status_code=201)
 @limiter.limit("60/minute")
-def submit_rewind(payload: RewindSubmit, request: Request, db: Session = Depends(get_db)):
+def submit_rewind(payload: RewindSubmit, request: Request, db: Session = Depends(get_db), background_tasks: BackgroundTasks = None):
     import json as _json
 
     # Canonical outcome: prefer explicit field, fall back to legacy won bool
@@ -1507,6 +1508,10 @@ def submit_rewind(payload: RewindSubmit, request: Request, db: Session = Depends
     db.add(replay)
     db.commit()
     db.refresh(replay)
+
+    if background_tasks is not None:
+        background_tasks.add_task(analyze_replay_async, replay.id, SessionLocal)
+
     return {"id": replay.id, "outcome": outcome}
 
 
