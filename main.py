@@ -72,7 +72,7 @@ def exclude_flagged(q, model, db):
     flagged_ids = (
         db.query(FlaggedScore.score_id)
         .filter(FlaggedScore.table_name == model.__tablename__)
-        .subquery()
+        .scalar_subquery()
     )
     return q.filter(~model.id.in_(flagged_ids))
 
