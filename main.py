@@ -21,7 +21,7 @@ from pydantic import BaseModel, Field, field_validator
 from countries import COUNTRIES as ALL_COUNTRIES, VALID_COUNTRY_CODES
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, get_db, init_db, SessionLocal
 from tametsi_generator import (
     generate_daily as _tametsi_generate_daily,
     generate_board as _tametsi_generate_board,
@@ -957,7 +957,9 @@ async def expert(request: Request):
     })
 
 @app.get("/evil", response_class=HTMLResponse)
-async def evil_ng(request: Request):
+async def evil_ng(request: Request, db: Session = Depends(get_db)):
+    db.add(EvilGameSession())
+    db.commit()
     return templates.TemplateResponse("evil.html", {
         "request": request, "mode": "evil",
         "user": get_current_user(request),
@@ -6003,6 +6005,14 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         .scalar()
     )
 
+    # Evil mode (page sessions)
+    evil_all = db.query(func.count()).select_from(EvilGameSession).scalar()
+    evil_today = (
+        db.query(func.count()).select_from(EvilGameSession)
+        .filter(func.date(EvilGameSession.created_at) == today)
+        .scalar()
+    )
+
     # Cylinder / Toroid
     cyl_today, cyl_all = _counts(CylinderScore, CylinderScore.cyl_mode)
     tor_today, tor_all = _counts(ToroidScore, ToroidScore.tor_mode)
@@ -6113,6 +6123,8 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         "rush_all": rush_all,
         "tent_today": tent_today_count,
         "tent_all": tent_all_count,
+        "evil_today": evil_today,
+        "evil_all": evil_all,
         "cyl_today": cyl_today,
         "cyl_all": cyl_all,
         "tor_today": tor_today,

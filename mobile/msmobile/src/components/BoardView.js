@@ -227,12 +227,14 @@ const styles = StyleSheet.create({
   },
   outerContent: {
     padding: BOARD_PADDING,
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   innerScroll: {
     flex: 1,
   },
   innerContent: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   board: {
     borderWidth: 1,
