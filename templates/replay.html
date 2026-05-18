@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Board Replay — Play Any Variant | minesweeper.org{% endblock %}
-{% block description %}Replay a specific Minesweeper board in Standard, Cylinder, or Toroid mode. Compare your time against others on the same board.{% endblock %}
+{% block title %}{{ t.var_replay_title }} | minesweeper.org{% endblock %}
+{% block description %}{{ t.var_replay_desc }}{% endblock %}
 {% block canonical %}https://minesweeper.org/variants/replay/{% endblock %}
 {% block og_url %}https://minesweeper.org/variants/replay/{% endblock %}
-{% block og_title %}Board Replay — minesweeper.org{% endblock %}
-{% block og_description %}Play a specific Minesweeper board in Standard, Cylinder, or Toroid mode and compete for the fastest time.{% endblock %}
+{% block og_title %}{{ t.var_replay_title }} — minesweeper.org{% endblock %}
+{% block og_description %}{{ t.var_replay_desc }}{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">
 {
