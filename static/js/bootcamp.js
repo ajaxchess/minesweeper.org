@@ -136,9 +136,7 @@
       .replace('Cut Wasted Clicks', 'Cut Waste')
       .replace('Effective Chording', 'Eff. Chording')
       .replace('Strategic No-Flag', 'Strategic NF')
-      .replace('Pure Efficiency', 'Pure Efficiency')
       .replace('Opening Recognition', 'Openings')
-      .replace('Flag Value', 'Flag Value')
       .replace('Fishing & Decision Hierarchy', 'Hierarchy');
   }
 
