@@ -1,3 +1,8 @@
+B34 CSP blocks csi.gstatic.com (connect-src) and ep1.adtrafficquality.google (img-src).
+   Google AdSense SODAR loads a tracking pixel from ep1.adtrafficquality.google via img-src,
+   and the Google CSI (Client-Side Instrumentation) beacon hits csi.gstatic.com via connect-src.
+   Fixed by adding *.adtrafficquality.google to img-src and csi.gstatic.com to connect-src.
+
 B33 Admin bootcamp replay links use ?id= which replay.js does not handle, so clicking them loads a
    blank/default board instead of the intended game.
    Fixed by building the full replay URL from GameReplay fields (rows, cols, mines, board_hash,

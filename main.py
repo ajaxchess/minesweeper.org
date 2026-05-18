@@ -197,6 +197,7 @@ async def add_security_headers(request: Request, call_next):
             " https://*.doubleclick.net"
             " https://www.googletagmanager.com"
             " https://www.google-analytics.com"
+            " https://*.adtrafficquality.google"
             " https://flagcdn.com"
         ),
         # 'self' covers same-origin WebSockets (wss://minesweeper.org/ws/…)
@@ -212,6 +213,7 @@ async def add_security_headers(request: Request, call_next):
             " https://*.googleadservices.com"
             " https://*.googlevideo.com"
             " https://*.adtrafficquality.google"
+            " https://csi.gstatic.com"
         ),
         # AdSense renders ad creatives inside iframes from these domains
         # ep2.adtrafficquality.google = Google's ad fraud/viewability system (SODAR)
