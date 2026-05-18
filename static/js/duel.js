@@ -256,7 +256,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Unrevealed the reset cells
+      const isSafeIdx = (r, c) =>
+        Number.isInteger(r) && Number.isInteger(c) &&
+        r >= 0 && r < ROWS && c >= 0 && c < COLS;
+
       resetCells.forEach(([r, c]) => {
+        if (!isSafeIdx(r, c)) return;
         rev[r][c]  = false;
         vals[r][c] = null;
       });
@@ -266,6 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (updatedValues) {
         Object.entries(updatedValues).forEach(([key, val]) => {
           const [r, c] = key.split(',').map(Number);
+          if (!isSafeIdx(r, c)) return;
           vals[r][c] = val;
           if (rev[r][c] && val > 0) flashCells.add(key);
         });
