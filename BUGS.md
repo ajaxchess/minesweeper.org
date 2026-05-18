@@ -1,3 +1,8 @@
+B33 Admin bootcamp replay links use ?id= which replay.js does not handle, so clicking them loads a
+   blank/default board instead of the intended game.
+   Fixed by building the full replay URL from GameReplay fields (rows, cols, mines, board_hash,
+   created_at, mode) so the link opens the correct board directly.
+
 B32 Tametsi, Evil NG, Custom, and 2026 World Cup pages show English SEO content for non-English locales
    Templates tametsi.html, evil.html, custom.html, and wc2026_main.html had hardcoded English
    title/description/keywords with no translation keys — all non-English locale URLs returned

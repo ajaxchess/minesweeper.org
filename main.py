@@ -6302,7 +6302,15 @@ def admin_bootcamp(request: Request, db: Session = Depends(get_db)):
             "time_ms": (gr.time_ms if gr else None),
             "three_bv": (gr.bbbv if gr else None),
             "created_at": ga.created_at.strftime("%Y-%m-%d %H:%M") if ga.created_at else "",
-            "replay_url": f"/variants/replay/?id={ga.game_replay_id}" if ga.game_replay_id else None,
+            "replay_url": (
+                "/variants/replay/?"
+                + f"rows={gr.rows}&cols={gr.cols}&mines={gr.mines}"
+                + f"&hash={quote(gr.board_hash or '', safe='')}"
+                + (f"&date={gr.created_at.strftime('%Y-%m-%d')}" if gr and gr.created_at else "")
+                + (f"&mode={gr.mode}" if gr and gr.mode else "")
+                + "&game=standard"
+                if ga.game_replay_id and gr and gr.board_hash else None
+            ),
         }
         for ga, gr in anomaly_rows
     ]
@@ -6387,24 +6395,23 @@ def admin_bootcamp(request: Request, db: Session = Depends(get_db)):
 #          .scalar()
 #    ) or 0
 
-   # New:
-   pending_replays = (
-       db.query(func.count(GameReplay.id))
-          .outerjoin(GameAnalysis, GameAnalysis.game_replay_id == GameReplay.id)
-          .filter(GameAnalysis.id.is_(None))
-          .filter(GameReplay.board_hash.isnot(None))
-          .filter(GameReplay.board_hash != "")
-          .filter(GameReplay.log_json.isnot(None))
-          .filter(GameReplay.log_json != "")
-          .scalar()
-   ) or 0
+    pending_replays = (
+        db.query(func.count(GameReplay.id))
+           .outerjoin(GameAnalysis, GameAnalysis.game_replay_id == GameReplay.id)
+           .filter(GameAnalysis.id.is_(None))
+           .filter(GameReplay.board_hash.isnot(None))
+           .filter(GameReplay.board_hash != "")
+           .filter(GameReplay.log_json.isnot(None))
+           .filter(GameReplay.log_json != "")
+           .scalar()
+    ) or 0
 
-   unrecoverable_replays = (
-       db.query(func.count(GameReplay.id))
-          .outerjoin(GameAnalysis, GameAnalysis.game_replay_id == GameReplay.id)
-          .filter(GameAnalysis.id.is_(None))
-          .filter((GameReplay.board_hash.is_(None)) | (GameReplay.board_hash == ""))
-          .scalar()
+    unrecoverable_replays = (
+        db.query(func.count(GameReplay.id))
+           .outerjoin(GameAnalysis, GameAnalysis.game_replay_id == GameReplay.id)
+           .filter(GameAnalysis.id.is_(None))
+           .filter((GameReplay.board_hash.is_(None)) | (GameReplay.board_hash == ""))
+           .scalar()
     ) or 0
 
     # ── 7. Mode mix (standard vs no-guess) ──────────────────────────────────
