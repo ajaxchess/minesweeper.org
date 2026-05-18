@@ -26,6 +26,7 @@ from typing import Optional
 from sqlalchemy import (
     Boolean, Column, DateTime, Float, Index, Integer, String, Text, text
 )
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
 from .passes_dard import (
     detect_fishing,
@@ -226,14 +227,16 @@ class GameAnalysis(Base):
     bootcamp_level              = Column(Integer, nullable=True)
     level_mastery_json          = Column(Text,    nullable=True)
 
-    # Full detail (JSON serialized — query with MySQL JSON_EXTRACT)
-    wasted_clicks_json          = Column(Text, nullable=True)
-    shortcuts_json              = Column(Text, nullable=True)
-    patterns_json               = Column(Text, nullable=True)
-    openings_json               = Column(Text, nullable=True)
-    fishing_json                = Column(Text, nullable=True)
-    flag_value_json             = Column(Text, nullable=True)
-    hierarchy_deviations_json   = Column(Text, nullable=True)
+    # Full detail (JSON serialized — query with MySQL JSON_EXTRACT).
+    # MEDIUMTEXT (16MB) rather than TEXT (64KB) — long custom-board games can
+    # exceed TEXT's limit on the *_json columns, especially fishing_json.
+    wasted_clicks_json          = Column(MEDIUMTEXT, nullable=True)
+    shortcuts_json              = Column(MEDIUMTEXT, nullable=True)
+    patterns_json               = Column(MEDIUMTEXT, nullable=True)
+    openings_json               = Column(MEDIUMTEXT, nullable=True)
+    fishing_json                = Column(MEDIUMTEXT, nullable=True)
+    flag_value_json             = Column(MEDIUMTEXT, nullable=True)
+    hierarchy_deviations_json   = Column(MEDIUMTEXT, nullable=True)
 
     # Bookkeeping
     no_guess         = Column(Boolean, nullable=False, default=False)
@@ -299,13 +302,15 @@ def persist_analysis(
         hierarchy_compliance_pct   = analysis.hierarchy.compliance_pct,
         bootcamp_level             = analysis.level.current_level,
         level_mastery_json         = json.dumps(analysis.level.level_mastery),
-        wasted_clicks_json   = json.dumps([asdict(w) for w in analysis.wasted_clicks.wasted], default=str),
-        shortcuts_json       = json.dumps([asdict(s) for s in analysis.shortcuts.missed]),
-        patterns_json        = json.dumps([asdict(p) for p in analysis.patterns]),
-        openings_json        = json.dumps([asdict(o) for o in analysis.openings.opportunities]),
-        fishing_json         = json.dumps([asdict(f) for f in analysis.fishing.opportunities]),
-        flag_value_json      = json.dumps([asdict(f) for f in analysis.flag_value.flags]),
-        hierarchy_deviations_json = json.dumps([asdict(d) for d in analysis.hierarchy.deviations]),
+        # Compact JSON (no spaces) — typically ~25% smaller, helps on the
+        # long-game outliers that previously overflowed TEXT columns.
+        wasted_clicks_json   = json.dumps([asdict(w) for w in analysis.wasted_clicks.wasted], default=str, separators=(",", ":")),
+        shortcuts_json       = json.dumps([asdict(s) for s in analysis.shortcuts.missed], separators=(",", ":")),
+        patterns_json        = json.dumps([asdict(p) for p in analysis.patterns], separators=(",", ":")),
+        openings_json        = json.dumps([asdict(o) for o in analysis.openings.opportunities], separators=(",", ":")),
+        fishing_json         = json.dumps([asdict(f) for f in analysis.fishing.opportunities], separators=(",", ":")),
+        flag_value_json      = json.dumps([asdict(f) for f in analysis.flag_value.flags], separators=(",", ":")),
+        hierarchy_deviations_json = json.dumps([asdict(d) for d in analysis.hierarchy.deviations], separators=(",", ":")),
         no_guess         = game.no_guess,
         analyzer_version = ANALYZER_VERSION,
     )
