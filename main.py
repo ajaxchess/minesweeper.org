@@ -6387,7 +6387,7 @@ def admin_bootcamp(request: Request, db: Session = Depends(get_db)):
 #          .scalar()
 #    ) or 0
 
-    # New:
+   # New:
    pending_replays = (
        db.query(func.count(GameReplay.id))
           .outerjoin(GameAnalysis, GameAnalysis.game_replay_id == GameReplay.id)
