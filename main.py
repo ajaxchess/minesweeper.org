@@ -212,7 +212,15 @@ async def add_security_headers(request: Request, call_next):
             " https://*.adtrafficquality.google"
         ),
         # AdSense renders ad creatives inside iframes from these domains
-        "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
+        # ep2.adtrafficquality.google = Google's ad fraud/viewability system (SODAR)
+        # www.google.com = required by some AdSense creatives
+        (
+            "frame-src"
+            " https://googleads.g.doubleclick.net"
+            " https://tpc.googlesyndication.com"
+            " https://ep2.adtrafficquality.google"
+            " https://www.google.com"
+        ),
         # Block all plugin-based content (Flash, Java applets, etc.)
         "object-src 'none'",
         # Prevent <base> tag injection from redirecting relative URLs
