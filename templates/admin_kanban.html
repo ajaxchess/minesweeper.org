@@ -11,6 +11,8 @@
     <a href="/admin/users">👥 {{ t.admin_users }}</a> &nbsp;|&nbsp;
     <a href="/admin/operations">⚙ {{ t.admin_operations }}</a> &nbsp;|&nbsp;
     <a href="/admin/analysis">📊 {{ t.admin_analysis }}</a>
+    &nbsp;|&nbsp;
+    <a href="/admin/bootcamp">🎓 {{ t.admin_bootcamp | default("Bootcamp") }}</a>
   </p>
 
   {% set col_names = {

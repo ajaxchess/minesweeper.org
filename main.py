@@ -502,6 +502,33 @@ TOROID_MODES = {
 
 ARCHIVE_MODES = {"beginner", "intermediate", "expert"}
 
+def _round_or_none(value, decimals: int):
+    """Round a Decimal/float to N places, or return None if input is None/NaN."""
+    if value is None:
+        return None
+    try:
+        return round(float(value), decimals)
+    except (TypeError, ValueError):
+        return None
+
+
+def _mask_email(player_id: str | None) -> str:
+    """Mask an email or guest-token for admin display.
+       'richard.cross@enlyt.io' → 'r******s@enlyt.io'
+       'abc-uuid-token-...'     → 'abc-...token'"""
+    if not player_id:
+        return "anonymous"
+    if "@" in player_id:
+        local, _, domain = player_id.partition("@")
+        if len(local) <= 2:
+            masked_local = local[0] + "*"
+        else:
+            masked_local = local[0] + "*" * (len(local) - 2) + local[-1]
+        return f"{masked_local}@{domain}"
+    if len(player_id) > 12:
+        return f"{player_id[:8]}…{player_id[-4:]}"
+    return player_id
+
 # ── Client type detection ─────────────────────────────────────────────────────
 def get_client_type(request: Request) -> str:
     """
