@@ -193,6 +193,147 @@ def get_bootcamp_diagnosis(
     }
 
 
+def get_level_progress(
+    db: Session,
+    player_id: str,
+    level: int,
+    *,
+    mode: str = "standard",
+    difficulty: str = "expert",
+    days_window: int = 30,
+) -> dict:
+    """
+    Per-game mastery time-series for a specific Bootcamp level.
+
+    Pulls the player's analyzed games over the time window, extracts the
+    target level's mastery from each game's `level_mastery_json`, computes
+    trend (improving/flat/declining), and projects a rough ETA.
+    """
+    from datetime import datetime, timedelta, timezone
+
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days_window)
+    analyses = (
+        db.query(GameAnalysis)
+          .filter(_player_filter(player_id))
+          .filter(_mode_filter(mode))
+          .filter(GameAnalysis.created_at >= cutoff)
+          .order_by(GameAnalysis.created_at.desc())
+          .limit(200)            # cap chart points; client samples for display
+          .all()
+    )
+
+    if not analyses:
+        return {
+            "games_in_window": 0,
+            "current_mastery": 0.0,
+            "progress_pct": 0.0,
+            "trend": "flat",
+            "trend_delta": 0.0,
+            "estimated_days_to_master": None,
+            "data_points": [],
+        }
+
+    # Extract this level's mastery from each game's level_mastery_json
+    data_points: list[dict] = []
+    for a in analyses:
+        m = _extract_level_mastery(a.level_mastery_json, level)
+        if m is None:
+            continue
+        data_points.append({
+            "game_replay_id": a.game_replay_id,
+            "created_at": a.created_at.isoformat() if a.created_at else "",
+            "created_at_obj": a.created_at,
+            "mastery": m,
+            "time_ms": None,    # filled below
+            "three_bv_per_sec": a.three_bv_per_sec,
+            "ioe": a.ioe,
+            "hierarchy_compliance_pct": a.hierarchy_compliance_pct,
+        })
+
+    if not data_points:
+        return {
+            "games_in_window": len(analyses),
+            "current_mastery": 0.0,
+            "progress_pct": 0.0,
+            "trend": "flat",
+            "trend_delta": 0.0,
+            "estimated_days_to_master": None,
+            "data_points": [],
+        }
+
+    # Fetch time_ms for these games in a single query
+    replay_ids = [dp["game_replay_id"] for dp in data_points if dp["game_replay_id"]]
+    if replay_ids:
+        time_map = dict(db.query(GameReplay.id, GameReplay.time_ms)
+                          .filter(GameReplay.id.in_(replay_ids))
+                          .all())
+        for dp in data_points:
+            dp["time_ms"] = time_map.get(dp["game_replay_id"])
+
+    # Sort oldest → newest for trend analysis, then reverse for response
+    data_points.sort(key=lambda d: d["created_at_obj"] or datetime.min)
+
+    # Current mastery = rolling avg of the last 10 games (or all if fewer)
+    recent_n = min(10, len(data_points))
+    recent_mastery = sum(d["mastery"] for d in data_points[-recent_n:]) / recent_n
+
+    # Trend: compare last 7 days vs prior 7 days
+    one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    two_weeks_ago = datetime.now(timezone.utc) - timedelta(days=14)
+    last_week = [d["mastery"] for d in data_points if d["created_at_obj"] and d["created_at_obj"] >= one_week_ago]
+    prev_week = [d["mastery"] for d in data_points if d["created_at_obj"] and two_weeks_ago <= d["created_at_obj"] < one_week_ago]
+    trend_delta = 0.0
+    if last_week and prev_week:
+        trend_delta = (sum(last_week) / len(last_week)) - (sum(prev_week) / len(prev_week))
+
+    if trend_delta > 0.02:
+        trend = "improving"
+    elif trend_delta < -0.02:
+        trend = "declining"
+    else:
+        trend = "flat"
+
+    # ETA: linear extrapolation from the last 30 games, if improving
+    target = 0.85
+    eta_days: Optional[int] = None
+    if trend == "improving" and recent_mastery < target and len(data_points) >= 5:
+        tail = data_points[-min(30, len(data_points)):]
+        if tail and tail[-1]["created_at_obj"] and tail[0]["created_at_obj"]:
+            span_days = (tail[-1]["created_at_obj"] - tail[0]["created_at_obj"]).total_seconds() / 86400
+            mastery_delta = tail[-1]["mastery"] - tail[0]["mastery"]
+            if mastery_delta > 0 and span_days > 0:
+                daily_gain = mastery_delta / span_days
+                gap = target - recent_mastery
+                eta_days = max(1, min(365, int(gap / daily_gain))) if daily_gain > 0 else None
+
+    # Newest-first for the response, strip the helper field
+    response_points = list(reversed(data_points))
+    for dp in response_points:
+        dp.pop("created_at_obj", None)
+
+    return {
+        "games_in_window": len(data_points),
+        "current_mastery": round(recent_mastery, 3),
+        "progress_pct": round(min(1.0, recent_mastery / target), 3),
+        "trend": trend,
+        "trend_delta": round(trend_delta, 3),
+        "estimated_days_to_master": eta_days,
+        "data_points": response_points,
+    }
+
+
+def _extract_level_mastery(level_mastery_json: Optional[str], level: int) -> Optional[float]:
+    """Pull a specific level's mastery from the JSON-serialized dict."""
+    if not level_mastery_json:
+        return None
+    try:
+        d = json.loads(level_mastery_json)
+    except (json.JSONDecodeError, TypeError):
+        return None
+    # Keys may be ints or strings depending on serializer
+    return d.get(level, d.get(str(level)))
+
+
 def _blocker_message(level: int, mastery: float, analyses) -> str:
     """Human-readable description of what's blocking the player at this level."""
     if level == 1:

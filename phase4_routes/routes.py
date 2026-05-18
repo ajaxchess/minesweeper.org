@@ -62,8 +62,10 @@ from .response_models import (
     HeatmapCell,
     HeatmapResponse,
     LevelMastery,
+    LevelProgressResponse,
     PatternFluencyEntry,
     PatternFluencyResponse,
+    ProgressDataPoint,
     RadarAxis,
     RadarInsight,
     RadarResponse,
@@ -177,6 +179,48 @@ def get_bootcamp_diagnosis(
         hierarchy_compliance_pct=d["hierarchy_compliance_pct"],
         throughput=d["throughput"],
         levels=levels,
+    )
+
+
+@router.get("/bootcamp/level/{level_num}/progress", response_model=LevelProgressResponse)
+@limiter.limit("30/minute")
+def get_bootcamp_level_progress(
+    level_num: int,
+    request: Request,
+    difficulty: str = Query("expert"),
+    mode: str = Query("standard", pattern="^(standard|no_guess)$"),
+    days_window: int = Query(30, ge=7, le=180),
+    db: Session = Depends(get_db),
+):
+    """
+    Time-series of mastery for a level, used by the View Progress modal.
+    Returns ≤200 data points oldest-first, plus trend metadata.
+    """
+    if level_num not in queries.LEVEL_META:
+        raise HTTPException(status_code=404, detail="Unknown bootcamp level")
+
+    player_id = _player_id(request)
+    data = queries.get_level_progress(
+        db, player_id, level_num,
+        mode=mode, difficulty=difficulty, days_window=days_window,
+    )
+    meta = queries.LEVEL_META[level_num]
+
+    return LevelProgressResponse(
+        player_id=player_id,
+        level=level_num,
+        level_name=meta["name"],
+        mode=mode,
+        difficulty=difficulty,
+        days_window=days_window,
+        games_in_window=data["games_in_window"],
+        current_mastery=data["current_mastery"],
+        target_mastery=0.85,
+        progress_pct=data["progress_pct"],
+        trend=data["trend"],
+        trend_delta=data["trend_delta"],
+        estimated_days_to_master=data["estimated_days_to_master"],
+        data_points=[ProgressDataPoint(**dp) for dp in data["data_points"]],
     )
 
 

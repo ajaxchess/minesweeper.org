@@ -81,6 +81,37 @@ class BootcampLevelDetail(BaseModel):
     improvement_summary: Optional[dict] = None
 
 
+# ── Level progress (View Progress modal) ─────────────────────────────────────
+
+class ProgressDataPoint(BaseModel):
+    """One game's contribution to a level's mastery trend."""
+    game_replay_id: int
+    created_at: str            # ISO 8601 timestamp
+    mastery: float             # this level's mastery for this single game, 0–1
+    time_ms: Optional[int]
+    three_bv_per_sec: Optional[float]
+    ioe: Optional[float]
+    hierarchy_compliance_pct: Optional[float]
+
+
+class LevelProgressResponse(BaseModel):
+    """GET /api/bootcamp/level/{n}/progress response."""
+    player_id: str
+    level: int
+    level_name: str
+    mode: Literal["standard", "no_guess"]
+    difficulty: str
+    days_window: int
+    games_in_window: int
+    current_mastery: float     # rolling-avg mastery for this level
+    target_mastery: float      # always 0.85 (graduation threshold)
+    progress_pct: float        # current_mastery / target_mastery, clamped to 1.0
+    trend: Literal["improving", "flat", "declining"]
+    trend_delta: float         # change in 7-day rolling avg over the window
+    estimated_days_to_master: Optional[int]   # None if flat / declining / already mastered
+    data_points: list[ProgressDataPoint]       # newest-first
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Skill Radar
 # ─────────────────────────────────────────────────────────────────────────────
