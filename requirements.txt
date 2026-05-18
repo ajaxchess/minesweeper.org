@@ -45,6 +45,7 @@ pycparser==3.0
 pydantic==2.13.4
 pydantic-core==2.46.4
 pymysql==1.1.1
+pygments==2.20.0
 pytest==9.0.3
 python-dotenv==1.2.2
 python-multipart==0.0.27
