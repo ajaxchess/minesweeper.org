@@ -87,6 +87,7 @@
         <button class="replay-preset-btn" data-rows="9"  data-cols="9"  data-mines="10">{{ t.nav_beginner }}</button>
         <button class="replay-preset-btn" data-rows="16" data-cols="16" data-mines="40">{{ t.nav_intermediate }}</button>
         <button class="replay-preset-btn" data-rows="16" data-cols="30" data-mines="99">{{ t.nav_expert }}</button>
+        <button class="replay-preset-btn" data-rows="20" data-cols="30" data-mines="130" data-evil="1">💀 Evil NG</button>
       </div>
       <div class="replay-setup-row">
         <label class="replay-setup-label">Rows <input  type="number" id="setup-rows"  min="5" max="30"  value="9"></label>
@@ -102,6 +103,14 @@
 
     <!-- Topology wrap label -->
     <div id="replay-wrap-label" class="cylinder-wrap-label" style="min-height:1.2em"></div>
+
+    <!-- Evil NG hints (shown only when mode=evil) -->
+    <p class="instructions evil-start-hint" id="evil-start-hint" style="display:none">
+      Click the <strong>✕ top-right cell</strong> to start.
+    </p>
+    <p class="instructions" id="evil-normal-hint" style="display:none">
+      <strong>Left-click</strong> to reveal &nbsp;|&nbsp; <strong>Right-click</strong> to flag
+    </p>
 
     <!-- Flag mode toggle (mobile) -->
     <button id="flag-mode-btn" class="flag-mode-btn" onclick="toggleFlagMode()" title="Toggle flag mode">🚩 Flag Mode</button>
@@ -163,7 +172,7 @@
   const infoEl = document.getElementById('replay-origin-info');
   const textEl = document.getElementById('replay-origin-text');
   if (infoEl && textEl && (date || mode)) {
-    const modeLabel = {beginner:'Beginner', intermediate:'Intermediate', expert:'Expert', custom:'Custom'}[mode] || mode || '';
+    const modeLabel = {beginner:'Beginner', intermediate:'Intermediate', expert:'Expert', custom:'Custom', evil:'Evil NG'}[mode] || mode || '';
     const board = (rows && cols && mines) ? `${rows}×${cols}, ${mines} mines` : '';
     const parts = [date, modeLabel, board].filter(Boolean);
     if (parts.length) {

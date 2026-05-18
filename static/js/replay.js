@@ -14,6 +14,8 @@
   const ORIG_DATE = params.get('date') || '';
   const ORIG_MODE = params.get('mode') || '';
   const INIT_VARIANT = params.get('game') || 'standard';
+  const IS_EVIL      = ORIG_MODE === 'evil';
+  let   setupMode    = IS_EVIL ? 'evil' : '';
 
   let currentVariant = INIT_VARIANT;
 
@@ -180,7 +182,18 @@
   function reveal(r, c) {
     if (state.over || state.revealed[r][c] || state.flagged[r][c] === 1) return;
 
+    // Evil NG: only the top-right corner is valid for the first click
+    if (!state.started && IS_EVIL && !(r === 0 && c === state.cols - 1)) return;
+
     if (!state.started) {
+      if (IS_EVIL) {
+        const sc = cellEl(0, state.cols - 1);
+        if (sc) { sc.classList.remove('evil-start'); sc.textContent = ''; }
+        const startHint  = document.getElementById('evil-start-hint');
+        const normalHint = document.getElementById('evil-normal-hint');
+        if (startHint)  startHint.style.display  = 'none';
+        if (normalHint) normalHint.style.display = '';
+      }
       state.started   = true;
       state.startTime = performance.now();
       startTimer();
@@ -493,6 +506,16 @@
     updateClickDisplay();
     buildBoard(ROWS, COLS);
 
+    // Evil NG: mark the forced start cell and reset hint visibility
+    if (IS_EVIL) {
+      const sc = cellEl(0, COLS - 1);
+      if (sc) { sc.classList.add('evil-start'); sc.textContent = '✕'; }
+      const startHint  = document.getElementById('evil-start-hint');
+      const normalHint = document.getElementById('evil-normal-hint');
+      if (startHint)  startHint.style.display  = '';
+      if (normalHint) normalHint.style.display = 'none';
+    }
+
     // Update 3BV display
     const bbbvEl = document.getElementById('replay-bbbv-value');
     if (bbbvEl) bbbvEl.textContent = bbbv;
@@ -666,6 +689,7 @@
     const hash  = document.getElementById('setup-hash').value.trim();
     if (!hash) return;
     const p = new URLSearchParams({ rows, cols, mines, hash });
+    if (setupMode === 'evil') p.set('mode', 'evil');
     window.location.href = '/variants/replay/?' + p.toString();
   }
 
@@ -716,6 +740,7 @@
         const r = parseInt(btn.dataset.rows);
         const c = parseInt(btn.dataset.cols);
         const m = parseInt(btn.dataset.mines);
+        setupMode = btn.dataset.evil === '1' ? 'evil' : '';
         populateSetupForm(r, c, m, generateHash(r, c, m));
       });
     });
