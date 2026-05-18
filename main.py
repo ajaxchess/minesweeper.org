@@ -23,6 +23,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, get_db, init_db, SessionLocal
 from phase2_analyzer import analyze_replay_async
+# Near the top of main.py with the other model imports
+from phase2_analyzer import GameAnalysis
 from tametsi_generator import (
     generate_daily as _tametsi_generate_daily,
     generate_board as _tametsi_generate_board,
