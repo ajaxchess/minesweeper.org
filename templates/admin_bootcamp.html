@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% block title %}Admin · Bootcamp — minesweeper.org{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="/static/css/admin_bootcamp.css?v=1" />
+{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper ab-wrapper" style="max-width:none;padding:1.5rem 1rem 3rem;">
+
+  <h1 class="lb-title">🎓 Bootcamp — Admin</h1>
+  <p class="ab-nav">
+    {{ user.email }} &nbsp;|&nbsp;
+    <a href="/admin">← {{ t.admin_dashboard | default("Dashboard") }}</a> &nbsp;|&nbsp;
+    <a href="/admin/users">👥 {{ t.admin_users | default("Users") }}</a> &nbsp;|&nbsp;
+    <a href="/admin/operations">⚙ {{ t.admin_operations | default("Operations") }}</a> &nbsp;|&nbsp;
+    <a href="/admin/kanban">📋 {{ t.admin_kanban_board | default("Kanban") }}</a> &nbsp;|&nbsp;
+    <a href="/admin/analysis">📊 {{ t.admin_analysis | default("Analysis") }}</a>
+  </p>
+
+  {# ─── Top-line counters ─────────────────────────────────────────────────── #}
+  <section class="ab-section">
+    <h2 class="ab-section-title">Pipeline at a glance</h2>
+    <div class="ab-stat-grid">
+      <div class="ab-stat-card">
+        <div class="ab-stat-label">Total games analyzed</div>
+        <div class="ab-stat-value">{{ "{:,}".format(total_analyses) }}</div>
+        <div class="ab-stat-sub">{{ "{:,}".format(analyses_7d) }} in last 7 days</div>
+      </div>
+      <div class="ab-stat-card">
+        <div class="ab-stat-label">Unique players (all time)</div>
+        <div class="ab-stat-value">{{ "{:,}".format(unique_players_total) }}</div>
+        <div class="ab-stat-sub">
+          {{ "{:,}".format(unique_players_7d) }} WAU · {{ "{:,}".format(unique_players_30d) }} MAU
+        </div>
+      </div>
+      <div class="ab-stat-card">
+        <div class="ab-stat-label">Last 30 days</div>
+        <div class="ab-stat-value">{{ "{:,}".format(analyses_30d) }}</div>
+        <div class="ab-stat-sub">
+          {{ "{:,}".format(standard_count) }} std · {{ "{:,}".format(no_guess_count) }} no-guess
+        </div>
+      </div>
+      <div class="ab-stat-card {% if pending_replays > 100 %}ab-stat-card--warn{% endif %}">
+        <div class="ab-stat-label">Analyzer backlog</div>
+        <div class="ab-stat-value">{{ "{:,}".format(pending_replays) }}</div>
+        <div class="ab-stat-sub">replays without analysis</div>
+      </div>
+      <div class="ab-stat-card {% if anomalies_7d > 0 %}ab-stat-card--alert{% endif %}">
+        <div class="ab-stat-label">No-guess anomalies</div>
+        <div class="ab-stat-value">{{ "{:,}".format(anomalies_total) }}</div>
+        <div class="ab-stat-sub">
+          {{ anomalies_7d }} this week · {{ anomalies_30d }} this month
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ─── Bootcamp level distribution ───────────────────────────────────────── #}
+  <section class="ab-section">
+    <h2 class="ab-section-title">Bootcamp adoption — current level distribution</h2>
+    <p class="ab-section-note">
+      Each player is counted at their most recent diagnosed level.
+      Total diagnosed players: <strong>{{ "{:,}".format(level_distribution_total) }}</strong>
+    </p>
+    <table class="ab-table">
+      <thead>
+        <tr>
+          <th>Level</th>
+          <th>Name</th>
+          <th class="ab-num">Players</th>
+          <th class="ab-num">% of total</th>
+          <th>Distribution</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set names = {
+          1: "Cut Wasted Clicks",
+          2: "Effective Chording",
+          3: "Strategic No-Flag",
+          4: "Pure Efficiency",
+          5: "Opening Recognition ★",
+          6: "Flag Value ★",
+          7: "Fishing & Hierarchy ★",
+        } %}
+        {% for lv in range(1, 8) %}
+          {% set count = level_distribution[lv] %}
+          {% set pct = (100 * count / level_distribution_total) if level_distribution_total else 0 %}
+          <tr>
+            <td><strong>L{{ lv }}</strong></td>
+            <td>{{ names[lv] }}</td>
+            <td class="ab-num">{{ "{:,}".format(count) }}</td>
+            <td class="ab-num">{{ "%.1f"|format(pct) }}%</td>
+            <td>
+              <div class="ab-bar"><div class="ab-bar-fill ab-bar-fill--l{{ lv }}" style="width: {{ pct }}%;"></div></div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="ab-section-note ab-section-footnote">
+      ★ Levels 5–7 are the Dard Part-2 advanced curriculum. Concentration there is the leading indicator of grand-master skill in the population.
+    </p>
+  </section>
+
+  {# ─── Population medians ─────────────────────────────────────────────────── #}
+  <section class="ab-section">
+    <h2 class="ab-section-title">Population skill medians (last 30 days, standard mode)</h2>
+    <div class="ab-stat-grid">
+      <div class="ab-stat-card">
+        <div class="ab-stat-label">IOE</div>
+        <div class="ab-stat-value">{{ population.ioe if population.ioe is not none else "—" }}</div>
+        <div class="ab-stat-sub">Target 0.85+</div>
+      </div>
+      <div class="ab-stat-card">
+        <div class="ab-stat-label">Correctness</div>
+        <div class="ab-stat-value">{{ population.correctness if population.correctness is not none else "—" }}</div>
+        <div class="ab-stat-sub">Target 0.90+</div>
+      </div>
+      <div class="ab-stat-card">
+        <div class="ab-stat-label">Hierarchy compliance ★</div>
+        <div class="ab-stat-value">{{ "%.0f"|format(100 * population.hierarchy) ~ "%" if population.hierarchy is not none else "—" }}</div>
+        <div class="ab-stat-sub">Dard signature metric</div>
+      </div>
+      <div class="ab-stat-card">
+        <div class="ab-stat-label">3BV/s</div>
+        <div class="ab-stat-value">{{ population.three_bv_per_sec if population.three_bv_per_sec is not none else "—" }}</div>
+        <div class="ab-stat-sub">Top: 2.5+</div>
+      </div>
+      <div class="ab-stat-card">
+        <div class="ab-stat-label">Opening take rate ★</div>
+        <div class="ab-stat-value">{{ "%.0f"|format(100 * population.opening_take_rate) ~ "%" if population.opening_take_rate is not none else "—" }}</div>
+        <div class="ab-stat-sub">{{ population.openings_taken or 0 }} taken · {{ population.openings_missed or 0 }} missed</div>
+      </div>
+      <div class="ab-stat-card">
+        <div class="ab-stat-label">Fishes / game ★</div>
+        <div class="ab-stat-value">{{ population.fishes if population.fishes is not none else "—" }}</div>
+        <div class="ab-stat-sub">Top: 1+</div>
+      </div>
+      <div class="ab-stat-card">
+        <div class="ab-stat-label">Avg flag value ★</div>
+        <div class="ab-stat-value">{{ population.flag_value if population.flag_value is not none else "—" }}</div>
+        <div class="ab-stat-sub">Target 3.0+</div>
+      </div>
+    </div>
+  </section>
+
+  {# ─── Analyses per day chart ────────────────────────────────────────────── #}
+  <section class="ab-section">
+    <h2 class="ab-section-title">Analyzer throughput — last 30 days</h2>
+    <div class="ab-chart-wrap">
+      <canvas id="ab-trend-chart"></canvas>
+    </div>
+  </section>
+
+  {# ─── No-guess anomalies ───────────────────────────────────────────────── #}
+  <section class="ab-section">
+    <h2 class="ab-section-title">
+      🐛 No-guess anomalies
+      {% if anomalies_7d > 0 %}
+        <span class="ab-alert-pill">{{ anomalies_7d }} this week</span>
+      {% endif %}
+    </h2>
+    <p class="ab-section-note">
+      A no-guess game classified as <code>forcedGuess</code> is impossible by definition — no-guess boards have no forced guesses.
+      Either the solver missed a deduction (analyzer bug) or the player misclicked. These need solver-team review.
+    </p>
+
+    {% if anomalies %}
+      <table class="ab-table ab-anomaly-table">
+        <thead>
+          <tr>
+            <th class="ab-num">Replay ID</th>
+            <th>Player</th>
+            <th>Difficulty</th>
+            <th>Region</th>
+            <th class="ab-num">Time</th>
+            <th class="ab-num">3BV</th>
+            <th>When</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in anomalies %}
+          <tr>
+            <td class="ab-num"><a href="{{ a.replay_url }}" target="_blank">#{{ a.game_replay_id }}</a></td>
+            <td><code class="ab-player">{{ a.player_id_masked }}</code></td>
+            <td>{{ a.difficulty }}</td>
+            <td>{{ a.death_region or "?" }}</td>
+            <td class="ab-num">{{ "%.1f"|format(a.time_ms / 1000) ~ "s" if a.time_ms else "—" }}</td>
+            <td class="ab-num">{{ a.three_bv or "—" }}</td>
+            <td>{{ a.created_at }}</td>
+            <td>
+              {% if a.replay_url %}
+                <a href="{{ a.replay_url }}" class="ab-link" target="_blank">Inspect →</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if anomalies_total > anomalies|length %}
+        <p class="ab-section-note">
+          Showing the {{ anomalies|length }} most recent of {{ anomalies_total }} total anomalies.
+        </p>
+      {% endif %}
+    {% else %}
+      <p class="ab-empty">No anomalies recorded. The solver is producing valid classifications on every no-guess game.</p>
+    {% endif %}
+  </section>
+
+  {# ─── Footer meta ─────────────────────────────────────────────────────── #}
+  <footer class="ab-footer">
+    Page is read-only. Data refreshes on each load — no caching.
+    Analyzer version: see <code>phase2_analyzer.ANALYZER_VERSION</code>.
+  </footer>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+  const TREND_LABELS = {{ trend_labels | tojson | safe }};
+  const TREND_COUNTS = {{ trend_counts | tojson | safe }};
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const ctx = document.getElementById('ab-trend-chart');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: TREND_LABELS,
+        datasets: [{
+          label: 'Games analyzed',
+          data: TREND_COUNTS,
+          backgroundColor: 'rgba(74, 158, 255, 0.7)',
+          borderColor: 'rgba(74, 158, 255, 1)',
+          borderWidth: 1,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#888' } } },
+        scales: {
+          x: { ticks: { color: '#888', maxTicksLimit: 12 }, grid: { color: '#2a2a2a' } },
+          y: { ticks: { color: '#888' }, grid: { color: '#2a2a2a' }, beginAtZero: true },
+        },
+      },
+    });
+  });
+</script>
+{% endblock %}
