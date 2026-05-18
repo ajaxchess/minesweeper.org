@@ -17,6 +17,7 @@
     <a href="/admin/contact"{% if alert_contact %} class="admin-alert"{% endif %}>✉ Contact</a> &nbsp;|&nbsp;
     <a href="/admin/15puzzle-photos"{% if alert_15p_photos %} class="admin-alert"{% endif %}>🖼 15P Photos</a> &nbsp;|&nbsp;
     <a href="/admin/jigsaw-photos"{% if alert_jigsaw_photos %} class="admin-alert"{% endif %}>🧩 Jigsaw Photos</a>
+    <a href="/admin/bootcamp">🎓 {{ t.admin_bootcamp | default("Bootcamp") }}</a>
   </p>
 
   <style>
