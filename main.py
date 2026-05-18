@@ -3488,6 +3488,14 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "lang": get_lang(request), "t": get_t(request),
     })
 
+@app.get("/bootcamp", response_class=HTMLResponse)
+async def bootcamp_page(request: Request):
+    return templates.TemplateResponse(request, "bootcamp.html", {
+        "mode": "bootcamp",
+        "user": get_current_user(request),
+        "lang": get_lang(request),
+        "t": get_t(request),
+    })
 
 @app.get("/quests", response_class=HTMLResponse)
 async def quests_page(request: Request):
