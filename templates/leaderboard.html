@@ -673,7 +673,7 @@ async function loadScores(mode, noGuess, period, game) {
 
     if (!data.length) {
       const emptyMsg = currentPeriod === 'daily' && currentDate !== TODAY_STR
-                       ? `No scores recorded for ${currentDate}.`
+                       ? `No scores recorded for ${escHtml(currentDate)}.`
                      : currentPeriod === 'daily'   ? 'No scores yet today — be the first!'
                      : currentPeriod === 'weekly'  ? 'No scores yet this week — be the first!'
                      : currentPeriod === 'monthly' ? 'No scores yet this month — be the first!'
