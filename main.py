@@ -6203,6 +6203,205 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         "alert_contact":       alert_contact,
     })
 
+@app.get("/admin/bootcamp", response_class=HTMLResponse)
+def admin_bootcamp(request: Request, db: Session = Depends(get_db)):
+    """
+    Admin dashboard for the Bootcamp / analyzer pipeline.
+
+    Surfaces:
+      - No-guess anomaly cases (forced-guess deaths in no-guess games)
+      - Player adoption and level distribution
+      - Analyzer throughput and pending backlog
+      - Population-wide skill medians
+    """
+    user = get_current_user(request)
+    require_admin(request, user)
+
+    now = datetime.now(timezone.utc)
+    week_ago  = now - timedelta(days=7)
+    month_ago = now - timedelta(days=30)
+
+    # ── 1. Top-line counts ────────────────────────────────────────────────────
+    total_analyses = db.query(func.count(GameAnalysis.id)).scalar() or 0
+    analyses_7d  = db.query(func.count(GameAnalysis.id)) \
+                     .filter(GameAnalysis.created_at >= week_ago).scalar() or 0
+    analyses_30d = db.query(func.count(GameAnalysis.id)) \
+                     .filter(GameAnalysis.created_at >= month_ago).scalar() or 0
+
+    unique_players_total = db.query(
+        func.count(func.distinct(GameAnalysis.player_id))
+    ).scalar() or 0
+    unique_players_7d    = db.query(
+        func.count(func.distinct(GameAnalysis.player_id))
+    ).filter(GameAnalysis.created_at >= week_ago).scalar() or 0
+    unique_players_30d   = db.query(
+        func.count(func.distinct(GameAnalysis.player_id))
+    ).filter(GameAnalysis.created_at >= month_ago).scalar() or 0
+
+    # Anomaly counts
+    anomalies_total = db.query(func.count(GameAnalysis.id)) \
+        .filter(GameAnalysis.no_guess == True) \
+        .filter(GameAnalysis.death_cause == "forcedGuess") \
+        .scalar() or 0
+    anomalies_7d = db.query(func.count(GameAnalysis.id)) \
+        .filter(GameAnalysis.no_guess == True) \
+        .filter(GameAnalysis.death_cause == "forcedGuess") \
+        .filter(GameAnalysis.created_at >= week_ago).scalar() or 0
+    anomalies_30d = db.query(func.count(GameAnalysis.id)) \
+        .filter(GameAnalysis.no_guess == True) \
+        .filter(GameAnalysis.death_cause == "forcedGuess") \
+        .filter(GameAnalysis.created_at >= month_ago).scalar() or 0
+
+    # ── 2. Recent anomalies list (50 most recent) ────────────────────────────
+    anomaly_rows = (
+        db.query(GameAnalysis, GameReplay)
+          .outerjoin(GameReplay, GameReplay.id == GameAnalysis.game_replay_id)
+          .filter(GameAnalysis.no_guess == True)
+          .filter(GameAnalysis.death_cause == "forcedGuess")
+          .order_by(GameAnalysis.created_at.desc())
+          .limit(50)
+          .all()
+    )
+    anomalies = [
+        {
+            "id": ga.id,
+            "game_replay_id": ga.game_replay_id,
+            "player_id_masked": _mask_email(ga.player_id),
+            "death_cause": ga.death_cause,
+            "death_region": ga.death_region,
+            "difficulty": (gr.mode if gr else "?"),
+            "time_ms": (gr.time_ms if gr else None),
+            "three_bv": (gr.bbbv if gr else None),
+            "created_at": ga.created_at.strftime("%Y-%m-%d %H:%M") if ga.created_at else "",
+            "replay_url": f"/variants/replay/?id={ga.game_replay_id}" if ga.game_replay_id else None,
+        }
+        for ga, gr in anomaly_rows
+    ]
+
+    # ── 3. Bootcamp level distribution (latest level per player) ─────────────
+    # Subquery: most recent game per player
+    latest_subq = (
+        db.query(
+            GameAnalysis.player_id,
+            func.max(GameAnalysis.created_at).label("latest"),
+        )
+        .filter(GameAnalysis.bootcamp_level.isnot(None))
+        .group_by(GameAnalysis.player_id)
+        .subquery()
+    )
+    level_rows = (
+        db.query(GameAnalysis.bootcamp_level, func.count(GameAnalysis.id))
+        .join(latest_subq,
+              (GameAnalysis.player_id == latest_subq.c.player_id) &
+              (GameAnalysis.created_at == latest_subq.c.latest))
+        .group_by(GameAnalysis.bootcamp_level)
+        .all()
+    )
+    level_distribution = {lv: 0 for lv in range(1, 8)}
+    for lv, n in level_rows:
+        if lv in level_distribution:
+            level_distribution[lv] = n
+
+    # ── 4. Population skill medians (standard mode, last 30 days) ────────────
+    pop_q = (
+        db.query(
+            func.avg(GameAnalysis.ioe),
+            func.avg(GameAnalysis.correctness),
+            func.avg(GameAnalysis.hierarchy_compliance_pct),
+            func.avg(GameAnalysis.three_bv_per_sec),
+            func.avg(GameAnalysis.openings_guaranteed_taken),
+            func.avg(GameAnalysis.openings_guaranteed_missed),
+            func.avg(GameAnalysis.fishes_attempted),
+            func.avg(GameAnalysis.avg_flag_value_score),
+        )
+        .filter(GameAnalysis.no_guess == False)
+        .filter(GameAnalysis.created_at >= month_ago)
+        .first()
+    )
+    population = {
+        "ioe":               _round_or_none(pop_q[0], 3),
+        "correctness":       _round_or_none(pop_q[1], 3),
+        "hierarchy":         _round_or_none(pop_q[2], 3),
+        "three_bv_per_sec":  _round_or_none(pop_q[3], 2),
+        "openings_taken":    _round_or_none(pop_q[4], 1),
+        "openings_missed":   _round_or_none(pop_q[5], 1),
+        "fishes":            _round_or_none(pop_q[6], 1),
+        "flag_value":        _round_or_none(pop_q[7], 2),
+    }
+    if population["openings_taken"] is not None and population["openings_missed"] is not None:
+        total_op = (population["openings_taken"] or 0) + (population["openings_missed"] or 0)
+        population["opening_take_rate"] = (
+            round(population["openings_taken"] / total_op, 3) if total_op else None
+        )
+    else:
+        population["opening_take_rate"] = None
+
+    # ── 5. Analyses-per-day trend (last 30 days) ─────────────────────────────
+    trend_rows = (
+        db.query(
+            func.date(GameAnalysis.created_at).label("day"),
+            func.count(GameAnalysis.id).label("n"),
+        )
+        .filter(GameAnalysis.created_at >= month_ago)
+        .group_by(func.date(GameAnalysis.created_at))
+        .order_by("day")
+        .all()
+    )
+    trend_labels = [r.day.strftime("%m-%d") if r.day else "" for r in trend_rows]
+    trend_counts = [int(r.n) for r in trend_rows]
+
+    # ── 6. Pending backlog (replays without an analysis row) ─────────────────
+    pending_replays = (
+        db.query(func.count(GameReplay.id))
+          .outerjoin(GameAnalysis, GameAnalysis.game_replay_id == GameReplay.id)
+          .filter(GameAnalysis.id.is_(None))
+          .scalar()
+    ) or 0
+
+    # ── 7. Mode mix (standard vs no-guess) ──────────────────────────────────
+    mode_mix = (
+        db.query(
+            GameAnalysis.no_guess,
+            func.count(GameAnalysis.id),
+        )
+        .filter(GameAnalysis.created_at >= month_ago)
+        .group_by(GameAnalysis.no_guess)
+        .all()
+    )
+    standard_count = sum(n for ng, n in mode_mix if not ng) or 0
+    no_guess_count = sum(n for ng, n in mode_mix if ng) or 0
+
+    return templates.TemplateResponse(request, "admin_bootcamp.html", {
+        "mode": "admin_bootcamp",
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        # Top-line counts
+        "total_analyses":        total_analyses,
+        "analyses_7d":           analyses_7d,
+        "analyses_30d":          analyses_30d,
+        "unique_players_total":  unique_players_total,
+        "unique_players_7d":     unique_players_7d,
+        "unique_players_30d":    unique_players_30d,
+        # Anomalies
+        "anomalies_total":       anomalies_total,
+        "anomalies_7d":          anomalies_7d,
+        "anomalies_30d":         anomalies_30d,
+        "anomalies":             anomalies,
+        # Level distribution
+        "level_distribution":    level_distribution,
+        "level_distribution_total": sum(level_distribution.values()),
+        # Population medians
+        "population":            population,
+        # Trend
+        "trend_labels":          trend_labels,
+        "trend_counts":          trend_counts,
+        # Backlog + mode mix
+        "pending_replays":       pending_replays,
+        "standard_count":        standard_count,
+        "no_guess_count":        no_guess_count,
+    })
+
 
 @app.get("/admin/users", response_class=HTMLResponse)
 def admin_users(request: Request, db: Session = Depends(get_db)):
