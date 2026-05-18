@@ -6380,10 +6380,30 @@ def admin_bootcamp(request: Request, db: Session = Depends(get_db)):
     trend_counts = [int(r.n) for r in trend_rows]
 
     # ── 6. Pending backlog (replays without an analysis row) ─────────────────
-    pending_replays = (
-        db.query(func.count(GameReplay.id))
+#    pending_replays = (
+#        db.query(func.count(GameReplay.id))
+#          .outerjoin(GameAnalysis, GameAnalysis.game_replay_id == GameReplay.id)
+#          .filter(GameAnalysis.id.is_(None))
+#          .scalar()
+#    ) or 0
+
+    # New:
+   pending_replays = (
+       db.query(func.count(GameReplay.id))
           .outerjoin(GameAnalysis, GameAnalysis.game_replay_id == GameReplay.id)
           .filter(GameAnalysis.id.is_(None))
+          .filter(GameReplay.board_hash.isnot(None))
+          .filter(GameReplay.board_hash != "")
+          .filter(GameReplay.log_json.isnot(None))
+          .filter(GameReplay.log_json != "")
+          .scalar()
+   ) or 0
+
+   unrecoverable_replays = (
+       db.query(func.count(GameReplay.id))
+          .outerjoin(GameAnalysis, GameAnalysis.game_replay_id == GameReplay.id)
+          .filter(GameAnalysis.id.is_(None))
+          .filter((GameReplay.board_hash.is_(None)) | (GameReplay.board_hash == ""))
           .scalar()
     ) or 0
 
