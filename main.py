@@ -153,8 +153,10 @@ from telemetry import (
 setup_telemetry(app, db_engine=_db_module.engine)
 
 # F96 — Analytics API (Phase 4)
-from phase4_routes import router as analytics_router
-app.include_router(analytics_router)
+import os
+if os.environ.get("ENABLE_ANALYTICS_API", "true").lower() == "true":
+    from phase4_routes import router as analytics_router
+    app.include_router(analytics_router)
 
 @app.middleware("http")
 async def count_requests(request: Request, call_next):
