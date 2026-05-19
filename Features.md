@@ -14,6 +14,21 @@ List of active features
   purged at midnight UTC daily. Registered user scores are retained permanently.
 
 ──────────────────────────────────────────────────────────────────────────────
+F101 Game Share / View
+  - Any completed game (win or loss) is saved with its full replay log and
+    accessible at `/game/{id}`.
+  - The page shows an animated replay via `rewind.js`, player name/flag,
+    outcome badge, and stats (time, 3BV, 3BV/s, clicks, efficiency).
+  - A copy-link button lets the player share the URL.
+  - After a win the win toast injects a "🔗 Share" link pointing to `/game/{id}`.
+  - Registered users can make their games private via a "Public Game Replays"
+    toggle on the profile settings page (stored as `games_public` on UserProfile).
+  - `/profile/games` lists the authenticated user's own games (paginated, 20/page).
+  - Files: `main.py`, `database_template.py`, `templates/game_view.html`,
+    `templates/my_games.html`, `templates/profile.html`, `static/js/minesweeper.js`.
+  - DB migration: `ALTER TABLE user_profiles ADD COLUMN games_public BOOLEAN NOT NULL DEFAULT 1;`
+
+──────────────────────────────────────────────────────────────────────────────
 F100 WC2026 Translation Backfill
   - Three keys ship with English-only `default` fallbacks from the F97 guest-play
     work and need translations in the other 8 supported languages.

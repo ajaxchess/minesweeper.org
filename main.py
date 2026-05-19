@@ -3511,6 +3511,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "vanity_slug":   profile.vanity_slug if profile else "",
         "pref_sounds":   profile.pref_sounds   if profile else False,
         "pref_chording": profile.pref_chording if profile else True,
+        "games_public":  getattr(profile, "games_public", True) if profile else True,
         "pref_skin":     profile.pref_skin     if profile else site_settings.active_skin(),
         "pref_on_win":   profile.pref_on_win   if profile else 'summary',
         "pref_on_lose":  profile.pref_on_lose  if profile else 'summary',
@@ -3562,6 +3563,114 @@ async def replay_page(request: Request):
         "mode": "replay",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+# ── F101 Game View & My Games ─────────────────────────────────────────────────
+
+_MODE_LABELS = {
+    "beginner":     "Beginner",
+    "intermediate": "Intermediate",
+    "expert":       "Expert",
+    "evil":         "Evil NG",
+    "custom":       "Custom",
+    "daily":        "Daily",
+    "no-guess":     "No-Guess",
+}
+
+
+@app.get("/game/{game_id}", response_class=HTMLResponse)
+async def game_view_page(game_id: int, request: Request, db: Session = Depends(get_db)):
+    import json as _json
+    replay = db.get(GameReplay, game_id)
+    if not replay or not replay.board_hash or not replay.log_json:
+        raise HTTPException(status_code=404)
+
+    player_profile = None
+    player_name    = "Anonymous"
+    player_slug    = None
+    player_country = None
+    if replay.user_email:
+        player_profile = db.query(UserProfile).filter(UserProfile.email == replay.user_email).first()
+        if player_profile:
+            player_name    = player_profile.display_name
+            player_slug    = player_profile.vanity_slug or player_profile.public_id
+            player_country = player_profile.country
+            if not getattr(player_profile, "games_public", True):
+                raise HTTPException(status_code=404)
+
+    try:
+        log_data = _json.loads(replay.log_json)
+    except Exception:
+        raise HTTPException(status_code=404)
+
+    time_secs       = replay.time_ms / 1000 if replay.time_ms else None
+    three_bv_per_sec = (
+        round(replay.bbbv / time_secs, 3)
+        if replay.bbbv and time_secs else None
+    )
+    total_clicks = (
+        (replay.left_clicks or 0)
+        + (replay.right_clicks or 0)
+        + (replay.chord_clicks or 0)
+    )
+    efficiency = (
+        round(replay.bbbv / total_clicks * 100)
+        if replay.bbbv and total_clicks else None
+    )
+
+    return templates.TemplateResponse(request, "game_view.html", {
+        "mode":            "game-view",
+        "user":            get_current_user(request),
+        "lang":            get_lang(request),
+        "t":               get_t(request),
+        "game_id":         game_id,
+        "replay":          replay,
+        "log_data":        log_data,
+        "player_name":     player_name,
+        "player_slug":     player_slug,
+        "player_country":  player_country,
+        "time_secs":       round(time_secs, 3) if time_secs else None,
+        "three_bv_per_sec": three_bv_per_sec,
+        "total_clicks":    total_clicks,
+        "efficiency":      efficiency,
+        "mode_label":      _MODE_LABELS.get(replay.mode or "", replay.mode or "Custom"),
+    })
+
+
+@app.get("/profile/games", response_class=HTMLResponse)
+async def my_games_page(request: Request, page: int = Query(1, ge=1),
+                         db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse("/login?next=/profile/games", status_code=302)
+
+    PAGE_SIZE = 20
+    offset    = (page - 1) * PAGE_SIZE
+    q = (
+        db.query(GameReplay)
+        .filter(
+            GameReplay.user_email == user["email"],
+            GameReplay.board_hash.isnot(None),
+            GameReplay.log_json.isnot(None),
+            GameReplay.log_json != "",
+        )
+    )
+    total       = q.count()
+    games       = q.order_by(GameReplay.created_at.desc()).offset(offset).limit(PAGE_SIZE).all()
+    total_pages = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
+
+    return templates.TemplateResponse(request, "my_games.html", {
+        "mode":        "my-games",
+        "user":        user,
+        "lang":        get_lang(request),
+        "t":           get_t(request),
+        "games":       games,
+        "page":        page,
+        "total":       total,
+        "total_pages": total_pages,
+        "page_size":   PAGE_SIZE,
+        "mode_labels": _MODE_LABELS,
     })
 
 
@@ -5719,6 +5828,7 @@ class ProfileSettingsUpdate(BaseModel):
     pref_skin:     str  = site_settings.active_skin()
     pref_on_win:   str  = 'summary'
     pref_on_lose:  str  = 'summary'
+    games_public:  bool = True
 
 
 @app.post("/api/profile/settings")
@@ -5733,6 +5843,8 @@ def update_profile_settings(payload: ProfileSettingsUpdate, request: Request, db
     profile.favorite_game = payload.favorite_game or None
     profile.pref_sounds   = payload.pref_sounds
     profile.pref_chording = payload.pref_chording
+    if hasattr(profile, "games_public"):
+        profile.games_public = payload.games_public
     _skin = payload.pref_skin if payload.pref_skin in site_settings.ALLOWED_SKINS else site_settings.DEFAULT_SKIN
     profile.pref_skin     = 'classic' if _skin == 'diana' else _skin
     profile.pref_on_win   = payload.pref_on_win  if payload.pref_on_win  in ('summary', 'new_game') else 'summary'

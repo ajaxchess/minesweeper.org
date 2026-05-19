@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Game #{{ game_id }} — {{ player_name }} — minesweeper.org{% endblock %}
+{% block description %}{{ mode_label }} game by {{ player_name }}{% if time_secs %} in {{ "%.3f"|format(time_secs) }}s{% endif %}. Watch the full replay on minesweeper.org.{% endblock %}
+{% block canonical %}https://minesweeper.org/game/{{ game_id }}{% endblock %}
+{% block og_url %}https://minesweeper.org/game/{{ game_id }}{% endblock %}
+{% block og_title %}Game #{{ game_id }} — {{ player_name }} — minesweeper.org{% endblock %}
+{% block og_description %}{{ mode_label }} game by {{ player_name }}{% if time_secs %} in {{ "%.3f"|format(time_secs) }}s{% endif %}. Watch the full replay.{% endblock %}
+
+{% block content %}
+<style>
+.gv-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  max-width: 960px;
+  margin: 1rem auto;
+  padding: 0 1rem;
+  align-items: flex-start;
+}
+.gv-board-side { display: flex; flex-direction: column; gap: 0.5rem; }
+.gv-info-row {
+  display: flex; gap: 0.75rem; align-items: center;
+  font-size: 0.85rem; flex-wrap: wrap;
+}
+.gv-mode-badge {
+  background: var(--accent2); color: #fff;
+  padding: 0.15rem 0.55rem; border-radius: 4px; font-size: 0.8rem; font-weight: 700;
+}
+.gv-outcome-win  { color: var(--accent2); font-weight: 700; }
+.gv-outcome-loss { color: #e53935; font-weight: 700; }
+
+.gv-stats-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  min-width: 200px;
+  max-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.gv-player-row {
+  display: flex; align-items: center; gap: 0.45rem;
+  font-size: 1rem; font-weight: 600;
+}
+.gv-player-flag { width: 20px; height: 14px; object-fit: cover; border-radius: 2px; }
+.gv-player-name { color: var(--accent2); text-decoration: none; }
+a.gv-player-name:hover { text-decoration: underline; }
+.gv-player-date { font-size: 0.8rem; color: var(--text-dim); }
+.gv-divider { border: none; border-top: 1px solid var(--border); margin: 0.4rem 0; }
+
+.gv-stats { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem; }
+.gv-stat-row { display: flex; gap: 0.4rem; align-items: baseline; }
+.gv-stat-row span { color: var(--text-dim); min-width: 80px; }
+.gv-stat-row small { color: var(--text-dim); font-size: 0.78rem; }
+
+.gv-share-row {
+  display: flex; gap: 0.4rem; margin-top: 0.6rem;
+}
+.gv-share-url {
+  flex: 1; padding: 0.3rem 0.5rem; font-size: 0.75rem;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text); font-family: monospace; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; cursor: text; min-width: 0;
+}
+.gv-copy-btn {
+  padding: 0.3rem 0.65rem; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text); cursor: pointer; font-size: 0.8rem; flex-shrink: 0;
+}
+.gv-copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+#board {
+  display: grid;
+  gap: 1px;
+  user-select: none;
+  grid-template-columns: repeat({{ replay.cols }}, var(--cell-size, 32px));
+}
+</style>
+
+<div class="gv-wrap">
+
+  <div class="gv-board-side">
+    <div class="gv-info-row">
+      <span class="gv-mode-badge">{{ mode_label }}</span>
+      <span style="color:var(--text-dim)">{{ replay.rows }}×{{ replay.cols }}, {{ replay.mines }} mines</span>
+      <span class="gv-outcome-{{ replay.outcome }}">
+        {{ "✓ Win" if replay.outcome == 'win' else "✗ Loss" if replay.outcome == 'loss' else "Abandoned" }}
+      </span>
+    </div>
+
+    <div id="board" data-mode="game-view">
+      {% for i in range(replay.rows * replay.cols) %}
+      <div class="cell hidden"></div>
+      {% endfor %}
+    </div>
+    <!-- rewind.js injects #rw-bar here -->
+  </div>
+
+  <aside class="gv-stats-panel">
+    <div class="gv-player-row">
+      {% if player_country and player_country|length == 2 %}
+      <img class="gv-player-flag"
+           src="/static/img/country-flags/{{ player_country }}.png" alt="">
+      {% endif %}
+      {% if player_slug %}
+      <a class="gv-player-name" href="/player/{{ player_slug }}">{{ player_name }}</a>
+      {% else %}
+      <span class="gv-player-name">{{ player_name }}</span>
+      {% endif %}
+    </div>
+    {% if replay.created_at %}
+    <div class="gv-player-date">{{ replay.created_at.strftime("%d %b %Y, %H:%M") }} UTC</div>
+    {% endif %}
+
+    <hr class="gv-divider">
+
+    <div class="gv-stats">
+      {% if replay.outcome == 'win' and time_secs %}
+      <div class="gv-stat-row"><span>Time:</span> <strong>{{ "%.3f"|format(time_secs) }}s</strong></div>
+      {% endif %}
+      {% if replay.bbbv %}
+      <div class="gv-stat-row"><span>3BV:</span> <strong>{{ replay.bbbv }}</strong></div>
+      {% endif %}
+      {% if three_bv_per_sec %}
+      <div class="gv-stat-row"><span>3BV/s:</span> <strong>{{ three_bv_per_sec }}</strong></div>
+      {% endif %}
+      {% if total_clicks %}
+      <div class="gv-stat-row">
+        <span>Clicks:</span>
+        <strong>{{ total_clicks }}</strong>
+        <small>({{ replay.left_clicks or 0 }}L&nbsp;{{ replay.right_clicks or 0 }}R&nbsp;{{ replay.chord_clicks or 0 }}C)</small>
+      </div>
+      {% endif %}
+      {% if efficiency %}
+      <div class="gv-stat-row"><span>Efficiency:</span> <strong>{{ efficiency }}%</strong></div>
+      {% endif %}
+    </div>
+
+    <hr class="gv-divider">
+
+    <div class="gv-share-row">
+      <input class="gv-share-url" type="text" readonly
+             value="https://minesweeper.org/game/{{ game_id }}"
+             id="gv-share-input">
+      <button class="gv-copy-btn" id="gv-copy-btn">Copy</button>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+var GAME_ENTRY = {
+  rows:      {{ replay.rows }},
+  cols:      {{ replay.cols }},
+  mines:     {{ replay.mines }},
+  boardHash: {{ replay.board_hash | tojson }},
+  noGuess:   {{ 'true' if replay.no_guess else 'false' }},
+  mode:      {{ (replay.mode or '') | tojson }},
+  timeMs:    {{ replay.time_ms or 0 }},
+  won:       {{ 'true' if replay.outcome == 'win' else 'false' }},
+  log:       {{ log_data | tojson }},
+};
+
+document.getElementById('gv-copy-btn').addEventListener('click', function () {
+  var inp = document.getElementById('gv-share-input');
+  navigator.clipboard.writeText(inp.value).then(function () {
+    var btn = document.getElementById('gv-copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+  });
+});
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/minesweeper.js"></script>
+<script src="/static/js/rewind.js"></script>
+<script>
+if (typeof window.rewindInit === 'function') {
+  window.rewindInit(GAME_ENTRY);
+}
+</script>
+{% endblock %}

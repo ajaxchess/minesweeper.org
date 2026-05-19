@@ -276,6 +276,13 @@
       </div>
       <div class="setting-row">
         <div class="setting-info">
+          <span class="setting-name">Public Game Replays</span>
+          <span class="setting-desc">Allow anyone with a /game/ID link to watch your replays and see stats. Turn off to make your games private.</span>
+        </div>
+        <button class="setting-toggle" id="games-public-toggle" onclick="toggleGamesPublic()"></button>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
           <span class="setting-name">Public Profile</span>
           <span class="setting-desc">Allow others to view your stats via a shareable link. Only your display name is shown — never your email.</span>
         </div>
@@ -1127,8 +1134,9 @@ const PUBLIC_ID    = "{{ public_id }}";
 let   isPublic     = {{ 'true' if is_public else 'false' }};
 let   favoriteGame = "{{ favorite_game or '' }}";
 const VANITY_SLUG  = "{{ vanity_slug or '' }}";
-let   prefSounds   = {{ 'true' if pref_sounds   else 'false' }};
-let   prefChording = {{ 'true' if pref_chording else 'false' }};
+let   prefSounds     = {{ 'true' if pref_sounds   else 'false' }};
+let   prefChording   = {{ 'true' if pref_chording else 'false' }};
+let   gamesPublic    = {{ 'true' if games_public  else 'false' }};
 let   prefSkin     = "{{ pref_skin }}";
 let   prefOnWin    = "{{ pref_on_win }}";
 let   prefOnLose   = "{{ pref_on_lose }}";
@@ -1163,6 +1171,7 @@ async function saveSettings() {
       pref_skin:     prefSkin,
       pref_on_win:   prefOnWin,
       pref_on_lose:  prefOnLose,
+      games_public:  gamesPublic,
     }),
   });
 }
@@ -1404,6 +1413,20 @@ function toggleChording() {
 }
 
 updateChordingUI();
+
+function updateGamesPublicUI() {
+  const btn = document.getElementById('games-public-toggle');
+  btn.textContent = gamesPublic ? 'ON' : 'OFF';
+  btn.classList.toggle('active', gamesPublic);
+}
+
+function toggleGamesPublic() {
+  gamesPublic = !gamesPublic;
+  updateGamesPublicUI();
+  saveSettings();
+}
+
+updateGamesPublicUI();
 
 // ── Skin ──────────────────────────────────────────────────────────────────────
 function setSkin(skin) {

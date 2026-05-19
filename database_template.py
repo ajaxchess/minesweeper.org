@@ -718,6 +718,7 @@ class UserProfile(Base):
     created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     wc2026_fan    = Column(String(16), name="2026_world_cup_fan_flag", nullable=True)
     timezone      = Column(String(64), nullable=True)
+    games_public  = Column(Boolean, default=True, server_default='1', nullable=False)
 
 # ── WC2026 match results (admin-managed) ──────────────────────────────────────
 class WC2026Match(Base):

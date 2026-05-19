@@ -240,7 +240,31 @@ function rewindSave(outcome) {
       headers:   {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
       body:      payload,
       keepalive: true,
-    }).catch(function () {});
+    }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !data.id) return;
+        if (state) state.lastGameId = data.id;
+        const gameUrl = '/game/' + data.id;
+        // Win toast path (PREF_ON_WIN = 'new_game')
+        const statsEl = document.querySelector('.win-toast-stats');
+        if (statsEl && !statsEl.querySelector('.win-toast-share')) {
+          const a = document.createElement('a');
+          a.href = gameUrl; a.className = 'win-toast-share'; a.textContent = '🔗 Share';
+          statsEl.appendChild(document.createTextNode(' '));
+          statsEl.appendChild(a);
+        }
+        // Traditional overlay path
+        const scoreMsg = document.getElementById('score-msg');
+        if (scoreMsg && !document.getElementById('game-share-link')) {
+          const div = document.createElement('div');
+          div.id = 'game-share-link';
+          div.style.cssText = 'font-size:0.82rem;margin-top:0.4rem;';
+          const a = document.createElement('a');
+          a.href = gameUrl; a.textContent = '🔗 Share this game'; a.target = '_blank';
+          div.appendChild(a);
+          scoreMsg.insertAdjacentElement('afterend', div);
+        }
+      }).catch(function () {});
   } catch (_) {}
 }
 
