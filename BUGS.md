@@ -1,3 +1,10 @@
+B36 Jigsaw generator page body is all English for non-English locales.
+   Template jigsaw_generator.html uses hardcoded English strings for all UI text.
+   Fixed by extracting to jgen_* translation keys and translating for all 12 locales.
+
+B35 Mosaic how-to-play page body is all English for non-English locales.
+   Fixed by extracting to ms_howto_* keys and translating for all 12 locales.
+
 B34 CSP blocks csi.gstatic.com (connect-src) and ep1.adtrafficquality.google (img-src).
    Google AdSense SODAR loads a tracking pixel from ep1.adtrafficquality.google via img-src,
    and the Google CSI (Client-Side Instrumentation) beacon hits csi.gstatic.com via connect-src.
