@@ -526,6 +526,178 @@
 }
 .bc-footer a { color: var(--bc-accent); text-decoration: none; }
 
+/* ── Progress modal ──────────────────────────────────────────────────────── */
+.bc-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.bc-modal[hidden] { display: none; }
+.bc-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+}
+.bc-modal-content {
+  position: relative;
+  background: var(--bc-surface);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  width: 100%;
+  max-width: 760px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px 28px;
+  z-index: 1;
+}
+.bc-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+.bc-modal-eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--bc-text-muted);
+  font-weight: 700;
+}
+.bc-modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin: 4px 0 0;
+}
+.bc-modal-close {
+  background: transparent;
+  border: 1px solid var(--bc-border);
+  border-radius: 8px;
+  font-size: 22px;
+  line-height: 1;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  color: var(--bc-text-muted);
+}
+.bc-modal-close:hover { background: var(--bc-locked-soft); color: var(--bc-text); }
+
+.bc-progress-loading,
+.bc-progress-empty {
+  padding: 36px 16px;
+  text-align: center;
+  color: var(--bc-text-muted);
+  font-size: 14px;
+}
+
+.bc-progress-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.bc-progress-stat {
+  background: var(--bc-locked-soft);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.bc-progress-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--bc-text-muted);
+  font-weight: 700;
+}
+.bc-progress-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 4px;
+  letter-spacing: -0.3px;
+  font-variant-numeric: tabular-nums;
+}
+.bc-progress-stat-value.bc-trend-improving { color: var(--bc-success); }
+.bc-progress-stat-value.bc-trend-declining { color: #ef4444; }
+.bc-progress-stat-value.bc-trend-flat      { color: var(--bc-text); }
+.bc-progress-stat-sub {
+  font-size: 11px;
+  color: var(--bc-text-muted);
+  margin-top: 4px;
+}
+
+.bc-progress-chart-wrap {
+  background: var(--bc-locked-soft);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 20px;
+  height: 240px;
+  position: relative;
+}
+
+.bc-progress-recent-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 10px;
+}
+.bc-progress-recent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.bc-progress-game {
+  display: grid;
+  grid-template-columns: 110px 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  background: #f9fafb;
+}
+.bc-progress-game:hover { background: var(--bc-accent-soft); }
+.bc-progress-game-date { color: var(--bc-text-muted); }
+.bc-progress-game-bar {
+  width: 100px;
+  height: 6px;
+  background: var(--bc-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.bc-progress-game-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--bc-accent), #60a5fa);
+}
+.bc-progress-game-mastery {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  min-width: 42px;
+  text-align: right;
+}
+.bc-progress-game-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--bc-text-muted);
+  min-width: 50px;
+  text-align: right;
+}
+
+/* Dark-skin tweaks for the modal */
+:root[data-skin="dark"] .bc-modal-content,
+:root[data-skin="flower"] .bc-modal-content {
+  background: var(--bc-surface);
+  color: var(--bc-text);
+}
+:root[data-skin="dark"] .bc-progress-game,
+:root[data-skin="flower"] .bc-progress-game {
+  background: rgba(255,255,255,0.04);
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .bc-diagnosis-stats { grid-template-columns: repeat(3, 1fr); }
@@ -539,6 +711,9 @@
   .bc-diagnosis-stats { grid-template-columns: repeat(2, 1fr); }
   .bc-diagnosis-top { flex-direction: column; }
   .bc-diagnosis-profile { text-align: left; }
+  .bc-progress-stats { grid-template-columns: repeat(2, 1fr); }
+  .bc-progress-game { grid-template-columns: 1fr auto; }
+  .bc-progress-game-bar, .bc-progress-game-time { display: none; }
 }
 
 /* ── Dark mode (matches existing skin pattern via :root[data-skin]) ──────── */

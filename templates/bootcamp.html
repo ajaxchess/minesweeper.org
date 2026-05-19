@@ -148,10 +148,69 @@
     </footer>
 
   </div>
+
+  {# ──────────────────────────────────────────────────────────────────────────
+     Progress modal — hidden by default. Opened by clicking "View progress"
+     on any level card. Populated by JS from /api/bootcamp/level/{n}/progress.
+     ────────────────────────────────────────────────────────────────────── #}
+  <div id="bc-progress-modal" class="bc-modal" hidden aria-hidden="true" role="dialog" aria-labelledby="bc-progress-title">
+    <div class="bc-modal-backdrop" data-modal-close></div>
+    <div class="bc-modal-content" role="document">
+      <header class="bc-modal-header">
+        <div>
+          <div class="bc-modal-eyebrow" id="bc-progress-eyebrow">{{ t.bootcamp_progress_eyebrow | default("Level progress") }}</div>
+          <h2 id="bc-progress-title" class="bc-modal-title">—</h2>
+        </div>
+        <button class="bc-modal-close" data-modal-close aria-label="Close">×</button>
+      </header>
+
+      <div id="bc-progress-loading" class="bc-progress-loading">
+        {{ t.bootcamp_progress_loading | default("Loading your progress…") }}
+      </div>
+
+      <div id="bc-progress-empty" class="bc-progress-empty" hidden>
+        {{ t.bootcamp_progress_empty | default("Not enough analyzed games yet to chart your progress on this level. Play a few more and check back.") }}
+      </div>
+
+      <div id="bc-progress-body" hidden>
+        <div class="bc-progress-stats">
+          <div class="bc-progress-stat">
+            <div class="bc-progress-stat-label">{{ t.bootcamp_progress_mastery | default("Current mastery") }}</div>
+            <div class="bc-progress-stat-value" id="bc-progress-current">—</div>
+            <div class="bc-progress-stat-sub">{{ t.bootcamp_progress_target | default("Target 85%") }}</div>
+          </div>
+          <div class="bc-progress-stat">
+            <div class="bc-progress-stat-label">{{ t.bootcamp_progress_trend | default("Trend") }}</div>
+            <div class="bc-progress-stat-value" id="bc-progress-trend">—</div>
+            <div class="bc-progress-stat-sub" id="bc-progress-trend-delta">—</div>
+          </div>
+          <div class="bc-progress-stat">
+            <div class="bc-progress-stat-label">{{ t.bootcamp_progress_games | default("Games in window") }}</div>
+            <div class="bc-progress-stat-value" id="bc-progress-games">—</div>
+            <div class="bc-progress-stat-sub" id="bc-progress-window">—</div>
+          </div>
+          <div class="bc-progress-stat">
+            <div class="bc-progress-stat-label">{{ t.bootcamp_progress_eta | default("ETA to master") }}</div>
+            <div class="bc-progress-stat-value" id="bc-progress-eta">—</div>
+            <div class="bc-progress-stat-sub" id="bc-progress-eta-sub">—</div>
+          </div>
+        </div>
+
+        <div class="bc-progress-chart-wrap">
+          <canvas id="bc-progress-chart"></canvas>
+        </div>
+
+        <h3 class="bc-progress-recent-title">{{ t.bootcamp_progress_recent | default("Recent contributing games") }}</h3>
+        <div class="bc-progress-recent" id="bc-progress-recent"></div>
+      </div>
+    </div>
+  </div>
+
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
   window.BOOTCAMP_CONFIG = {
     username: {{ (user.display_name if user else "Guest") | tojson }},

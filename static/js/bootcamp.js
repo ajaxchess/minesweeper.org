@@ -136,7 +136,9 @@
       .replace('Cut Wasted Clicks', 'Cut Waste')
       .replace('Effective Chording', 'Eff. Chording')
       .replace('Strategic No-Flag', 'Strategic NF')
+      .replace('Pure Efficiency', 'Pure Efficiency')
       .replace('Opening Recognition', 'Openings')
+      .replace('Flag Value', 'Flag Value')
       .replace('Fishing & Decision Hierarchy', 'Hierarchy');
   }
 
@@ -277,9 +279,197 @@
     '</div>' +
     gradHTML + citationHTML +
     '<div class="bc-level-actions">' +
-      '<button class="bc-btn bc-btn--primary">' + copy.startDrill + ' today’s drill</button>' +
-      '<button class="bc-btn bc-btn--secondary">' + copy.viewProgress + '</button>' +
+      '<button class="bc-btn bc-btn--primary" data-action="start-drill" ' +
+              'data-level="' + (detail.level || '') + '">' +
+        copy.startDrill + ' today’s drill</button>' +
+      '<button class="bc-btn bc-btn--secondary" data-action="view-progress" ' +
+              'data-level="' + (detail.level || '') + '" ' +
+              'data-level-name="' + escapeHtml(detail.name || '') + '">' +
+        copy.viewProgress + '</button>' +
     '</div>';
+  }
+
+  // ── Progress modal ────────────────────────────────────────────────────────
+  let progressChart = null;
+
+  function bindProgressModal() {
+    // Open via delegated click on any "View progress" button
+    document.addEventListener('click', function (ev) {
+      const btn = ev.target.closest('[data-action="view-progress"]');
+      if (btn) {
+        ev.preventDefault();
+        const level = parseInt(btn.dataset.level, 10);
+        const levelName = btn.dataset.levelName || '';
+        openProgressModal(level, levelName);
+        return;
+      }
+      if (ev.target.closest('[data-modal-close]')) {
+        closeProgressModal();
+      }
+    });
+    // Escape key
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape') closeProgressModal();
+    });
+  }
+
+  function openProgressModal(level, levelName) {
+    const modal   = document.getElementById('bc-progress-modal');
+    const loading = document.getElementById('bc-progress-loading');
+    const empty   = document.getElementById('bc-progress-empty');
+    const body    = document.getElementById('bc-progress-body');
+    const title   = document.getElementById('bc-progress-title');
+    const eyebrow = document.getElementById('bc-progress-eyebrow');
+
+    if (!modal) return;
+
+    title.textContent = 'Level ' + level + ' — ' + levelName;
+    eyebrow.textContent = 'Your progress · last 30 days · ' +
+      (currentMode === 'no_guess' ? 'No-Guess' : 'Standard');
+
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+
+    show(loading);
+    hide(empty);
+    hide(body);
+
+    const url = apiBase + '/bootcamp/level/' + level + '/progress' +
+                '?difficulty=' + encodeURIComponent(difficulty) +
+                '&mode=' + encodeURIComponent(currentMode) +
+                '&days_window=30';
+
+    fetch(url, {
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (data) {
+        hide(loading);
+        if (!data.data_points || data.data_points.length === 0) {
+          show(empty);
+          return;
+        }
+        renderProgress(data);
+        show(body);
+      })
+      .catch(function (err) {
+        hide(loading);
+        show(empty);
+        console.error('[bootcamp] progress fetch failed:', err);
+      });
+  }
+
+  function closeProgressModal() {
+    const modal = document.getElementById('bc-progress-modal');
+    if (!modal || modal.hidden) return;
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (progressChart) {
+      progressChart.destroy();
+      progressChart = null;
+    }
+  }
+
+  function renderProgress(data) {
+    // Top stat cards
+    document.getElementById('bc-progress-current').textContent =
+      Math.round(data.current_mastery * 100) + '%';
+
+    const trendEl  = document.getElementById('bc-progress-trend');
+    const trendDel = document.getElementById('bc-progress-trend-delta');
+    trendEl.className = 'bc-progress-stat-value bc-trend-' + data.trend;
+    if (data.trend === 'improving') trendEl.textContent = '↑ Improving';
+    else if (data.trend === 'declining') trendEl.textContent = '↓ Declining';
+    else trendEl.textContent = '→ Flat';
+    const dp = Math.round(data.trend_delta * 100);
+    trendDel.textContent = (dp > 0 ? '+' : '') + dp + '% week-over-week';
+
+    document.getElementById('bc-progress-games').textContent =
+      data.games_in_window;
+    document.getElementById('bc-progress-window').textContent =
+      'over last ' + data.days_window + ' days';
+
+    const etaEl  = document.getElementById('bc-progress-eta');
+    const etaSub = document.getElementById('bc-progress-eta-sub');
+    if (data.current_mastery >= data.target_mastery) {
+      etaEl.textContent = 'Mastered';
+      etaSub.textContent = 'You’re above the 85% target';
+    } else if (data.estimated_days_to_master) {
+      etaEl.textContent = '~' + data.estimated_days_to_master + 'd';
+      etaSub.textContent = 'at current pace';
+    } else {
+      etaEl.textContent = '—';
+      etaSub.textContent = data.trend === 'declining' ? 'Trend reversing first' : 'Pick up the pace';
+    }
+
+    // Chart — oldest first for the line chart
+    const points = [...data.data_points].reverse();
+    const labels = points.map(function (p) {
+      return p.created_at ? p.created_at.slice(0, 10) : '';
+    });
+    const masteryData = points.map(function (p) {
+      return Math.round(p.mastery * 100);
+    });
+
+    const canvas = document.getElementById('bc-progress-chart');
+    if (!canvas || !window.Chart) return;
+
+    if (progressChart) progressChart.destroy();
+    progressChart = new window.Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Mastery (%)',
+            data: masteryData,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,0.12)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 2,
+            borderWidth: 2,
+          },
+          {
+            label: 'Target (85%)',
+            data: masteryData.map(function () { return 85; }),
+            borderColor: '#10b981',
+            borderDash: [6, 4],
+            pointRadius: 0,
+            borderWidth: 1.5,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { maxTicksLimit: 8, color: '#94a3b8' }, grid: { display: false } },
+          y: { min: 0, max: 100, ticks: { callback: function (v) { return v + '%'; }, color: '#94a3b8' }, grid: { color: '#e5e7eb' } },
+        },
+      },
+    });
+
+    // Recent games list — newest first
+    const recent = document.getElementById('bc-progress-recent');
+    recent.innerHTML = data.data_points.slice(0, 25).map(function (p) {
+      const dateStr = p.created_at ? p.created_at.slice(5, 10) : '';
+      const masteryPct = Math.round(p.mastery * 100);
+      const timeStr = p.time_ms ? (p.time_ms / 1000).toFixed(1) + 's' : '—';
+      return '<div class="bc-progress-game" data-replay-id="' + p.game_replay_id + '">' +
+        '<span class="bc-progress-game-date">' + dateStr + '</span>' +
+        '<div class="bc-progress-game-bar">' +
+          '<div class="bc-progress-game-bar-fill" style="width:' + masteryPct + '%"></div>' +
+        '</div>' +
+        '<span class="bc-progress-game-mastery">' + masteryPct + '%</span>' +
+        '<span class="bc-progress-game-time">' + timeStr + '</span>' +
+      '</div>';
+    }).join('');
   }
 
   // ── Mode toggle ───────────────────────────────────────────────────────────
@@ -334,6 +524,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     bindModeToggle();
+    bindProgressModal();
     load();
   });
 })();
