@@ -5618,8 +5618,8 @@ def _build_stats(email: str, db: Session) -> dict:
             stats[mode] = None
             continue
         times = [s.time_secs for s in scores]
-        recent_ten = scores[:10]
-        recent_ids = [s.id for s in recent_ten]
+        recent_all = scores[:1000]
+        recent_ids = [s.id for s in recent_all]
         replay_id_map = {
             r.score_id: r.id
             for r in db.query(GameReplay.id, GameReplay.score_id)
@@ -5627,7 +5627,7 @@ def _build_stats(email: str, db: Session) -> dict:
                        .all()
         }
         recent_dicts = []
-        for s in recent_ten:
+        for s in recent_all:
             d = s.to_dict()
             d["game_id"] = replay_id_map.get(s.id)
             recent_dicts.append(d)

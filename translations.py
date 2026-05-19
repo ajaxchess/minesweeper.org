@@ -104,6 +104,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "lb_play_custom":       "Play Custom",
         # Profile
         "profile_recent_games": "Recent Games",
+        "profile_game_history": "Game History",
         "profile_loading":      "Loading\u2026",
         "profile_games":        "Games",
         "profile_best":         "Best",

@@ -1825,6 +1825,18 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
 }
 .lb-na { color: var(--text-dim); font-size: 0.8rem; }
 
+.rg-limit-btn {
+  padding: 0.15rem 0.55rem;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); cursor: pointer; font-size: 0.8rem;
+}
+.rg-limit-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.rg-limit-btn.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+
+.sort-th { cursor: pointer; user-select: none; white-space: nowrap; }
+.sort-th:hover { color: var(--accent2); }
+.sort-ind { font-size: 0.7rem; color: var(--text-dim); }
+
 .lb-back {
   display: flex;
   gap: 1rem;
