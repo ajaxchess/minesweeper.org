@@ -1823,6 +1823,7 @@ html[data-skin="classic"] .lang-opt-name     { color: rgba(255,255,255,0.6); }
   color: var(--text-dim);
   font-style: italic;
 }
+.lb-na { color: var(--text-dim); font-size: 0.8rem; }
 
 .lb-back {
   display: flex;

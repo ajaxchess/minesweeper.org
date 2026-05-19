@@ -3619,6 +3619,19 @@ async def game_view_page(game_id: int, request: Request, db: Session = Depends(g
         if replay.bbbv and total_clicks else None
     )
 
+    site_url = str(request.base_url).rstrip("/")
+    play_url = None
+    if replay.board_hash:
+        from urllib.parse import quote as _quote
+        play_url = (
+            "/variants/replay/?"
+            + f"rows={replay.rows}&cols={replay.cols}&mines={replay.mines}"
+            + f"&hash={_quote(replay.board_hash, safe='')}"
+            + (f"&date={replay.created_at.strftime('%Y-%m-%d')}" if replay.created_at else "")
+            + (f"&mode={replay.mode}" if replay.mode else "")
+            + "&game=standard"
+        )
+
     return templates.TemplateResponse(request, "game_view.html", {
         "mode":            "game-view",
         "user":            get_current_user(request),
@@ -3635,6 +3648,8 @@ async def game_view_page(game_id: int, request: Request, db: Session = Depends(g
         "total_clicks":    total_clicks,
         "efficiency":      efficiency,
         "mode_label":      _MODE_LABELS.get(replay.mode or "", replay.mode or "Custom"),
+        "site_url":        site_url,
+        "play_url":        play_url,
     })
 
 
@@ -5603,12 +5618,25 @@ def _build_stats(email: str, db: Session) -> dict:
             stats[mode] = None
             continue
         times = [s.time_secs for s in scores]
+        recent_ten = scores[:10]
+        recent_ids = [s.id for s in recent_ten]
+        replay_id_map = {
+            r.score_id: r.id
+            for r in db.query(GameReplay.id, GameReplay.score_id)
+                       .filter(GameReplay.score_id.in_(recent_ids))
+                       .all()
+        }
+        recent_dicts = []
+        for s in recent_ten:
+            d = s.to_dict()
+            d["game_id"] = replay_id_map.get(s.id)
+            recent_dicts.append(d)
         stats[mode] = {
             "games_played": len(scores),
             "best_time":    min(times),
             "avg_time":     round(sum(times) / len(times), 1),
             "worst_time":   max(times),
-            "recent":       [s.to_dict() for s in scores[:10]],
+            "recent":       recent_dicts,
         }
 
     rush_scores = (

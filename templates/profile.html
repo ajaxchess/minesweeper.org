@@ -530,10 +530,12 @@
             <th>{{ t.lb_col_board }}</th>
             <th>{{ t.lb_col_mines }}</th>
             <th>{{ t.lb_col_date }}</th>
+            <th>Watch</th>
+            <th>Hash</th>
           </tr>
         </thead>
         <tbody id="recent-body">
-          <tr><td colspan="5" class="lb-loading">{{ t.profile_loading }}</td></tr>
+          <tr><td colspan="7" class="lb-loading">{{ t.profile_loading }}</td></tr>
         </tbody>
       </table>
     </div>
@@ -779,8 +781,8 @@ function renderRecent(mode) {
   const data  = allStats?.[mode];
 
   if (!data) {
-    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>${window.T.lb_col_board}</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th></tr>`;
-    body.innerHTML = `<tr><td colspan="5" class="lb-empty">${window.T.profile_no_recent}</td></tr>`;
+    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>${window.T.lb_col_board}</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th><th>Watch</th><th>Hash</th></tr>`;
+    body.innerHTML = `<tr><td colspan="7" class="lb-empty">${window.T.profile_no_recent}</td></tr>`;
     return;
   }
 
@@ -820,16 +822,26 @@ function renderRecent(mode) {
       `;
     }).join('');
   } else {
-    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>${window.T.lb_col_board}</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th></tr>`;
-    body.innerHTML = data.recent.map((s, i) => `
-      <tr>
-        <td class="lb-rank">${i + 1}</td>
-        <td class="lb-time">${s.time_secs}s</td>
-        <td class="lb-board">${s.rows}×${s.cols}</td>
-        <td class="lb-mines">${s.mines}</td>
-        <td class="lb-date">${s.created_at}</td>
-      </tr>
-    `).join('');
+    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>${window.T.lb_col_board}</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th><th>Watch</th><th>Hash</th></tr>`;
+    body.innerHTML = data.recent.map((s, i) => {
+      const watchCell = s.game_id
+        ? `<a href="/game/${s.game_id}" target="_blank">▶ Watch</a>`
+        : `<span class="lb-na">N/A</span>`;
+      const hashCell = s.board_hash
+        ? `<code style="font-size:0.75rem">${s.board_hash.slice(0, 12)}…</code>`
+        : `<span class="lb-na">N/A</span>`;
+      return `
+        <tr>
+          <td class="lb-rank">${i + 1}</td>
+          <td class="lb-time">${s.time_secs}s</td>
+          <td class="lb-board">${s.rows}×${s.cols}</td>
+          <td class="lb-mines">${s.mines}</td>
+          <td class="lb-date">${s.created_at}</td>
+          <td>${watchCell}</td>
+          <td>${hashCell}</td>
+        </tr>
+      `;
+    }).join('');
   }
 }
 

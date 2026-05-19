@@ -71,6 +71,14 @@ a.gv-player-name:hover { text-decoration: underline; }
   color: var(--text); cursor: pointer; font-size: 0.8rem; flex-shrink: 0;
 }
 .gv-copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.gv-play-btn {
+  display: block; text-align: center;
+  padding: 0.35rem 0.65rem; margin-bottom: 0.5rem;
+  background: var(--accent2); border-radius: 4px;
+  color: #fff; font-size: 0.85rem; font-weight: 600;
+  text-decoration: none;
+}
+.gv-play-btn:hover { opacity: 0.88; }
 
 #board {
   display: grid;
@@ -141,9 +149,13 @@ a.gv-player-name:hover { text-decoration: underline; }
 
     <hr class="gv-divider">
 
+    {% if play_url %}
+    <a class="gv-play-btn" href="{{ play_url }}">▶ Play this board</a>
+    {% endif %}
+
     <div class="gv-share-row">
       <input class="gv-share-url" type="text" readonly
-             value="https://minesweeper.org/game/{{ game_id }}"
+             value="{{ site_url }}/game/{{ game_id }}"
              id="gv-share-input">
       <button class="gv-copy-btn" id="gv-copy-btn">Copy</button>
     </div>
