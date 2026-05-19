@@ -5619,17 +5619,26 @@ def _build_stats(email: str, db: Session) -> dict:
             continue
         times = [s.time_secs for s in scores]
         recent_all = scores[:1000]
-        recent_ids = [s.id for s in recent_all]
-        replay_id_map = {
-            r.score_id: r.id
-            for r in db.query(GameReplay.id, GameReplay.score_id)
-                       .filter(GameReplay.score_id.in_(recent_ids))
-                       .all()
-        }
+
+        # GameReplay.score_id references Score.id, not GameHistory.id.
+        # Join via shared (board_hash, time_ms) fields instead.
+        hashes = list({s.board_hash for s in recent_all if s.board_hash})
+        replay_map: dict = {}
+        if hashes:
+            for r in (
+                db.query(GameReplay.id, GameReplay.board_hash, GameReplay.time_ms)
+                  .filter(
+                      GameReplay.user_email == email,
+                      GameReplay.board_hash.in_(hashes),
+                  )
+                  .all()
+            ):
+                replay_map.setdefault((r.board_hash, r.time_ms), r.id)
+
         recent_dicts = []
         for s in recent_all:
             d = s.to_dict()
-            d["game_id"] = replay_id_map.get(s.id)
+            d["game_id"] = replay_map.get((s.board_hash, s.time_ms)) if s.board_hash and s.time_ms else None
             recent_dicts.append(d)
         stats[mode] = {
             "games_played": len(scores),
