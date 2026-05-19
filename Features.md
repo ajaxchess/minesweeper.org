@@ -14,6 +14,24 @@ List of active features
   purged at midnight UTC daily. Registered user scores are retained permanently.
 
 ──────────────────────────────────────────────────────────────────────────────
+F102 Pattern Wiki
+  - Curated minesweeper pattern library accessible at `/patterns` and
+    `/patterns/{slug}`.
+  - Patterns are organised by section (Holes, Holes+, Box Logic, Chains,
+    Combinations, etc.), difficulty grade (A–E), and depth (number of color
+    regions).
+  - Variants link back to a parent pattern via `parent_slug`.
+  - Admin CRUD at `/admin/patterns` with slug-rename support and full
+    revision history in `pattern_revisions` for audit and rollback.
+  - Editor role (`pattern_editor`) granted per-email by admins at
+    `/admin/patterns/editors`; ADMIN_EMAILS implicitly hold every role.
+  - Drafts are visible only to editors/admins; published patterns are public.
+  - New DB tables: `patterns`, `pattern_revisions`, `user_roles`.
+  - Files: `main.py`, `database_template.py`, `templates/patterns_index.html`,
+    `templates/pattern_detail.html`, `templates/admin_patterns.html`,
+    `templates/admin_pattern_edit.html`, `templates/admin_pattern_editors.html`.
+
+──────────────────────────────────────────────────────────────────────────────
 F101 Game Share / View
   - Any completed game (win or loss) is saved with its full replay log and
     accessible at `/game/{id}`.
