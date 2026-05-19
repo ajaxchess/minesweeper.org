@@ -1,3 +1,9 @@
+B39 main.py admin analysis page: path traversal via user-controlled src/doc params.
+   CodeQL flagged line 7289: src (query param) used in open() after only an
+   in-list guard that CodeQL does not recognise as sanitization.
+   Fixed by adding os.path.realpath() containment checks for both the doc and
+   src paths, asserting the resolved path starts with realpath(active_dir).
+
 B38 replay.js leaderboard title built with innerHTML from user-controlled HASH.
    CodeQL flagged line 626: HASH (from ?hash= URL param) flowed into innerHTML
    via esc() which CodeQL does not recognise as a sanitizer.

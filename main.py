@@ -7261,14 +7261,15 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
 
     content_html = None
     current_doc = None
+    real_base = os.path.realpath(active_dir)
     if doc and doc in docs:
         md_path   = os.path.join(active_dir, doc + ".md")
         html_path = os.path.join(active_dir, doc + ".html")
-        if os.path.isfile(md_path):
-            with open(md_path, encoding="utf-8") as f:
+        if os.path.isfile(md_path) and os.path.realpath(md_path).startswith(real_base + os.sep):
+            with open(os.path.realpath(md_path), encoding="utf-8") as f:
                 content_html = md_lib.markdown(f.read(), extensions=["extra", "sane_lists"])
-        elif os.path.isfile(html_path):
-            with open(html_path, encoding="utf-8") as f:
+        elif os.path.isfile(html_path) and os.path.realpath(html_path).startswith(real_base + os.sep):
+            with open(os.path.realpath(html_path), encoding="utf-8") as f:
                 content_html = f.read()
         current_doc = doc
 
@@ -7285,8 +7286,9 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
     current_src = None
     if src and src in source_files:
         src_path = os.path.join(active_dir, src)
-        if os.path.isfile(src_path):
-            with open(src_path, encoding="utf-8") as f:
+        real_src = os.path.realpath(src_path)
+        if os.path.isfile(real_src) and real_src.startswith(real_base + os.sep):
+            with open(real_src, encoding="utf-8") as f:
                 source_content = f.read()
             current_src = src
 
