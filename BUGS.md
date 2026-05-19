@@ -1,3 +1,9 @@
+B38 replay.js leaderboard title built with innerHTML from user-controlled HASH.
+   CodeQL flagged line 626: HASH (from ?hash= URL param) flowed into innerHTML
+   via esc() which CodeQL does not recognise as a sanitizer.
+   Fixed by replacing innerHTML with DOM construction (createElement/textContent/
+   setAttribute), so HASH only reaches safe DOM property sinks.
+
 B37 profile.html updateFlag() sets img.src from unvalidated select value.
    CodeQL flagged both country-flag and wc2026-flag updateFlag() functions: sel.value
    is user-controlled (editable via devtools) and was used directly in a URL path
