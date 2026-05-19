@@ -5704,7 +5704,6 @@ def _build_bootcamp(email: str, db: Session) -> dict:
         ("intermediate", True),
         ("expert",       False),
         ("expert",       True),
-        ("evil",         False),
         ("evil",         True),
     ]
     for mode, no_guess in combos:
