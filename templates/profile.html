@@ -1273,7 +1273,7 @@ async function saveAbout() {
   if (saved) sel.value = saved;
 
   function updateFlag(code) {
-    if (code) {
+    if (code && /^[a-z]{2}$/.test(code)) {
       flag.src = '/static/img/country-flags/' + code + '.png';
       flag.style.display = 'inline';
     } else {
@@ -1304,7 +1304,7 @@ async function saveCountry() {
   const sel  = document.getElementById('wc2026-select');
   const flag = document.getElementById('wc2026-flag');
   function updateFlag(code) {
-    if (code) {
+    if (code && /^[a-z]{2}$/.test(code)) {
       flag.src = '/static/img/country-flags/' + code + '.png';
       flag.style.display = 'inline';
     } else {

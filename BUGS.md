@@ -1,3 +1,9 @@
+B37 profile.html updateFlag() sets img.src from unvalidated select value.
+   CodeQL flagged both country-flag and wc2026-flag updateFlag() functions: sel.value
+   is user-controlled (editable via devtools) and was used directly in a URL path
+   without validation, enabling path traversal or protocol injection.
+   Fixed by adding /^[a-z]{2}$/ guard before building the flag image URL.
+
 B36 Jigsaw generator page body is all English for non-English locales.
    Template jigsaw_generator.html uses hardcoded English strings for all UI text.
    Fixed by extracting to jgen_* translation keys and translating for all 12 locales.
