@@ -1,3 +1,9 @@
+B40 rush.html SEO article body is hardcoded English — not localised for any locale.
+   The SEO <article> block (h2, sections, FAQs) has no translation keys; it renders
+   in English on all locale-prefixed URLs (e.g. /tl/rush, /de/rush, etc.).
+   Fix: extract all body text into rush_body_* translation keys and translate for
+   all 15 locales (en, eo, de, es, th, uk, fr, ko, ja, zh, pl, tl, ru, pt, it).
+
 B39 main.py admin analysis page: path traversal via user-controlled src/doc params.
    CodeQL flagged line 7289: src (query param) used in open() after only an
    in-list guard that CodeQL does not recognise as sanitization.

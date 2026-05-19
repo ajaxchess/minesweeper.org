@@ -203,7 +203,7 @@
         <button class="rush-lb-tab" data-mode="hard">{{ t.rush_hard }}</button>
         <button class="rush-lb-tab" data-mode="custom">Custom</button>
       </div>
-      <p class="lb-daily-note" style="margin:0.25rem 0 0.5rem">Today's best scores — resets at midnight UTC.</p>
+      <p class="lb-daily-note" style="margin:0.25rem 0 0.5rem">{{ t.rush_lb_daily_note }}</p>
       <div id="rush-lb-content" class="rush-lb-content">
         <div class="lb-loading">{{ t.rush_lb_loading }}</div>
       </div>
@@ -225,120 +225,68 @@
 
 <!-- SEO content: crawlable body text below the game -->
 <article class="seo-content" aria-label="About Minesweeper Rush">
-  <h2>Minesweeper Rush — Play Free Online, No Download</h2>
+  <h2>{{ t.rush_body_h2 }}</h2>
 
   <section>
-    <h2>What is Minesweeper Rush?</h2>
-    <p>
-      Minesweeper Rush is an endless, fast-paced twist on classic Minesweeper. Instead of clearing a
-      fixed grid, new rows of hidden mines continuously drop from the top of the board. Your job is
-      to identify and flag every mine in each row before the rows pile up and the board overflows.
-      Clear rows earn you points; let too many stack up and it's game over.
-    </p>
-    <p>
-      The longer you survive, the faster the rows drop — turning Rush into a test of reflexes and
-      pattern recognition as much as logical deduction. It's the same core Minesweeper you know,
-      but with a relentless sense of urgency that keeps every second exciting.
-    </p>
+    <h2>{{ t.rush_body_what_h2 }}</h2>
+    <p>{{ t.rush_body_what_p1 }}</p>
+    <p>{{ t.rush_body_what_p2 }}</p>
   </section>
 
   <section>
-    <h2>How to Play Minesweeper Rush</h2>
-    <p>
-      The controls are simple. <strong>Left-click</strong> (or tap on mobile) a cell to reveal it.
-      <strong>Right-click</strong> (or long-press on mobile) to plant a flag on a suspected mine.
-      When every mine in a row is flagged correctly, that row clears automatically and contributes
-      to your score. Rows without mines show a ✓ button you can click to clear them immediately.
-    </p>
-    <p>
-      Every game starts with a <strong>mine-free bottom row</strong> — a guaranteed safe space to
-      begin revealing cells and get your bearings before the pressure builds.
-    </p>
-    <h3>Difficulty Modes</h3>
+    <h2>{{ t.rush_body_how_h2 }}</h2>
+    <p>{{ t.rush_body_how_p1 | safe }}</p>
+    <p>{{ t.rush_body_how_p2 | safe }}</p>
+    <h3>{{ t.rush_body_diff_h3 }}</h3>
     <ul>
-      <li><strong>Easy</strong> — Fewer mines per row and a gentle drop speed. A great starting
-        point if you're new to Rush or want a more relaxed experience.</li>
-      <li><strong>Normal</strong> — A balanced challenge suited to players who are comfortable with
-        classic Minesweeper. Mine density and drop speed increase steadily as your score grows.</li>
-      <li><strong>Hard</strong> — Dense mine placement and an aggressive drop speed that demands
-        quick, confident decisions. Only the most experienced sweepers survive long here.</li>
+      <li>{{ t.rush_body_diff_easy | safe }}</li>
+      <li>{{ t.rush_body_diff_normal | safe }}</li>
+      <li>{{ t.rush_body_diff_hard | safe }}</li>
     </ul>
-    <h3>Scoring</h3>
-    <p>
-      Your score is the total number of mines you've cleared (flagged in successfully cleared rows).
-      The leaderboard resets at midnight UTC each day, so every player starts fresh. High scores
-      from all three difficulty modes are tracked separately, letting you compete across the board.
-    </p>
-    <h3>Salvage Tokens</h3>
-    <p>
-      In a tight spot? Salvage tokens let you instantly clear a dangerous row — even one you haven't
-      fully flagged. Tokens are earned by clearing rows efficiently. Use them wisely: they're your
-      emergency escape hatch when the board starts to overflow.
-    </p>
+    <h3>{{ t.rush_body_score_h3 }}</h3>
+    <p>{{ t.rush_body_score_p }}</p>
+    <h3>{{ t.rush_body_salvage_h3 }}</h3>
+    <p>{{ t.rush_body_salvage_p }}</p>
   </section>
 
   <section>
-    <h2>Tips &amp; Strategy</h2>
+    <h2>{{ t.rush_body_tips_h2 }}</h2>
     <ul>
-      <li><strong>Prioritize the bottom rows.</strong> Focus on the rows closest to the danger zone
-        first. A cleared bottom row buys you breathing room when things get hectic.</li>
-      <li><strong>Use number clues aggressively.</strong> Revealed numbers tell you exactly how many
-        mines are in adjacent cells — use them to flag mines in new rows before they drop further.</li>
-      <li><strong>Don't over-reveal.</strong> Unlike classic Minesweeper, you often don't need to
-        clear every cell. Flag the mines, clear the row, and move on.</li>
-      <li><strong>Save salvage tokens for emergencies.</strong> Don't burn them early — hold on to
-        them until a row is about to push the board over the edge.</li>
-      <li><strong>Learn the rhythm on Easy first.</strong> Spend time on Easy until you can clear
-        rows without hesitation. That muscle memory will carry you in Normal and Hard.</li>
-      <li><strong>Watch the drop speed indicator.</strong> The speed multiplier displayed in the
-        info panel tells you how fast things are escalating. Mentally prepare for each tier jump.</li>
+      <li>{{ t.rush_body_tips_li1 | safe }}</li>
+      <li>{{ t.rush_body_tips_li2 | safe }}</li>
+      <li>{{ t.rush_body_tips_li3 | safe }}</li>
+      <li>{{ t.rush_body_tips_li4 | safe }}</li>
+      <li>{{ t.rush_body_tips_li5 | safe }}</li>
+      <li>{{ t.rush_body_tips_li6 | safe }}</li>
     </ul>
   </section>
 
   <section>
-    <h2>Free in Your Browser — No Download Required</h2>
-    <p>
-      Minesweeper Rush at <strong>minesweeper.org/rush</strong> is completely free. There's no
-      download, no install, and no account required to play. Open it in any modern browser on
-      desktop, tablet, or phone, and you're playing within seconds. Sign In to save
-      your high scores to the daily leaderboard — entirely optional, always free.
-    </p>
-    <p>
-      Looking for a Minesweeper Rush game without the Steam price tag or the hassle of a PC
-      install? You've found it. Our browser version delivers the same endless, survival-style
-      gameplay with zero friction — just click and play.
-    </p>
+    <h2>{{ t.rush_body_free_h2 }}</h2>
+    <p>{{ t.rush_body_free_p1 | safe }}</p>
+    <p>{{ t.rush_body_free_p2 }}</p>
   </section>
 
   <section class="faq-section">
-    <h2>Frequently Asked Questions</h2>
+    <h2>{{ t.rush_body_faq_h2 }}</h2>
 
-    <h3>What is Minesweeper Rush?</h3>
-    <p>Minesweeper Rush is an endless survival mode where rows of mines drop from the top of the
-    board. Flag every mine in a row to clear it before the board fills up. The speed increases
-    over time, making it progressively harder to keep up.</p>
+    <h3>{{ t.rush_body_faq_q1 }}</h3>
+    <p>{{ t.rush_body_faq_a1 }}</p>
 
-    <h3>How do you play Minesweeper Rush?</h3>
-    <p>Left-click to reveal safe cells; right-click (or long-press on mobile) to flag mines. Clear
-    a row by flagging all its mines. Use salvage tokens when you're in danger of overflowing. The
-    game ends when rows reach the bottom and the board overflows.</p>
+    <h3>{{ t.rush_body_faq_q2 }}</h3>
+    <p>{{ t.rush_body_faq_a2 }}</p>
 
-    <h3>What difficulty modes are available?</h3>
-    <p>Rush has three modes: <strong>Easy</strong>, <strong>Normal</strong>, and
-    <strong>Hard</strong>. Each mode has its own daily leaderboard, so you can compete at the
-    level that suits you.</p>
+    <h3>{{ t.rush_body_faq_q3 }}</h3>
+    <p>{{ t.rush_body_faq_a3 | safe }}</p>
 
-    <h3>Is Minesweeper Rush free?</h3>
-    <p>Yes — completely free, no download required. Play instantly at minesweeper.org/rush in any
-    modern browser on any device.</p>
+    <h3>{{ t.rush_body_faq_q4 }}</h3>
+    <p>{{ t.rush_body_faq_a4 }}</p>
 
-    <h3>How is this different from Minesweeper Rush on Steam?</h3>
-    <p>Our browser version requires no purchase, no download, and no installation. It runs on any
-    device with a browser — desktop, mobile, or tablet — and is always free to play.</p>
+    <h3>{{ t.rush_body_faq_q5 }}</h3>
+    <p>{{ t.rush_body_faq_a5 }}</p>
 
-    <h3>Where can I learn more about Rush rules and strategy?</h3>
-    <p>Visit our <a href="/rush/how-to-play">Minesweeper Rush How to Play guide</a> for a full
-    breakdown of controls, row mechanics, speed progression, salvage tokens, and survival tips.</p>
+    <h3>{{ t.rush_body_faq_q6 }}</h3>
+    <p>{{ t.rush_body_faq_a6 | safe }}</p>
   </section>
 </article>
 {% endblock %}
