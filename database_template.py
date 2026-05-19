@@ -133,7 +133,7 @@ class GameHistory(Base):
             "left_clicks":  self.left_clicks,
             "right_clicks": self.right_clicks,
             "chord_clicks": self.chord_clicks,
-            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+            "created_at":   self.created_at.strftime("%Y-%m-%d %H:%M"),
         }
 
 # ── DB session dependency (used in FastAPI routes) ───────────────────────────
