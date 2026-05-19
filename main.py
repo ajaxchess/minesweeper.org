@@ -21,7 +21,7 @@ from pydantic import BaseModel, Field, field_validator
 from countries import COUNTRIES as ALL_COUNTRIES, VALID_COUNTRY_CODES
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, Pattern, PatternRevision, UserRole, get_db, init_db, SessionLocal
 from phase2_analyzer import analyze_replay_async
 # Near the top of main.py with the other model imports
 from phase2_analyzer import GameAnalysis
@@ -6208,6 +6208,78 @@ def require_admin(request: Request, user: dict | None) -> None:
         raise HTTPException(status_code=403, detail="Forbidden")
     _log_admin_access(request, user, success=True)
 
+
+def user_has_role(db: Session, user: dict | None, role: str) -> bool:
+    """True if user is in ADMIN_EMAILS (implicit all-roles) OR has the role in user_roles."""
+    if not user:
+        return False
+    email = (user.get("email") or "").lower()
+    if not email:
+        return False
+    if email in {e.lower() for e in ADMIN_EMAILS}:
+        return True
+    return db.query(UserRole).filter(
+        func.lower(UserRole.email) == email,
+        UserRole.role == role,
+    ).first() is not None
+
+
+def require_role(request: Request, user: dict | None, db: Session, role: str) -> None:
+    """Gate a route on a named role. Admins implicitly hold every role."""
+    if not user:
+        _log_admin_access(request, user, success=False, reason="not_logged_in")
+        raise HTTPException(status_code=403, detail="Forbidden")
+    if not user_has_role(db, user, role):
+        _log_admin_access(request, user, success=False, reason=f"missing_role:{role}")
+        raise HTTPException(status_code=403, detail="Forbidden")
+    _log_admin_access(request, user, success=True)
+
+
+# ── Pattern wiki helpers ─────────────────────────────────────────────────────
+_PATTERN_SECTIONS = [
+    "Holes",
+    "Holes+",
+    "High Complexity",
+    "Box Logic",
+    "Inward Chains",
+    "Chains",
+    "Combinations",
+    "Other",
+]
+
+_PATTERN_DIFFICULTIES = ["A", "B", "C", "D", "E"]
+
+
+def _pattern_slugify(value: str) -> str:
+    """Slug suitable for /patterns/{slug}. Lowercase, hyphenated, ASCII-only."""
+    value = (value or "").strip().lower()
+    value = re.sub(r"[^a-z0-9]+", "-", value)
+    value = value.strip("-")
+    return value[:128] or "pattern"
+
+
+def _save_pattern_revision(db: Session, pattern: Pattern, editor_email: str | None,
+                           edit_summary: str | None = None) -> None:
+    """Snapshot the current state of a Pattern row into pattern_revisions."""
+    db.add(PatternRevision(
+        pattern_id      = pattern.id,
+        slug            = pattern.slug,
+        name            = pattern.name,
+        aliases         = pattern.aliases,
+        section         = pattern.section,
+        depth           = pattern.depth,
+        difficulty      = pattern.difficulty,
+        parent_slug     = pattern.parent_slug,
+        sort_order      = pattern.sort_order,
+        body_md         = pattern.body_md,
+        board_json      = pattern.board_json,
+        board_image_url = pattern.board_image_url,
+        legend          = pattern.legend,
+        status          = pattern.status,
+        editor_email    = editor_email,
+        edit_summary    = edit_summary,
+    ))
+
 @app.get("/admin", response_class=HTMLResponse)
 def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
@@ -7119,6 +7191,330 @@ def admin_delete_comment(comment_id: int, request: Request, db: Session = Depend
     db.delete(comment)
     db.commit()
     return RedirectResponse("/admin/blog", status_code=303)
+
+
+# ── Pattern Wiki Admin ───────────────────────────────────────────────────────
+# Editors and admins can manage curated minesweeper patterns at /admin/patterns.
+# Editors are granted via /admin/patterns/editors (admins only). All edits are
+# snapshotted into pattern_revisions for audit + rollback.
+
+def _parse_pattern_form(form_data) -> dict:
+    """Pull and normalize fields from the admin pattern form. Raises HTTPException
+    on malformed JSON for board_json / legend / aliases."""
+    import json as _json_local
+
+    def _json_or_none(s: str, field: str):
+        s = (s or "").strip()
+        if not s:
+            return None
+        try:
+            return _json_local.loads(s)
+        except Exception as e:
+            raise HTTPException(status_code=400,
+                                detail=f"Invalid JSON in '{field}': {e}")
+
+    section = (form_data.get("section") or "").strip()
+    if section not in _PATTERN_SECTIONS:
+        raise HTTPException(status_code=400,
+                            detail=f"Unknown section '{section}'. "
+                                   f"Allowed: {', '.join(_PATTERN_SECTIONS)}")
+
+    difficulty = (form_data.get("difficulty") or "").strip().upper() or None
+    if difficulty and difficulty not in _PATTERN_DIFFICULTIES:
+        raise HTTPException(status_code=400,
+                            detail=f"Unknown difficulty '{difficulty}'")
+
+    depth_raw = (form_data.get("depth") or "").strip()
+    depth = int(depth_raw) if depth_raw else None
+    if depth is not None and not (1 <= depth <= 20):
+        raise HTTPException(status_code=400, detail="depth must be between 1 and 20")
+
+    sort_raw = (form_data.get("sort_order") or "0").strip()
+    try:
+        sort_order = int(sort_raw)
+    except ValueError:
+        sort_order = 0
+
+    status = (form_data.get("status") or "draft").strip().lower()
+    if status not in ("draft", "published"):
+        status = "draft"
+
+    return {
+        "name":            (form_data.get("name") or "").strip()[:128],
+        "aliases":         _json_or_none(form_data.get("aliases"),    "aliases"),
+        "section":         section,
+        "depth":           depth,
+        "difficulty":      difficulty,
+        "parent_slug":     (form_data.get("parent_slug") or "").strip() or None,
+        "sort_order":      sort_order,
+        "body_md":         form_data.get("body_md") or "",
+        "board_json":      _json_or_none(form_data.get("board_json"), "board_json"),
+        "board_image_url": (form_data.get("board_image_url") or "").strip() or None,
+        "legend":          _json_or_none(form_data.get("legend"),     "legend"),
+        "status":          status,
+    }
+
+
+@app.get("/admin/patterns", response_class=HTMLResponse)
+def admin_patterns_list(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_role(request, user, db, "pattern_editor")
+
+    rows = (
+        db.query(Pattern)
+        .order_by(Pattern.section, Pattern.sort_order, Pattern.name)
+        .all()
+    )
+    # Group for display
+    by_section: dict[str, list] = {}
+    for p in rows:
+        by_section.setdefault(p.section, []).append(p)
+
+    return templates.TemplateResponse(request, "admin_patterns.html", {
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        "patterns_by_section": by_section,
+        "sections": _PATTERN_SECTIONS,
+        "total": len(rows),
+        "is_admin": user and user.get("email", "").lower() in {e.lower() for e in ADMIN_EMAILS},
+    })
+
+
+@app.get("/admin/patterns/new", response_class=HTMLResponse)
+def admin_pattern_new_form(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_role(request, user, db, "pattern_editor")
+    return templates.TemplateResponse(request, "admin_pattern_edit.html", {
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        "pattern": None,
+        "sections": _PATTERN_SECTIONS,
+        "difficulties": _PATTERN_DIFFICULTIES,
+        "form_action": "/admin/patterns/new",
+        "form_title": "New pattern",
+    })
+
+
+@app.post("/admin/patterns/new")
+async def admin_pattern_create(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_role(request, user, db, "pattern_editor")
+
+    form = await request.form()
+    fields = _parse_pattern_form(form)
+    slug = (form.get("slug") or "").strip() or _pattern_slugify(fields["name"])
+    slug = _pattern_slugify(slug)
+
+    if not fields["name"]:
+        raise HTTPException(status_code=400, detail="name is required")
+    if db.query(Pattern).filter_by(slug=slug).first():
+        raise HTTPException(status_code=409, detail=f"slug '{slug}' already exists")
+
+    pattern = Pattern(
+        slug         = slug,
+        editor_email = user.get("email"),
+        **fields,
+    )
+    db.add(pattern)
+    db.commit()
+    db.refresh(pattern)
+    _save_pattern_revision(db, pattern, user.get("email"),
+                           edit_summary=(form.get("edit_summary") or "Created").strip()[:256])
+    db.commit()
+    return RedirectResponse(f"/admin/patterns/{slug}/edit", status_code=303)
+
+
+@app.get("/admin/patterns/{slug}/edit", response_class=HTMLResponse)
+def admin_pattern_edit_form(slug: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_role(request, user, db, "pattern_editor")
+    pattern = db.query(Pattern).filter_by(slug=slug).first()
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+    revisions = (
+        db.query(PatternRevision)
+        .filter_by(pattern_id=pattern.id)
+        .order_by(PatternRevision.created_at.desc())
+        .limit(20)
+        .all()
+    )
+    return templates.TemplateResponse(request, "admin_pattern_edit.html", {
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        "pattern": pattern,
+        "revisions": revisions,
+        "sections": _PATTERN_SECTIONS,
+        "difficulties": _PATTERN_DIFFICULTIES,
+        "form_action": f"/admin/patterns/{slug}/edit",
+        "form_title": f"Edit: {pattern.name}",
+    })
+
+
+@app.post("/admin/patterns/{slug}/edit")
+async def admin_pattern_update(slug: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_role(request, user, db, "pattern_editor")
+    pattern = db.query(Pattern).filter_by(slug=slug).first()
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+
+    form = await request.form()
+    fields = _parse_pattern_form(form)
+
+    # Allow slug rename, but only to another non-conflicting slug.
+    new_slug_raw = (form.get("slug") or "").strip()
+    if new_slug_raw:
+        new_slug = _pattern_slugify(new_slug_raw)
+        if new_slug != pattern.slug:
+            conflict = db.query(Pattern).filter_by(slug=new_slug).first()
+            if conflict:
+                raise HTTPException(status_code=409,
+                                    detail=f"slug '{new_slug}' already exists")
+            pattern.slug = new_slug
+
+    for k, v in fields.items():
+        setattr(pattern, k, v)
+    pattern.editor_email = user.get("email")
+    db.commit()
+    db.refresh(pattern)
+    _save_pattern_revision(db, pattern, user.get("email"),
+                           edit_summary=(form.get("edit_summary") or "").strip()[:256] or None)
+    db.commit()
+    return RedirectResponse(f"/admin/patterns/{pattern.slug}/edit", status_code=303)
+
+
+@app.post("/admin/patterns/{slug}/delete")
+def admin_pattern_delete(slug: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    # Deletion requires full admin — editors can move to status='draft' instead.
+    require_admin(request, user)
+    pattern = db.query(Pattern).filter_by(slug=slug).first()
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+    db.delete(pattern)
+    db.commit()
+    return RedirectResponse("/admin/patterns", status_code=303)
+
+
+# ── Pattern editor list management (admin-only) ───────────────────────────────
+
+@app.get("/admin/patterns/editors", response_class=HTMLResponse)
+def admin_pattern_editors(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_admin(request, user)
+    editors = (
+        db.query(UserRole)
+        .filter_by(role="pattern_editor")
+        .order_by(UserRole.granted_at.desc())
+        .all()
+    )
+    return templates.TemplateResponse(request, "admin_pattern_editors.html", {
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        "editors": editors,
+        "admin_emails": sorted(ADMIN_EMAILS),
+    })
+
+
+@app.post("/admin/patterns/editors/add")
+async def admin_pattern_editor_add(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_admin(request, user)
+    form = await request.form()
+    email = (form.get("email") or "").strip().lower()
+    note  = (form.get("note") or "").strip()[:256] or None
+    if not email or "@" not in email or len(email) > 256:
+        raise HTTPException(status_code=400, detail="Invalid email")
+
+    existing = db.query(UserRole).filter_by(email=email, role="pattern_editor").first()
+    if not existing:
+        db.add(UserRole(
+            email      = email,
+            role       = "pattern_editor",
+            granted_by = user.get("email"),
+            note       = note,
+        ))
+        db.commit()
+    return RedirectResponse("/admin/patterns/editors", status_code=303)
+
+
+@app.post("/admin/patterns/editors/{role_id}/remove")
+def admin_pattern_editor_remove(role_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_admin(request, user)
+    role = db.query(UserRole).filter_by(id=role_id, role="pattern_editor").first()
+    if not role:
+        raise HTTPException(status_code=404, detail="Not found")
+    db.delete(role)
+    db.commit()
+    return RedirectResponse("/admin/patterns/editors", status_code=303)
+
+
+# ── Public Pattern Wiki ──────────────────────────────────────────────────────
+
+@app.get("/patterns", response_class=HTMLResponse)
+def patterns_index(request: Request, db: Session = Depends(get_db)):
+    rows = (
+        db.query(Pattern)
+        .filter(Pattern.status == "published")
+        .order_by(Pattern.section, Pattern.sort_order, Pattern.name)
+        .all()
+    )
+    by_section: dict[str, list] = {}
+    for p in rows:
+        by_section.setdefault(p.section, []).append(p)
+    return templates.TemplateResponse(request, "patterns_index.html", {
+        "user": get_current_user(request),
+        "lang": get_lang(request),
+        "t":    get_t(request),
+        "patterns_by_section": by_section,
+        "sections":            _PATTERN_SECTIONS,
+        "mode":                "patterns",
+    })
+
+
+@app.get("/patterns/{slug}", response_class=HTMLResponse)
+def patterns_detail(slug: str, request: Request, db: Session = Depends(get_db)):
+    pattern = db.query(Pattern).filter_by(slug=slug).first()
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+
+    user = get_current_user(request)
+    is_editor = user_has_role(db, user, "pattern_editor")
+
+    # Drafts are visible only to editors/admins.
+    if pattern.status != "published" and not is_editor:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+
+    variants = (
+        db.query(Pattern)
+        .filter(Pattern.parent_slug == pattern.slug,
+                Pattern.status == "published")
+        .order_by(Pattern.sort_order, Pattern.name)
+        .all()
+    )
+    parent = None
+    if pattern.parent_slug:
+        parent = db.query(Pattern).filter_by(slug=pattern.parent_slug).first()
+
+    import markdown as md_lib
+    body_html = md_lib.markdown(pattern.body_md or "", extensions=["extra", "sane_lists"])
+
+    return templates.TemplateResponse(request, "pattern_detail.html", {
+        "user":      user,
+        "lang":      get_lang(request),
+        "t":         get_t(request),
+        "pattern":   pattern,
+        "parent":    parent,
+        "variants":  variants,
+        "body_html": body_html,
+        "is_editor": is_editor,
+        "mode":      "patterns",
+    })
 
 
 @app.get("/admin/contact", response_class=HTMLResponse)

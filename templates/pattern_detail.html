@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}{{ pattern.name }} — Minesweeper Patterns — minesweeper.org{% endblock %}
+{% block description %}{{ pattern.name }} — a minesweeper pattern{% if pattern.aliases %} ({{ pattern.aliases | join(', ') }}){% endif %}. Diagram and explanation.{% endblock %}
+{% block canonical %}https://minesweeper.org/patterns/{{ pattern.slug }}{% endblock %}
+{% block og_url %}https://minesweeper.org/patterns/{{ pattern.slug }}{% endblock %}
+{% block og_title %}{{ pattern.name }}{% endblock %}
+{% block og_description %}{{ pattern.name }} — a minesweeper pattern with diagram and explanation.{% endblock %}
+{% block tw_title %}{{ pattern.name }}{% endblock %}
+
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Minesweeper", "item": "https://minesweeper.org/" },
+    { "@type": "ListItem", "position": 2, "name": "Patterns",    "item": "https://minesweeper.org/patterns" },
+    { "@type": "ListItem", "position": 3, "name": "{{ pattern.section | e }}",
+      "item": "https://minesweeper.org/patterns#section-{{ pattern.section | lower | replace(' ', '-') }}" },
+    { "@type": "ListItem", "position": 4, "name": "{{ pattern.name | e }}",
+      "item": "https://minesweeper.org/patterns/{{ pattern.slug }}" }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="tz-content-page">
+
+  <nav class="tz-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Minesweeper</a>
+    <span aria-hidden="true">›</span>
+    <a href="/patterns">Patterns</a>
+    <span aria-hidden="true">›</span>
+    <a href="/patterns#section-{{ pattern.section | lower | replace(' ', '-') }}">{{ pattern.section }}</a>
+    {% if parent %}
+      <span aria-hidden="true">›</span>
+      <a href="/patterns/{{ parent.slug }}">{{ parent.name }}</a>
+    {% endif %}
+    <span aria-hidden="true">›</span>
+    <span>{{ pattern.name }}</span>
+  </nav>
+
+  {% if pattern.status != 'published' %}
+    <p style="background:#fffae5;color:#7a5a00;border:1px solid #e0b800;padding:0.5rem;border-radius:4px;">
+      ⚠ This pattern is a <strong>draft</strong> and not visible to the public.
+      {% if is_editor %}<a href="/admin/patterns/{{ pattern.slug }}/edit">Edit it</a>.{% endif %}
+    </p>
+  {% endif %}
+
+  <h1 class="tz-content-h1">{{ pattern.name }}</h1>
+
+  <p class="tz-content-lead" style="margin-bottom:0.5rem;">
+    {% if pattern.aliases %}<em>Also known as: {{ pattern.aliases | join(', ') }}</em>{% endif %}
+  </p>
+
+  <p style="color:var(--text-dim);">
+    {% if pattern.difficulty %}<span>Difficulty <strong>{{ pattern.difficulty }}</strong></span>{% endif %}
+    {% if pattern.depth %}<span> · Depth <strong>{{ pattern.depth }}</strong></span>{% endif %}
+    <span> · Section: {{ pattern.section }}</span>
+  </p>
+
+  {# Board: prefer JSON-driven rendering (TODO: client renderer), fall back to image. #}
+  {% if pattern.board_image_url %}
+    <figure style="margin:1rem 0;">
+      <img src="{{ pattern.board_image_url }}" alt="{{ pattern.name }} diagram"
+           style="max-width:100%;border:1px solid var(--border);border-radius:4px;">
+    </figure>
+  {% elif pattern.board_json %}
+    <div class="pattern-board-placeholder"
+         data-board='{{ pattern.board_json | tojson }}'
+         style="padding:1rem;border:1px dashed var(--border);border-radius:4px;color:var(--text-dim);">
+      Board diagram (JSON) — renderer not yet wired up.
+    </div>
+  {% endif %}
+
+  {% if pattern.legend %}
+    <section class="tz-section">
+      <h2>Legend</h2>
+      <ul style="list-style:none;padding:0;">
+        {% for row in pattern.legend %}
+          <li style="display:flex;align-items:center;gap:0.5rem;margin:0.25rem 0;">
+            <span style="display:inline-block;width:1rem;height:1rem;border:1px solid var(--border);background:{{ row.color | default('#ccc') }};"></span>
+            <span>{{ row.meaning }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  <section class="tz-section">
+    <h2>Explanation</h2>
+    <div class="pattern-body">{{ body_html | safe }}</div>
+  </section>
+
+  {% if variants %}
+    <section class="tz-section">
+      <h2>Variants</h2>
+      <ul>
+        {% for v in variants %}
+          <li><a href="/patterns/{{ v.slug }}">{{ v.name }}</a>
+            {% if v.difficulty %} <small>(Difficulty {{ v.difficulty }})</small>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {% if is_editor %}
+    <p style="margin-top:2rem;color:var(--text-dim);font-size:0.85rem;">
+      <a href="/admin/patterns/{{ pattern.slug }}/edit">✎ Edit this pattern</a>
+    </p>
+  {% endif %}
+
+</div>
+{% endblock %}

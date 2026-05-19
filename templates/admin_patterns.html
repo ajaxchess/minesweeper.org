@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Admin — Patterns — minesweeper.org{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <h1 class="lb-title">Pattern Wiki — Curation</h1>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">
+    Signed in as {{ user.email }}{% if is_admin %} · <strong>admin</strong>{% else %} · pattern editor{% endif %}
+  </p>
+  <p style="text-align:center;margin-bottom:1.5rem;">
+    <a href="/admin">⬅ Dashboard</a>
+    {% if is_admin %} &nbsp;|&nbsp; <a href="/admin/patterns/editors">👥 Manage editors</a>{% endif %}
+    &nbsp;|&nbsp; <a href="/admin/patterns/new" class="admin-btn admin-btn-approve">＋ New pattern</a>
+    &nbsp;|&nbsp; <a href="/patterns" target="_blank">View public wiki ↗</a>
+  </p>
+
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">
+    {{ total }} pattern{{ '' if total == 1 else 's' }} total
+  </p>
+
+  {% if total == 0 %}
+    <p style="color:var(--text-dim);padding:2rem 0;text-align:center;">
+      No patterns yet. Use <a href="/admin/patterns/new">＋ New pattern</a> to add the first one,
+      or run the import script to bulk-load from the Pattern Library docx.
+    </p>
+  {% endif %}
+
+  {% for section in sections %}
+    {% if section in patterns_by_section %}
+    <section class="admin-section">
+      <h2 class="admin-section-title">{{ section }} ({{ patterns_by_section[section] | length }})</h2>
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th style="width:3rem;text-align:right;">#</th>
+            <th>Name / Slug</th>
+            <th style="width:5rem;text-align:center;">Depth</th>
+            <th style="width:5rem;text-align:center;">Diff.</th>
+            <th style="width:6rem;text-align:center;">Status</th>
+            <th>Last edited</th>
+            <th style="width:9rem;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in patterns_by_section[section] %}
+          <tr>
+            <td style="text-align:right;color:var(--text-dim);">{{ p.sort_order }}</td>
+            <td>
+              <strong>{{ p.name }}</strong>
+              {% if p.parent_slug %}<br><small style="color:var(--text-dim)">variant of {{ p.parent_slug }}</small>{% endif %}
+              <br><small style="color:var(--text-dim)"><code>{{ p.slug }}</code></small>
+            </td>
+            <td style="text-align:center;">{{ p.depth or '—' }}</td>
+            <td style="text-align:center;">{{ p.difficulty or '—' }}</td>
+            <td style="text-align:center;">
+              {% if p.status == 'published' %}
+                <span style="color:#3a7;">published</span>
+              {% else %}
+                <span style="color:var(--text-dim);">draft</span>
+              {% endif %}
+            </td>
+            <td style="white-space:nowrap;color:var(--text-dim);font-size:0.85rem;">
+              {% if p.updated_at %}{{ p.updated_at.strftime("%Y-%m-%d %H:%M") }}{% endif %}
+              {% if p.editor_email %}<br><small>{{ p.editor_email }}</small>{% endif %}
+            </td>
+            <td style="white-space:nowrap;">
+              <a href="/admin/patterns/{{ p.slug }}/edit" class="admin-btn admin-btn-approve">✎ Edit</a>
+              {% if is_admin %}
+              <form method="post" action="/admin/patterns/{{ p.slug }}/delete" style="display:inline"
+                    onsubmit="return confirm('Delete pattern {{ p.slug }}? This cannot be undone (revisions are kept).');">
+                <button class="admin-btn admin-btn-delete" type="submit">🗑</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    {% endif %}
+  {% endfor %}
+
+</div>
+{% endblock %}

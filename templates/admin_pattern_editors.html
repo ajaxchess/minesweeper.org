@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Admin — Pattern Editors — minesweeper.org{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper" style="max-width:900px;">
+
+  <h1 class="lb-title">Pattern Editors</h1>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">Signed in as {{ user.email }} (admin)</p>
+  <p style="text-align:center;margin-bottom:1.5rem;">
+    <a href="/admin/patterns">⬅ Back to patterns</a>
+  </p>
+
+  <section class="admin-section">
+    <h2 class="admin-section-title">Grant pattern editor</h2>
+    <p style="color:var(--text-dim);font-size:0.9rem;">
+      Add a Google account email. The user must sign in once via Google for the
+      grant to take effect — they don't need to do anything else first.
+    </p>
+    <form method="post" action="/admin/patterns/editors/add"
+          style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap;">
+      <label style="flex:2 1 16rem;">
+        <span>Email</span>
+        <input type="email" name="email" required maxlength="256"
+               placeholder="someone@gmail.com">
+      </label>
+      <label style="flex:3 1 20rem;">
+        <span>Note (optional)</span>
+        <input type="text" name="note" maxlength="256"
+               placeholder="why this person — for your own records">
+      </label>
+      <button type="submit" class="admin-btn admin-btn-approve">＋ Add editor</button>
+    </form>
+  </section>
+
+  <section class="admin-section" style="margin-top:2rem;">
+    <h2 class="admin-section-title">Current editors ({{ editors | length }})</h2>
+    {% if editors %}
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Granted by</th>
+          <th>Granted at</th>
+          <th>Note</th>
+          <th style="width:7rem;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in editors %}
+        <tr>
+          <td>{{ e.email }}</td>
+          <td style="color:var(--text-dim);font-size:0.85rem;">{{ e.granted_by or '—' }}</td>
+          <td style="white-space:nowrap;color:var(--text-dim);font-size:0.85rem;">
+            {{ e.granted_at.strftime("%Y-%m-%d") }}
+          </td>
+          <td>{{ e.note or '' }}</td>
+          <td>
+            <form method="post" action="/admin/patterns/editors/{{ e.id }}/remove" style="display:inline"
+                  onsubmit="return confirm('Remove editor access for {{ e.email }}?')">
+              <button class="admin-btn admin-btn-delete" type="submit">Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--text-dim);padding:1rem 0">No pattern editors granted yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="admin-section" style="margin-top:2rem;">
+    <h2 class="admin-section-title">Admins (implicit editors)</h2>
+    <p style="color:var(--text-dim);font-size:0.85rem;">
+      Configured via the <code>ADMIN_EMAILS</code> env var. Admins always have
+      pattern editor access and can manage this list.
+    </p>
+    <ul style="padding-left:1.5rem;">
+      {% for a in admin_emails %}
+      <li><code>{{ a }}</code></li>
+      {% endfor %}
+    </ul>
+  </section>
+
+</div>
+{% endblock %}

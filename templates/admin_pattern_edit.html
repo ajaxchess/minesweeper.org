@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}{{ form_title }} — Admin — minesweeper.org{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper" style="max-width:1100px;">
+
+  <h1 class="lb-title">{{ form_title }}</h1>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">Signed in as {{ user.email }}</p>
+  <p style="text-align:center;margin-bottom:1rem;">
+    <a href="/admin/patterns">⬅ Back to patterns</a>
+    {% if pattern %} &nbsp;|&nbsp;
+      <a href="/patterns/{{ pattern.slug }}" target="_blank">View public page ↗</a>
+    {% endif %}
+  </p>
+
+  <form method="post" action="{{ form_action }}" class="admin-form">
+
+    <div class="admin-row" style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;">
+      <label>
+        <span>Name <span style="color:#c44">*</span></span>
+        <input type="text" name="name" required maxlength="128"
+               value="{{ pattern.name if pattern else '' }}">
+      </label>
+      <label>
+        <span>Slug (URL)</span>
+        <input type="text" name="slug" maxlength="128" pattern="[a-z0-9\-]+"
+               placeholder="{{ 'auto from name' if not pattern else '' }}"
+               value="{{ pattern.slug if pattern else '' }}">
+      </label>
+    </div>
+
+    <div class="admin-row" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1rem;margin-top:0.75rem;">
+      <label>
+        <span>Section <span style="color:#c44">*</span></span>
+        <select name="section" required>
+          {% for s in sections %}
+          <option value="{{ s }}" {% if pattern and pattern.section == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>Depth</span>
+        <input type="number" name="depth" min="1" max="20"
+               value="{{ pattern.depth if pattern and pattern.depth is not none else '' }}">
+      </label>
+      <label>
+        <span>Difficulty</span>
+        <select name="difficulty">
+          <option value="">—</option>
+          {% for d in difficulties %}
+          <option value="{{ d }}" {% if pattern and pattern.difficulty == d %}selected{% endif %}>{{ d }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>Sort order</span>
+        <input type="number" name="sort_order"
+               value="{{ pattern.sort_order if pattern else 0 }}">
+      </label>
+    </div>
+
+    <div class="admin-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.75rem;">
+      <label>
+        <span>Parent slug (for variants — leave blank for top-level)</span>
+        <input type="text" name="parent_slug" maxlength="128"
+               value="{{ pattern.parent_slug if pattern and pattern.parent_slug else '' }}">
+      </label>
+      <label>
+        <span>Status</span>
+        <select name="status">
+          <option value="draft"     {% if not pattern or pattern.status == 'draft' %}selected{% endif %}>draft (hidden)</option>
+          <option value="published" {% if pattern and pattern.status == 'published' %}selected{% endif %}>published (live)</option>
+        </select>
+      </label>
+    </div>
+
+    <label style="display:block;margin-top:0.75rem;">
+      <span>Aliases (JSON array, e.g. <code>["D-Pattern", "221-Hole"]</code>)</span>
+      <input type="text" name="aliases"
+             value='{% if pattern and pattern.aliases %}{{ pattern.aliases | tojson }}{% endif %}'>
+    </label>
+
+    <label style="display:block;margin-top:0.75rem;">
+      <span>Body (Markdown) <span style="color:#c44">*</span></span>
+      <textarea name="body_md" rows="14" required
+                style="width:100%;font-family:monospace;">{{ pattern.body_md if pattern else '' }}</textarea>
+    </label>
+
+    <details style="margin-top:0.75rem;" {% if pattern and pattern.board_json %}open{% endif %}>
+      <summary>Board (JSON grid) — recommended for themeable rendering</summary>
+      <p style="color:var(--text-dim);font-size:0.85rem;">
+        Format suggestion: <code>{"rows":3,"cols":5,"cells":[[null,"1","?"],...],"regions":[{"color":"red","cells":[[0,1],[1,1]]}]}</code>.
+        Leave empty to use the image fallback instead.
+      </p>
+      <textarea name="board_json" rows="8"
+                style="width:100%;font-family:monospace;">{% if pattern and pattern.board_json %}{{ pattern.board_json | tojson(indent=2) }}{% endif %}</textarea>
+    </details>
+
+    <details style="margin-top:0.75rem;" {% if pattern and pattern.board_image_url and not pattern.board_json %}open{% endif %}>
+      <summary>Board image URL (fallback if no JSON board)</summary>
+      <input type="text" name="board_image_url" style="width:100%;"
+             placeholder="/static/img/patterns/d-pattern-classic.png"
+             value="{{ pattern.board_image_url if pattern and pattern.board_image_url else '' }}">
+    </details>
+
+    <details style="margin-top:0.75rem;" {% if pattern and pattern.legend %}open{% endif %}>
+      <summary>Legend (JSON list)</summary>
+      <p style="color:var(--text-dim);font-size:0.85rem;">
+        e.g. <code>[{"color":"red","meaning":"one mine"},{"color":"lime","meaning":"safe"}]</code>
+      </p>
+      <textarea name="legend" rows="4"
+                style="width:100%;font-family:monospace;">{% if pattern and pattern.legend %}{{ pattern.legend | tojson(indent=2) }}{% endif %}</textarea>
+    </details>
+
+    <label style="display:block;margin-top:0.75rem;">
+      <span>Edit summary (optional, for revision history)</span>
+      <input type="text" name="edit_summary" maxlength="256"
+             placeholder="e.g. fixed mine count in D-Pattern Classic">
+    </label>
+
+    <div style="margin-top:1.25rem;">
+      <button type="submit" class="admin-btn admin-btn-approve">💾 Save</button>
+      {% if pattern %}
+      <a href="/admin/patterns" class="admin-btn">Cancel</a>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if pattern and revisions %}
+  <section class="admin-section" style="margin-top:2rem;">
+    <h2 class="admin-section-title">Recent revisions ({{ revisions | length }})</h2>
+    <table class="lb-table">
+      <thead><tr><th>When</th><th>Editor</th><th>Summary</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for r in revisions %}
+        <tr>
+          <td style="white-space:nowrap;">{{ r.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td>{{ r.editor_email or '—' }}</td>
+          <td>{{ r.edit_summary or '' }}</td>
+          <td>{{ r.status }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}
