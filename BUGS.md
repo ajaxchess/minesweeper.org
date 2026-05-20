@@ -1,3 +1,14 @@
+B42 meta_kw_* duplicate keys in translations.py put wrong-language keywords in 4 locales.
+   Python dict duplicate-key semantics (last wins) caused: en → Russian keywords,
+   eo → Portuguese keywords, es → Italian keywords, pl → Thai keywords.
+   The correct keywords already existed in the proper locale blocks (ru, pt, it, th);
+   the misplaced duplicates in en/eo/es/pl were removed.
+   Fix: removed 4 lines each from en, eo, es, pl locale blocks in translations.py.
+
+B41 Mosaic "Puzzle of the Day" badge label hardcoded English in mosaic.js.
+   mosaic.js overwrote the server-rendered translated label on every game init.
+   Fix: expose ms_label_potd / ms_label_random via window.T; use in mosaic.js.
+
 B40 rush.html SEO article body is hardcoded English — not localised for any locale.
    The SEO <article> block (h2, sections, FAQs) has no translation keys; it renders
    in English on all locale-prefixed URLs (e.g. /tl/rush, /de/rush, etc.).
