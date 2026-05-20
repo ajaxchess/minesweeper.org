@@ -467,7 +467,7 @@ function initGame(seedStr, isPOTD) {
     document.getElementById('ms-timer').textContent = '0:00';
 
     const label = document.getElementById('ms-mode-label');
-    if (label) label.textContent = isPOTD ? '📅 Puzzle of the Day' : '🎲 Random Puzzle';
+    if (label) label.textContent = isPOTD ? (window.T?.ms_label_potd ?? '📅 Puzzle of the Day') : (window.T?.ms_label_random ?? '🎲 Random Puzzle');
 
     // Hide permalink until solved
     const row = document.getElementById('ms-permalink-row');
