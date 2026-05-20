@@ -174,11 +174,12 @@
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_bbbv_tip }}">3BV</th>
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_bbbv_s_tip }}">3BV/s</th>
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_eff_tip }}">Eff</th>
+          <th>View</th>
           <th>Board</th>
         </tr>
       </thead>
       <tbody id="lb-body">
-        <tr><td colspan="7" class="lb-loading">{{ t.lb_loading }}</td></tr>
+        <tr><td colspan="8" class="lb-loading">{{ t.lb_loading }}</td></tr>
       </tbody>
     </table>
   </div>
@@ -599,7 +600,7 @@ function supportsNoGuess() {
 }
 
 function tableColspan() {
-  return isCustomMode() ? 9 : 7;
+  return isCustomMode() ? 10 : 8;
 }
 
 function setCustomColumnsVisible(visible) {
@@ -691,6 +692,9 @@ async function loadScores(mode, noGuess, period, game) {
       const nameCell = s.profile_url
         ? `<a href="${escHtml(s.profile_url)}" class="lb-profile-link">${flag}${escHtml(s.name)}</a>`
         : `${flag}${escHtml(s.name)}`;
+      const viewCell = s.game_id
+        ? `<td class="lb-view"><a href="/game/${s.game_id}" class="lb-replay-link">View</a></td>`
+        : `<td class="lb-view">—</td>`;
       let hashCell = '<td class="lb-hash">—</td>';
       if (s.board_hash && currentGame !== 'hex') {
         const game = currentGame === 'classic' ? (currentNoGuess ? 'no-guess' : 'standard') : currentGame;
@@ -710,6 +714,7 @@ async function loadScores(mode, noGuess, period, game) {
           <td class="lb-stat lb-stat-col">${s.bbbv ?? '—'}</td>
           <td class="lb-stat lb-stat-col">${bbbvS}</td>
           <td class="lb-stat lb-stat-col">${eff}</td>
+          ${viewCell}
           ${hashCell}
         </tr>`;
     }).join('');

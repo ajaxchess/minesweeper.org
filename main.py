@@ -1339,17 +1339,15 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
 
 
 def _enrich_with_profiles(scores: list, db) -> list:
-    """Add profile_url and country to score dicts for entries with a user_email."""
+    """Add profile_url, country, and game_id to score dicts."""
     emails = [s.user_email for s in scores if s.user_email]
-    if not emails:
-        return [s.to_dict() for s in scores]
 
     profiles = (
         db.query(UserProfile.email, UserProfile.vanity_slug, UserProfile.public_id,
                  UserProfile.is_public, UserProfile.country)
         .filter(UserProfile.email.in_(emails))
         .all()
-    )
+    ) if emails else []
     url_map:     dict = {}
     country_map: dict = {}
     for p in profiles:
@@ -1362,11 +1360,21 @@ def _enrich_with_profiles(scores: list, db) -> list:
         elif p.public_id:
             url_map[p.email] = f"/u/{p.public_id}"
 
+    # GameReplay.score_id directly references Score.id — one bulk lookup.
+    score_ids = [s.id for s in scores]
+    replay_map = {
+        r.score_id: r.id
+        for r in db.query(GameReplay.id, GameReplay.score_id)
+                   .filter(GameReplay.score_id.in_(score_ids))
+                   .all()
+    }
+
     result = []
     for s in scores:
         d = s.to_dict()
         d["profile_url"] = url_map.get(s.user_email) if s.user_email else None
         d["country"]     = country_map.get(s.user_email) if s.user_email else None
+        d["game_id"]     = replay_map.get(s.id)
         result.append(d)
     return result
 
