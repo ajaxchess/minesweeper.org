@@ -7981,7 +7981,9 @@ _MAH_TURTLE_BOARD   = "2175883231"  # Turtle layout — fixed daily board
 
 @app.get("/other/mahjong", response_class=HTMLResponse)
 def mahjong_landing(request: Request):
-    return RedirectResponse("/other/mahjong/daily", status_code=302)
+    if not os.path.isfile(_MAH_INDEX_PATH):
+        raise HTTPException(status_code=503, detail="Game not yet deployed")
+    return FileResponse(_MAH_INDEX_PATH)
 
 
 @app.get("/other/mahjong/daily")
