@@ -7331,7 +7331,7 @@ async def admin_pattern_create(request: Request, db: Session = Depends(get_db)):
     _save_pattern_revision(db, pattern, user.get("email"),
                            edit_summary=(form.get("edit_summary") or "Created").strip()[:256])
     db.commit()
-    return RedirectResponse(f"/admin/patterns/{slug}/edit", status_code=303)
+    return RedirectResponse(f"/admin/patterns/{pattern.slug}/edit", status_code=303)
 
 
 @app.get("/admin/patterns/{slug}/edit", response_class=HTMLResponse)
@@ -7838,6 +7838,7 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
     # Source file viewer
     source_content = None
     current_src = None
+    src = os.path.basename(src) if src else None  # strip any path components before lookup
     if src and src in source_files:
         src_path = os.path.join(active_dir, src)
         real_src = os.path.realpath(src_path)
