@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Mosaic Easy — Daily 5×5 Logic Puzzle | minesweeper.org{% endblock %}
-{% block description %}Play Mosaic Easy free online — a beginner-friendly 5×5 daily puzzle. Fill cells black so every number matches its 3×3 neighborhood count.{% endblock %}
+{% block title %}{{ t.meta_title_mosaic }}{% endblock %}
+{% block description %}{{ t.meta_desc_mosaic }}{% endblock %}
 {% block keywords %}<meta name="keywords" content="mosaic easy, mosaic 5x5, easy mosaic puzzle, beginner mosaic, daily mosaic, fill-a-pix easy">{% endblock %}
 {% block canonical %}https://minesweeper.org/mosaic{% endblock %}
 {% block og_url %}https://minesweeper.org/mosaic{% endblock %}
-{% block og_title %}Mosaic Easy — Daily 5×5 Logic Puzzle{% endblock %}
-{% block og_description %}A beginner-friendly 5×5 daily Mosaic puzzle. Fill cells black so every number matches its 3×3 neighborhood count.{% endblock %}
+{% block og_title %}{{ t.meta_title_mosaic | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ t.meta_desc_mosaic }}{% endblock %}
 {% block og_type %}game{% endblock %}
 {% block og_image %}https://minesweeper.org/static/img/og-mosaic.png{% endblock %}
-{% block tw_title %}Mosaic Easy — Daily 5×5 Logic Puzzle{% endblock %}
-{% block tw_description %}Beginner Mosaic: 5×5 grid, daily puzzle, no guessing required.{% endblock %}
+{% block tw_title %}{{ t.meta_title_mosaic | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block tw_description %}{{ t.meta_desc_mosaic }}{% endblock %}
 {% block tw_image %}https://minesweeper.org/static/img/og-mosaic.png{% endblock %}
 
 {% block content %}
