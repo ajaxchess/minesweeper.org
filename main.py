@@ -1234,6 +1234,8 @@ async def auth_callback(request: Request, db: Session = Depends(get_db)):
                 db.commit()
 
     next_url = request.session.pop("next", "/")
+    if not isinstance(next_url, str) or not next_url.startswith("/") or next_url.startswith("//"):
+        next_url = "/"
     return RedirectResponse(url=next_url)
 
 @app.get("/auth/logout")
@@ -7723,6 +7725,8 @@ def admin_hscleaning_delete(
     if score:
         db.delete(score)
         db.commit()
+    if not next_url.startswith("/") or next_url.startswith("//"):
+        next_url = "/admin/hscleaning"
     return RedirectResponse(next_url, status_code=303)
 
 
@@ -7893,9 +7897,9 @@ def admin_analysis_download(request: Request, file: str):
 @app.get("/admin/analysis/{filename}")
 def admin_analysis_by_path(filename: str, folder: Optional[str] = None):
     doc = filename.rsplit(".", 1)[0] if "." in filename else filename
-    url = f"/admin/analysis?doc={doc}"
+    url = f"/admin/analysis?doc={quote(doc, safe='')}"
     if folder:
-        url += f"&folder={folder}"
+        url += f"&folder={quote(folder, safe='')}"
     return RedirectResponse(url, status_code=302)
 
 
