@@ -1,3 +1,8 @@
+B43 /other/mahjong missing h1 — route was a 302 redirect with no HTML body.
+   Bing Webmaster Tools flagged the URL as missing h1 because a redirect response
+   has no HTML content. Fix: serve static/mah/index.html directly at /other/mahjong;
+   the SPA's <base href="/other/mahjong/"> keeps all asset paths valid.
+
 B42 meta_kw_* duplicate keys in translations.py put wrong-language keywords in 4 locales.
    Python dict duplicate-key semantics (last wins) caused: en → Russian keywords,
    eo → Portuguese keywords, es → Italian keywords, pl → Thai keywords.
