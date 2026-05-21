@@ -91,10 +91,10 @@
       <tr {% if m.team1_slug == country.slug or m.team2_slug == country.slug %}class="wcc-own-match"{% endif %}>
         <td style="white-space:nowrap;">{{ m.date_local }}<br><small style="color:var(--text-dim);">{{ m.time_local }} {{ m.tz_label }}</small></td>
         <td>
-          <img src="https://flagcdn.com/w20/{{ m.team1.get('flag','') }}.png" style="vertical-align:middle;margin-right:4px;">
+          <img src="https://flagcdn.com/w20/{{ m.team1.get('flag','') }}.png" style="vertical-align:middle;margin-right:4px;" alt="{{ m.team1.get('name', m.team1_slug) }}">
           {{ m.team1.get('name', m.team1_slug) }}
           <span style="color:var(--text-dim);margin:0 .3rem;">vs</span>
-          <img src="https://flagcdn.com/w20/{{ m.team2.get('flag','') }}.png" style="vertical-align:middle;margin-right:4px;">
+          <img src="https://flagcdn.com/w20/{{ m.team2.get('flag','') }}.png" style="vertical-align:middle;margin-right:4px;" alt="{{ m.team2.get('name', m.team2_slug) }}">
           {{ m.team2.get('name', m.team2_slug) }}
         </td>
         <td style="text-align:center;">
@@ -192,7 +192,7 @@
         <td>{{ loop.index }}</td>
         <td>{{ row.display_name }}</td>
         <td>
-          <img src="https://flagcdn.com/w20/{{ row.fan_flag_img }}.png" style="vertical-align:middle;margin-right:4px;">{{ row.fan_flag_name }}
+          <img src="https://flagcdn.com/w20/{{ row.fan_flag_img }}.png" style="vertical-align:middle;margin-right:4px;" alt="{{ row.fan_flag_name }}">{{ row.fan_flag_name }}
         </td>
         <td><strong>{{ row.points }}</strong></td>
         <td style="color:var(--text-dim);font-size:.85rem;">{{ row.best_time or '—' }}</td>

@@ -103,7 +103,7 @@
           {% set cc = namespace(data=none) %}
           {% for co in wc2026_teams if co.slug == row.slug %}{% set cc.data = co %}{% endfor %}
           {% if cc.data %}
-          <img src="https://flagcdn.com/w20/{{ cc.data.flag }}.png" style="vertical-align:middle;margin-right:6px;">
+          <img src="https://flagcdn.com/w20/{{ cc.data.flag }}.png" style="vertical-align:middle;margin-right:6px;" alt="{{ row.name }}">
           <a href="/2026worldcup/{{ row.slug }}">{{ row.name }}</a>
           {% else %}
           {{ row.name }}
@@ -132,7 +132,7 @@
         <td>{{ row.display_name }}</td>
         <td>
           {% if row.fan_country %}
-          <img src="https://flagcdn.com/w20/{{ row.fan_country.flag }}.png" style="vertical-align:middle;margin-right:4px;">
+          <img src="https://flagcdn.com/w20/{{ row.fan_country.flag }}.png" style="vertical-align:middle;margin-right:4px;" alt="{{ row.fan_country.name }}">
           {{ row.fan_country.name }}
           {% endif %}
         </td>
