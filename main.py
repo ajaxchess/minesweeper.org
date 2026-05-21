@@ -955,6 +955,9 @@ def shutdown():
 async def set_lang(request: Request, lang: str = "en", next: Optional[str] = None):
     if lang not in SUPPORTED_LANGS:
         lang = "en"
+    # Re-validate: only lowercase letters allowed in cookie value (no header-injection chars)
+    if not re.fullmatch(r'[a-z]{2,5}', lang):
+        lang = "en"
     redirect_to = next or request.headers.get("referer", "/")
     # Safety: only allow relative URLs to prevent open redirect
     if not redirect_to.startswith("/") or redirect_to.startswith("//"):
