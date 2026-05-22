@@ -343,7 +343,7 @@ function esc(v) {
 }
 
 async function loadPageLb() {
-  const noGuess = typeof state !== 'undefined' && !!state.noGuess;
+  const noGuess = localStorage.getItem('noGuess') === 'true';
   const body    = document.getElementById('page-lb-body');
   const title   = document.getElementById('page-lb-title');
 
@@ -393,21 +393,7 @@ async function loadPageLb() {
   }
 }
 
-// Refresh leaderboard whenever no-guess is toggled
-const _origToggleNoGuess = window.toggleNoGuess;
-window.toggleNoGuess = function() {
-  _origToggleNoGuess();
-  loadPageLb();
-};
-
-// Refresh leaderboard after a score is submitted
-const _origSubmitScore = window.submitScore;
-window.submitScore = async function(autoName) {
-  await _origSubmitScore(autoName);
-  loadPageLb();
-};
-
-// Stat column tooltips
+// Stat column tooltips (DOM is already present — inline script at bottom of body)
 const pageTip = document.getElementById('page-lb-tip');
 document.querySelectorAll('#page-lb-table .lb-th-stat[data-tip]').forEach(th => {
   th.addEventListener('mouseenter', () => {
@@ -423,6 +409,23 @@ document.querySelectorAll('#page-lb-table .lb-th-stat[data-tip]').forEach(th => 
   th.addEventListener('mouseleave', () => pageTip.classList.remove('visible'));
 });
 
-document.addEventListener('DOMContentLoaded', loadPageLb);
+// Wire up leaderboard refresh after deferred minesweeper.js has run.
+// Deferred scripts execute before DOMContentLoaded fires, so window.toggleNoGuess
+// and window.submitScore are defined by the time this handler runs.
+document.addEventListener('DOMContentLoaded', function() {
+  const _origToggleNoGuess = window.toggleNoGuess;
+  window.toggleNoGuess = function() {
+    _origToggleNoGuess();
+    loadPageLb();
+  };
+
+  const _origSubmitScore = window.submitScore;
+  window.submitScore = async function(autoName) {
+    await _origSubmitScore(autoName);
+    loadPageLb();
+  };
+
+  loadPageLb();
+});
 </script>
 {% endblock %}
