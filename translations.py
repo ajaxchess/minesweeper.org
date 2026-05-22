@@ -17114,7 +17114,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "meta_jsonld_desc":    "Play free Minesweeper online. Classic, no-guess, and real-time 1v1 duel modes. No download required.",
         # Page metadata
         "meta_title_beginner":     "Minesweeper — Maglaro Nang Libre Online | Multiplayer at Mga Klasikong Mode",
-        "meta_desc_beginner":      "Maglaro ng Minesweeper nang libre online — klasiko, walang hula, at 1v1 labanan sa real time. Hindi kailangan ng download. Hamunin ang isang kaibigan o maglaro nang mag-isa.",
+        "meta_desc_beginner":      "Maglaro ng Minesweeper nang libre online — klasiko, walang hula, at 1v1 labanan. Hindi kailangan ng download. Hamunin ang isang kaibigan o maglaro nang mag-isa.",
         "meta_kw_beginner":        "minesweeper online, play minesweeper free, minesweeper beginner, free minesweeper game",
         "meta_title_intermediate": "Minesweeper Intermediate — Maglaro Nang Libre Online | minesweeper.org",
         "meta_desc_intermediate":  "Laruin ang Minesweeper Intermediate online \u2014 {rows}\u00d7{cols} na board na may {mines} mina. Libre, walang download.",
