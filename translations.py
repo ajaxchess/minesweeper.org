@@ -1930,8 +1930,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_blog": "Novaĵoj, strategio kaj ĝisdatigoj",
         "nav_sub_links": "Rilataj retejoj kaj rimedoj",
         # Game UI controls
-        "game_no_guess_btn":   "No Guess",
-        "game_no_guess_title": "Generate boards that require no guessing",
+        "game_no_guess_btn":   "Sen Diveno",
+        "game_no_guess_title": "Generi tablojn kiuj ne postulas divenon",
         "game_flag_btn":       "\U0001f6a9 Flag",
         "game_flag_title":     "Toggle flag mode",
         # Hidden H1 tags
@@ -4523,8 +4523,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_blog": "Noticias, estrategia y actualizaciones",
         "nav_sub_links": "Sitios y recursos relacionados",
         # Game UI controls
-        "game_no_guess_btn":   "No Guess",
-        "game_no_guess_title": "Generate boards that require no guessing",
+        "game_no_guess_btn":   "Sin adivinar",
+        "game_no_guess_title": "Generar tableros que no requieren adivinar",
         "game_flag_btn":       "\U0001f6a9 Flag",
         "game_flag_title":     "Toggle flag mode",
         # Hidden H1 tags
@@ -5889,8 +5889,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_blog": "ข่าวสาร กลยุทธ์ และอัปเดต",
         "nav_sub_links": "เว็บไซต์และทรัพยากรที่เกี่ยวข้อง",
         # Game UI controls
-        "game_no_guess_btn":   "No Guess",
-        "game_no_guess_title": "Generate boards that require no guessing",
+        "game_no_guess_btn":   "ไม่เดา",
+        "game_no_guess_title": "สร้างบอร์ดที่ไม่ต้องเดา",
         "game_flag_btn":       "\U0001f6a9 Flag",
         "game_flag_title":     "Toggle flag mode",
         # Hidden H1 tags
@@ -7105,8 +7105,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_blog": "News, strategy & ship updates",
         "nav_sub_links": "Friendly ports & resources",
         # Game UI controls
-        "game_no_guess_btn":   "No Guess",
-        "game_no_guess_title": "Generate boards that require no guessing",
+        "game_no_guess_btn":   "Onay Essgay",
+        "game_no_guess_title": "Enerategay oardsbay atthay equireray onay essingguay",
         "game_flag_btn":       "\U0001f6a9 Flag",
         "game_flag_title":     "Toggle flag mode",
         # Hidden H1 tags
@@ -8215,8 +8215,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_blog": "Новини, стратегія та оновлення",
         "nav_sub_links": "Пов'язані сайти та ресурси",
         # Game UI controls
-        "game_no_guess_btn":   "No Guess",
-        "game_no_guess_title": "Generate boards that require no guessing",
+        "game_no_guess_btn":   "Без вгадування",
+        "game_no_guess_title": "Генерувати поля без необхідності вгадувати",
         "game_flag_btn":       "\U0001f6a9 Flag",
         "game_flag_title":     "Toggle flag mode",
         # Hidden H1 tags
@@ -9440,8 +9440,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_blog": "Actualités, stratégie et mises à jour",
         "nav_sub_links": "Sites et ressources associés",
         # Game UI controls
-        "game_no_guess_btn":   "No Guess",
-        "game_no_guess_title": "Generate boards that require no guessing",
+        "game_no_guess_btn":   "Sans devinette",
+        "game_no_guess_title": "Générer des grilles sans devinette",
         "game_flag_btn":       "\U0001f6a9 Flag",
         "game_flag_title":     "Toggle flag mode",
         # Hidden H1 tags
@@ -10801,8 +10801,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_blog": "뉴스, 전략 & 업데이트",
         "nav_sub_links": "관련 사이트와 자료",
         # Game UI controls
-        "game_no_guess_btn":   "No Guess",
-        "game_no_guess_title": "Generate boards that require no guessing",
+        "game_no_guess_btn":   "추측 없음",
+        "game_no_guess_title": "추측이 필요 없는 보드 생성",
         "game_flag_btn":       "\U0001f6a9 Flag",
         "game_flag_title":     "Toggle flag mode",
         # Hidden H1 tags
@@ -12109,8 +12109,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_blog": "ニュース・戦略・更新情報",
         "nav_sub_links": "関連サイトとリソース",
         # Game UI controls
-        "game_no_guess_btn":   "No Guess",
-        "game_no_guess_title": "Generate boards that require no guessing",
+        "game_no_guess_btn":   "ノーゲス",
+        "game_no_guess_title": "推測不要なボードを生成",
         "game_flag_btn":       "\U0001f6a9 Flag",
         "game_flag_title":     "Toggle flag mode",
         # Hidden H1 tags
@@ -13453,8 +13453,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_blog": "新闻、策略与更新",
         "nav_sub_links": "相关网站与资源",
         # Game UI controls
-        "game_no_guess_btn":   "No Guess",
-        "game_no_guess_title": "Generate boards that require no guessing",
+        "game_no_guess_btn":   "无猜测",
+        "game_no_guess_title": "生成无需猜测的棋盘",
         "game_flag_btn":       "\U0001f6a9 Flag",
         "game_flag_title":     "Toggle flag mode",
         # Hidden H1 tags
@@ -14748,8 +14748,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_blog": "新聞、策略與更新",
         "nav_sub_links": "相關網站與資源",
         # Game UI controls
-        "game_no_guess_btn":   "No Guess",
-        "game_no_guess_title": "Generate boards that require no guessing",
+        "game_no_guess_btn":   "無猜測",
+        "game_no_guess_title": "生成無需猜測的棋盤",
         "game_flag_btn":       "\U0001f6a9 Flag",
         "game_flag_title":     "Toggle flag mode",
         # Hidden H1 tags
@@ -15907,8 +15907,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_blog": "Aktualności, strategia i aktualizacje",
         "nav_sub_links": "Powiązane strony i zasoby",
         # Game UI controls
-        "game_no_guess_btn":   "No Guess",
-        "game_no_guess_title": "Generate boards that require no guessing",
+        "game_no_guess_btn":   "Bez Zgadywania",
+        "game_no_guess_title": "Generuj plansze, które nie wymagają zgadywania",
         "game_flag_btn":       "\U0001f6a9 Flag",
         "game_flag_title":     "Toggle flag mode",
         # Hidden H1 tags
@@ -17093,8 +17093,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_blog": "Balita, estratehiya at mga update",
         "nav_sub_links": "Mga kaugnay na site at mapagkukunan",
         # Game UI controls
-        "game_no_guess_btn":   "No Guess",
-        "game_no_guess_title": "Generate boards that require no guessing",
+        "game_no_guess_btn":   "Walang Hula",
+        "game_no_guess_title": "Bumuo ng mga board na hindi nangangailangan ng paghula",
         "game_flag_btn":       "\U0001f6a9 Flag",
         "game_flag_title":     "Toggle flag mode",
         # Hidden H1 tags
