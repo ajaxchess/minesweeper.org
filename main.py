@@ -9374,6 +9374,20 @@ def _wc_guest_points_today(db: Session, guest_token: str) -> int:
     return int(total or 0)
 
 
+def _wc_guest_team_pts(db: Session, guest_token: str | None, fan_flag: str | None) -> int:
+    """Total points this guest_token has ever earned for their fan_flag country."""
+    if not guest_token or not fan_flag:
+        return 0
+    total = (
+        db.query(func.coalesce(func.sum(WC2026Score.total_points), 0))
+        .filter(WC2026Score.guest_token == guest_token)
+        .filter(WC2026Score.fan_flag == fan_flag)
+        .filter(WC2026Score.email.is_(None))
+        .scalar()
+    )
+    return int(total or 0)
+
+
 def _wc_fan_banner(user, db: Session, request: Request | None = None) -> dict:
     """Return fan-flag context for WC pages.
 
@@ -9550,6 +9564,8 @@ def wc2026_main(request: Request, db: Session = Depends(get_db)):
     groups    = {g: WC2026_BY_GROUP[g] for g in WC2026_GROUPS}
     country_lb = _fan_country_leaderboard(db)
     individual_lb = _individual_leaderboard(db)
+    guest_token = None if user else request.session.get("guest_token")
+    guest_team_pts = _wc_guest_team_pts(db, guest_token, fan_ctx.get("wc_fan"))
     return templates.TemplateResponse(request, "wc2026_main.html", {
         "user": user, "t": t,
         "lang": get_lang(request),
@@ -9559,6 +9575,7 @@ def wc2026_main(request: Request, db: Session = Depends(get_db)):
         "country_lb": country_lb,
         "individual_lb": individual_lb,
         "wc2026_teams": WC2026_COUNTRIES,
+        "guest_team_pts": guest_team_pts,
         **fan_ctx,
     })
 

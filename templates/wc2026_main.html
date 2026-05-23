@@ -105,6 +105,9 @@
           {% if cc.data %}
           <img src="https://flagcdn.com/w20/{{ cc.data.flag }}.png" style="vertical-align:middle;margin-right:6px;" alt="{{ row.name }}">
           <a href="/2026worldcup/{{ row.slug }}">{{ row.name }}</a>
+          {% if not user and row.slug == wc_fan and guest_team_pts > 0 %}
+          <span class="wc-my-pts"> = <a href="/2026worldcup/{{ row.slug }}#wc-lb-section">{{ guest_team_pts }} pts for your team</a></span>
+          {% endif %}
           {% else %}
           {{ row.name }}
           {% endif %}
@@ -192,5 +195,8 @@ async function wcSetFan(slug) {
 .wc-lb-table th, .wc-lb-table td { padding:.4rem .6rem; border-bottom:1px solid var(--border); text-align:left; }
 .wc-lb-table th { font-weight:600; color:var(--text-dim); font-size:.8rem; }
 .wc-empty { color:var(--text-dim); font-style:italic; }
+.wc-my-pts { font-size:.8rem; color:var(--accent); white-space:nowrap; }
+.wc-my-pts a { color:inherit; text-decoration:none; }
+.wc-my-pts a:hover { text-decoration:underline; }
 </style>
 {% endblock %}
