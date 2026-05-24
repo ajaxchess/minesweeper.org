@@ -14,6 +14,8 @@ List of active features
   purged at midnight UTC daily. Registered user scores are retained permanently.
 
 ──────────────────────────────────────────────────────────────────────────────
+F103 Tametsi Hex
+
 F102 Pattern Wiki
   - Curated minesweeper pattern library accessible at `/patterns` and
     `/patterns/{slug}`.

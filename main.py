@@ -21,7 +21,7 @@ from pydantic import BaseModel, Field, field_validator
 from countries import COUNTRIES as ALL_COUNTRIES, VALID_COUNTRY_CODES
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, Pattern, PatternRevision, UserRole, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, Pattern, PatternRevision, UserRole, TametsiHexCompletion, get_db, init_db, SessionLocal
 from phase2_analyzer import analyze_replay_async
 # Near the top of main.py with the other model imports
 from phase2_analyzer import GameAnalysis
@@ -9182,6 +9182,49 @@ def tametsi_replay_page(replay_id: int, request: Request, db: Session = Depends(
         "mode":      replay.mode,
         "outcome":   replay.outcome,
     })
+
+
+# ── Tametsi Hex Campaign ──────────────────────────────────────────────────────
+
+class TametsiHexCompletePayload(BaseModel):
+    puzzle_id: int
+
+@app.get("/tametsi/hex", response_class=HTMLResponse)
+def tametsi_hex_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    completions: list[int] = []
+    if user:
+        completions = [
+            r.puzzle_id
+            for r in db.query(TametsiHexCompletion)
+                       .filter(TametsiHexCompletion.email == user["email"])
+                       .all()
+        ]
+    return templates.TemplateResponse(request, "tametsi_hex.html", {
+        "user":        user,
+        "t":           get_t(request),
+        "lang":        get_lang(request),
+        "mode":        "tametsi-hex",
+        "completions": completions,
+    })
+
+@app.post("/api/tametsi-hex/complete", status_code=200)
+def tametsi_hex_complete(payload: TametsiHexCompletePayload,
+                          request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    if payload.puzzle_id not in (1, 2, 3):
+        raise HTTPException(status_code=400, detail="Invalid puzzle_id")
+    existing = (
+        db.query(TametsiHexCompletion)
+          .filter_by(email=user["email"], puzzle_id=payload.puzzle_id)
+          .first()
+    )
+    if not existing:
+        db.add(TametsiHexCompletion(email=user["email"], puzzle_id=payload.puzzle_id))
+        db.commit()
+    return {"ok": True}
 
 
 # ── Numbers Match ─────────────────────────────────────────────────────────────

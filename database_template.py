@@ -3,7 +3,7 @@ database.py — SQLAlchemy setup for MySQL via PyMySQL
 """
 from sqlalchemy import (
     create_engine, Column, Integer, BigInteger, String, Float,
-    DateTime, Date, Enum, Index, Boolean, text, Text, JSON
+    DateTime, Date, Enum, Index, Boolean, text, Text, JSON, UniqueConstraint
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from datetime import datetime, timezone
@@ -1313,6 +1313,18 @@ class TametsiScore(Base):
             "bbbv":       self.bbbv,
             "created_at": self.created_at.strftime("%Y-%m-%d"),
         }
+
+
+# ── Tametsi Hex Campaign completions ─────────────────────────────────────────
+class TametsiHexCompletion(Base):
+    __tablename__ = "tametsi_hex_completions"
+
+    id           = Column(Integer, primary_key=True)
+    email        = Column(String(256), nullable=False, index=True)
+    puzzle_id    = Column(Integer, nullable=False)
+    completed_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (UniqueConstraint("email", "puzzle_id"),)
 
 
 # ── Numbers Match Daily Board (pre-generated, server-side) ───────────────────
