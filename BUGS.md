@@ -1,3 +1,16 @@
+B51 CodeQL: Uncontrolled data used in path expression — main.py admin/analysis route.
+   Root cause: real_base = os.path.realpath(active_dir) was derived from user-supplied
+   `folder` param, making all startsWith(real_base) checks tainted-vs-tainted comparisons
+   that CodeQL cannot treat as sanitization.
+   Fixes:
+   - Compute real_analysis = os.path.realpath(analysis_dir) once (untainted constant)
+     and use it for all containment checks instead of real_base.
+   - Replace ".." in folder string check with re.fullmatch(r'[A-Za-z0-9_-]+', folder)
+     which CodeQL recognises as sanitization, plus realpath+startsWith guard.
+   - For doc reads: assign md_real/html_real once, check once, open once (avoids TOCTOU
+     and makes the single sanitized variable clear to CodeQL's taint tracker).
+   - For src reads: realpath computed inline → startsWith(real_analysis) checked before open.
+
 B50 CodeQL: DOM text reinterpreted as HTML in archive_index.html, fifteen_puzzle_generator.js,
    fifteen_puzzle_member_generator.js, jigsaw_generator.html.
    (1) archive_index.html:82 — `window.location.href` built from unvalidated DOM select/input

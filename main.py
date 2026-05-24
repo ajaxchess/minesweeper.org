@@ -7782,17 +7782,16 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
     user = get_current_user(request)
     require_admin(request, user)
 
-    analysis_dir = os.path.join(os.path.dirname(__file__), "analysis")
+    analysis_dir  = os.path.join(os.path.dirname(__file__), "analysis")
+    real_analysis = os.path.realpath(analysis_dir)   # untainted constant — used for all containment checks
     download_exts = {".pptx", ".xlsx", ".docx", ".pdf"}
     source_exts   = {".ts", ".py", ".js"}
 
-    # Validate folder param — no traversal, no nesting
-    if folder and (".." in folder or "/" in folder or "\\" in folder):
-        folder = None
+    # Validate folder param — only safe filesystem names; realpath containment confirms no escape
     current_folder = None
-    if folder:
-        candidate = os.path.join(analysis_dir, folder)
-        if os.path.isdir(candidate):
+    if folder and re.fullmatch(r'[A-Za-z0-9_-]+', folder):
+        candidate = os.path.realpath(os.path.join(analysis_dir, folder))
+        if candidate.startswith(real_analysis + os.sep) and os.path.isdir(candidate):
             current_folder = folder
 
     active_dir = os.path.join(analysis_dir, current_folder) if current_folder else analysis_dir
@@ -7822,15 +7821,16 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
 
     content_html = None
     current_doc = None
-    real_base = os.path.realpath(active_dir)
     if doc and doc in docs:
-        md_path   = os.path.join(active_dir, doc + ".md")
+        md_path  = os.path.join(active_dir, doc + ".md")
         html_path = os.path.join(active_dir, doc + ".html")
-        if os.path.isfile(md_path) and os.path.realpath(md_path).startswith(real_base + os.sep):
-            with open(os.path.realpath(md_path), encoding="utf-8") as f:
+        md_real   = os.path.realpath(md_path)
+        html_real = os.path.realpath(html_path)
+        if os.path.isfile(md_real) and md_real.startswith(real_analysis + os.sep):
+            with open(md_real, encoding="utf-8") as f:
                 content_html = md_lib.markdown(f.read(), extensions=["extra", "sane_lists"])
-        elif os.path.isfile(html_path) and os.path.realpath(html_path).startswith(real_base + os.sep):
-            with open(os.path.realpath(html_path), encoding="utf-8") as f:
+        elif os.path.isfile(html_real) and html_real.startswith(real_analysis + os.sep):
+            with open(html_real, encoding="utf-8") as f:
                 content_html = f.read()
         current_doc = doc
 
@@ -7847,9 +7847,8 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
     current_src = None
     src = os.path.basename(src) if src else None  # strip any path components before lookup
     if src and src in source_files:
-        src_path = os.path.join(active_dir, src)
-        real_src = os.path.realpath(src_path)
-        if os.path.isfile(real_src) and real_src.startswith(real_base + os.sep):
+        real_src = os.path.realpath(os.path.join(active_dir, src))
+        if real_src.startswith(real_analysis + os.sep) and os.path.isfile(real_src):
             with open(real_src, encoding="utf-8") as f:
                 source_content = f.read()
             current_src = src
