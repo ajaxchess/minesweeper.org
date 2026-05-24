@@ -158,7 +158,10 @@ setup_telemetry(app, db_engine=_db_module.engine)
 import os
 if os.environ.get("ENABLE_ANALYTICS_API", "true").lower() == "true":
     from phase4_routes import router as analytics_router
+    from phase7_drills import api_router as drills_api_router, page_router as drills_page_router
     app.include_router(analytics_router)
+    app.include_router(drills_api_router)
+    app.include_router(drills_page_router)
 
 @app.middleware("http")
 async def count_requests(request: Request, call_next):
