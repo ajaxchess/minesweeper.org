@@ -613,6 +613,7 @@ function wcMountBoard(wrap) {
     }
 
     renderBoard();
+    if (started) startTimer();   // resume timer for partially-played boards
     checkOrphanedSolve();
 }
 
