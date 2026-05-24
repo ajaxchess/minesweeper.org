@@ -14,13 +14,13 @@
 {% block content %}
 <div class="bc-page">
 
-  <header class="bc-header">
+  <div class="bc-header">
     <h1 class="bc-title">{{ t.bootcamp_title | default("Bootcamp") }}</h1>
     <div class="bc-subtitle-row">
       <p class="bc-subtitle">{{ t.bootcamp_subtitle | default("The 7-level grand-master curriculum.") }}</p>
       <span class="bc-dard-badge">{{ t.bootcamp_dard_badge | default("★ Dard-curated") }}</span>
     </div>
-  </header>
+  </div>
 
   {# ── Mode toggle ───────────────────────────────────────────────────────── #}
   <div class="bc-mode-toggle" role="tablist" aria-label="Game mode">
