@@ -219,7 +219,9 @@ var JGEN_I18N = {
     fileInput.addEventListener('change', () => {
       const f = fileInput.files[0];
       if (!f) { preview.style.display = 'none'; return; }
-      preview.src = URL.createObjectURL(f);
+      const blobUrl = URL.createObjectURL(f);
+      if (!blobUrl.startsWith('blob:')) return;
+      preview.src = blobUrl;
       preview.style.display = 'block';
       // Generate a hash from filename+size+lastModified
       const raw = f.name + f.size + f.lastModified + Date.now() + Math.random();

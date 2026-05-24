@@ -96,7 +96,7 @@
         var tileNum = tiles[i] - 1;
         var solvedCol = tileNum % COLS;
         var solvedRow = Math.floor(tileNum / COLS);
-        cell.style.backgroundImage    = 'url(' + tileObjectURL + ')';
+        cell.style.backgroundImage    = 'url("' + tileObjectURL + '")';
         cell.style.backgroundSize     = (COLS * 100) + '% ' + (ROWS * 100) + '%';
         cell.style.backgroundPosition =
           (solvedCol / (COLS - 1) * 100) + '% ' + (solvedRow / (ROWS - 1) * 100) + '%';
@@ -143,7 +143,9 @@
     var err = validateImageFile(file, 'Tile');
     if (err) { alert(err); e.target.value = ''; return; }
     if (tileObjectURL) URL.revokeObjectURL(tileObjectURL);
-    tileObjectURL = URL.createObjectURL(file);
+    var blobUrl = URL.createObjectURL(file);
+    if (!blobUrl.startsWith('blob:')) return;
+    tileObjectURL = blobUrl;
     renderPreview();
   }
 
@@ -153,7 +155,9 @@
     if (err) { alert(err); e.target.value = ''; return; }
     var preview = document.getElementById('gen-reveal-preview');
     if (preview) {
-      preview.src = URL.createObjectURL(file);
+      var revealUrl = URL.createObjectURL(file);
+      if (!revealUrl.startsWith('blob:')) return;
+      preview.src = revealUrl;
       preview.style.display = 'block';
     }
   }

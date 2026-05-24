@@ -1,3 +1,16 @@
+B50 CodeQL: DOM text reinterpreted as HTML in archive_index.html, fifteen_puzzle_generator.js,
+   fifteen_puzzle_member_generator.js, jigsaw_generator.html.
+   (1) archive_index.html:82 — `window.location.href` built from unvalidated DOM select/input
+       values. Fixed by allowlist-checking mode and guess values and regex-validating the date
+       before constructing the URL.
+   (2) fifteen_puzzle_generator.js:197 and fifteen_puzzle_member_generator.js:156 — `img.src`
+       assigned directly from `URL.createObjectURL(file)` without confirming the URL is a
+       blob: origin. Fixed by checking `startsWith('blob:')` before assigning to src.
+   (3) CSS injection: `backgroundImage = 'url(' + blobUrl + ')'` — unquoted URL in CSS
+       string. Fixed by wrapping in double-quotes: `'url("' + blobUrl + '")'`.
+   (4) jigsaw_generator.html:222 — same `img.src = URL.createObjectURL(f)` pattern; same
+       blob: startsWith guard applied.
+
 B43 /other/mahjong missing h1 — route was a 302 redirect with no HTML body.
    Bing Webmaster Tools flagged the URL as missing h1 because a redirect response
    has no HTML content. Fix: serve static/mah/index.html directly at /other/mahjong;
