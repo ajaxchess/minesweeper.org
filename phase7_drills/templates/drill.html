@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Drill — Bootcamp | minesweeper.org{% endblock %}
+{% block description %}Pick-the-best-cell drill: train your opening recognition reflex.{% endblock %}
+{% block canonical %}https://minesweeper.org/drill/{{ drill_id }}{% endblock %}
+{% block og_url %}https://minesweeper.org/drill/{{ drill_id }}{% endblock %}
+{% block og_title %}Bootcamp drill — Opening Recognition{% endblock %}
+{% block og_description %}Click through 10 boards. Pick the cell with the best next opening.{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/css/drill.css?v=1" />
+{% endblock %}
+
+{% block content %}
+<div class="dr-page" data-drill-id="{{ drill_id }}">
+
+  <header class="dr-header">
+    <a class="dr-back" href="/bootcamp">← Bootcamp</a>
+    <h1 class="dr-title">{{ t.drill_title | default("Opening Recognition") }}</h1>
+    <div class="dr-meta">
+      <span class="dr-meta-item" id="dr-progress-label">— / —</span>
+      <span class="dr-meta-divider">·</span>
+      <span class="dr-meta-item" id="dr-accuracy-label">— correct</span>
+    </div>
+  </header>
+
+  {# ── Loading state ───────────────────────────────────────────────────────── #}
+  <div id="dr-loading" class="dr-loading">
+    <p>{{ t.drill_loading | default("Loading drill…") }}</p>
+  </div>
+
+  {# ── Error state ─────────────────────────────────────────────────────────── #}
+  <div id="dr-error" class="dr-error" hidden>
+    <h2>{{ t.drill_error_title | default("Couldn't load this drill") }}</h2>
+    <p id="dr-error-detail"></p>
+    <a class="dr-btn dr-btn--secondary" href="/bootcamp">← Back to Bootcamp</a>
+  </div>
+
+  {# ── Drill runner ────────────────────────────────────────────────────────── #}
+  <div id="dr-runner" class="dr-runner" hidden>
+
+    <div class="dr-progress-bar">
+      <div class="dr-progress-fill" id="dr-progress-fill" style="width: 0%"></div>
+    </div>
+
+    <div class="dr-prompt" id="dr-prompt">
+      {{ t.drill_prompt | default("Which unrevealed cell would you click next?") }}
+    </div>
+
+    {# Mini-board renderer — JS injects cell divs into here #}
+    <div class="dr-board-wrap">
+      <div class="dr-board" id="dr-board" role="grid"
+           aria-label="{{ t.drill_board_label | default('Minesweeper drill board') }}">
+      </div>
+    </div>
+
+    {# Feedback overlay shown after each pick #}
+    <div class="dr-feedback" id="dr-feedback" hidden>
+      <div class="dr-feedback-card">
+        <div class="dr-feedback-icon" id="dr-feedback-icon">✓</div>
+        <div class="dr-feedback-title" id="dr-feedback-title">Correct</div>
+        <div class="dr-feedback-body" id="dr-feedback-body">
+          That cell opens 18 cells — within 80% of the best pick.
+        </div>
+        <button class="dr-btn dr-btn--primary" id="dr-next-btn">
+          {{ t.drill_next | default("Next board →") }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {# ── Results screen ──────────────────────────────────────────────────────── #}
+  <div id="dr-results" class="dr-results" hidden>
+    <div class="dr-results-headline">
+      <div class="dr-results-icon" id="dr-results-icon">🎯</div>
+      <h2 class="dr-results-title" id="dr-results-title">
+        {{ t.drill_results_title | default("Drill complete") }}
+      </h2>
+    </div>
+
+    <div class="dr-results-stats">
+      <div class="dr-stat">
+        <div class="dr-stat-label">{{ t.drill_stat_accuracy | default("Accuracy") }}</div>
+        <div class="dr-stat-value" id="dr-stat-accuracy">—</div>
+      </div>
+      <div class="dr-stat">
+        <div class="dr-stat-label">{{ t.drill_stat_avg | default("Avg decision") }}</div>
+        <div class="dr-stat-value" id="dr-stat-avg">—</div>
+      </div>
+      <div class="dr-stat">
+        <div class="dr-stat-label">{{ t.drill_stat_mastery | default("Mastery score") }}</div>
+        <div class="dr-stat-value" id="dr-stat-mastery">—</div>
+      </div>
+    </div>
+
+    <p class="dr-results-blurb" id="dr-results-blurb"></p>
+
+    <div class="dr-results-actions">
+      <button class="dr-btn dr-btn--primary" id="dr-again-btn">
+        {{ t.drill_again | default("Drill again") }}
+      </button>
+      <a class="dr-btn dr-btn--secondary" href="/bootcamp">
+        {{ t.drill_back | default("← Back to Bootcamp") }}
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<script src="/static/js/drill.js?v=1"></script>
+{% endblock %}
