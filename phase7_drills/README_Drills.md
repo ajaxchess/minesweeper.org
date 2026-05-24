@@ -48,13 +48,17 @@ Rate limits: `20/min` on start, `60/min` on submit and state.
 ```bash
 cd /home/ubuntu/git/minesweeper.org
 cp -r /staged/phase7_drills phase7_drills
-python3 -m phase7_drills.schema_sql --apply
+
+# Run as a file path, NOT `python3 -m phase7_drills.schema_sql`. The -m form
+# triggers __init__.py which would import the FastAPI routes; the migration
+# script itself only needs SQLAlchemy.
+python3 phase7_drills/schema_sql.py --apply
 ```
 
 If you want to see the DDL first without running it:
 
 ```bash
-python3 -m phase7_drills.schema_sql
+python3 phase7_drills/schema_sql.py
 ```
 
 Creates one new table, `drill_sessions`. Idempotent — safe to re-run.
