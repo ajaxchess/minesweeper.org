@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Bootcamp — Train like a grand master | minesweeper.org{% endblock %}
+{% block description %}The 7-level Dard-curated curriculum. Diagnose your level, drill the right habits, and become faster.{% endblock %}
+{% block canonical %}https://minesweeper.org/bootcamp{% endblock %}
+{% block og_url %}https://minesweeper.org/bootcamp{% endblock %}
+{% block og_title %}Minesweeper Bootcamp — Train like a grand master{% endblock %}
+{% block og_description %}The 7-level Dard-curated curriculum. Diagnose your level, drill the right habits.{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/css/bootcamp.css?v=1" />
+{% endblock %}
+
+{% block content %}
+<div class="bc-page">
+
+  <header class="bc-header">
+    <h1 class="bc-title">{{ t.bootcamp_title | default("Bootcamp") }}</h1>
+    <div class="bc-subtitle-row">
+      <p class="bc-subtitle">{{ t.bootcamp_subtitle | default("The 7-level grand-master curriculum.") }}</p>
+      <span class="bc-dard-badge">{{ t.bootcamp_dard_badge | default("★ Dard-curated") }}</span>
+    </div>
+  </header>
+
+  {# ── Mode toggle ───────────────────────────────────────────────────────── #}
+  <div class="bc-mode-toggle" role="tablist" aria-label="Game mode">
+    <button class="bc-mode-tab bc-mode-tab--active" data-mode="standard" role="tab" aria-selected="true">
+      {{ t.bootcamp_mode_standard | default("Standard") }}
+    </button>
+    <button class="bc-mode-tab" data-mode="no_guess" role="tab" aria-selected="false">
+      {{ t.bootcamp_mode_no_guess | default("No-Guess track") }}
+    </button>
+  </div>
+
+  {# ── Loading state ───────────────────────────────────────────────────────── #}
+  <div id="bc-loading" class="bc-loading">
+    <p>{{ t.bootcamp_loading | default("Loading your diagnosis…") }}</p>
+  </div>
+
+  {# ── Empty state (no analyzed games yet) ────────────────────────────────── #}
+  <div id="bc-empty" class="bc-empty" hidden>
+    <div class="bc-empty-icon">💣</div>
+    <h2 class="bc-empty-title">{{ t.bootcamp_empty_title | default("Play a few games to unlock your diagnosis") }}</h2>
+    <p class="bc-empty-body">
+      {{ t.bootcamp_empty_body | default("Bootcamp diagnoses your current level from your last 50 expert games. Play a handful and come back — we'll have your skill profile ready.") }}
+    </p>
+    <a class="bc-empty-cta" href="/">{{ t.bootcamp_empty_cta | default("▶ Play a game") }}</a>
+  </div>
+
+  {# ── Error state ─────────────────────────────────────────────────────────── #}
+  <div id="bc-error" class="bc-error" hidden>
+    <p>{{ t.bootcamp_error | default("Something went wrong loading your diagnosis. Please refresh.") }}</p>
+  </div>
+
+  {# ── Main content (populated by JS) ──────────────────────────────────────── #}
+  <div id="bc-main" hidden>
+
+    {# Diagnosis panel #}
+    <section class="bc-diagnosis" aria-label="Your current diagnosis">
+      <div class="bc-diagnosis-top">
+        <div>
+          <div class="bc-diagnosis-label">{{ t.bootcamp_current_level | default("Your current level") }}</div>
+          <div class="bc-diagnosis-level">
+            <span id="bc-current-level-name"></span>
+            <small id="bc-current-level-tagline"></small>
+          </div>
+        </div>
+        <div class="bc-diagnosis-profile">
+          <div class="bc-diagnosis-label">{{ t.bootcamp_profile | default("Profile") }}</div>
+          <div id="bc-profile-name"></div>
+          <div id="bc-levels-to-master" class="bc-diagnosis-sublabel"></div>
+        </div>
+      </div>
+
+      <div class="bc-diagnosis-stats">
+        <div class="bc-stat">
+          <div class="bc-stat-label">{{ t.bootcamp_stat_best | default("Best (Expert)") }}</div>
+          <div class="bc-stat-value" id="bc-stat-best">—</div>
+          <div class="bc-stat-target" id="bc-stat-median">—</div>
+        </div>
+        <div class="bc-stat">
+          <div class="bc-stat-label">3BV/s</div>
+          <div class="bc-stat-value" id="bc-stat-bvs">—</div>
+          <div class="bc-stat-target">{{ t.bootcamp_stat_top | default("Top: 2.5+") }}</div>
+        </div>
+        <div class="bc-stat">
+          <div class="bc-stat-label">IOE</div>
+          <div class="bc-stat-value" id="bc-stat-ioe">—</div>
+          <div class="bc-stat-target">{{ t.bootcamp_stat_ioe_target | default("Target 0.85+") }}</div>
+        </div>
+        <div class="bc-stat">
+          <div class="bc-stat-label">{{ t.bootcamp_stat_correctness | default("Correctness") }}</div>
+          <div class="bc-stat-value" id="bc-stat-correctness">—</div>
+          <div class="bc-stat-target">{{ t.bootcamp_stat_correctness_target | default("Target 0.90") }}</div>
+        </div>
+        <div class="bc-stat">
+          <div class="bc-stat-label">{{ t.bootcamp_stat_hierarchy | default("Hierarchy") }}</div>
+          <div class="bc-stat-value" id="bc-stat-hierarchy">—</div>
+          <div class="bc-stat-target">{{ t.bootcamp_stat_hierarchy_target | default("Top: 88%+") }}</div>
+        </div>
+        <div class="bc-stat">
+          <div class="bc-stat-label">{{ t.bootcamp_stat_throughput | default("ThRoughput") }}</div>
+          <div class="bc-stat-value" id="bc-stat-throughput">—</div>
+          <div class="bc-stat-target">{{ t.bootcamp_stat_throughput_target | default("Top 30%") }}</div>
+        </div>
+      </div>
+
+      <div class="bc-progress-section">
+        <div class="bc-progress-bar"><div id="bc-progress-fill" class="bc-progress-fill"></div></div>
+        <div class="bc-progress-label">
+          <span id="bc-progress-text">{{ t.bootcamp_progress_to_next | default("Progress to next level") }}</span>
+          <strong id="bc-progress-pct">—</strong>
+        </div>
+      </div>
+    </section>
+
+    {# Ladder #}
+    <section class="bc-ladder" aria-label="Level progression">
+      <div class="bc-ladder-divider">
+        <span>{{ t.bootcamp_ladder_part1 | default("Speed-Efficiency (Part 1)") }}</span>
+        <span class="bc-ladder-divider-arrow">───</span>
+        <span>{{ t.bootcamp_ladder_part2 | default("Advanced Decision-Making (Part 2)") }}</span>
+      </div>
+      <div class="bc-ladder-track" id="bc-ladder-track"></div>
+    </section>
+
+    {# Level cards #}
+    <section class="bc-levels" id="bc-levels" aria-label="Level details"></section>
+
+    {# Habit-installation notice #}
+    <aside class="bc-habit-notice">
+      <div class="bc-habit-notice-icon">⚠️</div>
+      <div>
+        <div class="bc-habit-notice-title">
+          {{ t.bootcamp_habit_notice_title | default("Heads up: expect a temporary slowdown") }}
+        </div>
+        <div class="bc-habit-notice-body">
+          {{ t.bootcamp_habit_notice_body | default("When you start drilling new habits, your times typically dip 8–12% for the first 30–50 games as your hands learn the new patterns. This is normal — players who push through end up 14% faster than those who revert within 90 days.") }}
+        </div>
+      </div>
+    </aside>
+
+    {# Footer attribution #}
+    <footer class="bc-footer">
+      <span id="bc-footer-meta"></span> ·
+      {{ t.bootcamp_footer_attribution | default("Curriculum based on Dard's Grand Master video series") }} —
+      <a href="https://www.youtube.com/@DardMs" target="_blank" rel="noopener">{{ t.bootcamp_footer_view_videos | default("view source videos") }}</a>
+    </footer>
+
+  </div>
+
+  {# ──────────────────────────────────────────────────────────────────────────
+     Progress modal — hidden by default. Opened by clicking "View progress"
+     on any level card. Populated by JS from /api/bootcamp/level/{n}/progress.
+     ────────────────────────────────────────────────────────────────────── #}
+  <div id="bc-progress-modal" class="bc-modal" hidden aria-hidden="true" role="dialog" aria-labelledby="bc-progress-title">
+    <div class="bc-modal-backdrop" data-modal-close></div>
+    <div class="bc-modal-content" role="document">
+      <header class="bc-modal-header">
+        <div>
+          <div class="bc-modal-eyebrow" id="bc-progress-eyebrow">{{ t.bootcamp_progress_eyebrow | default("Level progress") }}</div>
+          <h2 id="bc-progress-title" class="bc-modal-title">—</h2>
+        </div>
+        <button class="bc-modal-close" data-modal-close aria-label="Close">×</button>
+      </header>
+
+      <div id="bc-progress-loading" class="bc-progress-loading">
+        {{ t.bootcamp_progress_loading | default("Loading your progress…") }}
+      </div>
+
+      <div id="bc-progress-empty" class="bc-progress-empty" hidden>
+        {{ t.bootcamp_progress_empty | default("Not enough analyzed games yet to chart your progress on this level. Play a few more and check back.") }}
+      </div>
+
+      <div id="bc-progress-body" hidden>
+        <div class="bc-progress-stats">
+          <div class="bc-progress-stat">
+            <div class="bc-progress-stat-label">{{ t.bootcamp_progress_mastery | default("Current mastery") }}</div>
+            <div class="bc-progress-stat-value" id="bc-progress-current">—</div>
+            <div class="bc-progress-stat-sub">{{ t.bootcamp_progress_target | default("Target 85%") }}</div>
+          </div>
+          <div class="bc-progress-stat">
+            <div class="bc-progress-stat-label">{{ t.bootcamp_progress_trend | default("Trend") }}</div>
+            <div class="bc-progress-stat-value" id="bc-progress-trend">—</div>
+            <div class="bc-progress-stat-sub" id="bc-progress-trend-delta">—</div>
+          </div>
+          <div class="bc-progress-stat">
+            <div class="bc-progress-stat-label">{{ t.bootcamp_progress_games | default("Games in window") }}</div>
+            <div class="bc-progress-stat-value" id="bc-progress-games">—</div>
+            <div class="bc-progress-stat-sub" id="bc-progress-window">—</div>
+          </div>
+          <div class="bc-progress-stat">
+            <div class="bc-progress-stat-label">{{ t.bootcamp_progress_eta | default("ETA to master") }}</div>
+            <div class="bc-progress-stat-value" id="bc-progress-eta">—</div>
+            <div class="bc-progress-stat-sub" id="bc-progress-eta-sub">—</div>
+          </div>
+        </div>
+
+        <div class="bc-progress-chart-wrap">
+          <canvas id="bc-progress-chart"></canvas>
+        </div>
+
+        <h3 class="bc-progress-recent-title">{{ t.bootcamp_progress_recent | default("Recent contributing games") }}</h3>
+        <div class="bc-progress-recent" id="bc-progress-recent"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+  window.BOOTCAMP_CONFIG = {
+    username: {{ (user.display_name if user else "Guest") | tojson }},
+    difficulty: "expert",
+    initialMode: "standard",
+    apiBase: "/api",
+    copy: {
+      // Strings that JS needs but the template can't easily inject
+      empty:           {{ (t.bootcamp_empty_inline if t and t.bootcamp_empty_inline else "Play a few games to see your diagnosis.") | tojson }},
+      levelsToMaster:  {{ (t.bootcamp_levels_to_master if t and t.bootcamp_levels_to_master else "more level(s) to grand-master") | tojson }},
+      progressToLevel: {{ (t.bootcamp_progress_to_level if t and t.bootcamp_progress_to_level else "Progress to Level") | tojson }},
+      currentTag:      {{ (t.bootcamp_tag_current if t and t.bootcamp_tag_current else "In Progress") | tojson }},
+      completeTag:     {{ (t.bootcamp_tag_complete if t and t.bootcamp_tag_complete else "Complete") | tojson }},
+      lockedTag:       {{ (t.bootcamp_tag_locked if t and t.bootcamp_tag_locked else "Locked") | tojson }},
+      grandMasterTag:  {{ (t.bootcamp_tag_grandmaster if t and t.bootcamp_tag_grandmaster else "Grand-Master") | tojson }},
+      habitsLabel:     {{ (t.bootcamp_habits_label if t and t.bootcamp_habits_label else "Habits to install") | tojson }},
+      drillsLabel:     {{ (t.bootcamp_drills_label if t and t.bootcamp_drills_label else "Recommended drills") | tojson }},
+      graduationLabel: {{ (t.bootcamp_graduation_label if t and t.bootcamp_graduation_label else "🎓 Graduation") | tojson }},
+      startDrill:      {{ (t.bootcamp_start_drill if t and t.bootcamp_start_drill else "▶ Start") | tojson }},
+      viewProgress:    {{ (t.bootcamp_view_progress if t and t.bootcamp_view_progress else "View progress") | tojson }},
+      reviewLevel:     {{ (t.bootcamp_review_level if t and t.bootcamp_review_level else "Review") | tojson }},
+      reDrill:         {{ (t.bootcamp_redrill if t and t.bootcamp_redrill else "Re-drill if needed") | tojson }},
+      preview:         {{ (t.bootcamp_preview if t and t.bootcamp_preview else "Preview") | tojson }},
+      bvs:             "3BV/s",
+      analyzedFromLast: {{ (t.bootcamp_analyzed_from_last if t and t.bootcamp_analyzed_from_last else "Diagnosis based on your last {n} expert games") | tojson }},
+    },
+  };
+</script>
+<script src="/static/js/bootcamp.js?v=1"></script>
+{% endblock %}

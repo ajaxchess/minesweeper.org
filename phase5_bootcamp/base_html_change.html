@@ -1,0 +1,21 @@
+{# ──────────────────────────────────────────────────────────────────────────
+   Phase 5 Bootcamp — base.html change
+
+   The bootcamp page needs its own stylesheet (bootcamp.css). The cleanest
+   way to load page-specific CSS is via an `extra_head` block in base.html
+   that child templates can override.
+
+   archive_day.html already references {% block extra_head %} — meaning the
+   convention exists in templates but the parent block isn't defined yet.
+   Adding it fixes that latent reference at the same time.
+
+   APPLY: insert the one line below into base.html after the existing
+   style.css <link> tag (currently around line 21).
+   ─────────────────────────────────────────────────────────────────────── #}
+
+{# Before (existing): #}
+<link rel="stylesheet" href="/static/css/style.css?v=60" />
+
+{# After — add this single line: #}
+<link rel="stylesheet" href="/static/css/style.css?v=60" />
+{% block extra_head %}{% endblock %}
