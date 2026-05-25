@@ -18,7 +18,7 @@
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
 
   <link rel="icon" type="image/png" href="/static/favicon.png" />
-  <link rel="stylesheet" href="/static/css/style.css?v=60" />
+  <link rel="stylesheet" href="/static/css/style.css?v=61" />
   {% block extra_head %}{% endblock %}
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
@@ -172,6 +172,10 @@
   <header>
     <div class="header-inner">
       <a href="{{ lp }}/" class="logo">
+        <img src="/static/img/mobile-logo.png"
+             class="site-logo-mobile"
+             alt="Minesweeper.org"
+             width="40" height="40">
         <picture class="site-logo-picture site-logo-master">
           <source srcset="/static/img/minesweeper-org-logo.webp" type="image/webp">
           <img src="/static/img/minesweeper-org-logo.png"

@@ -29,6 +29,7 @@ let _lbReqId = 0;          // incremented each loadLeaderboard call; stale respo
 let _showConnections = false; // persists across games; toggled by the Paths button
 let _autoNextTimer = null;
 let _gameSeq = 0;
+let _pendingGameId = 0;    // guards against stale initDailyGame completing after a newer load started
 let _serverRevision = 'v2';
 
 // ── Utility ────────────────────────────────────────────────────────────────────
@@ -87,8 +88,10 @@ function rememberVariant(kind, rows = null) {
 }
 
 async function startLastVariant() {
+    const pendingAtStart = _pendingGameId;
     const last = localStorage.getItem('nm_last_variant');
     const today = await serverToday();
+    if (_pendingGameId !== pendingAtStart) return; // a manual game load started while we awaited
     if (last === 'daily') {
         initDailyGame(today);
         return;
@@ -541,6 +544,7 @@ async function loadLeaderboard() {
 
 // ── Game init ──────────────────────────────────────────────────────────────────
 async function initDailyGame(dateStr) {
+    const myPendingId = ++_pendingGameId;
     stopTimer();
     rememberVariant('daily');
     _showLoading(true);
@@ -550,8 +554,10 @@ async function initDailyGame(dateStr) {
         const r = await fetch(boardUrl(requestedDate), { cache: 'no-store' });
         if (!r.ok) throw new Error('fetch failed');
         const data = await r.json();
+        if (myPendingId !== _pendingGameId) return;  // superseded by a newer load
         _startGame(data.board_data, data.rows, scorePuzzleId(requestedDate), true);
     } catch {
+        if (myPendingId !== _pendingGameId) return;
         _showLoading(false);
         document.getElementById('nm-grid').innerHTML =
             '<div class="nm-error">⚠️ Could not load today\'s puzzle. Please refresh.</div>';
@@ -559,6 +565,7 @@ async function initDailyGame(dateStr) {
 }
 
 function initRandomGame(rows, dateStr = null) {
+    ++_pendingGameId;  // cancel any in-flight initDailyGame
     stopTimer();
     const today    = dateStr || utcToday();
     const diffKey  = NM_DIFF_LABELS[rows]?.toLowerCase();

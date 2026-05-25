@@ -117,6 +117,7 @@ header {
   object-fit: contain;
 }
 .site-logo-classic { display: none; }
+.site-logo-mobile  { display: none; flex: 0 0 auto; width: 40px; height: 40px; object-fit: contain; border-radius: 4px; }
 
 nav { display: flex; gap: 0.25rem; overflow-x: auto; min-width: 0; }
 
@@ -6509,7 +6510,11 @@ body.drawer-open { overflow: hidden; }
   .auth-btn.login-btn { display: none; }
   .user-menu          { display: none; }
   .theme-picker       { display: none; }
+  /* Swap wide logo for compact icon logo */
+  .site-logo-master { display: none !important; }
+  .site-logo-mobile { display: block; }
 }
+html[data-skin="classic"] .site-logo-mobile { display: none !important; }
 
 @media (max-width: 640px) {
   header { padding: 0 0.9rem; }
