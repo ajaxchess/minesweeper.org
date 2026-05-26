@@ -1813,11 +1813,15 @@ def puzzles_numbers_match_redirect(request: Request):
 
 @app.get("/puzzles/15puzzle", response_class=HTMLResponse)
 def puzzles_15puzzle_redirect(request: Request):
-    return RedirectResponse("/other/15puzzle", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/15puzzle", status_code=301)
 
 @app.get("/puzzles/15-puzzle", response_class=HTMLResponse)
 def puzzles_15_puzzle_redirect(request: Request):
-    return RedirectResponse("/other/15puzzle", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/15puzzle", status_code=301)
 
 @app.get("/puzzles/2048", response_class=HTMLResponse)
 def puzzles_2048_redirect(request: Request):

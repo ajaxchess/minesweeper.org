@@ -88,7 +88,7 @@
         <div class="tz-overlay-time">{{ t["tz_overlay_time"] }} <strong id="tz-win-time">0:00</strong></div>
         <div id="tz-score-form" class="overlay-score-form" style="display:none">
           <input id="tz-name-input" type="text" maxlength="32" placeholder="{{ t['tz_name_placeholder'] }}" autocomplete="nickname">
-          <button id="tz-save-btn">{{ t["tz_save_score"] }}</button>
+          <button id="tz-save-btn" data-label="{{ t['tz_save_score'] }}">{{ t["tz_save_score"] }}</button>
         </div>
         <div class="tz-overlay-btns">
           <button id="tz-overlay-potd" class="tz-btn-potd">📅 {{ t["tz_btn_replay_daily"] }}</button>
@@ -155,97 +155,47 @@
 <!-- SEO Landing Content -->
 <div class="tz-landing">
 
-  <h2 class="tz-landing-h1">About Tentaizu</h2>
+  <h2 class="tz-landing-h1">{{ t["tz_landing_about_h2"] }}</h2>
 
   <div class="tz-landing-grid">
 
     <section class="tz-section">
-      <h2>What is Tentaizu?</h2>
-      <p>
-        Tentaizu (天体図) is a pure-logic deduction puzzle from Japan. The name translates to
-        <em>star chart</em> or <em>celestial atlas</em> — evoking the image of mines scattered
-        across a grid like stars across the night sky. The puzzle is played on a compact
-        <strong>7×7 grid</strong> with exactly <strong>10 hidden mines</strong>. A set of
-        numbered clues are pre-placed on certain cells; each number tells you precisely how many
-        of its eight neighboring cells contain a mine, exactly as in Minesweeper. Your task:
-        use logic alone to identify all ten mines.
-      </p>
-      <p>
-        What makes Tentaizu exceptional is its <strong>guarantee of solvability</strong>. Every
-        puzzle is carefully constructed so the given clues are sufficient to deduce every mine's
-        location through pure reasoning — no random clicking, no guessing, no luck. If you reach
-        a dead end, you haven't made a wrong move; you've simply missed a deduction. Step back,
-        re-examine the constraints, and the path forward will reveal itself.
-      </p>
-      <p>
-        The format is elegant in its predictability. Because the grid is always 7×7 and always
-        holds exactly 10 mines, you know the total "weight" of the puzzle from the start. This
-        lets you reason <em>globally</em> in a way Minesweeper never allows: if you've confirmed
-        7 mines, exactly 3 more hide somewhere in the remaining cells. That meta-reasoning —
-        tracking placed versus remaining mines — is a technique unique to Tentaizu.
-      </p>
-      <p>
-        Tentaizu also differs from Minesweeper in a fundamental structural way. In Minesweeper
-        you uncover cells to reveal numbers, progressively exposing the board. In Tentaizu all
-        clues are visible before you make your first move. The entire constraint system is laid
-        out in front of you, turning the puzzle into a pure <em>constraint-satisfaction
-        problem</em> — closer in spirit to Sudoku or nonograms than to mine-clearing action.
-        You're not exploring an unknown board; you're solving a logical equation.
-      </p>
-      <p>
-        The result is a puzzle that is simultaneously <strong>faster and deeper</strong> than
-        Minesweeper. A beginner might spend 10–15 minutes untangling a hard configuration;
-        an experienced solver can finish in under 90 seconds. The same puzzle genuinely
-        challenges both patience and pattern recognition. Add the daily format — a fresh
-        puzzle every 24 hours, a global leaderboard, a score to beat — and Tentaizu becomes
-        the kind of daily ritual that's hard to skip.
-      </p>
+      <h2>{{ t["tz_landing_what_h2"] }}</h2>
+      <p>{{ t["tz_landing_what_p1"] | safe }}</p>
+      <p>{{ t["tz_landing_what_p2"] | safe }}</p>
+      <p>{{ t["tz_landing_what_p3"] | safe }}</p>
+      <p>{{ t["tz_landing_what_p4"] | safe }}</p>
+      <p>{{ t["tz_landing_what_p5"] | safe }}</p>
     </section>
 
     <section class="tz-section">
-      <h2>A Brief History of Tentaizu</h2>
-      <p>
-        Tentaizu appeared in Japanese puzzle magazines in the late 1990s and early 2000s,
-        published alongside formats like Slitherlink, Hitori, and Akari by publishers such
-        as Nikoli. Its tiny footprint — the entire puzzle fits on a postage stamp — made it
-        a popular filler format: simple enough to explain in a single sentence, yet deeply
-        satisfying to crack.
-      </p>
-      <p>
-        Digital versions spread through Japanese casual gaming sites during the 2000s. After
-        the daily-puzzle renaissance sparked by Wordle in 2021, Tentaizu found a second life
-        as a near-perfect daily puzzle: compact, self-contained, uniquely solvable, and
-        completable in minutes. Unlike word puzzles, Tentaizu needs no translation — the
-        logic is universal.
-      </p>
-      <p>
-        <strong>2008–2009:</strong> The puzzle appeared regularly in Southwest Airlines'
-        <em>Spirit</em> magazine, distributed to passengers on Southwest flights. This
-        introduced the game to western audiences and helped build its following outside Japan.
-      </p>
+      <h2>{{ t["tz_landing_history_h2"] }}</h2>
+      <p>{{ t["tz_landing_history_p1"] | safe }}</p>
+      <p>{{ t["tz_landing_history_p2"] | safe }}</p>
+      <p>{{ t["tz_landing_history_p3"] | safe }}</p>
     </section>
 
     <section class="tz-section">
-      <h2>How Tentaizu Differs from Minesweeper</h2>
+      <h2>{{ t["tz_landing_diff_h2"] }}</h2>
       <ul class="tz-list">
-        <li><strong>All clues are visible from the start.</strong> You never click to reveal a cell — the numbers are pre-placed and the whole puzzle is visible immediately.</li>
-        <li><strong>No guessing, ever.</strong> Standard Minesweeper can force a 50/50 guess; Tentaizu is always fully deducible. Every legitimate Tentaizu puzzle has exactly one solution reachable through logic.</li>
-        <li><strong>Fixed mine count.</strong> Knowing there are always exactly 10 mines lets you reason globally about remaining placements — a powerful constraint Minesweeper's variable boards don't offer.</li>
-        <li><strong>Click to flag, not to reveal.</strong> Instead of uncovering cells, you cycle unknown cells through states: mine flag → safe mark → unknown. The board never changes; only your annotations do.</li>
-        <li><strong>Small, focused, daily.</strong> The 7×7 grid and fixed 10 mines create a manageable, repeatable format ideal for a daily puzzle habit.</li>
+        <li>{{ t["tz_landing_diff_li1"] | safe }}</li>
+        <li>{{ t["tz_landing_diff_li2"] | safe }}</li>
+        <li>{{ t["tz_landing_diff_li3"] | safe }}</li>
+        <li>{{ t["tz_landing_diff_li4"] | safe }}</li>
+        <li>{{ t["tz_landing_diff_li5"] | safe }}</li>
       </ul>
     </section>
 
     <section class="tz-section">
-      <h2>Quick Strategy Tips</h2>
+      <h2>{{ t["tz_landing_tips_h2"] }}</h2>
       <ol class="tz-list">
-        <li><strong>Track remaining mines.</strong> You start with 10. As you flag mines, watch the counter — fewer remaining mines means tighter constraints on open areas.</li>
-        <li><strong>Start with zeros and eights.</strong> A <em>0</em> clue means all eight neighbors are safe — mark them. An <em>8</em> means all eight neighbors are mines — flag them all instantly.</li>
-        <li><strong>Satisfied constraints unlock neighbors.</strong> When a numbered cell's mine tally is fully flagged, every other unknown neighbor is definitively safe.</li>
-        <li><strong>Compare overlapping clues.</strong> Two adjacent clues that share neighbors reveal hidden information through subtraction — a core Tentaizu technique.</li>
-        <li><strong>Corners and edges first.</strong> Corner cells have only 3 neighbors; edge cells have 5. Their clues are the most constrained and often the easiest to resolve early.</li>
+        <li>{{ t["tz_landing_tips_li1"] | safe }}</li>
+        <li>{{ t["tz_landing_tips_li2"] | safe }}</li>
+        <li>{{ t["tz_landing_tips_li3"] | safe }}</li>
+        <li>{{ t["tz_landing_tips_li4"] | safe }}</li>
+        <li>{{ t["tz_landing_tips_li5"] | safe }}</li>
       </ol>
-      <p><a href="/tentaizu/strategy" class="tz-link">Read the full strategy guide →</a></p>
+      <p><a href="/tentaizu/strategy" class="tz-link">{{ t["tz_landing_tips_link"] }}</a></p>
     </section>
 
   </div>
