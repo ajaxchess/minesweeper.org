@@ -124,7 +124,7 @@ header {
   object-fit: contain;
 }
 .site-logo-classic { display: none; }
-.site-logo-mobile  { display: none; flex: 0 0 auto; width: 50px; height: 50px; object-fit: contain; border-radius: 4px; }
+.site-logo-mobile  { display: none; flex: 0 0 auto; width: 56px; height: 56px; object-fit: contain; border-radius: 4px; }
 
 nav { display: flex; gap: 0.25rem; overflow-x: auto; min-width: 0; }
 
