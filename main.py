@@ -8047,6 +8047,12 @@ def _mah_response(lang: str) -> HTMLResponse:
             _MAH_INDEX_CACHE = f.read()
     mah_lang = _MAH_LANG_MAP.get(lang, lang)
     content = _MAH_INDEX_CACHE
+    if lang != "en":
+        content = content.replace(
+            '<base href="/other/mahjong/">',
+            f'<base href="/{lang}/other/mahjong/">',
+            1,
+        )
     if mah_lang in _MAH_VALID_LANGS:
         # Inject before </head> — runs synchronously before Angular's type="module" scripts
         inject = (
