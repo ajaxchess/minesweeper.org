@@ -1797,19 +1797,27 @@ def puzzles_hub(request: Request):
 
 @app.get("/puzzles/tametsi", response_class=HTMLResponse)
 def puzzles_tametsi_redirect(request: Request):
-    return RedirectResponse("/tametsi", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/tametsi", status_code=301)
 
 @app.get("/puzzles/tentaizu", response_class=HTMLResponse)
 def puzzles_tentaizu_redirect(request: Request):
-    return RedirectResponse("/tentaizu", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/tentaizu", status_code=301)
 
 @app.get("/puzzles/mosaic", response_class=HTMLResponse)
 def puzzles_mosaic_redirect(request: Request):
-    return RedirectResponse("/mosaic", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/mosaic", status_code=301)
 
 @app.get("/puzzles/numbers-match", response_class=HTMLResponse)
 def puzzles_numbers_match_redirect(request: Request):
-    return RedirectResponse("/numbers-match", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/numbers-match", status_code=301)
 
 @app.get("/puzzles/15puzzle", response_class=HTMLResponse)
 def puzzles_15puzzle_redirect(request: Request):
@@ -1825,39 +1833,57 @@ def puzzles_15_puzzle_redirect(request: Request):
 
 @app.get("/puzzles/2048", response_class=HTMLResponse)
 def puzzles_2048_redirect(request: Request):
-    return RedirectResponse("/other/2048", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/2048", status_code=301)
 
 @app.get("/puzzles/2048hex", response_class=HTMLResponse)
 def puzzles_2048hex_redirect(request: Request):
-    return RedirectResponse("/other/2048hex", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/2048hex", status_code=301)
 
 @app.get("/puzzles/2048-hexagon", response_class=HTMLResponse)
 def puzzles_2048_hexagon_redirect(request: Request):
-    return RedirectResponse("/other/2048hex", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/2048hex", status_code=301)
 
 @app.get("/puzzles/mahjong", response_class=HTMLResponse)
 def puzzles_mahjong_redirect(request: Request):
-    return RedirectResponse("/other/mahjong", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/mahjong", status_code=301)
 
 @app.get("/puzzles/mahjong-solitaire", response_class=HTMLResponse)
 def puzzles_mahjong_solitaire_redirect(request: Request):
-    return RedirectResponse("/other/mahjong", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/mahjong", status_code=301)
 
 @app.get("/puzzles/jigsaw", response_class=HTMLResponse)
 def puzzles_jigsaw_redirect(request: Request):
-    return RedirectResponse("/other/jigsaw", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/jigsaw", status_code=301)
 
 @app.get("/puzzles/schulte", response_class=HTMLResponse)
 def puzzles_schulte_redirect(request: Request):
-    return RedirectResponse("/other/schulte", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/schulte", status_code=301)
 
 @app.get("/puzzles/schulte-grid", response_class=HTMLResponse)
 def puzzles_schulte_grid_redirect(request: Request):
-    return RedirectResponse("/other/schulte", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/schulte", status_code=301)
 
 @app.get("/puzzles/sudoku", response_class=HTMLResponse)
 def puzzles_sudoku_redirect(request: Request):
-    return RedirectResponse("/other/sudoku", status_code=301)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/sudoku", status_code=301)
 
 @app.get("/other", response_class=HTMLResponse)
 def other_hub_redirect(request: Request):
@@ -2482,7 +2508,9 @@ def admin_unapprove_jigsaw_photo(board_hash: str, request: Request, db: Session 
 
 @app.get("/other/2048", response_class=HTMLResponse)
 def game_2048_landing(request: Request):
-    return RedirectResponse("/other/2048/daily", status_code=302)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/2048/daily", status_code=302)
 
 
 @app.get("/other/2048/daily", response_class=HTMLResponse)
@@ -2519,7 +2547,9 @@ def game_2048_howtoplay(request: Request):
 # ── 2048 Hexagon ──────────────────────────────────────────────────────────────
 @app.get("/other/2048hex", response_class=HTMLResponse)
 def game_2048hex_landing(request: Request):
-    return RedirectResponse("/other/2048hex/play", status_code=302)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/2048hex/play", status_code=302)
 
 @app.get("/other/2048hex/play", response_class=HTMLResponse)
 def game_2048hex_play(request: Request):
@@ -2655,7 +2685,9 @@ _SCHULTE_SIZES = set(range(3, 11))   # 3–10 inclusive
 
 @app.get("/other/schulte", response_class=HTMLResponse)
 def schulte_landing(request: Request):
-    return RedirectResponse("/other/schulte/play", status_code=302)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/schulte/play", status_code=302)
 
 @app.get("/other/schulte/play", response_class=HTMLResponse)
 def schulte_play(request: Request):
@@ -2806,7 +2838,9 @@ _SUDOKU_DIFFICULTIES = {"daily", "easy", "medium", "hard", "expert"}
 
 @app.get("/other/sudoku", response_class=HTMLResponse)
 def sudoku_landing(request: Request):
-    return RedirectResponse("/other/sudoku/daily", status_code=302)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/sudoku/daily", status_code=302)
 
 
 def _sudoku_seed(difficulty: str, today: str) -> int:
