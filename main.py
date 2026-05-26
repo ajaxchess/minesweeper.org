@@ -8026,25 +8026,54 @@ _DATE_MONTHLY_RE = __import__("re").compile(r"^\d{4}-\d{2}$")
 
 _MAH_INDEX_PATH     = os.path.join("static", "mah", "index.html")
 _MAH_TURTLE_BOARD   = "2175883231"  # Turtle layout — fixed daily board
+_MAH_INDEX_CACHE: str | None = None
+
+# Map minesweeper.org lang codes → mah lang codes (only differences listed)
+_MAH_LANG_MAP: dict[str, str] = {"zh-hant": "zh", "tl": "fil"}
+# mah supports these lang codes (from ffalt/mah languages.ts)
+_MAH_VALID_LANGS: frozenset[str] = frozenset({
+    "ar","bn","ca","cs","da","de","el","es","eu","fa","fi","fil","fr",
+    "hi","hu","id","it","ja","ko","ms","nl","no","pl","pt","ro","ru",
+    "sv","sw","ta","te","th","tr","uk","ur","vi","zh",
+})
+
+
+def _mah_response(lang: str) -> HTMLResponse:
+    global _MAH_INDEX_CACHE
+    if not os.path.isfile(_MAH_INDEX_PATH):
+        raise HTTPException(status_code=503, detail="Game not yet deployed")
+    if _MAH_INDEX_CACHE is None:
+        with open(_MAH_INDEX_PATH, encoding="utf-8") as f:
+            _MAH_INDEX_CACHE = f.read()
+    mah_lang = _MAH_LANG_MAP.get(lang, lang)
+    content = _MAH_INDEX_CACHE
+    if mah_lang in _MAH_VALID_LANGS:
+        # Inject before </head> — runs synchronously before Angular's type="module" scripts
+        inject = (
+            "<script>(function(){try{var s=JSON.parse(localStorage.getItem('mah.settings')||'{}');"
+            f"if(!s.lang||s.lang==='auto'){{s.lang='{mah_lang}';"
+            "localStorage.setItem('mah.settings',JSON.stringify(s))}}"
+            "catch(e){}})();</script>"
+        )
+        content = content.replace("</head>", inject + "\n</head>", 1)
+    return HTMLResponse(content=content)
 
 
 @app.get("/other/mahjong", response_class=HTMLResponse)
 def mahjong_landing(request: Request):
-    if not os.path.isfile(_MAH_INDEX_PATH):
-        raise HTTPException(status_code=503, detail="Game not yet deployed")
-    return FileResponse(_MAH_INDEX_PATH)
+    return _mah_response(get_lang(request))
 
 
 @app.get("/other/mahjong/daily")
 def mahjong_daily_page(request: Request):
-    return RedirectResponse(f"/other/mahjong/?board={_MAH_TURTLE_BOARD}", status_code=302)
+    lang = get_lang(request)
+    prefix = f"/{lang}" if lang != "en" else ""
+    return RedirectResponse(f"{prefix}/other/mahjong/?board={_MAH_TURTLE_BOARD}", status_code=302)
 
 
 @app.get("/other/mahjong/")
-def mahjong_game_root():
-    if not os.path.isfile(_MAH_INDEX_PATH):
-        raise HTTPException(status_code=503, detail="Game not yet deployed")
-    return FileResponse(_MAH_INDEX_PATH)
+def mahjong_game_root(request: Request):
+    return _mah_response(get_lang(request))
 
 
 @app.get("/other/mahjong/leaderboard", response_class=HTMLResponse)
