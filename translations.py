@@ -1935,7 +1935,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tz_landing_tips_li5":    "<strong>Anguloj kaj randoj unue.</strong> Angulaj \u0109eloj havas nur 3 najbarojn; randaj \u0109eloj havas 5. Iliaj indicoj estas plej limigitaj kaj ofte la plej facilaj por solvi frue.",
         "tz_landing_tips_link":   "Legu la plenan strategian gvidilon \u2192",
         # Mega-nav trigger labels
-        "nav_play":             "Play",
+        "nav_play":             "Ludi",
         "nav_puzzles":          "Puzzles",
         "nav_more":             "More",
         # Mega-nav card titles (previously hardcoded)
@@ -4576,7 +4576,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tz_landing_tips_li5":    "<strong>Esquinas y bordes primero.</strong> Las celdas de esquina tienen solo 3 vecinos; las celdas de borde tienen 5. Sus pistas son las m\u00e1s restringidas y a menudo las m\u00e1s f\u00e1ciles de resolver al principio.",
         "tz_landing_tips_link":   "Leer la gu\u00eda de estrategia completa \u2192",
         # Mega-nav trigger labels
-        "nav_play":             "Play",
+        "nav_play":             "Jugar",
         "nav_puzzles":          "Puzzles",
         "nav_more":             "More",
         # Mega-nav card titles (previously hardcoded)
@@ -5966,7 +5966,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tz_landing_tips_li5":    "<strong>\u0e21\u0e38\u0e21\u0e41\u0e25\u0e30\u0e02\u0e2d\u0e1a\u0e01\u0e48\u0e2d\u0e19</strong> \u0e0a\u0e48\u0e2d\u0e07\u0e21\u0e38\u0e21\u0e21\u0e35\u0e40\u0e1e\u0e35\u0e22\u0e07 3 \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e19\u0e1a\u0e49\u0e32\u0e19; \u0e0a\u0e48\u0e2d\u0e07\u0e02\u0e2d\u0e1a\u0e21\u0e35 5 \u0e15\u0e31\u0e27\u0e0a\u0e35\u0e49\u0e41\u0e19\u0e30\u0e02\u0e2d\u0e07\u0e1e\u0e27\u0e01\u0e40\u0e02\u0e32\u0e16\u0e39\u0e01\u0e08\u0e33\u0e01\u0e31\u0e14\u0e21\u0e32\u0e01\u0e17\u0e35\u0e48\u0e2a\u0e38\u0e14\u0e41\u0e25\u0e30\u0e21\u0e31\u0e01\u0e40\u0e1b\u0e47\u0e19\u0e08\u0e38\u0e14\u0e17\u0e35\u0e48\u0e07\u0e48\u0e32\u0e22\u0e17\u0e35\u0e48\u0e2a\u0e38\u0e14\u0e43\u0e19\u0e01\u0e32\u0e23\u0e41\u0e01\u0e49\u0e44\u0e02\u0e15\u0e31\u0e49\u0e07\u0e41\u0e15\u0e48\u0e40\u0e23\u0e34\u0e48\u0e21",
         "tz_landing_tips_link":   "\u0e2d\u0e48\u0e32\u0e19\u0e04\u0e39\u0e48\u0e21\u0e37\u0e2d\u0e01\u0e25\u0e22\u0e38\u0e17\u0e18\u0e4c\u0e09\u0e1a\u0e31\u0e1a\u0e2a\u0e21\u0e1a\u0e39\u0e23\u0e13\u0e4c \u2192",
         # Mega-nav trigger labels
-        "nav_play":             "Play",
+        "nav_play":             "\u0e40\u0e25\u0e48\u0e19",
         "nav_puzzles":          "\u0e1b\u0e23\u0e34\u0e28\u0e19\u0e32",
         "nav_more":             "More",
         # Mega-nav card titles (previously hardcoded)
@@ -8292,7 +8292,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tz_subnav_easy_title":    "\u041b\u0435\u0433\u043a\u0430 5\u00d75",
         "tz_subnav_easy_desc":     "\u0420\u0435\u0436\u0438\u043c \u0434\u043b\u044f \u043f\u043e\u0447\u0430\u0442\u043a\u0456\u0432\u0446\u0456\u0432 \u2014 \u0441\u0456\u0442\u043a\u0430 5\u00d75, 6 \u043c\u0456\u043d",
         # Mega-nav trigger labels
-        "nav_play":             "Play",
+        "nav_play":             "\u0413\u0440\u0430\u0442\u0438",
         "nav_puzzles":          "Puzzles",
         "nav_more":             "More",
         # Mega-nav card titles (previously hardcoded)
@@ -9541,7 +9541,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tz_landing_tips_li5":    "<strong>Coins et bords en premier.</strong> Les cases de coin n'ont que 3 voisins ; les cases de bord en ont 5. Leurs indices sont les plus contraints et souvent les plus faciles \u00e0 r\u00e9soudre en premier.",
         "tz_landing_tips_link":   "Lire le guide strat\u00e9gique complet \u2192",
         # Mega-nav trigger labels
-        "nav_play":             "Play",
+        "nav_play":             "Jouer",
         "nav_puzzles":          "Puzzles",
         "nav_more":             "More",
         # Mega-nav card titles (previously hardcoded)
@@ -10902,7 +10902,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tz_subnav_easy_title":    "\uc27d\uc74c 5\u00d75",
         "tz_subnav_easy_desc":     "\uc785\ubb38\uc790 \ubaa8\ub4dc \u2014 5\u00d75 \uaca9\uc790, \uc9c0\ub8c2 6\uac1c",
         # Mega-nav trigger labels
-        "nav_play":             "Play",
+        "nav_play":             "\uac8c\uc784\ud558\uae30",
         "nav_puzzles":          "Puzzles",
         "nav_more":             "More",
         # Mega-nav card titles (previously hardcoded)
@@ -16008,7 +16008,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tz_subnav_easy_title":    "\u0141atwy 5\u00d75",
         "tz_subnav_easy_desc":     "Tryb dla pocz\u0105tkuj\u0105cych \u2014 siatka 5\u00d75, 6 min",
         # Mega-nav trigger labels
-        "nav_play":             "Play",
+        "nav_play":             "Graj",
         "nav_puzzles":          "Puzzles",
         "nav_more":             "More",
         # Mega-nav card titles (previously hardcoded)
@@ -17194,7 +17194,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tz_subnav_easy_title":    "Madali 5\u00d75",
         "tz_subnav_easy_desc":     "Beginner mode \u2014 5\u00d75 grid, 6 mina",
         # Mega-nav trigger labels
-        "nav_play":             "Play",
+        "nav_play":             "Maglaro",
         "nav_puzzles":          "Puzzles",
         "nav_more":             "More",
         # Mega-nav card titles (previously hardcoded)
