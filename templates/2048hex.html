@@ -163,24 +163,24 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
 
   <div class="h2k-header">
     <h1>{{ t.t2kh_daily_h1 }}</h1>
-    <p>{{ today }} · Tile-merging on a hex grid</p>
+    <p>{{ today }} · {{ t.t2kh_subtitle }}</p>
   </div>
 
   <div class="h2k-subnav">
-    <a href="/other">Other Puzzles</a>
+    <a href="/other">{{ t.t2kh_other_link }}</a>
     <span>›</span>
     <a href="/other/2048hex/leaderboard">🏆 {{ t.nav_leaderboard }}</a>
     <span>·</span>
     <a href="/other/2048hex/how-to-play">{{ t.nav_how_to_play }}</a>
     <span>·</span>
-    <a href="/other/2048/daily">2048 Classic</a>
+    <a href="/other/2048/daily">{{ t.t2kh_classic_link }}</a>
   </div>
 
   <div class="h2k-stats">
-    <div>Score <span id="hex2k-score">0</span></div>
-    <div>Time <span id="hex2k-time">0.0</span>s</div>
-    <div>Moves <span id="hex2k-moves">0</span></div>
-    <div>4s <span id="hex2k-fours">0</span></div>
+    <div>{{ t.t2kh_score_label }} <span id="hex2k-score">0</span></div>
+    <div>{{ t.t2kh_time_label }} <span id="hex2k-time">0.0</span>s</div>
+    <div>{{ t.t2kh_moves_label }} <span id="hex2k-moves">0</span></div>
+    <div>{{ t.t2kh_fours_label }} <span id="hex2k-fours">0</span></div>
   </div>
 
   <div id="hex2k-board"></div>
@@ -189,10 +189,10 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
   <p class="h2k-hint desktop-only">
     <strong>Q</strong>=↖&nbsp; <strong>E</strong>=↗&nbsp; <strong>A</strong>=←&nbsp;
     <strong>D</strong>=→&nbsp; <strong>Z</strong>=↙&nbsp; <strong>X</strong>=↘
-    &nbsp;·&nbsp; Arrow keys also move left/right
+    &nbsp;·&nbsp; {{ t.t2kh_hint_desktop }}
   </p>
   <p class="h2k-hint mobile-only">
-    Swipe in any of 6 directions, or tap a button below
+    {{ t.t2kh_hint_mobile }}
   </p>
 
   <!-- Hex directional pad -->
@@ -224,21 +224,21 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
   </div>
 
   <div class="h2k-controls">
-    <button class="h2k-btn" id="hex2k-reset">New Game</button>
+    <button class="h2k-btn" id="hex2k-reset">{{ t.t2kh_new_game }}</button>
     <a href="/other/2048hex/leaderboard" class="h2k-btn" style="text-decoration:none;">🏆 {{ t.nav_leaderboard }}</a>
   </div>
 
   <div id="hex2k-win-msg">
-    <p>🎉 You reached 2048!</p>
-    <button class="h2k-btn" id="hex2k-continue">Keep Going</button>
+    <p>{{ t.t2kh_win_msg }}</p>
+    <button class="h2k-btn" id="hex2k-continue">{{ t.t2kh_keep_going }}</button>
   </div>
-  <div id="hex2k-over-msg">💥 No moves left — game over!</div>
+  <div id="hex2k-over-msg">{{ t.t2kh_game_over }}</div>
 
   <div id="hex2k-score-form">
     <strong style="font-size:0.95rem;">{{ t.common_submit_score_h }}</strong>
     <label>
-      <span>Your name</span>
-      <input type="text" id="hex2k-name" maxlength="32" placeholder="Your name"
+      <span>{{ t.t2kh_name_label }}</span>
+      <input type="text" id="hex2k-name" maxlength="32" placeholder="{{ t.t2kh_name_label }}"
              value="{{ user.display_name or user.name if user else '' }}">
     </label>
     <input type="hidden" id="hex2k-time-val"         value="0">
@@ -253,23 +253,15 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
   <!-- How to play -->
   <div class="h2k-howto">
     <h2>{{ t.nav_how_to_play }}</h2>
-    <p>
-      The board is a hexagonal grid of 19 circles — 18 playable tiles and one fixed
-      <strong>stone</strong> in the center. Tiles slide in <strong>6 directions</strong>
-      until they hit a wall or the stone. Two tiles with the same value merge into one
-      with double the value. Reach <strong>2048</strong> to win!
-    </p>
+    <p>{{ t.t2kh_howto_p1 }}</p>
     <ul>
-      <li><strong>Desktop:</strong> Q / E / A / D / Z / X — or use the buttons below the board</li>
-      <li><strong>Arrow keys:</strong> ← / → move left and right</li>
-      <li><strong>Mobile:</strong> swipe in any of the 6 hex directions</li>
+      <li>{{ t.t2kh_howto_li_desktop }}</li>
+      <li>{{ t.t2kh_howto_li_arrow }}</li>
+      <li>{{ t.t2kh_howto_li_mobile }}</li>
     </ul>
+    <p>{{ t.t2kh_howto_p2 }}</p>
     <p>
-      The stone blocks tiles — they cannot pass through or merge with it. This splits
-      each row and diagonal into two independent sections.
-    </p>
-    <p>
-      <a href="/other/2048hex/how-to-play" style="color:var(--accent2);">Full how-to-play guide →</a>
+      <a href="/other/2048hex/how-to-play" style="color:var(--accent2);">{{ t.t2kh_htp_link }}</a>
     </p>
   </div>
 
