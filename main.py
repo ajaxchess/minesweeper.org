@@ -426,6 +426,7 @@ async def robots():
         "Disallow: /duel/room/\n"
         "Disallow: /api/\n"
         "Disallow: /ws/\n"
+        "Disallow: /auth/\n"
         "Disallow: /login\n"
         "Disallow: /logout\n"
         "Disallow: /register\n"
