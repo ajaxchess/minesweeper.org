@@ -366,7 +366,7 @@
           </div>
         </div>
         {%- set _lc = lang if lang is defined else 'en' -%}
-        {%- set _ll = {'en':'EN','de':'DE','fr':'FR','es':'ES','pt':'PT','it':'IT','pl':'PL','ru':'RU','uk':'UK','zh':'ZH','zh-hant':'繁體','ja':'JA','ko':'KO','th':'TH','tl':'TL','pgl':'PGL','eo':'EO'} -%}
+        {%- set _ll = {'en':'EN','de':'DE','fr':'FR','es':'ES','pt':'PT','it':'IT','pl':'PL','ru':'RU','uk':'UK','zh':'ZH','zh-hant':'繁體','ja':'JA','ko':'KO','th':'TH','tl':'TL','nl':'NL','pgl':'PGL','eo':'EO'} -%}
         <div class="lang-picker" id="lang-picker">
           <button class="lang-picker-btn" type="button" onclick="toggleLangPicker(event)" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">
             <img src="/static/img/flags/{{ 'pgl' if _lc == 'tlh' else _lc }}.png" class="lang-flag" width="20" height="14" alt="{{ _lc }}">
@@ -397,6 +397,7 @@
               ('ko',      'KO',   '한국어'),
               ('th',      'TH',   'ไทย'),
               ('tl',      'TL',   'Filipino'),
+              ('nl',      'NL',   'Nederlands'),
               ('pgl',     'PGL',  'Pig Latin'),
               ('eo',      'EO',   'Esperanto')
             ] %}
