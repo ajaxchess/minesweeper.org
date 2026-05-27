@@ -340,6 +340,10 @@
                 <span class="mega-icon">🔁</span>
                 <span class="mega-card-text"><strong>{{ t.nav_replay }}</strong><span>{{ t.nav_sub_replay }}</span></span>
               </a>
+              <a href="/tametsi/hex" class="mega-card {% if mode=='tametsi-hex' %}active{% endif %}">
+                <span class="mega-icon">⬡</span>
+                <span class="mega-card-text"><strong>Tametsi Hex</strong><span>Logic puzzles on a hex board</span></span>
+              </a>
             </div>
           </div>
         </div>
@@ -555,6 +559,7 @@
           <a href="{{ lp }}/minesweeperchess" class="drawer-link {% if mode=='minesweeperchess' %}active{% endif %}">♟️ {{ t.nav_minesweeperchess }}</a>
           <a href="{{ lp }}/variants/replay/" class="drawer-link {% if mode=='replay' %}active{% endif %}">🔁 {{ t.nav_replay }}</a>
           <a href="{{ lp }}/variants/board-generator" class="drawer-link {% if mode=='board-generator' %}active{% endif %}">🔧 {{ t.nav_board_generator }}</a>
+          <a href="/tametsi/hex" class="drawer-link {% if mode=='tametsi-hex' %}active{% endif %}">⬡ Tametsi Hex</a>
         </div>
       </details>
       <details class="drawer-group"{% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' or request.url.path.startswith('/puzzles') %} open{% endif %}>
