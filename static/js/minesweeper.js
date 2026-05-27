@@ -260,7 +260,7 @@ function rewindSave(outcome) {
           div.id = 'game-share-link';
           div.style.cssText = 'font-size:0.82rem;margin-top:0.4rem;';
           const a = document.createElement('a');
-          a.href = gameUrl; a.textContent = '🔗 Share this game'; a.target = '_blank';
+          a.href = gameUrl; a.textContent = window.T.game_share_link; a.target = '_blank';
           div.appendChild(a);
           scoreMsg.insertAdjacentElement('afterend', div);
         }
@@ -926,16 +926,16 @@ function renderSessionStats() {
   const cps     = e.timeMsSum > 0 ? (e.clickSum / (e.timeMsSum / 1000)).toFixed(2) : '—';
   el.innerHTML =
     `<div class="session-stats-bar">` +
-    `<span class="ss-label">Session</span>` +
-    `<span class="ss-item"><span class="ss-val ss-wins">${e.wins}</span> won</span>` +
+    `<span class="ss-label">${window.T.game_session}</span>` +
+    `<span class="ss-item"><span class="ss-val ss-wins">${e.wins}</span> ${window.T.game_stat_won}</span>` +
     `<span class="ss-sep">·</span>` +
-    `<span class="ss-item"><span class="ss-val ss-loss">${e.losses}</span> lost</span>` +
+    `<span class="ss-item"><span class="ss-val ss-loss">${e.losses}</span> ${window.T.game_stat_lost}</span>` +
     `<span class="ss-sep">·</span>` +
-    `<span class="ss-item">Best <span class="ss-val">${bestStr}</span></span>` +
+    `<span class="ss-item">${window.T.game_stat_best} <span class="ss-val">${bestStr}</span></span>` +
     `<span class="ss-sep">·</span>` +
-    `<span class="ss-item">Avg eff <span class="ss-val">${avgEff}</span></span>` +
+    `<span class="ss-item">${window.T.game_stat_avg_eff} <span class="ss-val">${avgEff}</span></span>` +
     `<span class="ss-sep">·</span>` +
-    `<span class="ss-item"><span class="ss-val">${cps}</span> clicks/s</span>` +
+    `<span class="ss-item"><span class="ss-val">${cps}</span> ${window.T.game_stat_cps}</span>` +
     `</div>`;
 }
 

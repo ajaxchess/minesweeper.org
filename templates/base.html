@@ -642,6 +642,13 @@
     game_no_guess_mode:     {{ t.game_no_guess_mode | tojson }},
     game_congrats:          {{ t.game_congrats | tojson }},
     game_score_vanish:      {{ t.game_score_vanish | tojson }},
+    game_share_link:        {{ t.game_share_link | tojson }},
+    game_session:           {{ t.game_session | tojson }},
+    game_stat_won:          {{ t.game_stat_won | tojson }},
+    game_stat_lost:         {{ t.game_stat_lost | tojson }},
+    game_stat_best:         {{ t.game_stat_best | tojson }},
+    game_stat_avg_eff:      {{ t.game_stat_avg_eff | tojson }},
+    game_stat_cps:          {{ t.game_stat_cps | tojson }},
     guest_banner_pre:       {{ t.guest_banner_pre | tojson }},
     guest_banner_post:      {{ t.guest_banner_post | tojson }},
     auth_sign_in:           {{ t.auth_sign_in | tojson }},
@@ -653,7 +660,7 @@
   <script>
   window.QUEST_CONFIG = {{ quest_config(t) | tojson }};
   </script>
-  <script src="/static/js/minesweeper.js?v=9" defer></script>
+  <script src="/static/js/minesweeper.js?v=10" defer></script>
   <script src="/static/js/rewind.js?v=1" defer></script>
   <script src="/static/js/quests.js?v=2" defer></script>
   <script>
