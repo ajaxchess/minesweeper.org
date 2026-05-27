@@ -1169,7 +1169,12 @@ async def login(request: Request):
 
 @app.get("/auth/callback")
 async def auth_callback(request: Request, db: Session = Depends(get_db)):
-    token = await oauth.google.authorize_access_token(request)
+    try:
+        token = await oauth.google.authorize_access_token(request)
+    except Exception:
+        # Stale OAuth state (service restart, crawler, or double-callback).
+        # Redirect to login so the user can try again cleanly.
+        return RedirectResponse(url="/auth/login?error=session_expired")
     user  = token.get("userinfo")
     if user:
         email = user.get("email", "")
