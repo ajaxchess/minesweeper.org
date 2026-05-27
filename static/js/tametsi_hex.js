@@ -4,13 +4,14 @@ const THEX_SQRT3 = Math.sqrt(3);
 const THEX_SVG_NS = 'http://www.w3.org/2000/svg';
 const THEX_DIRS = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
 const THEX_ADJ_COLORS = ['','#1565c0','#2e7d32','#c62828','#0d47a1','#b71c1c','#00695c','#4a148c','#424242'];
+const THEX_QUESTION = -2; // board value for "?" cells — safe but give no information
 
 const THEX_PUZZLES = {
   1: {
     R: 2,
     mines: new Set(['0,-1','1,-1','1,0']),
     startRevealed: {'-1,0':1,'0,0':3,'0,1':1},
-    tutorialText: '<strong>Tutorial 1 — Tiny Board (R=2, 3 mines):</strong> Three cells are already revealed with their numbers. Each number tells you how many of its (up to 6) hex neighbours contain mines. Use logic to locate all 3 mines, then click every safe cell to win.',
+    tutorialText: '<strong>Tutorial 1 — Tiny Board (R=2, 3 mines):</strong> Watch the two counters above the board. <strong>🚩 flags / total</strong> tracks how many flags you\'ve placed. <strong>💣 mines left</strong> (top-right) counts unflagged mines — when it hits 0, every remaining hidden cell is safe to reveal. Right-click to flag a suspected mine. Use the numbers to deduce mine locations and click every safe cell to win.',
   },
   2: {
     R: 3,
@@ -20,9 +21,16 @@ const THEX_PUZZLES = {
   },
   3: {
     R: 4,
-    mines: new Set(['-2,0','-1,-1','-2,-2','0,-3','2,-3','3,-3','3,-2','3,-1','2,1','-1,2','1,2','-2,3']),
+    mines: new Set(['-2,0','-1,-1','-1,-2','0,-3','2,-3','3,-3','3,-2','3,-1','2,1','-1,2','1,2','-2,3']),
     startRevealed: {'-2,-1':3,'-3,0':1,'-3,1':1},
     tutorialText: '<strong>Tutorial 3 — Full Board (R=4, 12 mines):</strong> A larger board with more mines spread across the hex grid. When you reveal a cell with 0 mine-neighbours, its neighbours are uncovered automatically — use that cascade to open up new deduction opportunities.',
+  },
+  4: {
+    R: 3,
+    mines: new Set(['0,-1','2,-1','2,0']),
+    startRevealed: {'0,-2':1,'1,-2':1,'-1,-1':1},
+    questionCells: new Set(['-1,0','0,0','1,0']),
+    tutorialText: '<strong>Tutorial 4 — Question Marks (R=3, 3 mines):</strong> Some cells show <strong>?</strong> when revealed. A <strong>?</strong> cell is safe — it is not a mine — but it reveals nothing about how many mines are nearby. Treat a revealed <strong>?</strong> as a safe cell you can eliminate from your deductions, then use the numbered clues to locate all 3 mines.',
   },
 };
 
@@ -48,11 +56,12 @@ function thexNeighbours(q, r, R) {
     .filter(([nq,nr]) => Math.abs(nq)<=R-1 && Math.abs(nr)<=R-1 && Math.abs(nq+nr)<=R-1);
 }
 
-function thexBuildBoard(cells, mines, R) {
+function thexBuildBoard(cells, mines, R, questionCells) {
   const board = new Map();
   for (const [q,r] of cells) {
     const k = thexKey(q,r);
     if (mines.has(k)) { board.set(k,-1); continue; }
+    if (questionCells && questionCells.has(k)) { board.set(k, THEX_QUESTION); continue; }
     let count = 0;
     for (const [nq,nr] of thexNeighbours(q,r,R))
       if (mines.has(thexKey(nq,nr))) count++;
@@ -180,6 +189,10 @@ function thexRenderCell(q,r) {
   if (val === -1) {
     g.classList.add(thexState.explodedKey===k ? 'hex-detonated' : 'hex-mine');
     txt.textContent = '💣';
+  } else if (val === THEX_QUESTION) {
+    g.classList.add('thex-question');
+    txt.textContent = '?';
+    txt.style.fill = 'var(--text-dim)';
   } else if (val > 0) {
     txt.textContent = val;
     txt.style.fill = THEX_ADJ_COLORS[val] || '#fff';
@@ -198,7 +211,8 @@ function thexRevealCell(q,r) {
     if (thexState.revealed.has(ck)) continue;
     thexState.revealed.add(ck);
     thexRenderCell(cq,cr);
-    if (thexState.board.get(ck) === 0) {
+    const ckVal = thexState.board.get(ck);
+    if (ckVal === 0) {
       for (const [nq,nr] of thexNeighbours(cq,cr,thexState.R)) {
         const nk = thexKey(nq,nr);
         if (!thexState.revealed.has(nk) && !thexState.flagged.has(nk))
@@ -216,6 +230,7 @@ function thexFlagCell(q,r) {
   if (thexState.flagged.has(k)) thexState.flagged.delete(k);
   else thexState.flagged.add(k);
   thexRenderCell(q,r);
+  thexUpdateCounter();
 }
 
 function thexBoom(q,r) {
@@ -292,12 +307,20 @@ function thexHandleRightClick(q,r) {
   thexFlagCell(q,r);
 }
 
+function thexUpdateCounter() {
+  const remaining = thexState.mines.size - thexState.flagged.size;
+  const left = document.getElementById('thex-mine-counter');
+  if (left) left.textContent = '🚩 ' + thexState.flagged.size + ' / ' + thexState.mines.size;
+  const right = document.getElementById('thex-mines-left');
+  if (right) right.textContent = '💣 ' + remaining;
+}
+
 function thexInitPuzzle(puzzleId) {
   const def = THEX_PUZZLES[puzzleId];
   if (!def) return;
 
   const cells = thexBuildCells(def.R);
-  const board = thexBuildBoard(cells, def.mines, def.R);
+  const board = thexBuildBoard(cells, def.mines, def.R, def.questionCells || null);
 
   thexState = {
     puzzleId,
@@ -315,6 +338,7 @@ function thexInitPuzzle(puzzleId) {
 
   thexHideBanner();
   thexBuildSVG();
+  thexUpdateCounter();
 
   document.querySelectorAll('.thex-puzzle-btn').forEach(btn => {
     btn.classList.toggle('active', parseInt(btn.dataset.puzzle) === puzzleId);

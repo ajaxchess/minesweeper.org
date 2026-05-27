@@ -67,6 +67,23 @@
   stroke: var(--accent2);
   stroke-width: 1.5;
 }
+/* Question-mark cells: safe but give no information */
+.hex-cell.thex-question .hex-poly {
+  fill: var(--surface2);
+  stroke: var(--border);
+}
+.thex-counter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 520px;
+  margin: 0.25rem 0 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+#thex-mine-counter { color: var(--text-dim); }
+#thex-mines-left   { color: #fff; }
 </style>
 {% endblock %}
 
@@ -93,10 +110,16 @@
         <button class="thex-puzzle-btn" data-puzzle="1" onclick="thexSelectPuzzle(1)">Puzzle 1</button>
         <button class="thex-puzzle-btn" data-puzzle="2" onclick="thexSelectPuzzle(2)">Puzzle 2</button>
         <button class="thex-puzzle-btn" data-puzzle="3" onclick="thexSelectPuzzle(3)">Puzzle 3</button>
+        <button class="thex-puzzle-btn" data-puzzle="4" onclick="thexSelectPuzzle(4)">Puzzle 4</button>
       </div>
     </div>
 
     <div id="thex-tutorial-text" class="thex-tutorial-text"></div>
+
+    <div class="thex-counter-bar">
+      <span id="thex-mine-counter"></span>
+      <span id="thex-mines-left"></span>
+    </div>
 
     <div id="thex-board-wrap"
          class="hex-board-wrap"
@@ -119,7 +142,7 @@
       <div class="info-section">
         <h2>What is Tametsi Hex?</h2>
         <p>Tametsi Hex combines the deduction-only logic of Tametsi with the hexagonal grid of Hexsweeper. Every cell has up to 6 neighbours, and every puzzle is designed to be solved with pure logic — no guessing needed.</p>
-        <p>The three puzzles here are tutorials. They introduce the rules on progressively larger boards before the main campaign launches.</p>
+        <p>The four puzzles here are tutorials. They introduce the rules on progressively larger boards and mechanics before the main campaign launches.</p>
       </div>
       <div class="info-section">
         <h2>How to Play</h2>
@@ -128,6 +151,7 @@
           <li><strong>Left-click</strong> a hidden cell to reveal it. Hitting a mine ends the puzzle.</li>
           <li><strong>Right-click</strong> (or long-press on mobile) to flag a suspected mine.</li>
           <li>A cell showing <strong>0</strong> has no adjacent mines — its neighbours are revealed automatically.</li>
+          <li>A cell showing <strong>?</strong> is safe but gives no information — it could have any number of mine neighbours.</li>
           <li>Reveal every non-mine cell to win.</li>
         </ul>
       </div>
