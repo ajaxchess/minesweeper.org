@@ -46,8 +46,8 @@ document.addEventListener('DOMContentLoaded', function () {
   banner.id = 'ios-app-banner';
   banner.innerHTML =
     '\uD83D\uDCF1 <a href="https://apps.apple.com/us/app/minesweeper-org/id6761314113"'
-    + ' target="_blank" rel="noopener">Download the free Minesweeper app</a>'
-    + ' for iPhone &amp; iPad.'
+    + ' target="_blank" rel="noopener">' + window.T.game_ios_banner + '</a>'
+    + ' ' + window.T.game_ios_for
     + '<button aria-label="Dismiss">\u00d7</button>';
   document.body.appendChild(banner);
 
