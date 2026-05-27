@@ -32,6 +32,37 @@ const THEX_PUZZLES = {
     questionCells: new Set(['-1,0','0,0','1,0']),
     tutorialText: '<strong>Tutorial 4 — Question Marks (R=3, 3 mines):</strong> Some cells show <strong>?</strong> when revealed. A <strong>?</strong> cell is safe — it is not a mine — but it reveals nothing about how many mines are nearby. Treat a revealed <strong>?</strong> as a safe cell you can eliminate from your deductions, then use the numbered clues to locate all 3 mines.',
   },
+  5: {
+    customCells: [
+      // Row 1 — main cells (r=0, q=0..6)
+      [0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],
+      // Row 1 — indicator cells (r=1, q=0..5) — pre-revealed, each shows 1
+      [0,1],[1,1],[2,1],[3,1],[4,1],[5,1],
+      // Row 2 — main cells (r=3, q=-2..4)
+      [-2,3],[-1,3],[0,3],[1,3],[2,3],[3,3],[4,3],
+      // Row 2 — indicator cells (r=4, q=-2..3) — pre-revealed, each shows 1
+      [-2,4],[-1,4],[0,4],[1,4],[2,4],[3,4],
+      // Row 3 — main cells (r=6, q=-4..2)
+      [-4,6],[-3,6],[-2,6],[-1,6],[0,6],[1,6],[2,6],
+      // Row 3 — indicator cells (r=7, q=-4..1) — pre-revealed, each shows 1
+      [-4,7],[-3,7],[-2,7],[-1,7],[0,7],[1,7],
+    ],
+    mines: new Set([
+      '1,0','3,0','5,0',          // row 1: positions 2,4,6 → count 3
+      '-2,3','0,3','2,3','4,3',   // row 2: positions 1,3,5,7 → count 4
+      '-3,6','-1,6','1,6',        // row 3: positions 2,4,6 → count 3 (deduced from total)
+    ]),
+    startRevealed: {
+      '0,1':1,'1,1':1,'2,1':1,'3,1':1,'4,1':1,'5,1':1,
+      '-2,4':1,'-1,4':1,'0,4':1,'1,4':1,'2,4':1,'3,4':1,
+      '-4,7':1,'-3,7':1,'-2,7':1,'-1,7':1,'0,7':1,'1,7':1,
+    },
+    rowHints: [
+      {r: 0, count: 3},
+      {r: 3, count: 4},
+    ],
+    tutorialText: '<strong>Tutorial 5 — Row Hints (10 mines):</strong> The <strong style="color:#ffd700">yellow numbers</strong> to the left of each row show the total mine count for that row. Combined with the indicator cells below (each showing how many mines are in the two cells above it), you can deduce the exact mine positions in rows 1 and 2. For row 3, use the <strong>💣 mines left</strong> counter — with 10 mines total and rows 1 and 2 solved, you can work out how many remain in row 3.',
+  },
 };
 
 let thexState = {};
@@ -50,20 +81,20 @@ function thexBuildCells(R) {
   return out;
 }
 
-function thexNeighbours(q, r, R) {
+function thexNeighbours(q, r, cellSet) {
   return THEX_DIRS
     .map(([dq,dr]) => [q+dq, r+dr])
-    .filter(([nq,nr]) => Math.abs(nq)<=R-1 && Math.abs(nr)<=R-1 && Math.abs(nq+nr)<=R-1);
+    .filter(([nq,nr]) => cellSet.has(thexKey(nq,nr)));
 }
 
-function thexBuildBoard(cells, mines, R, questionCells) {
+function thexBuildBoard(cells, mines, cellSet, questionCells) {
   const board = new Map();
   for (const [q,r] of cells) {
     const k = thexKey(q,r);
     if (mines.has(k)) { board.set(k,-1); continue; }
     if (questionCells && questionCells.has(k)) { board.set(k, THEX_QUESTION); continue; }
     let count = 0;
-    for (const [nq,nr] of thexNeighbours(q,r,R))
+    for (const [nq,nr] of thexNeighbours(q,r,cellSet))
       if (mines.has(thexKey(nq,nr))) count++;
     board.set(k, count);
   }
@@ -83,18 +114,27 @@ function thexHexPoints(cx, cy, s) {
   return pts.join(' ');
 }
 
-function thexChooseSize(R) {
-  const maxW = Math.min(window.innerWidth-40, 540);
-  const fit = Math.floor(maxW / (THEX_SQRT3 * (2*R-1)));
-  return Math.max(16, Math.min(32, fit));
+function thexChooseSize(cells, extraLeftPx) {
+  const maxW = Math.min(window.innerWidth - 40, 540) - (extraLeftPx || 0);
+  let minX = Infinity, maxX = -Infinity;
+  for (const [q,r] of cells) {
+    const x = THEX_SQRT3 * (q + r/2);
+    minX = Math.min(minX, x - 1); maxX = Math.max(maxX, x + 1);
+  }
+  const span = maxX - minX;
+  return Math.max(16, Math.min(32, Math.floor(maxW / span)));
 }
 
 function thexBuildSVG() {
-  const {R, cells} = thexState;
-  thexCellSize = thexChooseSize(R);
+  const {cells, rowHints} = thexState;
   const wrap = document.getElementById('thex-board-wrap');
   if (!wrap) return;
   wrap.innerHTML = '';
+
+  const hasHints = rowHints && rowHints.length > 0;
+  // Estimate hint label width as 2 cell-widths; compute size with that reserved
+  const hintReservePx = hasHints ? 50 : 0;
+  thexCellSize = thexChooseSize(cells, hintReservePx);
 
   let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
   for (const [q,r] of cells) {
@@ -102,8 +142,13 @@ function thexBuildSVG() {
     minX=Math.min(minX,cx-thexCellSize); maxX=Math.max(maxX,cx+thexCellSize);
     minY=Math.min(minY,cy-thexCellSize); maxY=Math.max(maxY,cy+thexCellSize);
   }
-  const pad=4, W=maxX-minX+pad*2, H=maxY-minY+pad*2;
-  const ox=-minX+pad, oy=-minY+pad;
+  const pad = 4;
+  // Add left room for row hint labels
+  const leftExtra = hasHints ? Math.round(thexCellSize * 2.2) : 0;
+  const W = maxX - minX + pad * 2 + leftExtra;
+  const H = maxY - minY + pad * 2;
+  const ox = -minX + pad + leftExtra;
+  const oy = -minY + pad;
 
   thexSvgEl = document.createElementNS(THEX_SVG_NS,'svg');
   thexSvgEl.setAttribute('width', W.toFixed(0));
@@ -148,6 +193,28 @@ function thexBuildSVG() {
     g.appendChild(txt);
     thexSvgEl.appendChild(g);
   }
+
+  // Row hint labels — yellow number to the left of each hinted row
+  if (hasHints) {
+    for (const hint of rowHints) {
+      const rowCells = cells.filter(([,cr]) => cr === hint.r);
+      if (!rowCells.length) continue;
+      // Leftmost cell in this row
+      const [lq, lr] = rowCells.reduce((a, b) => (a[0]+a[1]/2 < b[0]+b[1]/2 ? a : b));
+      const [lcx, lcy] = thexHexCenter(lq, lr);
+      const lbl = document.createElementNS(THEX_SVG_NS,'text');
+      lbl.setAttribute('x', (lcx + ox - thexCellSize * 1.6).toFixed(2));
+      lbl.setAttribute('y', (lcy + oy).toFixed(2));
+      lbl.setAttribute('text-anchor', 'middle');
+      lbl.setAttribute('dominant-baseline', 'central');
+      lbl.style.fill = '#ffd700';
+      lbl.style.fontSize = `${Math.round(thexCellSize * 0.85)}px`;
+      lbl.style.fontWeight = 'bold';
+      lbl.textContent = hint.count;
+      thexSvgEl.appendChild(lbl);
+    }
+  }
+
   wrap.appendChild(thexSvgEl);
 }
 
@@ -213,7 +280,7 @@ function thexRevealCell(q,r) {
     thexRenderCell(cq,cr);
     const ckVal = thexState.board.get(ck);
     if (ckVal === 0) {
-      for (const [nq,nr] of thexNeighbours(cq,cr,thexState.R)) {
+      for (const [nq,nr] of thexNeighbours(cq,cr,thexState.cellSet)) {
         const nk = thexKey(nq,nr);
         if (!thexState.revealed.has(nk) && !thexState.flagged.has(nk))
           queue.push([nq,nr]);
@@ -319,16 +386,18 @@ function thexInitPuzzle(puzzleId) {
   const def = THEX_PUZZLES[puzzleId];
   if (!def) return;
 
-  const cells = thexBuildCells(def.R);
-  const board = thexBuildBoard(cells, def.mines, def.R, def.questionCells || null);
+  const cells = def.customCells ? def.customCells.slice() : thexBuildCells(def.R);
+  const cellSet = new Set(cells.map(([q,r]) => thexKey(q,r)));
+  const board = thexBuildBoard(cells, def.mines, cellSet, def.questionCells || null);
 
   thexState = {
     puzzleId,
-    R: def.R,
     mines: def.mines,
     startRevealed: def.startRevealed,
     cells,
+    cellSet,
     board,
+    rowHints: def.rowHints || [],
     revealed: new Set(Object.keys(def.startRevealed)),
     flagged: new Set(),
     over: false,
