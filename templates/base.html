@@ -192,7 +192,7 @@
 
   <header>
     <div class="header-inner">
-      <a href="{{ lp }}/" class="logo">
+      <a href="{{ lp or '/' }}" class="logo">
         <img src="/static/img/mobile-logo.png"
              class="site-logo-mobile"
              alt="Minesweeper.org"
@@ -224,7 +224,7 @@
           <button class="mega-trigger {% if mode in ['beginner','intermediate','expert','custom','evil','rush','how-to-play','rush-howto'] %}active{% endif %}" onclick="toggleMega(event,'mg-play')" aria-haspopup="true" aria-expanded="false">{{ t.nav_play }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
-              <a href="{{ lp }}/" class="mega-card {% if mode=='beginner' %}active{% endif %}">
+              <a href="{{ lp or '/' }}" class="mega-card {% if mode=='beginner' %}active{% endif %}">
                 <span class="mega-icon">🟢</span>
                 <span class="mega-card-text"><strong>{{ t.nav_beginner }}</strong><span>{{ t.nav_sub_beginner }}</span></span>
               </a>
@@ -472,7 +472,7 @@
   <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
   <aside id="mobile-drawer" class="mobile-drawer" aria-label="Navigation" aria-hidden="true">
     <div class="drawer-top">
-      <a href="{{ lp }}/" class="logo" onclick="closeDrawer()">
+      <a href="{{ lp or '/' }}" class="logo" onclick="closeDrawer()">
         <picture class="site-logo-picture site-logo-master">
           <source srcset="/static/img/minesweeper-org-logo.webp" type="image/webp">
           <img src="/static/img/minesweeper-org-logo.png"
@@ -526,7 +526,7 @@
       <details class="drawer-group"{% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %} open{% endif %}>
         <summary class="drawer-summary">💣 {{ t.nav_play }}</summary>
         <div class="drawer-links">
-          <a href="{{ lp }}/" class="drawer-link {% if mode=='beginner' %}active{% endif %}">🟢 {{ t.nav_beginner }}</a>
+          <a href="{{ lp or '/' }}" class="drawer-link {% if mode=='beginner' %}active{% endif %}">🟢 {{ t.nav_beginner }}</a>
           <a href="{{ lp }}/intermediate" class="drawer-link {% if mode=='intermediate' %}active{% endif %}">🟡 {{ t.nav_intermediate }}</a>
           <a href="{{ lp }}/expert" class="drawer-link {% if mode=='expert' %}active{% endif %}">🔴 {{ t.nav_expert }}</a>
           <a href="{{ lp }}/custom" class="drawer-link {% if mode=='custom' %}active{% endif %}">⚙️ {{ t.nav_custom }}</a>

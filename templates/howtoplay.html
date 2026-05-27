@@ -102,10 +102,10 @@ html:not(.is-mobile) .mobile-only{display:none!important}
         <tr><th>{{ t.htp_difficulty_th_level }}</th><th>{{ t.htp_difficulty_th_board }}</th><th>{{ t.htp_difficulty_th_mines }}</th></tr>
       </thead>
       <tbody>
-        <tr><td><a href="/">{{ t.nav_beginner }}</a></td><td>9×9</td><td>10</td></tr>
-        <tr><td><a href="/intermediate">{{ t.nav_intermediate }}</a></td><td>16×16</td><td>40</td></tr>
-        <tr><td><a href="/expert">{{ t.nav_expert }}</a></td><td>30×16</td><td>99</td></tr>
-        <tr><td><a href="/custom">{{ t.nav_custom }}</a></td><td>{{ t.htp_difficulty_custom_choice }}</td><td>{{ t.htp_difficulty_custom_choice }}</td></tr>
+        <tr><td><a href="{{ lp or '/' }}">{{ t.nav_beginner }}</a></td><td>9×9</td><td>10</td></tr>
+        <tr><td><a href="{{ lp }}/intermediate">{{ t.nav_intermediate }}</a></td><td>16×16</td><td>40</td></tr>
+        <tr><td><a href="{{ lp }}/expert">{{ t.nav_expert }}</a></td><td>30×16</td><td>99</td></tr>
+        <tr><td><a href="{{ lp }}/custom">{{ t.nav_custom }}</a></td><td>{{ t.htp_difficulty_custom_choice }}</td><td>{{ t.htp_difficulty_custom_choice }}</td></tr>
       </tbody>
     </table>
   </div>
@@ -119,22 +119,22 @@ html:not(.is-mobile) .mobile-only{display:none!important}
   <div class="help-section">
     <h2>{{ t.htp_modes_h2 }}</h2>
 
-    <h3><a href="/rush">Rush</a></h3>
+    <h3><a href="{{ lp }}/rush">Rush</a></h3>
     <p>{{ t.htp_modes_rush_p }}</p>
 
-    <h3><a href="/duel">Duel</a></h3>
+    <h3><a href="{{ lp }}/duel">Duel</a></h3>
     <p>{{ t.htp_modes_duel_p }}</p>
 
-    <h3><a href="/pvp">PvP</a></h3>
+    <h3><a href="{{ lp }}/pvp">PvP</a></h3>
     <p>{{ t.htp_modes_pvp_p }}</p>
 
-    <h3><a href="/tentaizu">Tentaizu</a></h3>
+    <h3><a href="{{ lp }}/tentaizu">Tentaizu</a></h3>
     <p>{{ t.htp_modes_tentaizu_p }}</p>
 
-    <h3><a href="/variants">{{ t.htp_modes_variants_h3 }}</a></h3>
+    <h3><a href="{{ lp }}/variants">{{ t.htp_modes_variants_h3 }}</a></h3>
     <p>{{ t.htp_modes_variants_p }}</p>
 
-    <h3><a href="/quests">{{ t.nav_quests }}</a></h3>
+    <h3><a href="{{ lp }}/quests">{{ t.nav_quests }}</a></h3>
     <p>{{ t.htp_modes_quests_p }}</p>
   </div>
 
@@ -173,10 +173,10 @@ html:not(.is-mobile) .mobile-only{display:none!important}
   </div>
 
   <div class="lb-back">
-    <a href="/">{{ t.htp_back_beginner }}</a>
-    <a href="/intermediate">{{ t.htp_back_intermediate }}</a>
-    <a href="/expert">{{ t.htp_back_expert }}</a>
-    <a href="/custom">{{ t.htp_back_custom }}</a>
+    <a href="{{ lp or '/' }}">{{ t.htp_back_beginner }}</a>
+    <a href="{{ lp }}/intermediate">{{ t.htp_back_intermediate }}</a>
+    <a href="{{ lp }}/expert">{{ t.htp_back_expert }}</a>
+    <a href="{{ lp }}/custom">{{ t.htp_back_custom }}</a>
   </div>
 
 </div>

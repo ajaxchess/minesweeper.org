@@ -356,6 +356,9 @@ async def lang_prefix_middleware(request: Request, call_next):
         bare_path = "/" + (parts[1] if len(parts) > 1 else "")
         if bare_path == "//":
             bare_path = "/"
+        # Redirect /{lang}/ → /{lang} to avoid trailing-slash duplicate content
+        if bare_path == "/" and path.endswith("/"):
+            return RedirectResponse(url=f"/{lang_code}", status_code=301)
         request.state.lang = lang_code
         request.scope["path"] = bare_path
         request.scope["raw_path"] = bare_path.encode("utf-8")
