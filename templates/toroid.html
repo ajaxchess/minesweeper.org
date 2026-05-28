@@ -14,7 +14,10 @@
   {% set _canon = "https://minesweeper.org/toroid/custom" %}
 {% endif %}
 {% set _title = t.meta_title_toroid ~ " — " ~ _diff ~ " | minesweeper.org" %}
-{% set _desc  = t.meta_desc_toroid %}
+{% if mode == 'toroid-intermediate' %}{% set _desc = t.meta_desc_toroid_intermediate %}
+{% elif mode == 'toroid-expert' %}{% set _desc = t.meta_desc_toroid_expert %}
+{% elif mode == 'toroid-custom' %}{% set _desc = t.meta_desc_toroid_custom %}
+{% else %}{% set _desc = t.meta_desc_toroid %}{% endif %}
 
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}

@@ -17,7 +17,11 @@
   {% set _canon = "https://minesweeper.org/worldsweeper/custom" %}
 {% endif %}
 {% set _title = t.meta_title_worldsweeper ~ " — " ~ _diff ~ " | minesweeper.org" %}
-{% set _desc  = t.meta_desc_worldsweeper %}
+{% if mode == 'intermediate' %}{% set _desc = t.meta_desc_worldsweeper_intermediate %}
+{% elif mode == 'expert' %}{% set _desc = t.meta_desc_worldsweeper_expert %}
+{% elif mode == 'custom' %}{% set _desc = t.meta_desc_worldsweeper_custom %}
+{% elif mode == 'dodecahedron' %}{% set _desc = t.meta_desc_worldsweeper_dodecahedron %}
+{% else %}{% set _desc = t.meta_desc_worldsweeper %}{% endif %}
 
 {% block keywords %}<meta name="keywords" content="worldsweeper, world sweeper, globesweeper, globe minesweeper, 3D minesweeper, minesweeper, minesweeper online, play minesweeper, free minesweeper">{% endblock %}
 {% block title %}{{ _title }}{% endblock %}

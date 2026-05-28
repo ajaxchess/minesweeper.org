@@ -1,10 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Sudoku — minesweeper.org{% endblock %}
-{% block description %}Play free Sudoku online with daily puzzles, Easy, Medium, Hard, and Expert difficulty. Timed, hints available, mistake highlighting. Global leaderboard.{% endblock %}
+{% if difficulty == 'easy' %}{% set _sudoku_title = t.meta_title_sudoku_easy %}{% set _sudoku_desc = t.meta_desc_sudoku_easy %}
+{% elif difficulty == 'medium' %}{% set _sudoku_title = t.meta_title_sudoku_medium %}{% set _sudoku_desc = t.meta_desc_sudoku_medium %}
+{% elif difficulty == 'hard' %}{% set _sudoku_title = t.meta_title_sudoku_hard %}{% set _sudoku_desc = t.meta_desc_sudoku_hard %}
+{% elif difficulty == 'expert' %}{% set _sudoku_title = t.meta_title_sudoku_expert %}{% set _sudoku_desc = t.meta_desc_sudoku_expert %}
+{% else %}{% set _sudoku_title = t.meta_title_sudoku_daily %}{% set _sudoku_desc = t.meta_desc_sudoku_daily %}{% endif %}
+{% block title %}{{ _sudoku_title }}{% endblock %}
+{% block description %}{{ _sudoku_desc }}{% endblock %}
 {% block canonical %}https://minesweeper.org/other/sudoku/{{ difficulty }}{% endblock %}
 {% block og_url %}https://minesweeper.org/other/sudoku/{{ difficulty }}{% endblock %}
-{% block og_title %}Sudoku — Free Daily Puzzles{% endblock %}
-{% block og_description %}Daily Sudoku puzzles with Easy, Medium, Hard, and Expert modes. Timed with hints and leaderboards. No download needed.{% endblock %}
+{% block og_title %}{{ _sudoku_title | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ _sudoku_desc }}{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">
 {

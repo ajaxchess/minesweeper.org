@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}PvP Rankings | minesweeper.org{% endblock %}
-{% block description %}PvP Minesweeper rankings — win counts, Elo ratings, and head-to-head match history. See where you stand against the best players on minesweeper.org.{% endblock %}
+{% block title %}{{ t.meta_title_pvp_rankings }}{% endblock %}
+{% block description %}{{ t.meta_desc_pvp_rankings }}{% endblock %}
 {% block canonical %}https://minesweeper.org/pvp/rankings{% endblock %}
 {% block og_url %}https://minesweeper.org/pvp/rankings{% endblock %}
-{% block og_title %}PvP Rankings{% endblock %}
-{% block og_description %}PvP Minesweeper rankings by win count and Elo rating.{% endblock %}
+{% block og_title %}{{ t.meta_title_pvp_rankings | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ t.meta_desc_pvp_rankings }}{% endblock %}
 
 {% block content %}
 <div class="lb-wrapper">

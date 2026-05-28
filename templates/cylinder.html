@@ -14,7 +14,10 @@
   {% set _canon = "https://minesweeper.org/cylinder/custom" %}
 {% endif %}
 {% set _title = t.meta_title_cylinder ~ " — " ~ _diff ~ " | minesweeper.org" %}
-{% set _desc  = t.meta_desc_cylinder %}
+{% if mode == 'cylinder-intermediate' %}{% set _desc = t.meta_desc_cylinder_intermediate %}
+{% elif mode == 'cylinder-expert' %}{% set _desc = t.meta_desc_cylinder_expert %}
+{% elif mode == 'cylinder-custom' %}{% set _desc = t.meta_desc_cylinder_custom %}
+{% else %}{% set _desc = t.meta_desc_cylinder %}{% endif %}
 
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}

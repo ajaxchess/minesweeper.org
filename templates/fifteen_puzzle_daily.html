@@ -5,12 +5,13 @@
 {% set _is4x4 = (_gs == "4x4") %}
 {% if _is4x4 %}
   {% set _title = t.meta_title_fifteen_puzzle %}
+  {% set _desc  = t.meta_desc_fifteen_puzzle %}
   {% set _canon = "https://minesweeper.org/other/15puzzle/daily" %}
 {% else %}
-  {% set _title = t.meta_title_fifteen_puzzle ~ " " ~ _gl %}
+  {% set _title = t.meta_title_fifteen_puzzle_5x5 %}
+  {% set _desc  = t.meta_desc_fifteen_puzzle_5x5 %}
   {% set _canon = "https://minesweeper.org/other/15puzzle/" + _gs %}
 {% endif %}
-{% set _desc = t.meta_desc_fifteen_puzzle %}
 
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}

@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Board Generator — Custom Minesweeper Boards | minesweeper.org{% endblock %}
-{% block description %}Design custom Minesweeper boards by placing mines on a grid. Get the board hash, 3BV for all three topology variants, and a shareable Mosaic puzzle link.{% endblock %}
+{% block title %}{{ t.meta_title_board_generator }}{% endblock %}
+{% block description %}{{ t.meta_desc_board_generator }}{% endblock %}
 {% block canonical %}https://minesweeper.org/variants/board-generator{% endblock %}
 {% block og_url %}https://minesweeper.org/variants/board-generator{% endblock %}
-{% block og_title %}Board Generator — Custom Minesweeper Boards{% endblock %}
-{% block og_description %}Place mines on a grid to create a custom board. Get a board hash, 3BV values for all three topologies, and a shareable Mosaic link.{% endblock %}
+{% block og_title %}{{ t.meta_title_board_generator | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ t.meta_desc_board_generator }}{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">
 {

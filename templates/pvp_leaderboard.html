@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}PvP Leaderboard — Best Match Times | minesweeper.org{% endblock %}
-{% block description %}Top PvP Minesweeper match times — see who wins fastest in real-time head-to-head duels. Daily and all-time rankings for standard and quick match modes.{% endblock %}
+{% block title %}{{ t.meta_title_pvp_leaderboard }}{% endblock %}
+{% block description %}{{ t.meta_desc_pvp_leaderboard }}{% endblock %}
 {% block canonical %}https://minesweeper.org/pvp/leaderboard{% endblock %}
 {% block og_url %}https://minesweeper.org/pvp/leaderboard{% endblock %}
-{% block og_title %}PvP Leaderboard — Best Match Times{% endblock %}
-{% block og_description %}Top PvP Minesweeper match times — see who wins fastest in real-time head-to-head duels. Daily and all-time rankings for standard and quick match modes.{% endblock %}
+{% block og_title %}{{ t.meta_title_pvp_leaderboard | replace(" | minesweeper.org", "") }}{% endblock %}
+{% block og_description %}{{ t.meta_desc_pvp_leaderboard }}{% endblock %}
 
 {% block content %}
 <div class="lb-wrapper">
