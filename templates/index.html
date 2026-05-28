@@ -339,7 +339,11 @@ function fmtEff(s) {
   return total ? Math.round(s.bbbv / total * 100) + '%' : '—';
 }
 function esc(v) {
-  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function safeUrl(url) {
+  if (!url || typeof url !== 'string') return null;
+  return /^https?:\/\//i.test(url) || url.startsWith('/') ? url : null;
 }
 
 async function loadPageLb() {
@@ -364,8 +368,9 @@ async function loadPageLb() {
     }
     body.innerHTML = data.map((s, i) => {
       const flag     = s.country ? `<img src="/static/img/country-flags/${s.country}.png" class="lb-flag" alt="">` : '';
-      const nameCell = s.profile_url
-        ? `<a href="${esc(s.profile_url)}" class="lb-profile-link">${flag}${esc(s.name)}</a>`
+      const _pu = safeUrl(s.profile_url);
+      const nameCell = _pu
+        ? `<a href="${esc(_pu)}" class="lb-profile-link">${flag}${esc(s.name)}</a>`
         : `${flag}${esc(s.name)}`;
       let hashCell = '<td class="lb-hash">—</td>';
       if (s.board_hash) {

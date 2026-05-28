@@ -1067,7 +1067,7 @@ async function loadRushLeaderboard(mode) {
         : '';
       return `<tr class="${cls}">
         <td class="lb-rank">${rank}</td>
-        <td class="lb-name">${s.profile_url ? `<a href="${escHtml(s.profile_url)}" class="lb-profile-link">${escHtml(s.name)}</a>` : escHtml(s.name)}</td>
+        <td class="lb-name">${(()=>{const _pu=safeUrl(s.profile_url);return _pu?`<a href="${escHtml(_pu)}" class="lb-profile-link">${escHtml(s.name)}</a>`:escHtml(s.name);})()}</td>
         <td class="lb-score">${s.score}</td>
         <td class="lb-score">${s.cleared_mines ?? '—'} mines</td>
         <td class="lb-score">${s.rows_cleared ?? '—'} rows</td>
@@ -1094,7 +1094,11 @@ async function loadRushLeaderboard(mode) {
 }
 
 function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function safeUrl(url) {
+  if (!url || typeof url !== 'string') return null;
+  return /^https?:\/\//i.test(url) || url.startsWith('/') ? url : null;
 }
 
 // ── Build initial board (no animation) ───────────────────────────────────────
