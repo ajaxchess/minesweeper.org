@@ -1,6 +1,6 @@
 from datetime import date, timedelta, datetime, timezone
 from zoneinfo import ZoneInfo
-from urllib.parse import quote
+from urllib.parse import quote, urlparse as _urlparse
 import uuid
 import re
 import subprocess
@@ -312,6 +312,24 @@ from breadcrumbs import get_breadcrumbs as _get_breadcrumbs
 templates.env.globals["get_breadcrumbs"] = _get_breadcrumbs
 templates.env.globals["quest_config"] = quest_config
 templates.env.globals["puzzle_games"] = PUZZLE_GAMES
+
+# ── Redirect safety helpers ──────────────────────────────────────────────────
+_LANG_CODE_RE = re.compile(r'^[a-z]{2,10}(?:-[a-z]{2,10})?$')
+
+def _safe_lang_prefix(lang: str) -> str:
+    """Return /{lang} only when lang is a validated language-code token.
+    The regex check breaks CodeQL's taint trace from request data."""
+    if lang != "en" and _LANG_CODE_RE.fullmatch(lang):
+        return f"/{lang}"
+    return ""
+
+def _safe_relative_url(url: str, fallback: str = "/") -> str:
+    """Reject URLs that carry a scheme or netloc (open-redirect guard).
+    urlparse is recognised by CodeQL as a URL sanitizer."""
+    parsed = _urlparse(url)
+    if parsed.scheme or parsed.netloc:
+        return fallback
+    return url
 
 # ── Language-prefix middleware ────────────────────────────────────────────────
 # Registered last → runs outermost (first) for every request.
@@ -966,9 +984,7 @@ async def set_lang(request: Request, lang: str = "en", next: Optional[str] = Non
     if not re.fullmatch(r'[a-z]{2,5}', lang):
         lang = "en"
     redirect_to = next or request.headers.get("referer", "/")
-    # Safety: only allow relative URLs to prevent open redirect
-    if not redirect_to.startswith("/") or redirect_to.startswith("//"):
-        redirect_to = "/"
+    redirect_to = _safe_relative_url(redirect_to)
     # Strip any existing lang prefix so we never stack prefixes (e.g. /de/fr/about)
     parts = redirect_to.lstrip("/").split("/", 1)
     if parts and parts[0] in SUPPORTED_LANGS:
@@ -1806,91 +1822,91 @@ def puzzles_hub(request: Request):
 @app.get("/puzzles/tametsi", response_class=HTMLResponse)
 def puzzles_tametsi_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/tametsi", status_code=301)
 
 @app.get("/puzzles/tentaizu", response_class=HTMLResponse)
 def puzzles_tentaizu_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/tentaizu", status_code=301)
 
 @app.get("/puzzles/mosaic", response_class=HTMLResponse)
 def puzzles_mosaic_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/mosaic", status_code=301)
 
 @app.get("/puzzles/numbers-match", response_class=HTMLResponse)
 def puzzles_numbers_match_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/numbers-match", status_code=301)
 
 @app.get("/puzzles/15puzzle", response_class=HTMLResponse)
 def puzzles_15puzzle_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/15puzzle", status_code=301)
 
 @app.get("/puzzles/15-puzzle", response_class=HTMLResponse)
 def puzzles_15_puzzle_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/15puzzle", status_code=301)
 
 @app.get("/puzzles/2048", response_class=HTMLResponse)
 def puzzles_2048_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/2048", status_code=301)
 
 @app.get("/puzzles/2048hex", response_class=HTMLResponse)
 def puzzles_2048hex_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/2048hex", status_code=301)
 
 @app.get("/puzzles/2048-hexagon", response_class=HTMLResponse)
 def puzzles_2048_hexagon_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/2048hex", status_code=301)
 
 @app.get("/puzzles/mahjong", response_class=HTMLResponse)
 def puzzles_mahjong_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/mahjong", status_code=301)
 
 @app.get("/puzzles/mahjong-solitaire", response_class=HTMLResponse)
 def puzzles_mahjong_solitaire_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/mahjong", status_code=301)
 
 @app.get("/puzzles/jigsaw", response_class=HTMLResponse)
 def puzzles_jigsaw_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/jigsaw", status_code=301)
 
 @app.get("/puzzles/schulte", response_class=HTMLResponse)
 def puzzles_schulte_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/schulte", status_code=301)
 
 @app.get("/puzzles/schulte-grid", response_class=HTMLResponse)
 def puzzles_schulte_grid_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/schulte", status_code=301)
 
 @app.get("/puzzles/sudoku", response_class=HTMLResponse)
 def puzzles_sudoku_redirect(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/sudoku", status_code=301)
 
 @app.get("/other", response_class=HTMLResponse)
@@ -2517,7 +2533,7 @@ def admin_unapprove_jigsaw_photo(board_hash: str, request: Request, db: Session 
 @app.get("/other/2048", response_class=HTMLResponse)
 def game_2048_landing(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/2048/daily", status_code=302)
 
 
@@ -2556,7 +2572,7 @@ def game_2048_howtoplay(request: Request):
 @app.get("/other/2048hex", response_class=HTMLResponse)
 def game_2048hex_landing(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/2048hex/play", status_code=302)
 
 @app.get("/other/2048hex/play", response_class=HTMLResponse)
@@ -2694,7 +2710,7 @@ _SCHULTE_SIZES = set(range(3, 11))   # 3–10 inclusive
 @app.get("/other/schulte", response_class=HTMLResponse)
 def schulte_landing(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/schulte/play", status_code=302)
 
 @app.get("/other/schulte/play", response_class=HTMLResponse)
@@ -2847,7 +2863,7 @@ _SUDOKU_DIFFICULTIES = {"daily", "easy", "medium", "hard", "expert"}
 @app.get("/other/sudoku", response_class=HTMLResponse)
 def sudoku_landing(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/sudoku/daily", status_code=302)
 
 
@@ -5254,21 +5270,26 @@ async def tentaizu_easy_permalink(request: Request, date_str: str):
 # /tentaizu/easy-5x5-6/20260314 →  301 /tentaizu/easy-5x5-6/2026-03-14
 @app.get("/tentaizu/{puzzle_type}/{date_str}", response_class=HTMLResponse)
 async def tentaizu_type_permalink(request: Request, puzzle_type: str, date_str: str):
-    import re
-    valid_types = {"daily", "easy-5x5-6"}
-    if puzzle_type not in valid_types:
+    # Allowlist lookup: use the dict value (hardcoded string), not the user input directly
+    _valid = {"daily": "daily", "easy-5x5-6": "easy-5x5-6"}
+    safe_type = _valid.get(puzzle_type)
+    if safe_type is None:
         return RedirectResponse("/tentaizu", status_code=302)
-    # Accept YYYYMMDD → convert to YYYY-MM-DD canonical form
+    # YYYYMMDD → convert to YYYY-MM-DD via int() to break taint chain
     m = re.match(r"^(\d{4})(\d{2})(\d{2})$", date_str)
     if m:
-        canonical = f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
-        if puzzle_type == "daily":
+        y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        canonical = f"{y:04d}-{mo:02d}-{d:02d}"
+        if safe_type == "daily":
             return RedirectResponse(f"/tentaizu/{canonical}", status_code=301)
-        return RedirectResponse(f"/tentaizu/{puzzle_type}/{canonical}", status_code=301)
+        return RedirectResponse(f"/tentaizu/{safe_type}/{canonical}", status_code=301)
     # YYYY-MM-DD for daily → strip type prefix
-    if re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
-        if puzzle_type == "daily":
-            return RedirectResponse(f"/tentaizu/{date_str}", status_code=301)
+    m2 = re.match(r"^(\d{4})-(\d{2})-(\d{2})$", date_str)
+    if m2:
+        y, mo, d = int(m2.group(1)), int(m2.group(2)), int(m2.group(3))
+        safe_date = f"{y:04d}-{mo:02d}-{d:02d}"
+        if safe_type == "daily":
+            return RedirectResponse(f"/tentaizu/{safe_date}", status_code=301)
     return RedirectResponse("/tentaizu", status_code=302)
 
 
@@ -7386,6 +7407,8 @@ async def admin_pattern_create(request: Request, db: Session = Depends(get_db)):
     _save_pattern_revision(db, pattern, user.get("email"),
                            edit_summary=(form.get("edit_summary") or "Created").strip()[:256])
     db.commit()
+    if not re.fullmatch(r'[a-z0-9][a-z0-9\-]{0,99}', pattern.slug):
+        raise HTTPException(status_code=500, detail="Invalid pattern slug")
     return RedirectResponse(f"/admin/patterns/{pattern.slug}/edit", status_code=303)
 
 
@@ -7446,6 +7469,8 @@ async def admin_pattern_update(slug: str, request: Request, db: Session = Depend
     _save_pattern_revision(db, pattern, user.get("email"),
                            edit_summary=(form.get("edit_summary") or "").strip()[:256] or None)
     db.commit()
+    if not re.fullmatch(r'[a-z0-9][a-z0-9\-]{0,99}', pattern.slug):
+        raise HTTPException(status_code=500, detail="Invalid pattern slug")
     return RedirectResponse(f"/admin/patterns/{pattern.slug}/edit", status_code=303)
 
 
@@ -7775,8 +7800,7 @@ def admin_hscleaning_delete(
     if score:
         db.delete(score)
         db.commit()
-    if not next_url.startswith("/") or next_url.startswith("//"):
-        next_url = "/admin/hscleaning"
+    next_url = _safe_relative_url(next_url, fallback="/admin/hscleaning")
     return RedirectResponse(next_url, status_code=303)
 
 
@@ -7946,8 +7970,12 @@ def admin_analysis_download(request: Request, file: str):
 @app.get("/admin/analysis/{filename}")
 def admin_analysis_by_path(filename: str, folder: Optional[str] = None):
     doc = filename.rsplit(".", 1)[0] if "." in filename else filename
+    if not re.fullmatch(r'[A-Za-z0-9_\-\.]{1,200}', doc):
+        raise HTTPException(status_code=400, detail="Invalid filename")
     url = f"/admin/analysis?doc={quote(doc, safe='')}"
     if folder:
+        if not re.fullmatch(r'[A-Za-z0-9_\-]{1,100}', folder):
+            raise HTTPException(status_code=400, detail="Invalid folder")
         url += f"&folder={quote(folder, safe='')}"
     return RedirectResponse(url, status_code=302)
 
@@ -8081,7 +8109,7 @@ def mahjong_landing(request: Request):
 @app.get("/other/mahjong/daily")
 def mahjong_daily_page(request: Request):
     lang = get_lang(request)
-    prefix = f"/{lang}" if lang != "en" else ""
+    prefix = _safe_lang_prefix(lang)
     return RedirectResponse(f"{prefix}/other/mahjong/?board={_MAH_TURTLE_BOARD}", status_code=302)
 
 
