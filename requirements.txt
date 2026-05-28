@@ -8,7 +8,7 @@ certifi==2026.4.22
 cffi==2.0.0
 charset-normalizer==3.4.7
 click==8.4.0
-cryptography==48.0.0
+cryptography==43.0.1
 deprecated==1.3.1
 fastapi==0.136.1
 googleapis-common-protos==1.75.0
@@ -22,7 +22,7 @@ iniconfig==2.3.0
 itsdangerous==2.2.0
 jinja2==3.1.6
 limits==5.8.0
-markdown==3.10.2
+markdown==3.7
 markupsafe==3.0.3
 opentelemetry-api==1.40.0
 opentelemetry-exporter-otlp-proto-common==1.40.0
@@ -45,8 +45,7 @@ pycparser==3.0
 pydantic==2.13.4
 pydantic-core==2.46.4
 pymysql==1.1.1
-pygments==2.20.0
-pytest==9.0.3
+pytest==8.3.5
 python-dotenv==1.2.2
 python-multipart==0.0.27
 pytz==2026.2
@@ -61,7 +60,7 @@ typing-extensions==4.15.0
 typing-inspection==0.4.2
 tzlocal==5.3.1
 urllib3==2.7.0
-uvicorn[standard]==0.30.6
+uvicorn==0.47.0
 uvloop==0.22.1
 watchfiles==1.1.1
 websockets==16.0
