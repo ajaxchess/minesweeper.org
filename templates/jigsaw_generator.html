@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% set _title = "Jigsaw Generator | minesweeper.org" %}
-{% set _desc  = "Upload your own image and create a custom jigsaw puzzle to share with friends." %}
+{% set _title = t.meta_title_jigen %}
+{% set _desc  = t.meta_desc_jigen %}
 {% set _canon = "https://minesweeper.org/other/jigsaw/generator" %}
 
 {% block title %}{{ _title }}{% endblock %}
@@ -107,46 +107,45 @@
 
 <div class="jgen-wrap">
   <div>
-    <h1>🧩 Jigsaw Generator</h1>
+    <h1>🧩 {{ t.jgen_title }}</h1>
     <div class="jgen-subnav">
       <a href="/other">Other Puzzles</a>
       <span>›</span>
       <a href="/other/jigsaw/daily">{{ t.common_daily_puzzle }}</a>
       <span>›</span>
-      <span>Generator</span>
+      <span>{{ t.jgen_breadcrumb }}</span>
     </div>
   </div>
 
   {% if not user %}
   <div style="background:var(--surface);border:1px solid var(--accent2);border-radius:8px;padding:0.85rem 1rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
     <span style="font-size:1.1rem;">🔒</span>
-    <span style="font-size:0.9rem;flex:1;">Sign in to upload images and create shareable puzzles. Guests can play shared puzzle links.</span>
-    <a href="/login?next=/other/jigsaw/generator" style="padding:0.4rem 1rem;background:var(--accent2);color:#fff;border-radius:5px;text-decoration:none;font-size:0.85rem;font-weight:700;white-space:nowrap;">Sign in</a>
+    <span style="font-size:0.9rem;flex:1;">{{ t.jgen_signin_msg }}</span>
+    <a href="/login?next=/other/jigsaw/generator" style="padding:0.4rem 1rem;background:var(--accent2);color:#fff;border-radius:5px;text-decoration:none;font-size:0.85rem;font-weight:700;white-space:nowrap;">{{ t.jgen_signin_btn }}</a>
   </div>
   {% endif %}
 
   <form id="jgen-form" enctype="multipart/form-data">
     <div class="jgen-section">
-      <h2>Upload Image</h2>
+      <h2>{{ t.jgen_upload_h2 }}</h2>
       <div>
-        <label class="jgen-label" for="jgen-file">Image (JPG or PNG, max 5MB)</label>
+        <label class="jgen-label" for="jgen-file">{{ t.jgen_file_label }}</label>
         <input class="jgen-input" type="file" id="jgen-file" name="file"
                accept="image/jpeg,image/png" {% if not user %}disabled{% endif %}>
       </div>
       <img id="jgen-preview" alt="Preview">
       <div>
-        <label class="jgen-label" for="jgen-name">Puzzle title (optional)</label>
+        <label class="jgen-label" for="jgen-name">{{ t.jgen_name_label }}</label>
         <input class="jgen-input" type="text" id="jgen-name" name="display_name"
-               maxlength="128" placeholder="e.g. My holiday photo"
+               maxlength="128" placeholder="{{ t.jgen_name_placeholder }}"
                {% if not user %}disabled{% endif %}>
       </div>
     </div>
 
     <div class="jgen-section" style="margin-top:1rem;">
-      <h2>Share URL will include difficulty — choose when sharing</h2>
+      <h2>{{ t.jgen_url_h2 }}</h2>
       <p style="font-size:0.82rem;color:var(--text-dim);margin:0;">
-        After uploading, you'll get a link. Add <code>?difficulty=beginner</code>,
-        <code>intermediate</code>, or <code>expert</code> to set the difficulty for your friend.
+        {{ t.jgen_url_hint | safe }}
       </p>
       <input type="hidden" id="jgen-hash" name="board_hash" value="">
     </div>
@@ -155,27 +154,27 @@
       <button type="submit" class="jgen-btn jgen-btn-primary" id="jgen-submit"
               {% if not user %}disabled title="Sign in to upload"
               {% elif photos|length >= limit %}disabled title="Limit reached ({{ limit }})"{% endif %}>
-        ⬆ Upload &amp; Create Puzzle
+        ⬆ {{ t.jgen_submit_btn }}
       </button>
       {% if user and photos|length >= limit %}
-      <p style="font-size:0.82rem;color:var(--text-dim);">Storage limit reached ({{ limit }} puzzles). Delete some to upload more.</p>
+      <p style="font-size:0.82rem;color:var(--text-dim);">{{ t.jgen_limit_msg }}</p>
       {% endif %}
       <div id="jgen-msg"></div>
     </div>
   </form>
 
   <div id="jgen-link-box">
-    <strong>Puzzle created!</strong>
+    <strong>{{ t.jgen_created }}</strong>
     <div class="jgen-link-row">
       <div id="jgen-link-url"></div>
       <button id="jgen-copy-btn" type="button">{{ t.duel_copy }}</button>
     </div>
-    <small style="color:var(--text-dim);font-size:0.8rem;">Share this link. Add <code>?difficulty=beginner|intermediate|expert</code> to set the piece count.</small>
+    <small style="color:var(--text-dim);font-size:0.8rem;">{{ t.jgen_share_hint | safe }}</small>
   </div>
 
   {% if photos %}
   <div class="jgen-section">
-    <h2>Your Puzzles ({{ photos|length }}/{{ limit }})</h2>
+    <h2>{{ t.jgen_your_puzzles_h2 }} ({{ photos|length }}/{{ limit }})</h2>
     <div class="jgen-saved-list">
       {% for p in photos %}
       <div class="jgen-saved-item">
@@ -183,20 +182,32 @@
              src="/static/uploads/jigsaw/{{ p.filename }}"
              alt="{{ p.display_name or 'Puzzle' }}" loading="lazy">
         <div class="jgen-saved-info">
-          <div><a href="/other/jigsaw/photo/{{ p.board_hash }}">{{ p.display_name or 'Untitled' }}</a></div>
+          <div><a href="/other/jigsaw/photo/{{ p.board_hash }}">{{ p.display_name or t.jgen_untitled }}</a></div>
           <small>{{ p.created_at.strftime("%Y-%m-%d") }}</small>
         </div>
         <button class="jgen-delete-btn"
-                onclick="jigDeletePhoto('{{ p.board_hash }}')">Delete</button>
+                onclick="jigDeletePhoto('{{ p.board_hash }}')">{{ t.jgen_delete_btn }}</button>
       </div>
       {% endfor %}
     </div>
   </div>
   {% elif user %}
-  <p style="color:var(--text-dim);font-size:0.9rem;">You haven't uploaded any puzzles yet.</p>
+  <p style="color:var(--text-dim);font-size:0.9rem;">{{ t.jgen_no_puzzles }}</p>
   {% endif %}
 </div>
 
+<script>
+var JGEN_I18N = {
+  selectImage:   {{ t.jgen_js_select_image | tojson }},
+  uploading:     {{ t.jgen_js_uploading | tojson }},
+  uploadFailed:  {{ t.jgen_js_upload_failed | tojson }},
+  uploadRetry:   {{ t.jgen_js_upload_retry | tojson }},
+  copied:        {{ t.jgen_js_copied | tojson }},
+  copy:          {{ t.jgen_js_copy | tojson }},
+  deleteConfirm: {{ t.jgen_js_delete_confirm | tojson }},
+  deleteFailed:  {{ t.jgen_js_delete_failed | tojson }},
+};
+</script>
 <script>
 (function () {
   'use strict';
@@ -208,7 +219,12 @@
     fileInput.addEventListener('change', () => {
       const f = fileInput.files[0];
       if (!f) { preview.style.display = 'none'; return; }
-      preview.src = URL.createObjectURL(f);
+      const blobUrl = URL.createObjectURL(f);
+      let safeBlobUrl;
+      try { const u = new URL(blobUrl); safeBlobUrl = u.protocol === 'blob:' ? u.href : null; }
+      catch (_) { safeBlobUrl = null; }
+      if (!safeBlobUrl) { URL.revokeObjectURL(blobUrl); return; }
+      preview.src = safeBlobUrl;
       preview.style.display = 'block';
       // Generate a hash from filename+size+lastModified
       const raw = f.name + f.size + f.lastModified + Date.now() + Math.random();
@@ -228,10 +244,10 @@
       const msg = document.getElementById('jgen-msg');
       const btn = document.getElementById('jgen-submit');
       const hashVal = document.getElementById('jgen-hash').value;
-      if (!hashVal) { msg.textContent = 'Please select an image first.'; return; }
+      if (!hashVal) { msg.textContent = JGEN_I18N.selectImage; return; }
       const fd = new FormData(form);
       btn.disabled = true;
-      msg.textContent = 'Uploading…';
+      msg.textContent = JGEN_I18N.uploading;
       try {
         const r = await fetch('/api/jigsaw/upload', {
           method: 'POST',
@@ -246,11 +262,11 @@
           document.getElementById('jgen-link-url').textContent = url;
           linkBox.style.display = 'flex';
         } else {
-          msg.textContent = data.detail || 'Upload failed.';
+          msg.textContent = data.detail || JGEN_I18N.uploadFailed;
           btn.disabled = false;
         }
       } catch (err) {
-        msg.textContent = 'Upload failed. Please try again.';
+        msg.textContent = JGEN_I18N.uploadRetry;
         btn.disabled = false;
       }
     });
@@ -262,21 +278,21 @@
     copyBtn.addEventListener('click', () => {
       const url = document.getElementById('jgen-link-url').textContent;
       navigator.clipboard.writeText(url).then(() => {
-        copyBtn.textContent = 'Copied!';
-        setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+        copyBtn.textContent = JGEN_I18N.copied;
+        setTimeout(() => copyBtn.textContent = JGEN_I18N.copy, 2000);
       });
     });
   }
 })();
 
 function jigDeletePhoto(hash) {
-  if (!confirm('Delete this puzzle?')) return;
+  if (!confirm(JGEN_I18N.deleteConfirm)) return;
   fetch('/api/jigsaw/delete-photo/' + hash, {
     method: 'POST',
     headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
   }).then(r => r.json()).then(d => {
     if (d.ok) location.reload();
-    else alert('Delete failed.');
+    else alert(JGEN_I18N.deleteFailed);
   });
 }
 </script>

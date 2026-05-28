@@ -239,10 +239,16 @@ def get_level_progress(
         m = _extract_level_mastery(a.level_mastery_json, level)
         if m is None:
             continue
+        # Normalise to UTC-aware; DB stores naive UTC datetimes
+        created_at_utc = (
+            a.created_at.replace(tzinfo=timezone.utc)
+            if a.created_at and a.created_at.tzinfo is None
+            else a.created_at
+        )
         data_points.append({
             "game_replay_id": a.game_replay_id,
             "created_at": a.created_at.isoformat() if a.created_at else "",
-            "created_at_obj": a.created_at,
+            "created_at_obj": created_at_utc,
             "mastery": m,
             "time_ms": None,    # filled below
             "three_bv_per_sec": a.three_bv_per_sec,
@@ -271,7 +277,7 @@ def get_level_progress(
             dp["time_ms"] = time_map.get(dp["game_replay_id"])
 
     # Sort oldest → newest for trend analysis, then reverse for response
-    data_points.sort(key=lambda d: d["created_at_obj"] or datetime.min)
+    data_points.sort(key=lambda d: d["created_at_obj"] or datetime.min.replace(tzinfo=timezone.utc))
 
     # Current mastery = rolling avg of the last 10 games (or all if fewer)
     recent_n = min(10, len(data_points))

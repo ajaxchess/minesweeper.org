@@ -143,9 +143,6 @@ async def duel_join(request: Request, game_id: str):
 # ── Page: PvP matchmaking lobby ───────────────────────────────────────────────
 @duel_router.get("/pvp", response_class=HTMLResponse)
 async def pvp_lobby(request: Request, m: Optional[str] = None):
-    # No explicit mode → land on vs-Bot by default
-    if not m:
-        return RedirectResponse("/pvp/bot", status_code=302)
     if m == "quick":
         rows, cols, mines = QUICK_ROWS, QUICK_COLS, QUICK_MINES
     else:

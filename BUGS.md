@@ -1,3 +1,76 @@
+B51 CodeQL: Uncontrolled data used in path expression — main.py admin/analysis route.
+   Root cause: real_base = os.path.realpath(active_dir) was derived from user-supplied
+   `folder` param, making all startsWith(real_base) checks tainted-vs-tainted comparisons
+   that CodeQL cannot treat as sanitization.
+   Fixes:
+   - Compute real_analysis = os.path.realpath(analysis_dir) once (untainted constant)
+     and use it for all containment checks instead of real_base.
+   - Replace ".." in folder string check with re.fullmatch(r'[A-Za-z0-9_-]+', folder)
+     which CodeQL recognises as sanitization, plus realpath+startsWith guard.
+   - For doc reads: assign md_real/html_real once, check once, open once (avoids TOCTOU
+     and makes the single sanitized variable clear to CodeQL's taint tracker).
+   - For src reads: realpath computed inline → startsWith(real_analysis) checked before open.
+
+B50 CodeQL: DOM text reinterpreted as HTML in archive_index.html, fifteen_puzzle_generator.js,
+   fifteen_puzzle_member_generator.js, jigsaw_generator.html.
+   (1) archive_index.html:82 — `window.location.href` built from unvalidated DOM select/input
+       values. Fixed by allowlist-checking mode and guess values and regex-validating the date
+       before constructing the URL.
+   (2) fifteen_puzzle_generator.js:197 and fifteen_puzzle_member_generator.js:156 — `img.src`
+       assigned directly from `URL.createObjectURL(file)` without confirming the URL is a
+       blob: origin. Fixed by checking `startsWith('blob:')` before assigning to src.
+   (3) CSS injection: `backgroundImage = 'url(' + blobUrl + ')'` — unquoted URL in CSS
+       string. Fixed by wrapping in double-quotes: `'url("' + blobUrl + '")'`.
+   (4) jigsaw_generator.html:222 — same `img.src = URL.createObjectURL(f)` pattern; same
+       blob: startsWith guard applied.
+
+B43 /other/mahjong missing h1 — route was a 302 redirect with no HTML body.
+   Bing Webmaster Tools flagged the URL as missing h1 because a redirect response
+   has no HTML content. Fix: serve static/mah/index.html directly at /other/mahjong;
+   the SPA's <base href="/other/mahjong/"> keeps all asset paths valid.
+
+B42 meta_kw_* duplicate keys in translations.py put wrong-language keywords in 4 locales.
+   Python dict duplicate-key semantics (last wins) caused: en → Russian keywords,
+   eo → Portuguese keywords, es → Italian keywords, pl → Thai keywords.
+   The correct keywords already existed in the proper locale blocks (ru, pt, it, th);
+   the misplaced duplicates in en/eo/es/pl were removed.
+   Fix: removed 4 lines each from en, eo, es, pl locale blocks in translations.py.
+
+B41 Mosaic "Puzzle of the Day" badge label hardcoded English in mosaic.js.
+   mosaic.js overwrote the server-rendered translated label on every game init.
+   Fix: expose ms_label_potd / ms_label_random via window.T; use in mosaic.js.
+
+B40 rush.html SEO article body is hardcoded English — not localised for any locale.
+   The SEO <article> block (h2, sections, FAQs) has no translation keys; it renders
+   in English on all locale-prefixed URLs (e.g. /tl/rush, /de/rush, etc.).
+   Fix: extract all body text into rush_body_* translation keys and translate for
+   all 15 locales (en, eo, de, es, th, uk, fr, ko, ja, zh, pl, tl, ru, pt, it).
+
+B39 main.py admin analysis page: path traversal via user-controlled src/doc params.
+   CodeQL flagged line 7289: src (query param) used in open() after only an
+   in-list guard that CodeQL does not recognise as sanitization.
+   Fixed by adding os.path.realpath() containment checks for both the doc and
+   src paths, asserting the resolved path starts with realpath(active_dir).
+
+B38 replay.js leaderboard title built with innerHTML from user-controlled HASH.
+   CodeQL flagged line 626: HASH (from ?hash= URL param) flowed into innerHTML
+   via esc() which CodeQL does not recognise as a sanitizer.
+   Fixed by replacing innerHTML with DOM construction (createElement/textContent/
+   setAttribute), so HASH only reaches safe DOM property sinks.
+
+B37 profile.html updateFlag() sets img.src from unvalidated select value.
+   CodeQL flagged both country-flag and wc2026-flag updateFlag() functions: sel.value
+   is user-controlled (editable via devtools) and was used directly in a URL path
+   without validation, enabling path traversal or protocol injection.
+   Fixed by adding /^[a-z]{2}$/ guard before building the flag image URL.
+
+B36 Jigsaw generator page body is all English for non-English locales.
+   Template jigsaw_generator.html uses hardcoded English strings for all UI text.
+   Fixed by extracting to jgen_* translation keys and translating for all 12 locales.
+
+B35 Mosaic how-to-play page body is all English for non-English locales.
+   Fixed by extracting to ms_howto_* keys and translating for all 12 locales.
+
 B34 CSP blocks csi.gstatic.com (connect-src) and ep1.adtrafficquality.google (img-src).
    Google AdSense SODAR loads a tracking pixel from ep1.adtrafficquality.google via img-src,
    and the Google CSI (Client-Side Instrumentation) beacon hits csi.gstatic.com via connect-src.

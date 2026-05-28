@@ -623,7 +623,13 @@
         const rp = new URLSearchParams(window.location.search);
         rp.set('game', variant);
         const short = HASH.slice(0, 8) + '…';
-        titleEl.innerHTML = `🏆 Board High Scores — ${label} — <a href="/variants/replay/?${rp}" class="lb-replay-link" title="${esc(HASH)}">${esc(short)}</a>`;
+        const link = document.createElement('a');
+        link.href      = '/variants/replay/?' + rp.toString();
+        link.className = 'lb-replay-link';
+        link.title     = HASH;
+        link.textContent = short;
+        titleEl.textContent = `🏆 Board High Scores — ${label} — `;
+        titleEl.appendChild(link);
       } else {
         titleEl.textContent = `🏆 Board High Scores — ${label}`;
       }

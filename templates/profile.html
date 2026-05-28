@@ -74,6 +74,7 @@
         <button class="lb-tab" data-bc="intermediate_ng">Intermediate NG</button>
         <button class="lb-tab" data-bc="expert">Expert</button>
         <button class="lb-tab" data-bc="expert_ng">Expert NG</button>
+        <button class="lb-tab" data-bc="evil_ng">Evil NG</button>
       </div>
       <div id="bc-content" style="margin-top:0.75rem;">
         <p style="color:var(--text-dim);font-size:0.9rem;">Loading…</p>
@@ -273,6 +274,13 @@
           <button class="setting-toggle" id="onlose-summary-btn" onclick="setOnLose('summary')">Summary</button>
           <button class="setting-toggle" id="onlose-newgame-btn" onclick="setOnLose('new_game')">New Game</button>
         </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <span class="setting-name">Public Game Replays</span>
+          <span class="setting-desc">Allow anyone with a /game/ID link to watch your replays and see stats. Turn off to make your games private.</span>
+        </div>
+        <button class="setting-toggle" id="games-public-toggle" onclick="toggleGamesPublic()"></button>
       </div>
       <div class="setting-row">
         <div class="setting-info">
@@ -500,7 +508,7 @@
 
   <!-- ── Recent games tabs ── -->
   <div class="profile-recent">
-    <h2 class="section-title">{{ t.profile_recent_games }}</h2>
+    <h2 class="section-title">{{ t.profile_game_history }}</h2>
 
     <div class="lb-tabs" role="tablist">
       <button class="lb-tab active" data-mode="beginner">{{ t.nav_beginner }}</button>
@@ -513,19 +521,29 @@
       <button class="lb-tab" data-mode="hexsweeper" id="tab-hexsweeper" style="display:none">⬡ Hexsweeper</button>
     </div>
 
-    <div class="lb-table-wrap" style="margin-top:0.75rem">
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:0.35rem;margin:0.6rem 0 0.25rem">
+      <span style="font-size:0.8rem;color:var(--text-dim)">Show:</span>
+      <button class="rg-limit-btn active" onclick="setRecentLimit(10)">10</button>
+      <button class="rg-limit-btn" onclick="setRecentLimit(50)">50</button>
+      <button class="rg-limit-btn" onclick="setRecentLimit(100)">100</button>
+      <button class="rg-limit-btn" onclick="setRecentLimit(1000)">1000</button>
+    </div>
+
+    <div class="lb-table-wrap">
       <table class="lb-table" id="recent-table">
         <thead id="recent-thead">
           <tr>
             <th>#</th>
-            <th>{{ t.lb_col_time }}</th>
-            <th>{{ t.lb_col_board }}</th>
-            <th>{{ t.lb_col_mines }}</th>
-            <th>{{ t.lb_col_date }}</th>
+            <th>Time</th>
+            <th>Eff%</th>
+            <th>CPS</th>
+            <th>Date</th>
+            <th>NG</th>
+            <th>Watch</th>
           </tr>
         </thead>
         <tbody id="recent-body">
-          <tr><td colspan="5" class="lb-loading">{{ t.profile_loading }}</td></tr>
+          <tr><td colspan="7" class="lb-loading">{{ t.profile_loading }}</td></tr>
         </tbody>
       </table>
     </div>
@@ -765,20 +783,44 @@ async function loadStats() {
   renderRecent('beginner');
 }
 
+let recentSortCol = 'date';
+let recentSortDir = 'desc';
+let recentLimit   = 10;
+let currentRecentMode = 'beginner';
+
+function setRecentLimit(n) {
+  recentLimit = n;
+  document.querySelectorAll('.rg-limit-btn').forEach(b =>
+    b.classList.toggle('active', parseInt(b.textContent) === n)
+  );
+  renderRecent(currentRecentMode);
+}
+
+function setRecentSort(col) {
+  if (recentSortCol === col) {
+    recentSortDir = recentSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    recentSortCol = col;
+    recentSortDir = col === 'date' ? 'desc' : 'asc';
+  }
+  renderRecent(currentRecentMode);
+}
+
 function renderRecent(mode) {
+  currentRecentMode = mode;
   const body  = document.getElementById('recent-body');
   const thead = document.getElementById('recent-thead');
   const data  = allStats?.[mode];
 
   if (!data) {
-    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>${window.T.lb_col_board}</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th></tr>`;
-    body.innerHTML = `<tr><td colspan="5" class="lb-empty">${window.T.profile_no_recent}</td></tr>`;
+    thead.innerHTML = `<tr><th>#</th><th>Time</th><th>Eff%</th><th>CPS</th><th>Date</th><th>NG</th><th>Watch</th></tr>`;
+    body.innerHTML = `<tr><td colspan="7" class="lb-empty">${window.T.profile_no_recent}</td></tr>`;
     return;
   }
 
   if (mode === 'rush') {
     thead.innerHTML = `<tr><th>#</th><th>Score</th><th>Mines</th><th>Mode</th><th>${window.T.lb_col_date}</th></tr>`;
-    body.innerHTML = data.recent.map((s, i) => `
+    body.innerHTML = data.recent.slice(0, recentLimit).map((s, i) => `
       <tr>
         <td class="lb-rank">${i + 1}</td>
         <td class="lb-time">${s.score}</td>
@@ -789,7 +831,7 @@ function renderRecent(mode) {
     `).join('');
   } else if (mode === 'tentaizu') {
     thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>Puzzle Date</th><th>${window.T.lb_col_date}</th></tr>`;
-    body.innerHTML = data.recent.map((s, i) => `
+    body.innerHTML = data.recent.slice(0, recentLimit).map((s, i) => `
       <tr>
         <td class="lb-rank">${i + 1}</td>
         <td class="lb-time">${s.time_secs}s</td>
@@ -799,7 +841,7 @@ function renderRecent(mode) {
     `).join('');
   } else if (mode === 'hexsweeper') {
     thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>Board</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th></tr>`;
-    body.innerHTML = data.recent.map((s, i) => {
+    body.innerHTML = data.recent.slice(0, recentLimit).map((s, i) => {
       const t = s.time_ms ? (s.time_ms / 1000).toFixed(3) + 's' : s.time_secs + 's';
       return `
         <tr>
@@ -812,16 +854,64 @@ function renderRecent(mode) {
       `;
     }).join('');
   } else {
-    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>${window.T.lb_col_board}</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th></tr>`;
-    body.innerHTML = data.recent.map((s, i) => `
-      <tr>
-        <td class="lb-rank">${i + 1}</td>
-        <td class="lb-time">${s.time_secs}s</td>
-        <td class="lb-board">${s.rows}×${s.cols}</td>
-        <td class="lb-mines">${s.mines}</td>
-        <td class="lb-date">${s.created_at}</td>
-      </tr>
-    `).join('');
+    function si(col) {
+      if (recentSortCol !== col) return ' <span class="sort-ind">↕</span>';
+      return recentSortDir === 'asc'
+        ? ' <span class="sort-ind">↑</span>'
+        : ' <span class="sort-ind">↓</span>';
+    }
+
+    let rows = data.recent.map(s => {
+      const timeMs = s.time_ms != null ? s.time_ms : (s.time_secs * 1000);
+      const totalC = (s.left_clicks || 0) + (s.right_clicks || 0) + (s.chord_clicks || 0);
+      const eff    = s.bbbv && totalC ? Math.round(s.bbbv / totalC * 100) : null;
+      const cps    = totalC && timeMs  ? +(totalC / (timeMs / 1000)).toFixed(2) : null;
+      return { ...s, _timeMs: timeMs, _eff: eff, _cps: cps };
+    });
+
+    rows.sort((a, b) => {
+      let va, vb;
+      if      (recentSortCol === 'time') { va = a._timeMs;   vb = b._timeMs; }
+      else if (recentSortCol === 'eff')  { va = a._eff ?? -1; vb = b._eff ?? -1; }
+      else if (recentSortCol === 'cps')  { va = a._cps ?? -1; vb = b._cps ?? -1; }
+      else                               { va = a.created_at; vb = b.created_at; }
+      if (va < vb) return recentSortDir === 'asc' ? -1 : 1;
+      if (va > vb) return recentSortDir === 'asc' ?  1 : -1;
+      return 0;
+    });
+
+    rows = rows.slice(0, recentLimit);
+
+    thead.innerHTML = `<tr>
+      <th>#</th>
+      <th class="sort-th" onclick="setRecentSort('time')">Time${si('time')}</th>
+      <th class="sort-th" onclick="setRecentSort('eff')">Eff%${si('eff')}</th>
+      <th class="sort-th" onclick="setRecentSort('cps')">CPS${si('cps')}</th>
+      <th class="sort-th" onclick="setRecentSort('date')">Date/Time${si('date')}</th>
+      <th>NG</th>
+      <th>Watch</th>
+    </tr>`;
+
+    body.innerHTML = rows.map((s, i) => {
+      const timeStr  = s._timeMs ? (s._timeMs / 1000).toFixed(3) + 's' : '—';
+      const effStr   = s._eff  != null ? s._eff + '%'  : '<span class="lb-na">—</span>';
+      const cpsStr   = s._cps  != null ? s._cps        : '<span class="lb-na">—</span>';
+      const ngCell   = s.no_guess ? '✓' : '';
+      const watchCell = s.game_id
+        ? `<a href="/game/${s.game_id}">▶</a>`
+        : `<span class="lb-na">—</span>`;
+      return `
+        <tr>
+          <td class="lb-rank">${i + 1}</td>
+          <td class="lb-time">${timeStr}</td>
+          <td>${effStr}</td>
+          <td>${cpsStr}</td>
+          <td class="lb-date">${s.created_at}</td>
+          <td style="text-align:center;color:var(--accent2)">${ngCell}</td>
+          <td>${watchCell}</td>
+        </tr>
+      `;
+    }).join('');
   }
 }
 
@@ -848,6 +938,7 @@ const BC_LABELS = {
   intermediate_ng: 'Intermediate No Guess',
   expert:          'Expert',
   expert_ng:       'Expert No Guess',
+  evil_ng:         'Evil NG',
 };
 
 async function loadBootcamp() {
@@ -1127,8 +1218,9 @@ const PUBLIC_ID    = "{{ public_id }}";
 let   isPublic     = {{ 'true' if is_public else 'false' }};
 let   favoriteGame = "{{ favorite_game or '' }}";
 const VANITY_SLUG  = "{{ vanity_slug or '' }}";
-let   prefSounds   = {{ 'true' if pref_sounds   else 'false' }};
-let   prefChording = {{ 'true' if pref_chording else 'false' }};
+let   prefSounds     = {{ 'true' if pref_sounds   else 'false' }};
+let   prefChording   = {{ 'true' if pref_chording else 'false' }};
+let   gamesPublic    = {{ 'true' if games_public  else 'false' }};
 let   prefSkin     = "{{ pref_skin }}";
 let   prefOnWin    = "{{ pref_on_win }}";
 let   prefOnLose   = "{{ pref_on_lose }}";
@@ -1163,6 +1255,7 @@ async function saveSettings() {
       pref_skin:     prefSkin,
       pref_on_win:   prefOnWin,
       pref_on_lose:  prefOnLose,
+      games_public:  gamesPublic,
     }),
   });
 }
@@ -1273,7 +1366,7 @@ async function saveAbout() {
   if (saved) sel.value = saved;
 
   function updateFlag(code) {
-    if (code) {
+    if (code && /^[a-z]{2}$/.test(code)) {
       flag.src = '/static/img/country-flags/' + code + '.png';
       flag.style.display = 'inline';
     } else {
@@ -1304,7 +1397,7 @@ async function saveCountry() {
   const sel  = document.getElementById('wc2026-select');
   const flag = document.getElementById('wc2026-flag');
   function updateFlag(code) {
-    if (code) {
+    if (code && /^[a-z]{2}$/.test(code)) {
       flag.src = '/static/img/country-flags/' + code + '.png';
       flag.style.display = 'inline';
     } else {
@@ -1404,6 +1497,20 @@ function toggleChording() {
 }
 
 updateChordingUI();
+
+function updateGamesPublicUI() {
+  const btn = document.getElementById('games-public-toggle');
+  btn.textContent = gamesPublic ? 'ON' : 'OFF';
+  btn.classList.toggle('active', gamesPublic);
+}
+
+function toggleGamesPublic() {
+  gamesPublic = !gamesPublic;
+  updateGamesPublicUI();
+  saveSettings();
+}
+
+updateGamesPublicUI();
 
 // ── Skin ──────────────────────────────────────────────────────────────────────
 function setSkin(skin) {

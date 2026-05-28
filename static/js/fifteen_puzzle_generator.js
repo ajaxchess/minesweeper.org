@@ -109,7 +109,7 @@
         var tileNum = tiles[i] - 1; // 0-based solved position
         var solvedCol = tileNum % COLS;
         var solvedRow = Math.floor(tileNum / COLS);
-        cell.style.backgroundImage = 'url(' + imgSrc + ')';
+        cell.style.backgroundImage = 'url("' + imgSrc + '")';
         cell.style.backgroundSize = (COLS * 100) + '% ' + (ROWS * 100) + '%';
         cell.style.backgroundPosition =
           (solvedCol / (COLS - 1) * 100) + '% ' + (solvedRow / (ROWS - 1) * 100) + '%';
@@ -183,7 +183,9 @@
     var err = validateImageFile(file);
     if (err) { alert(err); e.target.value = ''; return; }
     if (currentObjectURL) URL.revokeObjectURL(currentObjectURL);
-    currentObjectURL = URL.createObjectURL(file);
+    var blobUrl = URL.createObjectURL(file);
+    if (!blobUrl.startsWith('blob:')) return;
+    currentObjectURL = blobUrl;
     renderPreview();
   }
 
@@ -194,7 +196,12 @@
     if (err) { alert(err); e.target.value = ''; return; }
     var preview = document.getElementById('gen-reveal-preview');
     if (preview) {
-      preview.src = URL.createObjectURL(file);
+      var revealUrl = URL.createObjectURL(file);
+      var safeRevealUrl;
+      try { var ru = new URL(revealUrl); safeRevealUrl = ru.protocol === 'blob:' ? ru.href : null; }
+      catch (_) { safeRevealUrl = null; }
+      if (!safeRevealUrl) { URL.revokeObjectURL(revealUrl); return; }
+      preview.src = safeRevealUrl;
       preview.style.display = 'block';
     }
   }

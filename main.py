@@ -1,6 +1,6 @@
 from datetime import date, timedelta, datetime, timezone
 from zoneinfo import ZoneInfo
-from urllib.parse import quote
+from urllib.parse import quote, urlparse as _urlparse
 import uuid
 import re
 import subprocess
@@ -21,7 +21,7 @@ from pydantic import BaseModel, Field, field_validator
 from countries import COUNTRIES as ALL_COUNTRIES, VALID_COUNTRY_CODES
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, Pattern, PatternRevision, UserRole, TametsiHexCompletion, get_db, init_db, SessionLocal
 from phase2_analyzer import analyze_replay_async
 # Near the top of main.py with the other model imports
 from phase2_analyzer import GameAnalysis
@@ -158,7 +158,10 @@ setup_telemetry(app, db_engine=_db_module.engine)
 import os
 if os.environ.get("ENABLE_ANALYTICS_API", "true").lower() == "true":
     from phase4_routes import router as analytics_router
+    from phase7_drills import api_router as drills_api_router, page_router as drills_page_router
     app.include_router(analytics_router)
+    app.include_router(drills_api_router)
+    app.include_router(drills_page_router)
 
 @app.middleware("http")
 async def count_requests(request: Request, call_next):
@@ -310,6 +313,24 @@ templates.env.globals["get_breadcrumbs"] = _get_breadcrumbs
 templates.env.globals["quest_config"] = quest_config
 templates.env.globals["puzzle_games"] = PUZZLE_GAMES
 
+# ── Redirect safety helpers ──────────────────────────────────────────────────
+_LANG_CODE_RE = re.compile(r'^[a-z]{2,10}(?:-[a-z]{2,10})?$')
+
+def _safe_lang_prefix(lang: str) -> str:
+    """Return /{lang} only when lang is a validated language-code token.
+    The regex check breaks CodeQL's taint trace from request data."""
+    if lang != "en" and _LANG_CODE_RE.fullmatch(lang):
+        return f"/{lang}"
+    return ""
+
+def _safe_relative_url(url: str, fallback: str = "/") -> str:
+    """Reject URLs that carry a scheme or netloc (open-redirect guard).
+    urlparse is recognised by CodeQL as a URL sanitizer."""
+    parsed = _urlparse(url)
+    if parsed.scheme or parsed.netloc:
+        return fallback
+    return url
+
 # ── Language-prefix middleware ────────────────────────────────────────────────
 # Registered last → runs outermost (first) for every request.
 # Responsibilities:
@@ -353,6 +374,9 @@ async def lang_prefix_middleware(request: Request, call_next):
         bare_path = "/" + (parts[1] if len(parts) > 1 else "")
         if bare_path == "//":
             bare_path = "/"
+        # Redirect /{lang}/ → /{lang} to avoid trailing-slash duplicate content
+        if bare_path == "/" and path.endswith("/"):
+            return RedirectResponse(url=f"/{lang_code}", status_code=301)
         request.state.lang = lang_code
         request.scope["path"] = bare_path
         request.scope["raw_path"] = bare_path.encode("utf-8")
@@ -423,6 +447,7 @@ async def robots():
         "Disallow: /duel/room/\n"
         "Disallow: /api/\n"
         "Disallow: /ws/\n"
+        "Disallow: /auth/\n"
         "Disallow: /login\n"
         "Disallow: /logout\n"
         "Disallow: /register\n"
@@ -955,10 +980,11 @@ def shutdown():
 async def set_lang(request: Request, lang: str = "en", next: Optional[str] = None):
     if lang not in SUPPORTED_LANGS:
         lang = "en"
+    # Re-validate: only lowercase letters allowed in cookie value (no header-injection chars)
+    if not re.fullmatch(r'[a-z]{2,5}', lang):
+        lang = "en"
     redirect_to = next or request.headers.get("referer", "/")
-    # Safety: only allow relative URLs to prevent open redirect
-    if not redirect_to.startswith("/") or redirect_to.startswith("//"):
-        redirect_to = "/"
+    redirect_to = _safe_relative_url(redirect_to)
     # Strip any existing lang prefix so we never stack prefixes (e.g. /de/fr/about)
     parts = redirect_to.lstrip("/").split("/", 1)
     if parts and parts[0] in SUPPORTED_LANGS:
@@ -1162,7 +1188,12 @@ async def login(request: Request):
 
 @app.get("/auth/callback")
 async def auth_callback(request: Request, db: Session = Depends(get_db)):
-    token = await oauth.google.authorize_access_token(request)
+    try:
+        token = await oauth.google.authorize_access_token(request)
+    except Exception:
+        # Stale OAuth state (service restart, crawler, or double-callback).
+        # Redirect to login so the user can try again cleanly.
+        return RedirectResponse(url="/auth/login?error=session_expired")
     user  = token.get("userinfo")
     if user:
         email = user.get("email", "")
@@ -1231,6 +1262,8 @@ async def auth_callback(request: Request, db: Session = Depends(get_db)):
                 db.commit()
 
     next_url = request.session.pop("next", "/")
+    if not isinstance(next_url, str) or not next_url.startswith("/") or next_url.startswith("//"):
+        next_url = "/"
     return RedirectResponse(url=next_url)
 
 @app.get("/auth/logout")
@@ -1339,17 +1372,15 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
 
 
 def _enrich_with_profiles(scores: list, db) -> list:
-    """Add profile_url and country to score dicts for entries with a user_email."""
+    """Add profile_url, country, and game_id to score dicts."""
     emails = [s.user_email for s in scores if s.user_email]
-    if not emails:
-        return [s.to_dict() for s in scores]
 
     profiles = (
         db.query(UserProfile.email, UserProfile.vanity_slug, UserProfile.public_id,
                  UserProfile.is_public, UserProfile.country)
         .filter(UserProfile.email.in_(emails))
         .all()
-    )
+    ) if emails else []
     url_map:     dict = {}
     country_map: dict = {}
     for p in profiles:
@@ -1362,11 +1393,21 @@ def _enrich_with_profiles(scores: list, db) -> list:
         elif p.public_id:
             url_map[p.email] = f"/u/{p.public_id}"
 
+    # GameReplay.score_id directly references Score.id — one bulk lookup.
+    score_ids = [s.id for s in scores]
+    replay_map = {
+        r.score_id: r.id
+        for r in db.query(GameReplay.id, GameReplay.score_id)
+                   .filter(GameReplay.score_id.in_(score_ids))
+                   .all()
+    }
+
     result = []
     for s in scores:
         d = s.to_dict()
         d["profile_url"] = url_map.get(s.user_email) if s.user_email else None
         d["country"]     = country_map.get(s.user_email) if s.user_email else None
+        d["game_id"]     = replay_map.get(s.id)
         result.append(d)
     return result
 
@@ -1780,63 +1821,93 @@ def puzzles_hub(request: Request):
 
 @app.get("/puzzles/tametsi", response_class=HTMLResponse)
 def puzzles_tametsi_redirect(request: Request):
-    return RedirectResponse("/tametsi", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/tametsi", status_code=301)
 
 @app.get("/puzzles/tentaizu", response_class=HTMLResponse)
 def puzzles_tentaizu_redirect(request: Request):
-    return RedirectResponse("/tentaizu", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/tentaizu", status_code=301)
 
 @app.get("/puzzles/mosaic", response_class=HTMLResponse)
 def puzzles_mosaic_redirect(request: Request):
-    return RedirectResponse("/mosaic", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/mosaic", status_code=301)
 
 @app.get("/puzzles/numbers-match", response_class=HTMLResponse)
 def puzzles_numbers_match_redirect(request: Request):
-    return RedirectResponse("/numbers-match", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/numbers-match", status_code=301)
 
 @app.get("/puzzles/15puzzle", response_class=HTMLResponse)
 def puzzles_15puzzle_redirect(request: Request):
-    return RedirectResponse("/other/15puzzle", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/15puzzle", status_code=301)
 
 @app.get("/puzzles/15-puzzle", response_class=HTMLResponse)
 def puzzles_15_puzzle_redirect(request: Request):
-    return RedirectResponse("/other/15puzzle", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/15puzzle", status_code=301)
 
 @app.get("/puzzles/2048", response_class=HTMLResponse)
 def puzzles_2048_redirect(request: Request):
-    return RedirectResponse("/other/2048", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/2048", status_code=301)
 
 @app.get("/puzzles/2048hex", response_class=HTMLResponse)
 def puzzles_2048hex_redirect(request: Request):
-    return RedirectResponse("/other/2048hex", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/2048hex", status_code=301)
 
 @app.get("/puzzles/2048-hexagon", response_class=HTMLResponse)
 def puzzles_2048_hexagon_redirect(request: Request):
-    return RedirectResponse("/other/2048hex", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/2048hex", status_code=301)
 
 @app.get("/puzzles/mahjong", response_class=HTMLResponse)
 def puzzles_mahjong_redirect(request: Request):
-    return RedirectResponse("/other/mahjong", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/mahjong", status_code=301)
 
 @app.get("/puzzles/mahjong-solitaire", response_class=HTMLResponse)
 def puzzles_mahjong_solitaire_redirect(request: Request):
-    return RedirectResponse("/other/mahjong", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/mahjong", status_code=301)
 
 @app.get("/puzzles/jigsaw", response_class=HTMLResponse)
 def puzzles_jigsaw_redirect(request: Request):
-    return RedirectResponse("/other/jigsaw", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/jigsaw", status_code=301)
 
 @app.get("/puzzles/schulte", response_class=HTMLResponse)
 def puzzles_schulte_redirect(request: Request):
-    return RedirectResponse("/other/schulte", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/schulte", status_code=301)
 
 @app.get("/puzzles/schulte-grid", response_class=HTMLResponse)
 def puzzles_schulte_grid_redirect(request: Request):
-    return RedirectResponse("/other/schulte", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/schulte", status_code=301)
 
 @app.get("/puzzles/sudoku", response_class=HTMLResponse)
 def puzzles_sudoku_redirect(request: Request):
-    return RedirectResponse("/other/sudoku", status_code=301)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/sudoku", status_code=301)
 
 @app.get("/other", response_class=HTMLResponse)
 def other_hub_redirect(request: Request):
@@ -2461,7 +2532,9 @@ def admin_unapprove_jigsaw_photo(board_hash: str, request: Request, db: Session 
 
 @app.get("/other/2048", response_class=HTMLResponse)
 def game_2048_landing(request: Request):
-    return RedirectResponse("/other/2048/daily", status_code=302)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/2048/daily", status_code=302)
 
 
 @app.get("/other/2048/daily", response_class=HTMLResponse)
@@ -2498,7 +2571,9 @@ def game_2048_howtoplay(request: Request):
 # ── 2048 Hexagon ──────────────────────────────────────────────────────────────
 @app.get("/other/2048hex", response_class=HTMLResponse)
 def game_2048hex_landing(request: Request):
-    return RedirectResponse("/other/2048hex/play", status_code=302)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/2048hex/play", status_code=302)
 
 @app.get("/other/2048hex/play", response_class=HTMLResponse)
 def game_2048hex_play(request: Request):
@@ -2634,7 +2709,9 @@ _SCHULTE_SIZES = set(range(3, 11))   # 3–10 inclusive
 
 @app.get("/other/schulte", response_class=HTMLResponse)
 def schulte_landing(request: Request):
-    return RedirectResponse("/other/schulte/play", status_code=302)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/schulte/play", status_code=302)
 
 @app.get("/other/schulte/play", response_class=HTMLResponse)
 def schulte_play(request: Request):
@@ -2785,7 +2862,9 @@ _SUDOKU_DIFFICULTIES = {"daily", "easy", "medium", "hard", "expert"}
 
 @app.get("/other/sudoku", response_class=HTMLResponse)
 def sudoku_landing(request: Request):
-    return RedirectResponse("/other/sudoku/daily", status_code=302)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/sudoku/daily", status_code=302)
 
 
 def _sudoku_seed(difficulty: str, today: str) -> int:
@@ -3511,6 +3590,7 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "vanity_slug":   profile.vanity_slug if profile else "",
         "pref_sounds":   profile.pref_sounds   if profile else False,
         "pref_chording": profile.pref_chording if profile else True,
+        "games_public":  getattr(profile, "games_public", True) if profile else True,
         "pref_skin":     profile.pref_skin     if profile else site_settings.active_skin(),
         "pref_on_win":   profile.pref_on_win   if profile else 'summary',
         "pref_on_lose":  profile.pref_on_lose  if profile else 'summary',
@@ -3562,6 +3642,129 @@ async def replay_page(request: Request):
         "mode": "replay",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
+    })
+
+
+# ── F101 Game View & My Games ─────────────────────────────────────────────────
+
+_MODE_LABELS = {
+    "beginner":     "Beginner",
+    "intermediate": "Intermediate",
+    "expert":       "Expert",
+    "evil":         "Evil NG",
+    "custom":       "Custom",
+    "daily":        "Daily",
+    "no-guess":     "No-Guess",
+}
+
+
+@app.get("/game/{game_id}", response_class=HTMLResponse)
+async def game_view_page(game_id: int, request: Request, db: Session = Depends(get_db)):
+    import json as _json
+    replay = db.get(GameReplay, game_id)
+    if not replay or not replay.board_hash or not replay.log_json:
+        raise HTTPException(status_code=404)
+
+    player_profile = None
+    player_name    = "Anonymous"
+    player_slug    = None
+    player_country = None
+    if replay.user_email:
+        player_profile = db.query(UserProfile).filter(UserProfile.email == replay.user_email).first()
+        if player_profile:
+            player_name    = player_profile.display_name
+            player_slug    = player_profile.vanity_slug or player_profile.public_id
+            player_country = player_profile.country
+            if not getattr(player_profile, "games_public", True):
+                raise HTTPException(status_code=404)
+
+    try:
+        log_data = _json.loads(replay.log_json)
+    except Exception:
+        raise HTTPException(status_code=404)
+
+    time_secs       = replay.time_ms / 1000 if replay.time_ms else None
+    three_bv_per_sec = (
+        round(replay.bbbv / time_secs, 3)
+        if replay.bbbv and time_secs else None
+    )
+    total_clicks = (
+        (replay.left_clicks or 0)
+        + (replay.right_clicks or 0)
+        + (replay.chord_clicks or 0)
+    )
+    efficiency = (
+        round(replay.bbbv / total_clicks * 100)
+        if replay.bbbv and total_clicks else None
+    )
+
+    site_url = str(request.base_url).rstrip("/")
+    play_url = None
+    if replay.board_hash:
+        from urllib.parse import quote as _quote
+        play_url = (
+            "/variants/replay/?"
+            + f"rows={replay.rows}&cols={replay.cols}&mines={replay.mines}"
+            + f"&hash={_quote(replay.board_hash, safe='')}"
+            + (f"&date={replay.created_at.strftime('%Y-%m-%d')}" if replay.created_at else "")
+            + (f"&mode={replay.mode}" if replay.mode else "")
+            + "&game=standard"
+        )
+
+    return templates.TemplateResponse(request, "game_view.html", {
+        "mode":            "game-view",
+        "user":            get_current_user(request),
+        "lang":            get_lang(request),
+        "t":               get_t(request),
+        "game_id":         game_id,
+        "replay":          replay,
+        "log_data":        log_data,
+        "player_name":     player_name,
+        "player_slug":     player_slug,
+        "player_country":  player_country,
+        "time_secs":       round(time_secs, 3) if time_secs else None,
+        "three_bv_per_sec": three_bv_per_sec,
+        "total_clicks":    total_clicks,
+        "efficiency":      efficiency,
+        "mode_label":      _MODE_LABELS.get(replay.mode or "", replay.mode or "Custom"),
+        "site_url":        site_url,
+        "play_url":        play_url,
+    })
+
+
+@app.get("/profile/games", response_class=HTMLResponse)
+async def my_games_page(request: Request, page: int = Query(1, ge=1),
+                         db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse("/login?next=/profile/games", status_code=302)
+
+    PAGE_SIZE = 20
+    offset    = (page - 1) * PAGE_SIZE
+    q = (
+        db.query(GameReplay)
+        .filter(
+            GameReplay.user_email == user["email"],
+            GameReplay.board_hash.isnot(None),
+            GameReplay.log_json.isnot(None),
+            GameReplay.log_json != "",
+        )
+    )
+    total       = q.count()
+    games       = q.order_by(GameReplay.created_at.desc()).offset(offset).limit(PAGE_SIZE).all()
+    total_pages = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
+
+    return templates.TemplateResponse(request, "my_games.html", {
+        "mode":        "my-games",
+        "user":        user,
+        "lang":        get_lang(request),
+        "t":           get_t(request),
+        "games":       games,
+        "page":        page,
+        "total":       total,
+        "total_pages": total_pages,
+        "page_size":   PAGE_SIZE,
+        "mode_labels": _MODE_LABELS,
     })
 
 
@@ -5067,21 +5270,26 @@ async def tentaizu_easy_permalink(request: Request, date_str: str):
 # /tentaizu/easy-5x5-6/20260314 →  301 /tentaizu/easy-5x5-6/2026-03-14
 @app.get("/tentaizu/{puzzle_type}/{date_str}", response_class=HTMLResponse)
 async def tentaizu_type_permalink(request: Request, puzzle_type: str, date_str: str):
-    import re
-    valid_types = {"daily", "easy-5x5-6"}
-    if puzzle_type not in valid_types:
+    # Allowlist lookup: use the dict value (hardcoded string), not the user input directly
+    _valid = {"daily": "daily", "easy-5x5-6": "easy-5x5-6"}
+    safe_type = _valid.get(puzzle_type)
+    if safe_type is None:
         return RedirectResponse("/tentaizu", status_code=302)
-    # Accept YYYYMMDD → convert to YYYY-MM-DD canonical form
+    # YYYYMMDD → convert to YYYY-MM-DD via int() to break taint chain
     m = re.match(r"^(\d{4})(\d{2})(\d{2})$", date_str)
     if m:
-        canonical = f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
-        if puzzle_type == "daily":
+        y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        canonical = f"{y:04d}-{mo:02d}-{d:02d}"
+        if safe_type == "daily":
             return RedirectResponse(f"/tentaizu/{canonical}", status_code=301)
-        return RedirectResponse(f"/tentaizu/{puzzle_type}/{canonical}", status_code=301)
+        return RedirectResponse(f"/tentaizu/{safe_type}/{canonical}", status_code=301)
     # YYYY-MM-DD for daily → strip type prefix
-    if re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
-        if puzzle_type == "daily":
-            return RedirectResponse(f"/tentaizu/{date_str}", status_code=301)
+    m2 = re.match(r"^(\d{4})-(\d{2})-(\d{2})$", date_str)
+    if m2:
+        y, mo, d = int(m2.group(1)), int(m2.group(2)), int(m2.group(3))
+        safe_date = f"{y:04d}-{mo:02d}-{d:02d}"
+        if safe_type == "daily":
+            return RedirectResponse(f"/tentaizu/{safe_date}", status_code=301)
     return RedirectResponse("/tentaizu", status_code=302)
 
 
@@ -5494,12 +5702,34 @@ def _build_stats(email: str, db: Session) -> dict:
             stats[mode] = None
             continue
         times = [s.time_secs for s in scores]
+        recent_all = scores[:1000]
+
+        # GameReplay.score_id references Score.id, not GameHistory.id.
+        # Join via shared (board_hash, time_ms) fields instead.
+        hashes = list({s.board_hash for s in recent_all if s.board_hash})
+        replay_map: dict = {}
+        if hashes:
+            for r in (
+                db.query(GameReplay.id, GameReplay.board_hash, GameReplay.time_ms)
+                  .filter(
+                      GameReplay.user_email == email,
+                      GameReplay.board_hash.in_(hashes),
+                  )
+                  .all()
+            ):
+                replay_map.setdefault((r.board_hash, r.time_ms), r.id)
+
+        recent_dicts = []
+        for s in recent_all:
+            d = s.to_dict()
+            d["game_id"] = replay_map.get((s.board_hash, s.time_ms)) if s.board_hash and s.time_ms else None
+            recent_dicts.append(d)
         stats[mode] = {
             "games_played": len(scores),
             "best_time":    min(times),
             "avg_time":     round(sum(times) / len(times), 1),
             "worst_time":   max(times),
-            "recent":       [s.to_dict() for s in scores[:10]],
+            "recent":       recent_dicts,
         }
 
     rush_scores = (
@@ -5595,6 +5825,7 @@ def _build_bootcamp(email: str, db: Session) -> dict:
         ("intermediate", True),
         ("expert",       False),
         ("expert",       True),
+        ("evil",         True),
     ]
     for mode, no_guess in combos:
         key = f"{mode}_ng" if no_guess else mode
@@ -5719,6 +5950,7 @@ class ProfileSettingsUpdate(BaseModel):
     pref_skin:     str  = site_settings.active_skin()
     pref_on_win:   str  = 'summary'
     pref_on_lose:  str  = 'summary'
+    games_public:  bool = True
 
 
 @app.post("/api/profile/settings")
@@ -5733,6 +5965,8 @@ def update_profile_settings(payload: ProfileSettingsUpdate, request: Request, db
     profile.favorite_game = payload.favorite_game or None
     profile.pref_sounds   = payload.pref_sounds
     profile.pref_chording = payload.pref_chording
+    if hasattr(profile, "games_public"):
+        profile.games_public = payload.games_public
     _skin = payload.pref_skin if payload.pref_skin in site_settings.ALLOWED_SKINS else site_settings.DEFAULT_SKIN
     profile.pref_skin     = 'classic' if _skin == 'diana' else _skin
     profile.pref_on_win   = payload.pref_on_win  if payload.pref_on_win  in ('summary', 'new_game') else 'summary'
@@ -6057,6 +6291,78 @@ def require_admin(request: Request, user: dict | None) -> None:
         _log_admin_access(request, user, success=False, reason="email_not_in_admin_list")
         raise HTTPException(status_code=403, detail="Forbidden")
     _log_admin_access(request, user, success=True)
+
+
+def user_has_role(db: Session, user: dict | None, role: str) -> bool:
+    """True if user is in ADMIN_EMAILS (implicit all-roles) OR has the role in user_roles."""
+    if not user:
+        return False
+    email = (user.get("email") or "").lower()
+    if not email:
+        return False
+    if email in {e.lower() for e in ADMIN_EMAILS}:
+        return True
+    return db.query(UserRole).filter(
+        func.lower(UserRole.email) == email,
+        UserRole.role == role,
+    ).first() is not None
+
+
+def require_role(request: Request, user: dict | None, db: Session, role: str) -> None:
+    """Gate a route on a named role. Admins implicitly hold every role."""
+    if not user:
+        _log_admin_access(request, user, success=False, reason="not_logged_in")
+        raise HTTPException(status_code=403, detail="Forbidden")
+    if not user_has_role(db, user, role):
+        _log_admin_access(request, user, success=False, reason=f"missing_role:{role}")
+        raise HTTPException(status_code=403, detail="Forbidden")
+    _log_admin_access(request, user, success=True)
+
+
+# ── Pattern wiki helpers ─────────────────────────────────────────────────────
+_PATTERN_SECTIONS = [
+    "Holes",
+    "Holes+",
+    "High Complexity",
+    "Box Logic",
+    "Inward Chains",
+    "Chains",
+    "Combinations",
+    "Other",
+]
+
+_PATTERN_DIFFICULTIES = ["A", "B", "C", "D", "E"]
+
+
+def _pattern_slugify(value: str) -> str:
+    """Slug suitable for /patterns/{slug}. Lowercase, hyphenated, ASCII-only."""
+    value = (value or "").strip().lower()
+    value = re.sub(r"[^a-z0-9]+", "-", value)
+    value = value.strip("-")
+    return value[:128] or "pattern"
+
+
+def _save_pattern_revision(db: Session, pattern: Pattern, editor_email: str | None,
+                           edit_summary: str | None = None) -> None:
+    """Snapshot the current state of a Pattern row into pattern_revisions."""
+    db.add(PatternRevision(
+        pattern_id      = pattern.id,
+        slug            = pattern.slug,
+        name            = pattern.name,
+        aliases         = pattern.aliases,
+        section         = pattern.section,
+        depth           = pattern.depth,
+        difficulty      = pattern.difficulty,
+        parent_slug     = pattern.parent_slug,
+        sort_order      = pattern.sort_order,
+        body_md         = pattern.body_md,
+        board_json      = pattern.board_json,
+        board_image_url = pattern.board_image_url,
+        legend          = pattern.legend,
+        status          = pattern.status,
+        editor_email    = editor_email,
+        edit_summary    = edit_summary,
+    ))
 
 @app.get("/admin", response_class=HTMLResponse)
 def admin_dashboard(request: Request, db: Session = Depends(get_db)):
@@ -6971,6 +7277,334 @@ def admin_delete_comment(comment_id: int, request: Request, db: Session = Depend
     return RedirectResponse("/admin/blog", status_code=303)
 
 
+# ── Pattern Wiki Admin ───────────────────────────────────────────────────────
+# Editors and admins can manage curated minesweeper patterns at /admin/patterns.
+# Editors are granted via /admin/patterns/editors (admins only). All edits are
+# snapshotted into pattern_revisions for audit + rollback.
+
+def _parse_pattern_form(form_data) -> dict:
+    """Pull and normalize fields from the admin pattern form. Raises HTTPException
+    on malformed JSON for board_json / legend / aliases."""
+    import json as _json_local
+
+    def _json_or_none(s: str, field: str):
+        s = (s or "").strip()
+        if not s:
+            return None
+        try:
+            return _json_local.loads(s)
+        except Exception as e:
+            raise HTTPException(status_code=400,
+                                detail=f"Invalid JSON in '{field}': {e}")
+
+    section = (form_data.get("section") or "").strip()
+    if section not in _PATTERN_SECTIONS:
+        raise HTTPException(status_code=400,
+                            detail=f"Unknown section '{section}'. "
+                                   f"Allowed: {', '.join(_PATTERN_SECTIONS)}")
+
+    difficulty = (form_data.get("difficulty") or "").strip().upper() or None
+    if difficulty and difficulty not in _PATTERN_DIFFICULTIES:
+        raise HTTPException(status_code=400,
+                            detail=f"Unknown difficulty '{difficulty}'")
+
+    depth_raw = (form_data.get("depth") or "").strip()
+    depth = int(depth_raw) if depth_raw else None
+    if depth is not None and not (1 <= depth <= 20):
+        raise HTTPException(status_code=400, detail="depth must be between 1 and 20")
+
+    sort_raw = (form_data.get("sort_order") or "0").strip()
+    try:
+        sort_order = int(sort_raw)
+    except ValueError:
+        sort_order = 0
+
+    status = (form_data.get("status") or "draft").strip().lower()
+    if status not in ("draft", "published"):
+        status = "draft"
+
+    return {
+        "name":            (form_data.get("name") or "").strip()[:128],
+        "aliases":         _json_or_none(form_data.get("aliases"),    "aliases"),
+        "section":         section,
+        "depth":           depth,
+        "difficulty":      difficulty,
+        "parent_slug":     (form_data.get("parent_slug") or "").strip() or None,
+        "sort_order":      sort_order,
+        "body_md":         form_data.get("body_md") or "",
+        "board_json":      _json_or_none(form_data.get("board_json"), "board_json"),
+        "board_image_url": (form_data.get("board_image_url") or "").strip() or None,
+        "legend":          _json_or_none(form_data.get("legend"),     "legend"),
+        "status":          status,
+    }
+
+
+@app.get("/admin/patterns", response_class=HTMLResponse)
+def admin_patterns_list(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_role(request, user, db, "pattern_editor")
+
+    rows = (
+        db.query(Pattern)
+        .order_by(Pattern.section, Pattern.sort_order, Pattern.name)
+        .all()
+    )
+    # Group for display
+    by_section: dict[str, list] = {}
+    for p in rows:
+        by_section.setdefault(p.section, []).append(p)
+
+    return templates.TemplateResponse(request, "admin_patterns.html", {
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        "patterns_by_section": by_section,
+        "sections": _PATTERN_SECTIONS,
+        "total": len(rows),
+        "is_admin": user and user.get("email", "").lower() in {e.lower() for e in ADMIN_EMAILS},
+    })
+
+
+@app.get("/admin/patterns/new", response_class=HTMLResponse)
+def admin_pattern_new_form(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_role(request, user, db, "pattern_editor")
+    return templates.TemplateResponse(request, "admin_pattern_edit.html", {
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        "pattern": None,
+        "sections": _PATTERN_SECTIONS,
+        "difficulties": _PATTERN_DIFFICULTIES,
+        "form_action": "/admin/patterns/new",
+        "form_title": "New pattern",
+    })
+
+
+@app.post("/admin/patterns/new")
+async def admin_pattern_create(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_role(request, user, db, "pattern_editor")
+
+    form = await request.form()
+    fields = _parse_pattern_form(form)
+    slug = (form.get("slug") or "").strip() or _pattern_slugify(fields["name"])
+    slug = _pattern_slugify(slug)
+
+    if not fields["name"]:
+        raise HTTPException(status_code=400, detail="name is required")
+    if db.query(Pattern).filter_by(slug=slug).first():
+        raise HTTPException(status_code=409, detail=f"slug '{slug}' already exists")
+
+    pattern = Pattern(
+        slug         = slug,
+        editor_email = user.get("email"),
+        **fields,
+    )
+    db.add(pattern)
+    db.commit()
+    db.refresh(pattern)
+    _save_pattern_revision(db, pattern, user.get("email"),
+                           edit_summary=(form.get("edit_summary") or "Created").strip()[:256])
+    db.commit()
+    if not re.fullmatch(r'[a-z0-9][a-z0-9\-]{0,99}', pattern.slug):
+        raise HTTPException(status_code=500, detail="Invalid pattern slug")
+    return RedirectResponse(f"/admin/patterns/{pattern.slug}/edit", status_code=303)
+
+
+@app.get("/admin/patterns/{slug}/edit", response_class=HTMLResponse)
+def admin_pattern_edit_form(slug: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_role(request, user, db, "pattern_editor")
+    pattern = db.query(Pattern).filter_by(slug=slug).first()
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+    revisions = (
+        db.query(PatternRevision)
+        .filter_by(pattern_id=pattern.id)
+        .order_by(PatternRevision.created_at.desc())
+        .limit(20)
+        .all()
+    )
+    return templates.TemplateResponse(request, "admin_pattern_edit.html", {
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        "pattern": pattern,
+        "revisions": revisions,
+        "sections": _PATTERN_SECTIONS,
+        "difficulties": _PATTERN_DIFFICULTIES,
+        "form_action": f"/admin/patterns/{slug}/edit",
+        "form_title": f"Edit: {pattern.name}",
+    })
+
+
+@app.post("/admin/patterns/{slug}/edit")
+async def admin_pattern_update(slug: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_role(request, user, db, "pattern_editor")
+    pattern = db.query(Pattern).filter_by(slug=slug).first()
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+
+    form = await request.form()
+    fields = _parse_pattern_form(form)
+
+    # Allow slug rename, but only to another non-conflicting slug.
+    new_slug_raw = (form.get("slug") or "").strip()
+    if new_slug_raw:
+        new_slug = _pattern_slugify(new_slug_raw)
+        if new_slug != pattern.slug:
+            conflict = db.query(Pattern).filter_by(slug=new_slug).first()
+            if conflict:
+                raise HTTPException(status_code=409,
+                                    detail=f"slug '{new_slug}' already exists")
+            pattern.slug = new_slug
+
+    for k, v in fields.items():
+        setattr(pattern, k, v)
+    pattern.editor_email = user.get("email")
+    db.commit()
+    db.refresh(pattern)
+    _save_pattern_revision(db, pattern, user.get("email"),
+                           edit_summary=(form.get("edit_summary") or "").strip()[:256] or None)
+    db.commit()
+    if not re.fullmatch(r'[a-z0-9][a-z0-9\-]{0,99}', pattern.slug):
+        raise HTTPException(status_code=500, detail="Invalid pattern slug")
+    return RedirectResponse(f"/admin/patterns/{pattern.slug}/edit", status_code=303)
+
+
+@app.post("/admin/patterns/{slug}/delete")
+def admin_pattern_delete(slug: str, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    # Deletion requires full admin — editors can move to status='draft' instead.
+    require_admin(request, user)
+    pattern = db.query(Pattern).filter_by(slug=slug).first()
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+    db.delete(pattern)
+    db.commit()
+    return RedirectResponse("/admin/patterns", status_code=303)
+
+
+# ── Pattern editor list management (admin-only) ───────────────────────────────
+
+@app.get("/admin/patterns/editors", response_class=HTMLResponse)
+def admin_pattern_editors(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_admin(request, user)
+    editors = (
+        db.query(UserRole)
+        .filter_by(role="pattern_editor")
+        .order_by(UserRole.granted_at.desc())
+        .all()
+    )
+    return templates.TemplateResponse(request, "admin_pattern_editors.html", {
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        "editors": editors,
+        "admin_emails": sorted(ADMIN_EMAILS),
+    })
+
+
+@app.post("/admin/patterns/editors/add")
+async def admin_pattern_editor_add(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_admin(request, user)
+    form = await request.form()
+    email = (form.get("email") or "").strip().lower()
+    note  = (form.get("note") or "").strip()[:256] or None
+    if not email or "@" not in email or len(email) > 256:
+        raise HTTPException(status_code=400, detail="Invalid email")
+
+    existing = db.query(UserRole).filter_by(email=email, role="pattern_editor").first()
+    if not existing:
+        db.add(UserRole(
+            email      = email,
+            role       = "pattern_editor",
+            granted_by = user.get("email"),
+            note       = note,
+        ))
+        db.commit()
+    return RedirectResponse("/admin/patterns/editors", status_code=303)
+
+
+@app.post("/admin/patterns/editors/{role_id}/remove")
+def admin_pattern_editor_remove(role_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_admin(request, user)
+    role = db.query(UserRole).filter_by(id=role_id, role="pattern_editor").first()
+    if not role:
+        raise HTTPException(status_code=404, detail="Not found")
+    db.delete(role)
+    db.commit()
+    return RedirectResponse("/admin/patterns/editors", status_code=303)
+
+
+# ── Public Pattern Wiki ──────────────────────────────────────────────────────
+
+@app.get("/patterns", response_class=HTMLResponse)
+def patterns_index(request: Request, db: Session = Depends(get_db)):
+    rows = (
+        db.query(Pattern)
+        .filter(Pattern.status == "published")
+        .order_by(Pattern.section, Pattern.sort_order, Pattern.name)
+        .all()
+    )
+    by_section: dict[str, list] = {}
+    for p in rows:
+        by_section.setdefault(p.section, []).append(p)
+    return templates.TemplateResponse(request, "patterns_index.html", {
+        "user": get_current_user(request),
+        "lang": get_lang(request),
+        "t":    get_t(request),
+        "patterns_by_section": by_section,
+        "sections":            _PATTERN_SECTIONS,
+        "mode":                "patterns",
+    })
+
+
+@app.get("/patterns/{slug}", response_class=HTMLResponse)
+def patterns_detail(slug: str, request: Request, db: Session = Depends(get_db)):
+    pattern = db.query(Pattern).filter_by(slug=slug).first()
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+
+    user = get_current_user(request)
+    is_editor = user_has_role(db, user, "pattern_editor")
+
+    # Drafts are visible only to editors/admins.
+    if pattern.status != "published" and not is_editor:
+        raise HTTPException(status_code=404, detail="Pattern not found")
+
+    variants = (
+        db.query(Pattern)
+        .filter(Pattern.parent_slug == pattern.slug,
+                Pattern.status == "published")
+        .order_by(Pattern.sort_order, Pattern.name)
+        .all()
+    )
+    parent = None
+    if pattern.parent_slug:
+        parent = db.query(Pattern).filter_by(slug=pattern.parent_slug).first()
+
+    import markdown as md_lib
+    body_html = md_lib.markdown(pattern.body_md or "", extensions=["extra", "sane_lists"])
+
+    return templates.TemplateResponse(request, "pattern_detail.html", {
+        "user":      user,
+        "lang":      get_lang(request),
+        "t":         get_t(request),
+        "pattern":   pattern,
+        "parent":    parent,
+        "variants":  variants,
+        "body_html": body_html,
+        "is_editor": is_editor,
+        "mode":      "patterns",
+    })
+
+
 @app.get("/admin/contact", response_class=HTMLResponse)
 def admin_contact(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
@@ -7166,6 +7800,7 @@ def admin_hscleaning_delete(
     if score:
         db.delete(score)
         db.commit()
+    next_url = _safe_relative_url(next_url, fallback="/admin/hscleaning")
     return RedirectResponse(next_url, status_code=303)
 
 
@@ -7221,17 +7856,16 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
     user = get_current_user(request)
     require_admin(request, user)
 
-    analysis_dir = os.path.join(os.path.dirname(__file__), "analysis")
+    analysis_dir  = os.path.join(os.path.dirname(__file__), "analysis")
+    real_analysis = os.path.realpath(analysis_dir)   # untainted constant — used for all containment checks
     download_exts = {".pptx", ".xlsx", ".docx", ".pdf"}
     source_exts   = {".ts", ".py", ".js"}
 
-    # Validate folder param — no traversal, no nesting
-    if folder and (".." in folder or "/" in folder or "\\" in folder):
-        folder = None
+    # Validate folder param — only safe filesystem names; realpath containment confirms no escape
     current_folder = None
-    if folder:
-        candidate = os.path.join(analysis_dir, folder)
-        if os.path.isdir(candidate):
+    if folder and re.fullmatch(r'[A-Za-z0-9_-]+', folder):
+        candidate = os.path.realpath(os.path.join(analysis_dir, folder))
+        if candidate.startswith(real_analysis + os.sep) and os.path.isdir(candidate):
             current_folder = folder
 
     active_dir = os.path.join(analysis_dir, current_folder) if current_folder else analysis_dir
@@ -7262,13 +7896,15 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
     content_html = None
     current_doc = None
     if doc and doc in docs:
-        md_path   = os.path.join(active_dir, doc + ".md")
+        md_path  = os.path.join(active_dir, doc + ".md")
         html_path = os.path.join(active_dir, doc + ".html")
-        if os.path.isfile(md_path):
-            with open(md_path, encoding="utf-8") as f:
+        md_real   = os.path.realpath(md_path)
+        html_real = os.path.realpath(html_path)
+        if os.path.isfile(md_real) and md_real.startswith(real_analysis + os.sep):
+            with open(md_real, encoding="utf-8") as f:
                 content_html = md_lib.markdown(f.read(), extensions=["extra", "sane_lists"])
-        elif os.path.isfile(html_path):
-            with open(html_path, encoding="utf-8") as f:
+        elif os.path.isfile(html_real) and html_real.startswith(real_analysis + os.sep):
+            with open(html_real, encoding="utf-8") as f:
                 content_html = f.read()
         current_doc = doc
 
@@ -7283,10 +7919,11 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
     # Source file viewer
     source_content = None
     current_src = None
+    src = os.path.basename(src) if src else None  # strip any path components before lookup
     if src and src in source_files:
-        src_path = os.path.join(active_dir, src)
-        if os.path.isfile(src_path):
-            with open(src_path, encoding="utf-8") as f:
+        real_src = os.path.realpath(os.path.join(active_dir, src))
+        if real_src.startswith(real_analysis + os.sep) and os.path.isfile(real_src):
+            with open(real_src, encoding="utf-8") as f:
                 source_content = f.read()
             current_src = src
 
@@ -7333,9 +7970,13 @@ def admin_analysis_download(request: Request, file: str):
 @app.get("/admin/analysis/{filename}")
 def admin_analysis_by_path(filename: str, folder: Optional[str] = None):
     doc = filename.rsplit(".", 1)[0] if "." in filename else filename
-    url = f"/admin/analysis?doc={doc}"
+    if not re.fullmatch(r'[A-Za-z0-9_\-\.]{1,200}', doc):
+        raise HTTPException(status_code=400, detail="Invalid filename")
+    url = f"/admin/analysis?doc={quote(doc, safe='')}"
     if folder:
-        url += f"&folder={folder}"
+        if not re.fullmatch(r'[A-Za-z0-9_\-]{1,100}', folder):
+            raise HTTPException(status_code=400, detail="Invalid folder")
+        url += f"&folder={quote(folder, safe='')}"
     return RedirectResponse(url, status_code=302)
 
 
@@ -7421,23 +8062,60 @@ _DATE_MONTHLY_RE = __import__("re").compile(r"^\d{4}-\d{2}$")
 
 _MAH_INDEX_PATH     = os.path.join("static", "mah", "index.html")
 _MAH_TURTLE_BOARD   = "2175883231"  # Turtle layout — fixed daily board
+_MAH_INDEX_CACHE: str | None = None
+
+# Map minesweeper.org lang codes → mah lang codes (only differences listed)
+_MAH_LANG_MAP: dict[str, str] = {"zh-hant": "zh", "tl": "fil"}
+# mah supports these lang codes (from ffalt/mah languages.ts)
+_MAH_VALID_LANGS: frozenset[str] = frozenset({
+    "ar","bn","ca","cs","da","de","el","es","eu","fa","fi","fil","fr",
+    "hi","hu","id","it","ja","ko","ms","nl","no","pl","pt","ro","ru",
+    "sv","sw","ta","te","th","tr","uk","ur","vi","zh",
+})
+
+
+def _mah_response(lang: str) -> HTMLResponse:
+    global _MAH_INDEX_CACHE
+    if not os.path.isfile(_MAH_INDEX_PATH):
+        raise HTTPException(status_code=503, detail="Game not yet deployed")
+    if _MAH_INDEX_CACHE is None:
+        with open(_MAH_INDEX_PATH, encoding="utf-8") as f:
+            _MAH_INDEX_CACHE = f.read()
+    mah_lang = _MAH_LANG_MAP.get(lang, lang)
+    content = _MAH_INDEX_CACHE
+    if lang != "en":
+        content = content.replace(
+            '<base href="/other/mahjong/">',
+            f'<base href="/{lang}/other/mahjong/">',
+            1,
+        )
+    if mah_lang in _MAH_VALID_LANGS:
+        # Inject before </head> — runs synchronously before Angular's type="module" scripts
+        inject = (
+            "<script>(function(){try{var s=JSON.parse(localStorage.getItem('mah.settings')||'{}');"
+            f"if(!s.lang||s.lang==='auto'){{s.lang='{mah_lang}';"
+            "localStorage.setItem('mah.settings',JSON.stringify(s))}}"
+            "catch(e){}})();</script>"
+        )
+        content = content.replace("</head>", inject + "\n</head>", 1)
+    return HTMLResponse(content=content)
 
 
 @app.get("/other/mahjong", response_class=HTMLResponse)
 def mahjong_landing(request: Request):
-    return RedirectResponse("/other/mahjong/daily", status_code=302)
+    return _mah_response(get_lang(request))
 
 
 @app.get("/other/mahjong/daily")
 def mahjong_daily_page(request: Request):
-    return RedirectResponse(f"/other/mahjong/?board={_MAH_TURTLE_BOARD}", status_code=302)
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(f"{prefix}/other/mahjong/?board={_MAH_TURTLE_BOARD}", status_code=302)
 
 
 @app.get("/other/mahjong/")
-def mahjong_game_root():
-    if not os.path.isfile(_MAH_INDEX_PATH):
-        raise HTTPException(status_code=503, detail="Game not yet deployed")
-    return FileResponse(_MAH_INDEX_PATH)
+def mahjong_game_root(request: Request):
+    return _mah_response(get_lang(request))
 
 
 @app.get("/other/mahjong/leaderboard", response_class=HTMLResponse)
@@ -8618,6 +9296,49 @@ def tametsi_replay_page(replay_id: int, request: Request, db: Session = Depends(
     })
 
 
+# ── Tametsi Hex Campaign ──────────────────────────────────────────────────────
+
+class TametsiHexCompletePayload(BaseModel):
+    puzzle_id: int
+
+@app.get("/tametsi/hex", response_class=HTMLResponse)
+def tametsi_hex_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    completions: list[int] = []
+    if user:
+        completions = [
+            r.puzzle_id
+            for r in db.query(TametsiHexCompletion)
+                       .filter(TametsiHexCompletion.email == user["email"])
+                       .all()
+        ]
+    return templates.TemplateResponse(request, "tametsi_hex.html", {
+        "user":        user,
+        "t":           get_t(request),
+        "lang":        get_lang(request),
+        "mode":        "tametsi-hex",
+        "completions": completions,
+    })
+
+@app.post("/api/tametsi-hex/complete", status_code=200)
+def tametsi_hex_complete(payload: TametsiHexCompletePayload,
+                          request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    if payload.puzzle_id not in (1, 2, 3):
+        raise HTTPException(status_code=400, detail="Invalid puzzle_id")
+    existing = (
+        db.query(TametsiHexCompletion)
+          .filter_by(email=user["email"], puzzle_id=payload.puzzle_id)
+          .first()
+    )
+    if not existing:
+        db.add(TametsiHexCompletion(email=user["email"], puzzle_id=payload.puzzle_id))
+        db.commit()
+    return {"ok": True}
+
+
 # ── Numbers Match ─────────────────────────────────────────────────────────────
 
 @app.get("/numbers-match", response_class=HTMLResponse)
@@ -8808,6 +9529,20 @@ def _wc_guest_points_today(db: Session, guest_token: str) -> int:
     return int(total or 0)
 
 
+def _wc_guest_team_pts(db: Session, guest_token: str | None, fan_flag: str | None) -> int:
+    """Total points this guest_token has ever earned for their fan_flag country."""
+    if not guest_token or not fan_flag:
+        return 0
+    total = (
+        db.query(func.coalesce(func.sum(WC2026Score.total_points), 0))
+        .filter(WC2026Score.guest_token == guest_token)
+        .filter(WC2026Score.fan_flag == fan_flag)
+        .filter(WC2026Score.email.is_(None))
+        .scalar()
+    )
+    return int(total or 0)
+
+
 def _wc_fan_banner(user, db: Session, request: Request | None = None) -> dict:
     """Return fan-flag context for WC pages.
 
@@ -8984,6 +9719,8 @@ def wc2026_main(request: Request, db: Session = Depends(get_db)):
     groups    = {g: WC2026_BY_GROUP[g] for g in WC2026_GROUPS}
     country_lb = _fan_country_leaderboard(db)
     individual_lb = _individual_leaderboard(db)
+    guest_token = None if user else request.session.get("guest_token")
+    guest_team_pts = _wc_guest_team_pts(db, guest_token, fan_ctx.get("wc_fan"))
     return templates.TemplateResponse(request, "wc2026_main.html", {
         "user": user, "t": t,
         "lang": get_lang(request),
@@ -8993,6 +9730,7 @@ def wc2026_main(request: Request, db: Session = Depends(get_db)):
         "country_lb": country_lb,
         "individual_lb": individual_lb,
         "wc2026_teams": WC2026_COUNTRIES,
+        "guest_team_pts": guest_team_pts,
         **fan_ctx,
     })
 

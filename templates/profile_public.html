@@ -72,9 +72,9 @@
     </div>
   </div>
 
-  <!-- ── Recent games tabs ── -->
+  <!-- ── Game History tabs ── -->
   <div class="profile-recent">
-    <h2 class="section-title">{{ t.profile_recent_games }}</h2>
+    <h2 class="section-title">{{ t.profile_game_history }}</h2>
 
     <div class="lb-tabs" role="tablist">
       <button class="lb-tab active" data-mode="beginner">{{ t.nav_beginner }}</button>
@@ -85,19 +85,29 @@
       <button class="lb-tab" data-mode="tentaizu">🔢 Tentaizu</button>
     </div>
 
+    <div class="rg-limit-row" style="margin-top:0.5rem">
+      Show:
+      <button class="rg-limit-btn active" onclick="setRecentLimit(10)">10</button>
+      <button class="rg-limit-btn" onclick="setRecentLimit(50)">50</button>
+      <button class="rg-limit-btn" onclick="setRecentLimit(100)">100</button>
+      <button class="rg-limit-btn" onclick="setRecentLimit(1000)">1000</button>
+    </div>
+
     <div class="lb-table-wrap" style="margin-top:0.75rem">
       <table class="lb-table" id="recent-table">
         <thead id="recent-thead">
           <tr>
             <th>#</th>
-            <th>{{ t.lb_col_time }}</th>
-            <th>{{ t.lb_col_board }}</th>
-            <th>{{ t.lb_col_mines }}</th>
-            <th>{{ t.lb_col_date }}</th>
+            <th>Time</th>
+            <th>Eff%</th>
+            <th>CPS</th>
+            <th>Date/Time</th>
+            <th>NG</th>
+            <th>Watch</th>
           </tr>
         </thead>
         <tbody id="recent-body">
-          <tr><td colspan="5" class="lb-loading">{{ t.profile_loading }}</td></tr>
+          <tr><td colspan="7" class="lb-loading">{{ t.profile_loading }}</td></tr>
         </tbody>
       </table>
     </div>
@@ -272,20 +282,44 @@ async function loadStats() {
   renderRecent('beginner');
 }
 
+let recentSortCol = 'date';
+let recentSortDir = 'desc';
+let recentLimit   = 10;
+let currentRecentMode = 'beginner';
+
+function setRecentLimit(n) {
+  recentLimit = n;
+  document.querySelectorAll('.rg-limit-btn').forEach(b =>
+    b.classList.toggle('active', parseInt(b.textContent) === n)
+  );
+  renderRecent(currentRecentMode);
+}
+
+function setRecentSort(col) {
+  if (recentSortCol === col) {
+    recentSortDir = recentSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    recentSortCol = col;
+    recentSortDir = col === 'date' ? 'desc' : 'asc';
+  }
+  renderRecent(currentRecentMode);
+}
+
 function renderRecent(mode) {
+  currentRecentMode = mode;
   const body  = document.getElementById('recent-body');
   const thead = document.getElementById('recent-thead');
   const data  = allStats?.[mode];
 
   if (!data) {
-    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>${window.T.lb_col_board}</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th></tr>`;
-    body.innerHTML  = `<tr><td colspan="5" class="lb-empty">${window.T.profile_no_recent}</td></tr>`;
+    thead.innerHTML = `<tr><th>#</th><th>Time</th><th>Eff%</th><th>CPS</th><th>Date/Time</th><th>NG</th><th>Watch</th></tr>`;
+    body.innerHTML  = `<tr><td colspan="7" class="lb-empty">${window.T.profile_no_recent}</td></tr>`;
     return;
   }
 
   if (mode === 'rush') {
     thead.innerHTML = `<tr><th>#</th><th>Score</th><th>Mines</th><th>Mode</th><th>${window.T.lb_col_date}</th></tr>`;
-    body.innerHTML  = data.recent.map((s, i) => `
+    body.innerHTML  = data.recent.slice(0, recentLimit).map((s, i) => `
       <tr>
         <td class="lb-rank">${i + 1}</td>
         <td class="lb-time">${s.score}</td>
@@ -296,7 +330,7 @@ function renderRecent(mode) {
     `).join('');
   } else if (mode === 'tentaizu') {
     thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>Puzzle Date</th><th>${window.T.lb_col_date}</th></tr>`;
-    body.innerHTML  = data.recent.map((s, i) => `
+    body.innerHTML  = data.recent.slice(0, recentLimit).map((s, i) => `
       <tr>
         <td class="lb-rank">${i + 1}</td>
         <td class="lb-time">${s.time_secs}s</td>
@@ -305,16 +339,64 @@ function renderRecent(mode) {
       </tr>
     `).join('');
   } else {
-    thead.innerHTML = `<tr><th>#</th><th>${window.T.lb_col_time}</th><th>${window.T.lb_col_board}</th><th>${window.T.lb_col_mines}</th><th>${window.T.lb_col_date}</th></tr>`;
-    body.innerHTML  = data.recent.map((s, i) => `
-      <tr>
-        <td class="lb-rank">${i + 1}</td>
-        <td class="lb-time">${s.time_secs}s</td>
-        <td class="lb-board">${s.rows}×${s.cols}</td>
-        <td class="lb-mines">${s.mines}</td>
-        <td class="lb-date">${s.created_at}</td>
-      </tr>
-    `).join('');
+    function si(col) {
+      if (recentSortCol !== col) return ' <span class="sort-ind">↕</span>';
+      return recentSortDir === 'asc'
+        ? ' <span class="sort-ind">↑</span>'
+        : ' <span class="sort-ind">↓</span>';
+    }
+
+    let rows = data.recent.map(s => {
+      const timeMs = s.time_ms != null ? s.time_ms : (s.time_secs * 1000);
+      const totalC = (s.left_clicks || 0) + (s.right_clicks || 0) + (s.chord_clicks || 0);
+      const eff    = s.bbbv && totalC ? Math.round(s.bbbv / totalC * 100) : null;
+      const cps    = totalC && timeMs  ? +(totalC / (timeMs / 1000)).toFixed(2) : null;
+      return { ...s, _timeMs: timeMs, _eff: eff, _cps: cps };
+    });
+
+    rows.sort((a, b) => {
+      let va, vb;
+      if      (recentSortCol === 'time') { va = a._timeMs;    vb = b._timeMs; }
+      else if (recentSortCol === 'eff')  { va = a._eff ?? -1; vb = b._eff ?? -1; }
+      else if (recentSortCol === 'cps')  { va = a._cps ?? -1; vb = b._cps ?? -1; }
+      else                               { va = a.created_at; vb = b.created_at; }
+      if (va < vb) return recentSortDir === 'asc' ? -1 : 1;
+      if (va > vb) return recentSortDir === 'asc' ?  1 : -1;
+      return 0;
+    });
+
+    rows = rows.slice(0, recentLimit);
+
+    thead.innerHTML = `<tr>
+      <th>#</th>
+      <th class="sort-th" onclick="setRecentSort('time')">Time${si('time')}</th>
+      <th class="sort-th" onclick="setRecentSort('eff')">Eff%${si('eff')}</th>
+      <th class="sort-th" onclick="setRecentSort('cps')">CPS${si('cps')}</th>
+      <th class="sort-th" onclick="setRecentSort('date')">Date/Time${si('date')}</th>
+      <th>NG</th>
+      <th>Watch</th>
+    </tr>`;
+
+    body.innerHTML = rows.map((s, i) => {
+      const timeStr  = s._timeMs ? (s._timeMs / 1000).toFixed(3) + 's' : '—';
+      const effStr   = s._eff  != null ? s._eff + '%'  : '<span class="lb-na">—</span>';
+      const cpsStr   = s._cps  != null ? s._cps        : '<span class="lb-na">—</span>';
+      const ngCell   = s.no_guess ? '✓' : '';
+      const watchCell = s.game_id
+        ? `<a href="/game/${s.game_id}">▶</a>`
+        : `<span class="lb-na">—</span>`;
+      return `
+        <tr>
+          <td class="lb-rank">${i + 1}</td>
+          <td class="lb-time">${timeStr}</td>
+          <td>${effStr}</td>
+          <td>${cpsStr}</td>
+          <td class="lb-date">${s.created_at}</td>
+          <td style="text-align:center;color:var(--accent2)">${ngCell}</td>
+          <td>${watchCell}</td>
+        </tr>
+      `;
+    }).join('');
   }
 }
 

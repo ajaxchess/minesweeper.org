@@ -174,11 +174,12 @@
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_bbbv_tip }}">3BV</th>
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_bbbv_s_tip }}">3BV/s</th>
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_eff_tip }}">Eff</th>
+          <th>View</th>
           <th>Board</th>
         </tr>
       </thead>
       <tbody id="lb-body">
-        <tr><td colspan="7" class="lb-loading">{{ t.lb_loading }}</td></tr>
+        <tr><td colspan="8" class="lb-loading">{{ t.lb_loading }}</td></tr>
       </tbody>
     </table>
   </div>
@@ -256,7 +257,8 @@ function periodParams(period, supported = SHOWCASE_PERIODS) {
 
 function scoreApi(path, mode, opts = {}) {
   const supported = opts.supported || SHOWCASE_PERIODS;
-  return period => `${path}/${mode}?${periodParams(period, supported)}${opts.noGuess === false ? '&no_guess=false' : ''}`;
+  const ng = opts.noGuess === false ? '&no_guess=false' : opts.noGuess === true ? '&no_guess=true' : '';
+  return period => `${path}/${mode}?${periodParams(period, supported)}${ng}`;
 }
 
 function staticBoard(title, category, leaderboard, play, note = 'Open the full leaderboard for this game.') {
@@ -268,7 +270,10 @@ const CHAMPION_BOARDS = [
   { title: 'Classic Intermediate', category: 'minesweeper', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/scores', 'intermediate', { noGuess: false }), leaderboard: '/leaderboard?game=classic&mode=intermediate', play: '/intermediate' },
   { title: 'Classic Expert', category: 'minesweeper', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/scores', 'expert', { noGuess: false }), leaderboard: '/leaderboard?game=classic&mode=expert', play: '/expert' },
   { title: 'Classic Custom', category: 'minesweeper', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/scores', 'custom', { noGuess: false }), leaderboard: '/leaderboard?game=classic&mode=custom', play: '/custom' },
-  { title: 'Evil No-Guess', category: 'minesweeper', metric: 'time', periods: SHOWCASE_PERIODS, api: period => `/api/scores/evil?${periodParams(period)}&no_guess=true`, leaderboard: '/leaderboard?game=classic&mode=evil&no_guess=true', play: '/evil' },
+  { title: 'Evil No-Guess',         category: 'minesweeper', metric: 'time', periods: SHOWCASE_PERIODS, api: period => `/api/scores/evil?${periodParams(period)}&no_guess=true`, leaderboard: '/leaderboard?game=classic&mode=evil&no_guess=true', play: '/evil' },
+  { title: 'No-Guess Beginner',     category: 'minesweeper', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/scores', 'beginner',     { noGuess: true }), leaderboard: '/leaderboard?game=classic&mode=beginner&no_guess=true',     play: '/?ng=1' },
+  { title: 'No-Guess Intermediate', category: 'minesweeper', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/scores', 'intermediate', { noGuess: true }), leaderboard: '/leaderboard?game=classic&mode=intermediate&no_guess=true', play: '/intermediate?ng=1' },
+  { title: 'No-Guess Expert',       category: 'minesweeper', metric: 'time', periods: SHOWCASE_PERIODS, api: scoreApi('/api/scores', 'expert',       { noGuess: true }), leaderboard: '/leaderboard?game=classic&mode=expert&no_guess=true',       play: '/expert?ng=1' },
   { title: 'Rush Easy', category: 'minesweeper', metric: 'score', periods: SHOWCASE_PERIODS, api: period => `/api/rush-scores/easy?alltime=${period !== 'daily'}`, leaderboard: '/rush/leaderboard', play: '/rush' },
   { title: 'Rush Normal', category: 'minesweeper', metric: 'score', periods: SHOWCASE_PERIODS, api: period => `/api/rush-scores/normal?alltime=${period !== 'daily'}`, leaderboard: '/rush/leaderboard', play: '/rush' },
   { title: 'Rush Hard', category: 'minesweeper', metric: 'score', periods: SHOWCASE_PERIODS, api: period => `/api/rush-scores/hard?alltime=${period !== 'daily'}`, leaderboard: '/rush/leaderboard', play: '/rush' },
@@ -599,7 +604,7 @@ function supportsNoGuess() {
 }
 
 function tableColspan() {
-  return isCustomMode() ? 9 : 7;
+  return isCustomMode() ? 10 : 8;
 }
 
 function setCustomColumnsVisible(visible) {
@@ -691,6 +696,9 @@ async function loadScores(mode, noGuess, period, game) {
       const nameCell = s.profile_url
         ? `<a href="${escHtml(s.profile_url)}" class="lb-profile-link">${flag}${escHtml(s.name)}</a>`
         : `${flag}${escHtml(s.name)}`;
+      const viewCell = s.game_id
+        ? `<td class="lb-view"><a href="/game/${s.game_id}" class="lb-replay-link">View</a></td>`
+        : `<td class="lb-view">—</td>`;
       let hashCell = '<td class="lb-hash">—</td>';
       if (s.board_hash && currentGame !== 'hex') {
         const game = currentGame === 'classic' ? (currentNoGuess ? 'no-guess' : 'standard') : currentGame;
@@ -710,6 +718,7 @@ async function loadScores(mode, noGuess, period, game) {
           <td class="lb-stat lb-stat-col">${s.bbbv ?? '—'}</td>
           <td class="lb-stat lb-stat-col">${bbbvS}</td>
           <td class="lb-stat lb-stat-col">${eff}</td>
+          ${viewCell}
           ${hashCell}
         </tr>`;
     }).join('');

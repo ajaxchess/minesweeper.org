@@ -3,7 +3,7 @@ database.py — SQLAlchemy setup for MySQL via PyMySQL
 """
 from sqlalchemy import (
     create_engine, Column, Integer, BigInteger, String, Float,
-    DateTime, Date, Enum, Index, Boolean, text, Text, JSON
+    DateTime, Date, Enum, Index, Boolean, text, Text, JSON, UniqueConstraint
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from datetime import datetime, timezone
@@ -133,7 +133,7 @@ class GameHistory(Base):
             "left_clicks":  self.left_clicks,
             "right_clicks": self.right_clicks,
             "chord_clicks": self.chord_clicks,
-            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+            "created_at":   self.created_at.strftime("%Y-%m-%d %H:%M"),
         }
 
 # ── DB session dependency (used in FastAPI routes) ───────────────────────────
@@ -718,6 +718,7 @@ class UserProfile(Base):
     created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     wc2026_fan    = Column(String(16), name="2026_world_cup_fan_flag", nullable=True)
     timezone      = Column(String(64), nullable=True)
+    games_public  = Column(Boolean, default=True, server_default='1', nullable=False)
 
 # ── WC2026 match results (admin-managed) ──────────────────────────────────────
 class WC2026Match(Base):
@@ -1314,6 +1315,18 @@ class TametsiScore(Base):
         }
 
 
+# ── Tametsi Hex Campaign completions ─────────────────────────────────────────
+class TametsiHexCompletion(Base):
+    __tablename__ = "tametsi_hex_completions"
+
+    id           = Column(Integer, primary_key=True)
+    email        = Column(String(256), nullable=False, index=True)
+    puzzle_id    = Column(Integer, nullable=False)
+    completed_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (UniqueConstraint("email", "puzzle_id"),)
+
+
 # ── Numbers Match Daily Board (pre-generated, server-side) ───────────────────
 class NumbersMatchDaily(Base):
     __tablename__ = "numbers_match_daily"
@@ -1372,8 +1385,113 @@ class FlaggedScore(Base):
         Index("ix_flagged_scores_table_score", "table_name", "score_id", unique=True),
     )
 
-# F95 — Analyzer derived stats
-from phase2_analyzer.pipeline import GameAnalysis  # noqa: F401  registers the table
+
+# ── Pattern Wiki ─────────────────────────────────────────────────────────────
+# Patterns are the curated minesweeper "shapes" displayed at /patterns.
+# Schema mirrors the structure of the original Pattern Library .docx:
+#   section  : top-level grouping (Holes, Holes+, Box Logic, Chains, Combinations, ...)
+#   depth    : number of color regions used in the diagram (1..N)
+#   difficulty: opinion-based grade A..E (A easiest)
+# Variants (e.g. "1.2 D-Pattern Start-Extension") use parent_slug to link
+# back to their parent pattern.
+class Pattern(Base):
+    __tablename__ = "patterns"
+
+    id            = Column(Integer, primary_key=True, index=True)
+    slug          = Column(String(128), nullable=False, unique=True, index=True)
+    name          = Column(String(128), nullable=False)
+    aliases       = Column(JSON, nullable=True)        # e.g. ["221-Hole", "D-Pattern"]
+    section       = Column(String(64),  nullable=False, index=True)  # Holes / Holes+ / ...
+    depth         = Column(Integer, nullable=True)     # 1..N color regions
+    difficulty    = Column(String(2),   nullable=True) # 'A'..'E'
+    parent_slug   = Column(String(128), nullable=True, index=True)   # variant→parent
+    sort_order    = Column(Integer, nullable=False, server_default="0")
+    body_md       = Column(Text, nullable=False)       # Markdown explanation
+    board_json    = Column(JSON, nullable=True)        # grid + color regions (preferred)
+    board_image_url = Column(String(512), nullable=True)  # fallback for irregular boards
+    legend        = Column(JSON, nullable=True)        # [{"color":"red","meaning":"one mine"}, ...]
+    status        = Column(String(16), nullable=False, server_default="draft", index=True)
+                                                       # 'draft' | 'published'
+    editor_email  = Column(String(256), nullable=True, index=True)   # last editor
+    created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc),
+                           onupdate=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_patterns_section_sort", "section", "sort_order"),
+        Index("ix_patterns_status_section", "status", "section"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":              self.id,
+            "slug":            self.slug,
+            "name":            self.name,
+            "aliases":         self.aliases or [],
+            "section":         self.section,
+            "depth":           self.depth,
+            "difficulty":      self.difficulty,
+            "parent_slug":     self.parent_slug,
+            "sort_order":      self.sort_order,
+            "body_md":         self.body_md,
+            "board_json":      self.board_json,
+            "board_image_url": self.board_image_url,
+            "legend":          self.legend or [],
+            "status":          self.status,
+            "editor_email":    self.editor_email,
+            "created_at":      self.created_at.strftime("%Y-%m-%d %H:%M") if self.created_at else None,
+            "updated_at":      self.updated_at.strftime("%Y-%m-%d %H:%M") if self.updated_at else None,
+        }
+
+
+# Revision history for patterns. Every save inserts a new row so edits are
+# reversible and we can audit who changed what. Bounded growth — a manual
+# cleanup script can prune old revisions later if needed.
+class PatternRevision(Base):
+    __tablename__ = "pattern_revisions"
+
+    id              = Column(Integer, primary_key=True, index=True)
+    pattern_id      = Column(Integer, nullable=False, index=True)
+    slug            = Column(String(128), nullable=False, index=True)  # denormalized for audit
+    name            = Column(String(128), nullable=False)
+    aliases         = Column(JSON, nullable=True)
+    section         = Column(String(64),  nullable=False)
+    depth           = Column(Integer, nullable=True)
+    difficulty      = Column(String(2),   nullable=True)
+    parent_slug     = Column(String(128), nullable=True)
+    sort_order      = Column(Integer, nullable=False, server_default="0")
+    body_md         = Column(Text, nullable=False)
+    board_json      = Column(JSON, nullable=True)
+    board_image_url = Column(String(512), nullable=True)
+    legend          = Column(JSON, nullable=True)
+    status          = Column(String(16), nullable=False)
+    editor_email    = Column(String(256), nullable=True)
+    edit_summary    = Column(String(256), nullable=True)  # optional commit message
+    created_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ── User roles (Google-login gated permissions) ──────────────────────────────
+# Lets admins grant editing rights to specific Google accounts without a
+# redeploy. ADMIN_EMAILS (env var) continues to grant full admin and is treated
+# as having every role implicitly.
+#
+# Roles in use:
+#   'pattern_editor' — may create/edit/publish patterns
+#
+# (Add more roles here as the site grows — e.g. 'translator', 'moderator'.)
+class UserRole(Base):
+    __tablename__ = "user_roles"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    email        = Column(String(256), nullable=False, index=True)
+    role         = Column(String(32),  nullable=False, index=True)
+    granted_by   = Column(String(256), nullable=True)   # admin email who granted it
+    granted_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    note         = Column(String(256), nullable=True)
+
+    __table_args__ = (
+        Index("ix_user_roles_email_role", "email", "role", unique=True),
+    )
 
 
 # ── Create tables if they don't exist ────────────────────────────────────────

@@ -65,11 +65,12 @@
       </div>
 
       <!-- Difficulty tabs -->
+      {%- set lp = "" if lang == "en" else "/" + lang -%}
       <div class="variant-tabs">
-        <a href="/hexsweeper"              class="variant-tab {% if mode == 'hex-beginner'     %}active{% endif %}">{{ t.hex_easy }}</a>
-        <a href="/hexsweeper/intermediate" class="variant-tab {% if mode == 'hex-intermediate' %}active{% endif %}">{{ t.hex_medium }}</a>
-        <a href="/hexsweeper/expert"       class="variant-tab {% if mode == 'hex-expert'       %}active{% endif %}">{{ t.hex_hard }}</a>
-        <a href="/hexsweeper/custom"       class="variant-tab {% if mode == 'hex-custom'       %}active{% endif %}">{{ t.hex_custom }}</a>
+        <a href="{{ lp }}/hexsweeper"              class="variant-tab {% if mode == 'hex-beginner'     %}active{% endif %}">{{ t.hex_easy }}</a>
+        <a href="{{ lp }}/hexsweeper/intermediate" class="variant-tab {% if mode == 'hex-intermediate' %}active{% endif %}">{{ t.hex_medium }}</a>
+        <a href="{{ lp }}/hexsweeper/expert"       class="variant-tab {% if mode == 'hex-expert'       %}active{% endif %}">{{ t.hex_hard }}</a>
+        <a href="{{ lp }}/hexsweeper/custom"       class="variant-tab {% if mode == 'hex-custom'       %}active{% endif %}">{{ t.hex_custom }}</a>
       </div>
 
       {% if mode == 'hex-custom' %}

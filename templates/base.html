@@ -16,9 +16,30 @@
     <link rel="canonical" href="{% block canonical %}https://minesweeper.org/{% endblock %}">
   {% endif %}
   {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
+  {# hreflang alternates — only for pages that have localised variants. #}
+  {% if page_localized %}
+  {%- set _bp = request.url.path -%}
+  <link rel="alternate" hreflang="x-default" href="https://minesweeper.org{{ _bp }}">
+  <link rel="alternate" hreflang="en"      href="https://minesweeper.org{{ _bp }}">
+  <link rel="alternate" hreflang="de"      href="https://minesweeper.org/de{{ _bp }}">
+  <link rel="alternate" hreflang="fr"      href="https://minesweeper.org/fr{{ _bp }}">
+  <link rel="alternate" hreflang="es"      href="https://minesweeper.org/es{{ _bp }}">
+  <link rel="alternate" hreflang="pt"      href="https://minesweeper.org/pt{{ _bp }}">
+  <link rel="alternate" hreflang="it"      href="https://minesweeper.org/it{{ _bp }}">
+  <link rel="alternate" hreflang="pl"      href="https://minesweeper.org/pl{{ _bp }}">
+  <link rel="alternate" hreflang="ru"      href="https://minesweeper.org/ru{{ _bp }}">
+  <link rel="alternate" hreflang="uk"      href="https://minesweeper.org/uk{{ _bp }}">
+  <link rel="alternate" hreflang="zh"      href="https://minesweeper.org/zh{{ _bp }}">
+  <link rel="alternate" hreflang="zh-Hant" href="https://minesweeper.org/zh-hant{{ _bp }}">
+  <link rel="alternate" hreflang="ja"      href="https://minesweeper.org/ja{{ _bp }}">
+  <link rel="alternate" hreflang="ko"      href="https://minesweeper.org/ko{{ _bp }}">
+  <link rel="alternate" hreflang="th"      href="https://minesweeper.org/th{{ _bp }}">
+  <link rel="alternate" hreflang="tl"      href="https://minesweeper.org/tl{{ _bp }}">
+  <link rel="alternate" hreflang="nl"      href="https://minesweeper.org/nl{{ _bp }}">
+  {% endif %}
 
-  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=60" />
+  <link rel="icon" type="image/png" href="/static/favicon.png" />
+  <link rel="stylesheet" href="/static/css/style.css?v=61" />
   {% block extra_head %}{% endblock %}
   <!-- Apply skin before render to avoid flash; handle ?lang= redirect -->
   <script>
@@ -167,10 +188,15 @@
   {% endif %}
 </head>
 <body>
+{%- set lp = "" if (lang == "en" or not page_localized) else "/" + lang -%}
 
   <header>
     <div class="header-inner">
-      <a href="/" class="logo">
+      <a href="{{ lp or '/' }}" class="logo">
+        <img src="/static/img/mobile-logo.png"
+             class="site-logo-mobile"
+             alt="Minesweeper.org"
+             width="56" height="56">
         <picture class="site-logo-picture site-logo-master">
           <source srcset="/static/img/minesweeper-org-logo.webp" type="image/webp">
           <img src="/static/img/minesweeper-org-logo.png"
@@ -178,7 +204,7 @@
                alt="Minesweeper.org logo with minesweeper tiles, a smiling bomb mascot, and a red flag"
                title="Minesweeper.org - free online minesweeper and puzzle games"
                width="1200"
-               height="226">
+               height="205">
         </picture>
         <picture class="site-logo-picture site-logo-classic">
           <source srcset="/static/img/LadyDisMinesLogo.webp" type="image/webp">
@@ -198,37 +224,37 @@
           <button class="mega-trigger {% if mode in ['beginner','intermediate','expert','custom','evil','rush','how-to-play','rush-howto'] %}active{% endif %}" onclick="toggleMega(event,'mg-play')" aria-haspopup="true" aria-expanded="false">{{ t.nav_play }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
-              <a href="/" class="mega-card {% if mode=='beginner' %}active{% endif %}">
+              <a href="{{ lp or '/' }}" class="mega-card {% if mode=='beginner' %}active{% endif %}">
                 <span class="mega-icon">🟢</span>
                 <span class="mega-card-text"><strong>{{ t.nav_beginner }}</strong><span>{{ t.nav_sub_beginner }}</span></span>
               </a>
-              <a href="/intermediate" class="mega-card {% if mode=='intermediate' %}active{% endif %}">
+              <a href="{{ lp }}/intermediate" class="mega-card {% if mode=='intermediate' %}active{% endif %}">
                 <span class="mega-icon">🟡</span>
                 <span class="mega-card-text"><strong>{{ t.nav_intermediate }}</strong><span>{{ t.nav_sub_intermediate }}</span></span>
               </a>
-              <a href="/expert" class="mega-card {% if mode=='expert' %}active{% endif %}">
+              <a href="{{ lp }}/expert" class="mega-card {% if mode=='expert' %}active{% endif %}">
                 <span class="mega-icon">🔴</span>
                 <span class="mega-card-text"><strong>{{ t.nav_expert }}</strong><span>{{ t.nav_sub_expert }}</span></span>
               </a>
-              <a href="/custom" class="mega-card {% if mode=='custom' %}active{% endif %}">
+              <a href="{{ lp }}/custom" class="mega-card {% if mode=='custom' %}active{% endif %}">
                 <span class="mega-icon">⚙️</span>
                 <span class="mega-card-text"><strong>{{ t.nav_custom }}</strong><span>{{ t.nav_sub_custom }}</span></span>
               </a>
-              <a href="/evil" class="mega-card {% if mode=='evil' %}active{% endif %}">
+              <a href="{{ lp }}/evil" class="mega-card {% if mode=='evil' %}active{% endif %}">
                 <span class="mega-icon">💀</span>
                 <span class="mega-card-text"><strong>{{ t.nav_evil_ng }}</strong><span>{{ t.nav_sub_evil_ng }}</span></span>
               </a>
             </div>
             <div class="mega-col">
-              <a href="/rush" class="mega-card {% if mode=='rush' %}active{% endif %}">
+              <a href="{{ lp }}/rush" class="mega-card {% if mode=='rush' %}active{% endif %}">
                 <span class="mega-icon">⚡</span>
                 <span class="mega-card-text"><strong>{{ t.nav_rush }}</strong><span>{{ t.nav_sub_rush }}</span></span>
               </a>
-              <a href="/leaderboard" class="mega-card {% if mode=='leaderboard' %}active{% endif %}">
+              <a href="{{ lp }}/leaderboard" class="mega-card {% if mode=='leaderboard' %}active{% endif %}">
                 <span class="mega-icon">🏆</span>
                 <span class="mega-card-text"><strong>{{ t.nav_leaderboard }}</strong><span>{{ t.nav_sub_leaderboard }}</span></span>
               </a>
-              <a href="/how-to-play" class="mega-card {% if mode in ['how-to-play','rush-howto'] %}active{% endif %}">
+              <a href="{{ lp }}/how-to-play" class="mega-card {% if mode in ['how-to-play','rush-howto'] %}active{% endif %}">
                 <span class="mega-icon">❓</span>
                 <span class="mega-card-text"><strong>{{ t.nav_how_to_play }}</strong><span>{{ t.nav_sub_how_to_play }}</span></span>
               </a>
@@ -241,25 +267,25 @@
           <button class="mega-trigger {% if mode in ['pvp','pvp-beta','duel','pvp-leaderboard','pvp-rankings','pvp-bot','pvp-bot-beta'] %}active{% endif %}" onclick="toggleMega(event,'mg-pvp')" aria-haspopup="true" aria-expanded="false">PvP ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
-              <a href="/pvp" class="mega-card {% if mode in ('pvp','pvp-beta') %}active{% endif %}">
+              <a href="{{ lp }}/pvp" class="mega-card {% if mode in ('pvp','pvp-beta') %}active{% endif %}">
                 <span class="mega-icon">🎮</span>
                 <span class="mega-card-text"><strong>{{ t.nav_pvp }}</strong><span>{{ t.nav_sub_pvp }}</span></span>
               </a>
-              <a href="/duel" class="mega-card {% if mode=='duel' %}active{% endif %}">
+              <a href="{{ lp }}/duel" class="mega-card {% if mode=='duel' %}active{% endif %}">
                 <span class="mega-icon">⚔️</span>
                 <span class="mega-card-text"><strong>{{ t.nav_duel }}</strong><span>{{ t.nav_sub_duel }}</span></span>
               </a>
-              <a href="/pvp/bot" class="mega-card {% if mode in ('pvp-bot','pvp-bot-beta') %}active{% endif %}">
+              <a href="{{ lp }}/pvp/bot" class="mega-card {% if mode in ('pvp-bot','pvp-bot-beta') %}active{% endif %}">
                 <span class="mega-icon">🤖</span>
                 <span class="mega-card-text"><strong>{{ t.nav_vs_bot }}</strong><span>{{ t.nav_sub_vs_bot }}</span></span>
               </a>
             </div>
             <div class="mega-col">
-              <a href="/pvp/leaderboard" class="mega-card {% if mode=='pvp-leaderboard' %}active{% endif %}">
+              <a href="{{ lp }}/pvp/leaderboard" class="mega-card {% if mode=='pvp-leaderboard' %}active{% endif %}">
                 <span class="mega-icon">🏆</span>
                 <span class="mega-card-text"><strong>{{ t.nav_pvp_leaderboard }}</strong><span>{{ t.nav_sub_pvp_leaderboard }}</span></span>
               </a>
-              <a href="/pvp/rankings" class="mega-card {% if mode=='pvp-rankings' %}active{% endif %}">
+              <a href="{{ lp }}/pvp/rankings" class="mega-card {% if mode=='pvp-rankings' %}active{% endif %}">
                 <span class="mega-icon">👑</span>
                 <span class="mega-card-text"><strong>{{ t.nav_elo_rankings }}</strong><span>{{ t.nav_sub_elo_rankings }}</span></span>
               </a>
@@ -272,47 +298,51 @@
           <button class="mega-trigger {% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %}active{% endif %}" onclick="toggleMega(event,'mg-variants')" aria-haspopup="true" aria-expanded="false">{{ t.nav_variants }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
-              <a href="/cylinder" class="mega-card {% if 'cylinder' in mode %}active{% endif %}">
+              <a href="{{ lp }}/cylinder" class="mega-card {% if 'cylinder' in mode %}active{% endif %}">
                 <span class="mega-icon">🔄</span>
                 <span class="mega-card-text"><strong>{{ t.nav_cylinder }}</strong><span>{{ t.nav_sub_cylinder }}</span></span>
               </a>
-              <a href="/hexsweeper" class="mega-card {% if 'hex' in mode %}active{% endif %}">
+              <a href="{{ lp }}/hexsweeper" class="mega-card {% if 'hex' in mode %}active{% endif %}">
                 <span class="mega-icon">⬡</span>
                 <span class="mega-card-text"><strong>{{ t.nav_hexsweeper }}</strong><span>{{ t.nav_sub_hexsweeper }}</span></span>
               </a>
-              <a href="/worldsweeper" class="mega-card {% if request.url.path.startswith('/worldsweeper') %}active{% endif %}">
+              <a href="{{ lp }}/worldsweeper" class="mega-card {% if request.url.path.startswith('/worldsweeper') %}active{% endif %}">
                 <span class="mega-icon">🌍</span>
                 <span class="mega-card-text"><strong>{{ t.nav_worldsweeper }}</strong><span>{{ t.nav_sub_worldsweeper }}</span></span>
               </a>
-              <a href="/cubesweeper" class="mega-card {% if request.url.path.startswith('/cubesweeper') %}active{% endif %}">
+              <a href="{{ lp }}/cubesweeper" class="mega-card {% if request.url.path.startswith('/cubesweeper') %}active{% endif %}">
                 <span class="mega-icon">🎲</span>
                 <span class="mega-card-text"><strong>{{ t.nav_cubesweeper }}</strong><span>{{ t.nav_sub_cubesweeper }}</span></span>
               </a>
-              <a href="/mobiussweeper" class="mega-card {% if request.url.path.startswith('/mobiussweeper') %}active{% endif %}">
+              <a href="{{ lp }}/mobiussweeper" class="mega-card {% if request.url.path.startswith('/mobiussweeper') %}active{% endif %}">
                 <span class="mega-icon">∞</span>
                 <span class="mega-card-text"><strong>{{ t.nav_mobiussweeper }}</strong><span>{{ t.nav_sub_mobiussweeper }}</span></span>
               </a>
-              <a href="/variants/board-generator" class="mega-card {% if mode=='board-generator' %}active{% endif %}">
+              <a href="{{ lp }}/variants/board-generator" class="mega-card {% if mode=='board-generator' %}active{% endif %}">
                 <span class="mega-icon">🔧</span>
                 <span class="mega-card-text"><strong>{{ t.nav_board_generator }}</strong><span>{{ t.nav_sub_board_generator }}</span></span>
               </a>
             </div>
             <div class="mega-col">
-              <a href="/toroid" class="mega-card {% if 'toroid' in mode %}active{% endif %}">
+              <a href="{{ lp }}/toroid" class="mega-card {% if 'toroid' in mode %}active{% endif %}">
                 <span class="mega-icon">🍩</span>
                 <span class="mega-card-text"><strong>{{ t.nav_toroid }}</strong><span>{{ t.nav_sub_toroid }}</span></span>
               </a>
-              <a href="/nonosweeper" class="mega-card {% if mode=='nonosweeper' %}active{% endif %}">
+              <a href="{{ lp }}/nonosweeper" class="mega-card {% if mode=='nonosweeper' %}active{% endif %}">
                 <span class="mega-icon">🔢</span>
                 <span class="mega-card-text"><strong>{{ t.nav_nonosweeper }}</strong><span>{{ t.nav_sub_nonosweeper }}</span></span>
               </a>
-              <a href="/minesweeperchess" class="mega-card {% if mode=='minesweeperchess' %}active{% endif %}">
+              <a href="{{ lp }}/minesweeperchess" class="mega-card {% if mode=='minesweeperchess' %}active{% endif %}">
                 <span class="mega-icon">♟️</span>
                 <span class="mega-card-text"><strong>{{ t.nav_minesweeperchess }}</strong><span>{{ t.nav_sub_minesweeperchess }}</span></span>
               </a>
-              <a href="/variants/replay/" class="mega-card {% if mode=='replay' %}active{% endif %}">
+              <a href="{{ lp }}/variants/replay/" class="mega-card {% if mode=='replay' %}active{% endif %}">
                 <span class="mega-icon">🔁</span>
                 <span class="mega-card-text"><strong>{{ t.nav_replay }}</strong><span>{{ t.nav_sub_replay }}</span></span>
+              </a>
+              <a href="/tametsi/hex" class="mega-card {% if mode=='tametsi-hex' %}active{% endif %}">
+                <span class="mega-icon">⬡</span>
+                <span class="mega-card-text"><strong>Tametsi Hex</strong><span>Logic puzzles on a hex board</span></span>
               </a>
             </div>
           </div>
@@ -323,14 +353,14 @@
           <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">{{ t.nav_puzzles }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
-              <a href="/puzzles" class="mega-card {% if mode=='puzzles' %}active{% endif %}">
+              <a href="{{ lp }}/puzzles" class="mega-card {% if mode=='puzzles' %}active{% endif %}">
                 <span class="mega-icon">▦</span>
                 <span class="mega-card-text"><strong>{{ t.nav_all_puzzles }}</strong><span>{{ t.nav_sub_all_puzzles }}</span></span>
               </a>
             </div>
             {% for game in puzzle_games %}
               {% if loop.index0 % 4 == 0 %}<div class="mega-col">{% endif %}
-              <a href="{{ game.play_path }}" class="mega-card {% if request.url.path == game.url_prefix or request.url.path.startswith(game.url_prefix + '/') %}active{% endif %}">
+              <a href="{{ lp }}{{ game.play_path }}" class="mega-card {% if request.url.path == game.url_prefix or request.url.path.startswith(game.url_prefix + '/') %}active{% endif %}">
                 <span class="mega-icon puzzle-nav-logo puzzle-nav-logo-{{ game.slug }}" aria-hidden="true"></span>
                 <span class="mega-card-text"><strong>{{ game.title }}</strong><span>{{ t[game.nav_desc_key] if game.nav_desc_key is defined else (t[game.desc_key] if game.desc_key is defined else game.description) }}</span></span>
               </a>
@@ -340,10 +370,10 @@
         </div>
 
         <!-- Leaderboard + Quests: direct links -->
-        <a href="/leaderboard" class="mega-direct {% if mode=='leaderboard' %}active{% endif %}">{{ t.nav_leaderboard }}</a>
-        <a href="/quests" class="mega-direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
-        <a href="/blog" class="mega-direct {% if mode=='blog' %}active{% endif %}">{{ t.nav_blog }}</a>
-        <a href="/2026worldcup" class="mega-direct {% if mode=='wc2026' %}active{% endif %}" style="color:#e8a000;font-weight:600;">⚽ WC 2026</a>
+        <a href="{{ lp }}/leaderboard" class="mega-direct {% if mode=='leaderboard' %}active{% endif %}">{{ t.nav_leaderboard }}</a>
+        <a href="{{ lp }}/quests" class="mega-direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
+        <a href="{{ lp }}/blog" class="mega-direct {% if mode=='blog' %}active{% endif %}">{{ t.nav_blog }}</a>
+        <a href="{{ lp }}/2026worldcup" class="mega-direct {% if mode=='wc2026' %}active{% endif %}" style="color:#e8a000;font-weight:600;">⚽ WC 2026</a>
 
       </nav>
       <div class="auth-area">
@@ -361,7 +391,7 @@
           </div>
         </div>
         {%- set _lc = lang if lang is defined else 'en' -%}
-        {%- set _ll = {'en':'EN','de':'DE','fr':'FR','es':'ES','pt':'PT','it':'IT','pl':'PL','ru':'RU','uk':'UK','zh':'ZH','zh-hant':'繁體','ja':'JA','ko':'KO','th':'TH','tl':'TL','pgl':'PGL','eo':'EO'} -%}
+        {%- set _ll = {'en':'EN','de':'DE','fr':'FR','es':'ES','pt':'PT','it':'IT','pl':'PL','ru':'RU','uk':'UK','zh':'ZH','zh-hant':'繁體','ja':'JA','ko':'KO','th':'TH','tl':'TL','nl':'NL','pgl':'PGL','eo':'EO'} -%}
         <div class="lang-picker" id="lang-picker">
           <button class="lang-picker-btn" type="button" onclick="toggleLangPicker(event)" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">
             <img src="/static/img/flags/{{ 'pgl' if _lc == 'tlh' else _lc }}.png" class="lang-flag" width="20" height="14" alt="{{ _lc }}">
@@ -392,6 +422,7 @@
               ('ko',      'KO',   '한국어'),
               ('th',      'TH',   'ไทย'),
               ('tl',      'TL',   'Filipino'),
+              ('nl',      'NL',   'Nederlands'),
               ('pgl',     'PGL',  'Pig Latin'),
               ('eo',      'EO',   'Esperanto')
             ] %}
@@ -441,7 +472,7 @@
   <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
   <aside id="mobile-drawer" class="mobile-drawer" aria-label="Navigation" aria-hidden="true">
     <div class="drawer-top">
-      <a href="/" class="logo" onclick="closeDrawer()">
+      <a href="{{ lp or '/' }}" class="logo" onclick="closeDrawer()">
         <picture class="site-logo-picture site-logo-master">
           <source srcset="/static/img/minesweeper-org-logo.webp" type="image/webp">
           <img src="/static/img/minesweeper-org-logo.png"
@@ -449,7 +480,7 @@
                alt="Minesweeper.org logo with minesweeper tiles, a smiling bomb mascot, and a red flag"
                title="Minesweeper.org - free online minesweeper and puzzle games"
                width="1200"
-               height="226">
+               height="205">
         </picture>
         <picture class="site-logo-picture site-logo-classic">
           <source srcset="/static/img/LadyDisMinesLogo.webp" type="image/webp">
@@ -495,57 +526,58 @@
       <details class="drawer-group"{% if mode in ['beginner','intermediate','expert','custom','evil','leaderboard','rush','how-to-play','rush-howto'] %} open{% endif %}>
         <summary class="drawer-summary">💣 {{ t.nav_play }}</summary>
         <div class="drawer-links">
-          <a href="/" class="drawer-link {% if mode=='beginner' %}active{% endif %}">🟢 {{ t.nav_beginner }}</a>
-          <a href="/intermediate" class="drawer-link {% if mode=='intermediate' %}active{% endif %}">🟡 {{ t.nav_intermediate }}</a>
-          <a href="/expert" class="drawer-link {% if mode=='expert' %}active{% endif %}">🔴 {{ t.nav_expert }}</a>
-          <a href="/custom" class="drawer-link {% if mode=='custom' %}active{% endif %}">⚙️ {{ t.nav_custom }}</a>
-          <a href="/evil" class="drawer-link {% if mode=='evil' %}active{% endif %}">💀 {{ t.nav_evil_ng }}</a>
-          <a href="/rush" class="drawer-link {% if mode=='rush' %}active{% endif %}">⚡ {{ t.nav_rush }}</a>
-          <a href="/leaderboard" class="drawer-link {% if mode=='leaderboard' %}active{% endif %}">🏆 {{ t.nav_leaderboard }}</a>
-          <a href="/how-to-play" class="drawer-link {% if mode in ['how-to-play','rush-howto'] %}active{% endif %}">❓ {{ t.nav_how_to_play }}</a>
+          <a href="{{ lp or '/' }}" class="drawer-link {% if mode=='beginner' %}active{% endif %}">🟢 {{ t.nav_beginner }}</a>
+          <a href="{{ lp }}/intermediate" class="drawer-link {% if mode=='intermediate' %}active{% endif %}">🟡 {{ t.nav_intermediate }}</a>
+          <a href="{{ lp }}/expert" class="drawer-link {% if mode=='expert' %}active{% endif %}">🔴 {{ t.nav_expert }}</a>
+          <a href="{{ lp }}/custom" class="drawer-link {% if mode=='custom' %}active{% endif %}">⚙️ {{ t.nav_custom }}</a>
+          <a href="{{ lp }}/evil" class="drawer-link {% if mode=='evil' %}active{% endif %}">💀 {{ t.nav_evil_ng }}</a>
+          <a href="{{ lp }}/rush" class="drawer-link {% if mode=='rush' %}active{% endif %}">⚡ {{ t.nav_rush }}</a>
+          <a href="{{ lp }}/leaderboard" class="drawer-link {% if mode=='leaderboard' %}active{% endif %}">🏆 {{ t.nav_leaderboard }}</a>
+          <a href="{{ lp }}/how-to-play" class="drawer-link {% if mode in ['how-to-play','rush-howto'] %}active{% endif %}">❓ {{ t.nav_how_to_play }}</a>
         </div>
       </details>
       <details class="drawer-group"{% if mode in ['pvp','pvp-beta','duel','pvp-leaderboard','pvp-rankings','pvp-bot','pvp-bot-beta'] %} open{% endif %}>
         <summary class="drawer-summary">🎮 PvP</summary>
         <div class="drawer-links">
-          <a href="/pvp" class="drawer-link {% if mode in ('pvp','pvp-beta') %}active{% endif %}">🎮 {{ t.nav_pvp }}</a>
-          <a href="/duel" class="drawer-link {% if mode=='duel' %}active{% endif %}">⚔️ {{ t.nav_duel }}</a>
-          <a href="/pvp/bot" class="drawer-link {% if mode in ('pvp-bot','pvp-bot-beta') %}active{% endif %}">🤖 {{ t.nav_vs_bot }}</a>
-          <a href="/pvp/leaderboard" class="drawer-link {% if mode=='pvp-leaderboard' %}active{% endif %}">🏆 {{ t.nav_pvp_leaderboard }}</a>
-          <a href="/pvp/rankings" class="drawer-link {% if mode=='pvp-rankings' %}active{% endif %}">👑 {{ t.nav_elo_rankings }}</a>
+          <a href="{{ lp }}/pvp" class="drawer-link {% if mode in ('pvp','pvp-beta') %}active{% endif %}">🎮 {{ t.nav_pvp }}</a>
+          <a href="{{ lp }}/duel" class="drawer-link {% if mode=='duel' %}active{% endif %}">⚔️ {{ t.nav_duel }}</a>
+          <a href="{{ lp }}/pvp/bot" class="drawer-link {% if mode in ('pvp-bot','pvp-bot-beta') %}active{% endif %}">🤖 {{ t.nav_vs_bot }}</a>
+          <a href="{{ lp }}/pvp/leaderboard" class="drawer-link {% if mode=='pvp-leaderboard' %}active{% endif %}">🏆 {{ t.nav_pvp_leaderboard }}</a>
+          <a href="{{ lp }}/pvp/rankings" class="drawer-link {% if mode=='pvp-rankings' %}active{% endif %}">👑 {{ t.nav_elo_rankings }}</a>
         </div>
       </details>
       <details class="drawer-group"{% if mode == 'variants' or 'cylinder' in mode or 'toroid' in mode or 'hex' in mode or mode == 'replay' or mode == 'board-generator' or request.url.path.startswith('/worldsweeper') or request.url.path.startswith('/cubesweeper') or request.url.path.startswith('/mobiussweeper') or mode == 'minesweeperchess' or mode == 'nonosweeper' %} open{% endif %}>
         <summary class="drawer-summary">🔄 {{ t.nav_variants }}</summary>
         <div class="drawer-links">
-          <a href="/cylinder" class="drawer-link {% if 'cylinder' in mode %}active{% endif %}">🔄 {{ t.nav_cylinder }}</a>
-          <a href="/hexsweeper" class="drawer-link {% if 'hex' in mode %}active{% endif %}">⬡ {{ t.nav_hexsweeper }}</a>
-          <a href="/worldsweeper" class="drawer-link {% if request.url.path.startswith('/worldsweeper') %}active{% endif %}">🌍 {{ t.nav_worldsweeper }}</a>
-          <a href="/cubesweeper" class="drawer-link {% if request.url.path.startswith('/cubesweeper') %}active{% endif %}">🎲 {{ t.nav_cubesweeper }}</a>
-          <a href="/mobiussweeper" class="drawer-link {% if request.url.path.startswith('/mobiussweeper') %}active{% endif %}">∞ {{ t.nav_mobiussweeper }}</a>
-          <a href="/toroid" class="drawer-link {% if 'toroid' in mode %}active{% endif %}">🍩 {{ t.nav_toroid }}</a>
-          <a href="/nonosweeper" class="drawer-link {% if mode=='nonosweeper' %}active{% endif %}">🔢 {{ t.nav_nonosweeper }}</a>
-          <a href="/minesweeperchess" class="drawer-link {% if mode=='minesweeperchess' %}active{% endif %}">♟️ {{ t.nav_minesweeperchess }}</a>
-          <a href="/variants/replay/" class="drawer-link {% if mode=='replay' %}active{% endif %}">🔁 {{ t.nav_replay }}</a>
-          <a href="/variants/board-generator" class="drawer-link {% if mode=='board-generator' %}active{% endif %}">🔧 {{ t.nav_board_generator }}</a>
+          <a href="{{ lp }}/cylinder" class="drawer-link {% if 'cylinder' in mode %}active{% endif %}">🔄 {{ t.nav_cylinder }}</a>
+          <a href="{{ lp }}/hexsweeper" class="drawer-link {% if 'hex' in mode %}active{% endif %}">⬡ {{ t.nav_hexsweeper }}</a>
+          <a href="{{ lp }}/worldsweeper" class="drawer-link {% if request.url.path.startswith('/worldsweeper') %}active{% endif %}">🌍 {{ t.nav_worldsweeper }}</a>
+          <a href="{{ lp }}/cubesweeper" class="drawer-link {% if request.url.path.startswith('/cubesweeper') %}active{% endif %}">🎲 {{ t.nav_cubesweeper }}</a>
+          <a href="{{ lp }}/mobiussweeper" class="drawer-link {% if request.url.path.startswith('/mobiussweeper') %}active{% endif %}">∞ {{ t.nav_mobiussweeper }}</a>
+          <a href="{{ lp }}/toroid" class="drawer-link {% if 'toroid' in mode %}active{% endif %}">🍩 {{ t.nav_toroid }}</a>
+          <a href="{{ lp }}/nonosweeper" class="drawer-link {% if mode=='nonosweeper' %}active{% endif %}">🔢 {{ t.nav_nonosweeper }}</a>
+          <a href="{{ lp }}/minesweeperchess" class="drawer-link {% if mode=='minesweeperchess' %}active{% endif %}">♟️ {{ t.nav_minesweeperchess }}</a>
+          <a href="{{ lp }}/variants/replay/" class="drawer-link {% if mode=='replay' %}active{% endif %}">🔁 {{ t.nav_replay }}</a>
+          <a href="{{ lp }}/variants/board-generator" class="drawer-link {% if mode=='board-generator' %}active{% endif %}">🔧 {{ t.nav_board_generator }}</a>
+          <a href="/tametsi/hex" class="drawer-link {% if mode=='tametsi-hex' %}active{% endif %}">⬡ Tametsi Hex</a>
         </div>
       </details>
       <details class="drawer-group"{% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' or request.url.path.startswith('/puzzles') %} open{% endif %}>
         <summary class="drawer-summary">🧩 {{ t.nav_puzzles }}</summary>
         <div class="drawer-links">
-          <a href="/puzzles" class="drawer-link {% if mode=='puzzles' %}active{% endif %}">▦ {{ t.nav_all_puzzles }}</a>
+          <a href="{{ lp }}/puzzles" class="drawer-link {% if mode=='puzzles' %}active{% endif %}">▦ {{ t.nav_all_puzzles }}</a>
           {% for game in puzzle_games %}
-          <a href="{{ game.play_path }}" class="drawer-link {% if request.url.path == game.url_prefix or request.url.path.startswith(game.url_prefix + '/') %}active{% endif %}">
+          <a href="{{ lp }}{{ game.play_path }}" class="drawer-link {% if request.url.path == game.url_prefix or request.url.path.startswith(game.url_prefix + '/') %}active{% endif %}">
             <span class="puzzle-nav-logo drawer-puzzle-logo puzzle-nav-logo-{{ game.slug }}" aria-hidden="true"></span>
             <span>{{ game.title }}</span>
           </a>
           {% endfor %}
         </div>
       </details>
-      <a href="/leaderboard" class="drawer-link drawer-link--direct {% if mode=='leaderboard' %}active{% endif %}">{{ t.nav_leaderboard }}</a>
-      <a href="/quests" class="drawer-link drawer-link--direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
-      <a href="/blog" class="drawer-link drawer-link--direct {% if mode=='blog' %}active{% endif %}">{{ t.nav_blog }}</a>
-      <a href="/2026worldcup" class="drawer-link drawer-link--direct {% if mode=='wc2026' %}active{% endif %}" style="color:#e8a000;font-weight:600;">⚽ WC 2026</a>
+      <a href="{{ lp }}/leaderboard" class="drawer-link drawer-link--direct {% if mode=='leaderboard' %}active{% endif %}">{{ t.nav_leaderboard }}</a>
+      <a href="{{ lp }}/quests" class="drawer-link drawer-link--direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
+      <a href="{{ lp }}/blog" class="drawer-link drawer-link--direct {% if mode=='blog' %}active{% endif %}">{{ t.nav_blog }}</a>
+      <a href="{{ lp }}/2026worldcup" class="drawer-link drawer-link--direct {% if mode=='wc2026' %}active{% endif %}" style="color:#e8a000;font-weight:600;">⚽ WC 2026</a>
     </nav>
   </aside>
 
@@ -636,16 +668,31 @@
     game_no_guess_mode:     {{ t.game_no_guess_mode | tojson }},
     game_congrats:          {{ t.game_congrats | tojson }},
     game_score_vanish:      {{ t.game_score_vanish | tojson }},
+    game_share_link:        {{ t.game_share_link | tojson }},
+    game_hash_col:          {{ t.game_hash_col | tojson }},
+    game_3bv_tip:           {{ t.game_3bv_tip | tojson }},
+    game_3bvs_tip:          {{ t.game_3bvs_tip | tojson }},
+    game_eff_tip:           {{ t.game_eff_tip | tojson }},
+    game_ios_banner:        {{ t.game_ios_banner | tojson }},
+    game_ios_for:           {{ t.game_ios_for | tojson }},
+    game_session:           {{ t.game_session | tojson }},
+    game_stat_won:          {{ t.game_stat_won | tojson }},
+    game_stat_lost:         {{ t.game_stat_lost | tojson }},
+    game_stat_best:         {{ t.game_stat_best | tojson }},
+    game_stat_avg_eff:      {{ t.game_stat_avg_eff | tojson }},
+    game_stat_cps:          {{ t.game_stat_cps | tojson }},
     guest_banner_pre:       {{ t.guest_banner_pre | tojson }},
     guest_banner_post:      {{ t.guest_banner_post | tojson }},
     auth_sign_in:           {{ t.auth_sign_in | tojson }},
+    ms_label_potd:          {{ t.ms_label_potd | tojson }},
+    ms_label_random:        {{ t.ms_label_random | tojson }},
   };
   </script>
 
   <script>
   window.QUEST_CONFIG = {{ quest_config(t) | tojson }};
   </script>
-  <script src="/static/js/minesweeper.js?v=9" defer></script>
+  <script src="/static/js/minesweeper.js?v=11" defer></script>
   <script src="/static/js/rewind.js?v=1" defer></script>
   <script src="/static/js/quests.js?v=2" defer></script>
   <script>

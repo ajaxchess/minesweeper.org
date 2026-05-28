@@ -278,7 +278,7 @@ function showWinOverlay() {
             document.getElementById('tz-name-input').value = localStorage.getItem('tz_name') || '';
             const btn = document.getElementById('tz-save-btn');
             btn.disabled = false;
-            btn.textContent = 'Save Score';
+            btn.textContent = btn.dataset.label || 'Save Score';
         }
     } else {
         form.style.display = 'none';

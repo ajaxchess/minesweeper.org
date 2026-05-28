@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Minesweeper Patterns — minesweeper.org{% endblock %}
+{% block description %}A curated wiki of minesweeper patterns — D-Pattern, Box Logic, Chains, Combinations, and more — with diagrams and explanations.{% endblock %}
+{% block keywords %}<meta name="keywords" content="minesweeper patterns, minesweeper wiki, D-pattern, 221, box logic, chains, minesweeper strategy">{% endblock %}
+{% block canonical %}https://minesweeper.org/patterns{% endblock %}
+{% block og_url %}https://minesweeper.org/patterns{% endblock %}
+{% block og_title %}Minesweeper Patterns{% endblock %}
+{% block og_description %}A curated wiki of minesweeper patterns with diagrams and explanations.{% endblock %}
+{% block tw_title %}Minesweeper Patterns{% endblock %}
+{% block tw_description %}A curated wiki of minesweeper patterns with diagrams and explanations.{% endblock %}
+
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Minesweeper", "item": "https://minesweeper.org/" },
+    { "@type": "ListItem", "position": 2, "name": "Patterns",    "item": "https://minesweeper.org/patterns" }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="tz-content-page">
+
+  <nav class="tz-breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Minesweeper</a>
+    <span aria-hidden="true">›</span>
+    <span>Patterns</span>
+  </nav>
+
+  <h1 class="tz-content-h1">Minesweeper Patterns</h1>
+  <p class="tz-content-lead">
+    Common shapes that show up over and over in minesweeper boards. Learn to spot
+    them and you'll solve faster with fewer guesses.
+  </p>
+
+  {% if patterns_by_section %}
+    {% for section in sections %}
+      {% if section in patterns_by_section %}
+        <section class="tz-section" id="section-{{ section | lower | replace(' ', '-') }}">
+          <h2>{{ section }}</h2>
+          <ul style="list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:0.75rem;">
+            {% for p in patterns_by_section[section] %}
+              {% if not p.parent_slug %}
+              <li>
+                <a href="/patterns/{{ p.slug }}"
+                   style="display:block;padding:0.75rem;border:1px solid var(--border);border-radius:6px;text-decoration:none;color:inherit;">
+                  <strong>{{ p.name }}</strong>
+                  {% if p.aliases %}
+                    <br><small style="color:var(--text-dim)">{{ p.aliases | join(' · ') }}</small>
+                  {% endif %}
+                  <div style="margin-top:0.4rem;font-size:0.8rem;color:var(--text-dim);">
+                    {% if p.difficulty %}<span>Difficulty {{ p.difficulty }}</span>{% endif %}
+                    {% if p.depth %}<span> · Depth {{ p.depth }}</span>{% endif %}
+                  </div>
+                </a>
+              </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </section>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    <p style="color:var(--text-dim);padding:2rem 0;">
+      The pattern wiki is being prepared. Check back soon.
+    </p>
+  {% endif %}
+
+</div>
+{% endblock %}

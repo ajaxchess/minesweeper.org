@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}My Games — minesweeper.org{% endblock %}
+{% block description %}Your minesweeper game history with links to watch every replay.{% endblock %}
+{% block canonical %}https://minesweeper.org/profile/games{% endblock %}
+
+{% block content %}
+<style>
+.mg-wrap {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.mg-wrap h1 { font-size: 1.35rem; margin-bottom: 0.25rem; }
+.mg-sub { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 1.25rem; }
+.mg-sub a { color: var(--accent2); text-decoration: none; }
+.mg-sub a:hover { text-decoration: underline; }
+
+.mg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.mg-table th {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--text-dim);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.mg-table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.mg-table tr:hover td { background: var(--surface2); }
+
+.mg-outcome-win  { color: var(--accent2); font-weight: 700; }
+.mg-outcome-loss { color: #e53935; }
+.mg-dim { color: var(--text-dim); }
+.mg-link { color: var(--accent2); text-decoration: none; }
+.mg-link:hover { text-decoration: underline; }
+
+.mg-pagination {
+  display: flex; gap: 0.5rem; align-items: center;
+  margin-top: 1.25rem; justify-content: center; flex-wrap: wrap;
+}
+.mg-page-btn {
+  padding: 0.3rem 0.75rem;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); cursor: pointer;
+  font-size: 0.85rem; text-decoration: none;
+}
+.mg-page-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.mg-page-btn.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+.mg-page-info { font-size: 0.82rem; color: var(--text-dim); }
+
+.mg-empty { color: var(--text-dim); font-size: 0.9rem; margin: 2rem 0; text-align: center; }
+</style>
+
+<div class="mg-wrap">
+  <h1>🎮 My Games</h1>
+  <div class="mg-sub">
+    {{ total }} game{{ 's' if total != 1 else '' }} recorded &ensp;·&ensp;
+    <a href="/profile">Profile settings</a>
+  </div>
+
+  {% if games %}
+  <table class="mg-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Date</th>
+        <th>Mode</th>
+        <th>Board</th>
+        <th>Outcome</th>
+        <th>Time</th>
+        <th>3BV</th>
+        <th>3BV/s</th>
+        <th>Clicks</th>
+        <th>Eff.</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for g in games %}
+      {% set time_s = g.time_ms / 1000 if g.time_ms else none %}
+      {% set total_c = (g.left_clicks or 0) + (g.right_clicks or 0) + (g.chord_clicks or 0) %}
+      {% set three_bv_s = (g.bbbv / time_s)|round(3) if g.bbbv and time_s else none %}
+      {% set eff = ((g.bbbv / total_c * 100)|round|int) if g.bbbv and total_c else none %}
+      <tr>
+        <td class="mg-dim">{{ g.id }}</td>
+        <td class="mg-dim" style="white-space:nowrap">
+          {{ g.created_at.strftime("%Y-%m-%d") if g.created_at else "—" }}
+        </td>
+        <td>{{ mode_labels.get(g.mode or '', g.mode or '—') }}</td>
+        <td class="mg-dim">{{ g.rows }}×{{ g.cols }}/{{ g.mines }}</td>
+        <td>
+          {% if g.outcome == 'win' %}
+          <span class="mg-outcome-win">✓ Win</span>
+          {% elif g.outcome == 'loss' %}
+          <span class="mg-outcome-loss">✗ Loss</span>
+          {% else %}
+          <span class="mg-dim">—</span>
+          {% endif %}
+        </td>
+        <td>{% if g.outcome == 'win' and time_s %}{{ "%.3f"|format(time_s) }}s{% else %}<span class="mg-dim">—</span>{% endif %}</td>
+        <td>{% if g.bbbv %}{{ g.bbbv }}{% else %}<span class="mg-dim">—</span>{% endif %}</td>
+        <td>{% if three_bv_s %}{{ three_bv_s }}{% else %}<span class="mg-dim">—</span>{% endif %}</td>
+        <td>{% if total_c %}{{ total_c }}{% else %}<span class="mg-dim">—</span>{% endif %}</td>
+        <td>{% if eff %}{{ eff }}%{% else %}<span class="mg-dim">—</span>{% endif %}</td>
+        <td><a class="mg-link" href="/game/{{ g.id }}">▶ Replay</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if total_pages > 1 %}
+  <div class="mg-pagination">
+    {% if page > 1 %}
+    <a class="mg-page-btn" href="/profile/games?page={{ page - 1 }}">← Prev</a>
+    {% endif %}
+    <span class="mg-page-info">Page {{ page }} / {{ total_pages }}</span>
+    {% if page < total_pages %}
+    <a class="mg-page-btn" href="/profile/games?page={{ page + 1 }}">Next →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="mg-empty">
+    No games recorded yet. Play a game and your history will appear here!
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
