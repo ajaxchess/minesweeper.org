@@ -220,8 +220,11 @@ var JGEN_I18N = {
       const f = fileInput.files[0];
       if (!f) { preview.style.display = 'none'; return; }
       const blobUrl = URL.createObjectURL(f);
-      if (!blobUrl.startsWith('blob:')) return;
-      preview.src = blobUrl;
+      let safeBlobUrl;
+      try { const u = new URL(blobUrl); safeBlobUrl = u.protocol === 'blob:' ? u.href : null; }
+      catch (_) { safeBlobUrl = null; }
+      if (!safeBlobUrl) { URL.revokeObjectURL(blobUrl); return; }
+      preview.src = safeBlobUrl;
       preview.style.display = 'block';
       // Generate a hash from filename+size+lastModified
       const raw = f.name + f.size + f.lastModified + Date.now() + Math.random();

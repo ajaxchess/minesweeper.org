@@ -197,8 +197,11 @@
     var preview = document.getElementById('gen-reveal-preview');
     if (preview) {
       var revealUrl = URL.createObjectURL(file);
-      if (!revealUrl.startsWith('blob:')) return;
-      preview.src = revealUrl;
+      var safeRevealUrl;
+      try { var ru = new URL(revealUrl); safeRevealUrl = ru.protocol === 'blob:' ? ru.href : null; }
+      catch (_) { safeRevealUrl = null; }
+      if (!safeRevealUrl) { URL.revokeObjectURL(revealUrl); return; }
+      preview.src = safeRevealUrl;
       preview.style.display = 'block';
     }
   }
