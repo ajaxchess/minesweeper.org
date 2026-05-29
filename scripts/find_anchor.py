@@ -5,7 +5,8 @@ mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 T = mod.TRANSLATIONS
 langs = [l for l in T if l != 'tlh']
-candidates = ['nav_numbers_match', 'nn_daily_h1', 'nn_htp_h1', 'nn_lb_h1', 't2k_daily_h1', 'mj_daily_h1']
+candidates = ['nav_numbers_match', 't2k_daily_h1', 'mj_daily_h1',
+              'game_new_game', 'game_left_click', 'game_view_lb', 'game_over']
 for c in candidates:
     missing = [l for l in langs if c not in T[l]]
     ok = "GOOD" if not missing else f"missing: {missing}"
