@@ -190,8 +190,8 @@
 </style>
 
 <h1 class="tz-page-h1">{{ t.tametsi_page_h1 }}</h1>
-<p class="tmt-bridge">Minesweeper × Nonogram — row &amp; column hints, every board no-guess solvable.
-{% if user %}<a href="/tametsi/history" style="font-size:.82rem;color:var(--accent);margin-left:.6rem;">📋 My History</a>{% endif %}
+<p class="tmt-bridge">{{ t.tmt_bridge }}
+{% if user %}<a href="/tametsi/history" style="font-size:.82rem;color:var(--accent);margin-left:.6rem;">{{ t.tmt_my_history }}</a>{% endif %}
 </p>
 
 <div class="game-wrapper">
@@ -210,23 +210,23 @@
 
     <div class="game-info">
       <div class="mode-row">
-        <span id="tmt-mode-label" class="mode-badge">📅 Daily</span>
+        <span id="tmt-mode-label" class="mode-badge">📅 {{ t.tz_btn_daily }}</span>
         <div style="display:flex;gap:0.25rem">
-          <button class="tmt-mode-btn active" data-mode="daily">📅 Daily</button>
-          <button class="tmt-mode-btn"        data-mode="random">🎲 Random</button>
+          <button class="tmt-mode-btn active" data-mode="daily">📅 {{ t.tz_btn_daily }}</button>
+          <button class="tmt-mode-btn"        data-mode="random">🎲 {{ t.tz_btn_random }}</button>
         </div>
       </div>
       <div class="tmt-diff-row">
-        <button class="tmt-diff-btn active" data-diff="beginner">Beginner</button>
-        <button class="tmt-diff-btn"        data-diff="intermediate">Intermediate</button>
-        <button class="tmt-diff-btn"        data-diff="expert">Expert</button>
+        <button class="tmt-diff-btn active" data-diff="beginner">{{ t.nav_beginner }}</button>
+        <button class="tmt-diff-btn"        data-diff="intermediate">{{ t.nav_intermediate }}</button>
+        <button class="tmt-diff-btn"        data-diff="expert">{{ t.nav_expert }}</button>
       </div>
       <div class="stat-row">
-        <div class="stat" title="Mines remaining">
+        <div class="stat" title="{{ t.tmt_stat_mines }}">
           <span class="stat-icon">💣</span>
           <span class="stat-value" id="tmt-mines-left">—</span>
         </div>
-        <div class="stat" title="Time elapsed">
+        <div class="stat" title="{{ t.tmt_stat_time }}">
           <span class="stat-icon">⏱</span>
           <span class="stat-value" id="tmt-timer">0:00</span>
         </div>
@@ -238,14 +238,14 @@
       <div id="tmt-grid"
            data-username="{{ user.display_name if user else '' }}"
            data-initial-hash="{{ initial_hash or '' }}">
-        <div class="tmt-loading">Loading…</div>
+        <div class="tmt-loading">{{ t.lb_loading }}</div>
       </div>
 
       <!-- Win / lose overlay -->
       <div id="tmt-overlay">
-        <div class="tmt-overlay-title" id="tmt-overlay-title">🎉 Solved!</div>
+        <div class="tmt-overlay-title" id="tmt-overlay-title">{{ t.tmt_overlay_solved }}</div>
         <div class="tmt-overlay-time" id="tmt-overlay-time-row">
-          Time: <strong id="tmt-win-time">—</strong>
+          {{ t.tz_overlay_time }} <strong id="tmt-win-time">—</strong>
         </div>
         <div class="tmt-overlay-time" id="tmt-win-bbbv-row" style="display:none">
           3BV: <strong id="tmt-win-bbbv">—</strong> &nbsp;·&nbsp;
@@ -253,14 +253,14 @@
         </div>
         <div id="tmt-score-form" class="tmt-score-form" style="display:none">
           <input id="tmt-name-input" type="text" maxlength="32"
-                 placeholder="Your name" autocomplete="nickname">
-          <button id="tmt-save-btn" class="tmt-action-btn">Save Score</button>
+                 placeholder="{{ t.tz_name_placeholder }}" autocomplete="nickname">
+          <button id="tmt-save-btn" class="tmt-action-btn">{{ t.tz_save_score }}</button>
         </div>
         <div id="tmt-score-msg" style="display:none"></div>
         <div class="tmt-overlay-btns">
-          <button id="tmt-overlay-retry"  class="tmt-action-btn">↩ Retry</button>
-          <button id="tmt-overlay-daily"  class="tmt-action-btn">📅 Daily</button>
-          <button id="tmt-overlay-random" class="tmt-action-btn">🎲 New Random</button>
+          <button id="tmt-overlay-retry"  class="tmt-action-btn">{{ t.tmt_retry }}</button>
+          <button id="tmt-overlay-daily"  class="tmt-action-btn">📅 {{ t.tz_btn_daily }}</button>
+          <button id="tmt-overlay-random" class="tmt-action-btn">{{ t.tmt_new_random }}</button>
         </div>
       </div>
     </div>
@@ -271,19 +271,17 @@
     </div>
 
     <p class="instructions" id="tmt-start-hint">
-      👆 Click the <strong style="color:#4eff8a">green ✕</strong> (top-left) to start
+      {{ t.tmt_start_hint | safe }}
     </p>
     <p class="instructions" id="tmt-play-hint" style="display:none">
-      <strong>Left-click</strong> to reveal &nbsp;|&nbsp;
-      <strong>Right-click</strong> to flag &nbsp;|&nbsp;
-      Row/col hints: <span style="color:#4caf50">remaining</span> / <span style="color:var(--text-dim)">total</span>
+      {{ t.tmt_play_hint | safe }}
     </p>
 
     <!-- Leaderboard -->
     <div id="tmt-lb-section" class="tmt-lb-section" style="display:none">
-      <div id="tmt-lb-title" class="tmt-lb-title">🏆 Today's Best</div>
+      <div id="tmt-lb-title" class="tmt-lb-title">{{ t.tmt_lb_today }}</div>
       <div id="tmt-lb-subtitle" class="tmt-lb-subtitle"></div>
-      <div id="tmt-lb-content"><div class="lb-loading">Loading…</div></div>
+      <div id="tmt-lb-content"><div class="lb-loading">{{ t.lb_loading }}</div></div>
     </div>
 
   </section>
@@ -303,182 +301,59 @@
 <!-- SEO landing content -->
 <div class="tz-landing">
 
-  <h2 class="tz-landing-h1">About Tametsi</h2>
+  <h2 class="tz-landing-h1">{{ t.tmt_about_h2 }}</h2>
 
   <div class="tz-landing-grid">
 
     <section class="tz-section">
-      <h2>What Is Tametsi?</h2>
-      <p>
-        Tametsi is a logic deduction puzzle that layers two independent constraint systems onto a
-        single grid. Like classic Minesweeper, each revealed safe cell shows an
-        <strong>adjacency count</strong> — the number of mines among its eight neighbors. Unlike
-        Minesweeper, Tametsi surrounds every grid with <strong>row and column mine-count
-        hints</strong> in the style of a Nonogram: the edge of each row and column tells you
-        exactly how many mines that line contains. You solve by combining both systems — cell-level
-        adjacency clues and line-level totals — until every mine is located.
-      </p>
-      <p>
-        The two constraint layers complement each other in a way neither game achieves alone. Row
-        and column totals give you a global picture of mine distribution before you uncover a
-        single cell. Adjacency numbers then pinpoint individual cells within lines that the totals
-        alone cannot resolve. Where classic Minesweeper regularly reaches a dead end and forces a
-        coin-flip guess, Tametsi's double-constraint system closes every gap. Every board published
-        on minesweeper.org is <strong>verified no-guess solvable</strong> by a server-side
-        constraint solver before you ever see it.
-      </p>
-      <p>
-        Three difficulty levels cover a wide skill range. <strong>Beginner</strong> (9×9, 10 mines)
-        is the ideal starting point — the grid is small enough to hold the whole picture in your
-        head while the row/column hint system teaches its fundamentals. <strong>Intermediate</strong>
-        (16×16, 40 mines) requires chaining adjacency and line constraints together across a board
-        large enough that no single technique dominates. <strong>Expert</strong> (16×30, 99 mines)
-        matches the density of classic expert Minesweeper but remains fully solvable — an
-        achievement that feels qualitatively different from beating a random expert board that
-        required several lucky guesses. A fresh daily puzzle is generated at midnight UTC for each
-        difficulty level.
-      </p>
+      <h2>{{ t.tmt_what_h2 }}</h2>
+      <p>{{ t.tmt_what_p1 | safe }}</p>
+      <p>{{ t.tmt_what_p2 | safe }}</p>
+      <p>{{ t.tmt_what_p3 | safe }}</p>
     </section>
 
     <section class="tz-section">
-      <h2>How to Play Tametsi</h2>
+      <h2>{{ t.tmt_howto_h2 }}</h2>
       <ol class="tz-list">
-        <li>
-          <strong>Start the game.</strong> Click the <strong style="color:#4eff8a">green ✕</strong>
-          in the top-left corner. This starts the timer and opens the starting region — all cells
-          connected to the corner through zero-adjacency cells are revealed at once via flood fill,
-          exactly as in classic Minesweeper.
-        </li>
-        <li>
-          <strong>Read the row and column hints.</strong> Each edge shows two numbers:
-          a <strong style="color:#4caf50">green "remaining"</strong> count that decrements as you
-          flag mines, and a <strong style="color:var(--text-dim)">grey "total"</strong> that never
-          changes. When the green count hits 0, every unflagged cell in that line is safe. When the
-          number of hidden cells equals the green count, every hidden cell in that line is a mine.
-        </li>
-        <li>
-          <strong>Reveal safe cells.</strong> Left-click any hidden cell to uncover it. A number
-          appears showing how many of its up-to-eight neighbors contain mines. A blank cell means
-          zero mine neighbors — the flood fill expands automatically. Clicking a mine ends the game.
-        </li>
-        <li>
-          <strong>Flag mines.</strong> Right-click (or long-press on mobile) to cycle:
-          hidden → 🚩 flagged → ❓ uncertain → hidden. Each flag automatically decrements the
-          green remaining count for that cell's row and column.
-        </li>
-        <li>
-          <strong>Win.</strong> You win as soon as all mines are flagged <em>or</em> all safe cells
-          are revealed — whichever you accomplish first. You do not need to do both.
-        </li>
+        <li>{{ t.tmt_howto_li1 | safe }}</li>
+        <li>{{ t.tmt_howto_li2 | safe }}</li>
+        <li>{{ t.tmt_howto_li3 | safe }}</li>
+        <li>{{ t.tmt_howto_li4 | safe }}</li>
+        <li>{{ t.tmt_howto_li5 | safe }}</li>
       </ol>
     </section>
 
     <section class="tz-section">
-      <h2>Tametsi vs. Classic Minesweeper</h2>
+      <h2>{{ t.tmt_vs_ms_h2 }}</h2>
       <ul class="tz-list">
-        <li>
-          <strong>Extra hint layer.</strong> Classic Minesweeper gives you only adjacency counts as
-          you reveal cells. Tametsi adds row and column mine totals visible from the very first
-          move, giving you a global picture of mine distribution before you uncover anything.
-        </li>
-        <li>
-          <strong>Always solvable by logic.</strong> Standard Minesweeper boards regularly force
-          guesses — an isolated corner, a region with two equally valid configurations. Every
-          Tametsi board here is guaranteed to have exactly one solution reachable entirely through
-          deduction. No coin flips, ever.
-        </li>
-        <li>
-          <strong>Same standard sizes.</strong> Beginner (9×9, 10 mines), Intermediate (16×16, 40
-          mines), and Expert (16×30, 99 mines) match the classic Minesweeper grid dimensions, so
-          experienced players can directly benchmark their logic speed against familiar board shapes.
-        </li>
-        <li>
-          <strong>3BV speed metric.</strong> Like competitive Minesweeper, Tametsi tracks
-          3BV (Bechtel's Board Benchmark Value) — a measure of board complexity independent of
-          luck. Your 3BV/s score is recorded alongside your time, enabling fair cross-board
-          comparisons on the daily leaderboard.
-        </li>
-        <li>
-          <strong>Shared daily boards.</strong> A specific board is fixed for each difficulty every
-          day, so the entire community competes on identical layouts. Classic Minesweeper generates
-          a fresh random board for every player; Tametsi's daily format creates a truly shared
-          competitive experience.
-        </li>
+        <li>{{ t.tmt_vs_ms_li1 | safe }}</li>
+        <li>{{ t.tmt_vs_ms_li2 | safe }}</li>
+        <li>{{ t.tmt_vs_ms_li3 | safe }}</li>
+        <li>{{ t.tmt_vs_ms_li4 | safe }}</li>
+        <li>{{ t.tmt_vs_ms_li5 | safe }}</li>
       </ul>
     </section>
 
     <section class="tz-section">
-      <h2>Tametsi vs. Tentaizu</h2>
-      <p>
-        Both Tametsi and <a href="/tentaizu" class="tz-link">Tentaizu</a> are minesweeper-adjacent
-        logic puzzles with a no-guess guarantee, but they are structurally quite different.
-      </p>
+      <h2>{{ t.tmt_vs_tz_h2 }}</h2>
+      <p>{{ t.tmt_vs_tz_intro | safe }}</p>
       <ul class="tz-list">
-        <li>
-          <strong>Tentaizu has no reveals.</strong> In Tentaizu, all clue cells are visible before
-          you begin, and you never uncover anything — you only annotate cells with flags or safe
-          marks. The board is static; only your markings change. In Tametsi you actively reveal
-          cells, changing the board state and unlocking new adjacency information as you play.
-        </li>
-        <li>
-          <strong>Different clue types.</strong> Tentaizu uses only pre-placed adjacency counts as
-          clues, with no row or column totals. Tametsi is the opposite emphasis: row and column
-          totals are always present, while adjacency clues emerge dynamically as you reveal cells.
-        </li>
-        <li>
-          <strong>Different scale and pace.</strong> Tentaizu is always a compact 7×7 grid with
-          exactly 10 mines — completable in well under a minute once you learn the patterns.
-          Tametsi scales from beginner (9×9) to expert (16×30), with solve times that can run
-          several minutes on the harder boards.
-        </li>
-        <li>
-          <strong>Same no-guess philosophy.</strong> Both games guarantee every puzzle is uniquely
-          solvable by pure deduction. Neither should ever require a random guess. If you are stuck,
-          you have missed a deduction — not run out of information.
-        </li>
+        <li>{{ t.tmt_vs_tz_li1 | safe }}</li>
+        <li>{{ t.tmt_vs_tz_li2 | safe }}</li>
+        <li>{{ t.tmt_vs_tz_li3 | safe }}</li>
+        <li>{{ t.tmt_vs_tz_li4 | safe }}</li>
       </ul>
     </section>
 
     <section class="tz-section">
-      <h2>Strategy Tips</h2>
+      <h2>{{ t.tmt_strategy_h2 }}</h2>
       <ol class="tz-list">
-        <li>
-          <strong>Read all line totals before placing a single flag.</strong> After the opening
-          flood fill, scan every row and column hint. Lines with a total of 0 contain no mines at
-          all — reveal every cell in them immediately. Lines where the total equals the number of
-          hidden cells are fully mined — flag every hidden cell at once. These free resolutions
-          often cascade into further deductions.
-        </li>
-        <li>
-          <strong>Watch the green "remaining" counters.</strong> Every flag you place decrements
-          the green count for that cell's row and column. A counter dropping to 0 makes every
-          remaining unflagged cell in that line safe. Keep an eye on counters approaching zero —
-          they are your next free reveals.
-        </li>
-        <li>
-          <strong>Cross-reference adjacency clues with line totals.</strong> An adjacency clue
-          might leave two equally likely candidates, but a row total can eliminate one of them.
-          Never analyze a cell in isolation — always check whether the outstanding line counts
-          confirm or rule out a candidate.
-        </li>
-        <li>
-          <strong>Use constraint subtraction between adjacent lines.</strong> If two adjacent rows
-          share a region of unknown cells, the difference between their remaining counts tells you
-          the net mine count in the non-shared cells. This subtraction technique extends the same
-          pattern used in classic Minesweeper to entire rows and columns.
-        </li>
-        <li>
-          <strong>Corners and edges first.</strong> A corner cell has only 3 neighbors; an edge
-          cell has only 5. Their adjacency clues are the most constrained and often the first to
-          resolve cleanly. Combined with the tight row/column totals that corner regions produce,
-          the perimeter almost always provides the strongest opening deductions.
-        </li>
-        <li>
-          <strong>Use the global mine count in the endgame.</strong> The mine counter shows how
-          many unflagged mines remain. When you are down to the last few, scan the entire board
-          for configurations consistent with both the remaining count and all outstanding line
-          totals. Global reasoning becomes extremely powerful once local options are exhausted.
-        </li>
+        <li>{{ t.tmt_strategy_li1 | safe }}</li>
+        <li>{{ t.tmt_strategy_li2 | safe }}</li>
+        <li>{{ t.tmt_strategy_li3 | safe }}</li>
+        <li>{{ t.tmt_strategy_li4 | safe }}</li>
+        <li>{{ t.tmt_strategy_li5 | safe }}</li>
+        <li>{{ t.tmt_strategy_li6 | safe }}</li>
       </ol>
     </section>
 
