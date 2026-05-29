@@ -5,21 +5,21 @@
 # Production uses requirements.txt (no hashes).
 # Staging uses requirements.lock (hash-pinned, all transitive deps).
 
-fastapi==0.136.1
-uvicorn[standard]==0.30.6
+fastapi==0.136.3
+uvicorn[standard]==0.48.0
 jinja2==3.1.6
-python-multipart==0.0.27
-sqlalchemy==2.0.35
-pymysql==1.1.1
-cryptography==43.0.1
-apscheduler==3.10.4
+python-multipart==0.0.29
+sqlalchemy==2.0.50
+pymysql==1.2.0
+cryptography==48.0.0
+apscheduler==3.11.2
 authlib==1.6.12
-httpx==0.27.2
+httpx==0.28.1
 itsdangerous==2.2.0
-Markdown==3.7
-psutil==5.9.8
+Markdown==3.10.2
+psutil==7.2.2
 slowapi==0.1.9
-pytest==8.3.5
+pytest==9.0.3
 opentelemetry-api==1.40.0
 opentelemetry-sdk==1.40.0
 opentelemetry-instrumentation-fastapi==0.61b0
