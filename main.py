@@ -978,11 +978,8 @@ def shutdown():
 
 @app.get("/set-lang")
 async def set_lang(request: Request, lang: str = "en", next: Optional[str] = None):
-    if lang not in SUPPORTED_LANGS:
-        lang = "en"
-    # Re-validate: only lowercase letters allowed in cookie value (no header-injection chars)
-    if not re.fullmatch(r'[a-z]{2,5}', lang):
-        lang = "en"
+    # Whitelist + pattern: derive a clean value independent of user input
+    safe_lang = lang if (lang in SUPPORTED_LANGS and re.fullmatch(r'[a-z]{2,5}', lang)) else "en"
     redirect_to = next or request.headers.get("referer", "/")
     redirect_to = _safe_relative_url(redirect_to)
     # Strip any existing lang prefix so we never stack prefixes (e.g. /de/fr/about)
@@ -992,11 +989,11 @@ async def set_lang(request: Request, lang: str = "en", next: Optional[str] = Non
         if not redirect_to:
             redirect_to = "/"
     # Apply the new lang prefix for non-English
-    if lang != "en":
+    if safe_lang != "en":
         bare = "" if redirect_to == "/" else redirect_to
-        redirect_to = f"/{lang}{bare}"
+        redirect_to = f"/{safe_lang}{bare}"
     response = RedirectResponse(url=redirect_to)
-    response.set_cookie("lang", lang, max_age=365 * 24 * 3600, samesite="lax")
+    response.set_cookie("lang", safe_lang, max_age=365 * 24 * 3600, samesite="lax")
     return response
 
 

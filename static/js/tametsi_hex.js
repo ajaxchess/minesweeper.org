@@ -21,9 +21,9 @@ const THEX_PUZZLES = {
   },
   3: {
     R: 4,
-    mines: new Set(['-2,0','-1,-1','-1,-2','0,-3','2,-3','3,-3','3,-2','3,-1','2,1','-1,2','1,2','-2,3']),
-    startRevealed: {'-2,-1':3,'-3,0':1,'-3,1':1},
-    tutorialText: '<strong>Tutorial 3 — Full Board (R=4, 12 mines):</strong> A larger board with more mines spread across the hex grid. When you reveal a cell with 0 mine-neighbours, its neighbours are uncovered automatically — use that cascade to open up new deduction opportunities.',
+    mines: new Set(['3,-1','3,-2','3,-3','-3,1','-3,2','-3,3']),
+    startRevealed: {'0,0':0,'3,0':1,'-3,0':1},
+    tutorialText: '<strong>Tutorial 3 — Cascade (R=4, 6 mines):</strong> A <strong>0</strong> cell has no adjacent mines. When you reveal one, every neighbour is uncovered automatically — and if any neighbour is also 0, the cascade keeps spreading. Click any cell next to the centre <strong>0</strong> to trigger a cascade that opens most of the board. Then use the boundary numbers to flag all 6 mines.',
   },
   4: {
     R: 3,
@@ -62,6 +62,21 @@ const THEX_PUZZLES = {
       {r: 3, count: 4},
     ],
     tutorialText: '<strong>Tutorial 5 — Row Hints (10 mines):</strong> The <strong style="color:#ffd700">yellow numbers</strong> to the left of each row show the total mine count for that row. Combined with the indicator cells below (each showing how many mines are in the two cells above it), you can deduce the exact mine positions in rows 1 and 2. For row 3, use the <strong>💣 mines left</strong> counter — with 10 mines total and rows 1 and 2 solved, you can work out how many remain in row 3.',
+  },
+  6: {
+    R: 3,
+    mines: new Set(['1,-2','1,-1','0,0','1,0','2,0','-1,1','0,1','1,1','0,2']),
+    cellColors: {
+      '0,-2':'red', '0,-1':'red', '0,0':'red', '1,0':'red', '2,0':'red',
+      '1,-2':'blue', '2,-2':'blue', '1,-1':'blue', '2,-1':'blue',
+    },
+    startRevealed: {'-2,1':1, '-2,2':1, '-1,2':3},
+    tutorialText: '<strong>Tutorial 6 — Coloured Cells (R=3, 9 mines):</strong> '
+      + 'Red and blue cells form colour groups — each group has its own mine count shown in the counter bar as '
+      + '<span style="color:#e74c3c"><strong>🔴 3:3</strong></span> and <span style="color:#5b9cf6"><strong>🔵 2:2</strong></span>. '
+      + 'The format is <em>total&thinsp;:&thinsp;still to flag</em> — flag a red cell and it becomes <span style="color:#e74c3c"><strong>🔴 3:2</strong></span>. '
+      + 'Numbers on any cell still count <strong>all</strong> adjacent mines regardless of colour. '
+      + 'The overall total (9) includes mines hidden under coloured tiles.',
   },
 };
 
@@ -161,9 +176,12 @@ function thexBuildSVG() {
     const k = thexKey(q,r);
     const isPreRevealed = Object.prototype.hasOwnProperty.call(thexState.startRevealed, k);
 
+    const color = thexState.cellColors ? thexState.cellColors[k] : null;
+
     const g = document.createElementNS(THEX_SVG_NS,'g');
     g.dataset.q = q; g.dataset.r = r;
     g.classList.add('hex-cell', isPreRevealed ? 'thex-prerev' : 'hex-hidden');
+    if (!isPreRevealed && color) g.classList.add(`thex-color-${color}`);
 
     const poly = document.createElementNS(THEX_SVG_NS,'polygon');
     poly.setAttribute('points', thexHexPoints(cx+ox, cy+oy, thexCellSize-1.5));
@@ -238,6 +256,7 @@ function thexRenderCell(q,r) {
   if (!g) return;
   const k = thexKey(q,r);
   const val = thexState.board.get(k);
+  const color = thexState.cellColors ? thexState.cellColors[k] : null;
   g.className.baseVal = 'hex-cell';
   const txt = g.querySelector('.hex-label');
   txt.textContent = '';
@@ -245,16 +264,20 @@ function thexRenderCell(q,r) {
 
   if (thexState.flagged.has(k)) {
     g.classList.add('hex-flagged');
+    if (color) g.classList.add(`thex-color-${color}`); // keep hue on flagged cells
     txt.textContent = '🚩';
     return;
   }
   if (!thexState.revealed.has(k)) {
     g.classList.add('hex-hidden');
+    if (color) g.classList.add(`thex-color-${color}`);
     return;
   }
   g.classList.add('hex-revealed');
+  // Revealed safe cells lose colour (show as standard dark); mines keep it for clarity
   if (val === -1) {
     g.classList.add(thexState.explodedKey===k ? 'hex-detonated' : 'hex-mine');
+    if (color) g.classList.add(`thex-color-${color}`);
     txt.textContent = '💣';
   } else if (val === THEX_QUESTION) {
     g.classList.add('thex-question');
@@ -380,6 +403,22 @@ function thexUpdateCounter() {
   if (left) left.textContent = '🚩 ' + thexState.flagged.size + ' / ' + thexState.mines.size;
   const right = document.getElementById('thex-mines-left');
   if (right) right.textContent = '💣 ' + remaining;
+
+  const colorEl = document.getElementById('thex-color-counts');
+  if (!colorEl) return;
+  if (thexState.colorMines) {
+    const EMOJI  = {red:'🔴', blue:'🔵'};
+    const CLS    = {red:'thex-ccount-red', blue:'thex-ccount-blue'};
+    colorEl.style.display = 'flex';
+    colorEl.innerHTML = Object.entries(thexState.colorMines).map(([color, total]) => {
+      const flaggedOnColor = [...thexState.flagged]
+        .filter(k => thexState.cellColors && thexState.cellColors[k] === color).length;
+      return `<span class="${CLS[color]}">${EMOJI[color]}&thinsp;${total}:${total - flaggedOnColor}</span>`;
+    }).join('');
+  } else {
+    colorEl.style.display = 'none';
+    colorEl.innerHTML = '';
+  }
 }
 
 function thexInitPuzzle(puzzleId) {
@@ -390,6 +429,15 @@ function thexInitPuzzle(puzzleId) {
   const cellSet = new Set(cells.map(([q,r]) => thexKey(q,r)));
   const board = thexBuildBoard(cells, def.mines, cellSet, def.questionCells || null);
 
+  // Tally mines per colour group
+  let colorMines = null;
+  if (def.cellColors) {
+    const cm = {};
+    for (const [k, col] of Object.entries(def.cellColors))
+      if (def.mines.has(k)) cm[col] = (cm[col] || 0) + 1;
+    if (Object.keys(cm).length) colorMines = cm;
+  }
+
   thexState = {
     puzzleId,
     mines: def.mines,
@@ -398,6 +446,8 @@ function thexInitPuzzle(puzzleId) {
     cellSet,
     board,
     rowHints: def.rowHints || [],
+    cellColors: def.cellColors || null,
+    colorMines,
     revealed: new Set(Object.keys(def.startRevealed)),
     flagged: new Set(),
     over: false,
