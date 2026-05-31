@@ -54,6 +54,10 @@ fi
 trap 'rm -f "$LOCK_FILE"' EXIT
 touch "$LOCK_FILE"
 
+# Print the git HEAD that is ON DISK right now (before any fetch/reset).
+# This is the version of the smoke_test code that will actually execute.
+echo "$(date '+%Y-%m-%d %H:%M:%S') [start] disk HEAD: $(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null || echo unknown)"
+
 mkdir -p "$STATE_DIR"
 
 # ── Navigate to repo ──────────────────────────────────────────────────────────
@@ -143,38 +147,52 @@ smoke_test() {
     local label="$1"
     local path="$2"
     local expect="$3"
+    local TMPBODY HTTP_CODE PY_RESULT
 
-    local RESP
-    RESP=$(curl -s --max-time 15 --compressed \
-        -w "\n__HTTP_STATUS__%{http_code}" \
+    TMPBODY=$(mktemp)
+    HTTP_CODE=$(curl -s --max-time 15 --compressed \
+        -o "$TMPBODY" -w "%{http_code}" \
         "http://127.0.0.1:${PORT}${path}")
-    local HTTP_CODE
-    HTTP_CODE=$(echo "$RESP" | grep -a '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//')
-    local BODY
-    BODY=$(echo "$RESP" | grep -av '__HTTP_STATUS__')
 
     if [ "$HTTP_CODE" != "200" ]; then
         echo "  FAIL: $label ($path) — HTTP $HTTP_CODE"
-        echo "        body(100): $(echo "$BODY" | head -c 100)"
+        echo "        body(100): $(head -c 100 "$TMPBODY")"
+        rm -f "$TMPBODY"
         return 1
     fi
-    # Strip non-ASCII bytes (em-dash, en-dash, etc.) before grepping.
-    # In cron's C locale, grep skips or mis-handles lines with bytes >127
-    # even with -a, so we normalise to pure ASCII first.
-    local BODY_ASCII
-    BODY_ASCII=$(printf '%s' "$BODY" | LC_ALL=C tr -cd '\040-\176\n')
-    if echo "$BODY_ASCII" | grep -qi "internal server error\|traceback\|templateassertionerror\|jinja2.exceptions"; then
-        echo "  FAIL: $label ($path) — server error in response body"
-        echo "        body(200): $(echo "$BODY_ASCII" | grep -im1 "error\|traceback\|exception")"
-        return 1
-    fi
-    if [ -n "$expect" ] && ! echo "$BODY_ASCII" | grep -qi "$expect"; then
-        echo "  FAIL: $label ($path) — expected '$expect' not found in body"
-        echo "        body(300): $(echo "$BODY" | head -c 300)"
-        return 1
-    fi
-    echo "  PASS: $label ($path)"
-    return 0
+
+    # Use Python for locale-independent body inspection: reads raw bytes,
+    # no grep, no shell variable encoding issues.
+    PY_RESULT=$(python3 - "$TMPBODY" "$expect" <<'PYEOF'
+import sys
+body_path = sys.argv[1]
+expect = sys.argv[2].lower().encode() if len(sys.argv) > 2 and sys.argv[2] else b''
+body = open(body_path, 'rb').read().lower()
+errors = [b'internal server error', b'traceback', b'templateassertionerror', b'jinja2.exceptions']
+if any(e in body for e in errors):
+    print('SERVER_ERROR')
+elif expect and expect not in body:
+    print('EXPECT_FAIL')
+else:
+    print('PASS')
+PYEOF
+)
+
+    case "$PY_RESULT" in
+        SERVER_ERROR)
+            echo "  FAIL: $label ($path) — server error in response body"
+            rm -f "$TMPBODY"; return 1 ;;
+        EXPECT_FAIL)
+            echo "  FAIL: $label ($path) — expected '$expect' not found in body"
+            echo "        body(300): $(head -c 300 "$TMPBODY")"
+            rm -f "$TMPBODY"; return 1 ;;
+        PASS)
+            echo "  PASS: $label ($path)"
+            rm -f "$TMPBODY"; return 0 ;;
+        *)
+            echo "  FAIL: $label ($path) — smoke_test error: PY_RESULT='$PY_RESULT'"
+            rm -f "$TMPBODY"; return 1 ;;
+    esac
 }
 
 smoke_test "Home"               "/"                                           "minesweeper" || SMOKE_FAILED=1
