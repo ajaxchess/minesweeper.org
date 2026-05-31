@@ -105,8 +105,11 @@ echo "Regenerating database.py from template..."
 /usr/bin/sed -i "s/the_db_name/$DB_NAME/g" database.py
 
 # ── Start the service (it is stopped when idle) ───────────────────────────────
+# Use restart rather than start: if a previous run left the service running
+# (e.g. on the first transition from always-on staging), restart ensures the
+# new code is loaded; if it was already stopped, restart behaves like start.
 echo "$(date '+%Y-%m-%d %H:%M:%S') Starting service: $SERVICE_NAME (port $PORT)..."
-sudo systemctl start "$SERVICE_NAME" \
+sudo systemctl restart "$SERVICE_NAME" \
     || { echo "Error: failed to start $SERVICE_NAME"; exit 1; }
 
 # Wait for uvicorn to finish binding the port (up to 60s).
@@ -145,14 +148,17 @@ smoke_test() {
 
     if [ "$HTTP_CODE" != "200" ]; then
         echo "  FAIL: $label ($path) — HTTP $HTTP_CODE"
+        echo "        body(100): $(echo "$BODY" | head -c 100)"
         return 1
     fi
     if echo "$BODY" | grep -qi "internal server error\|traceback\|templateassertionerror\|jinja2.exceptions"; then
         echo "  FAIL: $label ($path) — server error in response body"
+        echo "        body(200): $(echo "$BODY" | grep -im1 "error\|traceback\|exception")"
         return 1
     fi
     if [ -n "$expect" ] && ! echo "$BODY" | grep -qi "$expect"; then
         echo "  FAIL: $label ($path) — expected '$expect' not found in body"
+        echo "        body(300): $(echo "$BODY" | head -c 300)"
         return 1
     fi
     echo "  PASS: $label ($path)"
