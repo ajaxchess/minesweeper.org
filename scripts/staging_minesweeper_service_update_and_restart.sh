@@ -138,7 +138,7 @@ smoke_test() {
     local expect="$3"
 
     local RESP
-    RESP=$(curl -s --max-time 15 \
+    RESP=$(curl -s --max-time 15 --compressed \
         -w "\n__HTTP_STATUS__%{http_code}" \
         "http://127.0.0.1:${PORT}${path}")
     local HTTP_CODE
