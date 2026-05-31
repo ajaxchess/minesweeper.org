@@ -133,6 +133,7 @@ if [ "$READY" = "0" ]; then
     exit 1
 fi
 echo "$(date '+%Y-%m-%d %H:%M:%S') Staging service is up. Running smoke tests..."
+echo "  [diag] script loaded from $LOCAL_COMMIT | testing $REMOTE_COMMIT | LANG=${LANG:-unset} LC_ALL=${LC_ALL:-unset}"
 
 # ── Smoke tests ───────────────────────────────────────────────────────────────
 # Tests run against staging's Uvicorn port directly (bypasses Apache).
