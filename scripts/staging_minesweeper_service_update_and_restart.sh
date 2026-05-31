@@ -31,6 +31,12 @@ SERVICE_NAME="minesweeper-staging"
 PORT=8002
 source "$REPO_DIR/.env"
 
+# Cron runs without LANG set (C locale).  In C locale, grep -i mis-handles lines
+# that contain multi-byte UTF-8 characters even with -a, silently failing to match
+# ASCII patterns on those lines.  Force C.UTF-8 so grep processes UTF-8 correctly.
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+
 # Prevent two cron ticks from running in parallel (tests can take >5 min).
 LOCK_FILE="/tmp/minesweeper_staging_deploy.lock"
 
