@@ -115,7 +115,7 @@ sudo systemctl restart "$SERVICE_NAME" \
 # Wait for uvicorn to finish binding the port (up to 60s).
 READY=0
 for i in $(seq 1 20); do
-    if curl -s --max-time 3 "http://127.0.0.1:${PORT}/health" | grep -q '"status"'; then
+    if curl -s --max-time 3 --compressed "http://127.0.0.1:${PORT}/health" | grep -aq '"status"'; then
         READY=1
         break
     fi
