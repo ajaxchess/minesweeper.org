@@ -1,109 +1,143 @@
 #!/bin/bash
 
-# --- Configuration ---
+# staging_minesweeper_service_update_and_restart.sh
+#
+# On-demand staging: only starts the service when there is a new, unvalidated
+# commit.  Runs smoke tests, then STOPS the service to free memory.  Writes
+# the validated commit SHA to a state file that the production deploy script reads.
+#
+# Flow:
+#   1. Acquire a lock — exit immediately if another run is in progress.
+#   2. Fetch origin/main — if no new commit, exit.
+#   3. If the new commit is already in last_good_commit, exit (already validated).
+#   4. If the new commit matches blocked_commit, exit (already failed).
+#   5. Reset to new commit, build assets, install deps, regenerate database.py.
+#   6. START the staging service (it is stopped when idle).
+#   7. Wait for /health, run smoke tests.
+#   8. STOP the service regardless of test outcome.
+#   9. On pass: write validated SHA → production deploy will unblock.
+#      On fail: write blocked SHA → exit 1.
+#
+# Recommended cron (runs every 5 minutes):
+#   2-57/5 * * * * /home/ubuntu/git/staging.minesweeper.org/scripts/staging_minesweeper_service_update_and_restart.sh >> /tmp/minesweeper_staging_deploy.log 2>&1
+
+set -euo pipefail
+
+# ── Configuration ─────────────────────────────────────────────────────────────
 STATE_DIR="/home/ubuntu/deploy_state"
 REPO_DIR="/home/ubuntu/git/staging.minesweeper.org"
-PROD_REPO_DIR="/home/ubuntu/minesweeper"
 VENV_DIR="$REPO_DIR/venv"
 SERVICE_NAME="minesweeper-staging"
+PORT=8002
 source "$REPO_DIR/.env"
 
-FORCE=0
-if [ "$1" = "--force" ]; then
-    FORCE=1
-    echo "Force mode enabled — skipping commit checks."
-fi
+# Prevent two cron ticks from running in parallel (tests can take >5 min).
+LOCK_FILE="/tmp/minesweeper_staging_deploy.lock"
 
+# ── Root check ────────────────────────────────────────────────────────────────
 if [ "$(id -u)" -eq 0 ]; then
     echo "Error: This script must not be run as root. Run as the 'ubuntu' user."
     exit 1
 fi
 
+# ── Lock ──────────────────────────────────────────────────────────────────────
+if [ -f "$LOCK_FILE" ]; then
+    echo "$(date '+%Y-%m-%d %H:%M:%S') Another staging deploy is already running. Skipping."
+    exit 0
+fi
+trap 'rm -f "$LOCK_FILE"' EXIT
+touch "$LOCK_FILE"
+
 mkdir -p "$STATE_DIR"
 
-# --- Navigate to repository and fetch changes ---
-cd "$REPO_DIR" || { echo "Error: Missing REPO_DIR"; exit 1; }
+# ── Navigate to repo ──────────────────────────────────────────────────────────
+cd "$REPO_DIR" || { echo "Error: REPO_DIR $REPO_DIR not found"; exit 1; }
 
 git fetch origin > /dev/null 2>&1
 
 LOCAL_COMMIT=$(git rev-parse HEAD)
 REMOTE_COMMIT=$(git rev-parse origin/main)
 
-# ── Blocked commit check ──────────────────────────────────────────────────────
-BLOCKED_COMMIT=$(cat "$STATE_DIR/blocked_commit" 2>/dev/null || echo "")
-if [ "$FORCE" = "0" ] && [ "$REMOTE_COMMIT" = "$BLOCKED_COMMIT" ]; then
-    echo "Commit $REMOTE_COMMIT is blocked (failed smoke tests). Waiting for a new commit."
-    echo "Use --force to override and redeploy anyway."
-    exit 0
-fi
-
 # ── Up-to-date check ─────────────────────────────────────────────────────────
-if [ "$FORCE" = "0" ] && [ "$LOCAL_COMMIT" = "$REMOTE_COMMIT" ]; then
-    echo "Staging is up to date. No changes to deploy."
+if [ "$LOCAL_COMMIT" = "$REMOTE_COMMIT" ]; then
+    echo "$(date '+%Y-%m-%d %H:%M:%S') Up to date ($LOCAL_COMMIT). Nothing to do."
     exit 0
 fi
 
-echo "New commit detected: $REMOTE_COMMIT. Deploying to staging..."
+echo "$(date '+%Y-%m-%d %H:%M:%S') New commit detected: $LOCAL_COMMIT -> $REMOTE_COMMIT"
 
-# Clear any stale block now that a new commit has arrived
-rm -f "$STATE_DIR/blocked_commit"
+# ── Skip if already validated ─────────────────────────────────────────────────
+if [ -f "$STATE_DIR/last_good_commit" ] && [ "$(cat "$STATE_DIR/last_good_commit")" = "$REMOTE_COMMIT" ]; then
+    echo "$(date '+%Y-%m-%d %H:%M:%S') Commit $REMOTE_COMMIT already validated. Nothing to do."
+    exit 0
+fi
 
-# ── Deploy new commit to staging ─────────────────────────────────────────────
+# ── Skip if already blocked ───────────────────────────────────────────────────
+BLOCKED_COMMIT=$(cat "$STATE_DIR/blocked_commit" 2>/dev/null || echo "")
+if [ "$REMOTE_COMMIT" = "$BLOCKED_COMMIT" ]; then
+    echo "$(date '+%Y-%m-%d %H:%M:%S') Commit $REMOTE_COMMIT is blocked (failed smoke tests). Waiting for a new commit."
+    exit 0
+fi
+
+# ── Reset to new commit ───────────────────────────────────────────────────────
 if [[ $(git status --porcelain) ]]; then
-    echo "Warning: Uncommitted local changes found. Stashing before deploy."
+    echo "Warning: uncommitted local changes found — stashing."
     git stash
 fi
 
 git reset --hard "$REMOTE_COMMIT"
+echo "Reset to $REMOTE_COMMIT complete."
 
-# Always rebuild static assets after git reset --hard, because the reset always
-# restores the unminified source files from git regardless of whether JS/CSS changed.
+# ── Build static assets ───────────────────────────────────────────────────────
 echo "Building static assets..."
 bash "$REPO_DIR/scripts/build_assets.sh" || echo "Warning: asset build failed (continuing)"
 
+# ── Update Python dependencies ────────────────────────────────────────────────
 echo "Installing/updating Python dependencies..."
 "$VENV_DIR/bin/pip" install --require-hashes -r "$REPO_DIR/requirements.lock" \
     || { echo "ERROR: pip install failed — hash mismatch or missing package. Aborting."; exit 1; }
 
+# ── Regenerate database.py from template ─────────────────────────────────────
 echo "Regenerating database.py from template..."
 /usr/bin/cp database_template.py database.py
 /usr/bin/sed -i "s/the_minesweeper_user/$DB_USER/g" database.py
 /usr/bin/sed -i "s/the_password/$DB_PASS/g" database.py
 /usr/bin/sed -i "s/the_db_name/$DB_NAME/g" database.py
 
-echo "Restarting staging service..."
-sudo systemctl restart "$SERVICE_NAME" || { echo "Error: Failed to restart staging service"; exit 1; }
+# ── Start the service (it is stopped when idle) ───────────────────────────────
+echo "$(date '+%Y-%m-%d %H:%M:%S') Starting service: $SERVICE_NAME (port $PORT)..."
+sudo systemctl start "$SERVICE_NAME" \
+    || { echo "Error: failed to start $SERVICE_NAME"; exit 1; }
 
-# Wait for Uvicorn to be ready before running smoke tests (up to 60s)
+# Wait for uvicorn to finish binding the port (up to 60s).
 READY=0
 for i in $(seq 1 20); do
-    if curl -s --max-time 3 http://127.0.0.1:8002/health | grep -q '"status"'; then
+    if curl -s --max-time 3 "http://127.0.0.1:${PORT}/health" | grep -q '"status"'; then
         READY=1
         break
     fi
     sleep 3
 done
 if [ "$READY" = "0" ]; then
-    echo "ERROR: Staging did not become healthy within 60s after restart. Aborting smoke tests."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') ERROR: Staging did not become healthy within 60s. Stopping and aborting."
+    sudo systemctl stop "$SERVICE_NAME"
     exit 1
 fi
-echo "Staging service is up. Running smoke tests..."
+echo "$(date '+%Y-%m-%d %H:%M:%S') Staging service is up. Running smoke tests..."
 
 # ── Smoke tests ───────────────────────────────────────────────────────────────
 # Tests run against staging's Uvicorn port directly (bypasses Apache).
-# smoke_test returns 1 on failure so the caller can collect results without
-# aborting the whole script mid-run.
 SMOKE_FAILED=0
 
 smoke_test() {
     local label="$1"
     local path="$2"
-    local expect="$3"   # optional string that must appear in body
+    local expect="$3"
 
     local RESP
     RESP=$(curl -s --max-time 15 \
         -w "\n__HTTP_STATUS__%{http_code}" \
-        "http://127.0.0.1:8002${path}")
+        "http://127.0.0.1:${PORT}${path}")
     local HTTP_CODE
     HTTP_CODE=$(echo "$RESP" | grep '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//')
     local BODY
@@ -125,41 +159,27 @@ smoke_test() {
     return 0
 }
 
-smoke_test "Home"              "/"                                          "minesweeper" || SMOKE_FAILED=1
-smoke_test "PvP"               "/pvp/bot"                                   "PvP Minesweeper" || SMOKE_FAILED=1
-smoke_test "Duel"              "/duel"                                      "Minesweeper" || SMOKE_FAILED=1
-smoke_test "Tentaizu"          "/tentaizu"                                  "Tentaizu" || SMOKE_FAILED=1
-smoke_test "Numbers Match page" "/numbers-match"                            "Numbers Match" || SMOKE_FAILED=1
+smoke_test "Home"               "/"                                           "minesweeper" || SMOKE_FAILED=1
+smoke_test "PvP"                "/pvp/bot"                                    "PvP Minesweeper" || SMOKE_FAILED=1
+smoke_test "Duel"               "/duel"                                       "Minesweeper" || SMOKE_FAILED=1
+smoke_test "Tentaizu"           "/tentaizu"                                   "Tentaizu" || SMOKE_FAILED=1
+smoke_test "Numbers Match page" "/numbers-match"                              "Numbers Match" || SMOKE_FAILED=1
 smoke_test "Numbers Match API"  "/api/numbers-match-board/$(date +%Y-%m-%d)" "board_data" || SMOKE_FAILED=1
 
-# ── Handle smoke test outcome ─────────────────────────────────────────────────
-if [ "$SMOKE_FAILED" = "1" ]; then
-    echo "Smoke tests FAILED for commit $REMOTE_COMMIT."
+# ── Stop the service to free memory ───────────────────────────────────────────
+echo "$(date '+%Y-%m-%d %H:%M:%S') Stopping service: $SERVICE_NAME..."
+sudo systemctl stop "$SERVICE_NAME"
+echo "Service stopped."
 
-    # Record this commit as blocked so future cron runs skip it
+# ── Record result ─────────────────────────────────────────────────────────────
+if [ "$SMOKE_FAILED" -eq 0 ]; then
+    echo "$REMOTE_COMMIT" > "$STATE_DIR/last_good_commit"
+    rm -f "$STATE_DIR/blocked_commit"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') ✅ Smoke tests passed. Commit $REMOTE_COMMIT written to last_good_commit."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') Production deploy will proceed on its next cron tick."
+else
     echo "$REMOTE_COMMIT" > "$STATE_DIR/blocked_commit"
-
-    # Revert staging to the last commit that passed tests.
-    # Fall back to prod's current HEAD if no last_good_commit file exists yet.
-    REVERT_TO=$(cat "$STATE_DIR/last_good_commit" 2>/dev/null \
-        || git -C "$PROD_REPO_DIR" rev-parse HEAD 2>/dev/null \
-        || echo "")
-
-    if [ -z "$REVERT_TO" ]; then
-        echo "WARNING: No revert target found. Staging left on failed commit $REMOTE_COMMIT."
-        exit 1
-    fi
-
-    echo "Reverting staging to last known good commit: $REVERT_TO..."
-    git reset --hard "$REVERT_TO"
-    bash "$REPO_DIR/scripts/build_assets.sh" || echo "Warning: asset build failed during revert"
-    sudo systemctl restart "$SERVICE_NAME" \
-        || echo "Warning: failed to restart staging service after revert"
-    echo "Staging reverted to $REVERT_TO. Blocked commit: $REMOTE_COMMIT."
-    echo "Deploy to production will not occur. Waiting for a new commit."
-    exit 0
+    echo "$(date '+%Y-%m-%d %H:%M:%S') ❌ Smoke tests FAILED for $REMOTE_COMMIT. State file NOT updated."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') Production deploy remains blocked until tests pass."
+    exit 1
 fi
-
-# ── All tests passed ──────────────────────────────────────────────────────────
-echo "$REMOTE_COMMIT" > "$STATE_DIR/last_good_commit"
-echo "All smoke tests passed. Commit $REMOTE_COMMIT is the deploy candidate for production."

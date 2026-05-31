@@ -40,44 +40,7 @@ if [ "$LOCAL_COMMIT" = "$LAST_GOOD" ]; then
     exit 0
 fi
 
-echo "Deploy candidate available: $LAST_GOOD. Checking staging..."
-
-# ── Staging health gate (3 attempts, 15s apart) ───────────────────────────────
-# Confirm staging is healthy and running the exact commit we are about to promote.
-# Retries handle the case where staging is still coming up after a restart.
-STAGING_OK=0
-for attempt in 1 2 3; do
-    STAGING_RESPONSE=$(curl -s --max-time 10 \
-        -w "\n__HTTP_STATUS__%{http_code}" \
-        http://127.0.0.1:8002/health)
-    STAGING_HTTP=$(echo "$STAGING_RESPONSE" | grep '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//')
-    STAGING_BODY=$(echo "$STAGING_RESPONSE" | grep -v '__HTTP_STATUS__')
-
-    STAGING_STATUS=$(echo "$STAGING_BODY" | python3 -c \
-        "import sys,json; print(json.load(sys.stdin).get('status',''))" 2>/dev/null)
-    STAGING_COMMIT=$(echo "$STAGING_BODY" | python3 -c \
-        "import sys,json; print(json.load(sys.stdin).get('commit',''))" 2>/dev/null)
-
-    if [ "$STAGING_HTTP" = "200" ] && [ "$STAGING_STATUS" = "ok" ] && [ "$STAGING_COMMIT" = "$LAST_GOOD" ]; then
-        STAGING_OK=1
-        break
-    fi
-
-    if [ $attempt -lt 3 ]; then
-        echo "Staging check attempt $attempt failed (HTTP=$STAGING_HTTP, status=$STAGING_STATUS, commit=$STAGING_COMMIT). Retrying in 15s..."
-        sleep 15
-    else
-        echo "ERROR: Staging health gate failed after 3 attempts."
-        echo "       Last response: HTTP=$STAGING_HTTP, status=$STAGING_STATUS, commit=$STAGING_COMMIT (expected $LAST_GOOD)."
-        echo "       Aborting prod deploy."
-    fi
-done
-
-if [ "$STAGING_OK" = "0" ]; then
-    exit 1
-fi
-
-echo "Staging OK — HTTP 200, status=ok, commit=$STAGING_COMMIT. Deploying to production..."
+echo "$(date '+%Y-%m-%d %H:%M:%S') Deploy candidate available: $LAST_GOOD. Deploying to production..."
 
 # ── Deploy ────────────────────────────────────────────────────────────────────
 if [[ $(git status --porcelain) ]]; then
