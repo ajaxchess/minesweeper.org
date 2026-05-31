@@ -142,21 +142,21 @@ smoke_test() {
         -w "\n__HTTP_STATUS__%{http_code}" \
         "http://127.0.0.1:${PORT}${path}")
     local HTTP_CODE
-    HTTP_CODE=$(echo "$RESP" | grep '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//')
+    HTTP_CODE=$(echo "$RESP" | grep -a '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//')
     local BODY
-    BODY=$(echo "$RESP" | grep -v '__HTTP_STATUS__')
+    BODY=$(echo "$RESP" | grep -av '__HTTP_STATUS__')
 
     if [ "$HTTP_CODE" != "200" ]; then
         echo "  FAIL: $label ($path) — HTTP $HTTP_CODE"
         echo "        body(100): $(echo "$BODY" | head -c 100)"
         return 1
     fi
-    if echo "$BODY" | grep -qi "internal server error\|traceback\|templateassertionerror\|jinja2.exceptions"; then
+    if echo "$BODY" | grep -aqi "internal server error\|traceback\|templateassertionerror\|jinja2.exceptions"; then
         echo "  FAIL: $label ($path) — server error in response body"
-        echo "        body(200): $(echo "$BODY" | grep -im1 "error\|traceback\|exception")"
+        echo "        body(200): $(echo "$BODY" | grep -aim1 "error\|traceback\|exception")"
         return 1
     fi
-    if [ -n "$expect" ] && ! echo "$BODY" | grep -qi "$expect"; then
+    if [ -n "$expect" ] && ! echo "$BODY" | grep -aqi "$expect"; then
         echo "  FAIL: $label ($path) — expected '$expect' not found in body"
         echo "        body(300): $(echo "$BODY" | head -c 300)"
         return 1
