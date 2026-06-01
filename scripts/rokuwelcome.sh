@@ -1,2 +1,2 @@
 #!/bin/bash
-cd /home/ubuntu/git/rokuwelcome; /usr/bin/git pull
+cd /home/ubuntu/git/RokuWelcomeManagement; /usr/bin/git pull
