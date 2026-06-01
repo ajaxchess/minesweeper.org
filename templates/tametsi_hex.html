@@ -72,6 +72,17 @@
   fill: var(--surface2);
   stroke: var(--border);
 }
+/* Coloured cells — show hue while hidden or flagged */
+.hex-cell.thex-color-red .hex-poly {
+  fill: rgba(160, 30, 30, 0.62);
+  stroke: #cc3333;
+  stroke-width: 1.5;
+}
+.hex-cell.thex-color-blue .hex-poly {
+  fill: rgba(30, 70, 180, 0.62);
+  stroke: #3366cc;
+  stroke-width: 1.5;
+}
 .thex-counter-bar {
   display: flex;
   justify-content: space-between;
@@ -84,6 +95,17 @@
 }
 #thex-mine-counter { color: var(--text-dim); }
 #thex-mines-left   { color: #fff; }
+/* Colour mine counters — total:remaining format */
+#thex-color-counts {
+  display: none;
+  gap: 0.6rem;
+  align-items: center;
+  font-size: 1.0rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.thex-ccount-red  { color: #e74c3c; }
+.thex-ccount-blue { color: #5b9cf6; }
 </style>
 {% endblock %}
 
@@ -112,6 +134,7 @@
         <button class="thex-puzzle-btn" data-puzzle="3" onclick="thexSelectPuzzle(3)">Puzzle 3</button>
         <button class="thex-puzzle-btn" data-puzzle="4" onclick="thexSelectPuzzle(4)">Puzzle 4</button>
         <button class="thex-puzzle-btn" data-puzzle="5" onclick="thexSelectPuzzle(5)">Puzzle 5</button>
+        <button class="thex-puzzle-btn" data-puzzle="6" onclick="thexSelectPuzzle(6)">Puzzle 6</button>
       </div>
     </div>
 
@@ -119,6 +142,7 @@
 
     <div class="thex-counter-bar">
       <span id="thex-mine-counter"></span>
+      <span id="thex-color-counts"></span>
       <span id="thex-mines-left"></span>
     </div>
 

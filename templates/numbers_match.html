@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Numbers Match — Daily Number Puzzle | minesweeper.org{% endblock %}
-{% block description %}Play Numbers Match free online. Clear the board by pairing identical numbers or pairs that sum to 10. New daily puzzle every day with a global leaderboard.{% endblock %}
+{% block title %}{{ t.nm_meta_title }}{% endblock %}
+{% block description %}{{ t.nm_meta_desc }}{% endblock %}
 {% block keywords %}<meta name="keywords" content="numbers match, number matching game, number puzzle, seeds game, daily puzzle, minesweeper.org">{% endblock %}
 {% block canonical %}https://minesweeper.org/numbers-match{% endblock %}
 {% block og_url %}https://minesweeper.org/numbers-match{% endblock %}
 {% block og_type %}game{% endblock %}
-{% block og_title %}Numbers Match — Daily Number Puzzle{% endblock %}
-{% block og_description %}Clear the board by matching identical numbers or pairs that sum to 10. Free daily number puzzle with global leaderboard.{% endblock %}
+{% block og_title %}{{ t.nm_og_title }}{% endblock %}
+{% block og_description %}{{ t.nm_og_desc }}{% endblock %}
 {% block og_image %}https://minesweeper.org/static/img/og-default.png{% endblock %}
-{% block tw_title %}Numbers Match — Daily Number Puzzle{% endblock %}
-{% block tw_description %}Clear the board by matching identical numbers or pairs that sum to 10. Free daily puzzle.{% endblock %}
+{% block tw_title %}{{ t.nm_og_title }}{% endblock %}
+{% block tw_description %}{{ t.nm_tw_desc }}{% endblock %}
 {% block tw_image %}https://minesweeper.org/static/img/og-default.png{% endblock %}
 
 {% block jsonld %}
@@ -32,7 +32,7 @@
 
 {% block content %}
 <h1 class="tz-page-h1">{{ t.nav_numbers_match }}</h1>
-<p class="tz-bridge-sentence">Match identical numbers or pairs that sum to 10. Clear connected cells to earn points.</p>
+<p class="tz-bridge-sentence">{{ t.nm_bridge }}</p>
 
 <div class="nm-wrapper">
 
@@ -51,21 +51,21 @@
     <!-- Info panel -->
     <div class="game-info">
       <div class="mode-row">
-        <span id="nm-mode-label" class="mode-badge">📅 Daily Puzzle</span>
+        <span id="nm-mode-label" class="mode-badge">{{ t.nm_mode_daily }}</span>
         <div class="tz-mode-btns">
-          <button id="nm-daily-btn" class="tz-mode-btn">📅 Daily</button>
+          <button id="nm-daily-btn" class="tz-mode-btn">{{ t.nm_btn_daily }}</button>
           <button class="tz-mode-btn nm-diff-btn" data-rows="4">{{ t.hex_easy }}</button>
           <button class="tz-mode-btn nm-diff-btn" data-rows="8">{{ t.hex_medium }}</button>
           <button class="tz-mode-btn nm-diff-btn" data-rows="16">{{ t.hex_hard }}</button>
-          <button class="tz-mode-btn nm-diff-btn" data-rows="32">Expert</button>
+          <button class="tz-mode-btn nm-diff-btn" data-rows="32">{{ t.nm_btn_expert }}</button>
         </div>
       </div>
       <div class="stat-row">
-        <div class="stat" title="Score">
+        <div class="stat" title="{{ t.nm_score }}">
           <span class="stat-icon">⭐</span>
           <span class="stat-value" id="nm-score">0</span>
         </div>
-        <div class="stat" title="Time elapsed">
+        <div class="stat" title="{{ t.nm_time }}">
           <span class="stat-icon">⏱</span>
           <span class="stat-value" id="nm-timer">0:00</span>
         </div>
@@ -74,10 +74,10 @@
 
     <!-- Action buttons -->
     <div class="nm-actions">
-      <button id="nm-undo-btn" title="Undo last match (3 per game, −5 pts)">↩ 3</button>
-      <button id="nm-hint-btn" title="Highlight a valid pair (9 per game, −3 pts)">💡 9</button>
-      <button id="nm-add-btn"  title="Append remaining numbers to the bottom">+ Add Lines</button>
-      <button id="nm-connect-btn" title="Show all cells reachable from your selection — helps you spot connections">🔗 Paths</button>
+      <button id="nm-undo-btn" title="{{ t.nm_undo_title }}">↩ 3</button>
+      <button id="nm-hint-btn" title="{{ t.nm_hint_title }}">💡 9</button>
+      <button id="nm-add-btn"  title="{{ t.nm_add_title }}">+ Add Lines</button>
+      <button id="nm-connect-btn" title="{{ t.nm_paths_title }}">🔗 Paths</button>
     </div>
 
     <!-- Board -->
@@ -87,66 +87,59 @@
            data-real-today="{{ real_today }}"
            data-username="{{ user.display_name if user else '' }}">
 
-        <div id="nm-loading">Loading puzzle…</div>
+        <div id="nm-loading">{{ t.nm_loading }}</div>
         <div id="nm-grid" style="display:none"></div>
 
       </div>
 
       <!-- Win overlay -->
       <div id="nm-overlay">
-        <div class="nm-overlay-title">🎉 Board Cleared!</div>
+        <div class="nm-overlay-title">{{ t.nm_cleared }}</div>
         <div class="nm-overlay-result">
-          Score <strong id="nm-win-score">0</strong>
+          {{ t.nm_score }} <strong id="nm-win-score">0</strong>
           &nbsp;·&nbsp;
-          Time <strong id="nm-win-time">0:00</strong>
+          {{ t.nm_time }} <strong id="nm-win-time">0:00</strong>
         </div>
         <div id="nm-score-form" style="display:none">
           <input id="nm-name-input" type="text" maxlength="32"
-                 placeholder="Your name" autocomplete="nickname">
-          <button id="nm-save-btn">Save Score</button>
+                 placeholder="{{ t.nm_name_placeholder }}" autocomplete="nickname">
+          <button id="nm-save-btn">{{ t.nm_save_score }}</button>
         </div>
         <div id="nm-score-msg" style="display:none"></div>
         <div class="nm-overlay-btns">
-          <button id="nm-overlay-daily">📅 New Daily</button>
-          <button id="nm-overlay-random">🎲 Play Again</button>
+          <button id="nm-overlay-daily">{{ t.nm_new_daily }}</button>
+          <button id="nm-overlay-random">{{ t.nm_play_again }}</button>
         </div>
       </div>
     </div>
 
     <!-- Instructions -->
-    <p class="instructions">
-      <strong>Tap</strong> a number to select it, then tap a matching number to remove the pair.
-      Numbers match if they are <strong>equal</strong> or <strong>sum to 10</strong>,
-      and are connected by a clear horizontal, vertical, or diagonal line
-      (row-end wraps to the next row). Use <strong>Add Lines</strong> when stuck.
-      Using <strong>Hint (−3 pts)</strong> or <strong>Undo (−5 pts)</strong> deducts from your score.
-    </p>
+    <p class="instructions">{{ t.nm_instructions | safe }}</p>
 
     <!-- Scoring reference -->
     <details class="tz-howto">
-      <summary>Scoring &amp; Rules</summary>
+      <summary>{{ t.nm_scoring_title }}</summary>
       <div class="tz-howto-body">
         <ul>
-          <li><strong>+1</strong> per pair removed</li>
-          <li><strong>+1 to +4</strong> Far Apart bonus — one point per empty cell between the pair (max 4)</li>
-          <li><strong>+10</strong> per full row cleared</li>
-          <li><strong>+150</strong> board cleared</li>
-          <li><strong>−3</strong> per 💡 Hint used</li>
-          <li><strong>−5</strong> per ↩ Undo used</li>
+          <li>{{ t.nm_scoring_li1 | safe }}</li>
+          <li>{{ t.nm_scoring_li2 | safe }}</li>
+          <li>{{ t.nm_scoring_li3 | safe }}</li>
+          <li>{{ t.nm_scoring_li4 | safe }}</li>
+          <li>{{ t.nm_scoring_li5 | safe }}</li>
+          <li>{{ t.nm_scoring_li6 | safe }}</li>
         </ul>
         <p>
-          <strong>Tools:</strong> ↩ Undo (3 per game, −5 pts each) · 💡 Hint (9 per game, −3 pts each) · + Add Lines (free, unlimited)<br>
-          Leaderboard ranks by <strong>score ÷ time</strong> — higher score achieved faster = better rank.
-          All modes — Daily, Easy, Medium, Hard and Expert — have their own daily leaderboard.
+          {{ t.nm_scoring_tools | safe }}<br>
+          {{ t.nm_scoring_rank | safe }}
         </p>
       </div>
     </details>
 
     <!-- Leaderboard -->
     <div id="nm-lb-section" style="display:none">
-      <div class="nm-lb-title">🏆 Today's Leaderboard</div>
+      <div class="nm-lb-title">{{ t.nm_lb_title }}</div>
       <div id="nm-lb-content">
-        <div class="lb-loading">Loading…</div>
+        <div class="lb-loading">{{ t.nm_lb_loading }}</div>
       </div>
     </div>
 
@@ -166,50 +159,37 @@
 
 <!-- SEO landing content -->
 <div class="tz-landing">
-  <h2 class="tz-landing-h1">About Numbers Match</h2>
+  <h2 class="tz-landing-h1">{{ t.nm_about_h2 }}</h2>
   <div class="tz-landing-grid">
 
     <section class="tz-section">
-      <h2>What is Numbers Match?</h2>
-      <p>
-        Numbers Match is a number-pairing puzzle where you clear a grid by connecting pairs of matching
-        numbers. Two numbers match if they are <strong>identical</strong> (1 and 1, 7 and 7) or if they
-        <strong>sum to 10</strong> (1 and 9, 2 and 8, 3 and 7, 4 and 6, 5 and 5). To remove a pair, the
-        two numbers must be connected by a clear line — horizontal, vertical, or diagonal — with only
-        empty cells between them.
-      </p>
-      <p>
-        A unique twist is the <strong>row wrap</strong>: the last cell of a row is considered adjacent to
-        the first cell of the next row, extending horizontal connections across the line boundary. This
-        creates unexpected matching opportunities that reward careful scanning.
-      </p>
-      <p>
-        When no valid moves remain, tap <strong>Add Lines</strong> to append the remaining numbers to the
-        bottom of the board, creating new adjacencies. The board grows until you can clear everything.
-      </p>
+      <h2>{{ t.nm_what_h2 }}</h2>
+      <p>{{ t.nm_what_p1 | safe }}</p>
+      <p>{{ t.nm_what_p2 | safe }}</p>
+      <p>{{ t.nm_what_p3 | safe }}</p>
     </section>
 
     <section class="tz-section">
-      <h2>How to Score Points</h2>
+      <h2>{{ t.nm_how_h2 }}</h2>
       <ul class="tz-list">
-        <li><strong>Basic match (+1):</strong> Every pair you remove earns at least one point.</li>
-        <li><strong>Far Apart bonus (+1–4):</strong> Matching numbers with empty cells between them earns a bonus — one point per empty cell, up to four. Seek out long-range matches for maximum points.</li>
-        <li><strong>Row clear (+10):</strong> When an entire row becomes empty, you earn a 10-point bonus. Plan ahead to clear full rows.</li>
-        <li><strong>Board clear (+150):</strong> Clear the entire board for a large bonus and a spot on the leaderboard.</li>
-        <li><strong>Hint penalty (−3):</strong> Each 💡 Hint you use deducts 3 points. Use them wisely.</li>
-        <li><strong>Undo penalty (−5):</strong> Each ↩ Undo deducts 5 points. Think before you match.</li>
+        <li>{{ t.nm_how_li1 | safe }}</li>
+        <li>{{ t.nm_how_li2 | safe }}</li>
+        <li>{{ t.nm_how_li3 | safe }}</li>
+        <li>{{ t.nm_how_li4 | safe }}</li>
+        <li>{{ t.nm_how_li5 | safe }}</li>
+        <li>{{ t.nm_how_li6 | safe }}</li>
       </ul>
-      <p>All five modes — Daily, Easy, Medium, Hard, and Expert — have their own daily leaderboard. Your best score of the day counts.</p>
+      <p>{{ t.nm_how_modes }}</p>
     </section>
 
     <section class="tz-section">
-      <h2>Strategy Tips</h2>
+      <h2>{{ t.nm_strategy_h2 }}</h2>
       <ol class="tz-list">
-        <li><strong>Scan for long-range pairs.</strong> Far Apart bonuses add up quickly. Before making an obvious adjacent match, look for the same pair connected through empty space.</li>
-        <li><strong>Target row clears.</strong> A row with only one or two numbers remaining is close to a +10 bonus. Prioritise clearing those numbers to trigger the bonus.</li>
-        <li><strong>Avoid hints unless truly stuck.</strong> Each hint costs −3 pts. If you need to use one, it probably won't be the last — save the rest for later rows.</li>
-        <li><strong>Undo is expensive.</strong> At −5 pts each and only 3 available, reserve undos for accidental taps, not exploration. Plan your matches before tapping.</li>
-        <li><strong>Add Lines is free.</strong> Unlike hints and undos, Add Lines has no score penalty and is unlimited. Use it whenever no valid move exists.</li>
+        <li>{{ t.nm_strategy_li1 | safe }}</li>
+        <li>{{ t.nm_strategy_li2 | safe }}</li>
+        <li>{{ t.nm_strategy_li3 | safe }}</li>
+        <li>{{ t.nm_strategy_li4 | safe }}</li>
+        <li>{{ t.nm_strategy_li5 | safe }}</li>
       </ol>
     </section>
 
