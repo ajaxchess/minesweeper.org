@@ -438,6 +438,13 @@ async def favicon():
     return FileResponse("static/favicon.svg", media_type="image/svg+xml")
 
 
+@app.get("/apple-touch-icon.png", include_in_schema=False)
+@app.get("/apple-touch-icon-precomposed.png", include_in_schema=False)
+async def apple_touch_icon():
+    from fastapi.responses import FileResponse
+    return FileResponse("static/img/minesweeper-org-logo.png", media_type="image/png")
+
+
 @app.get("/robots.txt", include_in_schema=False)
 async def robots():
     content = (
@@ -1290,7 +1297,7 @@ class ScoreSubmit(BaseModel):
     def sanitize_name(cls, v: str) -> str:
         # Strip whitespace, allow only printable ASCII
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -1694,7 +1701,7 @@ class RushScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -1829,6 +1836,8 @@ def puzzles_tentaizu_redirect(request: Request):
     return RedirectResponse(f"{prefix}/tentaizu", status_code=301)
 
 @app.get("/puzzles/mosaic", response_class=HTMLResponse)
+@app.get("/puzzles/mosaic/easy", response_class=HTMLResponse)
+@app.get("/puzzles/mosaic/standard", response_class=HTMLResponse)
 def puzzles_mosaic_redirect(request: Request):
     lang = get_lang(request)
     prefix = _safe_lang_prefix(lang)
@@ -1968,7 +1977,7 @@ class FifteenPuzzleScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -2614,7 +2623,7 @@ class Game2048HexScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -2750,7 +2759,7 @@ class SchulteScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -2970,7 +2979,7 @@ class SudokuScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -3101,7 +3110,7 @@ class Game2048ScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -3821,7 +3830,7 @@ class ReplayScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -4072,7 +4081,7 @@ class CylinderScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -4235,7 +4244,7 @@ class ToroidScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -4406,7 +4415,7 @@ class HexscoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -4622,7 +4631,7 @@ class WorldsweeperScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -4782,7 +4791,7 @@ class CubesweeperScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -4947,7 +4956,7 @@ class MobiussweeperScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -5393,7 +5402,7 @@ class MosaicScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -5451,7 +5460,7 @@ class MosaicEasyScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -5512,7 +5521,7 @@ class MosaicCustomScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -5577,7 +5586,7 @@ class TentaizuScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -5638,7 +5647,7 @@ class TentaizuEasyScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -6051,7 +6060,7 @@ class DisplayNameUpdate(BaseModel):
     @classmethod
     def sanitize(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Display name must contain printable characters")
         return v[:32]
@@ -7990,7 +7999,7 @@ class NonosweeperScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -8158,7 +8167,7 @@ class MahjongScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -8416,7 +8425,7 @@ class JigsawScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -9029,7 +9038,7 @@ class TametsiScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
@@ -9384,7 +9393,7 @@ class NumbersMatchScoreSubmit(BaseModel):
     @classmethod
     def sanitize_name(cls, v: str) -> str:
         v = v.strip()
-        v = "".join(c for c in v if c.isprintable() and ord(c) < 128)
+        v = "".join(c for c in v if c.isprintable())
         if not v:
             raise ValueError("Name must contain printable characters")
         return v[:32]
