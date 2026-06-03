@@ -575,6 +575,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Overlay ───────────────────────────────────────────────────────────────
+  function escH(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
   function showDuelOverlay(html) {
     const ov = document.getElementById('duel-overlay');
     ov.innerHTML     = html;
@@ -838,7 +841,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 hash: msg.board_hash,
                 rows: msg.rows, cols: msg.cols, mines: msg.mines,
               });
-              return `<p class="result-hash">Board: <a href="/variants/replay/?${p}" target="_blank">${msg.board_hash.slice(0, 12)}…</a></p>`;
+              return `<p class="result-hash">Board: <a href="/variants/replay/?${p}" target="_blank">${escH(msg.board_hash.slice(0, 12))}…</a></p>`;
             })()
           : '';
         const rematchBtn = (!IS_PVP && !IS_BOT)

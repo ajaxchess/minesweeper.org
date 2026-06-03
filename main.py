@@ -1,6 +1,7 @@
 from datetime import date, timedelta, datetime, timezone
 from zoneinfo import ZoneInfo
 from urllib.parse import quote, urlparse
+import json
 import uuid
 import re
 import subprocess
@@ -8099,7 +8100,7 @@ def _mah_response(lang: str) -> HTMLResponse:
         # Inject before </head> — runs synchronously before Angular's type="module" scripts
         inject = (
             "<script>(function(){try{var s=JSON.parse(localStorage.getItem('mah.settings')||'{}');"
-            f"if(!s.lang||s.lang==='auto'){{s.lang='{mah_lang}';"
+            f"if(!s.lang||s.lang==='auto'){{s.lang={json.dumps(mah_lang)};"
             "localStorage.setItem('mah.settings',JSON.stringify(s))}}"
             "catch(e){}})();</script>"
         )
