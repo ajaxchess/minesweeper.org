@@ -78,6 +78,54 @@ const THEX_PUZZLES = {
       + 'Numbers on any cell still count <strong>all</strong> adjacent mines regardless of colour. '
       + 'The overall total (9) includes mines hidden under coloured tiles.',
   },
+  7: {
+    customCells: [
+      // ── Top cluster — R=3 ring (hole at centre 3,−6) — 18 cells ──
+      [3,-8],[4,-8],[5,-8],
+      [2,-7],[3,-7],[4,-7],[5,-7],
+      [1,-6],[2,-6],        [4,-6],[5,-6],
+      [1,-5],[2,-5],[3,-5],[4,-5],
+      [1,-4],[2,-4],[3,-4],
+      // ── Left cluster — R=3 rows 1–4 only — 16 cells ──
+      [-6,-2],[-5,-2],[-4,-2],
+      [-7,-1],[-6,-1],[-5,-1],[-4,-1],
+      [-8,0],[-7,0],[-6,0],[-5,0],[-4,0],
+      [-8,1],[-7,1],[-6,1],[-5,1],
+      // ── Bottom cluster — full R=3 — 19 cells ──
+      [-3,4],[-2,4],[-1,4],
+      [-4,5],[-3,5],[-2,5],[-1,5],
+      [-5,6],[-4,6],[-3,6],[-2,6],[-1,6],
+      [-5,7],[-4,7],[-3,7],[-2,7],
+      [-5,8],[-4,8],[-3,8],
+      // ── Right cluster — R=3 minus local (1,0)+(2,0) — 17 cells ──
+      [6,-2],[7,-2],[8,-2],
+      [5,-1],[6,-1],[7,-1],[8,-1],
+      [4,0],[5,0],[6,0],
+      [4,1],[5,1],[6,1],[7,1],
+      [4,2],[5,2],[6,2],
+    ],
+    mines: new Set([
+      // Top cluster (4 mines)
+      '4,-8','2,-6','4,-6','2,-4',
+      // Left cluster (9 mines)
+      '-6,-2','-5,-2','-4,-2','-7,-1','-4,-1','-8,0','-7,0','-5,0','-4,0',
+      // Bottom cluster (6 mines)
+      '-2,4','-3,6','-1,6','-5,7','-2,7','-3,8',
+      // Right cluster (5 mines)
+      '7,-2','8,-2','4,1','6,1','5,2',
+    ]),
+    startRevealed: {
+      // Top cluster (8 cells)
+      '3,-8':1,'5,-8':1,'3,-7':2,'4,-7':2,'1,-6':1,'5,-6':1,'1,-4':1,'3,-4':1,
+      // Left cluster (3 cells)
+      '-6,0':2,'-8,1':2,'-5,1':2,
+      // Bottom cluster (8 cells)
+      '-1,4':1,'-3,5':2,'-1,5':1,'-5,6':1,'-2,6':3,'-4,7':2,'-3,7':3,'-5,8':1,
+      // Right cluster (5 cells)
+      '6,-2':1,'6,-1':1,'8,-1':1,'5,1':3,'6,2':2,
+    },
+    tutorialText: '<strong>Tutorial 7 — Four Boards (24 mines):</strong> Four separate hex boards share one mine counter. Each board is solved independently — no cell from one board neighbours any cell on another. Deduce mines board by board; the 🚩 and 💣 counters track totals across all four.',
+  },
 };
 
 let thexState = {};
