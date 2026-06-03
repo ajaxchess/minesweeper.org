@@ -5597,7 +5597,7 @@ html[data-skin="classic"] .mobile-drawer .drawer-summary:hover {
   color: #fff !important;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1280px) {
   html[data-skin="classic"] header .mega-nav {
     display: none !important;
   }
@@ -6510,7 +6510,9 @@ body.drawer-open { overflow: hidden; }
 .drawer-theme-btn.active { border-color: var(--accent); background: rgba(233,69,96,0.12); }
 
 /* ── Tablet/desktop: show hamburger, hide mega-nav ──────────────────────── */
-@media (max-width: 1100px) {
+/* 1280px: English nav needs ~1175px min (8 items + wide logo + auth area).  */
+/* Raised from 1100px to prevent Leaderboard/Quests/Blog/WC collisions.     */
+@media (max-width: 1280px) {
   .mega-nav        { display: none !important; }
   .hamburger-btn   { display: flex; }
   .mega-panel      { max-height: calc(100vh - 60px); overflow-y: auto; }
