@@ -917,12 +917,14 @@ document.addEventListener('DOMContentLoaded', () => {
         gameActive = msg.active !== false;
         // Restore own board
         msg.my_revealed.forEach(([r, c]) => {
+          if (!Number.isInteger(r) || !Number.isInteger(c) || r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
           revealed[r][c]  = true;
           boardVals[r][c] = msg.board_values[`${r},${c}`];
         });
         if (IS_BETA) recomputeMinDist(minDist, revealed);
         // Restore opponent board
         msg.opp_revealed.forEach(([r, c, val]) => {
+          if (!Number.isInteger(r) || !Number.isInteger(c) || r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
           oppRevealed[r][c]  = true;
           oppBoardVals[r][c] = val;
         });
