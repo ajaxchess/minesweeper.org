@@ -137,7 +137,13 @@ function apiUrl() {
 }
 
 function esc(v) {
-  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escUrl(v) {
+  const s = String(v || '');
+  // Allow relative paths or https:// only — block javascript: and data: schemes
+  if (!s.startsWith('/') && !/^https?:\/\//i.test(s)) return '#';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function setSortIndicators() {
@@ -165,7 +171,7 @@ function renderWinsTable() {
     <tr class="${i % 2 === 1 ? 'lb-even' : ''}">
       <td class="lb-rank">${i + 1}</td>
       <td class="lb-name">${(r.country ? `<img src="/static/img/country-flags/${esc(r.country)}.png" class="lb-flag" alt="">` : '') + (r.profile_url
-        ? `<a href="${esc(r.profile_url)}">${esc(r.name || 'Anonymous')}</a>`
+        ? `<a href="${escUrl(r.profile_url)}">${esc(r.name || 'Anonymous')}</a>`
         : esc(r.name || 'Anonymous'))}</td>
       <td class="lb-stat"><strong>${r.wins}</strong></td>
       <td class="lb-stat">${r.elo != null ? r.elo : '—'}</td>
@@ -205,7 +211,7 @@ async function loadEloRankings() {
       <tr class="${i % 2 === 1 ? 'lb-even' : ''}">
         <td class="lb-rank">${i + 1}</td>
         <td class="lb-name">${(r.country ? `<img src="/static/img/country-flags/${esc(r.country)}.png" class="lb-flag" alt="">` : '') + (r.profile_url
-          ? `<a href="${esc(r.profile_url)}">${esc(r.name || 'Anonymous')}</a>`
+          ? `<a href="${escUrl(r.profile_url)}">${esc(r.name || 'Anonymous')}</a>`
           : esc(r.name || 'Anonymous'))}</td>
         <td class="lb-stat"><strong>${r.elo}</strong></td>
       </tr>`).join('');
