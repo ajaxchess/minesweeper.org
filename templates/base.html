@@ -38,6 +38,7 @@
   <link rel="alternate" hreflang="nl"      href="https://minesweeper.org/nl{{ _bp }}">
   <link rel="alternate" hreflang="id"      href="https://minesweeper.org/id{{ _bp }}">
   <link rel="alternate" hreflang="ms"      href="https://minesweeper.org/ms{{ _bp }}">
+  <link rel="alternate" hreflang="hi"      href="https://minesweeper.org/hi{{ _bp }}">
   {% endif %}
 
   <link rel="icon" type="image/png" href="/static/favicon.png" />
@@ -393,7 +394,7 @@
           </div>
         </div>
         {%- set _lc = lang if lang is defined else 'en' -%}
-        {%- set _ll = {'en':'EN','de':'DE','fr':'FR','es':'ES','pt':'PT','it':'IT','pl':'PL','ru':'RU','uk':'UK','zh':'ZH','zh-hant':'繁體','ja':'JA','ko':'KO','th':'TH','tl':'TL','nl':'NL','sv':'SV','id':'ID','ms':'MS','pgl':'PGL','eo':'EO'} -%}
+        {%- set _ll = {'en':'EN','de':'DE','fr':'FR','es':'ES','pt':'PT','it':'IT','pl':'PL','ru':'RU','uk':'UK','zh':'ZH','zh-hant':'繁體','ja':'JA','ko':'KO','th':'TH','tl':'TL','nl':'NL','sv':'SV','id':'ID','ms':'MS','hi':'HI','pgl':'PGL','eo':'EO'} -%}
         <div class="lang-picker" id="lang-picker">
           <button class="lang-picker-btn" type="button" onclick="toggleLangPicker(event)" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">
             <img src="/static/img/flags/{{ 'pgl' if _lc == 'tlh' else _lc }}.png" class="lang-flag" width="20" height="14" alt="{{ _lc }}">
@@ -428,6 +429,7 @@
               ('sv',      'SV',   'Svenska'),
               ('id',      'ID',   'Bahasa Indonesia'),
               ('ms',      'MS',   'Melayu'),
+              ('hi',      'HI',   'हिन्दी'),
               ('pgl',     'PGL',  'Pig Latin'),
               ('eo',      'EO',   'Esperanto')
             ] %}
