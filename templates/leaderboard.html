@@ -28,19 +28,19 @@
   <section class="lb-personal-panel" aria-labelledby="lb-personal-title">
     {% if user %}
     <div class="lb-personal-copy">
-      <p class="lb-kicker">Your progress</p>
-      <h2 id="lb-personal-title">Your Leaderboard Snapshot</h2>
-      <p id="lb-personal-summary">Loading your saved results...</p>
+      <p class="lb-kicker">{{ t.lb_personal_kicker_user }}</p>
+      <h2 id="lb-personal-title">{{ t.lb_personal_title_user }}</h2>
+      <p id="lb-personal-summary">{{ t.lb_personal_loading }}</p>
     </div>
     <div class="lb-personal-actions">
-      <a href="/profile" class="lb-directory-primary">View My Stats</a>
-      <a href="/quests" class="lb-directory-secondary">Quests</a>
+      <a href="/profile" class="lb-directory-primary">{{ t.lb_view_stats }}</a>
+      <a href="/quests" class="lb-directory-secondary">{{ t.nav_quests }}</a>
     </div>
     {% else %}
     <div class="lb-personal-copy">
-      <p class="lb-kicker">Track your climb</p>
-      <h2 id="lb-personal-title">Save your personal leaderboard story</h2>
-      <p>Sign In to keep personal bests, leaderboard placements, and top-three finishes in your account Stats area.</p>
+      <p class="lb-kicker">{{ t.lb_personal_kicker_guest }}</p>
+      <h2 id="lb-personal-title">{{ t.lb_personal_title_guest }}</h2>
+      <p>{{ t.lb_personal_body_guest }}</p>
     </div>
     <div class="lb-personal-actions">
       <a href="/auth/login?next=/leaderboard" class="lb-signin-cta">{{ t.auth_sign_in }}</a>
@@ -50,9 +50,9 @@
 
   <section class="lb-showcase" aria-labelledby="lb-showcase-title">
     <div class="lb-showcase-head">
-      <p class="lb-kicker">Champions across Minesweeper.org</p>
-      <h2 id="lb-showcase-title" class="lb-section-title">Top 3 From Around The Site</h2>
-      <p>Scan the top three across every scored game, variant, puzzle, and event from one place.</p>
+      <p class="lb-kicker">{{ t.lb_showcase_kicker }}</p>
+      <h2 id="lb-showcase-title" class="lb-section-title">{{ t.lb_showcase_title }}</h2>
+      <p>{{ t.lb_showcase_body }}</p>
     </div>
 
     <div class="lb-showcase-controls" aria-label="Leaderboard showcase filters">
@@ -81,9 +81,9 @@
 
   <section class="lb-main-board lb-platform-board" aria-labelledby="lb-platform-board-title">
     <div class="lb-directory-head">
-      <p class="lb-kicker">Full board</p>
-      <h2 id="lb-platform-board-title" class="lb-section-title">Detailed Leaderboard</h2>
-      <p id="lb-platform-board-subtitle">Choose any Full Board button above to inspect that leaderboard here.</p>
+      <p class="lb-kicker">{{ t.lb_full_board_kicker }}</p>
+      <h2 id="lb-platform-board-title" class="lb-section-title">{{ t.lb_detailed_title }}</h2>
+      <p id="lb-platform-board-subtitle">{{ t.lb_platform_subtitle_default }}</p>
     </div>
     <div class="lb-table-wrap">
       <table class="lb-table" id="lb-platform-table">
@@ -106,8 +106,8 @@
   <div class="lb-legacy-board" hidden>
   <section class="lb-main-board" aria-labelledby="lb-main-board-title">
     <div class="lb-directory-head">
-      <p class="lb-kicker">Full board</p>
-      <h2 id="lb-main-board-title" class="lb-section-title">Detailed Leaderboard</h2>
+      <p class="lb-kicker">{{ t.lb_full_board_kicker }}</p>
+      <h2 id="lb-main-board-title" class="lb-section-title">{{ t.lb_detailed_title }}</h2>
     </div>
 
   <div class="lb-decision-tree" aria-label="Detailed leaderboard choices">
@@ -124,7 +124,7 @@
     <button class="lb-game-btn" data-game="toroid" data-category="variants">Toroid</button>
     <button class="lb-game-btn" data-game="hex" data-category="variants">Hexsweeper</button>
   </div>
-  <p class="lb-directory-only-note">Use the All Leaderboards cards below for this category; each card opens the fastest available board for that game.</p>
+  <p class="lb-directory-only-note">{{ t.lb_directory_only_note }}</p>
 
   <div class="lb-tabs" id="lb-mode-tabs" role="tablist">
     <button class="lb-tab active" data-mode="beginner"     role="tab">{{ t.nav_beginner }}</button>
@@ -135,32 +135,32 @@
   </div>
 
   <div class="lb-ng-toggle" role="group" aria-label="Game mode">
-    <button class="lb-ng-btn active" data-ng="false">Standard mode</button>
-    <button class="lb-ng-btn"        data-ng="true">No-Guess mode</button>
+    <button class="lb-ng-btn active" data-ng="false">{{ t.lb_ng_standard }}</button>
+    <button class="lb-ng-btn"        data-ng="true">{{ t.lb_ng_no_guess }}</button>
   </div>
 
   <div class="lb-period-toggle" role="group" aria-label="Time period">
-    <button class="lb-period-btn active" data-period="daily">Daily</button>
-    <button class="lb-period-btn"        data-period="weekly">Weekly</button>
-    <button class="lb-period-btn"        data-period="monthly">Monthly</button>
-    <button class="lb-period-btn"        data-period="season" id="season-btn">Season 1</button>
-    <button class="lb-period-btn"        data-period="yearly">Yearly</button>
-    <button class="lb-period-btn"        data-period="alltime">All Time</button>
+    <button class="lb-period-btn active" data-period="daily">{{ t.lb_period_daily }}</button>
+    <button class="lb-period-btn"        data-period="weekly">{{ t.lb_period_weekly }}</button>
+    <button class="lb-period-btn"        data-period="monthly">{{ t.lb_period_monthly }}</button>
+    <button class="lb-period-btn"        data-period="season" id="season-btn">{{ t.lb_period_season }}</button>
+    <button class="lb-period-btn"        data-period="yearly">{{ t.lb_period_yearly }}</button>
+    <button class="lb-period-btn"        data-period="alltime">{{ t.lb_period_alltime }}</button>
   </div>
   </div>
 
   <div id="lb-date-wrap" class="lb-sub-picker">
-    <label for="lb-date-input">Date:</label>
+    <label for="lb-date-input">{{ t.lb_date_label }}</label>
     <input type="date" id="lb-date-input" class="lb-date-input">
   </div>
 
   <div id="lb-season-wrap" class="lb-sub-picker" style="display:none">
-    <label for="lb-season-select">Season:</label>
+    <label for="lb-season-select">{{ t.lb_season_label }}</label>
     <select id="lb-season-select" class="lb-season-select"></select>
   </div>
 
   <div class="lb-meta" id="lb-meta"></div>
-  <p class="lb-daily-note" id="lb-period-note">Scores reset daily at midnight UTC — can you top today's board?</p>
+  <p class="lb-daily-note" id="lb-period-note">{{ t.lb_period_note_default }}</p>
 
   <div class="lb-table-wrap">
     <table class="lb-table" id="lb-table">
@@ -174,8 +174,8 @@
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_bbbv_tip }}">3BV</th>
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_bbbv_s_tip }}">3BV/s</th>
           <th class="lb-th-stat lb-stat-col" data-tip="{{ t.lb_eff_tip }}">Eff</th>
-          <th>View</th>
-          <th>Board</th>
+          <th>{{ t.lb_col_view }}</th>
+          <th>{{ t.lb_col_hash }}</th>
         </tr>
       </thead>
       <tbody id="lb-body">
@@ -197,8 +197,8 @@
 
   <section class="lb-directory" aria-labelledby="lb-directory-title">
     <div class="lb-directory-head">
-      <h2 id="lb-directory-title" class="lb-section-title">All Leaderboards</h2>
-      <p>Every scored game, variant, and puzzle has a path from here. Some games use the live table above; daily puzzles link directly to the leaderboard on their game page.</p>
+      <h2 id="lb-directory-title" class="lb-section-title">{{ t.lb_directory_title }}</h2>
+      <p>{{ t.lb_directory_body }}</p>
     </div>
 
     {% for group in leaderboard_groups %}
@@ -318,12 +318,12 @@ let showcasePeriod = 'daily';
 let showcaseCategory = 'all';
 
 function periodLabel(period) {
-  if (period === 'daily') return 'Today';
-  if (period === 'weekly') return 'This Week';
-  if (period === 'monthly') return 'This Month';
-  if (period === 'season') return `Season ${computeCurrentSeason()}`;
-  if (period === 'yearly') return 'This Year';
-  return 'All Time';
+  if (period === 'daily')   return window.T.lb_period_label_today;
+  if (period === 'weekly')  return window.T.lb_period_label_week;
+  if (period === 'monthly') return window.T.lb_period_label_month;
+  if (period === 'season')  return `${window.T.lb_period_season} ${computeCurrentSeason()}`;
+  if (period === 'yearly')  return window.T.lb_period_label_year;
+  return window.T.lb_period_label_alltime;
 }
 
 function championName(row) {
@@ -358,17 +358,17 @@ function championCardShell(board, index) {
         <div class="lb-card-meta"><span class="lb-directory-badge">${escHtml(periodLabel(badgePeriod))}</span>${level}</div>
         <h3>${escHtml(board.title)}</h3>
       </div>
-      <div class="lb-champion-card-body"><div class="lb-showcase-loading">Loading...</div></div>
+      <div class="lb-champion-card-body"><div class="lb-showcase-loading">${window.T.lb_loading}</div></div>
       <div class="lb-directory-actions">
-        <button type="button" class="lb-directory-primary lb-full-board-btn" data-board-id="${escHtml(board.id || '')}">Full Leaderboard</button>
-        <a href="${escHtml(board.play_href || board.play)}" class="lb-directory-secondary">Play</a>
+        <button type="button" class="lb-directory-primary lb-full-board-btn" data-board-id="${escHtml(board.id || '')}">${window.T.lb_full_leaderboard_btn}</button>
+        <a href="${escHtml(board.play_href || board.play)}" class="lb-directory-secondary">${window.T.common_play}</a>
       </div>
     </article>`;
 }
 
 function renderChampionRows(rows, board) {
   if (!rows.length) {
-    return `<p class="lb-champion-empty">No scores yet for ${escHtml(periodLabel(showcasePeriod))}. Be the first to post one.</p>`;
+    return `<p class="lb-champion-empty">${escHtml(window.T.lb_no_scores_for_period.replace('{period}', periodLabel(showcasePeriod)))}</p>`;
   }
   return `
     <ol class="lb-champion-list">
@@ -392,7 +392,7 @@ async function loadChampionShowcase() {
   if (!grid) return;
   const params = new URLSearchParams({ period: showcasePeriod, category: showcaseCategory, date: TODAY_STR });
   if (showcasePeriod === 'season') params.set('season_num', computeCurrentSeason());
-  grid.innerHTML = '<div class="lb-showcase-loading">Loading champions...</div>';
+  grid.innerHTML = `<div class="lb-showcase-loading">${window.T.lb_loading_champions}</div>`;
   let boards = [];
   try {
     const response = await fetch(`/api/leaderboards/cards?${params}`, { cache: 'no-store' });
@@ -401,7 +401,7 @@ async function loadChampionShowcase() {
     boards = [];
   }
   if (!boards.length) {
-    grid.innerHTML = '<div class="lb-champion-empty">No leaderboards found for this filter.</div>';
+    grid.innerHTML = `<div class="lb-champion-empty">${window.T.lb_no_boards}</div>`;
     return;
   }
   grid.innerHTML = boards.map(championCardShell).join('');
@@ -427,14 +427,14 @@ async function loadPlatformBoard(boardId) {
   if (!body) return;
   const params = new URLSearchParams({ period: showcasePeriod, date: TODAY_STR, limit: '15' });
   if (showcasePeriod === 'season') params.set('season_num', computeCurrentSeason());
-  body.innerHTML = '<tr><td colspan="5" class="lb-loading">Loading...</td></tr>';
+  body.innerHTML = `<tr><td colspan="5" class="lb-loading">${window.T.lb_loading}</td></tr>`;
   try {
     const response = await fetch(`/api/leaderboards/${encodeURIComponent(boardId)}?${params}`, { cache: 'no-store' });
     const board = response.ok ? await response.json() : null;
     if (!board) throw new Error('bad response');
     if (subtitle) subtitle.textContent = `${board.title}${board.level ? ` - ${board.level}` : ''} - ${periodLabel(showcasePeriod)}`;
     if (!board.rows.length) {
-      body.innerHTML = '<tr><td colspan="5" class="lb-empty">No scores yet for this leaderboard.</td></tr>';
+      body.innerHTML = `<tr><td colspan="5" class="lb-empty">${window.T.lb_no_scores_board}</td></tr>`;
       return;
     }
     body.innerHTML = board.rows.map(row => {
@@ -450,7 +450,7 @@ async function loadPlatformBoard(boardId) {
       </tr>`;
     }).join('');
   } catch {
-    body.innerHTML = '<tr><td colspan="5" class="lb-empty">Could not load this leaderboard.</td></tr>';
+    body.innerHTML = `<tr><td colspan="5" class="lb-empty">${window.T.lb_error_board}</td></tr>`;
   }
 }
 
@@ -657,18 +657,18 @@ async function loadScores(mode, noGuess, period, game) {
   let noteText;
   if (currentPeriod === 'daily') {
     noteText = currentDate === TODAY_STR
-      ? 'Today\'s scores — resets at midnight UTC.'
-      : `Scores from ${currentDate}.`;
+      ? window.T.lb_note_today
+      : window.T.lb_note_today_past.replace('{date}', currentDate);
   } else if (currentPeriod === 'weekly') {
-    noteText = 'This week\'s best score per player.';
+    noteText = window.T.lb_note_week;
   } else if (currentPeriod === 'monthly') {
-    noteText = 'This month\'s best score per player.';
+    noteText = window.T.lb_note_month;
   } else if (currentPeriod === 'season') {
-    noteText = `${seasonLabel(currentSeason)} — best score per player.`;
+    noteText = window.T.lb_note_season.replace('{season}', seasonLabel(currentSeason));
   } else if (currentPeriod === 'yearly') {
-    noteText = 'This year\'s best score per player.';
+    noteText = window.T.lb_note_year;
   } else {
-    noteText = 'All-time records — best score per player.';
+    noteText = window.T.lb_note_alltime;
   }
   if (noteEl) noteEl.textContent = noteText;
 
@@ -678,13 +678,13 @@ async function loadScores(mode, noGuess, period, game) {
 
     if (!data.length) {
       const emptyMsg = currentPeriod === 'daily' && currentDate !== TODAY_STR
-                       ? `No scores recorded for ${escHtml(currentDate)}.`
-                     : currentPeriod === 'daily'   ? 'No scores yet today — be the first!'
-                     : currentPeriod === 'weekly'  ? 'No scores yet this week — be the first!'
-                     : currentPeriod === 'monthly' ? 'No scores yet this month — be the first!'
-                     : currentPeriod === 'season'  ? 'No scores yet this season — be the first!'
-                     : currentPeriod === 'yearly'  ? 'No scores yet this year — be the first!'
-                     :                               'No all-time scores yet — be the first!';
+                       ? window.T.lb_empty_today_past.replace('{date}', escHtml(currentDate))
+                     : currentPeriod === 'daily'   ? window.T.lb_empty_today
+                     : currentPeriod === 'weekly'  ? window.T.lb_empty_week
+                     : currentPeriod === 'monthly' ? window.T.lb_empty_month
+                     : currentPeriod === 'season'  ? window.T.lb_empty_season
+                     : currentPeriod === 'yearly'  ? window.T.lb_empty_year
+                     :                               window.T.lb_empty_alltime;
       body.innerHTML = `<tr><td colspan="${tableColspan()}" class="lb-empty">${emptyMsg}</td></tr>`;
       return;
     }
@@ -903,7 +903,7 @@ document.querySelectorAll('.lb-th-stat[data-tip]').forEach(th => {
 
 // ── Season button label ───────────────────────────────────────────────────────
 const seasonBtn = document.getElementById('season-btn');
-if (seasonBtn) seasonBtn.textContent = `Season ${computeCurrentSeason()}`;
+if (seasonBtn) seasonBtn.textContent = `${window.T.lb_period_season} ${computeCurrentSeason()}`;
 
 // ── Initial load (honour URL params) ─────────────────────────────────────────
 const params        = new URLSearchParams(window.location.search);
