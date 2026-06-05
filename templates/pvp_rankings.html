@@ -13,34 +13,34 @@
 
   <!-- ── View toggle: Win Count vs Elo ── -->
   <div class="lb-tabs" role="tablist" id="pvprk-view-tabs">
-    <button class="lb-tab"        data-view="wins" role="tab">👑 Win Count</button>
-    <button class="lb-tab active" data-view="elo"  role="tab">📊 Elo Ratings</button>
+    <button class="lb-tab"        data-view="wins" role="tab">{{ t.pvprk_win_count_tab }}</button>
+    <button class="lb-tab active" data-view="elo"  role="tab">{{ t.pvprk_elo_tab }}</button>
   </div>
 
   <!-- ── Win Count view ── -->
   <div id="pvprk-wins-view" style="display:none">
-    <h2 class="lb-section-title">PvP Win Rankings</h2>
-    <p class="lb-daily-note">Players ranked by number of PvP wins.</p>
+    <h2 class="lb-section-title">{{ t.pvprk_wins_h2 }}</h2>
+    <p class="lb-daily-note">{{ t.pvprk_wins_desc }}</p>
 
     <div class="lb-tabs" role="tablist">
-      <button class="lb-tab active" data-mode="all"      role="tab">All Modes</button>
+      <button class="lb-tab active" data-mode="all"      role="tab">{{ t.pvp_all_modes }}</button>
       <button class="lb-tab"        data-mode="standard" role="tab">{{ t.archive_standard }}</button>
-      <button class="lb-tab"        data-mode="quick"    role="tab">⚡ Quick</button>
+      <button class="lb-tab"        data-mode="quick"    role="tab">{{ t.duel_quick }}</button>
     </div>
 
     <div class="lb-period-toggle" role="group" aria-label="Time period">
-      <button class="lb-period-btn active" data-period="daily">Daily</button>
-      <button class="lb-period-btn"        data-period="season" id="pvprk-season-btn">Season 1</button>
-      <button class="lb-period-btn"        data-period="alltime">All Time</button>
+      <button class="lb-period-btn active" data-period="daily">{{ t.lb_period_daily }}</button>
+      <button class="lb-period-btn"        data-period="season" id="pvprk-season-btn">{{ t.lb_period_season }} 1</button>
+      <button class="lb-period-btn"        data-period="alltime">{{ t.lb_period_alltime }}</button>
     </div>
 
     <div id="pvprk-date-wrap" class="lb-sub-picker">
-      <label for="pvprk-date-input">Date:</label>
+      <label for="pvprk-date-input">{{ t.lb_date_label }}</label>
       <input type="date" id="pvprk-date-input" class="lb-date-input">
     </div>
 
     <div id="pvprk-season-wrap" class="lb-sub-picker" style="display:none">
-      <label for="pvprk-season-select">Season:</label>
+      <label for="pvprk-season-select">{{ t.lb_season_label }}</label>
       <select id="pvprk-season-select" class="lb-season-select"></select>
     </div>
 
@@ -49,8 +49,8 @@
         <thead>
           <tr>
             <th>#</th>
-            <th>Player</th>
-            <th id="pvprk-th-wins" class="lb-sortable lb-sort-desc" style="cursor:pointer" title="Sort by wins">Wins</th>
+            <th>{{ t.pvprk_col_player }}</th>
+            <th id="pvprk-th-wins" class="lb-sortable lb-sort-desc" style="cursor:pointer" title="Sort by wins">{{ t.pvprk_col_wins }}</th>
             <th id="pvprk-th-elo"  class="lb-sortable" style="cursor:pointer" title="Sort by Elo">Elo</th>
           </tr>
         </thead>
@@ -63,15 +63,15 @@
 
   <!-- ── Elo view ── -->
   <div id="pvprk-elo-view">
-    <h2 class="lb-section-title">PvP Elo Rankings</h2>
-    <p class="lb-daily-note">Players ranked by Elo rating. Starting rating: 1200. Only logged-in players with at least one match are shown.</p>
+    <h2 class="lb-section-title">{{ t.pvprk_elo_h2 }}</h2>
+    <p class="lb-daily-note">{{ t.pvprk_elo_desc }}</p>
 
     <div class="lb-table-wrap">
       <table class="lb-table" id="pvpelo-table">
         <thead>
           <tr>
             <th>#</th>
-            <th>Player</th>
+            <th>{{ t.pvprk_col_player }}</th>
             <th>Elo</th>
           </tr>
         </thead>
@@ -83,8 +83,8 @@
   </div>
 
   <div class="pvp-sub-links">
-    <a href="/pvp" class="pvp-sub-link">🎮 Play PvP</a>
-    <a href="/pvp/leaderboard" class="pvp-sub-link">🏆 Best Times</a>
+    <a href="/pvp" class="pvp-sub-link">{{ t.pvplb_play_pvp }}</a>
+    <a href="/pvp/leaderboard" class="pvp-sub-link">{{ t.pvprk_best_times_btn }}</a>
   </div>
 
 </div>
@@ -107,7 +107,7 @@ function buildSeasonSelect() {
   for (let s = cur; s >= 1; s--) {
     const opt = document.createElement('option');
     opt.value = s;
-    opt.textContent = `Season ${s}`;
+    opt.textContent = `${window.T.lb_period_season} ${s}`;
     sel.appendChild(opt);
   }
   sel.value = cur;
@@ -151,7 +151,7 @@ function setSortIndicators() {
   const thElo  = document.getElementById('pvprk-th-elo');
   const winsMark = sortCol === 'wins' ? (sortDir === -1 ? ' ▼' : ' ▲') : '';
   const eloMark  = sortCol === 'elo'  ? (sortDir === -1 ? ' ▼' : ' ▲') : '';
-  thWins.textContent = 'Wins' + winsMark;
+  thWins.textContent = window.T.pvprk_col_wins + winsMark;
   thElo.textContent  = 'Elo'  + eloMark;
   thWins.classList.toggle('lb-sort-desc', sortCol === 'wins' && sortDir === -1);
   thWins.classList.toggle('lb-sort-asc',  sortCol === 'wins' && sortDir ===  1);
@@ -186,7 +186,7 @@ async function loadPvpRankings() {
     if (!res.ok) throw new Error(res.status);
     winsData = await res.json();
     if (!winsData.length) {
-      body.innerHTML = `<tr><td colspan="4" class="lb-empty">No PvP results yet — play to get on the board!</td></tr>`;
+      body.innerHTML = `<tr><td colspan="4" class="lb-empty">${window.T.pvprk_empty_wins}</td></tr>`;
       return;
     }
     setSortIndicators();
@@ -204,7 +204,7 @@ async function loadEloRankings() {
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
     if (!data.length) {
-      body.innerHTML = `<tr><td colspan="3" class="lb-empty">No ranked players yet — play PvP to earn an Elo rating!</td></tr>`;
+      body.innerHTML = `<tr><td colspan="3" class="lb-empty">${window.T.pvprk_empty_elo}</td></tr>`;
       return;
     }
     body.innerHTML = data.map((r, i) => `
@@ -279,7 +279,7 @@ document.getElementById('pvprk-th-elo').addEventListener('click', () => {
 });
 
 // Update season button label
-document.getElementById('pvprk-season-btn').textContent = `Season ${computeCurrentSeason()}`;
+document.getElementById('pvprk-season-btn').textContent = `${window.T.lb_period_season} ${computeCurrentSeason()}`;
 
 // Init
 document.getElementById('pvprk-date-input').value = currentDate;

@@ -10,27 +10,27 @@
 <div class="lb-wrapper">
 
   <h1 class="lb-title">{{ t.nav_pvp_leaderboard }}</h1>
-  <p class="lb-daily-note">Fastest winning times in head-to-head PvP matches.</p>
+  <p class="lb-daily-note">{{ t.pvplb_fastest_note }}</p>
 
   <div class="lb-tabs" role="tablist">
-    <button class="lb-tab active" data-mode="all"      role="tab">All Modes</button>
+    <button class="lb-tab active" data-mode="all"      role="tab">{{ t.pvp_all_modes }}</button>
     <button class="lb-tab"        data-mode="standard" role="tab">{{ t.archive_standard }}</button>
-    <button class="lb-tab"        data-mode="quick"    role="tab">⚡ Quick</button>
+    <button class="lb-tab"        data-mode="quick"    role="tab">{{ t.duel_quick }}</button>
   </div>
 
   <div class="lb-period-toggle" role="group" aria-label="Time period">
-    <button class="lb-period-btn active" data-period="daily">Daily</button>
-    <button class="lb-period-btn"        data-period="season" id="pvplb-season-btn">Season 1</button>
-    <button class="lb-period-btn"        data-period="alltime">All Time</button>
+    <button class="lb-period-btn active" data-period="daily">{{ t.lb_period_daily }}</button>
+    <button class="lb-period-btn"        data-period="season" id="pvplb-season-btn">{{ t.lb_period_season }} 1</button>
+    <button class="lb-period-btn"        data-period="alltime">{{ t.lb_period_alltime }}</button>
   </div>
 
   <div id="pvplb-date-wrap" class="lb-sub-picker">
-    <label for="pvplb-date-input">Date:</label>
+    <label for="pvplb-date-input">{{ t.lb_date_label }}</label>
     <input type="date" id="pvplb-date-input" class="lb-date-input">
   </div>
 
   <div id="pvplb-season-wrap" class="lb-sub-picker" style="display:none">
-    <label for="pvplb-season-select">Season:</label>
+    <label for="pvplb-season-select">{{ t.lb_season_label }}</label>
     <select id="pvplb-season-select" class="lb-season-select"></select>
   </div>
 
@@ -39,12 +39,12 @@
       <thead>
         <tr>
           <th>#</th>
-          <th>Winner</th>
-          <th>Time</th>
-          <th>vs.</th>
-          <th>Mode</th>
-          <th>Board</th>
-          <th>Date</th>
+          <th>{{ t.pvplb_col_winner }}</th>
+          <th>{{ t.lb_col_time }}</th>
+          <th>{{ t.pvplb_col_vs }}</th>
+          <th>{{ t.pvplb_col_mode }}</th>
+          <th>{{ t.lb_col_board }}</th>
+          <th>{{ t.lb_col_date }}</th>
         </tr>
       </thead>
       <tbody id="pvplb-body">
@@ -54,8 +54,8 @@
   </div>
 
   <div class="pvp-sub-links">
-    <a href="/pvp" class="pvp-sub-link">🎮 Play PvP</a>
-    <a href="/pvp/rankings" class="pvp-sub-link">👑 Win Rankings</a>
+    <a href="/pvp" class="pvp-sub-link">{{ t.pvplb_play_pvp }}</a>
+    <a href="/pvp/rankings" class="pvp-sub-link">{{ t.pvplb_win_rankings_btn }}</a>
   </div>
 
 </div>
@@ -78,7 +78,7 @@ function buildSeasonSelect() {
   for (let s = cur; s >= 1; s--) {
     const opt = document.createElement('option');
     opt.value = s;
-    opt.textContent = `Season ${s}`;
+    opt.textContent = `${window.T.lb_period_season} ${s}`;
     sel.appendChild(opt);
   }
   sel.value = cur;
@@ -118,7 +118,7 @@ async function loadPvpLb() {
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
     if (!data.length) {
-      body.innerHTML = `<tr><td colspan="7" class="lb-empty">No PvP results yet — be the first to win!</td></tr>`;
+      body.innerHTML = `<tr><td colspan="7" class="lb-empty">${window.T.pvplb_empty}</td></tr>`;
       return;
     }
     body.innerHTML = data.map((r, i) => `
@@ -170,7 +170,7 @@ document.getElementById('pvplb-season-select').addEventListener('change', e => {
 });
 
 // Update season button label
-document.getElementById('pvplb-season-btn').textContent = `Season ${computeCurrentSeason()}`;
+document.getElementById('pvplb-season-btn').textContent = `${window.T.lb_period_season} ${computeCurrentSeason()}`;
 
 // Init
 document.getElementById('pvplb-date-input').value = currentDate;

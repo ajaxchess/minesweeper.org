@@ -52,8 +52,8 @@
     <a href="/pvp?m=standard" class="duel-mode-tab {% if mode in ('pvp', 'pvp-beta') and submode == 'standard' %}active{% endif %}">{{ t.archive_standard }}</a>
     <a href="/pvp?m=quick"    class="duel-mode-tab {% if mode in ('pvp', 'pvp-beta') and submode == 'quick' %}active{% endif %}">{{ t.duel_quick }}</a>
     <a href="/pvp/bot"        class="duel-mode-tab {% if mode in ('pvp-bot', 'pvp-bot-beta') %}active{% endif %}">{{ t.duel_vs_bot }}</a>
-    <a href="/pvp/leaderboard" class="duel-mode-tab">🏆 Leaderboard</a>
-    <a href="/pvp/rankings"    class="duel-mode-tab">👑 Rankings</a>
+    <a href="/pvp/leaderboard" class="duel-mode-tab">{{ t.pvp_lb_tab }}</a>
+    <a href="/pvp/rankings"    class="duel-mode-tab">{{ t.pvp_rankings_tab }}</a>
     {% else %}
     <a href="/duel?m=standard" class="duel-mode-tab {% if submode == 'standard' %}active{% endif %}">{{ t.archive_standard }}</a>
     <a href="/duel?m=quick"    class="duel-mode-tab {% if submode == 'quick' %}active{% endif %}">{{ t.duel_quick }}</a>
@@ -120,7 +120,7 @@
   <!-- ── Boards ── -->
   {% if mode in ('pvp', 'pvp-beta') and submode == 'standard' %}
   <div class="debug-toggle-row">
-    <button id="debug-toggle-btn" class="debug-toggle-btn" onclick="toggleDebug()">🐛 Debug</button>
+    <button id="debug-toggle-btn" class="debug-toggle-btn" onclick="toggleDebug()">{{ t.pvp_debug_btn }}</button>
   </div>
   {% endif %}
   <div class="duel-boards-row">
@@ -128,9 +128,9 @@
     {% if mode in ('pvp', 'pvp-beta') and submode == 'standard' %}
     <!-- ── Debug panel (left of player board, Standard PvP only) ── -->
     <div id="debug-panel" class="debug-panel" style="display:none">
-      <div class="debug-section-label">📍 Position</div>
+      <div class="debug-section-label">{{ t.pvp_debug_position }}</div>
       <div id="debug-position" class="debug-position">NA</div>
-      <div class="debug-section-label">📋 Moves</div>
+      <div class="debug-section-label">{{ t.pvp_debug_moves }}</div>
       <ol id="debug-log" class="debug-log" reversed></ol>
     </div>
     {% endif %}
@@ -173,10 +173,10 @@
   {% if mode != 'pvp-bot' %}
   <!-- ── Chat ── -->
   <div class="duel-chat">
-    <div class="duel-chat-header">💬 Chat</div>
+    <div class="duel-chat-header">{{ t.duel_chat_header }}</div>
     <div id="duel-chat-log" class="duel-chat-log"></div>
     <div class="duel-chat-input-row">
-      <input id="duel-chat-input" type="text" placeholder="Message your opponent…" maxlength="200" autocomplete="off">
+      <input id="duel-chat-input" type="text" placeholder="{{ t.duel_chat_placeholder }}" maxlength="200" autocomplete="off">
       <button class="duel-chat-send-btn" onclick="sendChat()">{{ t.duel_send }}</button>
     </div>
   </div>
