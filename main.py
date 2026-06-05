@@ -1327,6 +1327,21 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
         guest_token = None
 
     client_type = get_client_type(request)
+
+    # Reject duplicate: same board + same player + same time already recorded
+    if payload.board_hash and payload.time_ms:
+        dup_q = db.query(Score.id).filter(
+            Score.board_hash == payload.board_hash,
+            Score.time_ms    == payload.time_ms,
+        )
+        if user:
+            dup_q = dup_q.filter(Score.user_email == user["email"])
+        else:
+            dup_q = dup_q.filter(Score.guest_token == guest_token)
+        existing = dup_q.first()
+        if existing:
+            return JSONResponse({"ok": True, "id": existing.id}, status_code=200)
+
     score = Score(
         name         = payload.name,
         user_email   = user["email"] if user else None,
@@ -3857,6 +3872,21 @@ def submit_replay_score(payload: ReplayScoreSubmit, request: Request, db: Sessio
         guest_token = request.session["guest_token"]
     else:
         guest_token = None
+    # Reject duplicate: same board + variant + player + time already recorded
+    if payload.time_ms:
+        dup_q = db.query(ReplayScore.id).filter(
+            ReplayScore.board_hash == payload.board_hash,
+            ReplayScore.variant    == payload.variant,
+            ReplayScore.time_ms    == payload.time_ms,
+        )
+        if user:
+            dup_q = dup_q.filter(ReplayScore.user_email == user["email"])
+        else:
+            dup_q = dup_q.filter(ReplayScore.guest_token == guest_token)
+        existing = dup_q.first()
+        if existing:
+            return JSONResponse({"ok": True, "id": existing.id}, status_code=200)
+
     entry = ReplayScore(
         board_hash   = payload.board_hash,
         variant      = payload.variant,
