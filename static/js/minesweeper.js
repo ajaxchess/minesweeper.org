@@ -1005,7 +1005,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ngParam === '1') localStorage.setItem('noGuess', 'true');
     else if (ngParam === '0') localStorage.setItem('noGuess', 'false');
   }
-  // Evil NG is always no-guess; other modes read from localStorage
+  // Evil NG is always no-guess; other modes read from localStorage.
+  // On first visit (key absent), seed from server-computed IP-based A/B default
+  // so half of new users start in no-guess mode without any server-side session state.
+  if (localStorage.getItem('noGuess') === null) {
+    const serverDefault = board.dataset.defaultNoGuess === 'true';
+    localStorage.setItem('noGuess', serverDefault ? 'true' : 'false');
+  }
   const noGuess  = isEvil || (localStorage.getItem('noGuess') === 'true');
   const chording = localStorage.getItem('chording') !== 'false';
 

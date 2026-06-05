@@ -73,7 +73,8 @@
          data-cols="{{ cols }}"
          data-mines="{{ mines }}"
          data-mode="{{ mode }}"
-         data-username="{{ user.display_name if user else '' }}">
+         data-username="{{ user.display_name if user else '' }}"
+         data-default-no-guess="{{ 'true' if default_no_guess else 'false' }}">
     </div>
     {% if mode == 'expert' %}
     <script>

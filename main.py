@@ -314,6 +314,25 @@ templates.env.globals["get_breadcrumbs"] = _get_breadcrumbs
 templates.env.globals["quest_config"] = quest_config
 templates.env.globals["puzzle_games"] = PUZZLE_GAMES
 
+# ── A/B default: no-guess mode split by IP ────────────────────────────────────
+def _ng_default_from_ip(request: Request) -> bool:
+    """Return True (no-guess) for ~half of first-time visitors via last bit of IP.
+    Deterministic per IP so the same user consistently gets the same default.
+    NOTE: if a CDN or shared-cache layer is ever added in front of these routes,
+    per-IP HTML content will conflict with shared caching — revisit at that time."""
+    ip = (request.client.host if request.client else "") or ""
+    try:
+        if ":" in ip:
+            # IPv6 — last segment may be an IPv4 quad (e.g. ::ffff:192.168.1.1)
+            last = ip.rstrip(":").rsplit(":", 1)[-1]
+            if "." in last:
+                return bool(int(last.rsplit(".", 1)[1]) & 1)
+            return bool(int(last or "0", 16) & 1)
+        return bool(int(ip.rsplit(".", 1)[1]) & 1)
+    except (ValueError, IndexError):
+        return False
+
+
 # ── Redirect safety helpers ──────────────────────────────────────────────────
 _LANG_CODE_RE = re.compile(r'^[a-z]{2,10}(?:-[a-z]{2,10})?$')
 
@@ -1015,6 +1034,7 @@ async def index(request: Request):
         "mode": "beginner",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
+        "default_no_guess": _ng_default_from_ip(request),
         **GAME_MODES["beginner"]
     })
 
@@ -1024,6 +1044,7 @@ async def intermediate(request: Request):
         "mode": "intermediate",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
+        "default_no_guess": _ng_default_from_ip(request),
         **GAME_MODES["intermediate"]
     })
 
@@ -1033,6 +1054,7 @@ async def expert(request: Request):
         "mode": "expert",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
+        "default_no_guess": _ng_default_from_ip(request),
         **GAME_MODES["expert"]
     })
 
