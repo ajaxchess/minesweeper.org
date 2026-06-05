@@ -8,15 +8,15 @@
 {% block description %}{{ _desc }}{% endblock %}
 {% block canonical %}{{ _canon }}{% endblock %}
 {% block og_url %}{{ _canon }}{% endblock %}
-{% block og_title %}All Puzzles | minesweeper.org{% endblock %}
+{% block og_title %}{{ t.puzzles_h1 }} | minesweeper.org{% endblock %}
 {% block og_description %}{{ _desc }}{% endblock %}
 
 {% block content %}
 <div class="variants-page">
   <h1 class="variants-title">{{ t['puzzles_h1'] }}</h1>
-  <p class="variants-subtitle">Daily puzzles, logic games, and brain teasers — all free, no download required.</p>
+  <p class="variants-subtitle">{{ t.puzzles_subtitle }}</p>
 
-  <div class="puzzles-section-label">Daily Logic Puzzles</div>
+  <div class="puzzles-section-label">{{ t.puzzles_section_daily }}</div>
   <div class="variants-grid">
 
     <div class="variant-card">
@@ -61,7 +61,7 @@
 
   </div>
 
-  <div class="puzzles-section-label">More Games</div>
+  <div class="puzzles-section-label">{{ t.puzzles_section_more }}</div>
   <div class="variants-grid">
 
     <div class="variant-card">
@@ -90,7 +90,7 @@
     <div class="variant-card">
       <div class="variant-card-icon">⬡</div>
       <h2 class="variant-card-title">2048 Hexagon</h2>
-      <p class="variant-card-desc">2048 on a hexagonal grid — 18 tiles, a fixed stone in the center, and 6 directions to slide.</p>
+      <p class="variant-card-desc">{{ t['other_2048hex_desc'] }}</p>
       <div class="variant-card-links">
         <a href="/other/2048hex/play"        class="variant-play-btn">{{ t.common_play }}</a>
         <a href="/other/2048hex/leaderboard" class="variant-play-btn variant-play-btn-outline">{{ t['nav_leaderboard'] }}</a>
@@ -138,7 +138,7 @@
       <h2 class="variant-card-title">Sudoku</h2>
       <p class="variant-card-desc">{{ t['other_sudoku_desc'] }}</p>
       <div class="variant-card-links">
-        <a href="/other/sudoku/daily"  class="variant-play-btn">Play Daily</a>
+        <a href="/other/sudoku/daily"  class="variant-play-btn">{{ t['other_daily_puzzle'] }}</a>
         <a href="/other/sudoku/scores" class="variant-play-btn variant-play-btn-outline">{{ t['nav_leaderboard'] }}</a>
       </div>
     </div>

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% set _title = "Jigsaw Puzzle — How to Play | minesweeper.org" %}
-{% set _desc  = "How to play the Jigsaw Puzzle on minesweeper.org." %}
+{% set _title = t.meta_title_jigsaw_htp %}
+{% set _desc  = t.meta_desc_jigsaw_htp %}
 
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}
@@ -41,60 +41,60 @@
   <div>
     <h1>{{ t['jig_htp_h1'] }}</h1>
     <div class="jhtp-subnav">
-      <a href="/other">Other Puzzles</a>
+      <a href="/other">{{ t['other_h1'] }}</a>
       <span>›</span>
       <a href="/other/jigsaw/daily">{{ t.common_daily_puzzle }}</a>
     </div>
   </div>
 
   <div class="jhtp-section">
-    <h2>Goal</h2>
-    <p>Assemble all the pieces of the image on the board. The puzzle is complete when every piece is snapped into its correct position and connected into a single group.</p>
+    <h2>{{ t.jig_htp_goal_h2 }}</h2>
+    <p>{{ t.jig_htp_goal_p }}</p>
   </div>
 
   <div class="jhtp-section">
-    <h2>Difficulty Levels</h2>
+    <h2>{{ t.jig_htp_diff_h2 }}</h2>
     <table class="jhtp-diff-table">
-      <thead><tr><th>Level</th><th>Pieces</th><th>Grid</th></tr></thead>
+      <thead><tr><th>{{ t.jig_htp_diff_col_level }}</th><th>{{ t.jig_htp_diff_col_pieces }}</th><th>{{ t.jig_htp_diff_col_grid }}</th></tr></thead>
       <tbody>
-        <tr><td>Beginner</td><td>100</td><td>10 × 10</td></tr>
-        <tr><td>Intermediate</td><td>500</td><td>20 × 25</td></tr>
-        <tr><td>Expert</td><td>1 000</td><td>25 × 40</td></tr>
+        <tr><td>{{ t.jig_diff_beginner }}</td><td>100</td><td>10 × 10</td></tr>
+        <tr><td>{{ t.jig_diff_intermediate }}</td><td>500</td><td>20 × 25</td></tr>
+        <tr><td>{{ t.jig_diff_expert }}</td><td>1 000</td><td>25 × 40</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="jhtp-section">
-    <h2>Playing</h2>
+    <h2>{{ t.jig_htp_playing_h2 }}</h2>
     <ul>
-      <li>Pieces start in the <strong>stash panel</strong> on the right, scattered as if tipped from a box.</li>
-      <li><strong>Drag</strong> a piece from the stash onto the board to place it.</li>
-      <li>When two pieces that fit together are brought within snapping distance, they <strong>snap together</strong> automatically with a click sound.</li>
-      <li>Snapped pieces form a <strong>group</strong> that can be dragged as a single unit.</li>
-      <li>Use the <strong>reference thumbnail</strong> (bottom-left of the board) to see the complete image.</li>
+      <li>{{ t.jig_htp_playing_li1 | safe }}</li>
+      <li>{{ t.jig_htp_playing_li2 | safe }}</li>
+      <li>{{ t.jig_htp_playing_li3 | safe }}</li>
+      <li>{{ t.jig_htp_playing_li4 | safe }}</li>
+      <li>{{ t.jig_htp_playing_li5 | safe }}</li>
     </ul>
   </div>
 
   <div class="jhtp-section">
-    <h2>Controls</h2>
+    <h2>{{ t.jig_htp_controls_h2 }}</h2>
     <ul>
-      <li><strong>Timer</strong> — starts on your first piece interaction.</li>
-      <li><strong>Pause</strong> — stops the timer. Signed-in users can close the page and resume later.</li>
-      <li><strong>Restart</strong> — resets the puzzle with the same image and difficulty.</li>
-      <li><strong>{{ t.common_gallery }}</strong> — browse and start puzzles from other images.</li>
-      <li><strong>Mute</strong> — toggles the snap sound effect.</li>
+      <li>{{ t.jig_htp_ctrl_timer | safe }}</li>
+      <li>{{ t.jig_htp_ctrl_pause | safe }}</li>
+      <li>{{ t.jig_htp_ctrl_restart | safe }}</li>
+      <li><strong>{{ t.common_gallery }}</strong> — {{ t.jig_htp_ctrl_gallery_desc }}</li>
+      <li>{{ t.jig_htp_ctrl_mute | safe }}</li>
     </ul>
   </div>
 
   <div class="jhtp-section">
     <h2>{{ t.common_daily_puzzle }}</h2>
-    <p>One image is selected each day, the same for every player. The puzzle resets at midnight UTC. Completion times are recorded on the daily leaderboard — separately for each difficulty level.</p>
-    <p>Guest scores are accepted but cleared at midnight UTC. Registered user scores are retained permanently.</p>
+    <p>{{ t.jig_htp_daily_p1 }}</p>
+    <p>{{ t.jig_htp_daily_p2 }}</p>
   </div>
 
   <div class="jhtp-section">
-    <h2>Custom Puzzles</h2>
-    <p>Use the <a href="/other/jigsaw/generator">Puzzle Generator</a> to upload your own image and share a link with friends. Guests can play shared links; uploading requires signing in.</p>
+    <h2>{{ t.jig_htp_custom_h2 }}</h2>
+    <p>{{ t.jig_htp_custom_p | safe }}</p>
   </div>
 
   <div style="text-align:center;">

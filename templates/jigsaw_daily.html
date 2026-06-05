@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% set _title = (display_name ~ " | minesweeper.org") if display_name else "Jigsaw Puzzle — Daily | minesweeper.org" %}
-{% set _desc  = "Play today's daily jigsaw puzzle on minesweeper.org. Drag and snap pieces together. Choose Beginner, Intermediate, or Expert. Same puzzle for every player, resets at midnight UTC." %}
+{% set _title = (display_name ~ " | minesweeper.org") if display_name else t.meta_title_jigsaw_daily %}
+{% set _desc  = t.meta_desc_jigsaw_daily %}
 {% set _canon = "https://minesweeper.org/other/jigsaw/daily" %}
 
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}
 {% block canonical %}{{ _canon }}{% endblock %}
 {% block og_url %}{{ _canon }}{% endblock %}
-{% block og_title %}Jigsaw Puzzle — Daily | minesweeper.org{% endblock %}
+{% block og_title %}{{ t.meta_title_jigsaw_daily | replace(" | minesweeper.org", "") }}{% endblock %}
 {% block og_description %}{{ _desc }}{% endblock %}
 
 {% block content %}
@@ -219,7 +219,7 @@
 
   {% if pending_review %}
   <div style="background:#7c4a00;color:#ffe082;border-radius:6px;padding:0.75rem 1rem;font-size:0.9rem;text-align:center;">
-    ⏳ This puzzle is pending admin review and is only visible to you. It will be publicly accessible once approved.
+    {{ t.jig_pending_review }}
   </div>
   {% endif %}
 
@@ -232,15 +232,15 @@
       <div class="jig-header">
         {% if display_name %}
         <h1>{{ display_name }}</h1>
-        <p>Custom puzzle · <a href="/other/jigsaw/daily" style="color:var(--accent2);">Daily puzzle</a></p>
+        <p>{{ t.jig_custom_label }} · <a href="/other/jigsaw/daily" style="color:var(--accent2);">{{ t.common_daily_puzzle }}</a></p>
         {% else %}
         <h1>{{ t.jig_daily_h1 }}</h1>
-        <p>{{ today }} · Same image for every player · Resets at midnight UTC</p>
+        <p>{{ today }} · {{ t.jig_daily_subtitle }}</p>
         {% endif %}
       </div>
 
       <div class="jig-subnav">
-        <a href="/other">Other Puzzles</a>
+        <a href="/other">{{ t['other_h1'] }}</a>
         <span>›</span>
         <a href="/other/jigsaw/leaderboard">{{ t['nav_leaderboard'] }}</a>
         <span>·</span>
@@ -253,18 +253,18 @@
 
       <!-- Difficulty -->
       <div class="jig-diff-row">
-        <button class="jig-diff-btn" data-diff="beginner">Beginner <small>(100)</small></button>
-        <button class="jig-diff-btn" data-diff="intermediate">Intermediate <small>(500)</small></button>
-        <button class="jig-diff-btn" data-diff="expert">Expert <small>(1000)</small></button>
+        <button class="jig-diff-btn" data-diff="beginner">{{ t.jig_diff_beginner_count }}</button>
+        <button class="jig-diff-btn" data-diff="intermediate">{{ t.jig_diff_inter_count }}</button>
+        <button class="jig-diff-btn" data-diff="expert">{{ t.jig_diff_expert_count }}</button>
       </div>
 
       <!-- Controls -->
       <div class="jig-controls">
         <span class="jig-timer" id="jig-timer">0:00</span>
-        <button class="jig-btn" id="jig-pause-btn">⏸ Pause</button>
-        <button class="jig-btn" id="jig-restart-btn">↺ Restart</button>
-        <a href="/other/jigsaw/gallery" class="jig-btn">🖼 Gallery</a>
-        <button class="jig-btn" id="jig-mute-btn" title="Toggle sound">🔊</button>
+        <button class="jig-btn" id="jig-pause-btn">{{ t.jig_btn_pause }}</button>
+        <button class="jig-btn" id="jig-restart-btn">{{ t.jig_btn_restart }}</button>
+        <a href="/other/jigsaw/gallery" class="jig-btn">{{ t.jig_btn_gallery }}</a>
+        <button class="jig-btn" id="jig-mute-btn" title="{{ t.jig_btn_sound_toggle }}">🔊</button>
         <a href="/other/jigsaw/leaderboard" class="jig-btn">🏆</a>
       </div>
     </div><!-- /.jig-top-center -->
@@ -280,7 +280,7 @@
   <div class="jig-game-area">
     <div id="jig-board">
       <canvas id="jig-board-canvas"></canvas>
-      <div id="jig-pause-overlay">⏸ Paused</div>
+      <div id="jig-pause-overlay">{{ t.jig_paused }}</div>
     </div>
     <div id="jig-stash">
       <div id="jig-stash-inner"></div>
@@ -288,25 +288,25 @@
   </div>
 
   <div id="jig-status" style="text-align:center;font-size:0.85rem;color:var(--text-dim);">
-    Select a difficulty to start.
+    {{ t.jig_select_diff }}
   </div>
 </div>
 
 <!-- Win modal -->
 <div id="jig-win">
   <div class="jig-win-box">
-    <h2>🎉 Puzzle Complete!</h2>
+    <h2>{{ t.jig_win_h2 }}</h2>
     <div class="jig-win-time" id="jig-win-time">0:00</div>
     <p id="jig-win-diff"></p>
     <div id="jig-score-form">
-      <strong style="font-size:0.9rem;">Submit your score</strong>
-      <input type="text" id="jig-name" maxlength="32" placeholder="Your name"
+      <strong style="font-size:0.9rem;">{{ t.jig_submit_score_label }}</strong>
+      <input type="text" id="jig-name" maxlength="32" placeholder="{{ t.jig_name_placeholder }}"
              value="{{ user.name if user else '' }}">
-      <button class="jig-btn" id="jig-submit-btn">Submit Score</button>
+      <button class="jig-btn" id="jig-submit-btn">{{ t.jig_submit_btn }}</button>
       <div id="jig-score-msg"></div>
     </div>
     <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;">
-      <button class="jig-btn" id="jig-win-restart">Play Again</button>
+      <button class="jig-btn" id="jig-win-restart">{{ t['common_play_again'] }}</button>
       <a href="/other/jigsaw/leaderboard" class="jig-btn">🏆 {{ t.nav_leaderboard }}</a>
     </div>
   </div>
