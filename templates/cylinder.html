@@ -58,7 +58,7 @@
   <section class="game-section">
     <div class="game-info">
       <div class="mode-row">
-        <div class="mode-badge">🔄 Cylinder</div>
+        <div class="mode-badge">🔄 {{ t.nav_sub_cylinder }}</div>
         <button id="noguess-toggle" onclick="cylToggleNoGuess()" title="Generate boards that require no guessing">{{ t.common_no_guess }}</button>
       </div>
 
@@ -84,7 +84,7 @@
           <span class="stat-icon">💣</span>
           <span class="stat-value" id="mines-left">{{ mines }}</span>
         </div>
-        <button id="reset-btn" title="New game">🙂</button>
+        <button id="reset-btn" title="{{ t.game_new_game }}">🙂</button>
         <div class="stat">
           <span class="stat-icon">⏱</span>
           <span class="stat-value" id="timer">000</span>
