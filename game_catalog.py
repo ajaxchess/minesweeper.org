@@ -33,6 +33,7 @@ LANGUAGE_OPTIONS: list[dict[str, str]] = [
     {"code": "id", "label": "ID", "name": "Bahasa Indonesia", "flag": "id"},
     {"code": "ms", "label": "MS", "name": "Melayu", "flag": "ms"},
     {"code": "hi", "label": "HI", "name": "हिन्दी", "flag": "hi"},
+    {"code": "el", "label": "EL", "name": "Ελληνικά", "flag": "el"},
     {"code": "pgl", "label": "PGL", "name": "Pig Latin", "flag": "pgl"},
     {"code": "eo", "label": "EO", "name": "Esperanto", "flag": "eo"},
     {"code": "tlh", "label": "TLH", "name": "Klingon", "flag": "tlh"},
