@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% set _title = "2048 Hexagon | minesweeper.org" %}
-{% set _desc  = "2048 on a hexagonal grid — 18 playable cells, a fixed stone in the center, and 6 directions to slide. A fresh twist on the classic tile-merging puzzle." %}
+{% set _title = t.meta_title_2048hex %}
+{% set _desc  = t.meta_desc_2048hex %}
 {% set _canon = "https://minesweeper.org/other/2048hex/play" %}
 
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}
 {% block canonical %}{{ _canon }}{% endblock %}
 {% block og_url %}{{ _canon }}{% endblock %}
-{% block og_title %}2048 Hexagon | minesweeper.org{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
 {% block og_description %}{{ _desc }}{% endblock %}
 
 {% block content %}
@@ -197,27 +197,27 @@ html:not(.is-mobile) .mobile-only  { display: none !important; }
 
   <!-- Hex directional pad -->
   <div class="h2k-dpad">
-    <button class="h2k-dir-btn h2k-dir-NW" data-dir="NW" aria-label="Move upper-left">
+    <button class="h2k-dir-btn h2k-dir-NW" data-dir="NW" aria-label="{{ t.aria_move_nw }}">
       <span class="h2k-dir-key desktop-only">Q</span>
       <span class="h2k-dir-arr">↖</span>
     </button>
-    <button class="h2k-dir-btn h2k-dir-NE" data-dir="NE" aria-label="Move upper-right">
+    <button class="h2k-dir-btn h2k-dir-NE" data-dir="NE" aria-label="{{ t.aria_move_ne }}">
       <span class="h2k-dir-key desktop-only">E</span>
       <span class="h2k-dir-arr">↗</span>
     </button>
-    <button class="h2k-dir-btn h2k-dir-W" data-dir="W" aria-label="Move left">
+    <button class="h2k-dir-btn h2k-dir-W" data-dir="W" aria-label="{{ t.aria_move_w }}">
       <span class="h2k-dir-key desktop-only">A</span>
       <span class="h2k-dir-arr">←</span>
     </button>
-    <button class="h2k-dir-btn h2k-dir-E" data-dir="E" aria-label="Move right">
+    <button class="h2k-dir-btn h2k-dir-E" data-dir="E" aria-label="{{ t.aria_move_e }}">
       <span class="h2k-dir-key desktop-only">D</span>
       <span class="h2k-dir-arr">→</span>
     </button>
-    <button class="h2k-dir-btn h2k-dir-SW" data-dir="SW" aria-label="Move lower-left">
+    <button class="h2k-dir-btn h2k-dir-SW" data-dir="SW" aria-label="{{ t.aria_move_sw }}">
       <span class="h2k-dir-key desktop-only">Z</span>
       <span class="h2k-dir-arr">↙</span>
     </button>
-    <button class="h2k-dir-btn h2k-dir-SE" data-dir="SE" aria-label="Move lower-right">
+    <button class="h2k-dir-btn h2k-dir-SE" data-dir="SE" aria-label="{{ t.aria_move_se }}">
       <span class="h2k-dir-key desktop-only">X</span>
       <span class="h2k-dir-arr">↘</span>
     </button>

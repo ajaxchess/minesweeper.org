@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% set _title = "How to Play 2048 Hexagon | minesweeper.org" %}
-{% set _desc  = "Learn how to play 2048 Hexagon — a tile-merging puzzle on a hex grid with 18 cells, a fixed stone in the center, and 6 directions to slide." %}
+{% set _title = t.meta_title_2048hex_htp %}
+{% set _desc  = t.meta_desc_2048hex_htp %}
 {% set _canon = "https://minesweeper.org/other/2048hex/how-to-play" %}
 
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}
 {% block canonical %}{{ _canon }}{% endblock %}
 {% block og_url %}{{ _canon }}{% endblock %}
-{% block og_title %}How to Play 2048 Hexagon{% endblock %}
+{% block og_title %}{{ _title | replace(" | minesweeper.org", "") }}{% endblock %}
 {% block og_description %}{{ _desc }}{% endblock %}
 
 {% block content %}
