@@ -14,7 +14,10 @@
   {% set _canon = "https://minesweeper.org/cubesweeper/custom" %}
 {% endif %}
 {% set _title = t.meta_title_cubesweeper ~ " — " ~ _diff ~ " | minesweeper.org" %}
-{% set _desc  = t.meta_desc_cubesweeper %}
+{% if mode == 'intermediate' %}{% set _desc = t.meta_desc_cubesweeper_intermediate %}
+{% elif mode == 'expert' %}{% set _desc = t.meta_desc_cubesweeper_expert %}
+{% elif mode == 'custom' %}{% set _desc = t.meta_desc_cubesweeper_custom %}
+{% else %}{% set _desc = t.meta_desc_cubesweeper %}{% endif %}
 
 {% block keywords %}<meta name="keywords" content="cubesweeper, cube minesweeper, 3D minesweeper, minesweeper on a cube, minesweeper online, play minesweeper, free minesweeper">{% endblock %}
 {% block title %}{{ _title }}{% endblock %}
