@@ -1327,6 +1327,19 @@ class TametsiHexCompletion(Base):
     __table_args__ = (UniqueConstraint("email", "puzzle_id"),)
 
 
+# ── Tametsi Hex best times (one row per user+puzzle, updated to keep best) ───
+class TametsiHexTime(Base):
+    __tablename__ = "tametsi_hex_times"
+
+    id         = Column(Integer, primary_key=True)
+    email      = Column(String(256), nullable=False, index=True)
+    puzzle_id  = Column(Integer, nullable=False)
+    time_ms    = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (UniqueConstraint("email", "puzzle_id"),)
+
+
 # ── Numbers Match Daily Board (pre-generated, server-side) ───────────────────
 class NumbersMatchDaily(Base):
     __tablename__ = "numbers_match_daily"

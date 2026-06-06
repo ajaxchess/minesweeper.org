@@ -131,6 +131,45 @@ const THEX_PUZZLES = {
 let thexState = {};
 let thexSvgEl = null;
 let thexCellSize = 28;
+let thexTimerStart = null;
+let thexTimerTick  = null;
+
+function thexFmtTime(ms) {
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const tenths = Math.floor((ms % 1000) / 100);
+  return m > 0
+    ? `${m}:${String(s % 60).padStart(2,'0')}.${tenths}`
+    : `${s}.${tenths}s`;
+}
+
+function thexStartTimer() {
+  if (thexTimerStart !== null) return;
+  thexTimerStart = Date.now();
+  const el = document.getElementById('thex-timer');
+  if (el) el.style.display = '';
+  thexTimerTick = setInterval(() => {
+    const el2 = document.getElementById('thex-timer');
+    if (el2) el2.textContent = '⏱ ' + thexFmtTime(Date.now() - thexTimerStart);
+  }, 100);
+}
+
+function thexStopTimer() {
+  clearInterval(thexTimerTick);
+  thexTimerTick = null;
+  const elapsed = thexTimerStart ? Date.now() - thexTimerStart : 0;
+  const el = document.getElementById('thex-timer');
+  if (el && elapsed) el.textContent = '⏱ ' + thexFmtTime(elapsed);
+  return elapsed;
+}
+
+function thexResetTimer() {
+  clearInterval(thexTimerTick);
+  thexTimerTick = null;
+  thexTimerStart = null;
+  const el = document.getElementById('thex-timer');
+  if (el) { el.textContent = ''; el.style.display = 'none'; }
+}
 
 function thexKey(q, r) { return `${q},${r}`; }
 
@@ -372,6 +411,7 @@ function thexFlagCell(q,r) {
 }
 
 function thexBoom(q,r) {
+  thexStopTimer();
   thexState.over = true;
   thexState.explodedKey = thexKey(q,r);
   for (const mk of thexState.mines) {
@@ -388,6 +428,7 @@ function thexCheckWin() {
     return thexState.mines.has(k) || thexState.revealed.has(k);
   });
   if (!allSafe) return;
+  const elapsed = thexStopTimer();
   thexState.over = true;
   thexState.won = true;
   for (const mk of thexState.mines) {
@@ -398,16 +439,16 @@ function thexCheckWin() {
     }
   }
   thexShowBanner('🎉 Puzzle complete!', true);
-  thexMarkComplete();
+  thexMarkComplete(elapsed);
 }
 
-async function thexMarkComplete() {
+async function thexMarkComplete(timeMs) {
   const pid = thexState.puzzleId;
   try {
     const res = await fetch('/api/tametsi-hex/complete', {
       method: 'POST',
       headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
-      body: JSON.stringify({puzzle_id: pid}),
+      body: JSON.stringify({puzzle_id: pid, time_ms: timeMs || null}),
     });
     if (res.ok) {
       const btn = document.querySelector(`.thex-puzzle-btn[data-puzzle="${pid}"]`);
@@ -436,12 +477,14 @@ function thexHideBanner() {
 
 function thexHandleClick(q,r) {
   if (thexState.over) return;
+  thexStartTimer();
   const k = thexKey(q,r);
   if (!thexState.flagged.has(k)) thexRevealCell(q,r);
 }
 
 function thexHandleRightClick(q,r) {
   if (thexState.over) return;
+  thexStartTimer();
   thexFlagCell(q,r);
 }
 
@@ -503,6 +546,7 @@ function thexInitPuzzle(puzzleId) {
     explodedKey: null,
   };
 
+  thexResetTimer();
   thexHideBanner();
   thexBuildSVG();
   thexUpdateCounter();

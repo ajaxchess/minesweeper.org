@@ -106,6 +106,32 @@
 }
 .thex-ccount-red  { color: #e74c3c; }
 .thex-ccount-blue { color: #5b9cf6; }
+.thex-timer-bar {
+  max-width: 520px;
+  margin: 0.1rem 0 0.3rem;
+  min-height: 1.3rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.thex-times-tabs {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+.thex-times-tab {
+  padding: 0.2rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.thex-times-tab:hover { background: var(--surface2); }
+.thex-times-tab.active { background: var(--surface2); border-color: var(--accent2); color: var(--accent2); }
+.thex-times-table { max-width: 400px; }
 </style>
 {% endblock %}
 
@@ -146,6 +172,9 @@
       <span id="thex-color-counts"></span>
       <span id="thex-mines-left"></span>
     </div>
+    <div class="thex-timer-bar">
+      <span id="thex-timer" style="display:none"></span>
+    </div>
 
     <div id="thex-board-wrap"
          class="hex-board-wrap"
@@ -168,7 +197,7 @@
       <div class="info-section">
         <h2>What is Tametsi Hex?</h2>
         <p>Tametsi Hex combines the deduction-only logic of Tametsi with the hexagonal grid of Hexsweeper. Every cell has up to 6 neighbours, and every puzzle is designed to be solved with pure logic — no guessing needed.</p>
-        <p>The four puzzles here are tutorials. They introduce the rules on progressively larger boards and mechanics before the main campaign launches.</p>
+        <p>The first few puzzles here are tutorials. They introduce the rules on progressively larger boards and mechanics before the main campaign launches.</p>
       </div>
       <div class="info-section">
         <h2>How to Play</h2>
@@ -180,6 +209,22 @@
           <li>A cell showing <strong>?</strong> is safe but gives no information — it could have any number of mine neighbours.</li>
           <li>Reveal every non-mine cell to win.</li>
         </ul>
+      </div>
+      <div class="info-section" id="thex-times-section">
+        <h2>Best Times</h2>
+        <div class="thex-times-tabs">
+          {% for n in range(1, 8) %}
+          <button class="thex-times-tab{% if n == 1 %} active{% endif %}" data-pid="{{ n }}" onclick="thexShowTimesTab({{ n }})">{{ n }}</button>
+          {% endfor %}
+        </div>
+        <div id="thex-times-wrap">
+          <table class="lb-table thex-times-table" id="thex-times-table">
+            <thead><tr><th>#</th><th>Player</th><th>Time</th></tr></thead>
+            <tbody id="thex-times-body">
+              <tr><td colspan="3" class="lb-loading">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </section>
@@ -198,4 +243,62 @@
 
 {% block scripts %}
 <script src="/static/js/tametsi_hex.js"></script>
+<script>
+(function() {
+  let allTimes = {};
+  let currentPid = 1;
+
+  function fmtMs(ms) {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const tenths = Math.floor((ms % 1000) / 100);
+    return m > 0
+      ? m + ':' + String(s % 60).padStart(2,'0') + '.' + tenths
+      : s + '.' + tenths + 's';
+  }
+
+  function esc(v) {
+    return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function renderTimesTable(pid) {
+    const body = document.getElementById('thex-times-body');
+    if (!body) return;
+    const rows = allTimes[pid] || [];
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="3" class="lb-empty">No times recorded yet.</td></tr>';
+      return;
+    }
+    body.innerHTML = rows.map((r, i) => `
+      <tr class="${i % 2 === 1 ? 'lb-even' : ''}">
+        <td class="lb-rank">${i + 1}</td>
+        <td class="lb-name">${r.profile_url
+          ? `<a href="${esc(r.profile_url)}">${esc(r.name)}</a>`
+          : esc(r.name)}</td>
+        <td class="lb-time">${fmtMs(r.time_ms)}</td>
+      </tr>`).join('');
+  }
+
+  window.thexShowTimesTab = function(pid) {
+    currentPid = pid;
+    document.querySelectorAll('.thex-times-tab').forEach(b =>
+      b.classList.toggle('active', +b.dataset.pid === pid));
+    renderTimesTable(pid);
+  };
+
+  async function loadBestTimes() {
+    try {
+      const res = await fetch('/api/tametsi-hex/best-times');
+      if (!res.ok) return;
+      const data = await res.json();
+      // keys come back as strings
+      allTimes = {};
+      for (const [k, v] of Object.entries(data)) allTimes[+k] = v;
+      renderTimesTable(currentPid);
+    } catch {}
+  }
+
+  loadBestTimes();
+})();
+</script>
 {% endblock %}

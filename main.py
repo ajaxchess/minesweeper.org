@@ -22,7 +22,7 @@ from pydantic import BaseModel, Field, field_validator
 from countries import COUNTRIES as ALL_COUNTRIES, VALID_COUNTRY_CODES
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, Pattern, PatternRevision, UserRole, TametsiHexCompletion, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, Pattern, PatternRevision, UserRole, TametsiHexCompletion, TametsiHexTime, get_db, init_db, SessionLocal
 from phase2_analyzer import analyze_replay_async
 # Near the top of main.py with the other model imports
 from phase2_analyzer import GameAnalysis
@@ -9359,6 +9359,7 @@ def tametsi_replay_page(replay_id: int, request: Request, db: Session = Depends(
 
 class TametsiHexCompletePayload(BaseModel):
     puzzle_id: int
+    time_ms: Optional[int] = None
 
 @app.get("/tametsi/hex", response_class=HTMLResponse)
 def tametsi_hex_page(request: Request, db: Session = Depends(get_db)):
@@ -9385,7 +9386,7 @@ def tametsi_hex_complete(payload: TametsiHexCompletePayload,
     user = get_current_user(request)
     if not user:
         return JSONResponse({"error": "Not logged in"}, status_code=401)
-    if payload.puzzle_id not in (1, 2, 3):
+    if payload.puzzle_id not in range(1, 20):
         raise HTTPException(status_code=400, detail="Invalid puzzle_id")
     existing = (
         db.query(TametsiHexCompletion)
@@ -9394,8 +9395,47 @@ def tametsi_hex_complete(payload: TametsiHexCompletePayload,
     )
     if not existing:
         db.add(TametsiHexCompletion(email=user["email"], puzzle_id=payload.puzzle_id))
-        db.commit()
+    if payload.time_ms and payload.time_ms > 0:
+        existing_time = (
+            db.query(TametsiHexTime)
+              .filter_by(email=user["email"], puzzle_id=payload.puzzle_id)
+              .first()
+        )
+        if not existing_time:
+            db.add(TametsiHexTime(email=user["email"], puzzle_id=payload.puzzle_id,
+                                  time_ms=payload.time_ms))
+        elif payload.time_ms < existing_time.time_ms:
+            existing_time.time_ms = payload.time_ms
+    db.commit()
     return {"ok": True}
+
+
+@app.get("/api/tametsi-hex/best-times")
+def tametsi_hex_best_times(db: Session = Depends(get_db)):
+    rows = (
+        db.query(TametsiHexTime, UserProfile)
+          .join(UserProfile, TametsiHexTime.email == UserProfile.email, isouter=True)
+          .order_by(TametsiHexTime.puzzle_id,
+                    TametsiHexTime.time_ms,
+                    TametsiHexTime.created_at.desc())
+          .all()
+    )
+    result: dict = {}
+    counts: dict = {}
+    for t, p in rows:
+        pid = t.puzzle_id
+        if pid not in result:
+            result[pid] = []
+            counts[pid] = 0
+        if counts[pid] >= 10:
+            continue
+        name = (p.display_name if p else None) or "Anonymous"
+        profile_url = (f"/u/{p.vanity_slug or p.public_id}"
+                       if p and p.is_public else None)
+        result[pid].append({"name": name, "time_ms": t.time_ms,
+                             "profile_url": profile_url})
+        counts[pid] += 1
+    return result
 
 
 # ── Numbers Match ─────────────────────────────────────────────────────────────
