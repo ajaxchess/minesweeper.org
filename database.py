@@ -1,0 +1,1755 @@
+"""
+database.py — SQLAlchemy setup for MySQL via PyMySQL
+"""
+from sqlalchemy import (
+    create_engine, Column, Integer, BigInteger, String, Float,
+    DateTime, Date, Enum, Index, Boolean, text, Text, JSON
+)
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from datetime import datetime, timezone
+import enum
+
+# ── Config — replace with your real credentials ───────────────────────────────
+DB_USER     = "the_minesweeper_user"
+DB_PASSWORD = "the_password"
+DB_HOST     = "localhost"
+DB_PORT     = 3306
+DB_NAME     = "the_db_name"
+
+DATABASE_URL = (
+    f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}"
+    f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+)
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,   # drops stale connections automatically
+    pool_recycle=3600,    # recycle connections every hour
+    echo=False,           # set True to log SQL queries during dev
+)
+
+SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+
+# ── Base ──────────────────────────────────────────────────────────────────────
+class Base(DeclarativeBase):
+    pass
+
+# ── Enum for game mode ────────────────────────────────────────────────────────
+class GameMode(str, enum.Enum):
+    beginner     = "beginner"
+    intermediate = "intermediate"
+    expert       = "expert"
+    custom       = "custom"
+    evil         = "evil"
+    tametsi      = "tametsi"
+
+# ── Score model ───────────────────────────────────────────────────────────────
+class Score(Base):
+    __tablename__ = "scores"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String(32), nullable=False)
+    user_email = Column(String(256), nullable=True, index=True)
+    mode       = Column(Enum(GameMode), nullable=False)
+    time_secs  = Column(Integer, nullable=False)       # elapsed whole seconds (legacy display)
+    time_ms    = Column(Integer, nullable=True)        # precise elapsed milliseconds
+    rows       = Column(Integer, nullable=False)
+    cols       = Column(Integer, nullable=False)
+    mines      = Column(Integer, nullable=False)
+    no_guess     = Column(Boolean, default=False, nullable=False)
+    board_hash   = Column(String(128), nullable=True)  # base64 bit-array of mine positions
+    bbbv         = Column(Integer, nullable=True)       # Bechtel's Board Benchmark Value
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
+    guest_token  = Column(String(36), nullable=True, index=True)  # links guest score to login session
+    client_type  = Column(String(32), nullable=False, server_default="na")  # chrome/firefox/safari/edge/mobile_browser/ios_app/android_app/na
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    # Fast lookups by mode + time for leaderboard queries
+    __table_args__ = (
+        Index("ix_scores_mode_time", "mode", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":           self.id,
+            "name":         self.name,
+            "user_email":   self.user_email,
+            "mode":         self.mode,
+            "time_secs":    self.time_secs,
+            "time_ms":      self.time_ms,
+            "rows":         self.rows,
+            "cols":         self.cols,
+            "mines":        self.mines,
+            "no_guess":     self.no_guess,
+            "board_hash":   self.board_hash,
+            "bbbv":         self.bbbv,
+            "left_clicks":  self.left_clicks,
+            "right_clicks": self.right_clicks,
+            "chord_clicks": self.chord_clicks,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+        }
+
+# ── Game history model (permanent — never reset) ─────────────────────────────
+class GameHistory(Base):
+    __tablename__ = "game_history"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    user_email = Column(String(256), nullable=False, index=True)
+    name       = Column(String(32), nullable=False)
+    mode       = Column(Enum(GameMode), nullable=False)
+    time_secs  = Column(Integer, nullable=False)
+    time_ms    = Column(Integer, nullable=True)
+    rows       = Column(Integer, nullable=False)
+    cols       = Column(Integer, nullable=False)
+    mines      = Column(Integer, nullable=False)
+    no_guess     = Column(Boolean, default=False, nullable=False)
+    board_hash   = Column(String(128), nullable=True)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
+    client_type  = Column(String(32), nullable=False, server_default="na")
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_game_history_email_mode", "user_email", "mode"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":           self.id,
+            "name":         self.name,
+            "mode":         self.mode,
+            "time_secs":    self.time_secs,
+            "time_ms":      self.time_ms,
+            "rows":         self.rows,
+            "cols":         self.cols,
+            "mines":        self.mines,
+            "no_guess":     self.no_guess,
+            "board_hash":   self.board_hash,
+            "bbbv":         self.bbbv,
+            "left_clicks":  self.left_clicks,
+            "right_clicks": self.right_clicks,
+            "chord_clicks": self.chord_clicks,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+        }
+
+# ── DB session dependency (used in FastAPI routes) ───────────────────────────
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# ── Rush Score model (separate table — never reset) ───────────────────────────
+class RushScore(Base):
+    __tablename__ = "rush_scores"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String(32), nullable=False)
+    user_email = Column(String(256), nullable=True, index=True)
+    score         = Column(Integer, nullable=False)          # elapsed + cleared_mines*5
+    cleared_mines = Column(Integer, nullable=True)           # mines in cleared rows
+    rows_cleared  = Column(Integer, nullable=True)           # number of rows cleared
+    time_secs     = Column(Integer, nullable=False)          # game duration (seconds)
+    cols          = Column(Integer, nullable=False)          # board width
+    density       = Column(Float, nullable=True)             # mines/cell (custom mode)
+    rush_mode    = Column(String(16), nullable=False)  # easy/normal/hard/custom
+    guest_token  = Column(String(36), nullable=True, index=True)
+    client_type  = Column(String(32), nullable=False, server_default="na")
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_rush_scores_mode_score", "rush_mode", "score"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":           self.id,
+            "name":         self.name,
+            "score":        self.score,
+            "cleared_mines":self.cleared_mines,
+            "rows_cleared": self.rows_cleared,
+            "time_secs":    self.time_secs,
+            "cols":         self.cols,
+            "density":      self.density,
+            "rush_mode":    self.rush_mode,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+        }
+
+# ── Tentaizu Score model (permanent — one per player per day) ─────────────────
+class TentaizuScore(Base):
+    __tablename__ = "tentaizu_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD
+    time_secs   = Column(Integer, nullable=False)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_tentaizu_scores_date_time", "puzzle_date", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "time_secs":   self.time_secs,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+# ── Tentaizu Easy (5×5) Score model ───────────────────────────────────────────
+class TentaizuEasyScore(Base):
+    __tablename__ = "tentaizu_easy_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD
+    time_secs   = Column(Integer, nullable=False)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_tentaizu_easy_scores_date_time", "puzzle_date", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "time_secs":   self.time_secs,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+# ── Mosaic Score model ────────────────────────────────────────────────────────
+class MosaicScore(Base):
+    __tablename__ = "mosaic_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD
+    time_secs   = Column(Integer, nullable=False)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_mosaic_scores_date_time", "puzzle_date", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "time_secs":   self.time_secs,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+# ── Mosaic Easy Score model ────────────────────────────────────────────────────
+class MosaicEasyScore(Base):
+    __tablename__ = "mosaic_easy_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD
+    time_secs   = Column(Integer, nullable=False)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_mosaic_easy_scores_date_time", "puzzle_date", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "time_secs":   self.time_secs,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+# ── Mosaic Custom Score model (per hash+mask board) ──────────────────────────
+class MosaicCustomScore(Base):
+    __tablename__ = "mosaic_custom_scores"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    board_id   = Column(String(64), nullable=False)   # SHA-256 of "RxC:hash:mask"
+    name       = Column(String(32), nullable=False)
+    user_email = Column(String(256), nullable=True, index=True)
+    time_secs  = Column(Integer, nullable=False)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_mosaic_custom_board_time", "board_id", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":        self.id,
+            "name":      self.name,
+            "board_id":  self.board_id,
+            "time_secs": self.time_secs,
+            "created_at": self.created_at.strftime("%Y-%m-%d"),
+        }
+
+# ── Cylinder Score model (permanent — never reset) ────────────────────────────
+class CylinderScore(Base):
+    __tablename__ = "cylinder_scores"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String(32), nullable=False)
+    user_email = Column(String(256), nullable=True, index=True)
+    cyl_mode     = Column(String(32), nullable=False)   # easy/intermediate/expert/custom
+    time_secs    = Column(Integer, nullable=False)
+    time_ms      = Column(Integer, nullable=True)
+    rows         = Column(Integer, nullable=False)
+    cols         = Column(Integer, nullable=False)
+    mines        = Column(Integer, nullable=False)
+    no_guess     = Column(Boolean, default=False, nullable=False)
+    board_hash   = Column(String(128), nullable=True)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
+    guest_token  = Column(String(36), nullable=True, index=True)
+    client_type  = Column(String(32), nullable=False, server_default="na")
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_cylinder_scores_mode_time", "cyl_mode", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":           self.id,
+            "name":         self.name,
+            "cyl_mode":     self.cyl_mode,
+            "time_secs":    self.time_secs,
+            "time_ms":      self.time_ms,
+            "rows":         self.rows,
+            "cols":         self.cols,
+            "mines":        self.mines,
+            "no_guess":     self.no_guess,
+            "board_hash":   self.board_hash,
+            "bbbv":         self.bbbv,
+            "left_clicks":  self.left_clicks,
+            "right_clicks": self.right_clicks,
+            "chord_clicks": self.chord_clicks,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+        }
+
+# ── Toroid Score model (permanent — never reset) ──────────────────────────────
+class ToroidScore(Base):
+    __tablename__ = "toroid_scores"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String(32), nullable=False)
+    user_email = Column(String(256), nullable=True, index=True)
+    tor_mode     = Column(String(32), nullable=False)   # easy/intermediate/expert/custom
+    time_secs    = Column(Integer, nullable=False)
+    time_ms      = Column(Integer, nullable=True)
+    rows         = Column(Integer, nullable=False)
+    cols         = Column(Integer, nullable=False)
+    mines        = Column(Integer, nullable=False)
+    no_guess     = Column(Boolean, default=False, nullable=False)
+    board_hash   = Column(String(128), nullable=True)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
+    guest_token  = Column(String(36), nullable=True, index=True)
+    client_type  = Column(String(32), nullable=False, server_default="na")
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_toroid_scores_mode_time", "tor_mode", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":           self.id,
+            "name":         self.name,
+            "tor_mode":     self.tor_mode,
+            "time_secs":    self.time_secs,
+            "time_ms":      self.time_ms,
+            "rows":         self.rows,
+            "cols":         self.cols,
+            "mines":        self.mines,
+            "no_guess":     self.no_guess,
+            "board_hash":   self.board_hash,
+            "bbbv":         self.bbbv,
+            "left_clicks":  self.left_clicks,
+            "right_clicks": self.right_clicks,
+            "chord_clicks": self.chord_clicks,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+        }
+
+# ── Replay Score model (board-specific scores, all topologies) ───────────────
+class ReplayScore(Base):
+    __tablename__ = "replay_scores"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    board_hash   = Column(String(128), nullable=False, index=True)
+    variant      = Column(String(16), nullable=False)   # standard / cylinder / toroid
+    name         = Column(String(32), nullable=False)
+    user_email   = Column(String(256), nullable=True, index=True)
+    time_secs    = Column(Integer, nullable=False)
+    time_ms      = Column(Integer, nullable=True)
+    rows         = Column(Integer, nullable=False)
+    cols         = Column(Integer, nullable=False)
+    mines        = Column(Integer, nullable=False)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
+    guest_token  = Column(String(36), nullable=True, index=True)
+    client_type  = Column(String(32), nullable=False, server_default="na")
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_replay_scores_hash_variant_time", "board_hash", "variant", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":           self.id,
+            "board_hash":   self.board_hash,
+            "variant":      self.variant,
+            "name":         self.name,
+            "time_secs":    self.time_secs,
+            "time_ms":      self.time_ms,
+            "rows":         self.rows,
+            "cols":         self.cols,
+            "mines":        self.mines,
+            "bbbv":         self.bbbv,
+            "left_clicks":  self.left_clicks,
+            "right_clicks": self.right_clicks,
+            "chord_clicks": self.chord_clicks,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── Hexsweeper Score model (permanent — never reset) ─────────────────────────
+class HexsweeperScore(Base):
+    __tablename__ = "hexsweeper_scores"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String(32), nullable=False)
+    user_email = Column(String(256), nullable=True, index=True)
+    hex_mode     = Column(String(32), nullable=False)   # beginner/intermediate/expert/custom
+    time_secs    = Column(Integer, nullable=False)
+    time_ms      = Column(Integer, nullable=True)
+    radius       = Column(Integer, nullable=False)
+    mines        = Column(Integer, nullable=False)
+    board_hash   = Column(String(128), nullable=True)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
+    guest_token  = Column(String(36), nullable=True, index=True)
+    client_type  = Column(String(32), nullable=False, server_default="na")
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_hexsweeper_scores_mode_time", "hex_mode", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":           self.id,
+            "name":         self.name,
+            "hex_mode":     self.hex_mode,
+            "time_secs":    self.time_secs,
+            "time_ms":      self.time_ms,
+            "radius":       self.radius,
+            "mines":        self.mines,
+            "board_hash":   self.board_hash,
+            "bbbv":         self.bbbv,
+            "left_clicks":  self.left_clicks,
+            "right_clicks": self.right_clicks,
+            "chord_clicks": self.chord_clicks,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── Globesweeper Score model ──────────────────────────────────────────────────
+class GlobesweeperScore(Base):
+    __tablename__ = "globesweeper_scores"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String(32), nullable=False)
+    user_email = Column(String(256), nullable=True, index=True)
+    glob_mode  = Column(String(20), nullable=False)   # dodecahedron/beginner/intermediate/expert/custom
+    time_ms    = Column(Integer, nullable=False)
+    t_param    = Column(Integer, nullable=False)       # Goldberg T value (e.g. 1, 3, 7, 25)
+    face_count = Column(Integer, nullable=False)       # 10*T+2
+    mines      = Column(Integer, nullable=False)
+    bbbv         = Column(Integer, nullable=True)        # 3BV of the solved board
+    left_clicks  = Column(Integer, nullable=True)        # non-rotation left clicks
+    chord_clicks = Column(Integer, nullable=True)        # chord (auto-reveal) clicks
+    board_hash = Column(String(128), nullable=True)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_globesweeper_scores_mode_time", "glob_mode", "time_ms"),
+    )
+
+    def to_dict(self):
+        bbbv_s = f"{self.bbbv / (self.time_ms / 1000):.2f}" if self.bbbv and self.time_ms else "—"
+        eff    = f"{round(self.bbbv / self.left_clicks * 100)}%" if (self.bbbv and self.left_clicks) else "—"
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "glob_mode":   self.glob_mode,
+            "time_ms":     self.time_ms,
+            "t_param":     self.t_param,
+            "face_count":  self.face_count,
+            "mines":       self.mines,
+            "bbbv":        self.bbbv if self.bbbv else "—",
+            "bbbv_s":      bbbv_s,
+            "eff":         eff,
+            "left_clicks": self.left_clicks if self.left_clicks else "—",
+            "board_hash":  self.board_hash,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── CubeSweeper Score model ───────────────────────────────────────────────────
+class CubesweeperScore(Base):
+    __tablename__ = "cubesweeper_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    cube_mode   = Column(String(20), nullable=False)   # beginner/intermediate/expert/custom
+    grid_size   = Column(Integer, nullable=False)      # N (cells per face edge)
+    time_ms     = Column(Integer, nullable=False)
+    mines       = Column(Integer, nullable=False)
+    no_guess    = Column(Boolean, default=False, nullable=False)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
+    board_hash  = Column(String(512), nullable=True)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_cubesweeper_scores_mode_ng_time", "cube_mode", "no_guess", "time_ms"),
+    )
+
+    def to_dict(self):
+        bbbv_s = f"{self.bbbv / (self.time_ms / 1000):.2f}" if self.bbbv and self.time_ms else "—"
+        eff    = f"{round(self.bbbv / self.left_clicks * 100)}%" if (self.bbbv and self.left_clicks) else "—"
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "cube_mode":   self.cube_mode,
+            "grid_size":   self.grid_size,
+            "time_ms":     self.time_ms,
+            "mines":       self.mines,
+            "no_guess":    self.no_guess,
+            "bbbv":        self.bbbv if self.bbbv else "—",
+            "bbbv_s":      bbbv_s,
+            "eff":         eff,
+            "left_clicks": self.left_clicks if self.left_clicks else "—",
+            "board_hash":  self.board_hash,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── MobiusSweeper Score model ─────────────────────────────────────────────────
+class MobiussweeperScore(Base):
+    __tablename__ = "mobiussweeper_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    mobius_mode = Column(String(20), nullable=False)   # beginner/intermediate/expert
+    width       = Column(Integer, nullable=False)      # strip width (rows)
+    length      = Column(Integer, nullable=False)      # strip length (cols around loop)
+    time_ms     = Column(Integer, nullable=False)
+    mines       = Column(Integer, nullable=False)
+    no_guess    = Column(Boolean, default=False, nullable=False)
+    bbbv         = Column(Integer, nullable=True)
+    left_clicks  = Column(Integer, nullable=True)
+    chord_clicks = Column(Integer, nullable=True)
+    board_hash  = Column(String(512), nullable=True)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_mobiussweeper_scores_mode_ng_time", "mobius_mode", "no_guess", "time_ms"),
+    )
+
+    def to_dict(self):
+        bbbv_s = f"{self.bbbv / (self.time_ms / 1000):.2f}" if self.bbbv and self.time_ms else "—"
+        eff    = f"{round(self.bbbv / self.left_clicks * 100)}%" if (self.bbbv and self.left_clicks) else "—"
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "mobius_mode": self.mobius_mode,
+            "width":       self.width,
+            "length":      self.length,
+            "time_ms":     self.time_ms,
+            "mines":       self.mines,
+            "no_guess":    self.no_guess,
+            "bbbv":        self.bbbv if self.bbbv else "—",
+            "bbbv_s":      bbbv_s,
+            "eff":         eff,
+            "left_clicks": self.left_clicks if self.left_clicks else "—",
+            "board_hash":  self.board_hash,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── Guest Score Archive (scores from unregistered players archived at midnight) ─
+class GuestScoreArchive(Base):
+    __tablename__ = "guest_score_archive"
+
+    id                  = Column(Integer, primary_key=True, index=True)
+    source_table        = Column(String(32), nullable=False, index=True)  # e.g. 'scores', 'rush_scores'
+    original_id         = Column(Integer, nullable=False)
+    guest_token         = Column(String(36), nullable=True, index=True)
+    name                = Column(String(32), nullable=True)
+    game_mode           = Column(String(32), nullable=True)   # mode/rush_mode/cyl_mode etc.
+    time_ms             = Column(Integer, nullable=True)
+    rows                = Column(Integer, nullable=True)
+    cols                = Column(Integer, nullable=True)
+    mines               = Column(Integer, nullable=True)
+    bbbv                = Column(Integer, nullable=True)
+    board_hash          = Column(String(128), nullable=True)
+    original_created_at = Column(DateTime, nullable=True)
+    archived_at         = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ── PvP Result model (one row per completed PvP match) ───────────────────────
+class PvpResult(Base):
+    __tablename__ = "pvp_results"
+
+    id            = Column(Integer, primary_key=True, index=True)
+    winner_name   = Column(String(32), nullable=True)
+    winner_email  = Column(String(256), nullable=True, index=True)
+    loser_name    = Column(String(32), nullable=True)
+    loser_email   = Column(String(256), nullable=True, index=True)
+    elapsed_ms    = Column(Integer, nullable=False)   # winner's elapsed time in ms
+    submode       = Column(String(16), nullable=False)  # standard / quick
+    rows          = Column(Integer, nullable=False)
+    cols          = Column(Integer, nullable=False)
+    mines         = Column(Integer, nullable=False)
+    board_hash    = Column(String(128), nullable=True)
+    created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_pvp_results_winner_email_date", "winner_email", "created_at"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":           self.id,
+            "winner_name":  self.winner_name,
+            "winner_email": self.winner_email,
+            "loser_name":   self.loser_name,
+            "elapsed_ms":   self.elapsed_ms,
+            "submode":      self.submode,
+            "rows":         self.rows,
+            "cols":         self.cols,
+            "mines":        self.mines,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+        }
+
+# ── Anonymous PvP archive (unregistered-user results, archived nightly) ──────
+class AnonymousPvpResult(Base):
+    __tablename__ = "anonymous_pvp_results"
+
+    id            = Column(Integer, primary_key=True, index=True)
+    winner_name   = Column(String(32), nullable=True)
+    winner_email  = Column(String(256), nullable=True)
+    loser_name    = Column(String(32), nullable=True)
+    loser_email   = Column(String(256), nullable=True)
+    elapsed_ms    = Column(Integer, nullable=False)
+    submode       = Column(String(16), nullable=False)
+    rows          = Column(Integer, nullable=False)
+    cols          = Column(Integer, nullable=False)
+    mines         = Column(Integer, nullable=False)
+    board_hash    = Column(String(128), nullable=True)
+    created_at    = Column(DateTime, nullable=False)
+    archived_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ── User profile model (display name, one row per user) ──────────────────────
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
+
+    email         = Column(String(256), primary_key=True)
+    display_name  = Column(String(32), nullable=False)
+    public_id     = Column(String(36), unique=True, nullable=True, index=True)
+    is_public     = Column(Boolean, default=False, nullable=False)
+    favorite_game = Column(String(32), nullable=True)
+    vanity_slug   = Column(String(32), unique=True, nullable=True, index=True)
+    pref_sounds   = Column(Boolean, default=False, nullable=False)
+    pref_chording = Column(Boolean, default=True,  nullable=False)
+    pref_skin     = Column(String(16), default='dark',    nullable=False)
+    pref_on_win   = Column(String(16), default='summary', nullable=False)
+    pref_on_lose  = Column(String(16), default='summary', nullable=False)
+    about_text    = Column(String(5000), nullable=True)
+    country       = Column(String(8),    nullable=True)
+    pvp_elo       = Column(Integer, default=1200, nullable=False)
+    created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    wc2026_fan    = Column(String(16), name="2026_world_cup_fan_flag", nullable=True)
+    timezone      = Column(String(64), nullable=True)
+
+# ── WC2026 match results (admin-managed) ──────────────────────────────────────
+class WC2026Match(Base):
+    __tablename__ = "wc2026_matches"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    group_name = Column(String(8),  nullable=False, index=True)
+    match_date = Column(String(10), nullable=False)   # YYYY-MM-DD
+    team1_slug = Column(String(32), nullable=False)
+    team2_slug = Column(String(32), nullable=False)
+    time_cdt   = Column(String(8),  nullable=False)   # HH:MM
+    city       = Column(String(64), nullable=False)
+    score1     = Column(Integer, nullable=True)
+    score2     = Column(Integer, nullable=True)
+    status     = Column(String(16), nullable=False, server_default="scheduled")
+
+# ── WC2026 Tametsi board states (per user OR per guest, per country, per difficulty) ──
+class WC2026BoardState(Base):
+    __tablename__ = "wc2026_board_states"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    # Exactly one of email / guest_token is non-null. Logged-in users carry an email;
+    # anonymous guests carry their session guest_token (UUID).
+    email        = Column(String(256), nullable=True, index=True)
+    guest_token  = Column(String(36),  nullable=True, index=True)
+    country_slug = Column(String(32),  nullable=False)
+    difficulty   = Column(String(8),   nullable=False)  # 'easy' | 'hard'
+    mine_layout  = Column(Text, nullable=False)   # JSON list of [r,c] mine positions
+    cell_state   = Column(Text, nullable=False)   # JSON list of per-cell state strings
+    is_solved    = Column(Boolean, default=False, nullable=False)
+    play_count   = Column(Integer, default=0, nullable=False, server_default='0')
+    started_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    solved_at    = Column(DateTime, nullable=True)
+
+    __table_args__ = (
+        # MySQL treats NULLs as distinct in UNIQUE indexes, so logged-in rows
+        # (email set, guest_token null) and guest rows (guest_token set, email null)
+        # each enforce their own uniqueness independently.
+        Index("ix_wc2026_board_states_email_country_diff",
+              "email", "country_slug", "difficulty", unique=True),
+        Index("ix_wc2026_board_states_guest_country_diff",
+              "guest_token", "country_slug", "difficulty", unique=True),
+    )
+
+# ── WC2026 Tametsi completed game scores ─────────────────────────────────────
+class WC2026Score(Base):
+    __tablename__ = "wc2026_scores"
+
+    id             = Column(Integer, primary_key=True, index=True)
+    # Exactly one of email / guest_token is non-null at write time. On login,
+    # /auth/callback walks guest_token rows over to email (see merge-on-login).
+    email          = Column(String(256), nullable=True, index=True)
+    guest_token    = Column(String(36),  nullable=True, index=True)
+    display_name   = Column(String(32),  nullable=False)
+    country_slug   = Column(String(32),  nullable=False)
+    difficulty     = Column(String(8),   nullable=False)
+    fan_flag       = Column(String(16),  nullable=False)   # fan team at time of solve
+    flags_correct  = Column(Integer,     nullable=False)
+    solve_bonus    = Column(Integer,     nullable=False)
+    total_points   = Column(Integer,     nullable=False)
+    solve_time_ms  = Column(Integer,     nullable=True)
+    bbbv           = Column(Integer,     nullable=True)
+    left_clicks    = Column(Integer,     nullable=True)
+    right_clicks   = Column(Integer,     nullable=True)
+    solved_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_wc2026_scores_fan_flag", "fan_flag"),
+        Index("ix_wc2026_scores_guest_token", "guest_token"),
+    )
+
+# ── Server Stats model (hourly snapshots) ─────────────────────────────────────
+class ServerStats(Base):
+    __tablename__ = "server_stats"
+
+    id             = Column(Integer, primary_key=True, index=True)
+    recorded_at    = Column(DateTime, nullable=False, index=True)
+    cpu_percent    = Column(Float,      nullable=False)
+    mem_used_mb    = Column(Float,      nullable=False)
+    mem_total_mb   = Column(Float,      nullable=False)
+    mem_percent    = Column(Float,      nullable=False)
+    disk_used_gb   = Column(Float,      nullable=False)
+    disk_total_gb  = Column(Float,      nullable=False)
+    disk_percent   = Column(Float,      nullable=False)
+    db_size_mb     = Column(Float,      nullable=False)
+    net_bytes_sent = Column(BigInteger, nullable=False)   # cumulative since boot
+    net_bytes_recv = Column(BigInteger, nullable=False)   # cumulative since boot
+    net_delta_sent = Column(BigInteger, nullable=True)    # bytes sent in this hour
+    net_delta_recv = Column(BigInteger, nullable=True)    # bytes received in this hour
+    http_requests  = Column(Integer,    nullable=False, default=0)  # requests this hour
+
+
+# ── Blog Comment model ────────────────────────────────────────────────────────
+# ── Web Traffic Stats (daily, parsed from Apache access logs) ─────────────────
+class WebTrafficStats(Base):
+    __tablename__ = "web_traffic_stats"
+
+    id              = Column(Integer, primary_key=True, index=True)
+    stat_date       = Column(Date, nullable=False, unique=True, index=True)
+    total_requests  = Column(Integer, nullable=False, default=0)
+    unique_ips      = Column(Integer, nullable=False, default=0)
+    # 2xx
+    http_200        = Column(Integer, nullable=False, default=0)
+    http_201        = Column(Integer, nullable=False, default=0)
+    http_206        = Column(Integer, nullable=False, default=0)
+    # 1xx / protocol upgrade
+    http_101        = Column(Integer, nullable=False, default=0)
+    # 3xx
+    http_302        = Column(Integer, nullable=False, default=0)
+    http_304        = Column(Integer, nullable=False, default=0)
+    http_307        = Column(Integer, nullable=False, default=0)
+    # 4xx
+    http_403        = Column(Integer, nullable=False, default=0)
+    http_404        = Column(Integer, nullable=False, default=0)
+    http_405        = Column(Integer, nullable=False, default=0)
+    http_422        = Column(Integer, nullable=False, default=0)
+    # 5xx
+    http_500        = Column(Integer, nullable=False, default=0)
+    http_503        = Column(Integer, nullable=False, default=0)
+    recorded_at     = Column(DateTime, nullable=True)
+
+
+class EvilGameSession(Base):
+    __tablename__ = "evil_game_sessions"
+    id         = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+
+class BlogComment(Base):
+    __tablename__ = "blog_comments"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    post_slug    = Column(String(128), nullable=False, index=True)
+    user_email   = Column(String(256), nullable=False, index=True)
+    display_name = Column(String(64), nullable=False)
+    body         = Column(String(2000), nullable=False)
+    approved     = Column(Boolean, default=False, nullable=False, index=True)
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_blog_comments_slug_approved", "post_slug", "approved"),
+    )
+
+
+# ── Nonosweeper Score model ────────────────────────────────────────────────────
+class NonosweeperScore(Base):
+    __tablename__ = "nonosweeper_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD
+    difficulty  = Column(String(16), nullable=False)   # beginner|intermediate|expert
+    time_secs   = Column(Integer, nullable=False)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_nonosweeper_scores_date_diff_time", "puzzle_date", "difficulty", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "difficulty":  self.difficulty,
+            "time_secs":   self.time_secs,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── 15-Puzzle Score model ─────────────────────────────────────────────────────
+class FifteenPuzzleScore(Base):
+    __tablename__ = "fifteen_puzzle_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD UTC
+    grid_size   = Column(String(8),  nullable=False, server_default="4x4")  # "3x3", "4x4", etc.
+    time_ms     = Column(Integer, nullable=False)
+    moves       = Column(Integer, nullable=False)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_fifteen_puzzle_scores_date_grid_time", "puzzle_date", "grid_size", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "time_ms":     self.time_ms,
+            "moves":       self.moves,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── 15-Puzzle Photo model ─────────────────────────────────────────────────────
+class FifteenPuzzlePhoto(Base):
+    __tablename__ = "fifteen_puzzle_photos"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    user_email   = Column(String(256), nullable=False, index=True)
+    filename     = Column(String(256), nullable=False)   # stored filename on disk
+    display_name = Column(String(128), nullable=True)    # user-supplied title
+    photo_mode   = Column(String(8),   nullable=False)   # 'tiles' or 'reveal'
+    board_hash   = Column(String(128), nullable=False, unique=True, index=True)
+    approved     = Column(Boolean, nullable=False, default=False)
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ── MemberPuzzle ──────────────────────────────────────────────────────────────
+class MemberPuzzle(Base):
+    __tablename__ = "member_puzzles"
+
+    id              = Column(Integer, primary_key=True, index=True)
+    board_hash      = Column(String(128), nullable=False, unique=True, index=True)
+    tile_filename   = Column(String(256), nullable=False)    # image shown on tiles during play
+    reveal_filename = Column(String(256), nullable=False)    # image shown full-bleed on win
+    display_name    = Column(String(128), nullable=True)
+    user_email      = Column(String(256), nullable=True, index=True)  # set if logged in at creation
+    approved        = Column(Boolean, nullable=False, default=False)
+    created_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ── 2048 Score model ─────────────────────────────────────────────────────────
+class Game2048Score(Base):
+    __tablename__ = "game_2048_scores"
+
+    id             = Column(Integer, primary_key=True, index=True)
+    name           = Column(String(32), nullable=False)
+    user_email     = Column(String(256), nullable=True, index=True)
+    puzzle_date    = Column(String(10), nullable=False)   # YYYY-MM-DD UTC
+    score          = Column(Integer, nullable=False)
+    time_ms        = Column(Integer, nullable=False)
+    moves          = Column(Integer, nullable=False)
+    fours_spawned  = Column(Integer, nullable=True)   # number of 4-tiles spawned during the game
+    moves_to_2048  = Column(Integer, nullable=True)   # move number when 2048 was first reached; NULL if not reached
+    guest_token    = Column(String(36), nullable=True, index=True)
+    client_type    = Column(String(32), nullable=False, server_default="na")
+    created_at     = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_game_2048_scores_date_score", "puzzle_date", "score"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":            self.id,
+            "name":          self.name,
+            "puzzle_date":   self.puzzle_date,
+            "score":         self.score,
+            "time_ms":       self.time_ms,
+            "moves":         self.moves,
+            "fours_spawned": self.fours_spawned,
+            "moves_to_2048": self.moves_to_2048,
+            "created_at":    self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── 2048 Hexagon Score model ──────────────────────────────────────────────────
+class Game2048HexScore(Base):
+    __tablename__ = "game_2048hex_scores"
+
+    id             = Column(Integer, primary_key=True, index=True)
+    name           = Column(String(32), nullable=False)
+    user_email     = Column(String(256), nullable=True, index=True)
+    puzzle_date    = Column(String(10), nullable=False)   # YYYY-MM-DD UTC
+    score          = Column(Integer, nullable=False)
+    time_ms        = Column(Integer, nullable=False)
+    moves          = Column(Integer, nullable=False)
+    fours_spawned  = Column(Integer, nullable=True)   # number of 4-tiles spawned during the game
+    moves_to_2048  = Column(Integer, nullable=True)   # move number when 2048 was first reached; NULL if not reached
+    guest_token    = Column(String(36), nullable=True, index=True)
+    client_type    = Column(String(32), nullable=False, server_default="na")
+    created_at     = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_game_2048hex_scores_date_score", "puzzle_date", "score"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":            self.id,
+            "name":          self.name,
+            "puzzle_date":   self.puzzle_date,
+            "score":         self.score,
+            "time_ms":       self.time_ms,
+            "moves":         self.moves,
+            "fours_spawned": self.fours_spawned,
+            "moves_to_2048": self.moves_to_2048,
+            "created_at":    self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── Schulte Grid Score model ──────────────────────────────────────────────────
+class SchulteGridScore(Base):
+    __tablename__ = "schulte_grid_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    mode        = Column(String(16), nullable=False)   # normal|easy|blind_normal|blind_easy|easy_mix|mix
+    board_size  = Column(Integer, nullable=False)       # 3–10
+    time_ms     = Column(Integer, nullable=False)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD UTC (for daily reset)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_schulte_grid_scores_date_mode_size_time", "puzzle_date", "mode", "board_size", "time_ms"),
+        Index("ix_schulte_grid_scores_email_mode_size_time", "user_email", "mode", "board_size", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "mode":        self.mode,
+            "board_size":  self.board_size,
+            "time_ms":     self.time_ms,
+            "puzzle_date": self.puzzle_date,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── Sudoku Score model ────────────────────────────────────────────────────────
+class SudokuScore(Base):
+    __tablename__ = "sudoku_scores"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    name         = Column(String(32), nullable=False)
+    user_email   = Column(String(256), nullable=True, index=True)
+    difficulty   = Column(String(16), nullable=False)    # daily|easy|medium|hard|expert
+    variant      = Column(String(32), nullable=False, server_default="standard")  # future-proofing
+    board_hash   = Column(String(64), nullable=False, index=True)
+    board_givens = Column(String(81), nullable=False)    # 81-char givens string for replay
+    time_ms      = Column(Integer, nullable=False)
+    hints_used   = Column(Integer, nullable=False, default=0)
+    puzzle_date  = Column(String(10), nullable=False)    # YYYY-MM-DD UTC
+    guest_token  = Column(String(36), nullable=True, index=True)
+    client_type  = Column(String(32), nullable=False, server_default="web")
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_sudoku_scores_hash_email",    "board_hash", "user_email"),
+        Index("ix_sudoku_scores_diff_date_time","difficulty", "puzzle_date", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "difficulty":  self.difficulty,
+            "board_hash":  self.board_hash[:8],
+            "full_hash":   self.board_hash,
+            "time_ms":     self.time_ms,
+            "hints_used":  self.hints_used,
+            "puzzle_date": self.puzzle_date,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── Contact Message model ─────────────────────────────────────────────────────
+class ContactMessage(Base):
+    __tablename__ = "contact_messages"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name       = Column(String(128), nullable=False)
+    email      = Column(String(256), nullable=False)
+    message    = Column(String(4000), nullable=False)
+    read       = Column(Boolean, default=False, nullable=False, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ── Mahjong Solitaire Score model ─────────────────────────────────────────────
+class MahjongScore(Base):
+    __tablename__ = "mahjong_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD UTC
+    board_hash  = Column(String(200), nullable=False)
+    time_ms     = Column(Integer, nullable=False)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    device_type = Column(String(20), nullable=True)         # "ios" | "android" | "web"
+    device_id   = Column(String(36), nullable=True, index=True)  # persistent device UUID
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_mahjong_scores_date_time", "puzzle_date", "time_ms"),
+        Index("ix_mahjong_scores_hash_time", "board_hash", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "board_hash":  self.board_hash,
+            "time_ms":     self.time_ms,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── Mahjong Solitaire Saved Game model ────────────────────────────────────────
+class MahjongSavedGame(Base):
+    __tablename__ = "mahjong_saved_games"
+
+    id            = Column(Integer, primary_key=True, index=True)
+    user_email    = Column(String(256), nullable=False, index=True)
+    board_hash    = Column(String(200), nullable=False)
+    puzzle_date   = Column(String(10), nullable=False)   # YYYY-MM-DD UTC
+    elapsed_ms    = Column(Integer, nullable=False, default=0)
+    removed_pairs = Column(String(4000), nullable=False, default="[]")  # JSON array
+    updated_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc),
+                           onupdate=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_mahjong_saved_games_user_hash", "user_email", "board_hash", unique=True),
+    )
+
+
+# ── Jigsaw Score model ────────────────────────────────────────────────────────
+class JigsawScore(Base):
+    __tablename__ = "jigsaw_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)   # YYYY-MM-DD UTC
+    difficulty  = Column(String(16), nullable=False)   # beginner|intermediate|expert
+    image_name  = Column(String(256), nullable=False)
+    time_ms     = Column(Integer, nullable=False)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_jigsaw_scores_date_diff_time", "puzzle_date", "difficulty", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "difficulty":  self.difficulty,
+            "image_name":  self.image_name,
+            "time_ms":     self.time_ms,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── Jigsaw Saved Game model ───────────────────────────────────────────────────
+class JigsawSavedGame(Base):
+    __tablename__ = "jigsaw_saved_games"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    user_email  = Column(String(256), nullable=False, index=True)
+    puzzle_date = Column(String(10), nullable=False)
+    difficulty  = Column(String(16), nullable=False)
+    image_name  = Column(String(256), nullable=False)
+    elapsed_ms  = Column(Integer, nullable=False, default=0)
+    piece_state = Column(Text, nullable=False, default="[]")  # JSON [{id,x,y,groupId}]
+    updated_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc),
+                         onupdate=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_jigsaw_saved_user_date_diff", "user_email", "puzzle_date", "difficulty",
+              unique=True),
+    )
+
+
+# ── Jigsaw Photo model (custom generator uploads) ─────────────────────────────
+class JigsawPhoto(Base):
+    __tablename__ = "jigsaw_photos"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    user_email   = Column(String(256), nullable=False, index=True)
+    filename     = Column(String(256), nullable=False)
+    display_name = Column(String(128), nullable=True)
+    board_hash   = Column(String(128), nullable=False, unique=True, index=True)
+    approved     = Column(Boolean, nullable=False, default=False)
+    created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ── F74 Rewind replay log ─────────────────────────────────────────────────────
+class GameReplay(Base):
+    __tablename__ = "game_replays"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    user_email   = Column(String(256), nullable=True, index=True)
+    mode         = Column(String(32),  nullable=True)          # beginner/intermediate/expert/custom/daily/…
+    rows         = Column(Integer,     nullable=False)
+    cols         = Column(Integer,     nullable=False)
+    mines        = Column(Integer,     nullable=False)
+    no_guess     = Column(Boolean,     default=False, nullable=False)
+    board_hash   = Column(String(128), nullable=True)
+    time_ms      = Column(Integer,     nullable=True)
+    log_json     = Column(Text,        nullable=False)         # JSON array of [t_ms, type, r, c]
+
+    # ── Phase 1 analytics instrumentation ────────────────────────────────────
+    outcome           = Column(String(16),  nullable=False, server_default="win")  # win | loss | abandon
+    bbbv              = Column(Integer,     nullable=True)
+    left_clicks       = Column(Integer,     nullable=True)
+    right_clicks      = Column(Integer,     nullable=True)
+    chord_clicks      = Column(Integer,     nullable=True)
+    cells_revealed    = Column(Integer,     nullable=True)
+    cells_total_safe  = Column(Integer,     nullable=True)
+    client_type       = Column(String(32),  nullable=False, server_default="na")
+    guest_token       = Column(String(36),  nullable=True, index=True)
+    score_id          = Column(Integer,     nullable=True, index=True)
+    # ──────────────────────────────────────────────────────────────────────────
+
+    created_at   = Column(DateTime,    default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_game_replays_mode_outcome_created", "mode", "outcome", "created_at"),
+        Index("ix_game_replays_email_created", "user_email", "created_at"),
+    )
+
+
+# ── Tametsi Board model (one row per unique board layout) ────────────────────
+class TametsiBoard(Base):
+    __tablename__ = "tametsi_boards"
+
+    board_hash = Column(String(64), primary_key=True)      # SHA-256 hex (64 chars)
+    rows       = Column(Integer, nullable=False)
+    cols       = Column(Integer, nullable=False)
+    mines      = Column(Integer, nullable=False)
+    bbbv       = Column(Integer, nullable=False)
+    board_data = Column(JSON, nullable=False)               # {"mines":[[r,c],...], "row_counts":[...], "col_counts":[...]}
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ── Tametsi Daily model (one row per level per day) ───────────────────────────
+class TametsiDaily(Base):
+    __tablename__ = "tametsi_daily"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)        # YYYY-MM-DD
+    level       = Column(String(16), nullable=False)        # beginner/intermediate/expert
+    board_hash  = Column(String(64), nullable=False, index=True)
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_tametsi_daily_date_level", "puzzle_date", "level", unique=True),
+    )
+
+
+# ── Tametsi Score model ───────────────────────────────────────────────────────
+class TametsiScore(Base):
+    __tablename__ = "tametsi_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    board_hash  = Column(String(64), nullable=False, index=True)
+    level       = Column(String(16), nullable=False)        # beginner/intermediate/expert
+    is_daily    = Column(Boolean, nullable=False, default=False)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    guest_token = Column(String(36), nullable=True, index=True)
+    time_ms     = Column(Integer, nullable=False)
+    bbbv        = Column(Integer, nullable=False)
+    left_clicks  = Column(Integer, nullable=True)
+    right_clicks = Column(Integer, nullable=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_tametsi_scores_hash_time",        "board_hash", "time_ms"),
+        Index("ix_tametsi_scores_level_daily_time", "level", "is_daily", "time_ms"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":         self.id,
+            "board_hash": self.board_hash,
+            "level":      self.level,
+            "is_daily":   self.is_daily,
+            "name":       self.name,
+            "time_ms":    self.time_ms,
+            "bbbv":       self.bbbv,
+            "created_at": self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── Tametsi Hex completion tracking ─────────────────────────────────────────
+class TametsiHexCompletion(Base):
+    __tablename__ = "tametsi_hex_completions"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    email      = Column(String(256), nullable=False, index=True)
+    puzzle_id  = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_tametsi_hex_completion_email_puzzle", "email", "puzzle_id", unique=True),
+    )
+
+
+class TametsiHexTime(Base):
+    __tablename__ = "tametsi_hex_times"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    email      = Column(String(256), nullable=False, index=True)
+    puzzle_id  = Column(Integer, nullable=False)
+    time_ms    = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_tametsi_hex_times_puzzle_time", "puzzle_id", "time_ms"),
+    )
+
+
+# ── Numbers Match Daily Board (pre-generated, server-side) ───────────────────
+class NumbersMatchDaily(Base):
+    __tablename__ = "numbers_match_daily"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    puzzle_date = Column(String(10), nullable=False, unique=True, index=True)  # YYYY-MM-DD
+    board_num   = Column(Integer, nullable=False)   # sequential board number (1-based from 2024-01-01)
+    rows        = Column(Integer, nullable=False)   # initial row count per board_num schedule
+    board_data  = Column(JSON, nullable=False)      # flat array of ints, 1-9 (length = rows * 9)
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ── Numbers Match Score model ─────────────────────────────────────────────────
+class NumbersMatchScore(Base):
+    __tablename__ = "numbers_match_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(32), nullable=False)   # YYYY-MM-DD (daily) or YYYY-MM-DD-{easy|medium|hard|expert}
+    score       = Column(Integer, nullable=False, default=0)
+    time_secs   = Column(Integer, nullable=False)
+    lines_added = Column(Integer, nullable=False, default=0)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_numbers_match_scores_date_score_time", "puzzle_date", "score", "time_secs"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":          self.id,
+            "name":        self.name,
+            "puzzle_date": self.puzzle_date,
+            "score":       self.score,
+            "time_secs":   self.time_secs,
+            "lines_added": self.lines_added,
+            "created_at":  self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
+# ── Profanity flagging ───────────────────────────────────────────────────────
+class FlaggedScore(Base):
+    __tablename__ = "flagged_scores"
+
+    id         = Column(Integer,  primary_key=True, index=True)
+    table_name = Column(String(64),  nullable=False, index=True)
+    score_id   = Column(Integer,     nullable=False)
+    name       = Column(String(64),  nullable=False)
+    reason     = Column(String(128), nullable=False, server_default="profanity")
+    flagged_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_flagged_scores_table_score", "table_name", "score_id", unique=True),
+    )
+
+
+# ── Pattern Wiki ─────────────────────────────────────────────────────────────
+# Patterns are the curated minesweeper "shapes" displayed at /patterns.
+# Schema mirrors the structure of the original Pattern Library .docx:
+#   section  : top-level grouping (Holes, Holes+, Box Logic, Chains, Combinations, ...)
+#   depth    : number of color regions used in the diagram (1..N)
+#   difficulty: opinion-based grade A..E (A easiest)
+# Variants (e.g. "1.2 D-Pattern Start-Extension") use parent_slug to link
+# back to their parent pattern.
+class Pattern(Base):
+    __tablename__ = "patterns"
+
+    id            = Column(Integer, primary_key=True, index=True)
+    slug          = Column(String(128), nullable=False, unique=True, index=True)
+    name          = Column(String(128), nullable=False)
+    aliases       = Column(JSON, nullable=True)        # e.g. ["221-Hole", "D-Pattern"]
+    section       = Column(String(64),  nullable=False, index=True)  # Holes / Holes+ / ...
+    depth         = Column(Integer, nullable=True)     # 1..N color regions
+    difficulty    = Column(String(2),   nullable=True) # 'A'..'E'
+    parent_slug   = Column(String(128), nullable=True, index=True)   # variant→parent
+    sort_order    = Column(Integer, nullable=False, server_default="0")
+    body_md       = Column(Text, nullable=False)       # Markdown explanation
+    board_json    = Column(JSON, nullable=True)        # grid + color regions (preferred)
+    board_image_url = Column(String(512), nullable=True)  # fallback for irregular boards
+    legend        = Column(JSON, nullable=True)        # [{"color":"red","meaning":"one mine"}, ...]
+    status        = Column(String(16), nullable=False, server_default="draft", index=True)
+                                                       # 'draft' | 'published'
+    editor_email  = Column(String(256), nullable=True, index=True)   # last editor
+    created_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at    = Column(DateTime, default=lambda: datetime.now(timezone.utc),
+                           onupdate=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_patterns_section_sort", "section", "sort_order"),
+        Index("ix_patterns_status_section", "status", "section"),
+    )
+
+    def to_dict(self):
+        return {
+            "id":              self.id,
+            "slug":            self.slug,
+            "name":            self.name,
+            "aliases":         self.aliases or [],
+            "section":         self.section,
+            "depth":           self.depth,
+            "difficulty":      self.difficulty,
+            "parent_slug":     self.parent_slug,
+            "sort_order":      self.sort_order,
+            "body_md":         self.body_md,
+            "board_json":      self.board_json,
+            "board_image_url": self.board_image_url,
+            "legend":          self.legend or [],
+            "status":          self.status,
+            "editor_email":    self.editor_email,
+            "created_at":      self.created_at.strftime("%Y-%m-%d %H:%M") if self.created_at else None,
+            "updated_at":      self.updated_at.strftime("%Y-%m-%d %H:%M") if self.updated_at else None,
+        }
+
+
+# Revision history for patterns. Every save inserts a new row so edits are
+# reversible and we can audit who changed what. Bounded growth — a manual
+# cleanup script can prune old revisions later if needed.
+class PatternRevision(Base):
+    __tablename__ = "pattern_revisions"
+
+    id              = Column(Integer, primary_key=True, index=True)
+    pattern_id      = Column(Integer, nullable=False, index=True)
+    slug            = Column(String(128), nullable=False, index=True)  # denormalized for audit
+    name            = Column(String(128), nullable=False)
+    aliases         = Column(JSON, nullable=True)
+    section         = Column(String(64),  nullable=False)
+    depth           = Column(Integer, nullable=True)
+    difficulty      = Column(String(2),   nullable=True)
+    parent_slug     = Column(String(128), nullable=True)
+    sort_order      = Column(Integer, nullable=False, server_default="0")
+    body_md         = Column(Text, nullable=False)
+    board_json      = Column(JSON, nullable=True)
+    board_image_url = Column(String(512), nullable=True)
+    legend          = Column(JSON, nullable=True)
+    status          = Column(String(16), nullable=False)
+    editor_email    = Column(String(256), nullable=True)
+    edit_summary    = Column(String(256), nullable=True)  # optional commit message
+    created_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ── User roles (Google-login gated permissions) ──────────────────────────────
+# Lets admins grant editing rights to specific Google accounts without a
+# redeploy. ADMIN_EMAILS (env var) continues to grant full admin and is treated
+# as having every role implicitly.
+#
+# Roles in use:
+#   'pattern_editor' — may create/edit/publish patterns
+#
+# (Add more roles here as the site grows — e.g. 'translator', 'moderator'.)
+class UserRole(Base):
+    __tablename__ = "user_roles"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    email        = Column(String(256), nullable=False, index=True)
+    role         = Column(String(32),  nullable=False, index=True)
+    granted_by   = Column(String(256), nullable=True)   # admin email who granted it
+    granted_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    note         = Column(String(256), nullable=True)
+
+    __table_args__ = (
+        Index("ix_user_roles_email_role", "email", "role", unique=True),
+    )
+
+
+# ── Create tables if they don't exist ────────────────────────────────────────
+def init_db():
+    Base.metadata.create_all(bind=engine)
+    _apply_migrations()
+    _seed_bot_profiles()
+
+
+# ── Bot PvP profiles ──────────────────────────────────────────────────────────
+_BOT_PROFILES = [
+    {"email": "bot-easy@bot.minesweeper.org",   "display_name": "🤖 Bot (Easy)",   "pvp_elo": 1000},
+    {"email": "bot-medium@bot.minesweeper.org", "display_name": "🤖 Bot (Medium)", "pvp_elo": 1200},
+    {"email": "bot-hard@bot.minesweeper.org",   "display_name": "🤖 Bot (Hard)",   "pvp_elo": 1400},
+]
+
+def _seed_wc2026_matches(conn):
+    """Seed wc2026_matches from WC2026_MATCHES_SEED if the table is empty."""
+    count = conn.execute(text("SELECT COUNT(*) FROM wc2026_matches")).scalar()
+    if count:
+        return
+    from wc2026_data import WC2026_MATCHES_SEED
+    for m in WC2026_MATCHES_SEED:
+        conn.execute(
+            text(
+                "INSERT INTO wc2026_matches "
+                "(group_name, match_date, team1_slug, team2_slug, time_cdt, city, status) "
+                "VALUES (:g, :d, :t1, :t2, :tc, :ci, 'scheduled')"
+            ),
+            {"g": m["group"], "d": m["date"], "t1": m["team1"],
+             "t2": m["team2"], "tc": m["time_cdt"], "ci": m["city"]},
+        )
+    conn.commit()
+
+
+def _seed_bot_profiles():
+    """Create UserProfile rows for the three bots if they don't already exist."""
+    db = SessionLocal()
+    try:
+        for bp in _BOT_PROFILES:
+            if not db.query(UserProfile).filter(UserProfile.email == bp["email"]).first():
+                db.add(UserProfile(
+                    email        = bp["email"],
+                    display_name = bp["display_name"],
+                    pvp_elo      = bp["pvp_elo"],
+                    is_public    = False,
+                ))
+        db.commit()
+    finally:
+        db.close()
+
+
+def _create_phase1_indexes(conn):
+    """Idempotently create analyzer-friendly indexes on game_replays."""
+    indexes = [
+        ("ix_game_replays_mode_outcome_created",
+         "CREATE INDEX `ix_game_replays_mode_outcome_created` "
+         "ON `game_replays` (`mode`, `outcome`, `created_at`)"),
+        ("ix_game_replays_email_created",
+         "CREATE INDEX `ix_game_replays_email_created` "
+         "ON `game_replays` (`user_email`, `created_at`)"),
+    ]
+    for name, ddl in indexes:
+        exists = conn.execute(
+            text(
+                "SELECT COUNT(*) FROM information_schema.statistics "
+                "WHERE table_schema = DATABASE() "
+                "AND table_name = 'game_replays' AND index_name = :idx"
+            ),
+            {"idx": name},
+        ).scalar()
+        if not exists:
+            conn.execute(text(ddl))
+            conn.commit()
+
+
+def _migrate_wc2026_guest_play(conn):
+    """Make WC2026 email columns nullable and add guest_token indexes.
+
+    Idempotent — uses information_schema to check current state before altering.
+    Required to support anonymous guest play on the /2026worldcup tree.
+    """
+    # 1. email must become nullable on both WC tables so a row can be keyed by
+    #    guest_token alone. ALTER MODIFY is safe to re-run, but we gate on
+    #    IS_NULLABLE so production logs aren't noisy.
+    nullable_targets = [
+        ("wc2026_board_states", "email", "VARCHAR(256) NULL"),
+        ("wc2026_scores",       "email", "VARCHAR(256) NULL"),
+    ]
+    for table, column, type_def in nullable_targets:
+        is_nullable = conn.execute(
+            text(
+                "SELECT IS_NULLABLE FROM information_schema.columns "
+                "WHERE table_schema = DATABASE() "
+                "AND table_name = :tbl AND column_name = :col"
+            ),
+            {"tbl": table, "col": column},
+        ).scalar()
+        if is_nullable == "NO":
+            conn.execute(text(
+                f"ALTER TABLE `{table}` MODIFY COLUMN `{column}` {type_def}"
+            ))
+            conn.commit()
+
+    # 2. Unique index on (guest_token, country_slug, difficulty) for boards.
+    #    NULLs are distinct in MySQL unique indexes, so this doesn't conflict
+    #    with logged-in rows where guest_token IS NULL.
+    wc_indexes = [
+        ("wc2026_board_states",
+         "ix_wc2026_board_states_guest_country_diff",
+         "CREATE UNIQUE INDEX `ix_wc2026_board_states_guest_country_diff` "
+         "ON `wc2026_board_states` (`guest_token`, `country_slug`, `difficulty`)"),
+        ("wc2026_scores",
+         "ix_wc2026_scores_guest_token",
+         "CREATE INDEX `ix_wc2026_scores_guest_token` "
+         "ON `wc2026_scores` (`guest_token`)"),
+    ]
+    for table, name, ddl in wc_indexes:
+        exists = conn.execute(
+            text(
+                "SELECT COUNT(*) FROM information_schema.statistics "
+                "WHERE table_schema = DATABASE() "
+                "AND table_name = :tbl AND index_name = :idx"
+            ),
+            {"tbl": table, "idx": name},
+        ).scalar()
+        if not exists:
+            conn.execute(text(ddl))
+            conn.commit()
+
+
+def _apply_migrations():
+    """Idempotent ALTER TABLE migrations for columns added after initial deploy."""
+    migrations = [
+        ("scores",                "guest_token",  "VARCHAR(36) NULL"),
+        ("rush_scores",           "guest_token",  "VARCHAR(36) NULL"),
+        ("cylinder_scores",       "guest_token",  "VARCHAR(36) NULL"),
+        ("toroid_scores",         "guest_token",  "VARCHAR(36) NULL"),
+        ("tentaizu_scores",       "guest_token",  "VARCHAR(36) NULL"),
+        ("replay_scores",         "guest_token",  "VARCHAR(36) NULL"),
+        ("pvp_results",           "board_hash",   "VARCHAR(128) NULL"),
+        ("user_profiles",         "pvp_elo",      "INT NOT NULL DEFAULT 1200"),
+        # client_type tracking (added 2026-03-27); historical rows default to 'na'
+        ("scores",                "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("game_history",          "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("rush_scores",           "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("tentaizu_scores",       "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("tentaizu_easy_scores",  "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("mosaic_scores",         "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("mosaic_easy_scores",    "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("mosaic_custom_scores",  "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("cylinder_scores",       "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("toroid_scores",         "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("replay_scores",         "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("hexsweeper_scores",     "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("globesweeper_scores",   "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        # 3BV + click tracking for Worldsweeper (added 2026-03-29)
+        ("globesweeper_scores",   "bbbv",         "INT NULL"),
+        ("globesweeper_scores",   "left_clicks",  "INT NULL"),
+        ("nonosweeper_scores",    "client_type",  "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        # nonosweeper user/guest tracking — missing from initial deploy
+        ("nonosweeper_scores",    "user_email",   "VARCHAR(256) NULL"),
+        ("nonosweeper_scores",    "guest_token",  "VARCHAR(36) NULL"),
+        # 15-puzzle generator: per-user saved puzzle limit (added 2026-03-30)
+        ("user_profiles",         "puzzle_storage_limit", "INT NOT NULL DEFAULT 32"),
+        # Photo upload approval gating (added 2026-04-28)
+        ("jigsaw_photos",         "approved",    "TINYINT(1) NOT NULL DEFAULT 0"),
+        ("fifteen_puzzle_photos", "approved",    "TINYINT(1) NOT NULL DEFAULT 0"),
+        ("member_puzzles",        "approved",    "TINYINT(1) NOT NULL DEFAULT 0"),
+        # On-win / on-lose preferences (added 2026-05-03)
+        ("user_profiles",         "pref_on_win",  "VARCHAR(16) NOT NULL DEFAULT 'summary'"),
+        ("user_profiles",         "pref_on_lose", "VARCHAR(16) NOT NULL DEFAULT 'summary'"),
+        # Country selection using FIFA codes (added 2026-05-08)
+        ("user_profiles",         "country",      "VARCHAR(8) NULL"),
+        # 2026 FIFA World Cup fan team (added 2026-05-10)
+        ("user_profiles",         "2026_world_cup_fan_flag", "VARCHAR(16) NULL"),
+        # 2026 World Cup celebration — timezone preference (added 2026-05-10)
+        ("user_profiles",         "timezone",      "VARCHAR(64) NULL"),
+        # game_replays — Phase 1 analytics instrumentation (added 2026-05-05)
+        ("game_replays", "outcome",          "VARCHAR(16) NOT NULL DEFAULT 'win'"),
+        ("game_replays", "bbbv",             "INT NULL"),
+        ("game_replays", "left_clicks",      "INT NULL"),
+        ("game_replays", "right_clicks",     "INT NULL"),
+        ("game_replays", "chord_clicks",     "INT NULL"),
+        ("game_replays", "cells_revealed",   "INT NULL"),
+        ("game_replays", "cells_total_safe", "INT NULL"),
+        ("game_replays", "client_type",      "VARCHAR(32) NOT NULL DEFAULT 'na'"),
+        ("game_replays", "guest_token",      "VARCHAR(36) NULL"),
+        ("game_replays", "score_id",         "INT NULL"),
+        ("wc2026_board_states", "play_count",    "INT NOT NULL DEFAULT 0"),
+        ("wc2026_scores",       "solve_time_ms", "INT NULL"),
+        ("wc2026_scores",       "bbbv",          "INT NULL"),
+        ("wc2026_scores",       "left_clicks",   "INT NULL"),
+        ("wc2026_scores",       "right_clicks",  "INT NULL"),
+        # WC2026 guest play — guests submit boards/scores under a session UUID
+        # rather than an email; merged onto the account on login (added 2026-05-16)
+        ("wc2026_board_states", "guest_token",   "VARCHAR(36) NULL"),
+        ("wc2026_scores",       "guest_token",   "VARCHAR(36) NULL"),
+        ("tametsi_scores",      "left_clicks",   "INT NULL"),
+        ("tametsi_scores",      "right_clicks",  "INT NULL"),
+        # mahjong_scores device tracking — added after initial deploy (F1.8)
+        ("mahjong_scores",      "device_type",   "VARCHAR(20) NULL"),
+        ("mahjong_scores",      "device_id",     "VARCHAR(36) NULL"),
+        # fifteen_puzzle_scores grid_size — added in F73 after table existed (F62)
+        ("fifteen_puzzle_scores", "grid_size",   "VARCHAR(8) NOT NULL DEFAULT '4x4'"),
+        # game_2048_scores analytics fields — added in F22 after table existed (F22 initial)
+        ("game_2048_scores",    "fours_spawned", "INT NULL"),
+        ("game_2048_scores",    "moves_to_2048", "INT NULL"),
+        # chord_clicks for 3D sweeper variants — JS tracked but backend never stored
+        ("globesweeper_scores",  "chord_clicks", "INT NULL"),
+        ("cubesweeper_scores",   "chord_clicks", "INT NULL"),
+        ("mobiussweeper_scores", "chord_clicks", "INT NULL"),
+    ]
+    with engine.connect() as conn:
+        for table, column, col_def in migrations:
+            exists = conn.execute(
+                text(
+                    "SELECT COUNT(*) FROM information_schema.columns "
+                    "WHERE table_schema = DATABASE() "
+                    "AND table_name = :tbl AND column_name = :col"
+                ),
+                {"tbl": table, "col": column},
+            ).scalar()
+            if not exists:
+                conn.execute(text(f"ALTER TABLE `{table}` ADD COLUMN `{column}` {col_def}"))
+                conn.commit()
+        _create_phase1_indexes(conn)
+        _migrate_wc2026_guest_play(conn)
+
+        # wc2026 tables (added 2026-05-10) — created via create_all, no ALTER needed
+        _seed_wc2026_matches(conn)
+
+        # Extend game_history.mode ENUM to include 'tametsi'
+        col_type = conn.execute(
+            text(
+                "SELECT COLUMN_TYPE FROM information_schema.columns "
+                "WHERE table_schema = DATABASE() "
+                "AND table_name = 'game_history' AND column_name = 'mode'"
+            )
+        ).scalar()
+        if col_type and "'tametsi'" not in col_type:
+            conn.execute(text(
+                "ALTER TABLE `game_history` MODIFY COLUMN `mode` "
+                "ENUM('beginner','intermediate','expert','custom','evil','tametsi') NOT NULL"
+            ))
+            conn.commit()
