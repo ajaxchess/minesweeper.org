@@ -3265,15 +3265,24 @@ async def team_page(request: Request):
 
 @app.get("/mobile", response_class=HTMLResponse)
 async def mobile_landing(request: Request):
-    return templates.TemplateResponse(request, "mobile.html", {})
+    return templates.TemplateResponse(request, "mobile.html", {
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
 
 @app.get("/mobile/ios", response_class=HTMLResponse)
 async def mobile_ios_landing(request: Request):
-    return templates.TemplateResponse(request, "mobile_ios.html", {})
+    return templates.TemplateResponse(request, "mobile_ios.html", {
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
 
 @app.get("/mobile/android", response_class=HTMLResponse)
 async def mobile_android_landing(request: Request):
-    return templates.TemplateResponse(request, "mobile_android.html", {})
+    return templates.TemplateResponse(request, "mobile_android.html", {
+        "user": get_current_user(request),
+        "lang": get_lang(request), "t": get_t(request),
+    })
 
 @app.get("/mobile/nmmobile", response_class=HTMLResponse)
 async def mobile_nmmobile(request: Request):
