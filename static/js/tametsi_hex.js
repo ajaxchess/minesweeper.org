@@ -22,7 +22,7 @@ const THEX_PUZZLES = {
   3: {
     R: 4,
     mines: new Set(['3,-1','3,-2','3,-3','-3,1','-3,2','-3,3']),
-    startRevealed: {'0,0':0,'3,0':1,'-3,0':1},
+    startRevealed: {'0,0':0,'3,0':1,'-3,0':1,'-2,0':1},
     tutorialText: '<strong>Tutorial 3 — Cascade (R=4, 6 mines):</strong> A <strong>0</strong> cell has no adjacent mines. When you reveal one, every neighbour is uncovered automatically — and if any neighbour is also 0, the cascade keeps spreading. Click any cell next to the centre <strong>0</strong> to trigger a cascade that opens most of the board. Then use the boundary numbers to flag all 6 mines.',
   },
   4: {
