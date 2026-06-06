@@ -288,7 +288,7 @@
 
   async function loadBestTimes() {
     try {
-      const res = await fetch('/api/tametsi-hex/best-times');
+      const res = await fetch('/tametsi-hex/best-times');
       if (!res.ok) return;
       const data = await res.json();
       // keys come back as strings

@@ -542,7 +542,7 @@ GAME_MODES = {
 EVIL_NG_MODE = {"rows": 20, "cols": 30, "mines": 130}
 
 _ANALYSIS_DIR      = os.path.realpath(os.path.join(os.path.dirname(__file__), "analysis"))
-_ANALYSIS_EXTS     = {".ts", ".py", ".js"}
+_ANALYSIS_EXTS     = {".ts", ".py", ".js", ".pptx"}
 
 CYLINDER_MODES = {
     "cylinder-beginner":     {"rows": 9, "cols": 9, "mines": 10},
@@ -1100,7 +1100,7 @@ def analysis_file(path: str):
         raise HTTPException(status_code=404)
     if not os.path.isfile(resolved):
         raise HTTPException(status_code=404)
-    return FileResponse(resolved, media_type="text/plain; charset=utf-8")
+    return FileResponse(resolved)
 
 
 @app.get("/custom", response_class=HTMLResponse)
@@ -9419,7 +9419,7 @@ def tametsi_hex_complete(payload: TametsiHexCompletePayload,
     return {"ok": True}
 
 
-@app.get("/api/tametsi-hex/best-times")
+@app.get("/tametsi-hex/best-times")
 def tametsi_hex_best_times(db: Session = Depends(get_db)):
     rows = (
         db.query(TametsiHexTime, UserProfile)
