@@ -114,7 +114,7 @@
     tbody.innerHTML = '<tr><td colspan="7" class="th-loading">Loading…</td></tr>';
     summary.textContent = '';
 
-    const res  = await fetch(`/api/tametsi/history?mode=${currentMode}&page=${currentPage}`);
+    const res  = await fetch(`/tametsi-history?mode=${currentMode}&page=${currentPage}`);
     if (!res.ok) {
       tbody.innerHTML = '<tr><td colspan="7" class="th-empty">Could not load history.</td></tr>';
       return;

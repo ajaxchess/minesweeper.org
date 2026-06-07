@@ -9232,7 +9232,7 @@ _TAMETSI_HISTORY_MODES = {"all", "beginner", "intermediate", "expert", "wc_easy"
 _TAMETSI_HISTORY_PAGE_SIZE = 50
 
 
-@app.get("/api/tametsi/history")
+@app.get("/tametsi-history")
 def tametsi_history_api(
     request: Request,
     mode: str = "all",
