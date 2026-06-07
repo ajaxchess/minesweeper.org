@@ -8738,8 +8738,8 @@ def delete_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends
     return {"ok": True}
 
 
-# These two 3-segment routes must be defined before /{mode}/{date_str}/{guess_mode}
-# below, which is a wildcard that would intercept them first.
+# All 3-segment routes must be defined before /{mode}/{date_str}/{guess_mode}
+# below, which is a wildcard catch-all that would intercept them first.
 @app.get("/api/numbers-match-today")
 def get_numbers_match_today(response: Response):
     response.headers["Cache-Control"] = "no-store"
@@ -8827,6 +8827,32 @@ def get_numbers_match_scores(puzzle_date: str, response: Response, db: Session =
         if len(top) >= 20:
             break
     return _enrich_with_profiles(top, db)
+
+
+@app.get("/tametsi/board/{board_hash}", response_class=HTMLResponse)
+async def tametsi_board_page(request: Request, board_hash: str):
+    _hash = board_hash if re.match(r"^[0-9a-f]{64}$", board_hash) else None
+    return templates.TemplateResponse(request, "tametsi.html", {
+        "mode":         "tametsi",
+        "user":         get_current_user(request),
+        "lang":         get_lang(request),
+        "t":            get_t(request),
+        "initial_hash": _hash,
+    })
+
+
+@app.get("/tametsi/replay/{replay_id}", response_class=HTMLResponse)
+def tametsi_replay_page(replay_id: int, request: Request, db: Session = Depends(get_db)):
+    replay = db.get(GameReplay, replay_id)
+    if not replay or not replay.mode or not replay.mode.startswith("tametsi-"):
+        raise HTTPException(status_code=404, detail="Replay not found")
+    return templates.TemplateResponse(request, "tametsi_replay.html", {
+        "user":      get_current_user(request),
+        "t":         get_t(request),
+        "replay_id": replay_id,
+        "mode":      replay.mode,
+        "outcome":   replay.outcome,
+    })
 
 
 @app.get("/{mode}/{date_str}/{guess_mode}", response_class=HTMLResponse)
@@ -8972,18 +8998,6 @@ async def tametsi_page(request: Request):
         "lang":         get_lang(request),
         "t":            get_t(request),
         "initial_hash": None,
-    })
-
-
-@app.get("/tametsi/board/{board_hash}", response_class=HTMLResponse)
-async def tametsi_board_page(request: Request, board_hash: str):
-    _hash = board_hash if re.match(r"^[0-9a-f]{64}$", board_hash) else None
-    return templates.TemplateResponse(request, "tametsi.html", {
-        "mode":         "tametsi",
-        "user":         get_current_user(request),
-        "lang":         get_lang(request),
-        "t":            get_t(request),
-        "initial_hash": _hash,
     })
 
 
@@ -9349,20 +9363,6 @@ def get_tametsi_replay(replay_id: int, db: Session = Depends(get_db)):
         "log":              _json.loads(replay.log_json) if replay.log_json else [],
         "board_data":       board.board_data if board else None,
     }
-
-
-@app.get("/tametsi/replay/{replay_id}", response_class=HTMLResponse)
-def tametsi_replay_page(replay_id: int, request: Request, db: Session = Depends(get_db)):
-    replay = db.get(GameReplay, replay_id)
-    if not replay or not replay.mode or not replay.mode.startswith("tametsi-"):
-        raise HTTPException(status_code=404, detail="Replay not found")
-    return templates.TemplateResponse(request, "tametsi_replay.html", {
-        "user":      get_current_user(request),
-        "t":         get_t(request),
-        "replay_id": replay_id,
-        "mode":      replay.mode,
-        "outcome":   replay.outcome,
-    })
 
 
 # ── Tametsi Hex Campaign ──────────────────────────────────────────────────────
