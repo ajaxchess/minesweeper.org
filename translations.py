@@ -5749,6 +5749,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         'index_welcome_title': "Willkommen bei Lady Di's Mines",
         'fp_gen_signin_msg': "Du musst dich <a href=\"/login?next=/other/15puzzle/generator\" style=\"color:var(--accent2);font-weight:700;\">Anmelden</a>, um Fotos hochzuladen und Puzzles zu speichern.",
 
+        'ws_info_what_p1': 'Worldsweeper ist Minesweeper, gespielt auf einem rotierenden 3D-Globus. Das Spielfeld ist ein <a href="https://en.wikipedia.org/wiki/Goldberg_polyhedron" target="_blank" rel="noopener">Goldberg-Polyeder</a> — dieselbe Formengruppe wie bei Fußbällen — bestehend aus 12 Fünfecken und einer variablen Anzahl von Sechsecken. Jede Fläche ist ein Feld, und die Zahl auf jedem Feld zählt die Minen unter seinen direkten Nachbarn auf der Kugeloberfläche.',
+
     },
 
     "es": {
