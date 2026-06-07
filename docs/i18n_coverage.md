@@ -27,7 +27,7 @@
 | `th` | Thai | 1555 | 438 | 78.0% ❌ |
 | `eo` | Esperanto | 1530 | 463 | 76.8% ❌ |
 | `tl` | Tagalog | 1488 | 505 | 74.7% ❌ |
-| `pgl` | Português (GL) | 1364 | 629 | 68.4% ❌ |
+| `pgl` | Pig Latin | 1364 | 629 | 68.4% ❌ |
 
 ## Missing Keys by Language
 
@@ -3015,7 +3015,7 @@
 - `ws_t_param` — Goldberg T parameter:
 - `ws_view_lb` — View Leaderboard
 
-### Português (GL) (`pgl`) — 629 missing
+### Pig Latin (`pgl`) — 629 missing
 
 **`aria`** (6 keys)
 
