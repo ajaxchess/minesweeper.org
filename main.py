@@ -9317,6 +9317,7 @@ def tametsi_history_page(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse("/login", status_code=302)
     return templates.TemplateResponse(request, "tametsi_history.html", {
         "user":    user,
+        "lang":    get_lang(request),
         "t":       get_t(request),
         "mode":    "tametsi",
     })
