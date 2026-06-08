@@ -64,6 +64,18 @@ def _get_templates():
     from main import templates                             # type: ignore
     return templates
 
+
+# i18n helpers — base.html accesses `t.*` and `lang`, so any page handler
+# that extends base.html must pass them. Imported lazily for the same reason
+# as templates above. Falls back to empty defaults if i18n isn't wired in
+# the runtime (keeps standalone tests happy).
+def _get_i18n(request):
+    try:
+        from translations import get_lang, get_t           # type: ignore
+        return get_lang(request), get_t(request)
+    except Exception:
+        return "en", {}
+
 from . import generator, mastery
 from .models import DrillSession
 from .response_models import (
@@ -342,8 +354,11 @@ async def drill_page(drill_id: int, request: Request):
     translation strings.
     """
     templates = _get_templates()
+    lang, t = _get_i18n(request)
     return templates.TemplateResponse(request, "drill.html", {
         "mode": "drill",
         "user": get_current_user(request),
+        "lang": lang,
+        "t": t,
         "drill_id": drill_id,
     })
