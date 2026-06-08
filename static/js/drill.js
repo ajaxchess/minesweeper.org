@@ -235,11 +235,13 @@
     }
 
     // Last board → "See results"; otherwise → "Next board"
-    if (resp && resp.completed) {
-      nextBtn.textContent = 'See results →';
-    } else {
-      nextBtn.textContent = 'Next board →';
-    }
+    // Belt-and-suspenders: server says completed=true OR we know this is the
+    // final board locally. Either way we should NOT advance.
+    const isFinal = (
+      (resp && resp.completed) ||
+      state.currentIndex >= (state.drill.num_boards - 1)
+    );
+    nextBtn.textContent = isFinal ? 'See results →' : 'Next board →';
 
     show('dr-feedback');
   }
@@ -247,9 +249,19 @@
   function onNextClick() {
     hide('dr-feedback');
     const resp = state.lastResponse;
-    if (resp && resp.completed) {
+    const numBoards = (state.drill && state.drill.num_boards) || 0;
+
+    // Treat any of these as "drill is over":
+    //   - server returned completed=true
+    //   - we're already on the last board (defensive — covers dropped responses
+    //     and double-clicks past the end)
+    const isDone = (
+      (resp && resp.completed) ||
+      state.currentIndex >= numBoards - 1
+    );
+    if (isDone) {
       state.completed = true;
-      renderResults(resp.summary || null);
+      renderResults((resp && resp.summary) || null);
       return;
     }
     state.currentIndex += 1;
