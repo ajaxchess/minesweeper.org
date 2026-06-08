@@ -29,18 +29,23 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
-# ── Project-specific imports (stubbed for standalone tests) ──────────────────
+# ── Project-specific imports (each fenced individually so one missing piece
+#    doesn't fall everything back to stubs) ───────────────────────────────────
 try:
     from database import get_db                            # type: ignore
-    from auth import get_current_user                      # type: ignore
-    from main import limiter, templates                    # type: ignore
 except ImportError:
     def get_db():
         yield None
 
+try:
+    from auth import get_current_user                      # type: ignore
+except ImportError:
     def get_current_user(_request):
         return None
 
+try:
+    from main import limiter                               # type: ignore
+except ImportError:
     class _StubLimiter:
         @staticmethod
         def limit(_):
@@ -49,10 +54,15 @@ except ImportError:
             return deco
     limiter = _StubLimiter()
 
-    class _StubTemplates:
-        def TemplateResponse(self, *args, **kwargs):
-            raise RuntimeError("templates stub — only used in tests")
-    templates = _StubTemplates()
+# NOTE: `templates` is imported lazily inside the page handler. At the moment
+# main.py executes `app.include_router(drills_page_router)` (early in
+# startup, around line 163), `templates` is not yet defined on the main
+# module (it's created later, around line 278). Pulling it in at import time
+# raises ImportError and used to fall every helper back to its stub — which
+# is why `get_current_user` was returning None even for authenticated users.
+def _get_templates():
+    from main import templates                             # type: ignore
+    return templates
 
 from . import generator, mastery
 from .models import DrillSession
@@ -331,6 +341,7 @@ async def drill_page(drill_id: int, request: Request):
     /api/drills/{id} on load; this handler only provides the skeleton +
     translation strings.
     """
+    templates = _get_templates()
     return templates.TemplateResponse(request, "drill.html", {
         "mode": "drill",
         "user": get_current_user(request),
