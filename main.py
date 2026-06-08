@@ -542,7 +542,7 @@ GAME_MODES = {
 EVIL_NG_MODE = {"rows": 20, "cols": 30, "mines": 130}
 
 _ANALYSIS_DIR      = os.path.realpath(os.path.join(os.path.dirname(__file__), "analysis"))
-_ANALYSIS_EXTS     = {".ts", ".py", ".js", ".pptx"}
+_ANALYSIS_EXTS     = {".ts", ".py", ".js", ".pptx", ".docx", ".doc"}
 
 CYLINDER_MODES = {
     "cylinder-beginner":     {"rows": 9, "cols": 9, "mines": 10},
