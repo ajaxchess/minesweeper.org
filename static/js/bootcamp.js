@@ -322,21 +322,24 @@
 
   // ── Start today's drill ───────────────────────────────────────────────────
   // POSTs /api/drills/start and redirects to the drill page on success.
-  // Only L5 is implemented today; other levels show a "coming soon" toast.
+  //
+  // Preview behaviour: only L5 Opening Recognition is implemented today,
+  // but every level's button routes here so users at any level can try it.
+  // The mastery-contribution row will be tagged level=5 regardless of where
+  // the click came from — when L1/L2/etc. drills land, swap DRILL_BY_LEVEL
+  // for a real lookup.
+  const DRILL_BY_LEVEL = {
+    1: { type: 'l5_opening_recognition', level: 5 },
+    2: { type: 'l5_opening_recognition', level: 5 },
+    3: { type: 'l5_opening_recognition', level: 5 },
+    4: { type: 'l5_opening_recognition', level: 5 },
+    5: { type: 'l5_opening_recognition', level: 5 },
+    6: { type: 'l5_opening_recognition', level: 5 },
+    7: { type: 'l5_opening_recognition', level: 5 },
+  };
+
   async function startDrill(level, btnEl) {
-    if (level !== 5) {
-      // Future levels — render a small inline notice instead of an alert.
-      if (btnEl) {
-        const original = btnEl.textContent;
-        btnEl.textContent = 'Drill coming soon';
-        btnEl.disabled = true;
-        setTimeout(function () {
-          btnEl.textContent = original;
-          btnEl.disabled = false;
-        }, 1800);
-      }
-      return;
-    }
+    const drill = DRILL_BY_LEVEL[level] || DRILL_BY_LEVEL[5];
 
     if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Loading…'; }
 
@@ -349,8 +352,8 @@
           'Accept': 'application/json',
         },
         body: JSON.stringify({
-          drill_type: 'l5_opening_recognition',
-          level: 5,
+          drill_type: drill.type,
+          level: drill.level,
           difficulty: 'expert',
           mode: currentMode || 'standard',
           num_boards: 10,
