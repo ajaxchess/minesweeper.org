@@ -116,7 +116,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "How to Play Minesweeper",
         # Footer
-        "footer": "Built by <a href=\"https://regis.consulting\">Regis Consulting</a> with Python &amp; FastAPI",
+        "footer": "Built by <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> with Python &amp; FastAPI",
         # Language switcher
         "lang_other": "eo",
         "lang_label": "EO \u2014 Esperanto",
@@ -2161,7 +2161,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Kiel Ludi Minosvepiston",
         # Footer
-        "footer": "Konstruita de <a href=\"https://regis.consulting\">Regis Consulting</a> per Python kaj FastAPI",
+        "footer": "Konstruita de <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> per Python kaj FastAPI",
         # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
@@ -3795,7 +3795,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Wie man Minesweeper spielt",
         # Footer
-        "footer": "Erstellt von <a href=\"https://regis.consulting\">Regis Consulting</a> mit Python &amp; FastAPI",
+        "footer": "Erstellt von <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> mit Python &amp; FastAPI",
         # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
@@ -5869,7 +5869,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "C\u00f3mo jugar al Buscaminas",
         # Footer
-        "footer": "Creado por <a href=\"https://regis.consulting\">Regis Consulting</a> con Python &amp; FastAPI",
+        "footer": "Creado por <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> con Python &amp; FastAPI",
         # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
@@ -7934,7 +7934,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "\u0e27\u0e34\u0e18\u0e35\u0e40\u0e25\u0e48\u0e19 Minesweeper",
         # Footer
-        "footer": "\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e42\u0e14\u0e22 <a href=\"https://regis.consulting\">Regis Consulting</a> \u0e14\u0e49\u0e27\u0e22 Python &amp; FastAPI",
+        "footer": "\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e42\u0e14\u0e22 <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> \u0e14\u0e49\u0e27\u0e22 Python &amp; FastAPI",
         # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
@@ -11009,7 +11009,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "\u042f\u043a \u0433\u0440\u0430\u0442\u0438 \u0432 \u0421\u0430\u043f\u0435\u0440",
         # Footer
-        "footer": "\u0421\u0442\u0432\u043e\u0440\u0435\u043d\u043e <a href=\"https://regis.consulting\">Regis Consulting</a> \u0437\u0430 \u0434\u043e\u043f\u043e\u043c\u043e\u0433\u043e\u044e Python &amp; FastAPI",
+        "footer": "\u0421\u0442\u0432\u043e\u0440\u0435\u043d\u043e <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> \u0437\u0430 \u0434\u043e\u043f\u043e\u043c\u043e\u0433\u043e\u044e Python &amp; FastAPI",
         # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
@@ -12664,7 +12664,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Comment jouer au D\u00e9mineur",
         # Footer
-        "footer": "Cr\u00e9\u00e9 par <a href=\"https://regis.consulting\">Regis Consulting</a> avec Python &amp; FastAPI",
+        "footer": "Cr\u00e9\u00e9 par <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> avec Python &amp; FastAPI",
         # Language switcher
         "lang_other": "fr",
         "lang_label": "FR \u2014 Fran\u00e7ais",
@@ -14725,7 +14725,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "지뢰찾기 플레이 방법",
         # Footer
-        "footer": "Python &amp; FastAPI로 <a href=\"https://regis.consulting\">Regis Consulting</a>이 제작",
+        "footer": "Python &amp; FastAPI로 <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a>이 제작",
         # Language switcher
         "lang_other": "ko",
         "lang_label": "KO \u2014 한국어",
@@ -16804,7 +16804,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "\u30de\u30a4\u30f3\u30b9\u30a4\u30fc\u30d1\u30fc\u306e\u904a\u3073\u65b9",
         # Footer
-        "footer": "Python &amp; FastAPI\u3067<a href=\"https://regis.consulting\">Regis Consulting</a>\u304c\u5236\u4f5c",
+        "footer": "Python &amp; FastAPI\u3067<a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a>\u304c\u5236\u4f5c",
         # Language switcher
         "lang_other": "ja",
         "lang_label": "JA \u2014 \u65e5\u672c\u8a9e",
@@ -18883,7 +18883,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "如何游玩扫雷",
         # Footer
-        "footer": "由 <a href=\"https://regis.consulting\">Regis Consulting</a> 使用 Python &amp; FastAPI 构建",
+        "footer": "由 <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> 使用 Python &amp; FastAPI 构建",
         # Language switcher
         "lang_other": "zh",
         "lang_label": "ZH — 中文",
@@ -20948,7 +20948,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "如何遊玩踩地雷",
         # Footer
-        "footer": "由 <a href=\"https://regis.consulting\">Regis Consulting</a> 使用 Python &amp; FastAPI 建置",
+        "footer": "由 <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> 使用 Python &amp; FastAPI 建置",
         # Language switcher
         "lang_other": "zh-hant",
         "lang_label": "繁體中文",
@@ -23011,7 +23011,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Jak grać w Sapera",
         # Footer
-        "footer": "Stworzone przez <a href=\"https://regis.consulting\">Regis Consulting</a> w Pythonie &amp; FastAPI",
+        "footer": "Stworzone przez <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> w Pythonie &amp; FastAPI",
         # Language switcher
         "lang_other": "pl",
         "lang_label": "PL — Polski",
@@ -25064,7 +25064,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Paano Maglaro ng Minesweeper",
         # Footer
-        "footer": "Ginawa ng <a href=\"https://regis.consulting\">Regis Consulting</a> gamit ang Python &amp; FastAPI",
+        "footer": "Ginawa ng <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> gamit ang Python &amp; FastAPI",
         # Language switcher
         "lang_other": "tl",
         "lang_label": "TL \u2014 Tagalog",
@@ -26650,7 +26650,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Как играть в Сапёр",
         # Footer
-        "footer": "Создано <a href=\"https://regis.consulting\">Regis Consulting</a> с использованием Python &amp; FastAPI",
+        "footer": "Создано <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> с использованием Python &amp; FastAPI",
         # Language switcher
         "lang_other": "ru",
         "lang_label": "RU \u2014 Русский",
@@ -28289,7 +28289,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Como Jogar Campo Minado",
         # Footer
-        "footer": "Criado por <a href=\"https://regis.consulting\">Regis Consulting</a> com Python &amp; FastAPI",
+        "footer": "Criado por <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> com Python &amp; FastAPI",
         # Language switcher
         "lang_other": "pt",
         "lang_label": "PT \u2014 Português",
@@ -30341,7 +30341,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Come Giocare a Campo Minato",
         # Footer
-        "footer": "Creato da <a href=\"https://regis.consulting\">Regis Consulting</a> con Python &amp; FastAPI",
+        "footer": "Creato da <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> con Python &amp; FastAPI",
         # Language switcher
         "lang_other": "it",
         "lang_label": "IT \u2014 Italiano",
@@ -32114,7 +32114,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Hoe Minesweeper te Spelen",
         # Footer
-        "footer": "Gebouwd door <a href=\"https://regis.consulting\">Regis Consulting</a> met Python &amp; FastAPI",
+        "footer": "Gebouwd door <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> met Python &amp; FastAPI",
         # Language switcher
         "lang_other": "nl",
         "lang_label": "NL — Nederlands",
@@ -34166,7 +34166,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Hur man spelar Minesweeper",
         # Footer
-        "footer": "Byggd av <a href=\"https://regis.consulting\">Regis Consulting</a> med Python &amp; FastAPI",
+        "footer": "Byggd av <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> med Python &amp; FastAPI",
         # Language switcher
         "lang_other": "eo",
         "lang_label": "EO — Esperanto",
@@ -36219,7 +36219,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "profile_play_now": "Main sekarang →",
         "profile_no_recent": "Belum ada permainan yang tercatat.",
         "help_title": "Cara Bermain Minesweeper",
-        "footer": "Dibuat oleh <a href=\"https://regis.consulting\">Regis Consulting</a> dengan Python &amp; FastAPI",
+        "footer": "Dibuat oleh <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> dengan Python &amp; FastAPI",
         "lang_other": "eo",
         "lang_label": "EO — Esperanto",
         "rush_easy": "Mudah",
@@ -38215,7 +38215,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "profile_play_now": "Main sekarang →",
         "profile_no_recent": "Tiada permainan yang direkodkan lagi.",
         "help_title": "Cara Bermain Minesweeper",
-        "footer": "Dibina oleh <a href=\"https://regis.consulting\">Regis Consulting</a> dengan Python &amp; FastAPI",
+        "footer": "Dibina oleh <a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> dengan Python &amp; FastAPI",
         "lang_other": "eo",
         "lang_label": "EO — Esperanto",
         "rush_easy": "Mudah",
@@ -40211,7 +40211,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "profile_play_now": "अभी खेलें →",
         "profile_no_recent": "अभी तक कोई खेल दर्ज नहीं।",
         "help_title": "माइनस्वीपर कैसे खेलें",
-        "footer": "<a href=\"https://regis.consulting\">Regis Consulting</a> द्वारा Python &amp; FastAPI के साथ निर्मित",
+        "footer": "<a href=\"https://regis.consulting\">Regis Consulting</a> and <a href=\"https://smarternerd.com/\">Smarter Nerd</a> द्वारा Python &amp; FastAPI के साथ निर्मित",
         "lang_other": "eo",
         "lang_label": "EO — Esperanto",
         "rush_easy": "आसान",
