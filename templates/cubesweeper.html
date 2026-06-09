@@ -109,18 +109,18 @@
     <div class="stat-row">
       <span class="stat" id="mine-count">💣 <span id="cs-mines-remaining">{{ mines }}</span></span>
       <button id="cs-reset-btn" class="btn-reset" title="{{ t['game_new_game'] }}">↺</button>
-      <button id="cs-flag-btn" class="ws-flag-btn" title="Flag mode — click to place/cycle flags instead of revealing">🚩 Flag</button>
-      <button id="cs-farnums-btn" class="ws-flag-btn" title="Click to hide numbers on the back of the cube">🔢 Far</button>
+      <button id="cs-flag-btn" class="ws-flag-btn" title="{{ t['seo_cube_btn_flag'] }}">🚩 Flag</button>
+      <button id="cs-farnums-btn" class="ws-flag-btn" title="{{ t['seo_cube_btn_farnums'] }}">🔢 Far</button>
       {% if mode not in ('expert', 'custom') %}
-      <button id="cs-noguess-btn" class="ws-flag-btn" title="No-Guess mode — board is always solvable without guessing">🎯 No-Guess: <span id="cs-noguess-state">Off</span></button>
+      <button id="cs-noguess-btn" class="ws-flag-btn" title="{{ t['seo_cube_btn_noguess'] }}">🎯 No-Guess: <span id="cs-noguess-state">Off</span></button>
       {% endif %}
       <span class="stat" id="cs-pct-display">🧹 <span id="cs-pct">0</span>%</span>
       <span class="stat" id="timer-display">⏱ <span id="cs-elapsed">0.00</span>s</span>
     </div>
-    <div class="ws-bg-btns" title="Background">
-      <button class="ws-bg-btn" data-bg="sky" title="Sky"></button>
-      <button class="ws-bg-btn" data-bg="orange" title="Orange"></button>
-      <button class="ws-bg-btn" data-bg="galaxy" title="Milky Way"></button>
+    <div class="ws-bg-btns" title="{{ t['seo_cube_btn_bg'] }}">
+      <button class="ws-bg-btn" data-bg="sky" title="{{ t['seo_cube_btn_sky'] }}"></button>
+      <button class="ws-bg-btn" data-bg="orange" title="{{ t['seo_cube_btn_orange'] }}"></button>
+      <button class="ws-bg-btn" data-bg="galaxy" title="{{ t['seo_cube_btn_galaxy'] }}"></button>
       <a id="ws-galaxy-credit" class="ws-galaxy-credit" style="display:none"
          href="https://commons.wikimedia.org/wiki/File:The_Galaxy_%28Milky_way%29.jpg"
          target="_blank" rel="noopener noreferrer">📷 Wikimedia Commons</a>
@@ -143,7 +143,7 @@
   </div>
 
   <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;margin-top:0.5rem;">
-    Drag to rotate · Left-click to reveal · Right-click or Flag button to flag
+    {{ t['seo_cube_drag_hint'] }}
   </p>
 
   <div id="cs-score-form" style="display:none;margin:1rem auto;max-width:420px;text-align:center;padding:1rem;border:1px solid var(--border);border-radius:8px;background:var(--surface);">
@@ -176,50 +176,52 @@
 </div>
 
 <!-- About / How to Play -->
-<div class="info-body" style="width:100%;max-width:700px;margin:2rem auto 0">
+<div class="game-landing-seo" style="width:100%;max-width:700px;margin:2rem auto 0">
 
-  <div class="info-section">
-    <h2>What is CubeSweeper?</h2>
-    <p>CubeSweeper is Minesweeper played on a rotating 3D cube. The board is divided into six N×N faces. Cells connect across face boundaries with full 8-connectivity — edge-crossing and corner-crossing both work — so the cube surface is one continuous minesweeping space with no breaks or seams.</p>
-    <p>Each corner of the cube is shared by three faces. Corner cells there see 7 unique neighbours (3 on their own face, 2 each from the two adjacent faces, and the one shared corner cell from the third face). Every other cell sees exactly 8 neighbours regardless of which face it's on.</p>
-  </div>
+  <h2>{{ t['seo_cube_h2'] }}</h2>
+  <p>{{ t['seo_cube_p1'] | safe }}</p>
+  <p>{{ t['seo_cube_p2'] | safe }}</p>
 
-  <div class="info-section">
-    <h2>{{ t.nav_how_to_play }}</h2>
-    <ul>
-      <li><strong>Drag</strong> the cube to rotate it and inspect any face.</li>
-      <li><strong>Left-click</strong> a cell to reveal it. Empty cells (0) auto-expand through all connected empty neighbours, including across face boundaries.</li>
-      <li><strong>Right-click</strong> a cell to place a flag (🚩). Right-click again for a question mark (?), and a third time to clear it.</li>
-      <li>The <strong>Flag button</strong> puts you in flag mode — left-clicks will cycle flags instead of revealing cells.</li>
-      <li>The ↺ button resets to a fresh board. Your timer starts on your first click.</li>
-      <li>Win by revealing every non-mine cell. All remaining mine cells are flagged automatically when you win.</li>
-    </ul>
-  </div>
+  <div class="landing-seo-grid">
 
-  <div class="info-section">
-    <h2>Board Sizes</h2>
-    <ul>
-      <li><strong>Beginner —</strong> 9×9 per face, 486 total cells, 60 mines (~12%). Numbers-only solving; no-guess mode available.</li>
-      <li><strong>Intermediate —</strong> 16×16 per face, 1536 total cells, 240 mines (~16%). Requires tracking constraints across multiple faces. No-guess mode available.</li>
-      <li><strong>Expert —</strong> 30×30 per face, 5400 total cells, 1050 mines (~19%). A marathon board designed for extended play. No no-guess mode.</li>
-      <li><strong>Custom —</strong> Set your own grid size (N×N per face) and mine count.</li>
-    </ul>
-  </div>
+    <section class="landing-seo-section">
+      <h2>{{ t.nav_how_to_play }}</h2>
+      <ul>
+        <li>{{ t['seo_cube_htp_li1'] | safe }}</li>
+        <li>{{ t['seo_cube_htp_li2'] | safe }}</li>
+        <li>{{ t['seo_cube_htp_li3'] | safe }}</li>
+        <li>{{ t['seo_cube_htp_li4'] | safe }}</li>
+        <li>{{ t['seo_cube_htp_li5'] | safe }}</li>
+        <li>{{ t['seo_cube_htp_li6'] | safe }}</li>
+      </ul>
+    </section>
 
-  <div class="info-section">
-    <h2>No-Guess Mode</h2>
-    <p>When No-Guess is enabled (Beginner and Intermediate only), the board is generated so that it can always be solved using logic alone — no guessing required. The generator uses constraint propagation and retries up to 200 times to find a solvable layout. If no solvable board is found within the limit, it falls back to a standard random board.</p>
-  </div>
+    <section class="landing-seo-section">
+      <h2>{{ t['seo_cube_sizes_h2'] }}</h2>
+      <ul>
+        <li>{{ t['seo_cube_sizes_li1'] | safe }}</li>
+        <li>{{ t['seo_cube_sizes_li2'] | safe }}</li>
+        <li>{{ t['seo_cube_sizes_li3'] | safe }}</li>
+        <li>{{ t['seo_cube_sizes_li4'] | safe }}</li>
+      </ul>
+    </section>
 
-  <div class="info-section">
-    <h2>Strategy Tips</h2>
-    <ul>
-      <li><strong>Rotate constantly.</strong> Information on the far side of the cube is just a drag away. A cell with a high number might be easily solvable once you see the face behind it.</li>
-      <li><strong>Use the Far button.</strong> Hiding numbers on the back face reduces visual noise while you work through the front.</li>
-      <li><strong>Track face crossings.</strong> A chain of empty cells can cross an edge and reveal cells on a different face. Follow auto-expand results to see the full picture.</li>
-      <li><strong>Corner cells are tighter.</strong> A corner cell has only 7 neighbours instead of 8. A high number on a corner cell is a stronger constraint than the same number on an interior cell.</li>
-      <li><strong>Expert is a marathon.</strong> Don't expect to finish in one sitting. Focus on local constraints and make steady progress across the cube surface.</li>
-    </ul>
+    <section class="landing-seo-section">
+      <h2>{{ t['seo_cube_ng_h2'] }}</h2>
+      <p>{{ t['seo_cube_ng_p1'] | safe }}</p>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>{{ t['seo_cube_strat_h2'] }}</h2>
+      <ul>
+        <li>{{ t['seo_cube_strat_li1'] | safe }}</li>
+        <li>{{ t['seo_cube_strat_li2'] | safe }}</li>
+        <li>{{ t['seo_cube_strat_li3'] | safe }}</li>
+        <li>{{ t['seo_cube_strat_li4'] | safe }}</li>
+        <li>{{ t['seo_cube_strat_li5'] | safe }}</li>
+      </ul>
+    </section>
+
   </div>
 
 </div>

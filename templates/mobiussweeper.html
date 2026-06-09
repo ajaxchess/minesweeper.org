@@ -152,44 +152,46 @@
 </div>
 
 <!-- About / How to Play -->
-<div class="info-body" style="width:100%;max-width:700px;margin:2rem auto 0">
+<div class="game-landing-seo" style="width:100%;max-width:700px;margin:2rem auto 0">
 
-  <div class="info-section">
-    <h2>What is MobiusSweeper?</h2>
-    <p>MobiusSweeper is Minesweeper played on a rotating 3D Möbius strip. The strip is a single-sided surface with one edge — if you trace a path along the full length of the strip, you return to your starting point with your orientation flipped. This topological twist affects the game: cells at the seam (the join point of the strip) are adjacent to cells on the <em>opposite row</em> of the other side, which is the defining challenge of the variant.</p>
-    <p>The board is laid out as a grid of W rows × L columns, where columns run around the loop and rows run across the strip width. Interior cells have 8 neighbours; row-edge cells have 5 (the strip edges are real boundaries); seam cells have 8 neighbours but 3 of them come from the twisted other side.</p>
-  </div>
+  <h2>{{ t['seo_mobius_h2'] }}</h2>
+  <p>{{ t['seo_mobius_p1'] | safe }}</p>
+  <p>{{ t['seo_mobius_p2'] | safe }}</p>
 
-  <div class="info-section">
-    <h2>{{ t.nav_how_to_play }}</h2>
-    <ul>
-      <li><strong>Drag</strong> the strip to rotate it in any direction.</li>
-      <li><strong>Left-click</strong> a cell to reveal it. Empty cells (0) auto-expand through connected empty neighbours, including across the Möbius seam.</li>
-      <li><strong>Right-click</strong> a cell to place a flag (🚩). Right-click again for a question mark (?), and once more to clear it.</li>
-      <li>The <strong>Flag button</strong> puts you in flag mode — left-clicks place/cycle flags instead of revealing cells.</li>
-      <li>The ↺ button resets to a fresh board. Your timer starts on the first click.</li>
-      <li>Win by revealing every non-mine cell.</li>
-    </ul>
-  </div>
+  <div class="landing-seo-grid">
 
-  <div class="info-section">
-    <h2>Board Sizes</h2>
-    <ul>
-      <li><strong>Beginner —</strong> 4 wide × 40 long, 160 total cells, 16 mines (10%). No-Guess mode available.</li>
-      <li><strong>Intermediate —</strong> 8 wide × 80 long, 640 total cells, 64 mines (10%). No-Guess mode available.</li>
-      <li><strong>Expert —</strong> 16 wide × 160 long, 2560 total cells, 256 mines (10%). A long strip designed for extended play.</li>
-    </ul>
-  </div>
+    <section class="landing-seo-section">
+      <h2>{{ t.nav_how_to_play }}</h2>
+      <ul>
+        <li>{{ t['seo_mobius_htp_li1'] | safe }}</li>
+        <li>{{ t['seo_mobius_htp_li2'] | safe }}</li>
+        <li>{{ t['seo_mobius_htp_li3'] | safe }}</li>
+        <li>{{ t['seo_mobius_htp_li4'] | safe }}</li>
+        <li>{{ t['seo_mobius_htp_li5'] | safe }}</li>
+        <li>{{ t['seo_mobius_htp_li6'] | safe }}</li>
+      </ul>
+    </section>
 
-  <div class="info-section">
-    <h2>The Möbius Twist</h2>
-    <p>At column 0 and column L-1 (the seam where the strip joins), adjacency crosses to the opposite side with the row index flipped. If you are in row r at the seam, your neighbours across the seam are in row (W-1-r) — the mirror row. This means a cell in row 0 is adjacent to a cell in row W-1 across the seam, and a cell in the middle rows is adjacent to a cell equally distant from the opposite edge.</p>
-    <p>Strategically, this creates unexpected connections. A chain of empty cells can flood-fill across the seam and reappear on the other side of the strip in mirrored rows. High-numbered cells near the seam are constrained by neighbours on both sides of the twist — rotate the strip to see both contributions before flagging.</p>
-  </div>
+    <section class="landing-seo-section">
+      <h2>{{ t['seo_mobius_sizes_h2'] }}</h2>
+      <ul>
+        <li>{{ t['seo_mobius_sizes_li1'] | safe }}</li>
+        <li>{{ t['seo_mobius_sizes_li2'] | safe }}</li>
+        <li>{{ t['seo_mobius_sizes_li3'] | safe }}</li>
+      </ul>
+    </section>
 
-  <div class="info-section">
-    <h2>No-Guess Mode</h2>
-    <p>When No-Guess is enabled (Beginner and Intermediate only), the board is guaranteed to be solvable using logic alone — no guessing required. The generator uses constraint propagation and retries up to 200 times to find a valid layout. If no solvable board is found, it falls back to a random board.</p>
+    <section class="landing-seo-section">
+      <h2>{{ t['seo_mobius_twist_h2'] }}</h2>
+      <p>{{ t['seo_mobius_twist_p1'] | safe }}</p>
+      <p>{{ t['seo_mobius_twist_p2'] | safe }}</p>
+    </section>
+
+    <section class="landing-seo-section">
+      <h2>{{ t['seo_mobius_ng_h2'] }}</h2>
+      <p>{{ t['seo_mobius_ng_p1'] | safe }}</p>
+    </section>
+
   </div>
 
 </div>
