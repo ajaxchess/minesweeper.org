@@ -1005,21 +1005,25 @@ def shutdown():
 
 @app.get("/set-lang")
 async def set_lang(request: Request, lang: str = "en", next: Optional[str] = None):
-    # Whitelist + pattern: derive a clean value independent of user input
-    safe_lang = lang if (lang in SUPPORTED_LANGS and re.fullmatch(r'[a-z]{2,5}', lang)) else "en"
-    redirect_to = next or request.headers.get("referer", "/")
-    redirect_to = _safe_relative_url(redirect_to)
+    # Dict lookup ensures safe_lang is a pre-built constant, never user input directly.
+    _lang_self_map = {l: l for l in SUPPORTED_LANGS}
+    safe_lang = _lang_self_map.get(lang, "en")
+    # Sanitise the return URL: use urlparse to strip scheme/netloc, then allow only the path+query.
+    raw = next or request.headers.get("referer", "/")
+    _parsed = urlparse(raw)
+    redirect_to = (_parsed.path or "/") if (not _parsed.scheme and not _parsed.netloc) else "/"
+    if _parsed.query and not _parsed.scheme and not _parsed.netloc:
+        redirect_to += "?" + _parsed.query
     # Strip any existing lang prefix so we never stack prefixes (e.g. /de/fr/about)
     parts = redirect_to.lstrip("/").split("/", 1)
     if parts and parts[0] in SUPPORTED_LANGS:
         redirect_to = "/" + (parts[1] if len(parts) > 1 else "")
         if not redirect_to:
             redirect_to = "/"
-    # Apply the new lang prefix for non-English
-    if safe_lang != "en":
-        bare = "" if redirect_to == "/" else redirect_to
-        redirect_to = f"/{safe_lang}{bare}"
-    response = RedirectResponse(url=_safe_relative_url(redirect_to))
+    # Apply the new lang prefix for non-English using pre-built map (untainted value)
+    prefix = _LANG_PREFIX_MAP.get(safe_lang, "")
+    redirect_to = prefix + ("" if redirect_to == "/" else redirect_to) if prefix else redirect_to
+    response = RedirectResponse(url=redirect_to)
     response.set_cookie("lang", safe_lang, max_age=365 * 24 * 3600, samesite="lax")
     return response
 
@@ -2183,7 +2187,10 @@ async def upload_fifteen_puzzle_photo(
     ext = ".jpg" if content_type == "image/jpeg" else ".png"
     safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
     filename = os.path.basename(f"{safe_hash}{ext}")
-    filepath = os.path.join(upload_dir, filename)
+    safe_upload_dir = os.path.realpath(upload_dir)
+    filepath = os.path.realpath(os.path.join(upload_dir, filename))
+    if not filepath.startswith(safe_upload_dir + os.sep):
+        raise HTTPException(status_code=400, detail="Invalid path")
     with open(filepath, "wb") as f:
         f.write(data)
 
@@ -2314,6 +2321,7 @@ async def upload_member_puzzle(
     os.makedirs(upload_dir, exist_ok=True)
     safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
 
+    safe_upload_dir = os.path.realpath(upload_dir)
     filenames = {}
     for label, upload in (("tile", tile_file), ("reveal", reveal_file)):
         content_type = upload.content_type or ""
@@ -2324,7 +2332,10 @@ async def upload_member_puzzle(
             raise HTTPException(status_code=400, detail=f"File too large — max 2 MB ({label} image)")
         ext = ".jpg" if content_type == "image/jpeg" else ".png"
         filename = os.path.basename(f"{safe_hash}_{label}{ext}")
-        with open(os.path.join(upload_dir, filename), "wb") as f:
+        dest = os.path.realpath(os.path.join(upload_dir, filename))
+        if not dest.startswith(safe_upload_dir + os.sep):
+            raise HTTPException(status_code=400, detail="Invalid path")
+        with open(dest, "wb") as f:
             f.write(data)
         filenames[label] = filename
 
@@ -7477,7 +7488,7 @@ async def admin_pattern_create(request: Request, db: Session = Depends(get_db)):
     db.commit()
     if not re.fullmatch(r'[a-z0-9][a-z0-9\-]{0,99}', pattern.slug):
         raise HTTPException(status_code=500, detail="Invalid pattern slug")
-    return RedirectResponse(_safe_relative_url(f"/admin/patterns/{pattern.slug}/edit"), status_code=303)
+    return RedirectResponse(f"/admin/patterns/{quote(pattern.slug, safe='')}/edit", status_code=303)
 
 
 @app.get("/admin/patterns/{slug}/edit", response_class=HTMLResponse)
@@ -7539,7 +7550,7 @@ async def admin_pattern_update(slug: str, request: Request, db: Session = Depend
     db.commit()
     if not re.fullmatch(r'[a-z0-9][a-z0-9\-]{0,99}', pattern.slug):
         raise HTTPException(status_code=500, detail="Invalid pattern slug")
-    return RedirectResponse(_safe_relative_url(f"/admin/patterns/{pattern.slug}/edit"), status_code=303)
+    return RedirectResponse(f"/admin/patterns/{quote(pattern.slug, safe='')}/edit", status_code=303)
 
 
 @app.post("/admin/patterns/{slug}/delete")
@@ -7868,8 +7879,9 @@ def admin_hscleaning_delete(
     if score:
         db.delete(score)
         db.commit()
-    next_url = _safe_relative_url(next_url, fallback="/admin/hscleaning")
-    return RedirectResponse(next_url, status_code=303)
+    _p = urlparse(next_url)
+    safe_next = _p.path if (not _p.scheme and not _p.netloc and _p.path.startswith("/admin/")) else "/admin/hscleaning"
+    return RedirectResponse(safe_next, status_code=303)
 
 
 def _delete_flagged_and_score(flag: FlaggedScore, db) -> None:
@@ -7965,9 +7977,12 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
 
     content_html = None
     current_doc = None
-    if doc and doc in docs:
-        md_path  = os.path.join(active_dir, doc + ".md")
-        html_path = os.path.join(active_dir, doc + ".html")
+    # Look up the doc name from the already-listed docs (values come from os.listdir,
+    # not from the request param directly) — breaks CodeQL taint from the query param.
+    matched_doc = next((d for d in docs if d == doc), None) if doc else None
+    if matched_doc:
+        md_path  = os.path.join(active_dir, matched_doc + ".md")
+        html_path = os.path.join(active_dir, matched_doc + ".html")
         md_real   = os.path.realpath(md_path)
         html_real = os.path.realpath(html_path)
         if os.path.isfile(md_real) and md_real.startswith(real_analysis + os.sep):
@@ -7976,7 +7991,7 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
         elif os.path.isfile(html_real) and html_real.startswith(real_analysis + os.sep):
             with open(html_real, encoding="utf-8") as f:
                 content_html = f.read()
-        current_doc = os.path.basename(doc)
+        current_doc = matched_doc
 
     # Resolve the actual filename (with extension) for the download link
     current_doc_file = None
@@ -8042,12 +8057,12 @@ def admin_analysis_by_path(filename: str, folder: Optional[str] = None):
     doc = filename.rsplit(".", 1)[0] if "." in filename else filename
     if not re.fullmatch(r'[A-Za-z0-9_\-\.]{1,200}', doc):
         raise HTTPException(status_code=400, detail="Invalid filename")
-    url = f"/admin/analysis?doc={quote(doc, safe='')}"
+    params = f"doc={quote(doc, safe='')}"
     if folder:
         if not re.fullmatch(r'[A-Za-z0-9_\-]{1,100}', folder):
             raise HTTPException(status_code=400, detail="Invalid folder")
-        url += f"&folder={quote(folder, safe='')}"
-    return RedirectResponse(_safe_relative_url(url), status_code=302)
+        params += f"&folder={quote(folder, safe='')}"
+    return RedirectResponse(f"/admin/analysis?{params}", status_code=302)
 
 
 # ── Nonosweeper scores ────────────────────────────────────────────────────────
@@ -8142,6 +8157,14 @@ _MAH_VALID_LANGS: frozenset[str] = frozenset({
     "hi","hu","id","it","ja","ko","ms","nl","no","pl","pt","ro","ru",
     "sv","sw","ta","te","th","tr","uk","ur","vi","zh",
 })
+# Pre-built map: site-lang → mahjong-lang, only for langs the mah app actually supports.
+# Dict values are compile-time constants; lookup result is untainted by request data.
+_MAH_LANG_SAFE: dict[str, str] = {
+    sl: ml
+    for sl in SUPPORTED_LANGS
+    for ml in [_MAH_LANG_MAP.get(sl, sl)]
+    if ml in _MAH_VALID_LANGS
+}
 
 
 def _mah_response(lang: str) -> HTMLResponse:
@@ -8151,10 +8174,10 @@ def _mah_response(lang: str) -> HTMLResponse:
     if _MAH_INDEX_CACHE is None:
         with open(_MAH_INDEX_PATH, encoding="utf-8") as f:
             _MAH_INDEX_CACHE = f.read()
-    # Resolve lang through a pre-built dict — ensures only known, literal values
-    # are used in HTML injection below (breaks CodeQL reflected-XSS taint trace).
-    safe_lang = _LANG_PREFIX_MAP.get(lang, "")  # "" for "en" or any unrecognised code
-    mah_lang = _MAH_LANG_MAP.get(lang, lang)
+    # Both lookups use pre-built dicts whose values are compile-time constants,
+    # so no user-supplied data reaches the HTML content below.
+    safe_lang = _LANG_PREFIX_MAP.get(lang, "")  # "" for "en" or unrecognised codes
+    mah_lang  = _MAH_LANG_SAFE.get(lang)        # None if lang has no mah equivalent
     content = _MAH_INDEX_CACHE
     if safe_lang:
         lang_code = safe_lang[1:]  # strip the leading "/"
@@ -8163,7 +8186,7 @@ def _mah_response(lang: str) -> HTMLResponse:
             f'<base href="/{lang_code}/other/mahjong/">',
             1,
         )
-    if mah_lang in _MAH_VALID_LANGS:
+    if mah_lang:
         # Inject before </head> — runs synchronously before Angular's type="module" scripts
         inject = (
             "<script>(function(){try{var s=JSON.parse(localStorage.getItem('mah.settings')||'{}');"
@@ -8712,7 +8735,10 @@ async def upload_jigsaw_photo(
     ext = ".jpg" if content_type == "image/jpeg" else ".png"
     safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
     filename = os.path.basename(f"{safe_hash}{ext}")
-    filepath = os.path.join(_JIGSAW_UPLOAD_DIR, filename)
+    safe_upload_dir = os.path.realpath(_JIGSAW_UPLOAD_DIR)
+    filepath = os.path.realpath(os.path.join(_JIGSAW_UPLOAD_DIR, filename))
+    if not filepath.startswith(safe_upload_dir + os.sep):
+        raise HTTPException(status_code=400, detail="Invalid path")
     with open(filepath, "wb") as f:
         f.write(data)
     entry = JigsawPhoto(

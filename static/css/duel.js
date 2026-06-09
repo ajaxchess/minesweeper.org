@@ -202,9 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const newCells   = msg.newly_revealed;
         const boardValsM = msg.board_values;
         newCells.forEach(([r, c]) => {
-          revealed[r][c]  = true;
-          boardVals[r][c] = boardValsM[`${r},${c}`];
-          renderCell(r, c);
+          const ri = r | 0, ci = c | 0;
+          revealed[ri][ci]  = true;
+          boardVals[ri][ci] = boardValsM[`${ri},${ci}`];
+          renderCell(ri, ci);
         });
         if (msg.exploded) {
           exploded = true;
