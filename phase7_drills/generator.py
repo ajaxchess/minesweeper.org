@@ -342,6 +342,9 @@ def _try_generate_l5(seed: int) -> Optional[DrillBoard]:
     _place_random_mines(board, rng)
     _make_starter_reveal(board, rng)
 
+    # Skill is in *reading the frontier* — guessing in untouched territory is
+    # a coin flip, not a learned reflex. Restrict the candidate set to cells
+    # that touch the revealed area.
     best_cell, best_size = _find_best_l5(board)
     if best_cell is None or best_size < MIN_L5_OPENING:
         return None
@@ -351,6 +354,8 @@ def _try_generate_l5(seed: int) -> Optional[DrillBoard]:
     for r in range(board.height):
         for c in range(board.width):
             if (r, c) in board.revealed or (r, c) in board.mines:
+                continue
+            if not _is_on_frontier(board, r, c):
                 continue
             sz = _flood_size(board, r, c)
             if sz >= threshold:
@@ -364,17 +369,37 @@ def _try_generate_l5(seed: int) -> Optional[DrillBoard]:
 
 
 def _find_best_l5(board: DrillBoard) -> tuple[Optional[tuple[int, int]], int]:
+    """Best opening reachable from a frontier cell.
+
+    Frontier = unrevealed cell that has at least one revealed neighbour. This
+    is the cell type the player can actually reason about — picks far from
+    the frontier are guesses, not recognition.
+    """
     best_cell: Optional[tuple[int, int]] = None
     best_size = 0
     for r in range(board.height):
         for c in range(board.width):
             if (r, c) in board.revealed or (r, c) in board.mines:
                 continue
+            if not _is_on_frontier(board, r, c):
+                continue
             sz = _flood_size(board, r, c)
             if sz > best_size:
                 best_size = sz
                 best_cell = (r, c)
     return best_cell, best_size
+
+
+def _is_on_frontier(board: DrillBoard, r: int, c: int) -> bool:
+    """True if (r, c) is an unrevealed cell adjacent to a revealed cell."""
+    if (r, c) in board.revealed:
+        return False
+    for nr, nc in _neighbors(r, c):
+        if not (0 <= nr < board.height and 0 <= nc < board.width):
+            continue
+        if (nr, nc) in board.revealed:
+            return True
+    return False
 
 
 # ─────────────────────────────────────────────────────────────────────────────
