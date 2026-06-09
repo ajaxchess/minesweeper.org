@@ -787,7 +787,6 @@ class WC2026Score(Base):
 
     __table_args__ = (
         Index("ix_wc2026_scores_fan_flag", "fan_flag"),
-        Index("ix_wc2026_scores_guest_token", "guest_token"),
     )
 
 # ── Server Stats model (hourly snapshots) ─────────────────────────────────────
