@@ -59,36 +59,19 @@
   </nav>
 
   <h1 class="tz-content-h1">{{ t['tz_howto_h1'] }}</h1>
-  <p class="tz-content-lead">
-    Tentaizu is a pure-logic puzzle — no guessing, no luck, no randomness. This guide walks
-    you through the rules, controls, and core solving techniques so you can tackle any
-    daily puzzle with confidence.
-  </p>
+  <p class="tz-content-lead">{{ t['tz_howto_lead'] }}</p>
 
   <a href="/tentaizu" class="tz-play-cta">{{ t.common_play_today_puzzle }}</a>
 
   <section class="tz-section">
-    <h2>The Board</h2>
-    <p>
-      Every Tentaizu puzzle uses the same format: a <strong>7×7 grid of 49 cells</strong>.
-      Exactly <strong>10 of those cells hide mines</strong>. The remaining 39 are safe.
-      Some cells are pre-revealed with a number from 0 to 8. These numbers are your only
-      clues — use them to deduce where every mine is hidden.
-    </p>
-    <p>
-      Unlike Minesweeper, the board does not change as you play. You never click to reveal
-      a new cell. All clues are visible from the very first moment; your job is to interpret
-      them.
-    </p>
+    <h2>{{ t['tz_howto_board_h2'] }}</h2>
+    <p>{{ t['tz_howto_board_p1'] | safe }}</p>
+    <p>{{ t['tz_howto_board_p2'] }}</p>
   </section>
 
   <section class="tz-section">
-    <h2>Reading the Number Clues</h2>
-    <p>
-      Each number on the board tells you the <strong>exact count of mines</strong> in the
-      eight cells surrounding it (horizontally, vertically, and diagonally). This is
-      identical to the mine-count logic in Minesweeper.
-    </p>
+    <h2>{{ t['tz_howto_clues_h2'] }}</h2>
+    <p>{{ t['tz_howto_clues_p1'] | safe }}</p>
     <div class="tz-rule-example">
       <div class="tz-rule-row">
         <div class="tz-ex-cell tz-ex-hidden"></div>
@@ -106,123 +89,59 @@
         <div class="tz-ex-cell tz-ex-hidden"></div>
       </div>
     </div>
-    <p>
-      The <strong>2</strong> above means exactly 2 of its 8 neighbors contain mines.
-      At the corner of the board, a cell has only 3 neighbors; on an edge, only 5.
-      The same counting rule applies — the number never exceeds the cell's actual
-      neighbor count.
-    </p>
+    <p>{{ t['tz_howto_clues_p2'] | safe }}</p>
   </section>
 
   <section class="tz-section">
-    <h2>Controls</h2>
-    <p>
-      Every unknown cell cycles through three states when you interact with it:
-    </p>
+    <h2>{{ t['tz_howto_controls_h2'] }}</h2>
+    <p>{{ t['tz_howto_controls_p1'] }}</p>
     <ul class="tz-list">
-      <li>
-        <strong>⭐ Mine flag</strong> — you believe this cell is a mine.
-      </li>
-      <li>
-        <strong>✓ Safe mark</strong> — you have logically confirmed this cell is safe.
-      </li>
-      <li>
-        <strong>? Unknown</strong> — not yet determined; the starting state of all cells.
-      </li>
+      <li>{{ t['tz_howto_controls_li1'] | safe }}</li>
+      <li>{{ t['tz_howto_controls_li2'] | safe }}</li>
+      <li>{{ t['tz_howto_controls_li3'] | safe }}</li>
     </ul>
-    <p>
-      <strong>Click</strong> (or tap on mobile) to advance the state forward.
-      There is no penalty for incorrect flags — the puzzle only checks your answer
-      when you've placed all 10 mine flags. Keep refining your deductions until
-      all 10 mines are correctly identified and no safe cells are mistakenly flagged.
-    </p>
+    <p>{{ t['tz_howto_controls_p2'] | safe }}</p>
   </section>
 
   <section class="tz-section">
-    <h2>Win Condition</h2>
-    <p>
-      You win when <strong>exactly the 10 mine cells are flagged as mines</strong> and
-      no safe cells are flagged. The moment this condition is met, the puzzle registers
-      as solved and you can submit your time to the daily leaderboard.
-    </p>
-    <p>
-      The puzzle does not end on a wrong flag — you will not accidentally trigger a mine.
-      This means you can test hypotheses: if a tentative flag leads to a contradiction,
-      you know that cell must be safe.
-    </p>
+    <h2>{{ t['tz_howto_win_h2'] }}</h2>
+    <p>{{ t['tz_howto_win_p1'] | safe }}</p>
+    <p>{{ t['tz_howto_win_p2'] }}</p>
   </section>
 
   <section class="tz-section">
-    <h2>Step-by-Step: Your First Solve</h2>
+    <h2>{{ t['tz_howto_steps_h2'] }}</h2>
     <ol class="tz-list tz-steps">
-      <li>
-        <strong>Scan for 0s and 8s first.</strong>
-        A clue of <em>0</em> means every neighbor is safe — mark them all ✓.
-        A clue of <em>8</em> means every neighbor is a mine — flag them all ⭐.
-        These are free deductions that cost no reasoning.
-      </li>
-      <li>
-        <strong>Look for satisfied constraints.</strong>
-        If a clue cell already has exactly as many mine flags around it as its number,
-        all remaining unknown neighbors must be safe. Mark them ✓ with confidence.
-      </li>
-      <li>
-        <strong>Look for forced mines.</strong>
-        If a clue cell has exactly as many unknown neighbors as its remaining mine count
-        (number minus flags already placed), every one of those unknowns must be a mine.
-        Flag them all.
-      </li>
-      <li>
-        <strong>Track the global count.</strong>
-        You have 10 mines total. Subtract your current flag count to know how many remain.
-        As the number gets small (2, 1), the remaining unknowns are heavily constrained
-        and often resolve quickly.
-      </li>
-      <li>
-        <strong>Compare overlapping clues.</strong>
-        When two number cells share some neighbors, subtract one constraint from the other.
-        If clue A = 2 and clue B = 1, and B's mine must lie among A's neighbors too,
-        then A has exactly one mine in its <em>exclusive</em> neighbors. This subtraction
-        technique is the key to cracking harder puzzles.
-      </li>
-      <li>
-        <strong>Repeat until all 10 mines are flagged.</strong>
-        Every Tentaizu puzzle is designed to be fully solvable by these logical steps alone.
-        If you feel stuck, look for a clue whose unknown neighbor count equals its remaining
-        mine count — that clue will unlock the next deduction.
-      </li>
+      <li>{{ t['tz_howto_steps_li1'] | safe }}</li>
+      <li>{{ t['tz_howto_steps_li2'] | safe }}</li>
+      <li>{{ t['tz_howto_steps_li3'] | safe }}</li>
+      <li>{{ t['tz_howto_steps_li4'] | safe }}</li>
+      <li>{{ t['tz_howto_steps_li5'] | safe }}</li>
+      <li>{{ t['tz_howto_steps_li6'] | safe }}</li>
     </ol>
   </section>
 
   <section class="tz-section">
-    <h2>Daily Puzzle vs. Random Mode</h2>
-    <p>
-      The <strong>Daily puzzle</strong> is the same for every player worldwide. It resets
-      at midnight UTC. Solve it to post your time to the global leaderboard and compare
-      results with other players.
-    </p>
-    <p>
-      <strong>Random mode</strong> generates a fresh unique-solution puzzle on demand.
-      Use it to practice techniques, warm up before the daily, or simply keep playing
-      after you've already solved the day's puzzle.
-    </p>
+    <h2>{{ t['tz_howto_daily_h2'] }}</h2>
+    <p>{{ t['tz_howto_daily_p1'] | safe }}</p>
+    <p>{{ t['tz_howto_daily_p2'] | safe }}</p>
   </section>
 
   <nav class="tz-subnav" aria-label="More Tentaizu guides">
     <a href="/tentaizu" class="tz-subnav-card">
       <span class="tz-subnav-icon">🔢</span>
-      <strong>Play Tentaizu</strong>
-      <span>Today's daily puzzle</span>
+      <strong>{{ t['tz_howto_subnav_play'] }}</strong>
+      <span>{{ t['tz_howto_subnav_play_desc'] }}</span>
     </a>
     <a href="/tentaizu/strategy" class="tz-subnav-card">
       <span class="tz-subnav-icon">🧠</span>
-      <strong>Strategy Guide</strong>
-      <span>Advanced solving techniques</span>
+      <strong>{{ t['tz_howto_subnav_strat'] }}</strong>
+      <span>{{ t['tz_howto_subnav_strat_desc'] }}</span>
     </a>
     <a href="/tentaizu/archive" class="tz-subnav-card">
       <span class="tz-subnav-icon">📅</span>
-      <strong>Puzzle Archive</strong>
-      <span>Replay past daily puzzles</span>
+      <strong>{{ t['tz_howto_subnav_arch'] }}</strong>
+      <span>{{ t['tz_howto_subnav_arch_desc'] }}</span>
     </a>
   </nav>
 

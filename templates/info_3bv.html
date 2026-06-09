@@ -33,42 +33,22 @@
   <div class="info-body">
 
     <section class="info-section">
-      <h2>Definition</h2>
-      <p>
-        <strong>3BV</strong> (pronounced "three-BV") stands for <em>Bechtel's Board Benchmark Value</em>,
-        named after Nick Bechtel who introduced it to the Minesweeper community. It measures the
-        <strong>minimum number of left-clicks</strong> required to clear a board completely —
-        without using flags — assuming perfect play.
-      </p>
-      <p>
-        A higher 3BV means a harder board: more individual clicks are required even from a player
-        who knows exactly where every mine is.
-      </p>
+      <h2>{{ t['info3bv_def_h2'] }}</h2>
+      <p>{{ t['info3bv_def_p1'] | safe }}</p>
+      <p>{{ t['info3bv_def_p2'] }}</p>
     </section>
 
     <section class="info-section">
-      <h2>How 3BV is Calculated</h2>
-      <p>Every non-mine cell on a Minesweeper board falls into one of two categories:</p>
+      <h2>{{ t['info3bv_how_h2'] }}</h2>
+      <p>{{ t['info3bv_how_p1'] }}</p>
       <ul>
-        <li>
-          <strong>Opening cells</strong> — cells with a value of <em>0</em> (no adjacent mines).
-          Clicking any cell in a connected group of zeros reveals the entire group and all its
-          numbered border cells in a single click. Each such connected region counts as
-          <strong>1 point</strong> toward 3BV, regardless of how many cells it contains.
-        </li>
-        <li>
-          <strong>Isolated numbered cells</strong> — cells with a value of 1–8 that are
-          <em>not</em> adjacent to any zero-cell opening. These cannot be revealed by flood-fill;
-          each one requires its own click. Each isolated numbered cell counts as
-          <strong>1 point</strong> toward 3BV.
-        </li>
+        <li>{{ t['info3bv_how_li1'] | safe }}</li>
+        <li>{{ t['info3bv_how_li2'] | safe }}</li>
       </ul>
-      <p>
-        Therefore: <code>3BV = (number of distinct openings) + (isolated numbered cells)</code>
-      </p>
+      <p>{{ t['info3bv_how_formula'] | safe }}</p>
 
       <div class="info-example">
-        <h3>Example — 4×4 board</h3>
+        <h3>{{ t['info3bv_ex_h3'] }}</h3>
         <div class="info-example-grid">
           <div class="ie-row">
             <span class="ie-cell ie-num1">1</span>
@@ -95,94 +75,45 @@
             <span class="ie-cell ie-open">·</span>
           </div>
         </div>
-        <p class="info-example-caption">
-          The bottom-left opening (all the <code>·</code> cells) is 1 click. The four numbered
-          cells along the boundary are revealed by that click. The cell at (0,2) is an isolated
-          <code>1</code> — it requires 1 additional click. <strong>3BV = 2.</strong>
-        </p>
+        <p class="info-example-caption">{{ t['info3bv_ex_caption'] | safe }}</p>
       </div>
 
     </section>
 
     <section class="info-section">
-      <h2>Derived Metrics</h2>
+      <h2>{{ t['info3bv_metrics_h2'] }}</h2>
       <dl class="info-dl">
-        <dt>3BV/s (3BV per second)</dt>
-        <dd>
-          Speed metric: <code>3BV ÷ time_in_seconds</code>. Measures how many "clicks worth of
-          board" a player clears per second. The world's fastest players exceed 10 3BV/s on
-          Expert boards.
-        </dd>
-        <dt>Efficiency (%)</dt>
-        <dd>
-          <code>3BV ÷ total_clicks × 100</code>. Measures how economically a player used
-          their clicks. 100 % efficiency means every click contributed directly to clearing
-          the board. Chording (revealing numbered cells via a surrounding flag cluster)
-          can push efficiency above 100 % if done skillfully.
-        </dd>
+        <dt>{{ t['info3bv_metrics_dt1'] }}</dt>
+        <dd>{{ t['info3bv_metrics_dd1'] | safe }}</dd>
+        <dt>{{ t['info3bv_metrics_dt2'] }}</dt>
+        <dd>{{ t['info3bv_metrics_dd2'] | safe }}</dd>
       </dl>
     </section>
 
     <section class="info-section">
-      <h2>3BV and Board Difficulty</h2>
-      <p>
-        For a fixed board size, 3BV varies with mine count in a characteristic curve:
-      </p>
+      <h2>{{ t['info3bv_diff_h2'] }}</h2>
+      <p>{{ t['info3bv_diff_p1'] }}</p>
       <ul>
-        <li>
-          <strong>Very few mines</strong> — almost all cells are zero-value openings. One click
-          reveals nearly the entire board. <em>3BV ≈ 1.</em>
-        </li>
-        <li>
-          <strong>Moderate mines</strong> — the board is divided into several opening regions
-          plus many isolated numbered cells. 3BV is highest here.
-        </li>
-        <li>
-          <strong>Many mines</strong> — no opening regions form; every non-mine cell is
-          adjacent to at least one mine. 3BV = number of non-mine cells, but there are few
-          non-mine cells left.
-        </li>
+        <li>{{ t['info3bv_diff_li1'] | safe }}</li>
+        <li>{{ t['info3bv_diff_li2'] | safe }}</li>
+        <li>{{ t['info3bv_diff_li3'] | safe }}</li>
       </ul>
-      <p>
-        Average 3BV values for the standard presets: Beginner (9×9, 10 mines) ~15,
-        Intermediate (16×16, 40 mines) ~65, Expert (16×30, 99 mines) ~174. The maximum
-        possible 3BV equals the number of non-mine cells — achieved when every non-mine
-        cell is adjacent to a mine.
-      </p>
+      <p>{{ t['info3bv_diff_p2'] }}</p>
     </section>
 
     <section class="info-section">
-      <h2>Topology Effects</h2>
-      <p>
-        On <strong>Cylinder</strong> boards (left↔right wrap) and <strong>Toroid</strong>
-        boards (all-edges wrap), every cell has more neighbors. This generally increases the
-        likelihood that zero-value openings form, which <em>lowers</em> 3BV compared to the
-        same board in Standard topology — the same mines produce larger flood-fill regions.
-        You can explore these effects in the calculator below.
-      </p>
+      <h2>{{ t['info3bv_topo_h2'] }}</h2>
+      <p>{{ t['info3bv_topo_p1'] | safe }}</p>
     </section>
 
     <section class="info-section">
-      <h2>Experimenting with 3BV</h2>
-      <p>
-        The best way to develop an intuition for 3BV is to design boards yourself.
-        The <a href="/variants/board-generator" class="info-link">Board Generator</a>
-        lets you place mines on a grid of any size and instantly see the resulting 3BV
-        for Standard, Cylinder, and Toroid topologies — updating live as you add or
-        remove mines. You can also open any generated board directly as a
-        <a href="/mosaic/custom/" class="info-link">Mosaic puzzle</a> or share it via
-        the replay link.
-      </p>
-      <p>
-        As an example, here is a 9×9 board with 10 mines arranged to achieve the
-        <strong>maximum possible 3BV</strong> for that mine count — every non-mine cell
-        is adjacent to at least one mine, so there are no openings and every cell must
-        be clicked individually:
-      </p>
+      <h2>{{ t['info3bv_exp_h2'] }}</h2>
+      <p>{{ t['info3bv_exp_p1'] | safe }}</p>
+      <p>{{ t['info3bv_exp_p2'] | safe }}</p>
       <p>
         <a href="/variants/replay/?rows=9&cols=9&mines=10&hash=ACRBACAJAABJAAA%3D"
            class="info-link info-link-prominent">
-          ▶ Play the maximum-3BV Beginner board (9×9, 10 mines)
+          {{ t['info3bv_exp_link'] }}
         </a>
       </p>
     </section>
@@ -191,21 +122,21 @@
 
   <!-- ── Calculator ───────────────────────────────────────────────────────── -->
   <div class="calc-section">
-    <h2 class="calc-title">Max 3BV Calculator</h2>
+    <h2 class="calc-title">{{ t['info3bv_maxcalc_h2'] }}</h2>
     <p class="calc-subtitle">
-      For each mine count, the chart shows the highest 3BV observed across
-      <strong id="sample-count-label">100</strong> randomly generated boards.
-      This empirical maximum approaches the true maximum as sample count grows.
+      {{ t['info3bv_maxcalc_sub_pre'] }}
+      <strong id="sample-count-label">100</strong>
+      {{ t['info3bv_maxcalc_sub_post'] }}
     </p>
 
     <div class="calc-controls">
-      <label class="calc-label">Rows
+      <label class="calc-label">{{ t['info3bv_label_rows'] }}
         <input id="calc-rows" type="number" min="3" max="30" value="9" class="calc-input">
       </label>
-      <label class="calc-label">Cols
+      <label class="calc-label">{{ t['info3bv_label_cols'] }}
         <input id="calc-cols" type="number" min="3" max="50" value="9" class="calc-input">
       </label>
-      <label class="calc-label">Samples / mine count
+      <label class="calc-label">{{ t['info3bv_label_samples'] }}
         <select id="calc-samples" class="calc-input">
           <option value="50">50 (fast)</option>
           <option value="100" selected>100</option>
@@ -213,25 +144,25 @@
           <option value="500">500 (slow)</option>
         </select>
       </label>
-      <button id="calc-run" class="calc-btn">▶ Calculate</button>
+      <button id="calc-run" class="calc-btn">{{ t['info3bv_calc_btn'] }}</button>
     </div>
 
     <div class="calc-toggles">
       <label class="calc-toggle">
         <input type="checkbox" id="tog-std" checked>
-        <span class="tog-swatch tog-std"></span> Standard
+        <span class="tog-swatch tog-std"></span> {{ t['info3bv_tog_std'] }}
       </label>
       <label class="calc-toggle">
         <input type="checkbox" id="tog-cyl" checked>
-        <span class="tog-swatch tog-cyl"></span> Cylinder
+        <span class="tog-swatch tog-cyl"></span> {{ t['info3bv_tog_cyl'] }}
       </label>
       <label class="calc-toggle">
         <input type="checkbox" id="tog-tor" checked>
-        <span class="tog-swatch tog-tor"></span> Toroid
+        <span class="tog-swatch tog-tor"></span> {{ t['info3bv_tog_tor'] }}
       </label>
       <label class="calc-toggle">
         <input type="checkbox" id="tog-theory">
-        <span class="tog-swatch tog-theory"></span> Theoretical max
+        <span class="tog-swatch tog-theory"></span> {{ t['info3bv_tog_theory'] }}
       </label>
     </div>
 
@@ -244,31 +175,29 @@
       <canvas id="bbbv-chart"></canvas>
     </div>
 
-    <p id="calc-hint" class="calc-hint">
-      Set rows, columns, and number of samples, then click <strong>Calculate</strong>.
-    </p>
+    <p id="calc-hint" class="calc-hint">{{ t['info3bv_maxcalc_hint'] | safe }}</p>
   </div>
 
   <!-- ── Distribution chart ──────────────────────────────────────────────── -->
   <div class="calc-section">
-    <h2 class="calc-title">3BV Distribution</h2>
+    <h2 class="calc-title">{{ t['info3bv_dist_h2'] }}</h2>
     <p class="calc-subtitle">
-      For a fixed board size and mine count, the chart shows how 3BV values are
-      distributed across <strong id="dist-sample-count-label">500</strong> randomly
-      generated boards — one bar per unique 3BV value.
+      {{ t['info3bv_dist_sub_pre'] }}
+      <strong id="dist-sample-count-label">500</strong>
+      {{ t['info3bv_dist_sub_post'] }}
     </p>
 
     <div class="calc-controls">
-      <label class="calc-label">Rows
+      <label class="calc-label">{{ t['info3bv_label_rows'] }}
         <input id="dist-rows" type="number" min="3" max="30" value="9" class="calc-input">
       </label>
-      <label class="calc-label">Cols
+      <label class="calc-label">{{ t['info3bv_label_cols'] }}
         <input id="dist-cols" type="number" min="3" max="50" value="9" class="calc-input">
       </label>
-      <label class="calc-label">Mines
+      <label class="calc-label">{{ t['info3bv_label_mines'] }}
         <input id="dist-mines" type="number" min="1" max="899" value="10" class="calc-input">
       </label>
-      <label class="calc-label">Samples
+      <label class="calc-label">{{ t['info3bv_label_samples_n'] }}
         <select id="dist-samples" class="calc-input">
           <option value="200">200 (fast)</option>
           <option value="500" selected>500</option>
@@ -276,21 +205,21 @@
           <option value="2000">2 000 (slow)</option>
         </select>
       </label>
-      <button id="dist-run" class="calc-btn">▶ Calculate</button>
+      <button id="dist-run" class="calc-btn">{{ t['info3bv_calc_btn'] }}</button>
     </div>
 
     <div class="calc-toggles">
       <label class="calc-toggle">
         <input type="checkbox" id="dist-tog-std" checked>
-        <span class="tog-swatch tog-std"></span> Standard
+        <span class="tog-swatch tog-std"></span> {{ t['info3bv_tog_std'] }}
       </label>
       <label class="calc-toggle">
         <input type="checkbox" id="dist-tog-cyl" checked>
-        <span class="tog-swatch tog-cyl"></span> Cylinder
+        <span class="tog-swatch tog-cyl"></span> {{ t['info3bv_tog_cyl'] }}
       </label>
       <label class="calc-toggle">
         <input type="checkbox" id="dist-tog-tor" checked>
-        <span class="tog-swatch tog-tor"></span> Toroid
+        <span class="tog-swatch tog-tor"></span> {{ t['info3bv_tog_tor'] }}
       </label>
     </div>
 
@@ -303,9 +232,7 @@
       <canvas id="dist-chart"></canvas>
     </div>
 
-    <p id="dist-hint" class="calc-hint">
-      Set board size, mine count, and samples, then click <strong>Calculate</strong>.
-    </p>
+    <p id="dist-hint" class="calc-hint">{{ t['info3bv_dist_hint'] | safe }}</p>
   </div>
 
 </div>

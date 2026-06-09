@@ -36,124 +36,77 @@
   <h1 class="lb-title">{{ t['schulte_htp_h1'] }}</h1>
 
   <div style="text-align:center;margin-bottom:1.5rem;">
-    <a href="/other/schulte/play" class="btn" style="margin:0.25rem;">Play Now</a>
-    <a href="/other/schulte/leaderboard" class="btn" style="margin:0.25rem;">Leaderboard</a>
-    <a href="/other" class="btn" style="margin:0.25rem;">Other Games</a>
+    <a href="/other/schulte/play" class="btn" style="margin:0.25rem;">{{ t['schulte_htp_play_now'] }}</a>
+    <a href="/other/schulte/leaderboard" class="btn" style="margin:0.25rem;">{{ t.nav_leaderboard }}</a>
+    <a href="/other" class="btn" style="margin:0.25rem;">{{ t['other_h1'] }}</a>
   </div>
 
   <div class="help-section">
-    <h2>The Rules</h2>
+    <h2>{{ t['schulte_htp_rules_h2'] }}</h2>
     <ol>
-      <li>Choose a <strong>mode</strong> and a <strong>board size</strong> (3×3 to 10×10).</li>
-      <li>A grid of N×N randomly arranged numbers will appear.</li>
-      <li>
-        <strong>Fix your gaze on the center of the board.</strong> The goal is to find each
-        number using your peripheral vision — not by scanning your eyes around the grid.
-      </li>
-      <li>Tap <strong>1</strong> to start the timer, then tap 2, 3, 4… in order up to N².</li>
-      <li>Tapping the wrong number does nothing — no penalty, just keep looking.</li>
-      <li>When you tap the final number, the timer stops and you can submit your score.</li>
+      <li>{{ t['schulte_htp_rules_li1'] | safe }}</li>
+      <li>{{ t['schulte_htp_rules_li2'] }}</li>
+      <li>{{ t['schulte_htp_rules_li3'] | safe }}</li>
+      <li>{{ t['schulte_htp_rules_li4'] | safe }}</li>
+      <li>{{ t['schulte_htp_rules_li5'] }}</li>
+      <li>{{ t['schulte_htp_rules_li6'] }}</li>
     </ol>
   </div>
 
   <div class="help-section">
-    <h2>The Six Modes</h2>
+    <h2>{{ t['schulte_htp_modes_h2'] }}</h2>
     <table class="lb-table" style="max-width:600px;">
       <thead>
-        <tr><th>Mode</th><th>What changes on a correct tap</th></tr>
+        <tr><th>{{ t['schulte_htp_modes_th1'] }}</th><th>{{ t['schulte_htp_modes_th2'] }}</th></tr>
       </thead>
       <tbody>
-        <tr><td><strong>Normal</strong></td><td>Nothing — tile and number stay visible.</td></tr>
-        <tr><td><strong>Easy</strong></td><td>Cell background disappears; the number floats in space.</td></tr>
-        <tr><td><strong>Blind</strong></td><td>The number disappears; an empty tile remains.</td></tr>
-        <tr><td><strong>Blind + Easy</strong></td><td>Both tile and number vanish — empty space left.</td></tr>
-        <tr><td><strong>Easy Mix</strong></td><td>Cell background disappears <em>and</em> remaining numbers shuffle positions.</td></tr>
-        <tr><td><strong>Mix</strong></td><td>Remaining numbers shuffle to new positions after each tap.</td></tr>
+        <tr><td><strong>Normal</strong></td><td>{{ t['schulte_htp_mode_normal_td'] }}</td></tr>
+        <tr><td><strong>Easy</strong></td><td>{{ t['schulte_htp_mode_easy_td'] }}</td></tr>
+        <tr><td><strong>Blind</strong></td><td>{{ t['schulte_htp_mode_blind_td'] }}</td></tr>
+        <tr><td><strong>Blind + Easy</strong></td><td>{{ t['schulte_htp_mode_blinde_td'] }}</td></tr>
+        <tr><td><strong>Easy Mix</strong></td><td>{{ t['schulte_htp_mode_emix_td'] | safe }}</td></tr>
+        <tr><td><strong>Mix</strong></td><td>{{ t['schulte_htp_mode_mix_td'] }}</td></tr>
       </tbody>
     </table>
     <p style="margin-top:0.75rem;color:var(--text-dim);font-size:0.9rem;">
-      Mix and Easy Mix are the most challenging modes — the target numbers keep moving,
-      forcing your peripheral processing system to constantly re-scan.
+      {{ t['schulte_htp_modes_note'] }}
     </p>
   </div>
 
   <div class="help-section">
-    <h2>Board Sizes</h2>
-    <p>
-      Boards range from <strong>3×3</strong> (9 numbers) to <strong>10×10</strong> (100 numbers).
-      Larger boards require more time and significantly more peripheral field. Start with 4×4 or
-      5×5 and work your way up.
-    </p>
-    <p>
-      <strong>Standard sizes used in training:</strong> 5×5 is the classic Schulte table and
-      the most widely researched size. Athletes often train on 7×7 and 8×8 to push their
-      visual field further.
-    </p>
+    <h2>{{ t['schulte_htp_sizes_h2'] }}</h2>
+    <p>{{ t['schulte_htp_sizes_p1'] | safe }}</p>
+    <p>{{ t['schulte_htp_sizes_p2'] | safe }}</p>
   </div>
 
   <div class="help-section">
-    <h2>Tips for Improvement</h2>
+    <h2>{{ t['schulte_htp_tips_h2'] }}</h2>
     <ul>
-      <li>
-        <strong>Don't move your eyes.</strong> This is the most common mistake. Looking directly
-        at each number defeats the purpose — peripheral vision only develops when you train it
-        under load.
-      </li>
-      <li>
-        <strong>Relax your focus.</strong> A soft, diffuse gaze rather than sharp focus lets
-        you perceive a wider field. Athletes call this "soft eyes."
-      </li>
-      <li>
-        <strong>Practice daily.</strong> Research suggests 5–10 minutes per day over several
-        weeks produces measurable improvements in reading speed and reaction time.
-      </li>
-      <li>
-        <strong>Increase board size gradually.</strong> Master 4×4 before moving to 5×5.
-        A new board size feels dramatically harder at first but adapts quickly.
-      </li>
-      <li>
-        <strong>Try Mix mode.</strong> Even a few sessions on Mix will make Normal feel easy —
-        the constant repositioning forces deeper peripheral adaptation.
-      </li>
+      <li>{{ t['schulte_htp_tips_li1'] | safe }}</li>
+      <li>{{ t['schulte_htp_tips_li2'] | safe }}</li>
+      <li>{{ t['schulte_htp_tips_li3'] | safe }}</li>
+      <li>{{ t['schulte_htp_tips_li4'] | safe }}</li>
+      <li>{{ t['schulte_htp_tips_li5'] | safe }}</li>
     </ul>
   </div>
 
   <div class="help-section">
-    <h2>Who Uses Schulte Grids?</h2>
+    <h2>{{ t['schulte_htp_who_h2'] }}</h2>
     <ul>
-      <li>
-        <strong>Athletes</strong> — used in professional sports training to improve court vision,
-        field awareness, and split-second decision making. Standard selection test for fighter
-        pilots, racing drivers, and elite military roles.
-      </li>
-      <li>
-        <strong>Seniors</strong> — one of the most well-studied tools for cognitive maintenance.
-        Regular practice supports attention, processing speed, and working memory as we age.
-      </li>
-      <li>
-        <strong>Readers and students</strong> — daily practice of 5–10 minutes can improve
-        reading speed by 20–30% by widening the span of characters captured per fixation.
-      </li>
-      <li>
-        <strong>ADHD</strong> — the structured, immediately rewarding nature of the task helps
-        build sustained attention and reduce distractibility.
-      </li>
+      <li>{{ t['schulte_htp_who_li1'] | safe }}</li>
+      <li>{{ t['schulte_htp_who_li2'] | safe }}</li>
+      <li>{{ t['schulte_htp_who_li3'] | safe }}</li>
+      <li>{{ t['schulte_htp_who_li4'] | safe }}</li>
     </ul>
   </div>
 
   <div class="help-section">
-    <h2>History</h2>
-    <p>
-      The Schulte table was developed by the German psychiatrist Walter Schulte in the mid-20th
-      century as a tool for measuring attentional and psychomotor speed. It became widely used
-      in the Soviet sports science program during the 1970s and 1980s — coaches used it to
-      screen and develop elite athletes. Today it is part of standard neuropsychological test
-      batteries and sports performance programs worldwide.
-    </p>
+    <h2>{{ t['schulte_htp_hist_h2'] }}</h2>
+    <p>{{ t['schulte_htp_hist_p1'] }}</p>
   </div>
 
   <div class="lb-back">
-    <a href="/other/schulte/play">← Play Schulte Grid</a>
+    <a href="/other/schulte/play">{{ t['schulte_htp_back'] }}</a>
   </div>
 
 </div>
