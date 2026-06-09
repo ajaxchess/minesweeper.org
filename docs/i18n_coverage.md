@@ -8,8 +8,9 @@
 - **EN placeholders** — keys whose value is identical to the English string. Includes both
   genuinely language-neutral values (proper nouns, "Expert", "OK", numbers, etc.) **and**
   keys that have not yet been translated.
-- **~76–77 keys** are legitimately identical to English across all languages (proper nouns,
-  universal terms, brand names). German has exactly 76; French has 77 (one extra brand name).
+- **~47–77 keys** are legitimately identical to English across all languages (proper nouns,
+  universal terms, brand names). German has 76; French has 77 (one extra brand name);
+  Spanish has 47 (Spanish translations cover more loanwords DE/FR keep as English).
   Any language with EN placeholders above 77 has that many keys awaiting real translation.
 - Keys added in **Parts 1–5** of the DE translation pass (316 keys: SEO sections, jigsaw
   gallery, placeholder attributes, info/how-to pages) were given EN placeholder values in
@@ -38,7 +39,7 @@
 | `pgl` | Pig Latin | 2309 | 388 | 312 |
 | `nl` | Dutch | 2309 | 405 | 329 |
 | `pl` | Polish | 2309 | 405 | 329 |
-| `es` | Spanish | 2309 | 401 | 325 |
+| `es` | Spanish | 2309 | 47 | 0 ✅ |
 | `fr` | French | 2309 | 77 | 1 ✅ |
 | `tl` | Tagalog | 2309 | 445 | 369 |
 
@@ -68,7 +69,11 @@ tracks translation quality (EN placeholders), not structural completeness.
 ### Pig Latin (`pgl`) — ~312 keys need translation
 ### Dutch (`nl`) — ~329 keys need translation
 ### Polish (`pl`) — ~329 keys need translation
-### Spanish (`es`) — ~325 keys need translation
+### Spanish (`es`) — ✅ Fully translated
+47 keys legitimately share their EN value (brand names, symbols, universal loanwords).
+All 325 previously untranslated keys were translated in the ES translation pass (2026-06-09).
+Note: Spanish uses 47 EN-identical keys vs. DE's 76 because ES translations cover more
+terms (e.g., "Más", "Clasificación", "Modo") that DE/FR keep as English loanwords.
 ### French (`fr`) — ✅ Fully translated
 77 keys legitimately share their EN value (proper nouns, universal terms, brand names).
 All 361 previously untranslated keys were translated in the FR translation pass (2026-06-09).
