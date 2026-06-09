@@ -8,10 +8,9 @@
 - **EN placeholders** — keys whose value is identical to the English string. Includes both
   genuinely language-neutral values (proper nouns, "Expert", "OK", numbers, etc.) **and**
   keys that have not yet been translated.
-- **~76 keys** are legitimately identical to English across all languages (proper nouns,
-  universal terms). German — the only language with full human translations for all key groups
-  — has exactly 76 such keys, establishing that baseline. Any language with EN placeholders
-  above 76 has that many keys awaiting real translation.
+- **~76–77 keys** are legitimately identical to English across all languages (proper nouns,
+  universal terms, brand names). German has exactly 76; French has 77 (one extra brand name).
+  Any language with EN placeholders above 77 has that many keys awaiting real translation.
 - Keys added in **Parts 1–5** of the DE translation pass (316 keys: SEO sections, jigsaw
   gallery, placeholder attributes, info/how-to pages) were given EN placeholder values in
   all languages except German.
@@ -40,7 +39,7 @@
 | `nl` | Dutch | 2309 | 405 | 329 |
 | `pl` | Polish | 2309 | 405 | 329 |
 | `es` | Spanish | 2309 | 401 | 325 |
-| `fr` | French | 2309 | 437 | 361 |
+| `fr` | French | 2309 | 77 | 1 ✅ |
 | `tl` | Tagalog | 2309 | 445 | 369 |
 
 ## Missing Keys by Language
@@ -70,5 +69,7 @@ tracks translation quality (EN placeholders), not structural completeness.
 ### Dutch (`nl`) — ~329 keys need translation
 ### Polish (`pl`) — ~329 keys need translation
 ### Spanish (`es`) — ~325 keys need translation
-### French (`fr`) — ~361 keys need translation
+### French (`fr`) — ✅ Fully translated
+77 keys legitimately share their EN value (proper nouns, universal terms, brand names).
+All 361 previously untranslated keys were translated in the FR translation pass (2026-06-09).
 ### Tagalog (`tl`) — ~369 keys need translation
