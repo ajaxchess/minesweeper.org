@@ -336,12 +336,12 @@ def _ng_default_from_ip(request: Request) -> bool:
 # ── Redirect safety helpers ──────────────────────────────────────────────────
 _LANG_CODE_RE = re.compile(r'^[a-z]{2,10}(?:-[a-z]{2,10})?$')
 
+_LANG_PREFIX_MAP: dict[str, str] = {lang: f"/{lang}" for lang in SUPPORTED_LANGS if lang != "en"}
+
 def _safe_lang_prefix(lang: str) -> str:
-    """Return /{lang} only when lang is a validated language-code token.
-    The regex check breaks CodeQL's taint trace from request data."""
-    if lang != "en" and _LANG_CODE_RE.fullmatch(lang):
-        return f"/{lang}"
-    return ""
+    """Return /{lang} for supported non-English languages, "" otherwise.
+    Dict lookup from pre-built constants breaks CodeQL's taint trace."""
+    return _LANG_PREFIX_MAP.get(lang, "")
 
 def _safe_relative_url(url: str, fallback: str = "/") -> str:
     """Reject URLs that carry a scheme or netloc (open-redirect guard).
@@ -2182,7 +2182,7 @@ async def upload_fifteen_puzzle_photo(
     os.makedirs(upload_dir, exist_ok=True)
     ext = ".jpg" if content_type == "image/jpeg" else ".png"
     safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
-    filename = f"{safe_hash}{ext}"
+    filename = os.path.basename(f"{safe_hash}{ext}")
     filepath = os.path.join(upload_dir, filename)
     with open(filepath, "wb") as f:
         f.write(data)
@@ -2323,7 +2323,7 @@ async def upload_member_puzzle(
         if len(data) > 2 * 1024 * 1024:
             raise HTTPException(status_code=400, detail=f"File too large — max 2 MB ({label} image)")
         ext = ".jpg" if content_type == "image/jpeg" else ".png"
-        filename = f"{safe_hash}_{label}{ext}"
+        filename = os.path.basename(f"{safe_hash}_{label}{ext}")
         with open(os.path.join(upload_dir, filename), "wb") as f:
             f.write(data)
         filenames[label] = filename
@@ -7929,14 +7929,16 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
     download_exts = {".pptx", ".xlsx", ".docx", ".pdf"}
     source_exts   = {".ts", ".py", ".js"}
 
-    # Validate folder param — only safe filesystem names; realpath containment confirms no escape
+    # Validate folder param — only safe filesystem names; realpath containment confirms no escape.
+    # active_dir is assigned the already-realpath-checked candidate (not re-derived from folder)
+    # so CodeQL's taint trace from the request param is broken at this point.
     current_folder = None
+    active_dir = real_analysis
     if folder and re.fullmatch(r'[A-Za-z0-9_-]+', folder):
         candidate = os.path.realpath(os.path.join(analysis_dir, folder))
         if candidate.startswith(real_analysis + os.sep) and os.path.isdir(candidate):
             current_folder = folder
-
-    active_dir = os.path.join(analysis_dir, current_folder) if current_folder else analysis_dir
+            active_dir = candidate
 
     # Always list subfolders from the root (one level only)
     folders = []
@@ -7974,7 +7976,7 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
         elif os.path.isfile(html_real) and html_real.startswith(real_analysis + os.sep):
             with open(html_real, encoding="utf-8") as f:
                 content_html = f.read()
-        current_doc = doc
+        current_doc = os.path.basename(doc)
 
     # Resolve the actual filename (with extension) for the download link
     current_doc_file = None
@@ -8149,12 +8151,16 @@ def _mah_response(lang: str) -> HTMLResponse:
     if _MAH_INDEX_CACHE is None:
         with open(_MAH_INDEX_PATH, encoding="utf-8") as f:
             _MAH_INDEX_CACHE = f.read()
+    # Resolve lang through a pre-built dict — ensures only known, literal values
+    # are used in HTML injection below (breaks CodeQL reflected-XSS taint trace).
+    safe_lang = _LANG_PREFIX_MAP.get(lang, "")  # "" for "en" or any unrecognised code
     mah_lang = _MAH_LANG_MAP.get(lang, lang)
     content = _MAH_INDEX_CACHE
-    if lang != "en":
+    if safe_lang:
+        lang_code = safe_lang[1:]  # strip the leading "/"
         content = content.replace(
             '<base href="/other/mahjong/">',
-            f'<base href="/{lang}/other/mahjong/">',
+            f'<base href="/{lang_code}/other/mahjong/">',
             1,
         )
     if mah_lang in _MAH_VALID_LANGS:
@@ -8208,9 +8214,10 @@ def mahjong_howtoplay_page(request: Request):
 
 @app.get("/other/mahjong/{path:path}")
 def mahjong_game_static(path: str):
-    file_path = os.path.join("static", "mah", path)
-    if os.path.isfile(file_path):
-        return FileResponse(file_path)
+    safe_base = os.path.realpath(os.path.join("static", "mah"))
+    resolved = os.path.realpath(os.path.join("static", "mah", path))
+    if resolved.startswith(safe_base + os.sep) and os.path.isfile(resolved):
+        return FileResponse(resolved)
     return FileResponse(_MAH_INDEX_PATH)
 
 
@@ -8704,7 +8711,7 @@ async def upload_jigsaw_photo(
     os.makedirs(_JIGSAW_UPLOAD_DIR, exist_ok=True)
     ext = ".jpg" if content_type == "image/jpeg" else ".png"
     safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
-    filename = f"{safe_hash}{ext}"
+    filename = os.path.basename(f"{safe_hash}{ext}")
     filepath = os.path.join(_JIGSAW_UPLOAD_DIR, filename)
     with open(filepath, "wb") as f:
         f.write(data)
