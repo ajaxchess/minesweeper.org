@@ -2328,12 +2328,15 @@ async def upload_member_puzzle(
         if len(data) > 2 * 1024 * 1024:
             raise HTTPException(status_code=400, detail=f"File too large — max 2 MB ({label} image)")
         filename = f"{uuid.uuid4().hex}_{label}{_ext_map[content_type]}"
-        target_path = os.path.abspath(os.path.join(upload_dir_abs, filename))
+        safe_filename = os.path.basename(filename)
+        if safe_filename != filename:
+            raise HTTPException(status_code=400, detail="Invalid upload filename")
+        target_path = os.path.abspath(os.path.join(upload_dir_abs, safe_filename))
         if os.path.commonpath([upload_dir_abs, target_path]) != upload_dir_abs:
             raise HTTPException(status_code=400, detail="Invalid upload path")
         with open(target_path, "wb") as f:
             f.write(data)
-        filenames[label] = filename
+        filenames[label] = safe_filename
 
     entry = MemberPuzzle(
         board_hash      = board_hash,
