@@ -83,7 +83,13 @@ class DrillSubmitRequest(BaseModel):
 
 
 class DrillBoardResult(BaseModel):
-    """Per-board verdict returned after a submit."""
+    """Per-board verdict returned after a submit.
+
+    `revealed_cells` is the list of [row, col, number] triples that would
+    have been uncovered by the player's pick. `optimal_revealed_cells` is
+    the same for the highlighted optimal pick. Both are populated whenever
+    they apply (i.e. empty for L6 flags / mine clicks).
+    """
     is_correct: bool
     is_mine: bool
     opening_size: int
@@ -91,6 +97,8 @@ class DrillBoardResult(BaseModel):
     optimal_row: int
     optimal_col: int
     optimal_opening_size: int
+    revealed_cells: list[list[int]] = []
+    optimal_revealed_cells: list[list[int]] = []
 
 
 class DrillSummary(BaseModel):

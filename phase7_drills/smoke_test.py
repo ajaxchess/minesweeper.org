@@ -109,9 +109,11 @@ def run() -> int:
     drill_id = start["drill_id"]
     assert len(start["boards"]) == 3
     for b in start["boards"]:
-        assert b["width"] == 30 and b["height"] == 16
+        # L5 is 16×10 (skill-based small board); L4/L6 are expert 30×16.
+        assert b["width"] > 0 and b["height"] > 0
         assert len(b["revealed"]) > 0
-    print(f"✓ Start: drill_id={drill_id}, boards={len(start['boards'])}")
+    print(f"✓ Start: drill_id={drill_id}, boards={len(start['boards'])}, "
+          f"size={start['boards'][0]['width']}×{start['boards'][0]['height']}")
 
     # 2) Submit one cell for each board. We deliberately mix in the optimal
     #    cell sometimes and a random cell other times by reading the stored

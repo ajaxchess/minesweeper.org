@@ -228,6 +228,16 @@ def submit_board(
         sol = solutions[body.board_index]
         board = generator.deserialize_solution(sol)
         verdict = generator.evaluate_click(board, body.chosen_row, body.chosen_col)
+        # Compute the cells that would be uncovered by the player's pick AND
+        # by the optimal pick. The client uses these to render the actual
+        # opening on top of the highlighted cell — turns "you missed" into
+        # a concrete visual lesson.
+        revealed_cells = generator.compute_reveal_cells(
+            board, body.chosen_row, body.chosen_col
+        )
+        optimal_revealed_cells = generator.compute_reveal_cells(
+            board, verdict.optimal_cell[0], verdict.optimal_cell[1]
+        )
         result = DrillBoardResult(
             is_correct=verdict.is_correct,
             is_mine=verdict.is_mine,
@@ -236,6 +246,8 @@ def submit_board(
             optimal_row=verdict.optimal_cell[0],
             optimal_col=verdict.optimal_cell[1],
             optimal_opening_size=verdict.optimal_opening_size,
+            revealed_cells=revealed_cells,
+            optimal_revealed_cells=optimal_revealed_cells,
         )
         attempts.append({
             "board_index": body.board_index,

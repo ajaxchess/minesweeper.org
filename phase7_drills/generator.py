@@ -49,8 +49,26 @@ EXPERT_WIDTH = 30
 EXPERT_HEIGHT = 16
 EXPERT_MINES = 99
 
-# Minimum target opening size for L5 — below this, we regenerate.
-MIN_L5_OPENING = 12
+# L5 uses a smaller board so the whole frontier is visible at a glance.
+# The lesson is "read the numbers", not "scan a wall of grey." Density is
+# kept moderate so the openings still exist behind the frontier.
+L5_WIDTH = 16
+L5_HEIGHT = 10
+L5_MINES = 26     # ~16% density (intermediate-ish)
+
+# Minimum opening size for the best pick.
+MIN_L5_OPENING = 4
+
+# The best cell's pressure must be at or below this — i.e., the player can
+# look at the surrounding numbers and conclude it's clearly the safest pick.
+L5_BEST_MAX_PRESSURE = 0.34
+
+# Composite score for L5 is (1 - pressure) × opening_size.
+# This rewards picks that are BOTH safe AND productive — exactly what the
+# lesson trains. The "best" cell must beat the runner-up by this multiple
+# so the right answer is unambiguous.
+L5_BEST_MIN_LEAD = 1.5    # best.score must be ≥ 1.5 × second.score
+L5_BEST_MIN_SCORE = 3.0   # best.score must be ≥ 3.0 absolute
 
 # Minimum chord-reveal size for L4 — best chord must open at least this many.
 MIN_L4_CHORD_SIZE = 4
@@ -60,6 +78,7 @@ MIN_L6_FLAG_VALUE = 2
 
 # Fraction of board revealed as the starter state.
 STARTER_TARGET_REVEAL_FRACTION = 0.25
+L5_STARTER_TARGET_REVEAL_FRACTION = 0.35   # denser reveal on the small board
 
 # A cell counts as "correct" if its score is within this fraction of the max.
 CORRECT_THRESHOLD = 0.80
@@ -138,13 +157,13 @@ class EvaluatedClick:
 def generate_l5_opening_board(seed: int) -> DrillBoard:
     """L5 Opening Recognition — see module docstring."""
     rng = random.Random(seed)
-    for _ in range(20):
+    for _ in range(200):
         attempt_seed = rng.randrange(1, 1_000_000_000)
         board = _try_generate_l5(attempt_seed)
         if board is not None:
             return board
     raise RuntimeError(
-        f"Could not generate a valid L5 board after 20 attempts (seed={seed})"
+        f"Could not generate a valid L5 board after 200 attempts (seed={seed})"
     )
 
 
@@ -313,6 +332,90 @@ def evaluate_click(board: DrillBoard, r: int, c: int) -> EvaluatedClick:
     )
 
 
+def compute_reveal_cells(board: DrillBoard, r: int, c: int) -> list[list[int]]:
+    """Return [row, col, number] for every cell that would be uncovered by
+    a click on (r, c). Honors the drill type:
+
+      L5 — flood-fill from (r, c) if safe; empty if mine
+      L4 — chord-reveal from (r, c) if chord-ready; empty otherwise
+      L6 — empty (flagging doesn't open anything)
+
+    Used by the client to draw what would have happened on this pick — gives
+    the player a concrete sense of the lesson even when they picked wrong.
+    """
+    if board.drill_type == DRILL_TYPE_L6:
+        return []
+    if not (0 <= r < board.height and 0 <= c < board.width):
+        return []
+    if board.drill_type == DRILL_TYPE_L4:
+        if (r, c) not in board.revealed:
+            return []
+        return _chord_reveal_cells(board, r, c)
+    # L5
+    if (r, c) in board.revealed or (r, c) in board.mines:
+        return []
+    return _flood_reveal_cells(board, r, c)
+
+
+def _flood_reveal_cells(board: DrillBoard, r: int, c: int) -> list[list[int]]:
+    """BFS flood, returning the (row, col, number) triples of newly-uncovered cells."""
+    out: list[list[int]] = []
+    visited: set[tuple[int, int]] = set()
+    q: deque[tuple[int, int]] = deque([(r, c)])
+    while q:
+        cr, cc = q.popleft()
+        if not (0 <= cr < board.height and 0 <= cc < board.width):
+            continue
+        if (cr, cc) in visited or (cr, cc) in board.revealed:
+            continue
+        if (cr, cc) in board.mines or (cr, cc) in board.flags:
+            continue
+        visited.add((cr, cc))
+        n = _count_adj_mines(board, cr, cc)
+        out.append([cr, cc, n])
+        if n == 0:
+            for nr, nc in _neighbors(cr, cc):
+                if (nr, nc) not in visited:
+                    q.append((nr, nc))
+    return out
+
+
+def _chord_reveal_cells(board: DrillBoard, r: int, c: int) -> list[list[int]]:
+    """For a chord-ready cell, return the cells uncovered by the chord."""
+    n = _count_adj_mines(board, r, c)
+    if n == 0:
+        return []
+    flagged = sum(1 for nr, nc in _neighbors(r, c) if (nr, nc) in board.flags)
+    if flagged != n:
+        return []
+
+    already: set[tuple[int, int]] = set(board.revealed)
+    out: list[list[int]] = []
+    for nr, nc in _neighbors(r, c):
+        if not (0 <= nr < board.height and 0 <= nc < board.width):
+            continue
+        if (nr, nc) in board.flags or (nr, nc) in already:
+            continue
+        if (nr, nc) in board.mines:
+            continue
+        # Flood from this neighbour, accumulating into `already` so multi-direction
+        # chord reveals don't double-count cells in the same zero region.
+        q: deque[tuple[int, int]] = deque([(nr, nc)])
+        while q:
+            cr, cc = q.popleft()
+            if not (0 <= cr < board.height and 0 <= cc < board.width):
+                continue
+            if (cr, cc) in already or (cr, cc) in board.mines or (cr, cc) in board.flags:
+                continue
+            already.add((cr, cc))
+            nn = _count_adj_mines(board, cr, cc)
+            out.append([cr, cc, nn])
+            if nn == 0:
+                for ar, ac in _neighbors(cr, cc):
+                    q.append((ar, ac))
+    return out
+
+
 def _miss(board: DrillBoard) -> EvaluatedClick:
     return EvaluatedClick(
         is_correct=False, is_mine=False, opening_size=0, relative_quality=0.0,
@@ -337,57 +440,141 @@ def _score_for(board: DrillBoard, r: int, c: int) -> int:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _try_generate_l5(seed: int) -> Optional[DrillBoard]:
+    """Build a small skill-based L5 board.
+
+    The "correct" cell is the frontier cell with the lowest *mine pressure* —
+    a number-based safety estimate — AND a meaningful opening size. We retry
+    until the best cell is clearly safer than every runner-up, so the answer
+    is derivable from the board state alone.
+    """
     rng = random.Random(seed)
-    board = _seed_board(seed, DRILL_TYPE_L5)
+    board = DrillBoard(
+        width=L5_WIDTH,
+        height=L5_HEIGHT,
+        num_mines=L5_MINES,
+        seed=seed,
+        drill_type=DRILL_TYPE_L5,
+    )
     _place_random_mines(board, rng)
-    _make_starter_reveal(board, rng)
+    _make_starter_reveal_l5(board, rng)
 
-    # Skill is in *reading the frontier* — guessing in untouched territory is
-    # a coin flip, not a learned reflex. Restrict the candidate set to cells
-    # that touch the revealed area.
-    best_cell, best_size = _find_best_l5(board)
-    if best_cell is None or best_size < MIN_L5_OPENING:
-        return None
+    # Need numbers before _mine_pressure can read them.
+    board.numbers = _compute_numbers(board)
 
-    threshold = max(1, int(best_size * CORRECT_THRESHOLD))
-    correct: set[tuple[int, int]] = set()
+    # Score every frontier cell on (1 - pressure) × opening_size.
+    # That composite rewards picks that are BOTH safe AND productive.
+    scored: list[tuple[tuple[int, int], float, int, float]] = []
     for r in range(board.height):
         for c in range(board.width):
             if (r, c) in board.revealed or (r, c) in board.mines:
                 continue
             if not _is_on_frontier(board, r, c):
                 continue
-            sz = _flood_size(board, r, c)
-            if sz >= threshold:
-                correct.add((r, c))
+            pressure = _mine_pressure(board, r, c)
+            opening  = _flood_size(board, r, c)
+            score    = (1.0 - pressure) * opening
+            scored.append(((r, c), pressure, opening, score))
+
+    if not scored:
+        return None
+
+    scored.sort(key=lambda x: -x[3])
+    best_cell, best_pressure, best_opening, best_score = scored[0]
+
+    if best_pressure > L5_BEST_MAX_PRESSURE:
+        return None
+    if best_opening < MIN_L5_OPENING:
+        return None
+    if best_score < L5_BEST_MIN_SCORE:
+        return None
+
+    # Runner-up must lag the best by a clear multiple so the answer is
+    # unambiguous to a player who can read the numbers.
+    if len(scored) >= 2:
+        runner_score = scored[1][3]
+        if runner_score <= 0:
+            pass  # any positive lead over zero is fine
+        elif best_score < runner_score * L5_BEST_MIN_LEAD:
+            return None
+
+    # "Correct" cells = anything tied with the best (same score within 1%).
+    correct: set[tuple[int, int]] = set()
+    for cell, _p, _o, score in scored:
+        if score >= best_score * 0.99:
+            correct.add(cell)
 
     board.correct_cells = correct
     board.optimal_cell = best_cell
-    board.optimal_opening_size = best_size
-    board.numbers = _compute_numbers(board)
+    board.optimal_opening_size = best_opening
     return board
 
 
-def _find_best_l5(board: DrillBoard) -> tuple[Optional[tuple[int, int]], int]:
-    """Best opening reachable from a frontier cell.
+def _make_starter_reveal_l5(board: DrillBoard, rng: random.Random) -> None:
+    """Smaller-board variant of the starter reveal — slightly denser target."""
+    target = int(board.width * board.height * L5_STARTER_TARGET_REVEAL_FRACTION)
+    safe_cells = _safe_cells(board)
+    rng.shuffle(safe_cells)
+    for cell in safe_cells:
+        if cell in board.revealed:
+            continue
+        if _flood_size(board, *cell) < 3:
+            continue
+        _reveal_flood(board, *cell)
+        if len(board.revealed) >= target:
+            break
+    if not board.revealed:
+        # Pathological fallback — reveal something to give the player a frontier.
+        for cell in safe_cells:
+            _reveal_flood(board, *cell)
+            if board.revealed:
+                break
 
-    Frontier = unrevealed cell that has at least one revealed neighbour. This
-    is the cell type the player can actually reason about — picks far from
-    the frontier are guesses, not recognition.
+
+def _mine_pressure(board: DrillBoard, r: int, c: int) -> float:
+    """Estimate the local probability that (r, c) is a mine.
+
+    For each revealed-number neighbour N of the cell, we get a constraint:
+    N is the count of mines among N's unrevealed neighbours. If N has U
+    unrevealed neighbours and K of them are already flagged, then
+    P(any single one is a mine) ≈ (N - K) / (U - K).
+
+    We take the MAX over all such neighbours (the most restrictive
+    constraint wins). If the cell has no revealed-number neighbours, we
+    return 1.0 — meaning "we can't reason about this cell, treat as worst".
+    That prevents stray non-frontier cells from looking artificially safe.
     """
-    best_cell: Optional[tuple[int, int]] = None
-    best_size = 0
-    for r in range(board.height):
-        for c in range(board.width):
-            if (r, c) in board.revealed or (r, c) in board.mines:
+    if (r, c) in board.revealed:
+        return 1.0
+    pressures: list[float] = []
+    for nr, nc in _neighbors(r, c):
+        if not (0 <= nr < board.height and 0 <= nc < board.width):
+            continue
+        if (nr, nc) not in board.revealed:
+            continue
+        n_value = board.numbers.get((nr, nc))
+        if n_value is None:
+            # Revealed "0" cell — its neighbours are all safe by definition,
+            # but those cells would already have been flooded open. If we
+            # somehow have a frontier cell next to a zero, it's safe.
+            return 0.0
+        unrev = 0
+        known_mines = 0
+        for ar, ac in _neighbors(nr, nc):
+            if not (0 <= ar < board.height and 0 <= ac < board.width):
                 continue
-            if not _is_on_frontier(board, r, c):
+            if (ar, ac) in board.revealed:
                 continue
-            sz = _flood_size(board, r, c)
-            if sz > best_size:
-                best_size = sz
-                best_cell = (r, c)
-    return best_cell, best_size
+            if (ar, ac) in board.flags:
+                known_mines += 1
+            else:
+                unrev += 1
+        remaining = n_value - known_mines
+        if unrev <= 0:
+            continue
+        pressures.append(remaining / unrev)
+    if not pressures:
+        return 1.0
+    return max(pressures)
 
 
 def _is_on_frontier(board: DrillBoard, r: int, c: int) -> bool:
