@@ -8,10 +8,11 @@
 - **EN placeholders** — keys whose value is identical to the English string. Includes both
   genuinely language-neutral values (proper nouns, "Expert", "OK", numbers, etc.) **and**
   keys that have not yet been translated.
-- **~47–77 keys** are legitimately identical to English across all languages (proper nouns,
+- **~26–77 keys** are legitimately identical to English across all languages (proper nouns,
   universal terms, brand names). German has 76; French has 77 (one extra brand name);
-  Spanish has 47 (Spanish translations cover more loanwords DE/FR keep as English).
-  Any language with EN placeholders above 77 has that many keys awaiting real translation.
+  Spanish has 47; Chinese (Simplified) has 26 (fewest — Chinese translates almost everything
+  including nav labels DE/FR/ES keep as English). Any language with EN placeholders above 77
+  has that many keys awaiting real translation.
 - Keys added in **Parts 1–5** of the DE translation pass (316 keys: SEO sections, jigsaw
   gallery, placeholder attributes, info/how-to pages) were given EN placeholder values in
   all languages except German.
@@ -25,7 +26,7 @@
 | `el` | Greek | 2309 | 359 | 283 |
 | `pt` | Portuguese | 2309 | 369 | 293 |
 | `ja` | Japanese | 2309 | 380 | 304 |
-| `zh` | Chinese (Simplified) | 2309 | 377 | 301 |
+| `zh` | Chinese (Simplified) | 2309 | 26 | 0 ✅ |
 | `zh-hant` | Chinese (Traditional) | 2309 | 377 | 301 |
 | `it` | Italian | 2309 | 376 | 300 |
 | `ko` | Korean | 2309 | 384 | 308 |
@@ -55,7 +56,11 @@ tracks translation quality (EN placeholders), not structural completeness.
 ### Greek (`el`) — ~283 keys need translation
 ### Portuguese (`pt`) — ~293 keys need translation
 ### Japanese (`ja`) — ~304 keys need translation
-### Chinese (Simplified) (`zh`) — ~301 keys need translation
+### Chinese (Simplified) (`zh`) — ✅ Fully translated
+26 keys legitimately share their EN value (brand names, symbols, abbreviations).
+All 301 previously untranslated keys were translated in the ZH translation pass (2026-06-09).
+Note: Chinese (Simplified) has the fewest EN-identical keys (26) — Chinese translations
+cover almost all nav labels, mode names, and terms that other languages keep as English.
 ### Chinese (Traditional) (`zh-hant`) — ~301 keys need translation
 ### Italian (`it`) — ~300 keys need translation
 ### Korean (`ko`) — ~308 keys need translation
