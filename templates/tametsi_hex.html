@@ -263,7 +263,8 @@
 
   function safeHref(v) {
     const s = String(v);
-    return /^https?:\/\//i.test(s) ? esc(s) : '#';
+    if (!/^https?:\/\//i.test(s)) return '#';
+    return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
   function renderTimesTable(pid) {

@@ -2181,16 +2181,12 @@ async def upload_fifteen_puzzle_photo(
     if len(data) > 2 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File too large (max 2MB)")
 
-    # Save file
+    # Save file — filename is server-generated (UUID), board_hash stored in DB only
+    _ext_map = {"image/jpeg": ".jpg", "image/png": ".png"}
     upload_dir = os.path.join("static", "uploads", "15puzzle")
     os.makedirs(upload_dir, exist_ok=True)
-    ext = ".jpg" if content_type == "image/jpeg" else ".png"
-    safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
-    filename = os.path.basename(f"{safe_hash}{ext}")
-    safe_upload_dir = os.path.realpath(upload_dir)
-    filepath = os.path.realpath(os.path.join(upload_dir, filename))
-    if not filepath.startswith(safe_upload_dir + os.sep):
-        raise HTTPException(status_code=400, detail="Invalid path")
+    filename = uuid.uuid4().hex + _ext_map[content_type]
+    filepath = os.path.join(upload_dir, filename)
     with open(filepath, "wb") as f:
         f.write(data)
 
@@ -2317,11 +2313,11 @@ async def upload_member_puzzle(
     if db.query(MemberPuzzle).filter_by(board_hash=board_hash).first():
         raise HTTPException(status_code=409, detail="A puzzle with this board already exists")
 
+    # Filenames are server-generated (UUID-based); board_hash is stored in the DB record only
+    _ext_map = {"image/jpeg": ".jpg", "image/png": ".png"}
     upload_dir = os.path.join("static", "uploads", "15puzzle")
     os.makedirs(upload_dir, exist_ok=True)
-    safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
 
-    safe_upload_dir = os.path.realpath(upload_dir)
     filenames = {}
     for label, upload in (("tile", tile_file), ("reveal", reveal_file)):
         content_type = upload.content_type or ""
@@ -2330,12 +2326,8 @@ async def upload_member_puzzle(
         data = await upload.read()
         if len(data) > 2 * 1024 * 1024:
             raise HTTPException(status_code=400, detail=f"File too large — max 2 MB ({label} image)")
-        ext = ".jpg" if content_type == "image/jpeg" else ".png"
-        filename = os.path.basename(f"{safe_hash}_{label}{ext}")
-        dest = os.path.realpath(os.path.join(upload_dir, filename))
-        if not dest.startswith(safe_upload_dir + os.sep):
-            raise HTTPException(status_code=400, detail="Invalid path")
-        with open(dest, "wb") as f:
+        filename = f"{uuid.uuid4().hex}_{label}{_ext_map[content_type]}"
+        with open(os.path.join(upload_dir, filename), "wb") as f:
             f.write(data)
         filenames[label] = filename
 
@@ -7975,31 +7967,32 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
             elif ext in source_exts:
                 source_files.append(fname)
 
+    # Pre-build a map: doc-name → verified realpath, constructed entirely from the
+    # directory listing (active_dir is already realpath-checked).  The VALUES of
+    # this dict are server-computed paths with no user input; looking up by `doc`
+    # (user input) returns an untainted path — no taint can flow to open().
+    _doc_path_map: dict[str, tuple] = {}
+    _doc_file_map: dict[str, str]   = {}
+    for _d in docs:
+        for _sfx, _is_html in ((".md", False), (".html", True)):
+            _rp = os.path.realpath(os.path.join(active_dir, _d + _sfx))
+            if _rp.startswith(real_analysis + os.sep) and os.path.isfile(_rp):
+                _doc_path_map[_d] = (_rp, _is_html)
+                _doc_file_map[_d] = _d + _sfx
+                break
+
     content_html = None
     current_doc = None
-    # Look up the doc name from the already-listed docs (values come from os.listdir,
-    # not from the request param directly) — breaks CodeQL taint from the query param.
-    matched_doc = next((d for d in docs if d == doc), None) if doc else None
-    if matched_doc:
-        md_path  = os.path.join(active_dir, matched_doc + ".md")
-        html_path = os.path.join(active_dir, matched_doc + ".html")
-        md_real   = os.path.realpath(md_path)
-        html_real = os.path.realpath(html_path)
-        if os.path.isfile(md_real) and md_real.startswith(real_analysis + os.sep):
-            with open(md_real, encoding="utf-8") as f:
-                content_html = md_lib.markdown(f.read(), extensions=["extra", "sane_lists"])
-        elif os.path.isfile(html_real) and html_real.startswith(real_analysis + os.sep):
-            with open(html_real, encoding="utf-8") as f:
-                content_html = f.read()
-        current_doc = matched_doc
+    _doc_entry = _doc_path_map.get(doc) if doc else None
+    if _doc_entry:
+        _doc_realpath, _doc_is_html = _doc_entry
+        with open(_doc_realpath, encoding="utf-8") as f:
+            raw = f.read()
+        content_html = raw if _doc_is_html else md_lib.markdown(raw, extensions=["extra", "sane_lists"])
+        current_doc = _doc_file_map.get(doc, "").rsplit(".", 1)[0] or None
 
     # Resolve the actual filename (with extension) for the download link
-    current_doc_file = None
-    if current_doc:
-        for ext in (".md", ".html"):
-            if os.path.isfile(os.path.join(active_dir, current_doc + ext)):
-                current_doc_file = current_doc + ext
-                break
+    current_doc_file = _doc_file_map.get(doc) if doc else None
 
     # Source file viewer
     source_content = None
@@ -8174,13 +8167,15 @@ def _mah_response(lang: str) -> HTMLResponse:
     if _MAH_INDEX_CACHE is None:
         with open(_MAH_INDEX_PATH, encoding="utf-8") as f:
             _MAH_INDEX_CACHE = f.read()
-    # Both lookups use pre-built dicts whose values are compile-time constants,
-    # so no user-supplied data reaches the HTML content below.
+    # safe_lang comes from a pre-built dict (untainted). lang_code is derived
+    # from safe_lang only, so it carries no taint from the request parameter.
+    # mah_lang is then looked up by lang_code (untainted key) — no user data
+    # reaches the HTML injection below.
     safe_lang = _LANG_PREFIX_MAP.get(lang, "")  # "" for "en" or unrecognised codes
-    mah_lang  = _MAH_LANG_SAFE.get(lang)        # None if lang has no mah equivalent
+    lang_code = safe_lang[1:] if safe_lang else ""  # untainted: derived from dict value only
+    mah_lang  = _MAH_LANG_SAFE.get(lang_code) if lang_code else None
     content = _MAH_INDEX_CACHE
-    if safe_lang:
-        lang_code = safe_lang[1:]  # strip the leading "/"
+    if lang_code:
         content = content.replace(
             '<base href="/other/mahjong/">',
             f'<base href="/{lang_code}/other/mahjong/">',
@@ -8731,14 +8726,11 @@ async def upload_jigsaw_photo(
     data = await file.read()
     if len(data) > 5 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+    # Filename is server-generated (UUID); board_hash stored in DB record only
+    _ext_map = {"image/jpeg": ".jpg", "image/png": ".png"}
     os.makedirs(_JIGSAW_UPLOAD_DIR, exist_ok=True)
-    ext = ".jpg" if content_type == "image/jpeg" else ".png"
-    safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
-    filename = os.path.basename(f"{safe_hash}{ext}")
-    safe_upload_dir = os.path.realpath(_JIGSAW_UPLOAD_DIR)
-    filepath = os.path.realpath(os.path.join(_JIGSAW_UPLOAD_DIR, filename))
-    if not filepath.startswith(safe_upload_dir + os.sep):
-        raise HTTPException(status_code=400, detail="Invalid path")
+    filename = uuid.uuid4().hex + _ext_map[content_type]
+    filepath = os.path.join(_JIGSAW_UPLOAD_DIR, filename)
     with open(filepath, "wb") as f:
         f.write(data)
     entry = JigsawPhoto(
