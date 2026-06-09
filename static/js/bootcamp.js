@@ -20,6 +20,54 @@
   // Page-level state
   let currentMode = cfg.initialMode || 'standard';
 
+  // ── Preview mode ──────────────────────────────────────────────────────────
+  // `?preview=all` forces every level card to render as if it were the
+  // current level — full body, drill buttons, View Progress, the lot.
+  // Persists in localStorage once enabled so a page reload (e.g. after the
+  // drill) keeps the preview on. Toggle off with `?preview=off`.
+  const PREVIEW_KEY = 'bc.preview.all';
+  (function syncPreviewFlag() {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get('preview') === 'all') localStorage.setItem(PREVIEW_KEY, '1');
+      if (q.get('preview') === 'off') localStorage.removeItem(PREVIEW_KEY);
+    } catch (_) { /* no-op if localStorage blocked */ }
+  }());
+  function isPreviewAll() {
+    try { return localStorage.getItem(PREVIEW_KEY) === '1'; }
+    catch (_) { return false; }
+  }
+  // Apply preview unlock to a fresh level list from the API. Returns a new
+  // array; doesn't mutate the input. Only the visual status is changed —
+  // mastery numbers are left as the server reported.
+  function applyPreviewUnlock(levels) {
+    if (!isPreviewAll() || !Array.isArray(levels)) return levels;
+    return levels.map(function (lv) {
+      return Object.assign({}, lv, { status: 'current' });
+    });
+  }
+  // Floating badge so it's obvious you're not seeing the real player state.
+  function renderPreviewBadge() {
+    const existing = document.getElementById('bc-preview-badge');
+    if (!isPreviewAll()) {
+      if (existing) existing.remove();
+      return;
+    }
+    if (existing) return;
+    const badge = document.createElement('div');
+    badge.id = 'bc-preview-badge';
+    badge.setAttribute('style', [
+      'position:fixed', 'bottom:16px', 'right:16px', 'z-index:60',
+      'background:#fde68a', 'color:#92400e', 'border:1px solid #f59e0b',
+      'border-radius:999px', 'padding:6px 12px',
+      'font:600 12px/1.2 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif',
+      'box-shadow:0 4px 12px rgba(0,0,0,0.12)',
+    ].join(';'));
+    badge.innerHTML = 'Preview: all levels unlocked · ' +
+      '<a href="?preview=off" style="color:#92400e;text-decoration:underline;">turn off</a>';
+    document.body.appendChild(badge);
+  }
+
   // ── DOM refs ──────────────────────────────────────────────────────────────
   const $loading   = document.getElementById('bc-loading');
   const $empty     = document.getElementById('bc-empty');
@@ -571,9 +619,11 @@
         return;
       }
 
+      const levels = applyPreviewUnlock(data.levels || []);
       renderDiagnosis(data);
-      renderLadder(data.levels || []);
-      renderLevels(data.levels || []);
+      renderLadder(levels);
+      renderLevels(levels);
+      renderPreviewBadge();
       renderFooter(data);
       show($main);
     } catch (err) {
