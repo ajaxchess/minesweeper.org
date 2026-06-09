@@ -101,11 +101,11 @@
   <div>
     <h1>{{ t['jig_gallery_h1'] }}</h1>
     <div class="jgal-subnav">
-      <a href="/other">Other Puzzles</a>
+      <a href="/other">{{ t['other_h1'] }}</a>
       <span>›</span>
-      <a href="/other/jigsaw/daily">Daily Puzzle</a>
+      <a href="/other/jigsaw/daily">{{ t['other_daily_puzzle'] }}</a>
       <span>·</span>
-      <a href="/other/jigsaw/generator">Upload Your Own</a>
+      <a href="/other/jigsaw/generator">{{ t['jig_gallery_upload_own'] }}</a>
     </div>
   </div>
 
@@ -119,21 +119,21 @@
     {% endfor %}
   </div>
   {% else %}
-  <p style="color:var(--text-dim);">No images found in the gallery yet.</p>
+  <p style="color:var(--text-dim);">{{ t['jig_gallery_empty'] }}</p>
   {% endif %}
 </div>
 
 <!-- Difficulty picker -->
 <div id="jgal-modal">
   <div class="jgal-modal-box">
-    <h2>Choose Difficulty</h2>
+    <h2>{{ t['jig_modal_h2'] }}</h2>
     <img id="jgal-modal-thumb" class="jgal-modal-thumb" src="" alt="">
     <div class="jgal-diff-btns">
-      <button class="jgal-diff-btn" onclick="startPuzzle('beginner')">Beginner — 100 pieces</button>
-      <button class="jgal-diff-btn" onclick="startPuzzle('intermediate')">Intermediate — 500 pieces</button>
-      <button class="jgal-diff-btn" onclick="startPuzzle('expert')">Expert — 1000 pieces</button>
+      <button class="jgal-diff-btn" onclick="startPuzzle('beginner')">{{ t['jig_diff_beginner_count'] }}</button>
+      <button class="jgal-diff-btn" onclick="startPuzzle('intermediate')">{{ t['jig_diff_inter_count'] }}</button>
+      <button class="jgal-diff-btn" onclick="startPuzzle('expert')">{{ t['jig_diff_expert_count'] }}</button>
     </div>
-    <div class="jgal-cancel" onclick="closeModal()">Cancel</div>
+    <div class="jgal-cancel" onclick="closeModal()">{{ t['jig_modal_cancel'] }}</div>
   </div>
 </div>
 
