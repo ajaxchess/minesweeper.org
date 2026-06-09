@@ -47,7 +47,13 @@ def run() -> int:
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
-    Base.metadata.create_all(engine)
+    # Don't call Base.metadata.create_all() — in production, models.py uses
+    # the project's shared Base, which has every other table on the site
+    # attached to its metadata. Creating them all here pulls in unrelated
+    # DDL that may not be SQLite-compatible (and historically has had
+    # duplicate-index issues like ix_wc2026_scores_guest_token).
+    # We only need the drill_sessions table for the smoke test.
+    DrillSession.__table__.create(engine, checkfirst=True)
     SessionLocal = sessionmaker(bind=engine)
 
     # Set up the FastAPI app with dependency overrides
