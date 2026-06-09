@@ -27,7 +27,7 @@
 | `pt` | Portuguese | 2309 | 369 | 293 |
 | `ja` | Japanese | 2309 | 380 | 304 |
 | `zh` | Chinese (Simplified) | 2309 | 26 | 0 ✅ |
-| `zh-hant` | Chinese (Traditional) | 2309 | 377 | 301 |
+| `zh-hant` | Chinese (Traditional) | 2309 | 26 | 0 ✅ |
 | `it` | Italian | 2309 | 376 | 300 |
 | `ko` | Korean | 2309 | 384 | 308 |
 | `th` | Thai | 2309 | 382 | 306 |
@@ -61,7 +61,10 @@ tracks translation quality (EN placeholders), not structural completeness.
 All 301 previously untranslated keys were translated in the ZH translation pass (2026-06-09).
 Note: Chinese (Simplified) has the fewest EN-identical keys (26) — Chinese translations
 cover almost all nav labels, mode names, and terms that other languages keep as English.
-### Chinese (Traditional) (`zh-hant`) — ~301 keys need translation
+### Chinese (Traditional) (`zh-hant`) — ✅ Fully translated
+26 keys legitimately share their EN value (brand names, symbols, abbreviations).
+All 301 previously untranslated keys were translated in the zh-hant translation pass (2026-06-09).
+Uses Traditional characters (繁體中文) with Taiwan/HK vocabulary throughout.
 ### Italian (`it`) — ~300 keys need translation
 ### Korean (`ko`) — ~308 keys need translation
 ### Thai (`th`) — ~306 keys need translation
