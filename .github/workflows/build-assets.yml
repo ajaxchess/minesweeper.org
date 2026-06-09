@@ -1,0 +1,54 @@
+name: Build Assets
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "static/js/**"
+      - "static/css/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install build tools
+        run: npm install -g terser csso-cli
+
+      - name: Minify JS
+        run: |
+          find static/js -maxdepth 1 -name "*.js" | sort | while read f; do
+            terser "$f" --compress --mangle --output "$f"
+            echo "  Minified JS: $(basename $f)"
+          done
+
+      - name: Minify CSS
+        run: |
+          find static/css -maxdepth 1 -name "*.css" | sort | while read f; do
+            csso "$f" --output "$f"
+            echo "  Minified CSS: $(basename $f)"
+          done
+
+      - name: Commit built assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add static/js/*.js static/css/*.css
+          if git diff --staged --quiet; then
+            echo "No changes — assets already minified."
+          else
+            git commit -m "chore: minify static assets [skip ci]"
+            git push
+          fi
