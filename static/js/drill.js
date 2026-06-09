@@ -103,6 +103,9 @@
     const fill = (idx / drill.num_boards) * 100;
     setStyle('dr-progress-fill', 'width', fill + '%');
 
+    // Per-board prompt (varies by drill type).
+    if (board.prompt) setText('dr-prompt', board.prompt);
+
     renderBoardGrid(board);
 
     state.boardClickAt = (window.performance && performance.now) ? performance.now() : Date.now();
@@ -114,9 +117,16 @@
     boardEl.innerHTML = '';
     boardEl.style.gridTemplateColumns = 'repeat(' + board.width + ', 22px)';
 
-    // Map revealed cells + numbers for fast lookup.
-    const revealedSet = new Set(board.revealed.map(rc => rc[0] + ',' + rc[1]));
-    const numbersMap  = new Map(board.numbers.map(rcn => [rcn[0] + ',' + rcn[1], rcn[2]]));
+    // Lookup sets for fast cell classification.
+    const revealedSet = new Set((board.revealed || []).map(rc => rc[0] + ',' + rc[1]));
+    const flagsSet    = new Set((board.flags    || []).map(rc => rc[0] + ',' + rc[1]));
+    const numbersMap  = new Map((board.numbers  || []).map(rcn => [rcn[0] + ',' + rcn[1], rcn[2]]));
+
+    // Drill-type drives which cells are clickable:
+    //   L4 — only revealed-number cells (chord targets)
+    //   L5/L6 — only unrevealed unflagged cells (next click / flag target)
+    const drillType = board.drill_type || 'l5_opening_recognition';
+    const isL4 = drillType === 'l4_pure_efficiency';
 
     for (let r = 0; r < board.height; r++) {
       for (let c = 0; c < board.width; c++) {
@@ -126,15 +136,30 @@
         cell.dataset.row = r;
         cell.dataset.col = c;
         const key = r + ',' + c;
-        if (revealedSet.has(key)) {
+
+        const isRevealed = revealedSet.has(key);
+        const isFlagged  = flagsSet.has(key);
+
+        if (isFlagged) {
+          cell.classList.add('dr-cell--flagged');
+          cell.textContent = '🚩';
+        } else if (isRevealed) {
           cell.classList.add('dr-cell--revealed');
           const n = numbersMap.get(key);
           if (typeof n === 'number') {
             cell.classList.add('dr-cell--n' + n);
             cell.textContent = String(n);
           }
+          if (isL4 && typeof numbersMap.get(key) === 'number') {
+            // Chord target — clickable.
+            cell.classList.add('dr-cell--chord-target');
+            cell.addEventListener('click', onCellClick);
+          }
         } else {
-          cell.addEventListener('click', onCellClick);
+          // Unrevealed, unflagged.
+          if (!isL4) {
+            cell.addEventListener('click', onCellClick);
+          }
         }
         boardEl.appendChild(cell);
       }
@@ -144,7 +169,10 @@
   // ── Click flow ───────────────────────────────────────────────────────────
   async function onCellClick(ev) {
     const cell = ev.currentTarget;
-    if (!cell || cell.classList.contains('dr-cell--revealed')) return;
+    if (!cell) return;
+    // L4 lets you click revealed cells (chord); L5/L6 don't. Either way, a
+    // cell that's already flagged is a no-op.
+    if (cell.classList.contains('dr-cell--flagged')) return;
 
     // Disable further clicks for this board.
     cell.classList.add('dr-cell--picked');
@@ -209,6 +237,9 @@
     if (!fb || !iconEl || !titleEl || !bodyEl || !nextBtn) return;
 
     iconEl.className = 'dr-feedback-icon';
+    const board = (state.drill.boards || [])[state.currentIndex] || {};
+    const drillType = board.drill_type || 'l5_opening_recognition';
+
     if (verdict.is_mine) {
       iconEl.classList.add('dr-feedback-icon--mine');
       iconEl.textContent = '💣';
@@ -219,19 +250,17 @@
     } else if (verdict.is_correct) {
       iconEl.classList.add('dr-feedback-icon--correct');
       iconEl.textContent = '✓';
-      titleEl.textContent = 'Nice pick';
-      bodyEl.textContent =
-        'Opens ' + verdict.opening_size +
-        ' cells (' + Math.round(verdict.relative_quality * 100) +
-        '% of the best available).';
+      titleEl.textContent = drillType === 'l4_pure_efficiency' ? 'Solid chord'
+                          : drillType === 'l6_flag_value'      ? 'Great flag'
+                          : 'Nice pick';
+      bodyEl.textContent = correctFeedbackBody(drillType, verdict);
     } else {
       iconEl.classList.add('dr-feedback-icon--wrong');
       iconEl.textContent = '✗';
-      titleEl.textContent = 'Small opening';
-      bodyEl.textContent =
-        'That cell only opens ' + verdict.opening_size +
-        ' cells. The best pick (highlighted) opens ' +
-        verdict.optimal_opening_size + '.';
+      titleEl.textContent = drillType === 'l4_pure_efficiency' ? 'Lower-value chord'
+                          : drillType === 'l6_flag_value'      ? 'Lower-value flag'
+                          : 'Small opening';
+      bodyEl.textContent = wrongFeedbackBody(drillType, verdict);
     }
 
     // Last board → "See results"; otherwise → "Next board"
@@ -343,6 +372,38 @@
     } catch (err) {
       showError('Could not start a new drill: ' + (err.message || 'unknown'));
     }
+  }
+
+  // ── Feedback copy ────────────────────────────────────────────────────────
+  function correctFeedbackBody(drillType, verdict) {
+    const pct = Math.round(verdict.relative_quality * 100);
+    if (drillType === 'l4_pure_efficiency') {
+      return 'Chord opens ' + verdict.opening_size + ' cells (' + pct +
+             '% of the best chord available).';
+    }
+    if (drillType === 'l6_flag_value') {
+      return 'That flag enables ' + verdict.opening_size +
+             ' cells of chord value (' + pct +
+             '% of the best flag available).';
+    }
+    return 'Opens ' + verdict.opening_size + ' cells (' + pct +
+           '% of the best available).';
+  }
+
+  function wrongFeedbackBody(drillType, verdict) {
+    if (drillType === 'l4_pure_efficiency') {
+      return 'That chord opens ' + verdict.opening_size +
+             ' cells. The best chord (highlighted) opens ' +
+             verdict.optimal_opening_size + '.';
+    }
+    if (drillType === 'l6_flag_value') {
+      return 'That flag enables ' + verdict.opening_size +
+             ' cells of chord value. The best flag (highlighted) enables ' +
+             verdict.optimal_opening_size + '.';
+    }
+    return 'That cell only opens ' + verdict.opening_size +
+           ' cells. The best pick (highlighted) opens ' +
+           verdict.optimal_opening_size + '.';
   }
 
   // ── DOM helpers ──────────────────────────────────────────────────────────

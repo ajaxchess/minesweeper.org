@@ -323,19 +323,18 @@
   // ── Start today's drill ───────────────────────────────────────────────────
   // POSTs /api/drills/start and redirects to the drill page on success.
   //
-  // Preview behaviour: only L5 Opening Recognition is implemented today,
-  // but every level's button routes here so users at any level can try it.
-  // The mastery-contribution row will be tagged level=5 regardless of where
-  // the click came from — when L1/L2/etc. drills land, swap DRILL_BY_LEVEL
-  // for a real lookup.
+  // L4, L5, L6 are wired today. L1/L2/L3/L7 don't have a dedicated drill
+  // yet, so they fall back to L5 Opening Recognition (the most universally
+  // useful skill). Each entry has the drill_type the server expects and the
+  // level the mastery row gets tagged with.
   const DRILL_BY_LEVEL = {
-    1: { type: 'l5_opening_recognition', level: 5 },
-    2: { type: 'l5_opening_recognition', level: 5 },
-    3: { type: 'l5_opening_recognition', level: 5 },
-    4: { type: 'l5_opening_recognition', level: 5 },
+    1: { type: 'l5_opening_recognition', level: 5 },  // fallback
+    2: { type: 'l5_opening_recognition', level: 5 },  // fallback
+    3: { type: 'l5_opening_recognition', level: 5 },  // fallback
+    4: { type: 'l4_pure_efficiency',     level: 4 },
     5: { type: 'l5_opening_recognition', level: 5 },
-    6: { type: 'l5_opening_recognition', level: 5 },
-    7: { type: 'l5_opening_recognition', level: 5 },
+    6: { type: 'l6_flag_value',          level: 6 },
+    7: { type: 'l5_opening_recognition', level: 5 },  // fallback
   };
 
   async function startDrill(level, btnEl) {

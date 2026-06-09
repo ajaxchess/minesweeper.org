@@ -11,7 +11,7 @@
 #   2. Fetch origin/main — if no new commit, exit.
 #   3. If the new commit is already in last_good_commit, exit (already validated).
 #   4. If the new commit matches blocked_commit, exit (already failed).
-#   5. Reset to new commit, build assets, install deps, regenerate database.py.
+#   5. Reset to new commit, install deps, regenerate database.py.
 #   6. START the staging service (it is stopped when idle).
 #   7. Wait for /health, run smoke tests.
 #   8. STOP the service regardless of test outcome.
@@ -97,10 +97,6 @@ fi
 
 git reset --hard "$REMOTE_COMMIT"
 echo "Reset to $REMOTE_COMMIT complete."
-
-# ── Build static assets ───────────────────────────────────────────────────────
-echo "Building static assets..."
-bash "$REPO_DIR/scripts/build_assets.sh" || echo "Warning: asset build failed (continuing)"
 
 # ── Update Python dependencies ────────────────────────────────────────────────
 echo "Installing/updating Python dependencies..."

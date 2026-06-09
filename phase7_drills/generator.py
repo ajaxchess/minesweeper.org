@@ -1,26 +1,36 @@
 """
 phase7_drills.generator — procedural board generation for drills.
 
-Currently implements the L5 Opening Recognition drill format:
+Three drill types are implemented today, all using the same pick-the-best-cell
+shell:
 
-  Pick-the-best-cell: show a partially-revealed expert board, ask the player
-  which unrevealed cell they'd click next. "Correct" cells are the
-  unrevealed cells that are NOT mines AND would reveal an opening within
-  80% of the maximum next-opening across all safe unrevealed cells.
+  l5_opening_recognition — Pick the unrevealed cell that opens the largest
+                           area. Trains opening recognition.
+
+  l4_pure_efficiency     — Pick the revealed-number cell that, when chorded,
+                           reveals the largest area. The drill pre-places
+                           correct flags so a chord is legal. Trains
+                           efficient mid-game play.
+
+  l6_flag_value          — Pick the provably-mine cell whose flag enables
+                           the most chord opportunities. Trains flag-value
+                           prioritization.
 
 Design constraints:
   - All randomness must be derivable from a seed so we can replay drill
-    boards (server-side validation, debugging, replays of a drill).
-  - Mine layouts are kept server-side. Only the "visible state" (revealed
-    cells + numbers) is sent to the client.
-  - The board must always have at least one large opening available (≥ 12
-    cells) — otherwise the drill teaches the wrong reflex (any random click
-    is fine).
+    boards (server-side validation, debugging).
+  - Mine layouts are kept server-side. Only the visible state (revealed,
+    numbers, flags, prompt) is sent to the client.
+  - Each board must have a meaningful "best" answer — at least some teaching
+    value. Boards that don't qualify are retried with a fresh seed.
 
 Public API:
-  generate_l5_opening_board(seed) -> DrillBoard
-  serialize_visible(board)        -> dict (safe to send to client)
-  evaluate_click(board, r, c)     -> EvaluatedClick
+  generate_l5_opening_board(seed)    -> DrillBoard
+  generate_l4_efficiency_board(seed) -> DrillBoard
+  generate_l6_flag_value_board(seed) -> DrillBoard
+  generate_drill_set(base_seed, drill_type, n) -> list[DrillBoard]
+  serialize_visible(board)           -> dict (client-safe)
+  evaluate_click(board, r, c)        -> EvaluatedClick
 """
 
 from __future__ import annotations
@@ -39,17 +49,42 @@ EXPERT_WIDTH = 30
 EXPERT_HEIGHT = 16
 EXPERT_MINES = 99
 
-# Minimum opening size we want available on a drill board. If the max opening
-# is below this, we regenerate. A truly tight board doesn't teach the lesson.
-MIN_TARGET_OPENING = 12
+# Minimum target opening size for L5 — below this, we regenerate.
+MIN_L5_OPENING = 12
 
-# A cell counts as "correct" if its next-opening is within this fraction of
-# the maximum next-opening across all safe unrevealed cells.
+# Minimum chord-reveal size for L4 — best chord must open at least this many.
+MIN_L4_CHORD_SIZE = 4
+
+# Minimum flag-enabling value for L6 — best flag must enable at least this much.
+MIN_L6_FLAG_VALUE = 2
+
+# Fraction of board revealed as the starter state.
+STARTER_TARGET_REVEAL_FRACTION = 0.25
+
+# A cell counts as "correct" if its score is within this fraction of the max.
 CORRECT_THRESHOLD = 0.80
 
-# How many cells to reveal in the "starter" — the partial reveal the player
-# sees when the drill begins.
-STARTER_TARGET_REVEAL_FRACTION = 0.25   # ~120 cells out of 480 on expert
+
+# Supported drill types — single source of truth.
+DRILL_TYPE_L5 = "l5_opening_recognition"
+DRILL_TYPE_L4 = "l4_pure_efficiency"
+DRILL_TYPE_L6 = "l6_flag_value"
+
+ALL_DRILL_TYPES = (DRILL_TYPE_L5, DRILL_TYPE_L4, DRILL_TYPE_L6)
+
+# Per-drill prompt text shown to the player above the board.
+DRILL_PROMPTS = {
+    DRILL_TYPE_L5: "Which unrevealed cell would you click next?",
+    DRILL_TYPE_L4: "Which revealed number would you chord next?",
+    DRILL_TYPE_L6: "Which cell would you flag next?",
+}
+
+# Per-drill description for the results blurb.
+DRILL_NAMES = {
+    DRILL_TYPE_L5: "Opening Recognition",
+    DRILL_TYPE_L4: "Pure Efficiency",
+    DRILL_TYPE_L6: "Flag Value",
+}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -60,26 +95,24 @@ STARTER_TARGET_REVEAL_FRACTION = 0.25   # ~120 cells out of 480 on expert
 class DrillBoard:
     """A generated drill board.
 
-    Attributes:
-      width, height       — board dimensions
-      num_mines           — total mine count
-      seed                — RNG seed (lets us replay the board if needed)
-      mines               — set of (r, c) mine positions (SECRET)
-      revealed            — set of (r, c) revealed cells (visible to player)
-      numbers             — (r, c) -> adjacent mine count, only for revealed
-                            cells with adjacent_mines > 0
-      correct_cells       — set of (r, c) cells that are "correct" picks
-                            (safe + opening ≥ 80% of max)
-      optimal_cell        — single (r, c) with the largest opening
-      optimal_opening_size — size of the best opening
+    Common fields apply to every drill type. Type-specific scoring is folded
+    into `correct_cells` / `optimal_cell` / `optimal_opening_size`, which
+    mean slightly different things per drill:
+
+      L5: opening size in cells
+      L4: chord-reveal size in cells
+      L6: count of chord opportunities the flag enables (× their sizes)
     """
     width: int
     height: int
     num_mines: int
     seed: int
 
+    # Set on every drill type
+    drill_type: str = DRILL_TYPE_L5
     mines: set[tuple[int, int]] = field(default_factory=set)
     revealed: set[tuple[int, int]] = field(default_factory=set)
+    flags: set[tuple[int, int]] = field(default_factory=set)
     numbers: dict[tuple[int, int], int] = field(default_factory=dict)
 
     correct_cells: set[tuple[int, int]] = field(default_factory=set)
@@ -92,8 +125,8 @@ class EvaluatedClick:
     """Result of evaluating a player's click on a drill board."""
     is_correct: bool
     is_mine: bool
-    opening_size: int        # how many cells *would* have been revealed
-    relative_quality: float  # 0..1, ratio vs the optimal opening size
+    opening_size: int
+    relative_quality: float
     optimal_cell: tuple[int, int]
     optimal_opening_size: int
 
@@ -103,37 +136,78 @@ class EvaluatedClick:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def generate_l5_opening_board(seed: int) -> DrillBoard:
-    """
-    Generate one L5 Opening Recognition drill board.
-
-    The RNG is seeded so the same seed always produces the same board. We
-    retry generation if the resulting board has no large opening available;
-    we cap retries at 20 (collisions are very rare with default constants).
-    """
+    """L5 Opening Recognition — see module docstring."""
     rng = random.Random(seed)
-    for attempt in range(20):
+    for _ in range(20):
         attempt_seed = rng.randrange(1, 1_000_000_000)
-        board = _try_generate(attempt_seed)
+        board = _try_generate_l5(attempt_seed)
         if board is not None:
             return board
     raise RuntimeError(
-        f"Could not generate a valid drill board after 20 attempts (seed={seed})"
+        f"Could not generate a valid L5 board after 20 attempts (seed={seed})"
     )
 
 
-def generate_drill_set(base_seed: int, n: int = 10) -> list[DrillBoard]:
-    """Generate n boards with deterministic, distinct seeds derived from base_seed."""
-    rng = random.Random(base_seed)
-    return [generate_l5_opening_board(rng.randrange(1, 1_000_000_000)) for _ in range(n)]
+def generate_l4_efficiency_board(seed: int) -> DrillBoard:
+    """L4 Pure Efficiency — see module docstring."""
+    rng = random.Random(seed)
+    for _ in range(40):
+        attempt_seed = rng.randrange(1, 1_000_000_000)
+        board = _try_generate_l4(attempt_seed)
+        if board is not None:
+            return board
+    raise RuntimeError(
+        f"Could not generate a valid L4 board after 40 attempts (seed={seed})"
+    )
 
+
+def generate_l6_flag_value_board(seed: int) -> DrillBoard:
+    """L6 Flag Value — see module docstring."""
+    rng = random.Random(seed)
+    for _ in range(40):
+        attempt_seed = rng.randrange(1, 1_000_000_000)
+        board = _try_generate_l6(attempt_seed)
+        if board is not None:
+            return board
+    raise RuntimeError(
+        f"Could not generate a valid L6 board after 40 attempts (seed={seed})"
+    )
+
+
+_GENERATORS = {
+    DRILL_TYPE_L5: generate_l5_opening_board,
+    DRILL_TYPE_L4: generate_l4_efficiency_board,
+    DRILL_TYPE_L6: generate_l6_flag_value_board,
+}
+
+
+def generate_drill_set(
+    base_seed: int,
+    n: int = 10,
+    drill_type: str = DRILL_TYPE_L5,
+) -> list[DrillBoard]:
+    """Generate n boards with distinct, seeded layouts for the given drill type."""
+    if drill_type not in _GENERATORS:
+        raise ValueError(f"Unknown drill_type: {drill_type!r}")
+    rng = random.Random(base_seed)
+    gen = _GENERATORS[drill_type]
+    return [gen(rng.randrange(1, 1_000_000_000)) for _ in range(n)]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Serialization
+# ─────────────────────────────────────────────────────────────────────────────
 
 def serialize_visible(board: DrillBoard) -> dict:
-    """Return the JSON-safe visible state for the client (mines NOT included)."""
+    """Visible payload sent to the client — NO mines."""
     return {
+        "drill_type": board.drill_type,
+        "prompt": DRILL_PROMPTS.get(board.drill_type, ""),
         "width": board.width,
         "height": board.height,
         "num_mines": board.num_mines,
         "revealed": [[r, c] for (r, c) in sorted(board.revealed)],
+        "flags":    [[r, c] for (r, c) in sorted(board.flags)],
         "numbers": [
             [r, c, n] for (r, c), n in sorted(board.numbers.items())
         ],
@@ -141,14 +215,16 @@ def serialize_visible(board: DrillBoard) -> dict:
 
 
 def serialize_solution(board: DrillBoard) -> dict:
-    """Server-side state we persist so we can validate clicks later."""
+    """Full state we persist server-side so we can validate clicks later."""
     return {
+        "drill_type": board.drill_type,
         "width": board.width,
         "height": board.height,
         "num_mines": board.num_mines,
         "seed": board.seed,
-        "mines": [[r, c] for (r, c) in sorted(board.mines)],
+        "mines":    [[r, c] for (r, c) in sorted(board.mines)],
         "revealed": [[r, c] for (r, c) in sorted(board.revealed)],
+        "flags":    [[r, c] for (r, c) in sorted(board.flags)],
         "correct_cells": [[r, c] for (r, c) in sorted(board.correct_cells)],
         "optimal_cell": list(board.optimal_cell) if board.optimal_cell else None,
         "optimal_opening_size": board.optimal_opening_size,
@@ -156,55 +232,73 @@ def serialize_solution(board: DrillBoard) -> dict:
 
 
 def deserialize_solution(d: dict) -> DrillBoard:
-    """Reverse of serialize_solution — rehydrate a board from stored JSON."""
     board = DrillBoard(
         width=d["width"],
         height=d["height"],
         num_mines=d["num_mines"],
         seed=d["seed"],
+        drill_type=d.get("drill_type", DRILL_TYPE_L5),
     )
-    board.mines = {tuple(p) for p in d["mines"]}
-    board.revealed = {tuple(p) for p in d["revealed"]}
-    board.correct_cells = {tuple(p) for p in d["correct_cells"]}
+    board.mines    = {tuple(p) for p in d.get("mines",    [])}
+    board.revealed = {tuple(p) for p in d.get("revealed", [])}
+    board.flags    = {tuple(p) for p in d.get("flags",    [])}
+    board.correct_cells = {tuple(p) for p in d.get("correct_cells", [])}
     board.optimal_cell = tuple(d["optimal_cell"]) if d.get("optimal_cell") else None
     board.optimal_opening_size = int(d.get("optimal_opening_size", 0))
-    # Recompute numbers from the mine layout — saves storage
     board.numbers = _compute_numbers(board)
     return board
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Click evaluation
+# ─────────────────────────────────────────────────────────────────────────────
+
 def evaluate_click(board: DrillBoard, r: int, c: int) -> EvaluatedClick:
-    """
-    Score the player's click. Always returns a verdict even for invalid
-    coordinates (which are treated as wrong, not error).
+    """Score the player's click.
+
+    The shape is identical across drill types. The generator decides what
+    counts as "correct" (it populated correct_cells) and what counts as a
+    fatal mistake (it populated mines / revealed):
+
+      L5: clicking a mine is fatal, clicking an already-revealed cell is invalid
+      L4: clicking an unrevealed cell is invalid (need to chord a number),
+          clicking a revealed-non-number is wrong, mine click is impossible
+          because the player can only click revealed cells
+      L6: clicking a non-mine cell counts as "wrong but not fatal" since you
+          can't actually trigger a mine by flagging — but we score it as
+          wrong (player thought it was a mine and was wrong)
+
+    For simplicity, the scoring rule is uniform:
+      - in correct_cells           → correct
+      - is a mine (only L5)        → is_mine=True, correct=False
+      - everything else            → correct=False
     """
     in_bounds = 0 <= r < board.height and 0 <= c < board.width
-    already_revealed = (r, c) in board.revealed
+
+    if not in_bounds:
+        return _miss(board)
+
+    # L4: clicking a non-revealed cell is invalid
+    if board.drill_type == DRILL_TYPE_L4 and (r, c) not in board.revealed:
+        return _miss(board)
+
+    # L5 / L6: clicking an already-revealed cell is invalid
+    if board.drill_type != DRILL_TYPE_L4 and (r, c) in board.revealed:
+        return _miss(board)
+
     is_mine = (r, c) in board.mines
-
-    if not in_bounds or already_revealed:
+    if board.drill_type == DRILL_TYPE_L5 and is_mine:
         return EvaluatedClick(
-            is_correct=False,
-            is_mine=False,
-            opening_size=0,
+            is_correct=False, is_mine=True, opening_size=0,
             relative_quality=0.0,
             optimal_cell=board.optimal_cell or (0, 0),
             optimal_opening_size=board.optimal_opening_size,
         )
 
-    if is_mine:
-        return EvaluatedClick(
-            is_correct=False,
-            is_mine=True,
-            opening_size=0,
-            relative_quality=0.0,
-            optimal_cell=board.optimal_cell or (0, 0),
-            optimal_opening_size=board.optimal_opening_size,
-        )
-
-    opening_size = _flood_size(board, r, c)
+    # Score size depends on drill type — use generator-provided lookup table.
+    score = _score_for(board, r, c)
     relative = (
-        opening_size / board.optimal_opening_size
+        score / board.optimal_opening_size
         if board.optimal_opening_size > 0
         else 0.0
     )
@@ -212,40 +306,46 @@ def evaluate_click(board: DrillBoard, r: int, c: int) -> EvaluatedClick:
     return EvaluatedClick(
         is_correct=(r, c) in board.correct_cells,
         is_mine=False,
-        opening_size=opening_size,
+        opening_size=score,
         relative_quality=round(relative, 3),
         optimal_cell=board.optimal_cell or (0, 0),
         optimal_opening_size=board.optimal_opening_size,
     )
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Internal — board generation
-# ─────────────────────────────────────────────────────────────────────────────
-
-def _try_generate(seed: int) -> Optional[DrillBoard]:
-    rng = random.Random(seed)
-    board = DrillBoard(
-        width=EXPERT_WIDTH,
-        height=EXPERT_HEIGHT,
-        num_mines=EXPERT_MINES,
-        seed=seed,
+def _miss(board: DrillBoard) -> EvaluatedClick:
+    return EvaluatedClick(
+        is_correct=False, is_mine=False, opening_size=0, relative_quality=0.0,
+        optimal_cell=board.optimal_cell or (0, 0),
+        optimal_opening_size=board.optimal_opening_size,
     )
 
-    # 1) Place mines randomly
-    cells = [(r, c) for r in range(board.height) for c in range(board.width)]
-    rng.shuffle(cells)
-    board.mines = set(cells[:board.num_mines])
 
-    # 2) Compute the "starter reveal" — a few openings the player sees
+def _score_for(board: DrillBoard, r: int, c: int) -> int:
+    """Compute the per-drill score for cell (r, c). Drives the feedback text."""
+    if board.drill_type == DRILL_TYPE_L5:
+        return _flood_size(board, r, c)
+    if board.drill_type == DRILL_TYPE_L4:
+        return _chord_reveal_size(board, r, c)
+    if board.drill_type == DRILL_TYPE_L6:
+        return _flag_value(board, r, c)
+    return 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# L5 — Opening Recognition
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _try_generate_l5(seed: int) -> Optional[DrillBoard]:
+    rng = random.Random(seed)
+    board = _seed_board(seed, DRILL_TYPE_L5)
+    _place_random_mines(board, rng)
     _make_starter_reveal(board, rng)
 
-    # 3) Identify the best next opening among safe unrevealed cells
-    best_cell, best_size = _find_best_next_opening(board)
-    if best_cell is None or best_size < MIN_TARGET_OPENING:
-        return None  # caller will retry
+    best_cell, best_size = _find_best_l5(board)
+    if best_cell is None or best_size < MIN_L5_OPENING:
+        return None
 
-    # 4) Collect all "correct" cells (within CORRECT_THRESHOLD of the best)
     threshold = max(1, int(best_size * CORRECT_THRESHOLD))
     correct: set[tuple[int, int]] = set()
     for r in range(board.height):
@@ -259,20 +359,287 @@ def _try_generate(seed: int) -> Optional[DrillBoard]:
     board.correct_cells = correct
     board.optimal_cell = best_cell
     board.optimal_opening_size = best_size
-
-    # 5) Precompute numbers for revealed cells (cheap; client uses these)
     board.numbers = _compute_numbers(board)
-
     return board
 
 
-def _make_starter_reveal(board: DrillBoard, rng: random.Random) -> None:
-    """
-    Reveal one or two safe openings to seed the partial state.
+def _find_best_l5(board: DrillBoard) -> tuple[Optional[tuple[int, int]], int]:
+    best_cell: Optional[tuple[int, int]] = None
+    best_size = 0
+    for r in range(board.height):
+        for c in range(board.width):
+            if (r, c) in board.revealed or (r, c) in board.mines:
+                continue
+            sz = _flood_size(board, r, c)
+            if sz > best_size:
+                best_size = sz
+                best_cell = (r, c)
+    return best_cell, best_size
 
-    We pick a random safe cell, flood-reveal it, then if too few cells are
-    revealed, pick another safe cell elsewhere on the board and reveal that.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# L4 — Pure Efficiency
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _try_generate_l4(seed: int) -> Optional[DrillBoard]:
+    rng = random.Random(seed)
+    board = _seed_board(seed, DRILL_TYPE_L4)
+    _place_random_mines(board, rng)
+    _make_starter_reveal(board, rng)
+
+    # Place flags on adjacent-mine cells where the constraint is unambiguous:
+    # a revealed number with k adjacent unrevealed cells equal to its mine
+    # quota means all those neighbors are mines.
+    _place_inferable_flags(board)
+
+    # Find chord-ready revealed cells (number == flagged adjacent count and
+    # at least one unrevealed-unflagged neighbor to reveal).
+    sizes: dict[tuple[int, int], int] = {}
+    for (r, c) in board.revealed:
+        n = _count_adj_mines(board, r, c)
+        if n == 0:
+            continue
+        flagged_adj = sum(
+            1 for nr, nc in _neighbors(r, c)
+            if (nr, nc) in board.flags
+        )
+        if flagged_adj != n:
+            continue
+        sz = _chord_reveal_size(board, r, c)
+        if sz > 0:
+            sizes[(r, c)] = sz
+
+    if not sizes:
+        return None
+    max_size = max(sizes.values())
+    if max_size < MIN_L4_CHORD_SIZE:
+        return None
+
+    threshold = max(1, int(max_size * CORRECT_THRESHOLD))
+    correct = {cell for cell, sz in sizes.items() if sz >= threshold}
+    optimal = max(sizes, key=sizes.get)
+
+    board.correct_cells = correct
+    board.optimal_cell = optimal
+    board.optimal_opening_size = max_size
+    board.numbers = _compute_numbers(board)
+    return board
+
+
+def _chord_reveal_size(board: DrillBoard, r: int, c: int) -> int:
+    """Non-mutating: how many cells would be revealed by chording (r, c)?
+
+    Chord rule: only fires when adjacent_flags == number. Returns 0 if the
+    cell isn't chord-ready, or for any cell that isn't a revealed number.
     """
+    if (r, c) not in board.revealed:
+        return 0
+    n = _count_adj_mines(board, r, c)
+    if n == 0:
+        return 0
+    flagged = sum(1 for nr, nc in _neighbors(r, c) if (nr, nc) in board.flags)
+    if flagged != n:
+        return 0
+
+    revealed_after = set(board.revealed)
+    new_cells = 0
+    for nr, nc in _neighbors(r, c):
+        if not (0 <= nr < board.height and 0 <= nc < board.width):
+            continue
+        if (nr, nc) in board.flags or (nr, nc) in revealed_after:
+            continue
+        if (nr, nc) in board.mines:
+            # Player would have detonated a wrongly-flagged-around chord, but
+            # in our generator chord-ready cells always have correct flags,
+            # so this branch shouldn't fire. Be defensive: don't count it.
+            continue
+        # Simulate the flood-fill from this newly-revealed neighbor.
+        sz = _flood_size_into(board, nr, nc, revealed_after)
+        new_cells += sz
+    return new_cells
+
+
+def _flood_size_into(
+    board: DrillBoard,
+    r: int,
+    c: int,
+    already_revealed: set[tuple[int, int]],
+) -> int:
+    """Flood from (r,c), counting newly-revealed cells, mutating already_revealed.
+
+    Used by _chord_reveal_size so a single chord across multiple neighbors
+    doesn't double-count cells that flood-fill into the same zero region.
+    """
+    if (r, c) in already_revealed or (r, c) in board.mines or (r, c) in board.flags:
+        return 0
+    if not (0 <= r < board.height and 0 <= c < board.width):
+        return 0
+    q: deque[tuple[int, int]] = deque([(r, c)])
+    count = 0
+    while q:
+        cr, cc = q.popleft()
+        if not (0 <= cr < board.height and 0 <= cc < board.width):
+            continue
+        if (cr, cc) in already_revealed:
+            continue
+        if (cr, cc) in board.mines or (cr, cc) in board.flags:
+            continue
+        already_revealed.add((cr, cc))
+        count += 1
+        if _count_adj_mines(board, cr, cc) == 0:
+            for nr, nc in _neighbors(cr, cc):
+                q.append((nr, nc))
+    return count
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# L6 — Flag Value
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _try_generate_l6(seed: int) -> Optional[DrillBoard]:
+    rng = random.Random(seed)
+    board = _seed_board(seed, DRILL_TYPE_L6)
+    _place_random_mines(board, rng)
+    _make_starter_reveal(board, rng)
+
+    # Find provably-mine cells: any unrevealed neighbor of a revealed number
+    # where the number's unrevealed-unflagged count equals (number - flags).
+    # We DON'T place those flags — the drill is to do so. We do place flags
+    # where the lesson would be uninteresting (cells whose flag wouldn't open
+    # anything) so the candidate set is meaningful.
+    provably_mine = _find_provably_mine_cells(board)
+    if not provably_mine:
+        return None
+
+    sizes: dict[tuple[int, int], int] = {}
+    for cell in provably_mine:
+        v = _flag_value(board, *cell)
+        if v > 0:
+            sizes[cell] = v
+
+    if not sizes:
+        return None
+    max_v = max(sizes.values())
+    if max_v < MIN_L6_FLAG_VALUE:
+        return None
+
+    threshold = max(1, int(max_v * CORRECT_THRESHOLD))
+    correct = {cell for cell, v in sizes.items() if v >= threshold}
+    optimal = max(sizes, key=sizes.get)
+
+    board.correct_cells = correct
+    board.optimal_cell = optimal
+    board.optimal_opening_size = max_v
+    board.numbers = _compute_numbers(board)
+    return board
+
+
+def _find_provably_mine_cells(board: DrillBoard) -> set[tuple[int, int]]:
+    """Cells that simple constraint propagation proves are mines.
+
+    Rule: revealed cell with number N, F flagged neighbors, U unrevealed
+    unflagged neighbors. If U == N - F, then every cell in U is a mine.
+    """
+    proven: set[tuple[int, int]] = set()
+    for (r, c) in board.revealed:
+        n = _count_adj_mines(board, r, c)
+        if n == 0:
+            continue
+        flagged = []
+        unrev_unflagged = []
+        for nr, nc in _neighbors(r, c):
+            if not (0 <= nr < board.height and 0 <= nc < board.width):
+                continue
+            if (nr, nc) in board.flags:
+                flagged.append((nr, nc))
+            elif (nr, nc) not in board.revealed:
+                unrev_unflagged.append((nr, nc))
+        if len(unrev_unflagged) == n - len(flagged) and unrev_unflagged:
+            proven.update(unrev_unflagged)
+    return proven
+
+
+def _flag_value(board: DrillBoard, r: int, c: int) -> int:
+    """If we flagged (r,c), how many new chord opportunities would open up?
+
+    We score the flag by:  sum over neighbouring revealed-number cells X of
+    the chord-reveal size X would have AFTER placing this flag (only if X
+    wasn't already chord-ready and becomes chord-ready as a result).
+
+    This rewards flags that unlock the BIGGEST new chord.
+    """
+    if (r, c) not in board.mines:
+        return 0
+    if (r, c) in board.flags or (r, c) in board.revealed:
+        return 0
+
+    # Hypothetical state with the flag placed.
+    new_flags = set(board.flags)
+    new_flags.add((r, c))
+
+    total = 0
+    for nr, nc in _neighbors(r, c):
+        if (nr, nc) not in board.revealed:
+            continue
+        num = _count_adj_mines(board, nr, nc)
+        if num == 0:
+            continue
+        flagged_before = sum(
+            1 for ar, ac in _neighbors(nr, nc) if (ar, ac) in board.flags
+        )
+        flagged_after = flagged_before + (
+            1 if (r, c) in {(ar, ac) for ar, ac in _neighbors(nr, nc)} else 0
+        )
+        # We only credit chords newly enabled by THIS flag.
+        if flagged_before == num:
+            continue
+        if flagged_after != num:
+            continue
+
+        # Compute the chord reveal as if (r,c) were flagged.
+        synthetic = _board_with_flags(board, new_flags)
+        total += _chord_reveal_size(synthetic, nr, nc)
+
+    return total
+
+
+def _board_with_flags(base: DrillBoard, flags: set[tuple[int, int]]) -> DrillBoard:
+    """Cheap shallow copy with the flags set replaced. Mines/revealed shared."""
+    return DrillBoard(
+        width=base.width,
+        height=base.height,
+        num_mines=base.num_mines,
+        seed=base.seed,
+        drill_type=base.drill_type,
+        mines=base.mines,
+        revealed=base.revealed,
+        flags=flags,
+        numbers=base.numbers,
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Shared helpers
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _seed_board(seed: int, drill_type: str) -> DrillBoard:
+    return DrillBoard(
+        width=EXPERT_WIDTH,
+        height=EXPERT_HEIGHT,
+        num_mines=EXPERT_MINES,
+        seed=seed,
+        drill_type=drill_type,
+    )
+
+
+def _place_random_mines(board: DrillBoard, rng: random.Random) -> None:
+    cells = [(r, c) for r in range(board.height) for c in range(board.width)]
+    rng.shuffle(cells)
+    board.mines = set(cells[:board.num_mines])
+
+
+def _make_starter_reveal(board: DrillBoard, rng: random.Random) -> None:
+    """Reveal one or two safe openings to seed the partial state."""
     target = int(board.width * board.height * STARTER_TARGET_REVEAL_FRACTION)
     safe_cells = _safe_cells(board)
     rng.shuffle(safe_cells)
@@ -281,8 +648,6 @@ def _make_starter_reveal(board: DrillBoard, rng: random.Random) -> None:
     for cell in safe_cells:
         if cell in board.revealed:
             continue
-        # Only pick a "real" opening — at least 4 cells — for the starter, so
-        # the player can see something. Skip cells whose opening is just 1.
         sz = _flood_size(board, *cell)
         if sz < 4:
             continue
@@ -291,8 +656,6 @@ def _make_starter_reveal(board: DrillBoard, rng: random.Random) -> None:
         if revealed_count >= target:
             break
 
-    # Fallback: if no large opening was reachable from any random cell, take
-    # the smallest 1-cell reveals until we hit the target (rare)
     if revealed_count < target:
         for cell in safe_cells:
             if cell in board.revealed:
@@ -302,11 +665,42 @@ def _make_starter_reveal(board: DrillBoard, rng: random.Random) -> None:
                 break
 
 
-def _reveal_flood(board: DrillBoard, r: int, c: int) -> int:
-    """Mutating BFS flood-fill: reveal all connected 0-region cells.
+def _place_inferable_flags(board: DrillBoard) -> None:
+    """Auto-place flags wherever a revealed number unambiguously identifies
+    its mines.
 
-    Returns count of newly revealed cells.
+    Re-runs until no new flags can be placed (handles cascades — a flag
+    that's placed may complete the constraint on a neighbouring number,
+    which then becomes chord-ready instead of contributing more flags).
     """
+    changed = True
+    while changed:
+        changed = False
+        for (r, c) in board.revealed:
+            n = _count_adj_mines(board, r, c)
+            if n == 0:
+                continue
+            flagged = []
+            unrev_unflagged = []
+            for nr, nc in _neighbors(r, c):
+                if not (0 <= nr < board.height and 0 <= nc < board.width):
+                    continue
+                if (nr, nc) in board.flags:
+                    flagged.append((nr, nc))
+                elif (nr, nc) not in board.revealed:
+                    unrev_unflagged.append((nr, nc))
+            if (
+                len(unrev_unflagged) == n - len(flagged)
+                and unrev_unflagged
+            ):
+                # All remaining unrevealed neighbours are mines.
+                for cell in unrev_unflagged:
+                    if cell not in board.flags:
+                        board.flags.add(cell)
+                        changed = True
+
+
+def _reveal_flood(board: DrillBoard, r: int, c: int) -> int:
     if (r, c) in board.mines:
         return 0
     q: deque[tuple[int, int]] = deque([(r, c)])
@@ -326,15 +720,11 @@ def _reveal_flood(board: DrillBoard, r: int, c: int) -> int:
 
 
 def _flood_size(board: DrillBoard, r: int, c: int) -> int:
-    """Non-mutating: how many cells *would* be revealed if we clicked (r, c)?
-
-    Returns 0 if (r, c) is a mine or already revealed.
-    """
-    if (r, c) in board.mines or (r, c) in board.revealed:
+    """Non-mutating: how many cells *would* be revealed if we clicked (r, c)?"""
+    if (r, c) in board.mines or (r, c) in board.revealed or (r, c) in board.flags:
         return 0
     if not (0 <= r < board.height and 0 <= c < board.width):
         return 0
-
     visited: set[tuple[int, int]] = set()
     q: deque[tuple[int, int]] = deque([(r, c)])
     count = 0
@@ -344,7 +734,7 @@ def _flood_size(board: DrillBoard, r: int, c: int) -> int:
             continue
         if not (0 <= cr < board.height and 0 <= cc < board.width):
             continue
-        if (cr, cc) in board.mines:
+        if (cr, cc) in board.mines or (cr, cc) in board.flags:
             continue
         visited.add((cr, cc))
         count += 1
@@ -354,25 +744,6 @@ def _flood_size(board: DrillBoard, r: int, c: int) -> int:
                     q.append((nr, nc))
     return count
 
-
-def _find_best_next_opening(board: DrillBoard) -> tuple[Optional[tuple[int, int]], int]:
-    """Among safe unrevealed cells, find the one with the largest opening."""
-    best_cell: Optional[tuple[int, int]] = None
-    best_size = 0
-    for r in range(board.height):
-        for c in range(board.width):
-            if (r, c) in board.revealed or (r, c) in board.mines:
-                continue
-            sz = _flood_size(board, r, c)
-            if sz > best_size:
-                best_size = sz
-                best_cell = (r, c)
-    return best_cell, best_size
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Internal — board math
-# ─────────────────────────────────────────────────────────────────────────────
 
 def _neighbors(r: int, c: int) -> Iterable[tuple[int, int]]:
     for dr in (-1, 0, 1):
@@ -398,11 +769,6 @@ def _safe_cells(board: DrillBoard) -> list[tuple[int, int]]:
 
 
 def _compute_numbers(board: DrillBoard) -> dict[tuple[int, int], int]:
-    """For each revealed cell with adjacent mines > 0, store the count.
-
-    Zero-cells are omitted; the client renders revealed cells without a number
-    as empty squares.
-    """
     out: dict[tuple[int, int], int] = {}
     for (r, c) in board.revealed:
         n = _count_adj_mines(board, r, c)
@@ -412,16 +778,19 @@ def _compute_numbers(board: DrillBoard) -> dict[tuple[int, int], int]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CLI smoke test — `python3 phase7_drills/generator.py` to sanity-check
+# CLI smoke test
 # ─────────────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    print("Generating 5 drill boards…\n")
-    for i, board in enumerate(generate_drill_set(base_seed=42, n=5), 1):
-        print(
-            f"Board {i}: revealed={len(board.revealed):>3}/{board.width*board.height}  "
-            f"correct={len(board.correct_cells):>3}  "
-            f"optimal=({board.optimal_cell[0]},{board.optimal_cell[1]}) "
-            f"opens {board.optimal_opening_size} cells"
-        )
+    for drill_type in ALL_DRILL_TYPES:
+        print(f"\n── {drill_type} ──")
+        boards = generate_drill_set(base_seed=42, n=5, drill_type=drill_type)
+        for i, board in enumerate(boards, 1):
+            print(
+                f"  Board {i}: revealed={len(board.revealed):>3}  "
+                f"flags={len(board.flags):>2}  "
+                f"correct={len(board.correct_cells):>3}  "
+                f"optimal=({board.optimal_cell[0]},{board.optimal_cell[1]})  "
+                f"score={board.optimal_opening_size}"
+            )
     print("\nOK")

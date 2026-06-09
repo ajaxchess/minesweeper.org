@@ -135,6 +135,26 @@
 }
 .dr-cell.dr-cell--revealed:hover { transform: none; }
 
+/* L4 chord targets — clickable revealed numbers */
+.dr-cell.dr-cell--chord-target {
+  cursor: pointer;
+  outline: 1px solid var(--dr-accent-soft);
+  outline-offset: -2px;
+}
+.dr-cell.dr-cell--chord-target:hover {
+  background: var(--dr-accent-soft);
+  transform: scale(1.04);
+}
+
+/* Flagged cells (pre-placed) — non-clickable; visual only */
+.dr-cell.dr-cell--flagged {
+  background: var(--dr-warning-soft);
+  color: var(--dr-danger);
+  cursor: default;
+  font-size: 12px;
+}
+.dr-cell.dr-cell--flagged:hover { transform: none; }
+
 /* Number colours mirror the canonical Minesweeper palette */
 .dr-cell--n1 { color: #1d4ed8; }
 .dr-cell--n2 { color: #047857; }

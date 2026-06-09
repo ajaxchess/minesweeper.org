@@ -50,11 +50,6 @@ fi
 
 git reset --hard "$LAST_GOOD"
 
-# Always rebuild static assets after git reset --hard, because the reset always
-# restores the unminified source files from git regardless of whether JS/CSS changed.
-echo "Building static assets..."
-bash "$REPO_DIR/scripts/build_assets.sh" || echo "Warning: asset build failed (continuing)"
-
 echo "Installing/updating Python dependencies..."
 "$VENV_DIR/bin/pip" install -r "$REPO_DIR/requirements.txt" --quiet || echo "Warning: pip install failed"
 

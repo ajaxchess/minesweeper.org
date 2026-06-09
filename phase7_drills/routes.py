@@ -128,10 +128,13 @@ def _visible_from_solution(sol: dict) -> DrillBoardVisible:
     board = generator.deserialize_solution(sol)
     vis = generator.serialize_visible(board)
     return DrillBoardVisible(
+        drill_type=vis["drill_type"],
+        prompt=vis["prompt"],
         width=vis["width"],
         height=vis["height"],
         num_mines=vis["num_mines"],
         revealed=vis["revealed"],
+        flags=vis["flags"],
         numbers=vis["numbers"],
     )
 
@@ -154,7 +157,9 @@ def start_drill(
     # boards without exposing predictable seeds.
     base_seed = abs(hash((player_id, datetime.now(timezone.utc).timestamp()))) % 1_000_000_000
 
-    boards = generator.generate_drill_set(base_seed, n=body.num_boards)
+    boards = generator.generate_drill_set(
+        base_seed, n=body.num_boards, drill_type=body.drill_type
+    )
     solutions = [generator.serialize_solution(b) for b in boards]
     visible = [_visible_from_solution(s) for s in solutions]
 

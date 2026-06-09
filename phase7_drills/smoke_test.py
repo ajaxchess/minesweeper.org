@@ -72,7 +72,25 @@ def run() -> int:
 
     client = TestClient(app)
 
-    # 1) Start a drill with only 3 boards for speed
+    # Exercise every drill type's start path with a short drill, just to
+    # catch generator regressions early.
+    for dtype, lvl in [
+        ("l5_opening_recognition", 5),
+        ("l4_pure_efficiency",     4),
+        ("l6_flag_value",          6),
+    ]:
+        r0 = client.post("/api/drills/start", json={
+            "drill_type": dtype, "level": lvl,
+            "difficulty": "expert", "mode": "standard", "num_boards": 3,
+        })
+        assert r0.status_code == 200, (dtype, r0.status_code, r0.text)
+        b0 = r0.json()["boards"][0]
+        assert b0["drill_type"] == dtype
+        assert b0["prompt"], "prompt should be non-empty"
+        if dtype == "l4_pure_efficiency":
+            assert len(b0["flags"]) > 0, "L4 should pre-place flags"
+
+    # 1) Run a full L5 drill with 3 boards as the deep-flow test
     r = client.post("/api/drills/start", json={
         "drill_type": "l5_opening_recognition",
         "level": 5,

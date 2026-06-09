@@ -27,11 +27,16 @@ class DrillBoardVisible(BaseModel):
     `revealed` is the list of revealed cells as [row, col] pairs.
     `numbers` is the subset of revealed cells with adjacent mines > 0,
     encoded as [row, col, count] triples.
+    `flags` is the list of pre-placed flags (L4/L6 only; empty for L5).
+    `prompt` is the per-drill instruction shown above the board.
     """
+    drill_type: str
+    prompt: str
     width: int
     height: int
     num_mines: int
     revealed: list[list[int]]
+    flags: list[list[int]]
     numbers: list[list[int]]
 
 
@@ -39,8 +44,15 @@ class DrillBoardVisible(BaseModel):
 # Start a drill
 # ─────────────────────────────────────────────────────────────────────────────
 
+DrillType = Literal[
+    "l5_opening_recognition",
+    "l4_pure_efficiency",
+    "l6_flag_value",
+]
+
+
 class DrillStartRequest(BaseModel):
-    drill_type: Literal["l5_opening_recognition"] = "l5_opening_recognition"
+    drill_type: DrillType = "l5_opening_recognition"
     level: int = Field(5, ge=1, le=7)
     difficulty: str = Field("expert", pattern="^(beginner|intermediate|expert)$")
     mode: Literal["standard", "no_guess"] = "standard"
