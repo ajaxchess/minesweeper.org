@@ -211,7 +211,7 @@
     <strong style="font-size:0.9rem;">{{ t['mj_submit_score'] }}</strong>
     <label>
       <span>{{ t['mj_name_label'] }}</span>
-      <input type="text" id="mj-name" maxlength="32" placeholder="Your name"
+      <input type="text" id="mj-name" maxlength="32" placeholder="{{ t['tz_name_placeholder'] }}"
              value="{{ user.name if user else '' }}">
     </label>
     <button class="mj-btn" id="mj-submit" style="align-self:flex-start;">{{ t['mj_submit_btn'] }}</button>

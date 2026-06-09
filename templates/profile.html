@@ -233,7 +233,7 @@
         </div>
         <div class="about-edit">
           <textarea id="about-input" maxlength="5000" rows="5"
-                    placeholder="Tell other players about yourself…">{{ about_text or '' }}</textarea>
+                    placeholder="{{ t['profile_about_ph'] }}">{{ about_text or '' }}</textarea>
           <div class="about-footer">
             <span id="about-chars" class="setting-desc"></span>
             <button id="about-save" onclick="saveAbout()">{{ t.common_save }}</button>

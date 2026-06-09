@@ -234,7 +234,7 @@
     <strong style="font-size:0.95rem;">{{ t['fp_submit_score'] }}</strong>
     <label>
       <span>{{ t['fp_name_label'] }}</span>
-      <input type="text" id="fp-name" maxlength="32" placeholder="Your name"
+      <input type="text" id="fp-name" maxlength="32" placeholder="{{ t['tz_name_placeholder'] }}"
              value="{{ user.name if user else '' }}">
     </label>
     <input type="hidden" id="fp-time-val" value="0">

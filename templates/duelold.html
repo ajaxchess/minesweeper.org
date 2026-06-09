@@ -159,8 +159,8 @@
     <div class="duel-chat-header">💬 Chat</div>
     <div id="duel-chat-log" class="duel-chat-log"></div>
     <div class="duel-chat-input-row">
-      <input id="duel-chat-input" type="text" placeholder="Message your opponent…" maxlength="200" autocomplete="off">
-      <button class="duel-chat-send-btn" onclick="sendChat()">Send</button>
+      <input id="duel-chat-input" type="text" placeholder="{{ t['duel_chat_placeholder'] }}" maxlength="200" autocomplete="off">
+      <button class="duel-chat-send-btn" onclick="sendChat()">{{ t['duel_send'] }}</button>
     </div>
   </div>
   {% endif %}
