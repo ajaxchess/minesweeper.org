@@ -54,14 +54,14 @@
       </div>
     </div>
 
-    {# Feedback overlay shown after each pick #}
+    {# Feedback overlay shown after each pick — populated by drill.js;
+       placeholders intentionally empty so a CSS bug doesn't surface
+       stale text. #}
     <div class="dr-feedback" id="dr-feedback" hidden>
       <div class="dr-feedback-card">
-        <div class="dr-feedback-icon" id="dr-feedback-icon">✓</div>
-        <div class="dr-feedback-title" id="dr-feedback-title">Correct</div>
-        <div class="dr-feedback-body" id="dr-feedback-body">
-          That cell opens 18 cells — within 80% of the best pick.
-        </div>
+        <div class="dr-feedback-icon" id="dr-feedback-icon"></div>
+        <div class="dr-feedback-title" id="dr-feedback-title"></div>
+        <div class="dr-feedback-body" id="dr-feedback-body"></div>
         <button class="dr-btn dr-btn--primary" id="dr-next-btn">
           {{ t.drill_next | default("Next board →") }}
         </button>
