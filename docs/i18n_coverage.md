@@ -22,7 +22,7 @@
 | Lang | Language | Keys | EN placeholders | Untranslated est. |
 |------|----------|-----:|----------------:|------------------:|
 | `de` | German | 2309 | 76 | 0 ✅ |
-| `ru` | Russian | 2309 | 346 | 270 |
+| `ru` | Russian | 2309 | 27 | 0 ✅ |
 | `el` | Greek | 2309 | 359 | 283 |
 | `pt` | Portuguese | 2309 | 369 | 293 |
 | `ja` | Japanese | 2309 | 29 | 0 ✅ |
@@ -52,7 +52,12 @@ tracks translation quality (EN placeholders), not structural completeness.
 ### German (`de`) — ✅ Fully translated
 76 keys legitimately share their EN value (proper nouns, universal terms).
 
-### Russian (`ru`) — ~270 keys need translation
+### Russian (`ru`) — ✅ Fully translated
+27 keys legitimately share their EN value (brand names: CubeSweeper, Hexsweeper, MobiusSweeper,
+Nonosweeper, Worldsweeper, Tametsi, Tentaizu, Minesweeper Chess, Numbers Match; acronyms: PvP, VS;
+symbols: #; product titles: 2048 Hexagon, Minesweeper Rush, Vibe Coding section; empty string).
+All 270 previously untranslated keys were translated in the RU translation pass (2026-06-10).
+Note: `meta_kw_default` in EN was pre-populated with Russian SEO keywords — value correctly retained.
 ### Greek (`el`) — ~283 keys need translation
 ### Portuguese (`pt`) — ~293 keys need translation
 ### Japanese (`ja`) — ✅ Fully translated
