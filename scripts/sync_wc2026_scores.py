@@ -58,18 +58,19 @@ def _name_to_slug(name: str) -> str:
     return plain.lower().replace(" ", "-").replace("&", "and").replace("'", "")
 
 
-def _fetch(path: str) -> list:
+def _fetch(path: str, key: str | None = None) -> list:
     url = f"{API_BASE}{path}"
     resp = requests.get(url, timeout=15)
     resp.raise_for_status()
-    return resp.json()
+    data = resp.json()
+    return data[key] if key else data
 
 
 # ── core logic ───────────────────────────────────────────────────────────────
 
 def build_team_map() -> dict[str, str]:
     """Return {worldcup26_team_id: minesweeper_slug} for all 48 teams."""
-    teams = _fetch("/get/teams")
+    teams = _fetch("/get/teams", key="teams")
     mapping = {str(t["id"]): _name_to_slug(t["name_en"]) for t in teams}
     log.info("Team map built for %d teams", len(mapping))
     return mapping
@@ -77,7 +78,7 @@ def build_team_map() -> dict[str, str]:
 
 def sync(dry_run: bool = False) -> None:
     team_map = build_team_map()
-    games    = _fetch("/get/games")
+    games    = _fetch("/get/games", key="games")
 
     finished = [g for g in games if str(g.get("finished", "")).upper() == "TRUE"]
     log.info("API returned %d total games, %d finished", len(games), len(finished))
