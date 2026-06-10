@@ -34,7 +34,7 @@
 | `ms` | Malay | 2309 | 387 | 311 |
 | `hi` | Hindi | 2309 | 390 | 314 |
 | `id` | Indonesian | 2309 | 390 | 314 |
-| `uk` | Ukrainian | 2309 | 392 | 316 |
+| `uk` | Ukrainian | 2309 | 24 | 0 ✅ |
 | `sv` | Swedish | 2309 | 396 | 320 |
 | `eo` | Esperanto | 2309 | 397 | 321 |
 | `pgl` | Pig Latin | 2309 | 388 | 312 |
@@ -85,7 +85,12 @@ cover nearly all terms including product names and mode labels that other langua
 ### Malay (`ms`) — ~311 keys need translation
 ### Hindi (`hi`) — ~314 keys need translation
 ### Indonesian (`id`) — ~314 keys need translation
-### Ukrainian (`uk`) — ~316 keys need translation
+### Ukrainian (`uk`) — ✅ Fully translated
+24 keys legitimately share their EN value (brand names: CubeSweeper, Hexsweeper, MobiusSweeper,
+Nonosweeper, Worldsweeper, Tametsi, Tentaizu, Numbers Match, Minesweeper Rush, Vibe Coding;
+product title: 2048 Hexagon; acronym: PvP; symbol: #; empty string; holiday banner; company name).
+All 316 previously untranslated keys were translated in the UK translation pass (2026-06-10).
+Uses «» Ukrainian guillemets for quoted phrases throughout.
 ### Swedish (`sv`) — ~320 keys need translation
 ### Esperanto (`eo`) — ~321 keys need translation
 ### Pig Latin (`pgl`) — ~312 keys need translation
