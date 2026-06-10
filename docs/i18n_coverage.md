@@ -28,7 +28,7 @@
 | `ja` | Japanese | 2309 | 29 | 0 ✅ |
 | `zh` | Chinese (Simplified) | 2309 | 26 | 0 ✅ |
 | `zh-hant` | Chinese (Traditional) | 2309 | 26 | 0 ✅ |
-| `it` | Italian | 2309 | 376 | 300 |
+| `it` | Italian | 2309 | 51 | 0 ✅ |
 | `ko` | Korean | 2309 | 13 | 0 ✅ |
 | `th` | Thai | 2309 | 382 | 306 |
 | `ms` | Malay | 2309 | 387 | 311 |
@@ -82,7 +82,14 @@ cover almost all nav labels, mode names, and terms that other languages keep as 
 26 keys legitimately share their EN value (brand names, symbols, abbreviations).
 All 301 previously untranslated keys were translated in the zh-hant translation pass (2026-06-09).
 Uses Traditional characters (繁體中文) with Taiwan/HK vocabulary throughout.
-### Italian (`it`) — ~300 keys need translation
+### Italian (`it`) — ✅ Fully translated
+51 keys legitimately share their EN value: brand names (CubeSweeper, Hexsweeper, MobiusSweeper,
+Nonosweeper, Worldsweeper, Tametsi, Tentaizu, Minesweeper Chess, Numbers Match), product titles,
+English loanwords standard in Italian — Game Over, Puzzle, Chat, Blog, Email, Desktop, Mobile,
+Backlog, Multiplayer, Sudoku, Auto, Debug, Top, Hash — plus «Standard» (identical in both
+languages), symbols, and universal terms (VS, PvP, Expert).
+All 300 previously untranslated keys were translated in the IT translation pass (2026-06-10).
+Uses «» Italian guillemets for quoted phrases throughout.
 ### Korean (`ko`) — ✅ Fully translated
 13 keys legitimately share their EN value (brand names: Tametsi, Tentaizu; acronyms: PvP, VS; symbols: #, 4s, vs.; empty string; holiday banner).
 All 371 previously untranslated keys were translated in the KO translation pass (2026-06-09).
