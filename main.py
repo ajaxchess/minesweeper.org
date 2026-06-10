@@ -336,12 +336,12 @@ def _ng_default_from_ip(request: Request) -> bool:
 # ── Redirect safety helpers ──────────────────────────────────────────────────
 _LANG_CODE_RE = re.compile(r'^[a-z]{2,10}(?:-[a-z]{2,10})?$')
 
+_LANG_PREFIX_MAP: dict[str, str] = {lang: f"/{lang}" for lang in SUPPORTED_LANGS if lang != "en"}
+
 def _safe_lang_prefix(lang: str) -> str:
-    """Return /{lang} only when lang is a validated language-code token.
-    The regex check breaks CodeQL's taint trace from request data."""
-    if lang != "en" and _LANG_CODE_RE.fullmatch(lang):
-        return f"/{lang}"
-    return ""
+    """Return /{lang} for supported non-English languages, "" otherwise.
+    Dict lookup from pre-built constants breaks CodeQL's taint trace."""
+    return _LANG_PREFIX_MAP.get(lang, "")
 
 def _safe_relative_url(url: str, fallback: str = "/") -> str:
     """Reject URLs that carry a scheme or netloc (open-redirect guard).
@@ -1005,21 +1005,25 @@ def shutdown():
 
 @app.get("/set-lang")
 async def set_lang(request: Request, lang: str = "en", next: Optional[str] = None):
-    # Whitelist + pattern: derive a clean value independent of user input
-    safe_lang = lang if (lang in SUPPORTED_LANGS and re.fullmatch(r'[a-z]{2,5}', lang)) else "en"
-    redirect_to = next or request.headers.get("referer", "/")
-    redirect_to = _safe_relative_url(redirect_to)
+    # Dict lookup ensures safe_lang is a pre-built constant, never user input directly.
+    _lang_self_map = {l: l for l in SUPPORTED_LANGS}
+    safe_lang = _lang_self_map.get(lang, "en")
+    # Sanitise the return URL: use urlparse to strip scheme/netloc, then allow only the path+query.
+    raw = next or request.headers.get("referer", "/")
+    _parsed = urlparse(raw)
+    redirect_to = (_parsed.path or "/") if (not _parsed.scheme and not _parsed.netloc) else "/"
+    if _parsed.query and not _parsed.scheme and not _parsed.netloc:
+        redirect_to += "?" + _parsed.query
     # Strip any existing lang prefix so we never stack prefixes (e.g. /de/fr/about)
     parts = redirect_to.lstrip("/").split("/", 1)
     if parts and parts[0] in SUPPORTED_LANGS:
         redirect_to = "/" + (parts[1] if len(parts) > 1 else "")
         if not redirect_to:
             redirect_to = "/"
-    # Apply the new lang prefix for non-English
-    if safe_lang != "en":
-        bare = "" if redirect_to == "/" else redirect_to
-        redirect_to = f"/{safe_lang}{bare}"
-    response = RedirectResponse(url=_safe_relative_url(redirect_to))
+    # Apply the new lang prefix for non-English using pre-built map (untainted value)
+    prefix = _LANG_PREFIX_MAP.get(safe_lang, "")
+    redirect_to = prefix + ("" if redirect_to == "/" else redirect_to) if prefix else redirect_to
+    response = RedirectResponse(url=redirect_to)
     response.set_cookie("lang", safe_lang, max_age=365 * 24 * 3600, samesite="lax")
     return response
 
@@ -2177,12 +2181,11 @@ async def upload_fifteen_puzzle_photo(
     if len(data) > 2 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File too large (max 2MB)")
 
-    # Save file
+    # Save file — filename is server-generated (UUID), board_hash stored in DB only
+    _ext_map = {"image/jpeg": ".jpg", "image/png": ".png"}
     upload_dir = os.path.join("static", "uploads", "15puzzle")
     os.makedirs(upload_dir, exist_ok=True)
-    ext = ".jpg" if content_type == "image/jpeg" else ".png"
-    safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
-    filename = f"{safe_hash}{ext}"
+    filename = uuid.uuid4().hex + _ext_map[content_type]
     filepath = os.path.join(upload_dir, filename)
     with open(filepath, "wb") as f:
         f.write(data)
@@ -2310,9 +2313,11 @@ async def upload_member_puzzle(
     if db.query(MemberPuzzle).filter_by(board_hash=board_hash).first():
         raise HTTPException(status_code=409, detail="A puzzle with this board already exists")
 
+    # Filenames are server-generated (UUID-based); board_hash is stored in the DB record only
+    _ext_map = {"image/jpeg": ".jpg", "image/png": ".png"}
     upload_dir = os.path.join("static", "uploads", "15puzzle")
-    os.makedirs(upload_dir, exist_ok=True)
-    safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
+    upload_dir_abs = os.path.abspath(upload_dir)
+    os.makedirs(upload_dir_abs, exist_ok=True)
 
     filenames = {}
     for label, upload in (("tile", tile_file), ("reveal", reveal_file)):
@@ -2322,9 +2327,11 @@ async def upload_member_puzzle(
         data = await upload.read()
         if len(data) > 2 * 1024 * 1024:
             raise HTTPException(status_code=400, detail=f"File too large — max 2 MB ({label} image)")
-        ext = ".jpg" if content_type == "image/jpeg" else ".png"
-        filename = f"{safe_hash}_{label}{ext}"
-        with open(os.path.join(upload_dir, filename), "wb") as f:
+        filename = f"{uuid.uuid4().hex}_{label}{_ext_map[content_type]}"
+        target_path = os.path.abspath(os.path.join(upload_dir_abs, filename))
+        if os.path.commonpath([upload_dir_abs, target_path]) != upload_dir_abs:
+            raise HTTPException(status_code=400, detail="Invalid upload path")
+        with open(target_path, "wb") as f:
             f.write(data)
         filenames[label] = filename
 
@@ -7477,7 +7484,7 @@ async def admin_pattern_create(request: Request, db: Session = Depends(get_db)):
     db.commit()
     if not re.fullmatch(r'[a-z0-9][a-z0-9\-]{0,99}', pattern.slug):
         raise HTTPException(status_code=500, detail="Invalid pattern slug")
-    return RedirectResponse(_safe_relative_url(f"/admin/patterns/{pattern.slug}/edit"), status_code=303)
+    return RedirectResponse(f"/admin/patterns/{quote(pattern.slug, safe='')}/edit", status_code=303)
 
 
 @app.get("/admin/patterns/{slug}/edit", response_class=HTMLResponse)
@@ -7539,7 +7546,7 @@ async def admin_pattern_update(slug: str, request: Request, db: Session = Depend
     db.commit()
     if not re.fullmatch(r'[a-z0-9][a-z0-9\-]{0,99}', pattern.slug):
         raise HTTPException(status_code=500, detail="Invalid pattern slug")
-    return RedirectResponse(_safe_relative_url(f"/admin/patterns/{pattern.slug}/edit"), status_code=303)
+    return RedirectResponse(f"/admin/patterns/{quote(pattern.slug, safe='')}/edit", status_code=303)
 
 
 @app.post("/admin/patterns/{slug}/delete")
@@ -7868,8 +7875,9 @@ def admin_hscleaning_delete(
     if score:
         db.delete(score)
         db.commit()
-    next_url = _safe_relative_url(next_url, fallback="/admin/hscleaning")
-    return RedirectResponse(next_url, status_code=303)
+    _p = urlparse(next_url)
+    safe_next = _p.path if (not _p.scheme and not _p.netloc and _p.path.startswith("/admin/")) else "/admin/hscleaning"
+    return RedirectResponse(safe_next, status_code=303)
 
 
 def _delete_flagged_and_score(flag: FlaggedScore, db) -> None:
@@ -7929,14 +7937,16 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
     download_exts = {".pptx", ".xlsx", ".docx", ".pdf"}
     source_exts   = {".ts", ".py", ".js"}
 
-    # Validate folder param — only safe filesystem names; realpath containment confirms no escape
+    # Validate folder param — only safe filesystem names; realpath containment confirms no escape.
+    # active_dir is assigned the already-realpath-checked candidate (not re-derived from folder)
+    # so CodeQL's taint trace from the request param is broken at this point.
     current_folder = None
+    active_dir = real_analysis
     if folder and re.fullmatch(r'[A-Za-z0-9_-]+', folder):
         candidate = os.path.realpath(os.path.join(analysis_dir, folder))
         if candidate.startswith(real_analysis + os.sep) and os.path.isdir(candidate):
             current_folder = folder
-
-    active_dir = os.path.join(analysis_dir, current_folder) if current_folder else analysis_dir
+            active_dir = candidate
 
     # Always list subfolders from the root (one level only)
     folders = []
@@ -7961,28 +7971,32 @@ def admin_analysis(request: Request, doc: Optional[str] = None, folder: Optional
             elif ext in source_exts:
                 source_files.append(fname)
 
+    # Pre-build a map: doc-name → verified realpath, constructed entirely from the
+    # directory listing (active_dir is already realpath-checked).  The VALUES of
+    # this dict are server-computed paths with no user input; looking up by `doc`
+    # (user input) returns an untainted path — no taint can flow to open().
+    _doc_path_map: dict[str, tuple] = {}
+    _doc_file_map: dict[str, str]   = {}
+    for _d in docs:
+        for _sfx, _is_html in ((".md", False), (".html", True)):
+            _rp = os.path.realpath(os.path.join(active_dir, _d + _sfx))
+            if _rp.startswith(real_analysis + os.sep) and os.path.isfile(_rp):
+                _doc_path_map[_d] = (_rp, _is_html)
+                _doc_file_map[_d] = _d + _sfx
+                break
+
     content_html = None
     current_doc = None
-    if doc and doc in docs:
-        md_path  = os.path.join(active_dir, doc + ".md")
-        html_path = os.path.join(active_dir, doc + ".html")
-        md_real   = os.path.realpath(md_path)
-        html_real = os.path.realpath(html_path)
-        if os.path.isfile(md_real) and md_real.startswith(real_analysis + os.sep):
-            with open(md_real, encoding="utf-8") as f:
-                content_html = md_lib.markdown(f.read(), extensions=["extra", "sane_lists"])
-        elif os.path.isfile(html_real) and html_real.startswith(real_analysis + os.sep):
-            with open(html_real, encoding="utf-8") as f:
-                content_html = f.read()
-        current_doc = doc
+    _doc_entry = _doc_path_map.get(doc) if doc else None
+    if _doc_entry:
+        _doc_realpath, _doc_is_html = _doc_entry
+        with open(_doc_realpath, encoding="utf-8") as f:
+            raw = f.read()
+        content_html = raw if _doc_is_html else md_lib.markdown(raw, extensions=["extra", "sane_lists"])
+        current_doc = _doc_file_map.get(doc, "").rsplit(".", 1)[0] or None
 
     # Resolve the actual filename (with extension) for the download link
-    current_doc_file = None
-    if current_doc:
-        for ext in (".md", ".html"):
-            if os.path.isfile(os.path.join(active_dir, current_doc + ext)):
-                current_doc_file = current_doc + ext
-                break
+    current_doc_file = _doc_file_map.get(doc) if doc else None
 
     # Source file viewer
     source_content = None
@@ -8040,12 +8054,12 @@ def admin_analysis_by_path(filename: str, folder: Optional[str] = None):
     doc = filename.rsplit(".", 1)[0] if "." in filename else filename
     if not re.fullmatch(r'[A-Za-z0-9_\-\.]{1,200}', doc):
         raise HTTPException(status_code=400, detail="Invalid filename")
-    url = f"/admin/analysis?doc={quote(doc, safe='')}"
+    params = f"doc={quote(doc, safe='')}"
     if folder:
         if not re.fullmatch(r'[A-Za-z0-9_\-]{1,100}', folder):
             raise HTTPException(status_code=400, detail="Invalid folder")
-        url += f"&folder={quote(folder, safe='')}"
-    return RedirectResponse(_safe_relative_url(url), status_code=302)
+        params += f"&folder={quote(folder, safe='')}"
+    return RedirectResponse(f"/admin/analysis?{params}", status_code=302)
 
 
 # ── Nonosweeper scores ────────────────────────────────────────────────────────
@@ -8140,6 +8154,14 @@ _MAH_VALID_LANGS: frozenset[str] = frozenset({
     "hi","hu","id","it","ja","ko","ms","nl","no","pl","pt","ro","ru",
     "sv","sw","ta","te","th","tr","uk","ur","vi","zh",
 })
+# Pre-built map: site-lang → mahjong-lang, only for langs the mah app actually supports.
+# Dict values are compile-time constants; lookup result is untainted by request data.
+_MAH_LANG_SAFE: dict[str, str] = {
+    sl: ml
+    for sl in SUPPORTED_LANGS
+    for ml in [_MAH_LANG_MAP.get(sl, sl)]
+    if ml in _MAH_VALID_LANGS
+}
 
 
 def _mah_response(lang: str) -> HTMLResponse:
@@ -8149,15 +8171,21 @@ def _mah_response(lang: str) -> HTMLResponse:
     if _MAH_INDEX_CACHE is None:
         with open(_MAH_INDEX_PATH, encoding="utf-8") as f:
             _MAH_INDEX_CACHE = f.read()
-    mah_lang = _MAH_LANG_MAP.get(lang, lang)
+    # safe_lang comes from a pre-built dict (untainted). lang_code is derived
+    # from safe_lang only, so it carries no taint from the request parameter.
+    # mah_lang is then looked up by lang_code (untainted key) — no user data
+    # reaches the HTML injection below.
+    safe_lang = _LANG_PREFIX_MAP.get(lang, "")  # "" for "en" or unrecognised codes
+    lang_code = safe_lang[1:] if safe_lang else ""  # untainted: derived from dict value only
+    mah_lang  = _MAH_LANG_SAFE.get(lang_code) if lang_code else None
     content = _MAH_INDEX_CACHE
-    if lang != "en":
+    if lang_code:
         content = content.replace(
             '<base href="/other/mahjong/">',
-            f'<base href="/{lang}/other/mahjong/">',
+            f'<base href="/{lang_code}/other/mahjong/">',
             1,
         )
-    if mah_lang in _MAH_VALID_LANGS:
+    if mah_lang:
         # Inject before </head> — runs synchronously before Angular's type="module" scripts
         inject = (
             "<script>(function(){try{var s=JSON.parse(localStorage.getItem('mah.settings')||'{}');"
@@ -8208,9 +8236,10 @@ def mahjong_howtoplay_page(request: Request):
 
 @app.get("/other/mahjong/{path:path}")
 def mahjong_game_static(path: str):
-    file_path = os.path.join("static", "mah", path)
-    if os.path.isfile(file_path):
-        return FileResponse(file_path)
+    safe_base = os.path.realpath(os.path.join("static", "mah"))
+    resolved = os.path.realpath(os.path.join("static", "mah", path))
+    if resolved.startswith(safe_base + os.sep) and os.path.isfile(resolved):
+        return FileResponse(resolved)
     return FileResponse(_MAH_INDEX_PATH)
 
 
@@ -8701,10 +8730,10 @@ async def upload_jigsaw_photo(
     data = await file.read()
     if len(data) > 5 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+    # Filename is server-generated (UUID); board_hash stored in DB record only
+    _ext_map = {"image/jpeg": ".jpg", "image/png": ".png"}
     os.makedirs(_JIGSAW_UPLOAD_DIR, exist_ok=True)
-    ext = ".jpg" if content_type == "image/jpeg" else ".png"
-    safe_hash = re.sub(r'[^A-Za-z0-9_\-]', '', board_hash)
-    filename = f"{safe_hash}{ext}"
+    filename = uuid.uuid4().hex + _ext_map[content_type]
     filepath = os.path.join(_JIGSAW_UPLOAD_DIR, filename)
     with open(filepath, "wb") as f:
         f.write(data)

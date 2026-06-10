@@ -119,9 +119,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Overlay ───────────────────────────────────────────────────────────────
-  function showDuelOverlay(html) {
+  function showDuelOverlay(headline, sub, elapsed) {
     const ov = document.getElementById('duel-overlay');
-    ov.innerHTML     = html;
+    const div = document.createElement('div');
+    div.className = 'duel-result';
+    const h2 = document.createElement('h2');
+    h2.textContent = headline;
+    const p1 = document.createElement('p');
+    p1.textContent = sub;
+    const p2 = document.createElement('p');
+    p2.className = 'result-time';
+    p2.textContent = 'Time: ' + Number(elapsed) + 's';
+    const a = document.createElement('a');
+    a.href = '/duel';
+    a.className = 'duel-play-again';
+    a.textContent = '⚔️ New Duel';
+    div.append(h2, p1, p2, a);
+    ov.replaceChildren(div);
     ov.style.display = 'flex';
   }
 
@@ -188,9 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const newCells   = msg.newly_revealed;
         const boardValsM = msg.board_values;
         newCells.forEach(([r, c]) => {
-          revealed[r][c]  = true;
-          boardVals[r][c] = boardValsM[`${r},${c}`];
-          renderCell(r, c);
+          const ri = r | 0, ci = c | 0;
+          revealed[ri][ci]  = true;
+          boardVals[ri][ci] = boardValsM[`${ri},${ci}`];
+          renderCell(ri, ci);
         });
         if (msg.exploded) {
           exploded = true;
@@ -231,14 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
           sub      = `Final score: ${myScore} vs ${oppScore}`;
         }
 
-        showDuelOverlay(`
-          <div class="duel-result">
-            <h2>${headline}</h2>
-            <p>${sub}</p>
-            <p class="result-time">Time: ${msg.elapsed}s</p>
-            <a href="/duel" class="duel-play-again">⚔️ New Duel</a>
-          </div>
-        `);
+        showDuelOverlay(headline, sub, msg.elapsed);
         break;
       }
 

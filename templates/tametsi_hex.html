@@ -261,6 +261,12 @@
     return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
+  function safeHref(v) {
+    const s = String(v);
+    if (!/^https?:\/\//i.test(s)) return '#';
+    return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
   function renderTimesTable(pid) {
     const body = document.getElementById('thex-times-body');
     if (!body) return;
@@ -273,7 +279,7 @@
       <tr class="${i % 2 === 1 ? 'lb-even' : ''}">
         <td class="lb-rank">${i + 1}</td>
         <td class="lb-name">${r.profile_url
-          ? `<a href="${esc(r.profile_url)}">${esc(r.name)}</a>`
+          ? `<a href="${safeHref(r.profile_url)}">${esc(r.name)}</a>`
           : esc(r.name)}</td>
         <td class="lb-time">${fmtMs(r.time_ms)}</td>
       </tr>`).join('');
