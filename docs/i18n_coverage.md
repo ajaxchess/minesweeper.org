@@ -11,7 +11,8 @@
 - **~13–77 keys** are legitimately identical to English across all languages (proper nouns,
   universal terms, brand names). German has 76; French has 77 (one extra brand name);
   Spanish has 47; Japanese has 29; Chinese (Simplified) has 26; Korean has 13 (fewest —
-  Korean translates nearly everything including product names other languages keep as English).
+  Korean translates nearly everything including product names other languages keep as English);
+  Thai has 42 (includes JSON-LD genre fields and meta titles kept EN for SEO/schema.org).
   Any language with EN placeholders above 77 has that many keys awaiting real translation.
 - Keys added in **Parts 1–5** of the DE translation pass (316 keys: SEO sections, jigsaw
   gallery, placeholder attributes, info/how-to pages) were given EN placeholder values in
@@ -30,7 +31,7 @@
 | `zh-hant` | Chinese (Traditional) | 2309 | 26 | 0 ✅ |
 | `it` | Italian | 2309 | 51 | 0 ✅ |
 | `ko` | Korean | 2309 | 13 | 0 ✅ |
-| `th` | Thai | 2309 | 382 | 306 |
+| `th` | Thai | 2309 | 42 | 0 ✅ |
 | `ms` | Malay | 2309 | 387 | 311 |
 | `hi` | Hindi | 2309 | 48 | 0 ✅ |
 | `id` | Indonesian | 2309 | 390 | 314 |
@@ -95,7 +96,10 @@ Uses «» Italian guillemets for quoted phrases throughout.
 All 371 previously untranslated keys were translated in the KO translation pass (2026-06-09).
 Note: Korean has the fewest EN-identical keys (13) of all translated languages — Korean translations
 cover nearly all terms including product names and mode labels that other languages keep as English.
-### Thai (`th`) — ~306 keys need translation
+### Thai (`th`) — ✅ Fully translated
+42 keys legitimately share their EN value: game/brand names (CubeSweeper, Hexsweeper, MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tametsi Hex, Tentaizu, Tentaizu Daily, Tentaizu Easy, Minesweeper Chess, Numbers Match, Minesweeper Rush, Vibe Coding, Mosaic, 2048 Hexagon), acronyms (PvP, VS), symbols (#, 4s), universal terms (Expert, Blog), company name (Regis Consulting), JSON-LD genre/platform fields (Strategy, Browser Game, Web Browser, Competitive, Logic, Brain Teaser, Multiplayer — kept EN for schema.org compatibility), meta title strings (kept EN for SEO), and the Cinco de Mayo banner.
+All 340 previously untranslated keys were translated in the TH translation pass (2026-06-10).
+Uses Thai script (ภาษาไทย) throughout.
 ### Malay (`ms`) — ~311 keys need translation
 ### Hindi (`hi`) — ✅ Fully translated
 48 keys legitimately share their EN value: 13 `meta_kw_*` SEO keyword strings (kept in EN for
