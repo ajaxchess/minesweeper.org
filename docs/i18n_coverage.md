@@ -32,7 +32,7 @@
 | `ko` | Korean | 2309 | 13 | 0 ✅ |
 | `th` | Thai | 2309 | 382 | 306 |
 | `ms` | Malay | 2309 | 387 | 311 |
-| `hi` | Hindi | 2309 | 390 | 314 |
+| `hi` | Hindi | 2309 | 48 | 0 ✅ |
 | `id` | Indonesian | 2309 | 390 | 314 |
 | `uk` | Ukrainian | 2309 | 24 | 0 ✅ |
 | `sv` | Swedish | 2309 | 396 | 320 |
@@ -83,7 +83,14 @@ Note: Korean has the fewest EN-identical keys (13) of all translated languages �
 cover nearly all terms including product names and mode labels that other languages keep as English.
 ### Thai (`th`) — ~306 keys need translation
 ### Malay (`ms`) — ~311 keys need translation
-### Hindi (`hi`) — ~314 keys need translation
+### Hindi (`hi`) — ✅ Fully translated
+48 keys legitimately share their EN value: 13 `meta_kw_*` SEO keyword strings (kept in EN for
+search indexing on this English-primary domain), brand/product names (CubeSweeper, Hexsweeper,
+MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tentaizu, Minesweeper Chess, Numbers Match),
+product page titles, language codes (lang_label/lang_other for Esperanto), section headings
+(Arcade, Mosaic, Minesweeper Rush, Vibe Coding), theme name (Starfield), and symbols.
+All 314 previously untranslated keys were translated in the HI translation pass (2026-06-10).
+Uses Devanagari script throughout.
 ### Indonesian (`id`) — ~314 keys need translation
 ### Ukrainian (`uk`) — ✅ Fully translated
 24 keys legitimately share their EN value (brand names: CubeSweeper, Hexsweeper, MobiusSweeper,
