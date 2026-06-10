@@ -2316,7 +2316,8 @@ async def upload_member_puzzle(
     # Filenames are server-generated (UUID-based); board_hash is stored in the DB record only
     _ext_map = {"image/jpeg": ".jpg", "image/png": ".png"}
     upload_dir = os.path.join("static", "uploads", "15puzzle")
-    os.makedirs(upload_dir, exist_ok=True)
+    upload_dir_abs = os.path.abspath(upload_dir)
+    os.makedirs(upload_dir_abs, exist_ok=True)
 
     filenames = {}
     for label, upload in (("tile", tile_file), ("reveal", reveal_file)):
@@ -2327,7 +2328,10 @@ async def upload_member_puzzle(
         if len(data) > 2 * 1024 * 1024:
             raise HTTPException(status_code=400, detail=f"File too large — max 2 MB ({label} image)")
         filename = f"{uuid.uuid4().hex}_{label}{_ext_map[content_type]}"
-        with open(os.path.join(upload_dir, filename), "wb") as f:
+        target_path = os.path.abspath(os.path.join(upload_dir_abs, filename))
+        if os.path.commonpath([upload_dir_abs, target_path]) != upload_dir_abs:
+            raise HTTPException(status_code=400, detail="Invalid upload path")
+        with open(target_path, "wb") as f:
             f.write(data)
         filenames[label] = filename
 
