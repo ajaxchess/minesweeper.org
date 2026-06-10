@@ -12047,7 +12047,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         # Help
         "help_title": "Owhay otay Ayplay Inesweepermay",
         # Footer
-        "footer": "Uiltbay ybay <a href=\"https://regis.consulting\">Egisray Onsultingcay</a> ithway Ythonpay &amp; FastAPI",
+        "footer": "Uiltbay ybay <a href=\"https://regis.consulting\">Egisray Onsultingcay</a> andway <a href=\"https://smarternerd.com/\">Artersmay Erdnay</a> ithway Ythonpay &amp; FastAPI",
         # Language switcher (unused by template — kept for symmetry)
         "lang_other": "en",
         "lang_label": "EN \u2014 English",
