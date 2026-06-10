@@ -24,7 +24,7 @@
 | `de` | German | 2309 | 76 | 0 ✅ |
 | `ru` | Russian | 2309 | 27 | 0 ✅ |
 | `el` | Greek | 2309 | 359 | 283 |
-| `pt` | Portuguese | 2309 | 369 | 293 |
+| `pt` | Portuguese | 2309 | 47 | 0 ✅ |
 | `ja` | Japanese | 2309 | 29 | 0 ✅ |
 | `zh` | Chinese (Simplified) | 2309 | 26 | 0 ✅ |
 | `zh-hant` | Chinese (Traditional) | 2309 | 26 | 0 ✅ |
@@ -59,7 +59,14 @@ symbols: #; product titles: 2048 Hexagon, Minesweeper Rush, Vibe Coding section;
 All 270 previously untranslated keys were translated in the RU translation pass (2026-06-10).
 Note: `meta_kw_default` in EN was pre-populated with Russian SEO keywords — value correctly retained.
 ### Greek (`el`) — ~283 keys need translation
-### Portuguese (`pt`) — ~293 keys need translation
+### Portuguese (`pt`) — ✅ Fully translated
+47 keys legitimately share their EN value: brand names (CubeSweeper, Hexsweeper, MobiusSweeper,
+Nonosweeper, Worldsweeper, Tametsi, Tentaizu, Minesweeper Chess, Numbers Match), product titles,
+and common English loanwords standard in Brazilian Portuguese — Blog, Chat, Bot, Replay, Puzzle,
+Rankings, Backlog, Desktop, Hash, Links, Top, Normal, Final, Status, Sudoku, Debug — plus
+symbols (#, 4s, vs.) and universal terms (VS, PvP, Expert).
+All 293 previously untranslated keys were translated in the PT translation pass (2026-06-10).
+Uses Brazilian Portuguese (pt-BR) throughout.
 ### Japanese (`ja`) — ✅ Fully translated
 29 keys legitimately share their EN value (brand names, symbols, acronyms, and product names).
 All 304 previously untranslated keys were translated in the JA translation pass (2026-06-09).
