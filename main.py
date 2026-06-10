@@ -299,7 +299,7 @@ def _autolink(text):
         while url and url[-1] in '.,;:!?)]\'\"':
             url = url[:-1]
         return '<a href="{u}" target="_blank" rel="noopener noreferrer">{u}</a>'.format(u=url)
-    return Markup(re.sub(r'https?://[^\s<>"\'\x00-\x1f]+', _replace, safe))
+    return Markup(re.sub(r'https?://[^\s<>"\'\x00-\x1f]+', _replace, safe))  # nosec B704 — input already HTML-escaped via markupsafe.escape above
 
 templates.env.filters['autolink'] = _autolink
 
@@ -2364,7 +2364,7 @@ def _daily_pool_image(today_str: str) -> str:
         return ""
     if not imgs:
         return ""
-    idx = int(hashlib.md5(today_str.encode()).hexdigest(), 16) % len(imgs)
+    idx = int(hashlib.md5(today_str.encode(), usedforsecurity=False).hexdigest(), 16) % len(imgs)
     return f"/static/img/puzzle/{imgs[idx]}"
 
 _GRID_LABELS = {
@@ -2921,7 +2921,7 @@ def sudoku_landing(request: Request):
 def _sudoku_seed(difficulty: str, today: str) -> int:
     import hashlib as _hl
     if difficulty == "daily":
-        return int(_hl.md5(f"sudoku-daily-{today}".encode()).hexdigest(), 16) & 0xFFFFFFFF
+        return int(_hl.md5(f"sudoku-daily-{today}".encode(), usedforsecurity=False).hexdigest(), 16) & 0xFFFFFFFF
     import random as _rand
     return _rand.randint(0, 0xFFFFFFFF)
 
@@ -6533,7 +6533,7 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     staging_head = None
     try:
         import urllib.request, json as _json
-        with urllib.request.urlopen("http://localhost:8002/health", timeout=2) as resp:
+        with urllib.request.urlopen("http://localhost:8002/health", timeout=2) as resp:  # nosec B310 — hardcoded localhost health check
             staging_head = _json.loads(resp.read()).get("commit", "unknown")
     except Exception:
         staging_head = None
@@ -8366,7 +8366,7 @@ def _jigsaw_daily_image(puzzle_date: str) -> str:
     if not images:
         return ""
     import hashlib
-    seed = int(hashlib.md5(puzzle_date.encode()).hexdigest(), 16)
+    seed = int(hashlib.md5(puzzle_date.encode(), usedforsecurity=False).hexdigest(), 16)
     return images[seed % len(images)]
 
 

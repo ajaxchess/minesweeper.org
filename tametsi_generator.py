@@ -254,7 +254,7 @@ def daily_rng(level: str, date_str: str) -> random.Random:
     """Deterministic seeded RNG for daily puzzle generation (reproducible from level + date)."""
     if level not in LEVELS:
         raise ValueError(f"Unknown level {level!r}; expected one of {list(LEVELS)}")
-    seed = int(hashlib.md5(f"tametsi:{level}:{date_str}".encode()).hexdigest(), 16) & 0xFFFF_FFFF
+    seed = int(hashlib.md5(f"tametsi:{level}:{date_str}".encode(), usedforsecurity=False).hexdigest(), 16) & 0xFFFF_FFFF
     return random.Random(seed)
 
 

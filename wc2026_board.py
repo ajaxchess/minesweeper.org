@@ -35,7 +35,7 @@ def _identity_key(email: str | None, guest_token: str | None) -> str:
 def _seed_for(identity: str, country_slug: str, difficulty: str, play_count: int = 0) -> int:
     """Deterministic seed: same player + country + difficulty + play_count → same board."""
     raw = f"wc2026:{identity}:{country_slug}:{difficulty}:{play_count}"
-    return int(hashlib.md5(raw.encode()).hexdigest(), 16) & 0xFFFF_FFFF
+    return int(hashlib.md5(raw.encode(), usedforsecurity=False).hexdigest(), 16) & 0xFFFF_FFFF
 
 
 def _spec(difficulty: str) -> dict:
