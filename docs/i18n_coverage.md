@@ -1,5 +1,5 @@
 # i18n Coverage Report
-> Generated: 2026-06-09  
+> Generated: 2026-06-11  
 > Base language: English (2309 keys)
 
 ## Notes
@@ -13,9 +13,9 @@
   Spanish has 47; Japanese has 29; Chinese (Simplified) has 26; Korean has 13 (fewest —
   Korean translates nearly everything including product names other languages keep as English);
   Thai has 42 (includes JSON-LD genre fields and meta titles kept EN for SEO/schema.org);
-  Polish has 63; Dutch has 80 (highest of the European languages — Dutch uses more English
-  loanwords in gaming contexts: Score, Dashboard, Kanban, Quests, Duel, Expert, Beginner,
-  Arcade, Community, Links, Contact, Desktop, Status, etc.).
+  Polish has 63; Swedish has 78; Dutch has 80 (highest of the European languages — Dutch
+  uses more English loanwords in gaming contexts: Score, Dashboard, Kanban, Quests, Duel,
+  Expert, Beginner, Arcade, Community, Links, Contact, Desktop, Status, etc.).
   Any language with EN placeholders above 80 has that many keys awaiting real translation.
 - Keys added in **Parts 1–5** of the DE translation pass (316 keys: SEO sections, jigsaw
   gallery, placeholder attributes, info/how-to pages) were given EN placeholder values in
@@ -39,7 +39,7 @@
 | `hi` | Hindi | 2309 | 48 | 0 ✅ |
 | `id` | Indonesian | 2309 | 390 | 314 |
 | `uk` | Ukrainian | 2309 | 24 | 0 ✅ |
-| `sv` | Swedish | 2309 | 396 | 320 |
+| `sv` | Swedish | 2309 | 78 | 0 ✅ |
 | `eo` | Esperanto | 2309 | 397 | 321 |
 | `pgl` | Pig Latin | 2309 | 388 | 312 |
 | `nl` | Dutch | 2309 | 80 | 0 ✅ |
@@ -119,7 +119,10 @@ Nonosweeper, Worldsweeper, Tametsi, Tentaizu, Numbers Match, Minesweeper Rush, V
 product title: 2048 Hexagon; acronym: PvP; symbol: #; empty string; holiday banner; company name).
 All 316 previously untranslated keys were translated in the UK translation pass (2026-06-10).
 Uses «» Ukrainian guillemets for quoted phrases throughout.
-### Swedish (`sv`) — ~320 keys need translation
+### Swedish (`sv`) — ✅ Fully translated
+78 keys legitimately share their EN value: brand/product names (CubeSweeper, Hexsweeper, MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tametsi Hex, Tentaizu, Minesweeper Chess, Numbers Match, Minesweeper Rush, Vibe Coding, 2048 Hexagon, Regis Consulting), acronyms (PvP, VS), symbols (#, 💥), game-mode terms identical in Swedish (Standard, Cylinder, Toroid, Expert, Normal, Max, Generator, Community, Status, Match, Auto, Session, Hash, Debug, Sudoku — all standard Swedish gaming/tech loanwords), schema.org/JSON-LD genre fields, meta title strings (kept EN for SEO), language selector data (lang_other/lang_label for Esperanto), proper event names (FIFA World Cup), and empty string.
+All 318 previously untranslated keys were translated in the SV translation pass (2026-06-11).
+Uses Swedish diacritics (å, ä, ö) throughout; meta_kw_default and meta_kw_about replaced with Swedish SEO keywords (were incorrectly holding Russian placeholder values).
 ### Esperanto (`eo`) — ~321 keys need translation
 ### Pig Latin (`pgl`) — ~312 keys need translation
 ### Dutch (`nl`) — ✅ Fully translated
