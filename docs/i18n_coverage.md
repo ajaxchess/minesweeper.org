@@ -13,7 +13,7 @@
   Spanish has 47; Japanese has 29; Chinese (Simplified) has 26; Korean has 13 (fewest —
   Korean translates nearly everything including product names other languages keep as English);
   Thai has 42 (includes JSON-LD genre fields and meta titles kept EN for SEO/schema.org);
-  Polish has 63; Swedish has 78; Dutch has 80 (highest of the European languages — Dutch
+  Polish has 63; Indonesian has 75; Swedish has 78; Dutch has 80 (highest of the European languages — Dutch
   uses more English loanwords in gaming contexts: Score, Dashboard, Kanban, Quests, Duel,
   Expert, Beginner, Arcade, Community, Links, Contact, Desktop, Status, etc.).
   Any language with EN placeholders above 80 has that many keys awaiting real translation.
@@ -37,7 +37,7 @@
 | `th` | Thai | 2309 | 42 | 0 ✅ |
 | `ms` | Malay | 2309 | 387 | 311 |
 | `hi` | Hindi | 2309 | 48 | 0 ✅ |
-| `id` | Indonesian | 2309 | 390 | 314 |
+| `id` | Indonesian | 2309 | 75 | 0 ✅ |
 | `uk` | Ukrainian | 2309 | 24 | 0 ✅ |
 | `sv` | Swedish | 2309 | 78 | 0 ✅ |
 | `eo` | Esperanto | 2309 | 397 | 321 |
@@ -112,7 +112,10 @@ product page titles, language codes (lang_label/lang_other for Esperanto), secti
 (Arcade, Mosaic, Minesweeper Rush, Vibe Coding), theme name (Starfield), and symbols.
 All 314 previously untranslated keys were translated in the HI translation pass (2026-06-10).
 Uses Devanagari script throughout.
-### Indonesian (`id`) — ~314 keys need translation
+### Indonesian (`id`) — ✅ Fully translated
+75 keys legitimately share their EN value: brand/product names (CubeSweeper, Hexsweeper, MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tametsi Hex, Tentaizu, Minesweeper Chess, Numbers Match, Minesweeper Rush, Vibe Coding, 2048 Hexagon, Regis Consulting), acronyms (PvP, VS), symbols (#, 4s), schema.org/JSON-LD fields, meta title strings (kept EN for SEO), language selector data (lang_other/lang_label for Esperanto), and English loanwords standard in Indonesian (Mode, Normal, Standard, Cylinder, Toroid, Level, Radius, Blog, Replay, Email, Desktop, Generator, Status, Final, Hash, Debug, Backlog, Orange, Top, Quests, Duel — all widely used in Indonesian tech/gaming contexts).
+All 315 previously untranslated keys were translated in the ID translation pass (2026-06-11).
+Uses Bahasa Indonesia throughout; meta_kw_default and meta_kw_about replaced with Indonesian SEO keywords (were incorrectly holding Russian placeholder values). One double-escaping issue in seo_cust_density_p2 fixed post-run via _fix_id_quotes.py.
 ### Ukrainian (`uk`) — ✅ Fully translated
 24 keys legitimately share their EN value (brand names: CubeSweeper, Hexsweeper, MobiusSweeper,
 Nonosweeper, Worldsweeper, Tametsi, Tentaizu, Numbers Match, Minesweeper Rush, Vibe Coding;
