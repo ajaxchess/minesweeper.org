@@ -43,7 +43,7 @@
 | `pl` | Polish | 2309 | 405 | 329 |
 | `es` | Spanish | 2309 | 47 | 0 ✅ |
 | `fr` | French | 2309 | 77 | 1 ✅ |
-| `tl` | Tagalog | 2309 | 445 | 369 |
+| `tl` | Tagalog | 2309 | 98 | 0 ✅ |
 
 ## Missing Keys by Language
 
@@ -129,4 +129,7 @@ terms (e.g., "Más", "Clasificación", "Modo") that DE/FR keep as English loanwo
 ### French (`fr`) — ✅ Fully translated
 77 keys legitimately share their EN value (proper nouns, universal terms, brand names).
 All 361 previously untranslated keys were translated in the FR translation pass (2026-06-09).
-### Tagalog (`tl`) — ~369 keys need translation
+### Tagalog (`tl`) — ✅ Fully translated
+98 keys legitimately share their EN value: game/brand names (CubeSweeper, Hexsweeper, MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tametsi Hex, Tentaizu, Tentaizu Easy, Minesweeper Chess, Numbers Match, Minesweeper Rush, Vibe Coding, Mosaic, Mosaic Easy, 2048 Hexagon, 2048 Classic, Regis Consulting), acronyms (PvP, VS), symbols (#, 4s, vs.), common English loanwords in Filipino (Blog, Chat, Email, Dashboard, Backlog, Leaderboard, Puzzle, Grid, Mode, Normal, Expert, Random, Auto, Desktop, Mobile, Radius, Generator, Arcade, Gallery, Season, Classic, Fiesta — all naturally used in Filipino), JSON-LD genre/platform fields (kept EN for schema.org), meta title strings (kept EN for SEO), plus official names (FIFA World Cup, Schulte Grid, Dodecahedron) and tech strings (Hosting: AWS, Chording, Left-click, Right-click).
+All 347 previously untranslated keys were translated in the TL translation pass (2026-06-11).
+Uses Filipino (Tagalog) throughout; English loanwords retained where natural per Filipino language norms.
