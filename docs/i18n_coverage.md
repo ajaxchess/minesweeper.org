@@ -13,7 +13,9 @@
   Spanish has 47; Japanese has 29; Chinese (Simplified) has 26; Korean has 13 (fewest —
   Korean translates nearly everything including product names other languages keep as English);
   Thai has 42 (includes JSON-LD genre fields and meta titles kept EN for SEO/schema.org);
-  Polish has 63; Indonesian has 75; Swedish has 78; Dutch has 80 (highest of the European languages — Dutch
+  Polish has 63; Greek has 43 (Greek alphabet means fewer loanwords than Germanic/Romance
+  languages — translates nav labels, mode names, and most UI terms that others keep in English);
+  Indonesian has 75; Swedish has 78; Dutch has 80 (highest of the European languages — Dutch
   uses more English loanwords in gaming contexts: Score, Dashboard, Kanban, Quests, Duel,
   Expert, Beginner, Arcade, Community, Links, Contact, Desktop, Status, etc.).
   Any language with EN placeholders above 80 has that many keys awaiting real translation.
@@ -27,7 +29,7 @@
 |------|----------|-----:|----------------:|------------------:|
 | `de` | German | 2309 | 76 | 0 ✅ |
 | `ru` | Russian | 2309 | 27 | 0 ✅ |
-| `el` | Greek | 2309 | 359 | 283 |
+| `el` | Greek | 2309 | 43 | 0 ✅ |
 | `pt` | Portuguese | 2309 | 47 | 0 ✅ |
 | `ja` | Japanese | 2309 | 29 | 0 ✅ |
 | `zh` | Chinese (Simplified) | 2309 | 26 | 0 ✅ |
@@ -62,7 +64,10 @@ Nonosweeper, Worldsweeper, Tametsi, Tentaizu, Minesweeper Chess, Numbers Match; 
 symbols: #; product titles: 2048 Hexagon, Minesweeper Rush, Vibe Coding section; empty string).
 All 270 previously untranslated keys were translated in the RU translation pass (2026-06-10).
 Note: `meta_kw_default` in EN was pre-populated with Russian SEO keywords — value correctly retained.
-### Greek (`el`) — ~283 keys need translation
+### Greek (`el`) — ✅ Fully translated
+43 keys legitimately share their EN value: brand/product names (CubeSweeper, Hexsweeper, MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tametsi Hex, Tentaizu, Minesweeper Chess, Numbers Match, Minesweeper Rush, Vibe Coding, 2048 Hexagon, Regis Consulting), acronyms (PvP, VS), symbols (#), schema.org meta titles (kept EN for SEO), language selector data (lang_other/lang_label for Esperanto), and English loanwords standard in Greek gaming (Blog, Email, Desktop, Arcade, Backlog, Hash, Debug, Orange, Sudoku — plus empty string and the Cinco de Mayo banner).
+All 316 previously untranslated keys were translated in the EL translation pass (2026-06-11).
+Uses the Greek alphabet (ελληνικά) throughout with proper accents; «» Greek guillemets for quoted phrases. Greek at 43 EN-identical keys is among the lowest for European languages — the Greek alphabet means fewer gaming loanwords are borrowed from English compared to Germanic or Romance languages.
 ### Portuguese (`pt`) — ✅ Fully translated
 47 keys legitimately share their EN value: brand names (CubeSweeper, Hexsweeper, MobiusSweeper,
 Nonosweeper, Worldsweeper, Tametsi, Tentaizu, Minesweeper Chess, Numbers Match), product titles,
