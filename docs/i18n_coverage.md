@@ -8,14 +8,15 @@
 - **EN placeholders** — keys whose value is identical to the English string. Includes both
   genuinely language-neutral values (proper nouns, "Expert", "OK", numbers, etc.) **and**
   keys that have not yet been translated.
-- **~13–77 keys** are legitimately identical to English across all languages (proper nouns,
+- **~13–80 keys** are legitimately identical to English across all languages (proper nouns,
   universal terms, brand names). German has 76; French has 77 (one extra brand name);
   Spanish has 47; Japanese has 29; Chinese (Simplified) has 26; Korean has 13 (fewest —
   Korean translates nearly everything including product names other languages keep as English);
   Thai has 42 (includes JSON-LD genre fields and meta titles kept EN for SEO/schema.org);
-  Polish has 63 (brand names, symbols, schema.org fields, SEO keywords, and words identical
-  in Polish usage: Generator, Status, Sudoku, Blog, Auto, Arcade, Restart, Expert, Toroid).
-  Any language with EN placeholders above 77 has that many keys awaiting real translation.
+  Polish has 63; Dutch has 80 (highest of the European languages — Dutch uses more English
+  loanwords in gaming contexts: Score, Dashboard, Kanban, Quests, Duel, Expert, Beginner,
+  Arcade, Community, Links, Contact, Desktop, Status, etc.).
+  Any language with EN placeholders above 80 has that many keys awaiting real translation.
 - Keys added in **Parts 1–5** of the DE translation pass (316 keys: SEO sections, jigsaw
   gallery, placeholder attributes, info/how-to pages) were given EN placeholder values in
   all languages except German.
@@ -41,7 +42,7 @@
 | `sv` | Swedish | 2309 | 396 | 320 |
 | `eo` | Esperanto | 2309 | 397 | 321 |
 | `pgl` | Pig Latin | 2309 | 388 | 312 |
-| `nl` | Dutch | 2309 | 405 | 329 |
+| `nl` | Dutch | 2309 | 80 | 0 ✅ |
 | `pl` | Polish | 2309 | 63 | 0 ✅ |
 | `es` | Spanish | 2309 | 47 | 0 ✅ |
 | `fr` | French | 2309 | 77 | 1 ✅ |
@@ -121,7 +122,10 @@ Uses «» Ukrainian guillemets for quoted phrases throughout.
 ### Swedish (`sv`) — ~320 keys need translation
 ### Esperanto (`eo`) — ~321 keys need translation
 ### Pig Latin (`pgl`) — ~312 keys need translation
-### Dutch (`nl`) — ~329 keys need translation
+### Dutch (`nl`) — ✅ Fully translated
+80 keys legitimately share their EN value: brand/product names (CubeSweeper, Hexsweeper, MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tametsi Hex, Tentaizu, Minesweeper Chess, Numbers Match, Minesweeper Rush, Vibe Coding, 2048 Hexagon, Regis Consulting), acronyms (PvP, VS), symbols (#, vs.), schema.org/JSON-LD genre fields, meta title strings and SEO keyword sets, difficulty levels (Beginner, Expert — kept in EN in Dutch gaming), and English loanwords standard in Dutch (Score, Dashboard, Kanban Board, Backlog, Review, Quests, Duel, Contact, Chat, Blog, Links, Community, Arcade, Generator, Desktop, Status, Max, Toroid, Debug, Sudoku, etc.) plus the Cinco de Mayo banner, cultural theme name, and empty string.
+All 325 previously untranslated keys were translated in the NL translation pass (2026-06-11).
+Dutch naturally adopts many English gaming and technical terms; 80 EN-identical keys is the highest European-language baseline on this site.
 ### Polish (`pl`) — ✅ Fully translated
 63 keys legitimately share their EN value: brand/product names (CubeSweeper, Hexsweeper, MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tametsi Hex, Tentaizu, Minesweeper Chess, Numbers Match, Minesweeper Rush, Vibe Coding, 2048 Hexagon, Regis Consulting), acronyms (PvP, VS), symbols (#, vs.), JSON-LD genre/platform fields (kept EN for schema.org), meta title strings and SEO keyword sets (kept EN for SEO), and words identical in Polish usage (Generator, Status, Sudoku, Blog, Auto, Arcade, Restart, Expert, Toroid, Top, Hash, Debug) plus the Cinco de Mayo banner and empty string.
 All 342 previously untranslated keys were translated in the PL translation pass (2026-06-11).
