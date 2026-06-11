@@ -12,7 +12,9 @@
   universal terms, brand names). German has 76; French has 77 (one extra brand name);
   Spanish has 47; Japanese has 29; Chinese (Simplified) has 26; Korean has 13 (fewest —
   Korean translates nearly everything including product names other languages keep as English);
-  Thai has 42 (includes JSON-LD genre fields and meta titles kept EN for SEO/schema.org).
+  Thai has 42 (includes JSON-LD genre fields and meta titles kept EN for SEO/schema.org);
+  Polish has 63 (brand names, symbols, schema.org fields, SEO keywords, and words identical
+  in Polish usage: Generator, Status, Sudoku, Blog, Auto, Arcade, Restart, Expert, Toroid).
   Any language with EN placeholders above 77 has that many keys awaiting real translation.
 - Keys added in **Parts 1–5** of the DE translation pass (316 keys: SEO sections, jigsaw
   gallery, placeholder attributes, info/how-to pages) were given EN placeholder values in
@@ -40,7 +42,7 @@
 | `eo` | Esperanto | 2309 | 397 | 321 |
 | `pgl` | Pig Latin | 2309 | 388 | 312 |
 | `nl` | Dutch | 2309 | 405 | 329 |
-| `pl` | Polish | 2309 | 405 | 329 |
+| `pl` | Polish | 2309 | 63 | 0 ✅ |
 | `es` | Spanish | 2309 | 47 | 0 ✅ |
 | `fr` | French | 2309 | 77 | 1 ✅ |
 | `tl` | Tagalog | 2309 | 98 | 0 ✅ |
@@ -120,7 +122,10 @@ Uses «» Ukrainian guillemets for quoted phrases throughout.
 ### Esperanto (`eo`) — ~321 keys need translation
 ### Pig Latin (`pgl`) — ~312 keys need translation
 ### Dutch (`nl`) — ~329 keys need translation
-### Polish (`pl`) — ~329 keys need translation
+### Polish (`pl`) — ✅ Fully translated
+63 keys legitimately share their EN value: brand/product names (CubeSweeper, Hexsweeper, MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tametsi Hex, Tentaizu, Minesweeper Chess, Numbers Match, Minesweeper Rush, Vibe Coding, 2048 Hexagon, Regis Consulting), acronyms (PvP, VS), symbols (#, vs.), JSON-LD genre/platform fields (kept EN for schema.org), meta title strings and SEO keyword sets (kept EN for SEO), and words identical in Polish usage (Generator, Status, Sudoku, Blog, Auto, Arcade, Restart, Expert, Toroid, Top, Hash, Debug) plus the Cinco de Mayo banner and empty string.
+All 342 previously untranslated keys were translated in the PL translation pass (2026-06-11).
+Uses Polish diacritics (ą ć ę ł ń ó ś ź ż) throughout; „" Polish guillemets for quoted phrases.
 ### Spanish (`es`) — ✅ Fully translated
 47 keys legitimately share their EN value (brand names, symbols, universal loanwords).
 All 325 previously untranslated keys were translated in the ES translation pass (2026-06-09).
