@@ -155,12 +155,67 @@
 .thex-times-tab:hover { background: var(--surface2); }
 .thex-times-tab.active { background: var(--surface2); border-color: var(--accent2); color: var(--accent2); }
 .thex-times-table { max-width: 400px; }
+/* ── Editor ── */
+.thex-editor-tools {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0.4rem 0 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.thex-editor-tool-btn {
+  padding: 0.3rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.thex-editor-tool-btn:hover { background: var(--surface2); }
+.thex-editor-tool-btn.active {
+  background: var(--surface2);
+  border-color: var(--accent2);
+  color: var(--accent2);
+}
+.thex-editor-save-btn {
+  padding: 0.3rem 1rem;
+  border: 1px solid var(--accent2);
+  border-radius: var(--radius);
+  background: var(--accent2);
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.thex-editor-save-btn:hover { opacity: 0.85; }
+.hex-cell.thex-editor-mine .hex-poly {
+  fill: rgba(180, 40, 40, 0.75);
+  stroke: #cc3333;
+  stroke-width: 1.5;
+}
+.thex-editor-result {
+  max-width: 520px;
+  margin: 0.4rem 0 0.2rem;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+.thex-editor-result--ok   { background: color-mix(in srgb,#4caf50 15%,var(--surface)); border: 1px solid #4caf50; }
+.thex-editor-result--fail { background: color-mix(in srgb,var(--accent) 15%,var(--surface)); border: 1px solid var(--accent); }
+.thex-editor-share-url {
+  font-family: monospace;
+  font-size: 0.82rem;
+  word-break: break-all;
+  color: var(--accent2);
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <h1 class="tz-page-h1">Tametsi Hex — Tutorial Puzzles</h1>
-<div class="game-wrapper">
+<div class="game-wrapper"{% if user %} data-thex-authed="1"{% endif %}>
 
   <aside class="ad-sidebar ad-left">
     <ins class="adsbygoogle"
@@ -180,6 +235,7 @@
       <div class="thex-puzzle-selector">
         <button class="thex-puzzle-btn" data-puzzle="1" onclick="thexSelectPuzzle(1)">Puzzle 1</button>
         <button class="thex-puzzle-btn" data-puzzle="2" onclick="thexSelectPuzzle(2)">Puzzle 2</button>
+        <button class="thex-puzzle-btn" data-puzzle="e1" onclick="thexSelectPuzzle('e1')">E1 Editor</button>
         <button class="thex-puzzle-btn" data-puzzle="3" onclick="thexSelectPuzzle(3)">Puzzle 3</button>
         <button class="thex-puzzle-btn" data-puzzle="4" onclick="thexSelectPuzzle(4)">Puzzle 4</button>
         <button class="thex-puzzle-btn" data-puzzle="5" onclick="thexSelectPuzzle(5)">Puzzle 5</button>
@@ -203,6 +259,20 @@
     <div id="thex-board-wrap"
          class="hex-board-wrap"
          data-completions="{{ completions | tojson }}">
+    </div>
+
+    <div id="thex-editor-panel" style="display:none">
+      <div class="thex-editor-tools">
+        <button class="thex-editor-tool-btn active" data-tool="mine"
+                onclick="thexEditorSetTool('mine')">💣 Mine</button>
+        <button class="thex-editor-tool-btn" data-tool="reveal"
+                onclick="thexEditorSetTool('reveal')">👁 Reveal</button>
+        <button class="thex-editor-tool-btn"
+                onclick="thexEditorClear()">✕ Clear</button>
+        <button class="thex-editor-save-btn"
+                onclick="thexEditorSave()">Save &amp; Check</button>
+      </div>
+      <div id="thex-editor-result"></div>
     </div>
 
     <p class="instructions">
@@ -267,6 +337,7 @@
 
 {% block scripts %}
 <script src="/static/js/tametsi_hex.js"></script>
+<script src="/static/js/tametsi_hex_editor.js"></script>
 <script>
 (function() {
   let allTimes = {};

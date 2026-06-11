@@ -22,7 +22,7 @@ from pydantic import BaseModel, Field, field_validator
 from countries import COUNTRIES as ALL_COUNTRIES, VALID_COUNTRY_CODES
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, Pattern, PatternRevision, UserRole, TametsiHexCompletion, TametsiHexTime, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, Pattern, PatternRevision, UserRole, TametsiHexCompletion, TametsiHexTime, TametsiHexUserBoard, get_db, init_db, SessionLocal
 from phase2_analyzer import analyze_replay_async
 # Near the top of main.py with the other model imports
 from phase2_analyzer import GameAnalysis
@@ -9446,6 +9446,26 @@ def tametsi_hex_complete(payload: TametsiHexCompletePayload,
         elif payload.time_ms < existing_time.time_ms:
             existing_time.time_ms = payload.time_ms
     db.commit()
+    return {"ok": True}
+
+
+class TametsiHexEditorSavePayload(BaseModel):
+    board_hash: str
+
+@app.post("/api/tametsi-hex/editor/save", status_code=200)
+def tametsi_hex_editor_save(payload: TametsiHexEditorSavePayload,
+                             request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        return JSONResponse({"error": "Not logged in"}, status_code=401)
+    h = payload.board_hash.strip()
+    if not h or len(h) > 64 or not all(c in '0123456789abcdefghijklmnopqrstuvwxyz-' for c in h):
+        raise HTTPException(status_code=400, detail="Invalid board_hash")
+    existing = db.query(TametsiHexUserBoard).filter_by(
+        email=user["email"], board_hash=h).first()
+    if not existing:
+        db.add(TametsiHexUserBoard(email=user["email"], board_hash=h))
+        db.commit()
     return {"ok": True}
 
 
