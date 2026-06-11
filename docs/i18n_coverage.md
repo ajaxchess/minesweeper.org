@@ -15,7 +15,8 @@
   Thai has 42 (includes JSON-LD genre fields and meta titles kept EN for SEO/schema.org);
   Polish has 63; Greek has 43 (Greek alphabet means fewer loanwords than Germanic/Romance
   languages — translates nav labels, mode names, and most UI terms that others keep in English);
-  Indonesian has 75; Swedish has 78; Dutch has 80 (highest of the European languages — Dutch
+  Indonesian has 75; Malay has 69 (slightly lower than Indonesian — Malay translates a few
+  more terms like Silinder/Cylinder and Tanpa Tekaan/No Guess); Swedish has 78; Dutch has 80 (highest of the European languages — Dutch
   uses more English loanwords in gaming contexts: Score, Dashboard, Kanban, Quests, Duel,
   Expert, Beginner, Arcade, Community, Links, Contact, Desktop, Status, etc.).
   Any language with EN placeholders above 80 has that many keys awaiting real translation.
@@ -37,7 +38,7 @@
 | `it` | Italian | 2309 | 51 | 0 ✅ |
 | `ko` | Korean | 2309 | 13 | 0 ✅ |
 | `th` | Thai | 2309 | 42 | 0 ✅ |
-| `ms` | Malay | 2309 | 387 | 311 |
+| `ms` | Malay | 2309 | 69 | 0 ✅ |
 | `hi` | Hindi | 2309 | 48 | 0 ✅ |
 | `id` | Indonesian | 2309 | 75 | 0 ✅ |
 | `uk` | Ukrainian | 2309 | 24 | 0 ✅ |
@@ -108,7 +109,10 @@ cover nearly all terms including product names and mode labels that other langua
 42 keys legitimately share their EN value: game/brand names (CubeSweeper, Hexsweeper, MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tametsi Hex, Tentaizu, Tentaizu Daily, Tentaizu Easy, Minesweeper Chess, Numbers Match, Minesweeper Rush, Vibe Coding, Mosaic, 2048 Hexagon), acronyms (PvP, VS), symbols (#, 4s), universal terms (Expert, Blog), company name (Regis Consulting), JSON-LD genre/platform fields (Strategy, Browser Game, Web Browser, Competitive, Logic, Brain Teaser, Multiplayer — kept EN for schema.org compatibility), meta title strings (kept EN for SEO), and the Cinco de Mayo banner.
 All 340 previously untranslated keys were translated in the TH translation pass (2026-06-10).
 Uses Thai script (ภาษาไทย) throughout.
-### Malay (`ms`) — ~311 keys need translation
+### Malay (`ms`) — ✅ Fully translated
+69 keys legitimately share their EN value: brand/product names (CubeSweeper, Hexsweeper, MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tametsi Hex, Tentaizu, Minesweeper Chess, Numbers Match, Minesweeper Rush, Vibe Coding, 2048 Hexagon, Mosaic, Regis Consulting), acronyms (PvP, VS), symbols (#, 4s), schema.org meta titles (kept EN for SEO), language selector data (lang_other/lang_label for Esperanto), and English loanwords standard in Malay (Duel, Normal, Standard, Toroid, Grid, Blog, Replay, Email, Desktop, Hash, Status, Final, Auto, Debug, Backlog, Sudoku, Starfield, Top, VS Bot — all widely used in Malaysian tech/gaming contexts) plus the Cinco de Mayo banner, cultural theme name, empty string, and web archive link.
+All 318 previously untranslated keys were translated in the MS translation pass (2026-06-11).
+Uses Bahasa Malaysia throughout; meta_kw_default and meta_kw_about replaced with Malay SEO keywords (were incorrectly holding Russian placeholder values). nav_cylinder translated to Silinder; game_no_guess_btn translated to Tanpa Tekaan.
 ### Hindi (`hi`) — ✅ Fully translated
 48 keys legitimately share their EN value: 13 `meta_kw_*` SEO keyword strings (kept in EN for
 search indexing on this English-primary domain), brand/product names (CubeSweeper, Hexsweeper,
