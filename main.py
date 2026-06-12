@@ -827,40 +827,37 @@ def archive_guest_scores():
     db = SessionLocal()
     try:
         now = datetime.now(timezone.utc)
-        tables = [
-            (Score,             "scores",             "mode"),
-            (RushScore,         "rush_scores",         "rush_mode"),
-            (CylinderScore,     "cylinder_scores",     "cyl_mode"),
-            (ToroidScore,       "toroid_scores",       "tor_mode"),
-            (TentaizuScore,     "tentaizu_scores",     "puzzle_date"),
-            (ReplayScore,       "replay_scores",       "variant"),
-            (NonosweeperScore,    "nonosweeper_scores",    "puzzle_date"),
-            (FifteenPuzzleScore,  "fifteen_puzzle_scores", "puzzle_date"),
-            (Game2048Score,       "game_2048_scores",      "puzzle_date"),
-            (MahjongScore,        "mahjong_scores",        "puzzle_date"),
-            (NumbersMatchScore,    "numbers_match_scores",  "puzzle_date"),
+        # Columns: table, mode_expr, time_ms_expr, rows_expr, cols_expr,
+        #          mines_expr, bbbv_expr, board_hash_expr, token_expr
+        # All exprs are raw SQL — table/column names are hardcoded, not user input.
+        specs = [
+            ("scores",                "mode",        "IFNULL(time_ms, time_secs * 1000)", "rows", "cols", "mines", "bbbv", "board_hash", "guest_token"),
+            ("rush_scores",           "rush_mode",   "time_secs * 1000",                  "NULL", "cols", "NULL",  "NULL", "NULL",       "guest_token"),
+            ("cylinder_scores",       "cyl_mode",    "IFNULL(time_ms, time_secs * 1000)", "rows", "cols", "mines", "bbbv", "board_hash", "guest_token"),
+            ("toroid_scores",         "tor_mode",    "IFNULL(time_ms, time_secs * 1000)", "rows", "cols", "mines", "bbbv", "board_hash", "guest_token"),
+            ("tentaizu_scores",       "puzzle_date", "time_secs * 1000",                  "NULL", "NULL", "NULL",  "NULL", "NULL",       "guest_token"),
+            ("replay_scores",         "variant",     "IFNULL(time_ms, time_secs * 1000)", "rows", "cols", "mines", "bbbv", "board_hash", "guest_token"),
+            ("nonosweeper_scores",    "puzzle_date", "time_secs * 1000",                  "NULL", "NULL", "NULL",  "NULL", "NULL",       "guest_token"),
+            ("fifteen_puzzle_scores", "puzzle_date", "time_ms",                           "NULL", "NULL", "NULL",  "NULL", "NULL",       "guest_token"),
+            ("game_2048_scores",      "puzzle_date", "time_ms",                           "NULL", "NULL", "NULL",  "NULL", "NULL",       "guest_token"),
+            ("mahjong_scores",        "puzzle_date", "time_ms",                           "NULL", "NULL", "NULL",  "NULL", "board_hash", "guest_token"),
+            ("numbers_match_scores",  "puzzle_date", "time_secs * 1000",                  "NULL", "NULL", "NULL",  "NULL", "NULL",       "guest_token"),
         ]
         total = 0
-        for model, table_name, mode_attr in tables:
-            guests = db.query(model).filter(model.user_email.is_(None)).all()
-            for row in guests:
-                db.add(GuestScoreArchive(
-                    source_table        = table_name,
-                    original_id         = row.id,
-                    guest_token         = getattr(row, "guest_token", None),
-                    name                = row.name,
-                    game_mode           = str(getattr(row, mode_attr, "")),
-                    time_ms             = getattr(row, "time_ms", None) or (getattr(row, "time_secs", 0) * 1000 if hasattr(row, "time_secs") else None),
-                    rows                = getattr(row, "rows", None),
-                    cols                = getattr(row, "cols", None),
-                    mines               = getattr(row, "mines", None),
-                    bbbv                = getattr(row, "bbbv", None),
-                    board_hash          = getattr(row, "board_hash", None),
-                    original_created_at = row.created_at,
-                    archived_at         = now,
-                ))
-                db.delete(row)
-                total += 1
+        for tbl, mode_e, time_e, rows_e, cols_e, mines_e, bbbv_e, hash_e, token_e in specs:
+            result = db.execute(text(f"""
+                INSERT INTO guest_score_archive
+                    (source_table, original_id, guest_token, name, game_mode,
+                     time_ms, rows, cols, mines, bbbv, board_hash,
+                     original_created_at, archived_at)
+                SELECT :src, id, {token_e}, name, CAST({mode_e} AS CHAR(32)),
+                       {time_e}, {rows_e}, {cols_e}, {mines_e}, {bbbv_e}, {hash_e},
+                       created_at, :archived_at
+                FROM {tbl}
+                WHERE user_email IS NULL
+            """), {"src": tbl, "archived_at": now})
+            total += result.rowcount
+            db.execute(text(f"DELETE FROM {tbl} WHERE user_email IS NULL"))
         db.commit()
         logger.info(f"archive_guest_scores: archived {total} guest score(s).")
         record_scheduler_run("archive_guest_scores", success=True)

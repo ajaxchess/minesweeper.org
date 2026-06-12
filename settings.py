@@ -12,6 +12,7 @@
 #   'mexico'       — Mexico fiesta theme (active on May 5 and Sep 16)
 
 from datetime import date, datetime, timedelta
+from functools import lru_cache
 
 DEFAULT_SKIN: str = 'dark'
 ALLOWED_SKINS: tuple[str, ...] = ('default', 'dark', 'light', 'tentaizu', 'diana', 'flower', 'flower-light', 'mexico')
@@ -38,13 +39,14 @@ SOLSTICE_BANNER: str = "Tentaizu theme is in celebration of the solstice!"
 EQUINOX_BANNER: str = "In celebration of the Equinox, please enjoy the Tentaizu theme"
 
 
+@lru_cache(maxsize=4)
 def _astronomical_dates(year: int) -> tuple[date, date, date, date]:
     """Return (march_equinox, june_solstice, september_equinox, december_solstice)
     for the given year (server time).
 
     Uses the Meeus simplified formula (Astronomical Algorithms, ch. 27).
     Accurate to within a few minutes for years near 2000, so the calendar
-    date is always correct.
+    date is always correct.  Result is cached for the process lifetime.
     """
     Y = (year - 2000) / 1000.0
     march_jde = (2451623.80984

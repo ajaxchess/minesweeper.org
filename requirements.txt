@@ -1,5 +1,6 @@
 annotated-doc==0.0.4
 annotated-types==0.7.0
+better-profanity==0.7.0
 anyio==4.13.0
 apscheduler==3.11.2
 asgiref==3.11.1

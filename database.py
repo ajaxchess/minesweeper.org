@@ -66,9 +66,10 @@ class Score(Base):
     client_type  = Column(String(32), nullable=False, server_default="na")  # chrome/firefox/safari/edge/mobile_browser/ios_app/android_app/na
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
-    # Fast lookups by mode + time for leaderboard queries
     __table_args__ = (
-        Index("ix_scores_mode_time", "mode", "time_secs"),
+        Index("ix_scores_mode_time",  "mode",       "time_secs"),  # leaderboard queries
+        Index("ix_scores_board_hash", "board_hash"),               # duplicate detection on submission
+        Index("ix_scores_created_at", "created_at"),               # archive index date-range queries
     )
 
     def to_dict(self):
