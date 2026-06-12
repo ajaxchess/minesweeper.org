@@ -86,4 +86,32 @@ window.thexEditorSave2=function(){
   },20)
 };
 
-document.addEventListener("DOMContentLoaded",()=>{if(localStorage.getItem("thex_e2_saved")){const btn=document.querySelector('[data-puzzle="e2"]');btn&&!btn.querySelector(".thex-check")&&btn.insertAdjacentHTML("beforeend",'<span class="thex-check">✓</span>')}});
+function thexEdDecodeCustom(hash){
+  const m=hash.match(/^2r(\d+)\.([A-Za-z0-9_-]*)\.([A-Za-z0-9_-]*)$/);
+  if(!m)return null;
+  const R=parseInt(m[1]);if(R<2||R>8)return null;
+  function b64urlDec(s){const b=s.replace(/-/g,"+").replace(/_/g,"/"),p=b.padEnd(Math.ceil(b.length/4)*4,"="),bin=atob(p),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a}
+  let mb,rb;try{mb=b64urlDec(m[2]);rb=b64urlDec(m[3])}catch(e){return null}
+  const cells=thexBuildCells(R),mines=new Set,prerev=new Set;
+  cells.forEach(([q,r],i)=>{const k=`${q},${r}`;mb[i>>3]&(1<<(7-(i&7)))&&mines.add(k);rb[i>>3]&(1<<(7-(i&7)))&&prerev.add(k)});
+  return{R,cells,mines,prerev}
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  if(localStorage.getItem("thex_e2_saved")){const btn=document.querySelector('[data-puzzle="e2"]');btn&&!btn.querySelector(".thex-check")&&btn.insertAdjacentHTML("beforeend",'<span class="thex-check">✓</span>')}
+  const hash=new URLSearchParams(location.search).get("board");
+  if(!hash||!hash.startsWith("2r"))return;
+  const d=thexEdDecodeCustom(hash);
+  if(!d)return;
+  thexEd2.R=d.R;thexEd2.mines=d.mines;thexEd2.prerev=d.prerev;
+  const sel=document.getElementById("thex-e2-radius");sel&&(sel.value=d.R);
+  thexSelectPuzzle("e2");
+  const url=`${location.origin}${location.pathname}?board=${hash}`,r2=document.getElementById("thex-editor2-result");
+  r2&&(r2.className="thex-editor-result thex-editor-result--ok",r2.style.display="block",r2.innerHTML=`✅ Shared puzzle loaded!<br><span class="thex-editor-share-url">${url}</span> <button class="thex-reset-btn" style="margin-left:0.4rem" onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(url)})">Copy link</button>`);
+  const cs=new Set(d.cells.map(([q,r])=>`${q},${r}`)),board=thexBuildBoard(d.cells,d.mines,cs,null),sr={};
+  for(const k of d.prerev)d.mines.has(k)||(sr[k]=board.get(k)??0);
+  THEX_PUZZLES.e2={R:d.R,mines:new Set([...d.mines]),startRevealed:sr,tutorialText:"<strong>Shared E2 Puzzle:</strong> Left-click to reveal, right-click to flag."};
+  thexInitPuzzle("e2");
+  const ep2=document.getElementById("thex-editor2-panel");ep2&&(ep2.style.display="");
+  document.querySelectorAll(".thex-puzzle-btn").forEach(b=>b.classList.toggle("active","e2"===b.dataset.puzzle));
+});
