@@ -238,6 +238,7 @@
         <button class="thex-puzzle-btn" data-puzzle="e1" onclick="thexSelectPuzzle('e1')">E1 Editor</button>
         <button class="thex-puzzle-btn" data-puzzle="3" onclick="thexSelectPuzzle(3)">Puzzle 3</button>
         <button class="thex-puzzle-btn" data-puzzle="4" onclick="thexSelectPuzzle(4)">Puzzle 4</button>
+        <button class="thex-puzzle-btn" data-puzzle="e2" onclick="thexSelectPuzzle('e2')">E2 Editor</button>
         <button class="thex-puzzle-btn" data-puzzle="5" onclick="thexSelectPuzzle(5)">Puzzle 5</button>
         <button class="thex-puzzle-btn" data-puzzle="6" onclick="thexSelectPuzzle(6)">Puzzle 6</button>
         <button class="thex-puzzle-btn" data-puzzle="7" onclick="thexSelectPuzzle(7)">Puzzle 7</button>
@@ -273,6 +274,32 @@
                 onclick="thexEditorSave()">Save &amp; Check</button>
       </div>
       <div id="thex-editor-result"></div>
+    </div>
+
+    <div id="thex-editor2-panel" style="display:none">
+      <div class="thex-editor-tools">
+        <label style="font-size:0.85rem;color:var(--text-dim);align-self:center">Radius:</label>
+        <select id="thex-e2-radius" class="thex-editor-tool-btn"
+                style="padding:0.3rem 0.5rem;cursor:pointer"
+                onchange="thexE2ChangeRadius(this.value)">
+          <option value="2">R = 2 &nbsp;(7 cells)</option>
+          <option value="3">R = 3 &nbsp;(19 cells)</option>
+          <option value="4" selected>R = 4 &nbsp;(37 cells)</option>
+          <option value="5">R = 5 &nbsp;(61 cells)</option>
+          <option value="6">R = 6 &nbsp;(91 cells)</option>
+          <option value="7">R = 7 &nbsp;(127 cells)</option>
+          <option value="8">R = 8 &nbsp;(169 cells)</option>
+        </select>
+        <button class="thex-editor-tool-btn active" data-tool2="mine"
+                onclick="thexEditorSetTool2('mine')">💣 Mine</button>
+        <button class="thex-editor-tool-btn" data-tool2="reveal"
+                onclick="thexEditorSetTool2('reveal')">👁 Reveal</button>
+        <button class="thex-editor-tool-btn"
+                onclick="thexEditorClear2()">✕ Clear</button>
+        <button class="thex-editor-save-btn"
+                onclick="thexEditorSave2()">Save &amp; Check</button>
+      </div>
+      <div id="thex-editor2-result"></div>
     </div>
 
     <p class="instructions">

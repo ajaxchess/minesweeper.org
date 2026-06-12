@@ -1343,6 +1343,18 @@ class TametsiHexTime(Base):
     )
 
 
+# ── Tametsi Hex user-created boards (E1/E2 editor saves) ─────────────────────
+class TametsiHexUserBoard(Base):
+    __tablename__ = "tametsi_hex_user_boards"
+
+    id         = Column(Integer, primary_key=True)
+    email      = Column(String(256), nullable=False, index=True)
+    board_hash = Column(String(128), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (UniqueConstraint("email", "board_hash"),)
+
+
 # ── Numbers Match Daily Board (pre-generated, server-side) ───────────────────
 class NumbersMatchDaily(Base):
     __tablename__ = "numbers_match_daily"

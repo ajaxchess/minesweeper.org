@@ -1,7 +1,6 @@
-Make a board editor for Tametsi.
+This board editor lets you select the size of the Board, so like the first board editor, but you can select the radius R of the board
 
-First we will make a basic board editor...  
-This should be puzzle after puzzle 3...  Call it E2
+This should be puzzle after puzzle 4...  Call it E2
 The only addition is that you can now select the Radius from R=2 to R=8.
 
 Basic board editor: 
@@ -25,3 +24,4 @@ Select which squares are revealed
 Save
 Play test
 
+For Editors E1 and E2, if you have successfully saved a board, then put a check on the editor card in the main Tametsi Hex menu
