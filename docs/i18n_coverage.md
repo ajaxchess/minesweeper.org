@@ -20,7 +20,10 @@
   uses more English loanwords in gaming contexts: Score, Dashboard, Kanban, Quests, Duel,
   Expert, Beginner, Arcade, Community, Links, Contact, Desktop, Status, etc.);
   Esperanto has 52 (low for a constructed language — keeps brand names and schema.org fields EN,
-  but translates most nav labels, mode names, and UI terms with proper Esperanto morphology).
+  but translates most nav labels, mode names, and UI terms with proper Esperanto morphology);
+  Pig Latin has 38 (lowest of all languages — PGL applies the word-transformation rule to almost
+  everything including nav items, game strings, and all SEO descriptions; only schema.org fields,
+  SEO keyword strings, meta titles, and brand-name nav items stay in EN).
   Any language with EN placeholders above 80 has that many keys awaiting real translation.
 - Keys added in **Parts 1–5** of the DE translation pass (316 keys: SEO sections, jigsaw
   gallery, placeholder attributes, info/how-to pages) were given EN placeholder values in
@@ -46,7 +49,7 @@
 | `uk` | Ukrainian | 2309 | 24 | 0 ✅ |
 | `sv` | Swedish | 2309 | 78 | 0 ✅ |
 | `eo` | Esperanto | 2309 | 52 | 0 ✅ |
-| `pgl` | Pig Latin | 2309 | 388 | 312 |
+| `pgl` | Pig Latin | 2309 | 38 | 0 ✅ |
 | `nl` | Dutch | 2309 | 80 | 0 ✅ |
 | `pl` | Polish | 2309 | 63 | 0 ✅ |
 | `es` | Spanish | 2309 | 47 | 0 ✅ |
@@ -137,6 +140,11 @@ Uses «» Ukrainian guillemets for quoted phrases throughout.
 78 keys legitimately share their EN value: brand/product names (CubeSweeper, Hexsweeper, MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tametsi Hex, Tentaizu, Minesweeper Chess, Numbers Match, Minesweeper Rush, Vibe Coding, 2048 Hexagon, Regis Consulting), acronyms (PvP, VS), symbols (#, 💥), game-mode terms identical in Swedish (Standard, Cylinder, Toroid, Expert, Normal, Max, Generator, Community, Status, Match, Auto, Session, Hash, Debug, Sudoku — all standard Swedish gaming/tech loanwords), schema.org/JSON-LD genre fields, meta title strings (kept EN for SEO), language selector data (lang_other/lang_label for Esperanto), proper event names (FIFA World Cup), and empty string.
 All 318 previously untranslated keys were translated in the SV translation pass (2026-06-11).
 Uses Swedish diacritics (å, ä, ö) throughout; meta_kw_default and meta_kw_about replaced with Swedish SEO keywords (were incorrectly holding Russian placeholder values).
+### Pig Latin (`pgl`) — ✅ Fully translated
+38 keys legitimately share their EN value: brand/product names (CubeSweeper, Hexsweeper, MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tametsi Hex, Tentaizu, Minesweeper Chess, Minesweeper Duel, Minesweeper Rush), acronyms (PvP, VS), symbols (#), schema.org/JSON-LD genre and platform fields (kept EN for schema.org compatibility), meta title strings and SEO keyword sets (kept EN for SEO indexing), and proper company name (Regis Consulting).
+All 350 previously untranslated keys were translated in the PGL translation pass (2026-06-11).
+Applies standard Pig Latin rules throughout: consonant-initial words move leading consonant cluster to end + "ay" (mine→inemay, flag→agflay, board→oardbay, play→ayplay, click→ickclay); vowel-initial words append "way" (and→andway, open→openway); y treated as consonant when word-initial (you→ouyay). HTML tags, URLs, code blocks, and brand names preserved. One double-escaping fix applied to seo_cust_density_p2 (pre-escaped quotes corrected post-run).
+
 ### Esperanto (`eo`) — ✅ Fully translated
 52 keys legitimately share their EN value: brand/product names (CubeSweeper, Hexsweeper, MobiusSweeper, Nonosweeper, Worldsweeper, Tametsi, Tametsi Hex, Tentaizu, Minesweeper Chess, Minesweeper Duel, Minesweeper Rush, Mosaic, 2048 Hexagon, Regis Consulting, Lady Di's Mines), acronyms (PvP, VS), symbols (#), schema.org/JSON-LD genre fields (Strategy, Browser Game, Web Browser, Competitive, Logic, Brain Teaser, Multiplayer — kept EN for schema.org), meta title and keyword strings (kept EN for SEO), English loanwords natural in Esperanto (Blog, Standard), cultural names (Cinco de Mayo banner), and empty string.
 All 345 previously untranslated keys were translated in the EO translation pass (2026-06-11).
