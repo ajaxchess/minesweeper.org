@@ -118,7 +118,7 @@ After=network.target mysql.service
 [Service]
 User=${APP_USER}
 WorkingDirectory=${REPO_DIR}
-ExecStart=${VENV_DIR}/bin/uvicorn main:app --host 127.0.0.1 --port 8000 --workers 2
+ExecStart=${VENV_DIR}/bin/uvicorn main:app --host 127.0.0.1 --port 8000 --workers 1
 Restart=always
 RestartSec=5
 
