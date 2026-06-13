@@ -143,7 +143,10 @@ cat > "/etc/apache2/sites-available/${DOMAIN}.conf" <<APACHE
     Alias /static ${REPO_DIR}/static
     <Directory ${REPO_DIR}/static>
         Require all granted
+        Header set Cache-Control "max-age=31536000, public, immutable"
     </Directory>
+
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json text/plain
 
     ProxyPass        /ws/ ws://127.0.0.1:8000/ws/
     ProxyPassReverse /ws/ ws://127.0.0.1:8000/ws/
