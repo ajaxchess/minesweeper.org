@@ -1836,6 +1836,7 @@ async def contact_page(request: Request, submitted: bool = False):
 
 
 @app.post("/contact", response_class=HTMLResponse)
+@limiter.limit("5/minute")
 async def contact_submit(
     request: Request,
     db: Session = Depends(get_db),
@@ -3568,6 +3569,7 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
 
 
 @app.post("/api/blog/{slug}/comments")
+@limiter.limit("10/minute")
 async def submit_blog_comment(slug: str, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
     if not user:
