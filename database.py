@@ -24,6 +24,8 @@ DATABASE_URL = (
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,   # drops stale connections automatically
+    pool_size=10,         # persistent connections kept open
+    max_overflow=20,      # burst up to 30 total under load
     pool_recycle=3600,    # recycle connections every hour
     echo=False,           # set True to log SQL queries during dev
 )
