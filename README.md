@@ -10,7 +10,7 @@ Free online Minesweeper — classic, no-guess, real-time PvP duel, Rush, Tentaiz
 
 ## About
 
-Minesweeper.org was originally launched in 2001 and dedicated to Diana, Princess of Wales, and the charity she supported — [The HALO Trust](https://www.halousa.org/).
+Minesweeper.org was originally launched in 1999 and dedicated to Diana, Princess of Wales, and the charity she supported — [The HALO Trust](https://www.halousa.org/).
 
 The original site can be seen at the [Wayback Machine](https://web.archive.org/web/20040325004955/http://www.minesweeper.org/). One goal of this project is to bring back the original look, feel, and mission.
 
