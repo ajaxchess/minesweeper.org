@@ -35,6 +35,7 @@
   <link rel="alternate" hreflang="ko"      href="https://minesweeper.org/ko{{ _bp }}">
   <link rel="alternate" hreflang="th"      href="https://minesweeper.org/th{{ _bp }}">
   <link rel="alternate" hreflang="tl"      href="https://minesweeper.org/tl{{ _bp }}">
+  <link rel="alternate" hreflang="da"      href="https://minesweeper.org/da{{ _bp }}">
   <link rel="alternate" hreflang="nl"      href="https://minesweeper.org/nl{{ _bp }}">
   <link rel="alternate" hreflang="id"      href="https://minesweeper.org/id{{ _bp }}">
   <link rel="alternate" hreflang="ms"      href="https://minesweeper.org/ms{{ _bp }}">
@@ -397,7 +398,7 @@
           </div>
         </div>
         {%- set _lc = lang if lang is defined else 'en' -%}
-        {%- set _ll = {'en':'EN','de':'DE','fr':'FR','es':'ES','pt':'PT','it':'IT','pl':'PL','ru':'RU','uk':'UK','zh':'ZH','zh-hant':'繁體','ja':'JA','ko':'KO','th':'TH','tl':'TL','nl':'NL','sv':'SV','id':'ID','ms':'MS','hi':'HI','el':'EL','pgl':'PGL','eo':'EO'} -%}
+        {%- set _ll = {'en':'EN','da':'DA','de':'DE','fr':'FR','es':'ES','pt':'PT','it':'IT','pl':'PL','ru':'RU','uk':'UK','zh':'ZH','zh-hant':'繁體','ja':'JA','ko':'KO','th':'TH','tl':'TL','nl':'NL','sv':'SV','id':'ID','ms':'MS','hi':'HI','el':'EL','pgl':'PGL','eo':'EO'} -%}
         <div class="lang-picker" id="lang-picker">
           <button class="lang-picker-btn" type="button" onclick="toggleLangPicker(event)" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">
             <img src="/static/img/flags/{{ 'pgl' if _lc == 'tlh' else _lc }}.png" class="lang-flag" width="20" height="14" alt="{{ _lc }}">
@@ -415,6 +416,7 @@
             {%- for code, label, name in [
               ('en',      'EN',   'English'),
               ('id',      'ID',   'Bahasa Indonesia'),
+              ('da',      'DA',   'Dansk'),
               ('de',      'DE',   'Deutsch'),
               ('es',      'ES',   'Español'),
               ('eo',      'EO',   'Esperanto'),
