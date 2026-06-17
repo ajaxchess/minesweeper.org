@@ -204,6 +204,18 @@
 }
 .thex-editor-result--ok   { background: color-mix(in srgb,#4caf50 15%,var(--surface)); border: 1px solid #4caf50; }
 .thex-editor-result--fail { background: color-mix(in srgb,var(--accent) 15%,var(--surface)); border: 1px solid var(--accent); }
+/* Editor ? cells */
+.hex-cell.thex-editor-revealedQ .hex-poly {
+  fill: var(--surface2);
+  stroke: var(--text-dim);
+  stroke-width: 1.5;
+}
+.hex-cell.thex-editor-hiddenQ .hex-poly {
+  fill: var(--surface);
+  stroke: var(--text-dim);
+  stroke-dasharray: 4 2;
+  stroke-width: 1.5;
+}
 .thex-editor-share-url {
   font-family: monospace;
   font-size: 0.82rem;
@@ -294,6 +306,10 @@
                 onclick="thexEditorSetTool2('mine')">💣 Mine</button>
         <button class="thex-editor-tool-btn" data-tool2="reveal"
                 onclick="thexEditorSetTool2('reveal')">👁 Reveal</button>
+        <button class="thex-editor-tool-btn" data-tool2="revealedQ"
+                onclick="thexEditorSetTool2('revealedQ')">? Revealed</button>
+        <button class="thex-editor-tool-btn" data-tool2="hiddenQ"
+                onclick="thexEditorSetTool2('hiddenQ')">? Hidden</button>
         <button class="thex-editor-tool-btn"
                 onclick="thexEditorClear2()">✕ Clear</button>
         <button class="thex-editor-save-btn"
