@@ -13,10 +13,24 @@ Usage:
 import argparse
 import logging
 import os
+import ssl
 import sys
 import unicodedata
 
 import requests
+from requests.adapters import HTTPAdapter
+
+
+class _IgnoreEOFAdapter(HTTPAdapter):
+    """Work around servers that drop TLS without close_notify (Python 3.14+)."""
+    def init_poolmanager(self, *args, **kwargs):
+        ctx = ssl.create_default_context()
+        ctx.options |= getattr(ssl, "OP_IGNORE_UNEXPECTED_EOF", 0)
+        kwargs["ssl_context"] = ctx
+        return super().init_poolmanager(*args, **kwargs)
+
+_session = requests.Session()
+_session.mount("https://", _IgnoreEOFAdapter())
 
 # ── path setup ───────────────────────────────────────────────────────────────
 # Allow importing database / ORM models from the project root regardless of
@@ -60,7 +74,7 @@ def _name_to_slug(name: str) -> str:
 
 def _fetch(path: str, key: str | None = None) -> list:
     url = f"{API_BASE}{path}"
-    resp = requests.get(url, timeout=15)
+    resp = _session.get(url, timeout=15)
     resp.raise_for_status()
     data = resp.json()
     return data[key] if key else data
