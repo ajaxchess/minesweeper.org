@@ -23,15 +23,15 @@ LOCAL_COMMIT=$(git rev-parse HEAD)
 
 # ── Determine deploy target ───────────────────────────────────────────────────
 # Production only deploys commits that have been validated by staging smoke tests.
-# The staging script writes the last passing commit SHA to last_good_commit.
-LAST_GOOD=$(cat "$STATE_DIR/last_good_commit" 2>/dev/null || echo "")
+# The staging script writes the last passing commit SHA to minesweeper_last_good_commit.
+LAST_GOOD=$(cat "$STATE_DIR/minesweeper_last_good_commit" 2>/dev/null || echo "")
 
 if [ -z "$LAST_GOOD" ]; then
-    # First run: no last_good_commit exists yet.
+    # First run: no minesweeper_last_good_commit exists yet.
     # Assume the current prod state is good and record it.
     # Staging will overwrite this once it validates a new commit.
-    echo "Initializing last_good_commit to current prod HEAD ($LOCAL_COMMIT)."
-    echo "$LOCAL_COMMIT" > "$STATE_DIR/last_good_commit"
+    echo "Initializing minesweeper_last_good_commit to current prod HEAD ($LOCAL_COMMIT)."
+    echo "$LOCAL_COMMIT" > "$STATE_DIR/minesweeper_last_good_commit"
     LAST_GOOD="$LOCAL_COMMIT"
 fi
 

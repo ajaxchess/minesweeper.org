@@ -9,8 +9,8 @@
 # Flow:
 #   1. Acquire a lock — exit immediately if another run is in progress.
 #   2. Fetch origin/main — if no new commit, exit.
-#   3. If the new commit is already in last_good_commit, exit (already validated).
-#   4. If the new commit matches blocked_commit, exit (already failed).
+#   3. If the new commit is already in minesweeper_last_good_commit, exit (already validated).
+#   4. If the new commit matches minesweeper_blocked_commit, exit (already failed).
 #   5. Reset to new commit, install deps, regenerate database.py.
 #   6. START the staging service (it is stopped when idle).
 #   7. Wait for /health, run smoke tests.
@@ -77,13 +77,13 @@ fi
 echo "$(date '+%Y-%m-%d %H:%M:%S') New commit detected: $LOCAL_COMMIT -> $REMOTE_COMMIT"
 
 # ── Skip if already validated ─────────────────────────────────────────────────
-if [ -f "$STATE_DIR/last_good_commit" ] && [ "$(cat "$STATE_DIR/last_good_commit")" = "$REMOTE_COMMIT" ]; then
+if [ -f "$STATE_DIR/minesweeper_last_good_commit" ] && [ "$(cat "$STATE_DIR/minesweeper_last_good_commit")" = "$REMOTE_COMMIT" ]; then
     echo "$(date '+%Y-%m-%d %H:%M:%S') Commit $REMOTE_COMMIT already validated. Nothing to do."
     exit 0
 fi
 
 # ── Skip if already blocked ───────────────────────────────────────────────────
-BLOCKED_COMMIT=$(cat "$STATE_DIR/blocked_commit" 2>/dev/null || echo "")
+BLOCKED_COMMIT=$(cat "$STATE_DIR/minesweeper_blocked_commit" 2>/dev/null || echo "")
 if [ "$REMOTE_COMMIT" = "$BLOCKED_COMMIT" ]; then
     echo "$(date '+%Y-%m-%d %H:%M:%S') Commit $REMOTE_COMMIT is blocked (failed smoke tests). Waiting for a new commit."
     exit 0
@@ -205,12 +205,12 @@ echo "Service stopped."
 
 # ── Record result ─────────────────────────────────────────────────────────────
 if [ "$SMOKE_FAILED" -eq 0 ]; then
-    echo "$REMOTE_COMMIT" > "$STATE_DIR/last_good_commit"
-    rm -f "$STATE_DIR/blocked_commit"
-    echo "$(date '+%Y-%m-%d %H:%M:%S') ✅ Smoke tests passed. Commit $REMOTE_COMMIT written to last_good_commit."
+    echo "$REMOTE_COMMIT" > "$STATE_DIR/minesweeper_last_good_commit"
+    rm -f "$STATE_DIR/minesweeper_blocked_commit"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') ✅ Smoke tests passed. Commit $REMOTE_COMMIT written to minesweeper_last_good_commit."
     echo "$(date '+%Y-%m-%d %H:%M:%S') Production deploy will proceed on its next cron tick."
 else
-    echo "$REMOTE_COMMIT" > "$STATE_DIR/blocked_commit"
+    echo "$REMOTE_COMMIT" > "$STATE_DIR/minesweeper_blocked_commit"
     echo "$(date '+%Y-%m-%d %H:%M:%S') ❌ Smoke tests FAILED for $REMOTE_COMMIT. State file NOT updated."
     echo "$(date '+%Y-%m-%d %H:%M:%S') Production deploy remains blocked until tests pass."
     exit 1
