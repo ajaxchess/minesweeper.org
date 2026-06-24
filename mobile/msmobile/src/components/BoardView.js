@@ -235,6 +235,7 @@ const styles = StyleSheet.create({
   },
   innerContent: {
     alignItems: 'center',
+    justifyContent: 'center',
   },
   board: {
     borderWidth: 1,
