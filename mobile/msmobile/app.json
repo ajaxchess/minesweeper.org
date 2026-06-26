@@ -12,12 +12,9 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "entitlements": {
-        "com.apple.developer.game-center": true
-      },
       "supportsTablet": true,
       "bundleIdentifier": "org.minesweeper",
-      "buildNumber": "20",
+      "buildNumber": "22",
       "config": {
         "usesNonExemptEncryption": false
       },
