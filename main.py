@@ -1017,6 +1017,8 @@ async def set_lang(request: Request, lang: str = "en", next: Optional[str] = Non
         redirect_to = "/" + (parts[1] if len(parts) > 1 else "")
         if not redirect_to:
             redirect_to = "/"
+    # Normalize: single leading slash, no protocol-relative // or backslash prefix
+    redirect_to = "/" + redirect_to.lstrip("/\\")
     # Apply the new lang prefix for non-English using pre-built map (untainted value)
     prefix = _LANG_PREFIX_MAP.get(safe_lang, "")
     redirect_to = prefix + ("" if redirect_to == "/" else redirect_to) if prefix else redirect_to
@@ -2325,7 +2327,8 @@ async def upload_member_puzzle(
         data = await upload.read()
         if len(data) > 2 * 1024 * 1024:
             raise HTTPException(status_code=400, detail=f"File too large — max 2 MB ({label} image)")
-        filename = f"{uuid.uuid4().hex}_{label}{_ext_map[content_type]}"
+        safe_label = {"tile": "tile", "reveal": "reveal"}[label]  # whitelist gate for CodeQL path-expression check
+        filename = f"{uuid.uuid4().hex}_{safe_label}{_ext_map[content_type]}"
         target_path = os.path.abspath(os.path.join(upload_dir_abs, filename))
         if os.path.commonpath([upload_dir_abs, target_path]) != upload_dir_abs:
             raise HTTPException(status_code=400, detail="Invalid upload path")
@@ -7543,9 +7546,10 @@ async def admin_pattern_update(slug: str, request: Request, db: Session = Depend
     _save_pattern_revision(db, pattern, user.get("email"),
                            edit_summary=(form.get("edit_summary") or "").strip()[:256] or None)
     db.commit()
-    if not re.fullmatch(r'[a-z0-9][a-z0-9\-]{0,99}', pattern.slug):
+    slug_match = re.fullmatch(r'[a-z0-9][a-z0-9\-]{0,99}', pattern.slug)
+    if not slug_match:
         raise HTTPException(status_code=500, detail="Invalid pattern slug")
-    return RedirectResponse(f"/admin/patterns/{quote(pattern.slug, safe='')}/edit", status_code=303)
+    return RedirectResponse(f"/admin/patterns/{slug_match.group()}/edit", status_code=303)
 
 
 @app.post("/admin/patterns/{slug}/delete")
@@ -7875,7 +7879,10 @@ def admin_hscleaning_delete(
         db.delete(score)
         db.commit()
     _p = urlparse(next_url)
-    safe_next = _p.path if (not _p.scheme and not _p.netloc and _p.path.startswith("/admin/")) else "/admin/hscleaning"
+    if not _p.scheme and not _p.netloc and _p.path.startswith("/admin/"):
+        safe_next = "/" + _p.path.lstrip("/\\")  # normalize leading slashes
+    else:
+        safe_next = "/admin/hscleaning"
     return RedirectResponse(safe_next, status_code=303)
 
 
@@ -8050,14 +8057,16 @@ def admin_analysis_download(request: Request, file: str):
 
 @app.get("/admin/analysis/{filename}")
 def admin_analysis_by_path(filename: str, folder: Optional[str] = None):
-    doc = filename.rsplit(".", 1)[0] if "." in filename else filename
-    if not re.fullmatch(r'[A-Za-z0-9_\-\.]{1,200}', doc):
+    doc_raw = filename.rsplit(".", 1)[0] if "." in filename else filename
+    doc_match = re.fullmatch(r'[A-Za-z0-9_\-\.]{1,200}', doc_raw)
+    if not doc_match:
         raise HTTPException(status_code=400, detail="Invalid filename")
-    params = f"doc={quote(doc, safe='')}"
+    params = f"doc={quote(doc_match.group(), safe='')}"
     if folder:
-        if not re.fullmatch(r'[A-Za-z0-9_\-]{1,100}', folder):
+        folder_match = re.fullmatch(r'[A-Za-z0-9_\-]{1,100}', folder)
+        if not folder_match:
             raise HTTPException(status_code=400, detail="Invalid folder")
-        params += f"&folder={quote(folder, safe='')}"
+        params += f"&folder={quote(folder_match.group(), safe='')}"
     return RedirectResponse(f"/admin/analysis?{params}", status_code=302)
 
 
