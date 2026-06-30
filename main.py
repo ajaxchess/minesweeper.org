@@ -54,6 +54,10 @@ from better_profanity import profanity as _profanity_checker
 
 logger = logging.getLogger(__name__)
 
+# ── Module-level adjacency cache for WC2026 flood-reveal ─────────────────────
+# Keyed by (board_row_id, rr, cc) so adj counts persist across reveal requests
+# for the same board without mixing data from different mine layouts.
+_adj_cache: dict = {}
 
 # ── Profanity helpers ─────────────────────────────────────────────────────────
 # Maps every score table name → its SQLAlchemy model, used to resolve the
@@ -810,14 +814,14 @@ def get_url_traffic_stats(target_date: date = None):
 def _backfill_web_traffic():
     """On startup: process any days from ARCHIVE_START to yesterday missing from DB."""
     yesterday = date.today() - timedelta(days=1)
-    db = SessionLocal()
-    try:
-        existing = {str(r.stat_date) for r in db.query(WebTrafficStats.stat_date).all()}
-    finally:
-        db.close()
     d = _TRAFFIC_ARCHIVE_START
     while d <= yesterday:
-        if str(d) not in existing:
+        db = SessionLocal()
+        try:
+            exists = db.query(WebTrafficStats).filter(WebTrafficStats.stat_date == d).first() is not None
+        finally:
+            db.close()
+        if not exists:
             collect_web_traffic_stats(target_date=d)
         d += timedelta(days=1)
 
@@ -5123,8 +5127,11 @@ def get_pvp_leaderboard(period: str = "alltime",
                         score_date: Optional[str] = Query(None, alias="date"),
                         season_num: Optional[int] = Query(None),
                         submode: Optional[str] = Query(None),
-                        db: Session = Depends(get_db)):
+                        db: Session = Depends(get_db),
+                        response: Response = None):
     """Return best PvP games ranked by winner's time (fastest first)."""
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=60"
     if period not in ("daily", "weekly", "monthly", "season", "yearly", "alltime"):
         period = "alltime"
 
@@ -9243,7 +9250,9 @@ def submit_tametsi_score(
 
 
 @app.get("/api/tametsi/leaderboard/{level}")
-def tametsi_leaderboard_daily(level: str, db: Session = Depends(get_db)):
+def tametsi_leaderboard_daily(level: str, db: Session = Depends(get_db), response: Response = None):
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=60"
     if not _TAMETSI_LEVEL_RE.match(level):
         raise HTTPException(status_code=400, detail="Invalid level")
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -9264,7 +9273,9 @@ def tametsi_leaderboard_daily(level: str, db: Session = Depends(get_db)):
 
 
 @app.get("/api/tametsi/leaderboard/board/{board_hash}")
-def tametsi_leaderboard_board(board_hash: str, db: Session = Depends(get_db)):
+def tametsi_leaderboard_board(board_hash: str, db: Session = Depends(get_db), response: Response = None):
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=60"
     if not _TAMETSI_HASH_RE.match(board_hash):
         raise HTTPException(status_code=400, detail="Invalid board hash")
     q = db.query(TametsiScore).filter(TametsiScore.board_hash == board_hash)
@@ -10011,15 +10022,16 @@ def wc2026_reveal(slug: str, difficulty: str, payload: WC2026RevealPayload,
     # BFS flood-reveal
     from collections import deque
     queue = deque([(r, c)])
-    adj_cache = {}
+    board_id = row.id
     def adj_count(rr, cc):
-        if (rr, cc) not in adj_cache:
-            adj_cache[(rr, cc)] = sum(
+        key = (board_id, rr, cc)
+        if key not in _adj_cache:
+            _adj_cache[key] = sum(
                 1 for dr in (-1,0,1) for dc in (-1,0,1)
                 if (dr or dc) and 0 <= rr+dr < rows and 0 <= cc+dc < cols
                 and (rr+dr, cc+dc) in mines
             )
-        return adj_cache[(rr, cc)]
+        return _adj_cache[key]
 
     visited = set()
     while queue:
@@ -10214,17 +10226,23 @@ def wc2026_new_game(slug: str, difficulty: str,
 # ── API: leaderboards ─────────────────────────────────────────────────────────
 
 @app.get("/api/wc2026/leaderboard/countries")
-def wc2026_lb_countries(db: Session = Depends(get_db)):
+def wc2026_lb_countries(db: Session = Depends(get_db), response: Response = None):
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=60"
     return _fan_country_leaderboard(db, limit=48)
 
 
 @app.get("/api/wc2026/leaderboard/individuals")
-def wc2026_lb_individuals(db: Session = Depends(get_db)):
+def wc2026_lb_individuals(db: Session = Depends(get_db), response: Response = None):
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=60"
     return _individual_leaderboard(db, limit=50)
 
 
 @app.get("/api/wc2026/leaderboard/country/{slug}")
-def wc2026_lb_country(slug: str, db: Session = Depends(get_db)):
+def wc2026_lb_country(slug: str, db: Session = Depends(get_db), response: Response = None):
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=60"
     if slug not in VALID_WC2026_SLUGS:
         raise HTTPException(status_code=404)
     return _country_leaderboard(slug, db, limit=20)
