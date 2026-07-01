@@ -38,6 +38,9 @@
     "react-native-webview": "13.16.0"
   },
   "private": true,
+  "overrides": {
+    "form-data": "^4.0.6"
+  },
   "devDependencies": {
     "@testing-library/react-native": "^13.3.3",
     "babel-jest": "^30.3.0",
