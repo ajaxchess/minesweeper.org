@@ -469,13 +469,19 @@ def leaderboard_rows(
     except SQLAlchemyError:
         db.rollback()
         return _empty_rows_response(spec, clean_period)
-    seen: set[str] = set()
+    seen_users:  set[str] = set()
+    seen_hashes: set[str] = set()
     rows: list[Any] = []
     for row in raw:
-        key = getattr(row, spec.email_field, None) or getattr(row, spec.name_field, None) or str(getattr(row, "id"))
-        if key in seen:
+        user_key   = getattr(row, spec.email_field, None) or getattr(row, spec.name_field, None) or str(getattr(row, "id"))
+        board_hash = getattr(row, "board_hash", None)
+        if user_key in seen_users:
             continue
-        seen.add(key)
+        if board_hash and board_hash in seen_hashes:
+            continue
+        seen_users.add(user_key)
+        if board_hash:
+            seen_hashes.add(board_hash)
         rows.append(row)
         if len(rows) >= limit:
             break
