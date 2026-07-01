@@ -7556,7 +7556,7 @@ async def admin_pattern_update(slug: str, request: Request, db: Session = Depend
     slug_match = re.fullmatch(r'[a-z0-9][a-z0-9\-]{0,99}', pattern.slug)
     if not slug_match:
         raise HTTPException(status_code=500, detail="Invalid pattern slug")
-    return RedirectResponse(f"/admin/patterns/{slug_match.group()}/edit", status_code=303)
+    return RedirectResponse(_safe_relative_url(f"/admin/patterns/{slug_match.group()}/edit"), status_code=303)
 
 
 @app.post("/admin/patterns/{slug}/delete")
@@ -8074,7 +8074,7 @@ def admin_analysis_by_path(filename: str, folder: Optional[str] = None):
         if not folder_match:
             raise HTTPException(status_code=400, detail="Invalid folder")
         params += f"&folder={quote(folder_match.group(), safe='')}"
-    return RedirectResponse(f"/admin/analysis?{params}", status_code=302)
+    return RedirectResponse(_safe_relative_url(f"/admin/analysis?{params}"), status_code=302)
 
 
 # ── Nonosweeper scores ────────────────────────────────────────────────────────
