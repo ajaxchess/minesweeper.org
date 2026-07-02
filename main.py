@@ -6654,35 +6654,41 @@ def admin_bootcamp(request: Request, db: Session = Depends(get_db)):
     month_ago = now - timedelta(days=30)
 
     # ── 1. Top-line counts ────────────────────────────────────────────────────
-    total_analyses = db.query(func.count(GameAnalysis.id)).scalar() or 0
-    analyses_7d  = db.query(func.count(GameAnalysis.id)) \
-                     .filter(GameAnalysis.created_at >= week_ago).scalar() or 0
-    analyses_30d = db.query(func.count(GameAnalysis.id)) \
-                     .filter(GameAnalysis.created_at >= month_ago).scalar() or 0
+    # One scan each instead of three separate queries per metric.
+    from sqlalchemy import case as sa_case
 
-    unique_players_total = db.query(
-        func.count(func.distinct(GameAnalysis.player_id))
-    ).scalar() or 0
-    unique_players_7d    = db.query(
-        func.count(func.distinct(GameAnalysis.player_id))
-    ).filter(GameAnalysis.created_at >= week_ago).scalar() or 0
-    unique_players_30d   = db.query(
-        func.count(func.distinct(GameAnalysis.player_id))
-    ).filter(GameAnalysis.created_at >= month_ago).scalar() or 0
+    analyses_row = db.query(
+        func.count(GameAnalysis.id).label("total"),
+        func.count(sa_case((GameAnalysis.created_at >= week_ago,  GameAnalysis.id), else_=None)).label("week"),
+        func.count(sa_case((GameAnalysis.created_at >= month_ago, GameAnalysis.id), else_=None)).label("month"),
+    ).one()
+    total_analyses = analyses_row.total or 0
+    analyses_7d    = analyses_row.week  or 0
+    analyses_30d   = analyses_row.month or 0
 
-    # Anomaly counts
-    anomalies_total = db.query(func.count(GameAnalysis.id)) \
-        .filter(GameAnalysis.no_guess == True) \
-        .filter(GameAnalysis.death_cause == "forcedGuess") \
-        .scalar() or 0
-    anomalies_7d = db.query(func.count(GameAnalysis.id)) \
-        .filter(GameAnalysis.no_guess == True) \
-        .filter(GameAnalysis.death_cause == "forcedGuess") \
-        .filter(GameAnalysis.created_at >= week_ago).scalar() or 0
-    anomalies_30d = db.query(func.count(GameAnalysis.id)) \
-        .filter(GameAnalysis.no_guess == True) \
-        .filter(GameAnalysis.death_cause == "forcedGuess") \
-        .filter(GameAnalysis.created_at >= month_ago).scalar() or 0
+    players_row = db.query(
+        func.count(func.distinct(GameAnalysis.player_id)).label("total"),
+        func.count(func.distinct(sa_case(
+            (GameAnalysis.created_at >= week_ago,  GameAnalysis.player_id), else_=None))).label("week"),
+        func.count(func.distinct(sa_case(
+            (GameAnalysis.created_at >= month_ago, GameAnalysis.player_id), else_=None))).label("month"),
+    ).one()
+    unique_players_total = players_row.total or 0
+    unique_players_7d    = players_row.week  or 0
+    unique_players_30d   = players_row.month or 0
+
+    # Anomaly counts — single scan
+    anomalies_row = db.query(
+        func.count(GameAnalysis.id).label("total"),
+        func.count(sa_case((GameAnalysis.created_at >= week_ago,  GameAnalysis.id), else_=None)).label("week"),
+        func.count(sa_case((GameAnalysis.created_at >= month_ago, GameAnalysis.id), else_=None)).label("month"),
+    ).filter(
+        GameAnalysis.no_guess == True,
+        GameAnalysis.death_cause == "forcedGuess",
+    ).one()
+    anomalies_total = anomalies_row.total or 0
+    anomalies_7d    = anomalies_row.week  or 0
+    anomalies_30d   = anomalies_row.month or 0
 
     # ── 2. Recent anomalies list (50 most recent) ────────────────────────────
     anomaly_rows = (
