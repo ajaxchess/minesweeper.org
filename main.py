@@ -1357,17 +1357,20 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
 
     client_type = get_client_type(request)
 
-    # Reject duplicate: same board + same player + same time already recorded
-    if payload.board_hash and payload.time_ms:
-        dup_q = db.query(Score.id).filter(
-            Score.board_hash == payload.board_hash,
-            Score.time_ms    == payload.time_ms,
-        )
+    # Reject duplicate board submissions.
+    # Logged-in users: one score per (user, board_hash).
+    # Guests: one score per board_hash globally — guest_token changes across
+    # sessions/tabs so per-token checks allow the same board to be resubmitted.
+    if payload.board_hash:
         if user:
-            dup_q = dup_q.filter(Score.user_email == user["email"])
+            existing = db.query(Score.id).filter(
+                Score.board_hash == payload.board_hash,
+                Score.user_email == user["email"],
+            ).first()
         else:
-            dup_q = dup_q.filter(Score.guest_token == guest_token)
-        existing = dup_q.first()
+            existing = db.query(Score.id).filter(
+                Score.board_hash == payload.board_hash,
+            ).first()
         if existing:
             return JSONResponse({"ok": True, "id": existing.id}, status_code=200)
 
@@ -1411,7 +1414,15 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
             client_type  = client_type,
         ))
 
-    db.commit()
+    from sqlalchemy.exc import IntegrityError
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        existing = db.query(Score).filter(Score.board_hash == payload.board_hash).first()
+        if existing:
+            return JSONResponse({"ok": True, "id": existing.id}, status_code=200)
+        raise
     db.refresh(score)
     flag_if_profane(db, score.__tablename__, score.id, score.name)
     record_score_submit("minesweeper", payload.mode.value)
