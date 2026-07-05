@@ -310,6 +310,18 @@
         startDrill(level, drillBtn);
         return;
       }
+      // Per-drill "Start" buttons in the level detail — data-drill-id IS the
+      // phase7 drill_type (e.g. "l3_strategic_nf"); level is its lN prefix.
+      const recBtn = ev.target.closest('[data-drill-id]');
+      if (recBtn) {
+        ev.preventDefault();
+        const dtype = recBtn.dataset.drillId || '';
+        const m = /^l([1-7])_/.exec(dtype);
+        if (m) {
+          startDrillByType(dtype, parseInt(m[1], 10), recBtn);
+        }
+        return;
+      }
       if (ev.target.closest('[data-modal-close]')) {
         closeProgressModal();
       }
@@ -335,7 +347,10 @@
 
   async function startDrill(level, btnEl) {
     const drill = LEVEL_DRILLS[level] || LEVEL_DRILLS[5];
+    return startDrillByType(drill.type, drill.level, btnEl);
+  }
 
+  async function startDrillByType(drillType, level, btnEl) {
     if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Loading…'; }
 
     try {
@@ -347,8 +362,8 @@
           'Accept': 'application/json',
         },
         body: JSON.stringify({
-          drill_type: drill.type,
-          level: drill.level,
+          drill_type: drillType,
+          level: level,
           difficulty: 'expert',
           mode: currentMode || 'standard',
           num_boards: 10,

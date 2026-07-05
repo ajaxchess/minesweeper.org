@@ -270,33 +270,32 @@ def get_bootcamp_level(
 
 
 def _drills_for_level(lv: int) -> list[DrillRecommendation]:
+    """One runnable drill per level. drill_id IS the phase7 drill_type —
+    the frontend POSTs it straight to /api/drills/start."""
     catalog = {
-        1: [("drill_no_safety_chord", "No-safety-chord practice", 10, 5,
-             "Reduce wasted chords to <2/game")],
-        2: [("drill_21_shortcut", "2-1 Flag Shortcut Drill", 10, 5,
-             "Skip the flag step on shortcut patterns"),
-            ("drill_bold_chord", "Bold Reach Drill", 15, 8,
-             "Maximize cells cleared per chord")],
-        3: [("drill_no_flag_edges", "Edge no-flag drill", 12, 6,
-             "Stop flagging stranded edge mines")],
-        4: [("drill_efficiency_mix", "Mixed efficiency boards", 15, 10,
-             "Choose flag vs. NF per situation")],
-        5: [("drill_l_shape_opening", "L-shape Opening Recognition", 15, 6,
-             "Spot guaranteed openings in <500ms"),
-            ("drill_potential_opening", "Potential Opening EV", 12, 8,
-             "Take 2-cell openings on expert")],
-        6: [("drill_high_value_flag", "High-Value Flag Drill", 12, 7,
-             "Choose flags that participate in multiple chords")],
-        7: [("drill_fishing_for_1", "Fishing for 1 Drill", 12, 7,
-             "Recognize and act on fishing opportunities"),
-            ("drill_hierarchy_compliance", "Decision-Hierarchy Practice", 15, 10,
-             "Pick the highest-priority option every move")],
+        1: ("l1_cut_waste", "Cut Waste — chord or click", 10, 5,
+            "Pick the one action that reveals the most"),
+        2: ("l2_effective_chord", "Effective Chording — flag-then-chord", 10, 5,
+            "Spot the number with the best flag-then-chord payoff"),
+        3: ("l3_strategic_nf", "Strategic No-Flag reads", 10, 5,
+            "Prove a cell safe from the raw numbers — no flags"),
+        4: ("l4_pure_efficiency", "Pure Efficiency chords", 10, 5,
+            "Chord where it opens the most"),
+        5: ("l5_opening_recognition", "Opening Recognition", 10, 5,
+            "Find the safest, biggest opening on the frontier"),
+        6: ("l6_flag_value", "High-Value Flag Drill", 10, 5,
+            "Choose flags that unlock the most chord value"),
+        7: ("l7_fishing", "Fishing & Hierarchy", 10, 5,
+            "When no easy move exists, chain constraints to prove one"),
     }
-    items = catalog.get(lv, [])
+    item = catalog.get(lv)
+    if not item:
+        return []
+    did, name, bc, mins, target = item
     return [DrillRecommendation(
         drill_id=did, name=name, board_count=bc,
         estimated_minutes=mins, target=target,
-    ) for did, name, bc, mins, target in items]
+    )]
 
 
 def _habits_for_level(lv: int, d: dict) -> list[HabitProgress]:

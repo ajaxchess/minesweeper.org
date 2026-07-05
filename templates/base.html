@@ -379,6 +379,7 @@
         <!-- Leaderboard + Quests: direct links -->
         <a href="{{ lp }}/leaderboard" class="mega-direct {% if mode=='leaderboard' %}active{% endif %}">{{ t.nav_leaderboard }}</a>
         <a href="{{ lp }}/quests" class="mega-direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
+        <a href="{{ lp }}/bootcamp" class="mega-direct {% if mode=='bootcamp' %}active{% endif %}">{{ t.nav_bootcamp | default("Bootcamp") }}</a>
         <a href="{{ lp }}/blog" class="mega-direct {% if mode=='blog' %}active{% endif %}">{{ t.nav_blog }}</a>
         <a href="{{ lp }}/2026worldcup" class="mega-direct {% if mode=='wc2026' %}active{% endif %}" style="color:#e8a000;font-weight:600;">⚽ {{ t.nav_wc2026 }}</a>
 
@@ -591,6 +592,7 @@
       </details>
       <a href="{{ lp }}/leaderboard" class="drawer-link drawer-link--direct {% if mode=='leaderboard' %}active{% endif %}">{{ t.nav_leaderboard }}</a>
       <a href="{{ lp }}/quests" class="drawer-link drawer-link--direct {% if mode=='quests' %}active{% endif %}">{{ t.nav_quests }}</a>
+      <a href="{{ lp }}/bootcamp" class="drawer-link drawer-link--direct {% if mode=='bootcamp' %}active{% endif %}">{{ t.nav_bootcamp | default("Bootcamp") }}</a>
       <a href="{{ lp }}/blog" class="drawer-link drawer-link--direct {% if mode=='blog' %}active{% endif %}">{{ t.nav_blog }}</a>
       <a href="{{ lp }}/2026worldcup" class="drawer-link drawer-link--direct {% if mode=='wc2026' %}active{% endif %}" style="color:#e8a000;font-weight:600;">⚽ {{ t.nav_wc2026 }}</a>
     </nav>

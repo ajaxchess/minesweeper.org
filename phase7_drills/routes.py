@@ -264,6 +264,13 @@ def submit_board(
     if len(attempts) >= drill.num_boards and drill.completed_at is None:
         _finalise(drill, attempts)
         completed = True
+        # The diagnosis blends this drill in — drop the player's cached
+        # diagnosis so /bootcamp reflects it immediately on return.
+        try:
+            from phase4_routes.queries import invalidate_diagnosis_cache
+            invalidate_diagnosis_cache(drill.player_id)
+        except ImportError:
+            pass
         summary = DrillSummary(
             num_correct=drill.num_correct or 0,
             num_total=drill.num_boards,
