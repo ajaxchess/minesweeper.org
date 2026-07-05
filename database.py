@@ -3,7 +3,7 @@ database.py — SQLAlchemy setup for MySQL via PyMySQL
 """
 from sqlalchemy import (
     create_engine, Column, Integer, BigInteger, String, Float,
-    DateTime, Date, Enum, Index, Boolean, text, Text, JSON
+    DateTime, Date, Enum, Index, Boolean, text, Text, JSON, UniqueConstraint
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from datetime import datetime, timezone
@@ -1521,6 +1521,26 @@ class UserRole(Base):
 
     __table_args__ = (
         Index("ix_user_roles_email_role", "email", "role", unique=True),
+    )
+
+
+class SeoRanking(Base):
+    """Weekly snapshot of search rankings per language."""
+    __tablename__ = "seo_rankings"
+
+    id                  = Column(Integer, primary_key=True, index=True)
+    lang                = Column(String(16),  nullable=False, index=True)
+    search_term         = Column(String(256), nullable=False)
+    country             = Column(String(8),   nullable=False)
+    google_position     = Column(Float,   nullable=True)   # GSC avg position (1 = #1)
+    google_clicks       = Column(Integer, nullable=True)   # GSC clicks in 28-day window
+    google_impressions  = Column(Integer, nullable=True)   # GSC impressions in 28-day window
+    bing_position       = Column(Integer, nullable=True)   # position in Bing top-50, None = not found
+    checked_at          = Column(DateTime, nullable=False,
+                                 default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_seo_lang_checked", "lang", "checked_at"),
     )
 
 
