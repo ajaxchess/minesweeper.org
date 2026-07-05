@@ -1518,6 +1518,26 @@ class UserRole(Base):
     )
 
 
+class SeoRanking(Base):
+    """Weekly snapshot of search rankings per language."""
+    __tablename__ = "seo_rankings"
+
+    id                  = Column(Integer, primary_key=True, index=True)
+    lang                = Column(String(16),  nullable=False, index=True)
+    search_term         = Column(String(256), nullable=False)
+    country             = Column(String(8),   nullable=False)
+    google_position     = Column(Float,   nullable=True)
+    google_clicks       = Column(Integer, nullable=True)
+    google_impressions  = Column(Integer, nullable=True)
+    bing_position       = Column(Integer, nullable=True)
+    checked_at          = Column(DateTime, nullable=False,
+                                 default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_seo_lang_checked", "lang", "checked_at"),
+    )
+
+
 # ── Create tables if they don't exist ────────────────────────────────────────
 def init_db():
     Base.metadata.create_all(bind=engine)
