@@ -27,7 +27,7 @@ class DrillBoardVisible(BaseModel):
     `revealed` is the list of revealed cells as [row, col] pairs.
     `numbers` is the subset of revealed cells with adjacent mines > 0,
     encoded as [row, col, count] triples.
-    `flags` is the list of pre-placed flags (L4/L6 only; empty for L5).
+    `flags` is the list of pre-placed flags (L1/L4/L7; empty for L2/L3/L5/L6).
     `prompt` is the per-drill instruction shown above the board.
     """
     drill_type: str
@@ -45,9 +45,13 @@ class DrillBoardVisible(BaseModel):
 # ─────────────────────────────────────────────────────────────────────────────
 
 DrillType = Literal[
-    "l5_opening_recognition",
+    "l1_cut_waste",
+    "l2_effective_chord",
+    "l3_strategic_nf",
     "l4_pure_efficiency",
+    "l5_opening_recognition",
     "l6_flag_value",
+    "l7_fishing",
 ]
 
 

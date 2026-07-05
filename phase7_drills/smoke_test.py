@@ -81,9 +81,13 @@ def run() -> int:
     # Exercise every drill type's start path with a short drill, just to
     # catch generator regressions early.
     for dtype, lvl in [
-        ("l5_opening_recognition", 5),
+        ("l1_cut_waste",           1),
+        ("l2_effective_chord",     2),
+        ("l3_strategic_nf",        3),
         ("l4_pure_efficiency",     4),
+        ("l5_opening_recognition", 5),
         ("l6_flag_value",          6),
+        ("l7_fishing",             7),
     ]:
         r0 = client.post("/api/drills/start", json={
             "drill_type": dtype, "level": lvl,

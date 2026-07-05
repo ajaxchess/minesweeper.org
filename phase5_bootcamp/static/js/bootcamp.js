@@ -322,21 +322,19 @@
 
   // ── Start today's drill ───────────────────────────────────────────────────
   // POSTs /api/drills/start and redirects to the drill page on success.
-  // Only L5 is implemented today; other levels show a "coming soon" toast.
+  // All 7 levels have a drill (phase7 v1.1).
+  const LEVEL_DRILLS = {
+    1: { type: 'l1_cut_waste', level: 1 },
+    2: { type: 'l2_effective_chord', level: 2 },
+    3: { type: 'l3_strategic_nf', level: 3 },
+    4: { type: 'l4_pure_efficiency', level: 4 },
+    5: { type: 'l5_opening_recognition', level: 5 },
+    6: { type: 'l6_flag_value', level: 6 },
+    7: { type: 'l7_fishing', level: 7 },
+  };
+
   async function startDrill(level, btnEl) {
-    if (level !== 5) {
-      // Future levels — render a small inline notice instead of an alert.
-      if (btnEl) {
-        const original = btnEl.textContent;
-        btnEl.textContent = 'Drill coming soon';
-        btnEl.disabled = true;
-        setTimeout(function () {
-          btnEl.textContent = original;
-          btnEl.disabled = false;
-        }, 1800);
-      }
-      return;
-    }
+    const drill = LEVEL_DRILLS[level] || LEVEL_DRILLS[5];
 
     if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Loading…'; }
 
@@ -349,8 +347,8 @@
           'Accept': 'application/json',
         },
         body: JSON.stringify({
-          drill_type: 'l5_opening_recognition',
-          level: 5,
+          drill_type: drill.type,
+          level: drill.level,
           difficulty: 'expert',
           mode: currentMode || 'standard',
           num_boards: 10,

@@ -1,6 +1,6 @@
 # phase7_drills — "Start today's drill" feature
 
-Adds a procedural drill runner backing the **Start today's drill** button on the Bootcamp page. First drill shipped is **L5 Opening Recognition** — Pick-the-best-cell on a partially-revealed expert board, 10 boards per session.
+Adds a procedural drill runner backing the **Start today's drill** button on the Bootcamp page. All **7 bootcamp levels** now have a drill (see the catalog table below) — pick-the-best-cell on a partially-revealed board, 10 boards per session. Each level's button on `/bootcamp` starts its own drill type.
 
 This is additive to phase4 + phase5. No changes to existing tables, no breaking changes to existing routes.
 
@@ -202,24 +202,27 @@ I've left those two integration patches out of this push to keep it small and re
 - **Empty drill (0 boards)**: rejected by Pydantic — `num_boards >= 1`.
 - **Cheating via devtools**: mine layout is never sent to the client; verdicts are server-computed.
 
-## Future work — the rest of the drill catalog
+## Drill catalog — all 7 levels shipped (drill_version 1.1)
 
-| Level | Drill name | Status |
+| Level | Drill type | What the player does |
 |---|---|---|
-| L1 | Cut waste — chord-or-click | TODO |
-| L2 | Effective chord — flag-then-chord rhythm | TODO |
-| L3 | Strategic NF — recognise safe non-flag chords | TODO |
-| L4 | Pure efficiency — minimum-click solutions | TODO |
-| **L5** | **Opening recognition** | **shipped (this README)** |
-| L6 | Flag value — which flag opens more | TODO |
-| L7 | Fishing & hierarchy — multi-step solver patterns | TODO |
+| L1 | `l1_cut_waste` | Chord-or-click: pick the single action (chord a number OR click a provably-safe cell) that reveals the most |
+| L2 | `l2_effective_chord` | Pick the revealed number with the best flag-then-chord payoff (its missing flags are all provable, ≤2 needed) |
+| L3 | `l3_strategic_nf` | No flags on the board; pick a cell provable safe from the raw numbers (tier-1 deduction), small 16×10 board |
+| L4 | `l4_pure_efficiency` | Pick the chord-ready number that opens the most (flags pre-placed) |
+| L5 | `l5_opening_recognition` | Pick the safest+biggest opening on the frontier, small 16×10 board |
+| L6 | `l6_flag_value` | Pick the provable mine whose flag unlocks the most chord value |
+| L7 | `l7_fishing` | Board is played to a "stuck" state — no tier-1 move exists; pick the cell that subset (tier-2) deduction proves safe. Uses `phase2_analyzer/solver.py::ConstraintSolver` |
 
-The generator + routes + UI shell are reusable. Each new drill is:
-1. A new `generate_lN_*` function in `generator.py`
+Adding another drill is still:
+1. A new `generate_lN_*` function in `generator.py` (+ `_GENERATORS`, `DRILL_PROMPTS`, `DRILL_NAMES` entries)
 2. A new `drill_type` literal in `response_models.py`
-3. (Optionally) drill-type-specific rendering branches in `drill.js`
+3. Click-target + feedback-copy entries in `drill.js` (`CLICK_REVEALED` / `CLICK_UNREVEALED` / `FEEDBACK`)
 
-The harder ones (L6, L7) will need the constraint propagation solver — we already have one in `phase2_analyzer/solver.py` so the work is wiring it up.
+**JS source/minified**: the canonical drill runner source is `phase7_drills/static/js/drill.js`; regenerate the deployed copy with
+`npx terser phase7_drills/static/js/drill.js -c -m -o static/js/drill.js` and bump the `?v=` cache-buster in `templates/drill.html`.
+
+**Tests**: `tests/test_drills.py` covers generation validity, determinism, mine-leak prevention, click-evaluation semantics, and the type-specific lessons for every drill type.
 
 ## Rollback
 

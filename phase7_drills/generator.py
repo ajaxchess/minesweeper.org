@@ -1,20 +1,41 @@
 """
 phase7_drills.generator — procedural board generation for drills.
 
-Three drill types are implemented today, all using the same pick-the-best-cell
-shell:
+All seven bootcamp drill types are implemented, all using the same
+pick-the-best-cell shell (one click per board):
 
-  l5_opening_recognition — Pick the unrevealed cell that opens the largest
-                           area. Trains opening recognition.
+  l1_cut_waste           — Chord-or-click. Both chord-ready numbers AND
+                           provably-safe unrevealed cells are candidates;
+                           pick whichever single action reveals the most.
+                           Trains cutting wasted clicks.
+
+  l2_effective_chord     — Pick the revealed number with the best
+                           flag-then-chord payoff. Its missing flags are
+                           all provable; the drill scores the chord that
+                           placing them would enable. Trains the
+                           flag-then-chord rhythm.
+
+  l3_strategic_nf        — No flags anywhere on the board. Pick a cell
+                           that is provably safe from the raw numbers
+                           (tier-1 deduction). Trains no-flag reading.
 
   l4_pure_efficiency     — Pick the revealed-number cell that, when chorded,
                            reveals the largest area. The drill pre-places
                            correct flags so a chord is legal. Trains
                            efficient mid-game play.
 
+  l5_opening_recognition — Pick the unrevealed cell that opens the largest
+                           area. Trains opening recognition.
+
   l6_flag_value          — Pick the provably-mine cell whose flag enables
                            the most chord opportunities. Trains flag-value
                            prioritization.
+
+  l7_fishing             — No trivial (tier-1) safe cell exists. Pick the
+                           cell that multi-constraint (subset) deduction
+                           proves safe. Uses phase2_analyzer's
+                           ConstraintSolver. Trains fishing & the decision
+                           hierarchy.
 
 Design constraints:
   - All randomness must be derivable from a seed so we can replay drill
@@ -25,9 +46,13 @@ Design constraints:
     value. Boards that don't qualify are retried with a fresh seed.
 
 Public API:
-  generate_l5_opening_board(seed)    -> DrillBoard
+  generate_l1_cut_waste_board(seed)  -> DrillBoard
+  generate_l2_chord_board(seed)      -> DrillBoard
+  generate_l3_nf_board(seed)         -> DrillBoard
   generate_l4_efficiency_board(seed) -> DrillBoard
+  generate_l5_opening_board(seed)    -> DrillBoard
   generate_l6_flag_value_board(seed) -> DrillBoard
+  generate_l7_fishing_board(seed)    -> DrillBoard
   generate_drill_set(base_seed, drill_type, n) -> list[DrillBoard]
   serialize_visible(board)           -> dict (client-safe)
   evaluate_click(board, r, c)        -> EvaluatedClick
@@ -84,25 +109,78 @@ L5_STARTER_TARGET_REVEAL_FRACTION = 0.35   # denser reveal on the small board
 CORRECT_THRESHOLD = 0.80
 
 
-# Supported drill types — single source of truth.
-DRILL_TYPE_L5 = "l5_opening_recognition"
-DRILL_TYPE_L4 = "l4_pure_efficiency"
-DRILL_TYPE_L6 = "l6_flag_value"
+# L1 — best action (chord or click) must reveal at least this many cells,
+# and both an interesting chord AND an interesting click must exist so the
+# comparison is a real decision.
+MIN_L1_BEST = 4
+MIN_L1_EACH_KIND = 2
 
-ALL_DRILL_TYPES = (DRILL_TYPE_L5, DRILL_TYPE_L4, DRILL_TYPE_L6)
+# L2 — the best flag-then-chord must open at least this many cells.
+MIN_L2_CHORD_SIZE = 4
+# ...and must need at most this many flags (keeps the rhythm tight).
+MAX_L2_FLAGS_NEEDED = 2
+
+# L3 — small board like L5; optimal safe cell must open at least this many.
+MIN_L3_OPTIMAL = 2
+# Frontier must be at least this multiple of the provably-safe set, so
+# "find the safe cell" is a real search, not a giveaway.
+L3_MIN_FRONTIER_RATIO = 3.0
+
+# L7 — small board; number of solver-provable safe cells required.
+MIN_L7_SAFE = 1
+
+# Small-board dimensions shared by L3 / L7 (same rationale as L5 — the
+# lesson is reading numbers, not scanning a wall of grey).
+SMALL_WIDTH = 16
+SMALL_HEIGHT = 10
+L3_MINES = 26
+L7_MINES = 24
+L7_STARTER_TARGET_REVEAL_FRACTION = 0.40
+
+
+# Supported drill types — single source of truth.
+DRILL_TYPE_L1 = "l1_cut_waste"
+DRILL_TYPE_L2 = "l2_effective_chord"
+DRILL_TYPE_L3 = "l3_strategic_nf"
+DRILL_TYPE_L4 = "l4_pure_efficiency"
+DRILL_TYPE_L5 = "l5_opening_recognition"
+DRILL_TYPE_L6 = "l6_flag_value"
+DRILL_TYPE_L7 = "l7_fishing"
+
+ALL_DRILL_TYPES = (
+    DRILL_TYPE_L1, DRILL_TYPE_L2, DRILL_TYPE_L3, DRILL_TYPE_L4,
+    DRILL_TYPE_L5, DRILL_TYPE_L6, DRILL_TYPE_L7,
+)
+
+# Which cells are clickable, per type. L1 allows both.
+REVEALED_TARGET_TYPES = frozenset({DRILL_TYPE_L4, DRILL_TYPE_L2})
+BOTH_TARGET_TYPES = frozenset({DRILL_TYPE_L1})
+
+# Types where clicking an unrevealed mine is fatal (a real click).
+MINE_FATAL_TYPES = frozenset({
+    DRILL_TYPE_L5, DRILL_TYPE_L3, DRILL_TYPE_L7, DRILL_TYPE_L1,
+})
 
 # Per-drill prompt text shown to the player above the board.
 DRILL_PROMPTS = {
-    DRILL_TYPE_L5: "Which unrevealed cell would you click next?",
+    DRILL_TYPE_L1: "Chord or click — which single move reveals the most?",
+    DRILL_TYPE_L2: "Which number gives the best flag-then-chord?",
+    DRILL_TYPE_L3: "No flags. Which cell is provably safe?",
     DRILL_TYPE_L4: "Which revealed number would you chord next?",
+    DRILL_TYPE_L5: "Which unrevealed cell would you click next?",
     DRILL_TYPE_L6: "Which cell would you flag next?",
+    DRILL_TYPE_L7: "No easy move exists. Which cell can you prove safe?",
 }
 
 # Per-drill description for the results blurb.
 DRILL_NAMES = {
-    DRILL_TYPE_L5: "Opening Recognition",
+    DRILL_TYPE_L1: "Cut Waste",
+    DRILL_TYPE_L2: "Effective Chording",
+    DRILL_TYPE_L3: "Strategic No-Flag",
     DRILL_TYPE_L4: "Pure Efficiency",
+    DRILL_TYPE_L5: "Opening Recognition",
     DRILL_TYPE_L6: "Flag Value",
+    DRILL_TYPE_L7: "Fishing & Hierarchy",
 }
 
 
@@ -193,10 +271,46 @@ def generate_l6_flag_value_board(seed: int) -> DrillBoard:
     )
 
 
+def generate_l1_cut_waste_board(seed: int) -> DrillBoard:
+    """L1 Cut Waste (chord-or-click) — see module docstring."""
+    return _retry_generate(_try_generate_l1, seed, attempts=60, name="L1")
+
+
+def generate_l2_chord_board(seed: int) -> DrillBoard:
+    """L2 Effective Chording (flag-then-chord) — see module docstring."""
+    return _retry_generate(_try_generate_l2, seed, attempts=60, name="L2")
+
+
+def generate_l3_nf_board(seed: int) -> DrillBoard:
+    """L3 Strategic No-Flag — see module docstring."""
+    return _retry_generate(_try_generate_l3, seed, attempts=200, name="L3")
+
+
+def generate_l7_fishing_board(seed: int) -> DrillBoard:
+    """L7 Fishing & Hierarchy — see module docstring."""
+    return _retry_generate(_try_generate_l7, seed, attempts=400, name="L7")
+
+
+def _retry_generate(fn, seed: int, attempts: int, name: str) -> DrillBoard:
+    rng = random.Random(seed)
+    for _ in range(attempts):
+        attempt_seed = rng.randrange(1, 1_000_000_000)
+        board = fn(attempt_seed)
+        if board is not None:
+            return board
+    raise RuntimeError(
+        f"Could not generate a valid {name} board after {attempts} attempts (seed={seed})"
+    )
+
+
 _GENERATORS = {
-    DRILL_TYPE_L5: generate_l5_opening_board,
+    DRILL_TYPE_L1: generate_l1_cut_waste_board,
+    DRILL_TYPE_L2: generate_l2_chord_board,
+    DRILL_TYPE_L3: generate_l3_nf_board,
     DRILL_TYPE_L4: generate_l4_efficiency_board,
+    DRILL_TYPE_L5: generate_l5_opening_board,
     DRILL_TYPE_L6: generate_l6_flag_value_board,
+    DRILL_TYPE_L7: generate_l7_fishing_board,
 }
 
 
@@ -279,34 +393,46 @@ def evaluate_click(board: DrillBoard, r: int, c: int) -> EvaluatedClick:
     counts as "correct" (it populated correct_cells) and what counts as a
     fatal mistake (it populated mines / revealed):
 
-      L5: clicking a mine is fatal, clicking an already-revealed cell is invalid
-      L4: clicking an unrevealed cell is invalid (need to chord a number),
-          clicking a revealed-non-number is wrong, mine click is impossible
-          because the player can only click revealed cells
-      L6: clicking a non-mine cell counts as "wrong but not fatal" since you
-          can't actually trigger a mine by flagging — but we score it as
-          wrong (player thought it was a mine and was wrong)
+      L5/L3/L7: clicking a mine is fatal, clicking a revealed cell is invalid
+      L4/L2:    clicking an unrevealed cell is invalid (targets are revealed
+                numbers), mine click is impossible
+      L1:       both revealed (chord) and unrevealed (click) cells are valid
+                targets; clicking an unrevealed mine is fatal
+      L6:       clicking a non-mine cell counts as "wrong but not fatal" since
+                you can't actually trigger a mine by flagging — but we score
+                it as wrong (player thought it was a mine and was wrong)
 
     For simplicity, the scoring rule is uniform:
-      - in correct_cells           → correct
-      - is a mine (only L5)        → is_mine=True, correct=False
-      - everything else            → correct=False
+      - in correct_cells                  → correct
+      - is a mine (MINE_FATAL_TYPES only) → is_mine=True, correct=False
+      - everything else                   → correct=False
     """
     in_bounds = 0 <= r < board.height and 0 <= c < board.width
 
     if not in_bounds:
         return _miss(board)
 
-    # L4: clicking a non-revealed cell is invalid
-    if board.drill_type == DRILL_TYPE_L4 and (r, c) not in board.revealed:
+    dt = board.drill_type
+
+    # Flagged cells are never valid targets.
+    if (r, c) in board.flags:
         return _miss(board)
 
-    # L5 / L6: clicking an already-revealed cell is invalid
-    if board.drill_type != DRILL_TYPE_L4 and (r, c) in board.revealed:
+    # L4 / L2: clicking a non-revealed cell is invalid
+    if dt in REVEALED_TARGET_TYPES and (r, c) not in board.revealed:
         return _miss(board)
 
-    is_mine = (r, c) in board.mines
-    if board.drill_type == DRILL_TYPE_L5 and is_mine:
+    # L5 / L6 / L3 / L7: clicking an already-revealed cell is invalid.
+    # (L1 allows both, L4/L2 handled above.)
+    if (
+        dt not in REVEALED_TARGET_TYPES
+        and dt not in BOTH_TARGET_TYPES
+        and (r, c) in board.revealed
+    ):
+        return _miss(board)
+
+    is_mine = (r, c) in board.mines and (r, c) not in board.revealed
+    if dt in MINE_FATAL_TYPES and is_mine:
         return EvaluatedClick(
             is_correct=False, is_mine=True, opening_size=0,
             relative_quality=0.0,
@@ -336,9 +462,12 @@ def compute_reveal_cells(board: DrillBoard, r: int, c: int) -> list[list[int]]:
     """Return [row, col, number] for every cell that would be uncovered by
     a click on (r, c). Honors the drill type:
 
-      L5 — flood-fill from (r, c) if safe; empty if mine
-      L4 — chord-reveal from (r, c) if chord-ready; empty otherwise
-      L6 — empty (flagging doesn't open anything)
+      L5/L3/L7 — flood-fill from (r, c) if safe; empty if mine
+      L4       — chord-reveal from (r, c) if chord-ready; empty otherwise
+      L2       — flag-then-chord reveal from (r, c) with its provable flags
+                 hypothetically placed; empty otherwise
+      L1       — chord-reveal if (r, c) is revealed, flood otherwise
+      L6       — empty (flagging doesn't open anything)
 
     Used by the client to draw what would have happened on this pick — gives
     the player a concrete sense of the lesson even when they picked wrong.
@@ -351,7 +480,16 @@ def compute_reveal_cells(board: DrillBoard, r: int, c: int) -> list[list[int]]:
         if (r, c) not in board.revealed:
             return []
         return _chord_reveal_cells(board, r, c)
-    # L5
+    if board.drill_type == DRILL_TYPE_L2:
+        if (r, c) not in board.revealed:
+            return []
+        synthetic = _l2_board_with_needed_flags(board, r, c)
+        if synthetic is None:
+            return []
+        return _chord_reveal_cells(synthetic, r, c)
+    if board.drill_type == DRILL_TYPE_L1 and (r, c) in board.revealed:
+        return _chord_reveal_cells(board, r, c)
+    # L5 / L3 / L7 / L1-unrevealed
     if (r, c) in board.revealed or (r, c) in board.mines:
         return []
     return _flood_reveal_cells(board, r, c)
@@ -426,12 +564,18 @@ def _miss(board: DrillBoard) -> EvaluatedClick:
 
 def _score_for(board: DrillBoard, r: int, c: int) -> int:
     """Compute the per-drill score for cell (r, c). Drives the feedback text."""
-    if board.drill_type == DRILL_TYPE_L5:
+    if board.drill_type in (DRILL_TYPE_L5, DRILL_TYPE_L3, DRILL_TYPE_L7):
         return _flood_size(board, r, c)
     if board.drill_type == DRILL_TYPE_L4:
         return _chord_reveal_size(board, r, c)
     if board.drill_type == DRILL_TYPE_L6:
         return _flag_value(board, r, c)
+    if board.drill_type == DRILL_TYPE_L2:
+        return _l2_flag_then_chord_size(board, r, c)
+    if board.drill_type == DRILL_TYPE_L1:
+        if (r, c) in board.revealed:
+            return _chord_reveal_size(board, r, c)
+        return _flood_size(board, r, c)
     return 0
 
 
@@ -828,6 +972,334 @@ def _board_with_flags(base: DrillBoard, flags: set[tuple[int, int]]) -> DrillBoa
         flags=flags,
         numbers=base.numbers,
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# L1 — Cut Waste (chord-or-click)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _try_generate_l1(seed: int) -> Optional[DrillBoard]:
+    """Both chord-ready numbers and provably-safe clicks are candidates.
+
+    The lesson: before clicking cell-by-cell, check whether a chord (or a
+    bigger click) does the same work in one action. A valid board needs a
+    meaningful candidate of EACH kind so the comparison is a real decision.
+    """
+    rng = random.Random(seed)
+    board = _seed_board(seed, DRILL_TYPE_L1)
+    _place_random_mines(board, rng)
+    _make_starter_reveal(board, rng)
+    _place_inferable_flags(board)
+    board.numbers = _compute_numbers(board)
+
+    # Chord candidates — chord-ready revealed numbers.
+    chord_sizes: dict[tuple[int, int], int] = {}
+    for (r, c) in board.revealed:
+        sz = _chord_reveal_size(board, r, c)
+        if sz > 0:
+            chord_sizes[(r, c)] = sz
+
+    # Click candidates — tier-1 provably-safe unrevealed cells.
+    safe, _mines = _tier1_deduce(board)
+    click_sizes: dict[tuple[int, int], int] = {}
+    for cell in safe:
+        sz = _flood_size(board, *cell)
+        if sz > 0:
+            click_sizes[cell] = sz
+
+    if not chord_sizes or not click_sizes:
+        return None
+    if max(chord_sizes.values()) < MIN_L1_EACH_KIND:
+        return None
+    if max(click_sizes.values()) < MIN_L1_EACH_KIND:
+        return None
+
+    sizes = {**chord_sizes, **click_sizes}
+    max_size = max(sizes.values())
+    if max_size < MIN_L1_BEST:
+        return None
+
+    threshold = max(1, int(max_size * CORRECT_THRESHOLD))
+    board.correct_cells = {cell for cell, sz in sizes.items() if sz >= threshold}
+    board.optimal_cell = max(sizes, key=sizes.get)
+    board.optimal_opening_size = max_size
+    return board
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# L2 — Effective Chording (flag-then-chord)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _try_generate_l2(seed: int) -> Optional[DrillBoard]:
+    """No flags are pre-placed. Candidates are revealed numbers whose missing
+    flags are ALL provable mines — so flag-then-chord is safe — scored by the
+    chord reveal that placing those flags would enable.
+    """
+    rng = random.Random(seed)
+    board = _seed_board(seed, DRILL_TYPE_L2)
+    _place_random_mines(board, rng)
+    _make_starter_reveal(board, rng)
+    board.numbers = _compute_numbers(board)
+
+    sizes: dict[tuple[int, int], int] = {}
+    for (r, c) in board.revealed:
+        sz = _l2_flag_then_chord_size(board, r, c)
+        if sz > 0:
+            sizes[(r, c)] = sz
+
+    if not sizes:
+        return None
+    max_size = max(sizes.values())
+    if max_size < MIN_L2_CHORD_SIZE:
+        return None
+
+    threshold = max(1, int(max_size * CORRECT_THRESHOLD))
+    board.correct_cells = {cell for cell, sz in sizes.items() if sz >= threshold}
+    board.optimal_cell = max(sizes, key=sizes.get)
+    board.optimal_opening_size = max_size
+    return board
+
+
+def _l2_needed_flags(board: DrillBoard, r: int, c: int) -> Optional[set[tuple[int, int]]]:
+    """The provable mines a chord on (r, c) still needs flagged, or None if
+    flag-then-chord on (r, c) isn't provably safe / isn't a real opportunity.
+
+    Conditions:
+      - (r, c) is a revealed number N with F adjacent flags, F < N
+      - the missing (N - F) flags are all tier-1 provable mines
+      - at most MAX_L2_FLAGS_NEEDED flags are missing
+      - after flagging, the chord actually reveals something
+    """
+    if (r, c) not in board.revealed:
+        return None
+    n = _count_adj_mines(board, r, c)
+    if n == 0:
+        return None
+    flagged = sum(1 for nr, nc in _neighbors(r, c) if (nr, nc) in board.flags)
+    missing = n - flagged
+    if missing <= 0 or missing > MAX_L2_FLAGS_NEEDED:
+        return None
+
+    proven = _find_provably_mine_cells(board)
+    needed: set[tuple[int, int]] = set()
+    for nr, nc in _neighbors(r, c):
+        if not (0 <= nr < board.height and 0 <= nc < board.width):
+            continue
+        if (nr, nc) in board.flags or (nr, nc) in board.revealed:
+            continue
+        if (nr, nc) in board.mines:
+            if (nr, nc) not in proven:
+                return None      # an adjacent mine we can't prove — unsafe chord
+            needed.add((nr, nc))
+    if len(needed) != missing:
+        return None              # counts disagree — over/under-flagged, skip
+    return needed
+
+
+def _l2_board_with_needed_flags(board: DrillBoard, r: int, c: int) -> Optional[DrillBoard]:
+    needed = _l2_needed_flags(board, r, c)
+    if needed is None:
+        return None
+    return _board_with_flags(board, set(board.flags) | needed)
+
+
+def _l2_flag_then_chord_size(board: DrillBoard, r: int, c: int) -> int:
+    """Cells revealed by chording (r, c) after placing its provable flags."""
+    synthetic = _l2_board_with_needed_flags(board, r, c)
+    if synthetic is None:
+        return 0
+    return _chord_reveal_size(synthetic, r, c)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# L3 — Strategic No-Flag
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _try_generate_l3(seed: int) -> Optional[DrillBoard]:
+    """Small board, zero flags. Correct cells are those tier-1 deduction
+    proves safe from the raw numbers. The frontier must be much larger than
+    the safe set so spotting the safe cell is a real read.
+    """
+    rng = random.Random(seed)
+    board = DrillBoard(
+        width=SMALL_WIDTH,
+        height=SMALL_HEIGHT,
+        num_mines=L3_MINES,
+        seed=seed,
+        drill_type=DRILL_TYPE_L3,
+    )
+    _place_random_mines(board, rng)
+    _make_starter_reveal_l5(board, rng)   # same denser small-board reveal
+    board.numbers = _compute_numbers(board)
+
+    safe, _mines = _tier1_deduce(board)
+    sizes = {cell: _flood_size(board, *cell) for cell in safe}
+    sizes = {cell: sz for cell, sz in sizes.items() if sz > 0}
+    if not sizes:
+        return None
+    max_size = max(sizes.values())
+    if max_size < MIN_L3_OPTIMAL:
+        return None
+
+    frontier = sum(
+        1 for r in range(board.height) for c in range(board.width)
+        if _is_on_frontier(board, r, c)
+    )
+    if frontier < len(sizes) * L3_MIN_FRONTIER_RATIO:
+        return None
+
+    # Any provably-safe cell is a correct NF read; the biggest flood is optimal.
+    board.correct_cells = set(sizes.keys())
+    board.optimal_cell = max(sizes, key=sizes.get)
+    board.optimal_opening_size = max_size
+    return board
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# L7 — Fishing & Decision Hierarchy
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _try_generate_l7(seed: int) -> Optional[DrillBoard]:
+    """Small board where NO tier-1 safe cell exists but subset (tier-2)
+    deduction proves at least one cell safe. That's the fishing lesson:
+    when the easy moves run out, chain constraints instead of guessing.
+
+    Provable mines ARE pre-flagged (tier-1 closure) so the player's
+    attention goes to the deduction, not to flag bookkeeping.
+    """
+    rng = random.Random(seed)
+    board = DrillBoard(
+        width=SMALL_WIDTH,
+        height=SMALL_HEIGHT,
+        num_mines=L7_MINES,
+        seed=seed,
+        drill_type=DRILL_TYPE_L7,
+    )
+    _place_random_mines(board, rng)
+
+    target = int(board.width * board.height * L7_STARTER_TARGET_REVEAL_FRACTION)
+    safe_cells = _safe_cells(board)
+    rng.shuffle(safe_cells)
+    for cell in safe_cells:
+        if cell in board.revealed:
+            continue
+        if _flood_size(board, *cell) < 3:
+            continue
+        _reveal_flood(board, *cell)
+        if len(board.revealed) >= target:
+            break
+    if not board.revealed:
+        return None
+
+    # Drive the board to a "stuck" state: play out every trivial move
+    # (flag provable mines, reveal provable safes) until tier-1 deduction
+    # yields nothing. That's exactly the moment fishing matters.
+    for _ in range(50):
+        _place_inferable_flags(board)
+        tier1_safe, _tier1_mines = _tier1_deduce(board)
+        tier1_safe = {s for s in tier1_safe if s not in board.revealed}
+        if not tier1_safe:
+            break
+        for cell in tier1_safe:
+            _reveal_flood(board, *cell)
+    else:
+        return None
+    board.numbers = _compute_numbers(board)
+
+    solver_safe = _solver_safe_cells(board)
+    fishing_safe = {cell for cell in solver_safe if cell not in board.revealed}
+    if len(fishing_safe) < MIN_L7_SAFE:
+        return None
+
+    sizes = {cell: max(1, _flood_size(board, *cell)) for cell in fishing_safe}
+    board.correct_cells = set(sizes.keys())
+    board.optimal_cell = max(sizes, key=sizes.get)
+    board.optimal_opening_size = max(sizes.values())
+    return board
+
+
+def _solver_safe_cells(board: DrillBoard) -> set[tuple[int, int]]:
+    """Run phase2_analyzer's ConstraintSolver (tier-1 + tier-2 subset
+    deduction) and return provably-safe unrevealed cells as (r, c).
+
+    Imported lazily so the generator stays standalone when phase2_analyzer
+    isn't on the path (e.g. isolated tooling).
+    """
+    from phase2_analyzer.solver import ConstraintSolver
+    from phase2_analyzer.types import BoardSnapshot, CellState
+
+    cells: list[list] = []
+    mine_layout: list[list[bool]] = []
+    for r in range(board.height):
+        row_cells = []
+        row_mines = []
+        for c in range(board.width):
+            row_mines.append((r, c) in board.mines)
+            if (r, c) in board.flags:
+                row_cells.append(CellState(kind="flagged"))
+            elif (r, c) in board.revealed:
+                row_cells.append(CellState(
+                    kind="revealed",
+                    adjacent_mines=_count_adj_mines(board, r, c),
+                ))
+            else:
+                row_cells.append(CellState(kind="unrevealed"))
+        cells.append(row_cells)
+        mine_layout.append(row_mines)
+
+    snapshot = BoardSnapshot(
+        width=board.width,
+        height=board.height,
+        mine_layout=mine_layout,
+        cells=cells,
+    )
+    result = ConstraintSolver().analyze(snapshot)
+    # Solver speaks (x, y); we speak (r, c).
+    return {(y, x) for (x, y) in result.provably_safe}
+
+
+def _tier1_deduce(board: DrillBoard) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
+    """Iterated trivial deduction to a fixpoint.
+
+    For each revealed number N: count flags + already-proven mines among its
+    neighbours as known. Then:
+      - if remaining quota == remaining unknown neighbours → all are mines
+      - if remaining quota == 0                            → all are safe
+
+    Returns (safe, mines) — unrevealed, unflagged cells only.
+    """
+    proven_mines: set[tuple[int, int]] = set()
+    proven_safe: set[tuple[int, int]] = set()
+    changed = True
+    while changed:
+        changed = False
+        for (r, c) in board.revealed:
+            n = _count_adj_mines(board, r, c)
+            if n == 0:
+                continue
+            known_mines = 0
+            unknown: list[tuple[int, int]] = []
+            for nr, nc in _neighbors(r, c):
+                if not (0 <= nr < board.height and 0 <= nc < board.width):
+                    continue
+                if (nr, nc) in board.revealed:
+                    continue
+                if (nr, nc) in board.flags or (nr, nc) in proven_mines:
+                    known_mines += 1
+                elif (nr, nc) in proven_safe:
+                    continue
+                else:
+                    unknown.append((nr, nc))
+            remaining = n - known_mines
+            if not unknown:
+                continue
+            if remaining == 0:
+                proven_safe.update(unknown)
+                changed = True
+            elif remaining == len(unknown):
+                proven_mines.update(unknown)
+                changed = True
+    return proven_safe, proven_mines
 
 
 # ─────────────────────────────────────────────────────────────────────────────

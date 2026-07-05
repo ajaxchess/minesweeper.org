@@ -31,7 +31,7 @@ from typing import Iterable, Optional
 
 
 DRILL_WEIGHT = 0.3
-DRILL_VERSION = "1.0"
+DRILL_VERSION = "1.1"   # 1.1: added l1_cut_waste, l2_effective_chord, l3_strategic_nf, l7_fishing
 
 
 def compute_drill_mastery(
