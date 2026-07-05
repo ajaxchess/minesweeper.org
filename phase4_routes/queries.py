@@ -37,6 +37,15 @@ except ImportError:
     Score = None
     GameAnalysis = None
 
+try:
+    from phase7_drills.models import DrillSession          # type: ignore
+    from phase7_drills.mastery import blend_into_rolling_average  # type: ignore
+except ImportError:
+    DrillSession = None
+
+    def blend_into_rolling_average(game_values, drill_values):
+        return (sum(game_values) / len(game_values)) if game_values else 0.0
+
 
 # ═════════════════════════════════════════════════════════════════════════════
 # Helpers
@@ -69,6 +78,76 @@ def _time_range_filter(time_range_days: Optional[int]):
     return GameAnalysis.created_at >= cutoff
 
 
+def _recent_drill_values(
+    db: Session,
+    player_id: str,
+    level: int,
+    *,
+    mode: str,
+    difficulty: str,
+    limit: int = 10,
+    since: Optional[datetime] = None,
+) -> list[float]:
+    """Mastery contributions from the player's recent completed drills for
+    one level (newest first). Empty when drills aren't installed."""
+    if DrillSession is None:
+        return []
+    q = (
+        db.query(DrillSession.mastery_contribution)
+          .filter(DrillSession.player_id == player_id)
+          .filter(DrillSession.level == level)
+          .filter(DrillSession.mode == mode)
+          .filter(DrillSession.difficulty == difficulty)
+          .filter(DrillSession.completed_at.isnot(None))
+          .filter(DrillSession.counted_toward_mastery == True)  # noqa: E712
+    )
+    if since is not None:
+        q = q.filter(DrillSession.completed_at >= since)
+    rows = (q.order_by(DrillSession.completed_at.desc())
+              .limit(limit)
+              .all())
+    return [r[0] for r in rows if r[0] is not None]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Diagnosis cache — the bootcamp page hits /diagnosis and /level/{n} on every
+# load (and again per mode toggle), and each used to recompute the same
+# 50-game aggregation. A short TTL keeps both endpoints on one computation.
+# Invalidated explicitly when a drill completes so players see their drill
+# reflected the moment they return to /bootcamp.
+# ─────────────────────────────────────────────────────────────────────────────
+
+_DIAGNOSIS_TTL_SECONDS = 30
+_MAX_DIAGNOSIS_CACHE_ENTRIES = 2000
+_diagnosis_cache: dict[tuple, tuple[float, dict]] = {}
+
+
+def invalidate_diagnosis_cache(player_id: str) -> None:
+    """Drop all cached diagnoses for one player (any mode/difficulty)."""
+    for key in [k for k in _diagnosis_cache if k[0] == player_id]:
+        _diagnosis_cache.pop(key, None)
+
+
+def _diagnosis_cache_get(key: tuple) -> Optional[dict]:
+    import time
+    entry = _diagnosis_cache.get(key)
+    if entry is None:
+        return None
+    expires, value = entry
+    if time.monotonic() > expires:
+        _diagnosis_cache.pop(key, None)
+        return None
+    return value
+
+
+def _diagnosis_cache_put(key: tuple, value: dict) -> None:
+    import time
+    if len(_diagnosis_cache) >= _MAX_DIAGNOSIS_CACHE_ENTRIES:
+        # Cheap pressure valve — drop everything rather than track LRU.
+        _diagnosis_cache.clear()
+    _diagnosis_cache[key] = (time.monotonic() + _DIAGNOSIS_TTL_SECONDS, value)
+
+
 # ═════════════════════════════════════════════════════════════════════════════
 # Core: load player's recent analyses
 # ═════════════════════════════════════════════════════════════════════════════
@@ -81,9 +160,33 @@ def get_player_analyses(
     difficulty: str = "expert",
     limit: int = 50,
     time_range_days: Optional[int] = None,
+    light: bool = False,
 ) -> list[GameAnalysis]:
-    """Return the player's most recent analyses matching filters."""
+    """Return the player's most recent analyses matching filters.
+
+    light=True fetches only the scalar summary columns + level_mastery_json,
+    skipping the seven MEDIUMTEXT detail blobs (up to 16MB each). Use it for
+    aggregate views (diagnosis, radar) that never read the detail JSON —
+    accessing a skipped column on a light row triggers a lazy per-row load,
+    so keep light=False for callers that need details (replay, heatmap).
+    """
     q = db.query(GameAnalysis).filter(_player_filter(player_id))
+    if light:
+        from sqlalchemy.orm import load_only
+        q = q.options(load_only(
+            GameAnalysis.id, GameAnalysis.game_replay_id,
+            GameAnalysis.player_id, GameAnalysis.created_at,
+            GameAnalysis.no_guess,
+            GameAnalysis.ioe, GameAnalysis.throughput,
+            GameAnalysis.correctness, GameAnalysis.three_bv_per_sec,
+            GameAnalysis.hierarchy_compliance_pct,
+            GameAnalysis.wasted_click_count, GameAnalysis.missed_shortcut_count,
+            GameAnalysis.stranded_flag_count, GameAnalysis.wasted_chords,
+            GameAnalysis.successful_chords,
+            GameAnalysis.openings_guaranteed_missed,   # _blocker_message L5
+            GameAnalysis.high_value_flag_pct,          # _blocker_message L6
+            GameAnalysis.bootcamp_level, GameAnalysis.level_mastery_json,
+        ))
     q = q.filter(_mode_filter(mode))
     if time_range_days:
         q = q.filter(_time_range_filter(time_range_days))
@@ -124,9 +227,24 @@ LEVEL_META = {
 def get_bootcamp_diagnosis(
     db: Session, player_id: str, mode: str, difficulty: str
 ) -> dict:
-    """Aggregate over recent games to produce a Bootcamp diagnosis."""
+    """Aggregate over recent games (blended with recent drills) to produce
+    a Bootcamp diagnosis. Cached briefly — see _diagnosis_cache above."""
+    cache_key = (player_id, mode, difficulty)
+    cached = _diagnosis_cache_get(cache_key)
+    if cached is not None:
+        return cached
+
+    result = _compute_bootcamp_diagnosis(db, player_id, mode, difficulty)
+    _diagnosis_cache_put(cache_key, result)
+    return result
+
+
+def _compute_bootcamp_diagnosis(
+    db: Session, player_id: str, mode: str, difficulty: str
+) -> dict:
     analyses = get_player_analyses(db, player_id, mode=mode,
-                                   difficulty=difficulty, limit=50)
+                                   difficulty=difficulty, limit=50,
+                                   light=True)
     if not analyses:
         return {"games_analyzed": 0, "current_level": 1,
                 "level_mastery": {k: 0.0 for k in range(1, 8)},
@@ -153,18 +271,24 @@ def get_bootcamp_diagnosis(
     best_time = min(times) if times else None
     median_time = int(stats.median(times)) if times else None
 
-    # Average level mastery from individual analyses
-    mastery_accum = {k: 0.0 for k in range(1, 8)}
+    # Per-level mastery: games blended with recent drills (drills weigh
+    # DRILL_WEIGHT = 0.3× a live game — see phase7_drills/mastery.py).
+    game_values: dict[int, list[float]] = {k: [] for k in range(1, 8)}
     for a in analyses:
         if a.level_mastery_json:
             try:
                 m = json.loads(a.level_mastery_json)
                 for k, v in m.items():
-                    mastery_accum[int(k)] += float(v)
+                    game_values[int(k)].append(float(v))
             except (json.JSONDecodeError, ValueError, TypeError):
                 continue
     n = len(analyses)
-    mastery = {k: round(v / n, 3) for k, v in mastery_accum.items()}
+    mastery: dict[int, float] = {}
+    for k in range(1, 8):
+        drill_values = _recent_drill_values(
+            db, player_id, k, mode=mode, difficulty=difficulty, limit=10)
+        mastery[k] = round(
+            blend_into_rolling_average(game_values[k], drill_values), 3)
 
     # Find current level (lowest unmastered)
     current_level = 7
@@ -211,9 +335,16 @@ def get_level_progress(
     """
     from datetime import datetime, timedelta, timezone
 
+    from sqlalchemy.orm import load_only
+
     cutoff = datetime.now(timezone.utc) - timedelta(days=days_window)
     analyses = (
         db.query(GameAnalysis)
+          .options(load_only(          # skip the MEDIUMTEXT detail blobs
+              GameAnalysis.game_replay_id, GameAnalysis.created_at,
+              GameAnalysis.level_mastery_json, GameAnalysis.three_bv_per_sec,
+              GameAnalysis.ioe, GameAnalysis.hierarchy_compliance_pct,
+          ))
           .filter(_player_filter(player_id))
           .filter(_mode_filter(mode))
           .filter(GameAnalysis.created_at >= cutoff)
@@ -279,9 +410,15 @@ def get_level_progress(
     # Sort oldest → newest for trend analysis, then reverse for response
     data_points.sort(key=lambda d: d["created_at_obj"] or datetime.min.replace(tzinfo=timezone.utc))
 
-    # Current mastery = rolling avg of the last 10 games (or all if fewer)
+    # Current mastery = rolling avg of the last 10 games (or all if fewer),
+    # blended with recent completed drills in the window at 0.3× weight so
+    # the modal agrees with the diagnosis.
     recent_n = min(10, len(data_points))
-    recent_mastery = sum(d["mastery"] for d in data_points[-recent_n:]) / recent_n
+    recent_game_values = [d["mastery"] for d in data_points[-recent_n:]]
+    drill_values = _recent_drill_values(
+        db, player_id, level, mode=mode, difficulty=difficulty,
+        limit=10, since=cutoff)
+    recent_mastery = blend_into_rolling_average(recent_game_values, drill_values)
 
     # Trend: compare last 7 days vs prior 7 days
     one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
