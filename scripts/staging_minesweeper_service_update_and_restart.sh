@@ -118,9 +118,9 @@ echo "$(date '+%Y-%m-%d %H:%M:%S') Starting service: $SERVICE_NAME (port $PORT).
 sudo systemctl restart "$SERVICE_NAME" \
     || { echo "Error: failed to start $SERVICE_NAME"; exit 1; }
 
-# Wait for uvicorn to finish binding the port (up to 60s).
+# Wait for uvicorn to finish binding the port (up to 120s).
 READY=0
-for i in $(seq 1 20); do
+for i in $(seq 1 40); do
     if curl -s --max-time 3 --compressed "http://127.0.0.1:${PORT}/health" | grep -aq '"status"'; then
         READY=1
         break
@@ -128,7 +128,7 @@ for i in $(seq 1 20); do
     sleep 3
 done
 if [ "$READY" = "0" ]; then
-    echo "$(date '+%Y-%m-%d %H:%M:%S') ERROR: Staging did not become healthy within 60s. Stopping and aborting."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') ERROR: Staging did not become healthy within 120s. Stopping and aborting."
     sudo systemctl stop "$SERVICE_NAME"
     exit 1
 fi
