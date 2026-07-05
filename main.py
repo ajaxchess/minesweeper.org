@@ -22,7 +22,8 @@ from pydantic import BaseModel, Field, field_validator
 from countries import COUNTRIES as ALL_COUNTRIES, VALID_COUNTRY_CODES
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, Pattern, PatternRevision, UserRole, TametsiHexCompletion, TametsiHexTime, TametsiHexUserBoard, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, Pattern, PatternRevision, UserRole, TametsiHexCompletion, TametsiHexTime, TametsiHexUserBoard, SeoRanking, get_db, init_db, SessionLocal
+import seo_checker
 from phase2_analyzer import analyze_replay_async
 # Near the top of main.py with the other model imports
 from phase2_analyzer import GameAnalysis
@@ -969,6 +970,20 @@ scheduler.add_job(generate_numbers_match_daily,      CronTrigger(hour=0,  minute
 scheduler.add_job(cleanup_old_games,          CronTrigger(hour="*"))             # hourly
 scheduler.add_job(collect_server_stats,       CronTrigger(minute=0))             # top of every hour
 scheduler.add_job(collect_web_traffic_stats,  CronTrigger(hour=1,  minute=0))   # 1 AM UTC — parse yesterday's logs
+
+
+def _run_seo_rankings():
+    db = SessionLocal()
+    try:
+        n = seo_checker.update_all_rankings(db)
+        logger.info("SEO ranking refresh complete (%d languages)", n)
+    except Exception as exc:
+        logger.error("SEO ranking refresh failed: %s", exc)
+    finally:
+        db.close()
+
+
+scheduler.add_job(_run_seo_rankings, CronTrigger(day_of_week="sun", hour=1, minute=0))  # Sun 1 AM UTC
 
 def _migrate_numbers_match_puzzle_date():
     """Widen numbers_match_scores.puzzle_date from VARCHAR(10) to VARCHAR(32)
@@ -7744,6 +7759,58 @@ def admin_contact_delete(msg_id: int, request: Request, db: Session = Depends(ge
     db.delete(msg)
     db.commit()
     return RedirectResponse("/admin/contact", status_code=303)
+
+
+# ── /admin/seo ────────────────────────────────────────────────────────────────
+
+@app.get("/admin/seo", response_class=HTMLResponse)
+def admin_seo(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_admin(request, user)
+
+    # Latest snapshot for each language (subquery: max checked_at per lang)
+    from sqlalchemy import select
+    subq = (
+        db.query(SeoRanking.lang, func.max(SeoRanking.checked_at).label("latest"))
+        .group_by(SeoRanking.lang)
+        .subquery()
+    )
+    rows = (
+        db.query(SeoRanking)
+        .join(subq, (SeoRanking.lang == subq.c.lang) & (SeoRanking.checked_at == subq.c.latest))
+        .order_by(SeoRanking.lang)
+        .all()
+    )
+
+    # Index by lang for easy template lookup; also include langs not yet checked
+    rankings = {r.lang: r for r in rows}
+    all_langs = list(seo_checker.LANG_SEO.keys())
+
+    last_checked = max((r.checked_at for r in rows), default=None) if rows else None
+
+    return templates.TemplateResponse(request, "admin_seo.html", {
+        "user":         user,
+        "lang":         get_lang(request),
+        "t":            get_t(request),
+        "rankings":     rankings,
+        "all_langs":    all_langs,
+        "lang_seo":     seo_checker.LANG_SEO,
+        "last_checked": last_checked,
+        "refresh_msg":  request.query_params.get("msg"),
+        "bing_enabled": bool(seo_checker.BING_SEARCH_API_KEY),
+    })
+
+
+@app.post("/admin/seo/refresh")
+def admin_seo_refresh(request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_admin(request, user)
+
+    def _run():
+        _run_seo_rankings()
+
+    background_tasks.add_task(_run)
+    return RedirectResponse("/admin/seo?msg=refresh_started", status_code=303)
 
 
 @app.post("/admin/contact/delete-all-unread")

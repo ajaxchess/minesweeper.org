@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}SEO Rankings — minesweeper.org Admin{% endblock %}
+
+{% block content %}
+<style>
+  .seo-table th, .seo-table td { padding: .45rem .7rem; }
+  .rank-great  { color: #4caf50; font-weight: 700; }
+  .rank-good   { color: #8bc34a; font-weight: 600; }
+  .rank-ok     { color: #ff9800; }
+  .rank-poor   { color: #f44336; }
+  .rank-none   { color: #666; }
+  .badge-fun   { background: #3a3060; color: #b39ddb; font-size: .7rem;
+                 padding: .15em .45em; border-radius: 3px; }
+  .seo-term    { font-family: monospace; font-size: .82rem; color: #aaa; }
+  .seo-country { font-size: .8rem; color: #888; }
+</style>
+
+<div style="max-width:1200px;margin:0 auto;padding:1.5rem 1rem">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem">
+    <div>
+      <h1 style="margin:0 0 .25rem">🔍 SEO Rankings</h1>
+      <p style="color:#888;margin:0;font-size:.9rem">
+        Google position = 28-day average from Search Console
+        {% if bing_enabled %}&nbsp;·&nbsp; Bing position = live top-50 scan{% endif %}
+        &nbsp;·&nbsp; Lower number = better rank
+      </p>
+    </div>
+    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+      {% if last_checked %}
+      <span style="font-size:.85rem;color:#888">
+        Last updated: <strong style="color:#ccc">{{ last_checked.strftime('%Y-%m-%d %H:%M') }} UTC</strong>
+      </span>
+      {% else %}
+      <span style="font-size:.85rem;color:#f44336">No data yet — run a refresh</span>
+      {% endif %}
+      <form method="post" action="/admin/seo/refresh" style="margin:0">
+        <button type="submit" class="btn btn-primary btn-small"
+                onclick="return confirm('Start a full ranking refresh? This queries Google Search Console{% if bing_enabled %} and Bing{% endif %} for all ~28 languages and runs in the background.')">
+          ↺ Refresh Now
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {% if refresh_msg == 'refresh_started' %}
+  <div style="background:#1a3a1a;border:1px solid #4caf50;border-radius:6px;padding:.75rem 1rem;margin-bottom:1rem;color:#81c784">
+    ✓ Refresh started in background — this takes a few minutes. Reload the page to see updated data.
+  </div>
+  {% endif %}
+
+  <div style="overflow-x:auto">
+    <table class="seo-table data-table" style="width:100%;min-width:780px">
+      <thead>
+        <tr>
+          <th>Lang</th>
+          <th>Search Term</th>
+          <th>Country</th>
+          <th title="Google Search Console average position (28-day)">🔵 Google Rank</th>
+          <th title="GSC clicks in the 28-day window">Clicks</th>
+          <th title="GSC impressions in the 28-day window">Impressions</th>
+          {% if bing_enabled %}<th title="Position of minesweeper.org in Bing top-50">🟠 Bing Rank</th>{% endif %}
+          <th>Checked</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for lang in all_langs %}
+        {% set cfg = lang_seo[lang] %}
+        {% set r = rankings.get(lang) %}
+        {% set is_fun = lang in ('eo', 'pgl', 'tlh') %}
+        <tr>
+          <td>
+            <strong>{{ lang }}</strong>
+            {% if is_fun %}<span class="badge-fun">fun</span>{% endif %}
+          </td>
+          <td class="seo-term">{{ cfg.term }}</td>
+          <td class="seo-country">{{ cfg.country }}</td>
+
+          {# Google rank #}
+          {% if r and r.google_position is not none %}
+            {% set gp = r.google_position %}
+            {% if gp <= 3 %}
+              <td class="rank-great">{{ "%.1f"|format(gp) }} 🥇</td>
+            {% elif gp <= 10 %}
+              <td class="rank-good">{{ "%.1f"|format(gp) }}</td>
+            {% elif gp <= 30 %}
+              <td class="rank-ok">{{ "%.1f"|format(gp) }}</td>
+            {% else %}
+              <td class="rank-poor">{{ "%.1f"|format(gp) }}</td>
+            {% endif %}
+          {% else %}
+            <td class="rank-none">{% if r %}—{% else %}not checked{% endif %}</td>
+          {% endif %}
+
+          {# GSC clicks & impressions #}
+          {% if r and r.google_clicks is not none %}
+            <td>{{ "{:,}".format(r.google_clicks) }}</td>
+            <td>{{ "{:,}".format(r.google_impressions) }}</td>
+          {% else %}
+            <td class="rank-none">—</td>
+            <td class="rank-none">—</td>
+          {% endif %}
+
+          {# Bing rank #}
+          {% if bing_enabled %}
+            {% if r and r.bing_position is not none %}
+              {% set bp = r.bing_position %}
+              {% if bp <= 3 %}
+                <td class="rank-great">{{ bp }} 🥇</td>
+              {% elif bp <= 10 %}
+                <td class="rank-good">{{ bp }}</td>
+              {% elif bp <= 30 %}
+                <td class="rank-ok">{{ bp }}</td>
+              {% else %}
+                <td class="rank-poor">{{ bp }}</td>
+              {% endif %}
+            {% elif r %}
+              <td class="rank-none" title="Not found in Bing top 50">&gt;50</td>
+            {% else %}
+              <td class="rank-none">not checked</td>
+            {% endif %}
+          {% endif %}
+
+          {# Last checked #}
+          <td style="font-size:.8rem;color:#777;white-space:nowrap">
+            {{ r.checked_at.strftime('%Y-%m-%d') if r else '—' }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:2rem;padding:1rem;background:#1a1a2a;border-radius:8px;font-size:.82rem;color:#888">
+    <strong style="color:#aaa">Setup required:</strong>
+    <ul style="margin:.5rem 0 0 1.2rem;line-height:1.8">
+      <li>Set <code>GSC_SERVICE_ACCOUNT_JSON</code> in <code>.env</code> — path to a Google service account JSON with Search Console read access</li>
+      <li>Set <code>GSC_SITE_URL</code> in <code>.env</code> — e.g. <code>https://minesweeper.org/</code> (must match verified GSC property)</li>
+      <li><em>Optional:</em> Set <code>BING_SEARCH_API_KEY</code> in <code>.env</code> — Azure Cognitive Services key for Bing Web Search v7 (column hidden when not configured)</li>
+      <li>Install new dependencies on the server: <code>pip install google-api-python-client google-auth</code></li>
+      <li>Rankings auto-refresh every <strong>Sunday at 1 AM UTC</strong> via APScheduler</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}
