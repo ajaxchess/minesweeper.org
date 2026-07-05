@@ -17,6 +17,7 @@
   <header class="dr-header">
     <a class="dr-back" href="/bootcamp">← Bootcamp</a>
     <h1 class="dr-title">{{ t.drill_title | default("Opening Recognition") }}</h1>
+    <p class="dr-subtitle" style="margin:0;font-size:13px;color:var(--dr-text-muted,#6b7280);font-weight:400;">{{ t.drill_subtitle | default("Click the cell that will reveal the most squares.") }}</p>
     <div class="dr-meta">
       <span class="dr-meta-item" id="dr-progress-label">— / —</span>
       <span class="dr-meta-divider">·</span>
@@ -44,7 +45,7 @@
     </div>
 
     <div class="dr-prompt" id="dr-prompt">
-      {{ t.drill_prompt | default("Which unrevealed cell would you click next?") }}
+      {{ t.drill_prompt | default("Which cell opens the largest area?") }}
     </div>
 
     {# Mini-board renderer — JS injects cell divs into here #}
