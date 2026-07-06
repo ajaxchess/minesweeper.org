@@ -55,12 +55,14 @@ def db():
     session.close()
 
 
-def _add_analysis(db, *, replay_id: int, mastery: dict, days_ago: float = 0.0):
+def _add_analysis(db, *, replay_id: int, mastery: dict, days_ago: float = 0.0,
+                  difficulty: str = "expert"):
     created = datetime.now(timezone.utc) - timedelta(days=days_ago)
     db.add(GameAnalysis(
         game_replay_id=replay_id,
         player_id=PLAYER,
         no_guess=False,
+        difficulty=difficulty,
         ioe=0.8, correctness=0.9, throughput=1.0, three_bv_per_sec=1.5,
         hierarchy_compliance_pct=0.7,
         level_mastery_json=json.dumps({str(k): v for k, v in mastery.items()}),
@@ -157,6 +159,38 @@ def test_drills_can_advance_current_level(db):
     d = queries.get_bootcamp_diagnosis(db, PLAYER, "standard", "expert")
     assert d["level_mastery"][1] >= 0.85
     assert d["current_level"] == 2
+
+
+# ── Difficulty dimension ─────────────────────────────────────────────────────
+
+def test_diagnosis_excludes_other_difficulties(db):
+    """Beginner/custom games must not inflate an expert diagnosis."""
+    perfect = {k: 1.0 for k in range(1, 8)}
+    _add_analysis(db, replay_id=100, mastery=GAME_MASTERY, difficulty="expert")
+    _add_analysis(db, replay_id=101, mastery=perfect, difficulty="beginner")
+    _add_analysis(db, replay_id=102, mastery=perfect, difficulty="custom")
+
+    d = queries.get_bootcamp_diagnosis(db, PLAYER, "standard", "expert")
+    assert d["games_analyzed"] == 1
+    assert d["level_mastery"][1] == pytest.approx(0.5, abs=1e-3)
+
+
+def test_diagnosis_tolerates_legacy_null_difficulty(db):
+    """Rows analyzed before the column existed (NULL) still count, so a
+    deploy before the backfill degrades to old behavior, not an empty page."""
+    _add_analysis(db, replay_id=100, mastery=GAME_MASTERY, difficulty=None)
+    d = queries.get_bootcamp_diagnosis(db, PLAYER, "standard", "expert")
+    assert d["games_analyzed"] == 1
+
+
+def test_level_progress_excludes_other_difficulties(db):
+    perfect = {k: 1.0 for k in range(1, 8)}
+    _add_analysis(db, replay_id=100, mastery=GAME_MASTERY, difficulty="expert")
+    _add_analysis(db, replay_id=101, mastery=perfect, difficulty="beginner")
+    p = queries.get_level_progress(db, PLAYER, 1, mode="standard",
+                                   difficulty="expert", days_window=30)
+    assert p["games_in_window"] == 1
+    assert p["current_mastery"] == pytest.approx(0.5, abs=1e-3)
 
 
 # ── Cache behavior ───────────────────────────────────────────────────────────

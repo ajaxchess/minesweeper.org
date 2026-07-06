@@ -240,6 +240,10 @@ class GameAnalysis(Base):
 
     # Bookkeeping
     no_guess         = Column(Boolean, nullable=False, default=False)
+    # 'beginner' | 'intermediate' | 'expert' | 'custom'. Nullable for rows
+    # analyzed before the column existed — backfilled by
+    # phase2_analyzer/migrate_difficulty.py; queries treat NULL as "any".
+    difficulty       = Column(String(16), nullable=True)
     analyzer_version = Column(String(16), nullable=False, server_default="1.0")
     created_at       = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -247,6 +251,8 @@ class GameAnalysis(Base):
         Index("ix_game_analyses_player_created", "player_id", "created_at"),
         Index("ix_game_analyses_hierarchy", "hierarchy_compliance_pct"),
         Index("ix_game_analyses_no_guess_created", "no_guess", "created_at"),
+        Index("ix_game_analyses_player_diff_created",
+              "player_id", "difficulty", "created_at"),
     )
 
 
@@ -312,6 +318,7 @@ def persist_analysis(
         flag_value_json      = json.dumps([asdict(f) for f in analysis.flag_value.flags], separators=(",", ":")),
         hierarchy_deviations_json = json.dumps([asdict(d) for d in analysis.hierarchy.deviations], separators=(",", ":")),
         no_guess         = game.no_guess,
+        difficulty       = game.difficulty.value if game.difficulty else None,
         analyzer_version = ANALYZER_VERSION,
     )
 

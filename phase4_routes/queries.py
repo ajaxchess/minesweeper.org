@@ -71,6 +71,20 @@ def _mode_filter(mode: str):
     return True  # both — no filter
 
 
+def _difficulty_filter(difficulty: Optional[str]):
+    """Filter game_analyses by difficulty.
+
+    Rows with NULL difficulty predate the column (see
+    phase2_analyzer/migrate_difficulty.py) and are treated as matching any
+    difficulty so a not-yet-backfilled deploy degrades to the old behavior
+    instead of an empty diagnosis.
+    """
+    if not difficulty or difficulty == "both":
+        return True
+    return or_(GameAnalysis.difficulty == difficulty,
+               GameAnalysis.difficulty.is_(None))
+
+
 def _time_range_filter(time_range_days: Optional[int]):
     if not time_range_days:
         return True
@@ -188,6 +202,7 @@ def get_player_analyses(
             GameAnalysis.bootcamp_level, GameAnalysis.level_mastery_json,
         ))
     q = q.filter(_mode_filter(mode))
+    q = q.filter(_difficulty_filter(difficulty))
     if time_range_days:
         q = q.filter(_time_range_filter(time_range_days))
     return (q.order_by(GameAnalysis.created_at.desc())
@@ -347,6 +362,7 @@ def get_level_progress(
           ))
           .filter(_player_filter(player_id))
           .filter(_mode_filter(mode))
+          .filter(_difficulty_filter(difficulty))
           .filter(GameAnalysis.created_at >= cutoff)
           .order_by(GameAnalysis.created_at.desc())
           .limit(200)            # cap chart points; client samples for display
