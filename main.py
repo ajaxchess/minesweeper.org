@@ -9708,6 +9708,7 @@ def mvs_static(path: str):
 from wc2026_data import (
     WC2026_COUNTRIES, WC2026_BY_SLUG, WC2026_BY_GROUP,
     WC2026_GROUPS, VALID_WC2026_SLUGS, WC2026_EASY, WC2026_HARD,
+    WC2026_ROUND_ORDER, WC2026_ROUND_LABELS,
 )
 from wc2026_board import get_or_create_board, board_to_dict, _make_board
 from database import WC2026Match, WC2026BoardState, WC2026Score
@@ -9841,6 +9842,26 @@ def _localize_match(match_date: str, time_cdt: str, user_tz_str: Optional[str]) 
         return {"date_local": match_date, "time_local": time_cdt, "tz_label": "CDT"}
 
 
+def _wc_match_dict(r: "WC2026Match", user_tz_str: Optional[str] = None) -> dict:
+    """Shared row → dict mapping for WC2026Match, used by every match list below.
+
+    team1/team2 fall back to {} (unknown slug) or an empty dict (no slug yet —
+    knockout slot not resolved); templates use team1_label/team2_label
+    ("Winner QF1", etc.) to render a placeholder until then.
+    """
+    return {
+        "id": r.id, "group": r.group_name,
+        "round": r.round, "round_label": WC2026_ROUND_LABELS.get(r.round, r.round),
+        "date": r.match_date, "time_cdt": r.time_cdt, "city": r.city,
+        "team1": WC2026_BY_SLUG.get(r.team1_slug, {}),
+        "team2": WC2026_BY_SLUG.get(r.team2_slug, {}),
+        "team1_slug": r.team1_slug, "team2_slug": r.team2_slug,
+        "team1_label": r.team1_label, "team2_label": r.team2_label,
+        "score1": r.score1, "score2": r.score2, "status": r.status,
+        **_localize_match(r.match_date, r.time_cdt, user_tz_str),
+    }
+
+
 def _wc_matches_for_country(slug: str, db: Session,
                              user_tz_str: Optional[str] = None) -> list:
     rows = (
@@ -9851,18 +9872,7 @@ def _wc_matches_for_country(slug: str, db: Session,
         .order_by(WC2026Match.match_date, WC2026Match.time_cdt)
         .all()
     )
-    result = []
-    for r in rows:
-        result.append({
-            "id": r.id, "group": r.group_name,
-            "date": r.match_date, "time_cdt": r.time_cdt, "city": r.city,
-            "team1": WC2026_BY_SLUG.get(r.team1_slug, {}),
-            "team2": WC2026_BY_SLUG.get(r.team2_slug, {}),
-            "team1_slug": r.team1_slug, "team2_slug": r.team2_slug,
-            "score1": r.score1, "score2": r.score2, "status": r.status,
-            **_localize_match(r.match_date, r.time_cdt, user_tz_str),
-        })
-    return result
+    return [_wc_match_dict(r, user_tz_str) for r in rows]
 
 
 def _wc_group_matches(group: str, db: Session,
@@ -9873,17 +9883,35 @@ def _wc_group_matches(group: str, db: Session,
         .order_by(WC2026Match.match_date, WC2026Match.time_cdt)
         .all()
     )
-    result = []
+    return [_wc_match_dict(r, user_tz_str) for r in rows]
+
+
+def _wc_knockout_matches(db: Session, user_tz_str: Optional[str] = None) -> dict:
+    """All knockout-stage matches grouped by round, in bracket order.
+
+    Returns {"rounds": [{"key","label","matches":[...]}, ...], "next_round": {...}|None}
+    where next_round is the earliest round (bracket order) that isn't fully final yet —
+    used to headline "next round of scheduled games" on the main page.
+    """
+    rows = (
+        db.query(WC2026Match)
+        .filter(WC2026Match.round != "group")
+        .order_by(WC2026Match.match_date, WC2026Match.time_cdt)
+        .all()
+    )
+    by_round: dict = {}
     for r in rows:
-        result.append({
-            "id": r.id, "date": r.match_date, "time_cdt": r.time_cdt, "city": r.city,
-            "team1": WC2026_BY_SLUG.get(r.team1_slug, {}),
-            "team2": WC2026_BY_SLUG.get(r.team2_slug, {}),
-            "team1_slug": r.team1_slug, "team2_slug": r.team2_slug,
-            "score1": r.score1, "score2": r.score2, "status": r.status,
-            **_localize_match(r.match_date, r.time_cdt, user_tz_str),
-        })
-    return result
+        by_round.setdefault(r.round, []).append(_wc_match_dict(r, user_tz_str))
+
+    rounds = [
+        {"key": rk, "label": WC2026_ROUND_LABELS.get(rk, rk), "matches": by_round[rk]}
+        for rk in WC2026_ROUND_ORDER if rk in by_round
+    ]
+    next_round = next(
+        (rd for rd in rounds if any(m["status"] != "final" for m in rd["matches"])),
+        None,
+    )
+    return {"rounds": rounds, "next_round": next_round}
 
 
 def _country_leaderboard(slug: str, db: Session, limit: int = 20) -> list:
@@ -9982,6 +10010,9 @@ def wc2026_main(request: Request, db: Session = Depends(get_db)):
     individual_lb = _individual_leaderboard(db)
     guest_token = None if user else request.session.get("guest_token")
     guest_team_pts = _wc_guest_team_pts(db, guest_token, fan_ctx.get("wc_fan"))
+    profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first() if user else None
+    user_tz = getattr(profile, "timezone", None) if profile else None
+    knockout = _wc_knockout_matches(db, user_tz)
     return templates.TemplateResponse(request, "wc2026_main.html", {
         "user": user, "t": t,
         "lang": get_lang(request),
@@ -9992,6 +10023,8 @@ def wc2026_main(request: Request, db: Session = Depends(get_db)):
         "individual_lb": individual_lb,
         "wc2026_teams": WC2026_COUNTRIES,
         "guest_team_pts": guest_team_pts,
+        "knockout_rounds": knockout["rounds"],
+        "next_round": knockout["next_round"],
         **fan_ctx,
     })
 
@@ -10383,6 +10416,7 @@ def wc2026_admin_matches(request: Request, db: Session = Depends(get_db)):
         "user": user, "mode": "admin",
         "matches": matches,
         "by_slug": WC2026_BY_SLUG,
+        "round_labels": WC2026_ROUND_LABELS,
     })
 
 

@@ -727,15 +727,25 @@ class WC2026Match(Base):
     __tablename__ = "wc2026_matches"
 
     id         = Column(Integer, primary_key=True, index=True)
-    group_name = Column(String(8),  nullable=False, index=True)
+    # group_name is only set for group-stage rows; knockout rows carry `round` instead.
+    group_name = Column(String(8),  nullable=True, index=True)
     match_date = Column(String(10), nullable=False)   # YYYY-MM-DD
-    team1_slug = Column(String(32), nullable=False)
-    team2_slug = Column(String(32), nullable=False)
+    # Nullable for knockout slots whose participants aren't decided yet.
+    team1_slug = Column(String(32), nullable=True)
+    team2_slug = Column(String(32), nullable=True)
+    # Placeholder text shown until team1_slug/team2_slug resolve, e.g. "Winner QF1".
+    team1_label = Column(String(64), nullable=True)
+    team2_label = Column(String(64), nullable=True)
     time_cdt   = Column(String(8),  nullable=False)   # HH:MM
     city       = Column(String(64), nullable=False)
     score1     = Column(Integer, nullable=True)
     score2     = Column(Integer, nullable=True)
     status     = Column(String(16), nullable=False, server_default="scheduled")
+    # "group" | "r32" | "r16" | "qf" | "sf" | "third" | "final"
+    round      = Column(String(8), nullable=False, server_default="group")
+    # Stable id from the worldcup26.ir schedule; used by the sync script to find
+    # knockout rows (which can't be matched by team slug until teams are decided).
+    source_game_id = Column(Integer, nullable=True, index=True)
 
 # ── WC2026 Tametsi board states (per user OR per guest, per country, per difficulty) ──
 class WC2026BoardState(Base):
@@ -1568,11 +1578,47 @@ def _seed_wc2026_matches(conn):
         conn.execute(
             text(
                 "INSERT INTO wc2026_matches "
-                "(group_name, match_date, team1_slug, team2_slug, time_cdt, city, status) "
-                "VALUES (:g, :d, :t1, :t2, :tc, :ci, 'scheduled')"
+                "(group_name, match_date, team1_slug, team2_slug, time_cdt, city, status, round) "
+                "VALUES (:g, :d, :t1, :t2, :tc, :ci, 'scheduled', 'group')"
             ),
             {"g": m["group"], "d": m["date"], "t1": m["team1"],
              "t2": m["team2"], "tc": m["time_cdt"], "ci": m["city"]},
+        )
+    conn.commit()
+
+
+def _seed_wc2026_knockout_matches(conn):
+    """Insert any WC2026_KNOCKOUT_SEED rows not yet present, keyed by source_game_id.
+
+    Unlike _seed_wc2026_matches (all-or-nothing on an empty table), this runs
+    every startup and inserts only the bracket slots that are missing — needed
+    because knockout rows get added well after the group-stage table already
+    has data, and team1/team2 on later rounds (SF/3rd/Final) start as None and
+    are backfilled in place by scripts/sync_wc2026_scores.py as earlier rounds resolve.
+    """
+    from wc2026_data import WC2026_KNOCKOUT_SEED
+    existing = {
+        row[0] for row in conn.execute(
+            text("SELECT source_game_id FROM wc2026_matches WHERE source_game_id IS NOT NULL")
+        )
+    }
+    for m in WC2026_KNOCKOUT_SEED:
+        if m["source_game_id"] in existing:
+            continue
+        conn.execute(
+            text(
+                "INSERT INTO wc2026_matches "
+                "(group_name, match_date, team1_slug, team2_slug, team1_label, team2_label, "
+                " time_cdt, city, score1, score2, status, round, source_game_id) "
+                "VALUES (NULL, :d, :t1, :t2, :t1l, :t2l, :tc, :ci, :s1, :s2, :st, :rd, :sgid)"
+            ),
+            {
+                "d": m["date"], "t1": m.get("team1"), "t2": m.get("team2"),
+                "t1l": m.get("team1_label"), "t2l": m.get("team2_label"),
+                "tc": m["time_cdt"], "ci": m["city"],
+                "s1": m.get("score1"), "s2": m.get("score2"),
+                "st": m["status"], "rd": m["round"], "sgid": m["source_game_id"],
+            },
         )
     conn.commit()
 
@@ -1673,6 +1719,34 @@ def _migrate_wc2026_guest_play(conn):
             conn.commit()
 
 
+def _migrate_wc2026_knockout(conn):
+    """Make wc2026_matches.group_name/team1_slug/team2_slug nullable.
+
+    Knockout rows have no group, and later rounds (SF/3rd/Final) don't have
+    both teams decided at seed time. Idempotent via IS_NULLABLE check, same
+    pattern as _migrate_wc2026_guest_play.
+    """
+    nullable_targets = [
+        ("wc2026_matches", "group_name", "VARCHAR(8) NULL"),
+        ("wc2026_matches", "team1_slug", "VARCHAR(32) NULL"),
+        ("wc2026_matches", "team2_slug", "VARCHAR(32) NULL"),
+    ]
+    for table, column, type_def in nullable_targets:
+        is_nullable = conn.execute(
+            text(
+                "SELECT IS_NULLABLE FROM information_schema.columns "
+                "WHERE table_schema = DATABASE() "
+                "AND table_name = :tbl AND column_name = :col"
+            ),
+            {"tbl": table, "col": column},
+        ).scalar()
+        if is_nullable == "NO":
+            conn.execute(text(
+                f"ALTER TABLE `{table}` MODIFY COLUMN `{column}` {type_def}"
+            ))
+            conn.commit()
+
+
 def _apply_migrations():
     """Idempotent ALTER TABLE migrations for columns added after initial deploy."""
     migrations = [
@@ -1754,6 +1828,11 @@ def _apply_migrations():
         ("globesweeper_scores",  "chord_clicks", "INT NULL"),
         ("cubesweeper_scores",   "chord_clicks", "INT NULL"),
         ("mobiussweeper_scores", "chord_clicks", "INT NULL"),
+        # WC2026 knockout stage — round tag + bracket placeholders (added 2026-07-08)
+        ("wc2026_matches", "round",          "VARCHAR(8) NOT NULL DEFAULT 'group'"),
+        ("wc2026_matches", "team1_label",    "VARCHAR(64) NULL"),
+        ("wc2026_matches", "team2_label",    "VARCHAR(64) NULL"),
+        ("wc2026_matches", "source_game_id", "INT NULL"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:
@@ -1770,9 +1849,11 @@ def _apply_migrations():
                 conn.commit()
         _create_phase1_indexes(conn)
         _migrate_wc2026_guest_play(conn)
+        _migrate_wc2026_knockout(conn)
 
         # wc2026 tables (added 2026-05-10) — created via create_all, no ALTER needed
         _seed_wc2026_matches(conn)
+        _seed_wc2026_knockout_matches(conn)
 
         # Extend game_history.mode ENUM to include 'tametsi'
         col_type = conn.execute(

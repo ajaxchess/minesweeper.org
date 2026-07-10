@@ -14,7 +14,7 @@
   <table style="width:100%;border-collapse:collapse;font-size:.9rem;">
     <thead>
       <tr style="border-bottom:2px solid var(--border);">
-        <th style="text-align:left;padding:.5rem;">Group</th>
+        <th style="text-align:left;padding:.5rem;">Group / Round</th>
         <th style="text-align:left;padding:.5rem;">Date</th>
         <th style="text-align:left;padding:.5rem;">Match</th>
         <th style="text-align:center;padding:.5rem;">Score</th>
@@ -27,14 +27,22 @@
     {% set t1 = by_slug.get(m.team1_slug, {}) %}
     {% set t2 = by_slug.get(m.team2_slug, {}) %}
     <tr data-id="{{ m.id }}" style="border-bottom:1px solid var(--border);">
-      <td style="padding:.4rem .5rem;">{{ m.group_name }}</td>
+      <td style="padding:.4rem .5rem;">{{ m.group_name or round_labels.get(m.round, m.round) }}</td>
       <td style="padding:.4rem .5rem;white-space:nowrap;">{{ m.match_date }}</td>
       <td style="padding:.4rem .5rem;">
+        {% if m.team1_slug %}
         <img src="https://flagcdn.com/w20/{{ t1.get('flag','') }}.png" style="vertical-align:middle;margin-right:4px;" alt="{{ t1.get('name', m.team1_slug) }}">
         {{ t1.get('name', m.team1_slug) }}
+        {% else %}
+        <span style="color:var(--text-dim);font-style:italic;">{{ m.team1_label or 'TBD' }}</span>
+        {% endif %}
         <span style="color:var(--text-dim);margin:0 .3rem;">vs</span>
+        {% if m.team2_slug %}
         <img src="https://flagcdn.com/w20/{{ t2.get('flag','') }}.png" style="vertical-align:middle;margin-right:4px;" alt="{{ t2.get('name', m.team2_slug) }}">
         {{ t2.get('name', m.team2_slug) }}
+        {% else %}
+        <span style="color:var(--text-dim);font-style:italic;">{{ m.team2_label or 'TBD' }}</span>
+        {% endif %}
       </td>
       <td style="text-align:center;padding:.4rem .5rem;">
         <input type="number" min="0" max="30" class="score-input s1" value="{{ m.score1 if m.score1 is not none else '' }}"

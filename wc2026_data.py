@@ -198,3 +198,65 @@ WC2026_STADIUMS = {
 # Board dimensions
 WC2026_EASY = {"cols": 15, "rows": 9,  "mines": 20, "top_rows": 5, "solve_bonus": 20}
 WC2026_HARD = {"cols": 30, "rows": 18, "mines": 99, "top_rows": 9, "solve_bonus": 50}
+
+
+# ── Knockout stage ────────────────────────────────────────────────────────────
+# Bracket matches after the group stage. Unlike group matches, the two teams
+# in a knockout slot aren't known until earlier rounds finish, so team1/team2
+# are None (rendered as "TBD") until resolved. source_game_id is the stable id
+# from the worldcup26.ir schedule — scripts/sync_wc2026_scores.py uses it to
+# find/update the right row (including backfilling team1/team2 once decided)
+# instead of matching by team slug, which only works once both teams are set.
+#
+# round: "r32" | "r16" | "qf" | "sf" | "third" | "final"
+# Snapshot: R32/R16/QF1 (France–Morocco) final; remaining QFs scheduled,
+# SF/3rd/Final TBD. Run scripts/sync_wc2026_scores.py to pick up later results.
+
+WC2026_ROUND_ORDER  = ["r32", "r16", "qf", "sf", "third", "final"]
+WC2026_ROUND_LABELS = {
+    "r32":   "Round of 32",
+    "r16":   "Round of 16",
+    "qf":    "Quarterfinal",
+    "sf":    "Semifinal",
+    "third": "Third Place Match",
+    "final": "Final",
+}
+
+WC2026_KNOCKOUT_SEED = [
+    # Round of 32 — 2026-06-28 to 2026-07-03 (all final)
+    {"source_game_id": 73, "round": "r32", "date": "2026-06-28", "time_cdt": "14:00", "city": "Los Angeles",         "team1": "south-africa",  "team2": "canada",                "score1": 0, "score2": 1, "status": "final"},
+    {"source_game_id": 74, "round": "r32", "date": "2026-06-29", "time_cdt": "15:30", "city": "Boston",              "team1": "germany",        "team2": "paraguay",              "score1": 1, "score2": 1, "status": "final"},
+    {"source_game_id": 75, "round": "r32", "date": "2026-06-29", "time_cdt": "20:00", "city": "Monterrey",           "team1": "netherlands",    "team2": "morocco",               "score1": 1, "score2": 1, "status": "final"},
+    {"source_game_id": 76, "round": "r32", "date": "2026-06-29", "time_cdt": "12:00", "city": "Houston",             "team1": "brazil",         "team2": "japan",                 "score1": 2, "score2": 1, "status": "final"},
+    {"source_game_id": 77, "round": "r32", "date": "2026-06-30", "time_cdt": "16:00", "city": "New York/New Jersey", "team1": "france",         "team2": "sweden",                "score1": 3, "score2": 0, "status": "final"},
+    {"source_game_id": 78, "round": "r32", "date": "2026-06-30", "time_cdt": "12:00", "city": "Dallas",              "team1": "ivory-coast",    "team2": "norway",                "score1": 1, "score2": 2, "status": "final"},
+    {"source_game_id": 79, "round": "r32", "date": "2026-06-30", "time_cdt": "20:00", "city": "Mexico City",         "team1": "mexico",         "team2": "ecuador",               "score1": 2, "score2": 0, "status": "final"},
+    {"source_game_id": 80, "round": "r32", "date": "2026-07-01", "time_cdt": "11:00", "city": "Atlanta",             "team1": "england",        "team2": "dr-congo",              "score1": 2, "score2": 1, "status": "final"},
+    {"source_game_id": 81, "round": "r32", "date": "2026-07-01", "time_cdt": "19:00", "city": "San Francisco",       "team1": "usa",            "team2": "bosnia-and-herzegovina","score1": 2, "score2": 0, "status": "final"},
+    {"source_game_id": 82, "round": "r32", "date": "2026-07-01", "time_cdt": "15:00", "city": "Seattle",             "team1": "belgium",        "team2": "senegal",               "score1": 3, "score2": 2, "status": "final"},
+    {"source_game_id": 83, "round": "r32", "date": "2026-07-02", "time_cdt": "18:00", "city": "Toronto",             "team1": "portugal",       "team2": "croatia",               "score1": 2, "score2": 1, "status": "final"},
+    {"source_game_id": 84, "round": "r32", "date": "2026-07-02", "time_cdt": "14:00", "city": "Los Angeles",         "team1": "spain",          "team2": "austria",               "score1": 3, "score2": 0, "status": "final"},
+    {"source_game_id": 85, "round": "r32", "date": "2026-07-02", "time_cdt": "22:00", "city": "Vancouver",           "team1": "switzerland",    "team2": "algeria",               "score1": 2, "score2": 0, "status": "final"},
+    {"source_game_id": 86, "round": "r32", "date": "2026-07-03", "time_cdt": "17:00", "city": "Miami",               "team1": "argentina",      "team2": "cape-verde",            "score1": 3, "score2": 2, "status": "final"},
+    {"source_game_id": 87, "round": "r32", "date": "2026-07-03", "time_cdt": "20:30", "city": "Kansas City",         "team1": "colombia",       "team2": "ghana",                 "score1": 1, "score2": 0, "status": "final"},
+    {"source_game_id": 88, "round": "r32", "date": "2026-07-03", "time_cdt": "13:00", "city": "Dallas",              "team1": "australia",      "team2": "egypt",                 "score1": 1, "score2": 1, "status": "final"},
+    # Round of 16 — 2026-07-04 to 2026-07-07 (all final)
+    {"source_game_id": 89, "round": "r16", "date": "2026-07-04", "time_cdt": "16:00", "city": "Philadelphia",        "team1": "paraguay",       "team2": "france",                "score1": 0, "score2": 1, "status": "final"},
+    {"source_game_id": 90, "round": "r16", "date": "2026-07-04", "time_cdt": "12:00", "city": "Houston",             "team1": "canada",         "team2": "morocco",               "score1": 0, "score2": 3, "status": "final"},
+    {"source_game_id": 91, "round": "r16", "date": "2026-07-05", "time_cdt": "15:00", "city": "New York/New Jersey", "team1": "brazil",         "team2": "norway",                "score1": 1, "score2": 2, "status": "final"},
+    {"source_game_id": 92, "round": "r16", "date": "2026-07-05", "time_cdt": "19:00", "city": "Mexico City",         "team1": "mexico",         "team2": "england",               "score1": 2, "score2": 3, "status": "final"},
+    {"source_game_id": 93, "round": "r16", "date": "2026-07-06", "time_cdt": "14:00", "city": "Dallas",              "team1": "portugal",       "team2": "spain",                 "score1": 0, "score2": 1, "status": "final"},
+    {"source_game_id": 94, "round": "r16", "date": "2026-07-06", "time_cdt": "19:00", "city": "Seattle",             "team1": "usa",            "team2": "belgium",               "score1": 1, "score2": 4, "status": "final"},
+    {"source_game_id": 95, "round": "r16", "date": "2026-07-07", "time_cdt": "11:00", "city": "Atlanta",             "team1": "argentina",      "team2": "egypt",                 "score1": 3, "score2": 2, "status": "final"},
+    {"source_game_id": 96, "round": "r16", "date": "2026-07-07", "time_cdt": "15:00", "city": "Vancouver",           "team1": "switzerland",    "team2": "colombia",              "score1": 0, "score2": 0, "status": "final"},
+    # Quarterfinals — 2026-07-09 to 2026-07-11 (scheduled — next round up)
+    {"source_game_id": 97,  "round": "qf", "date": "2026-07-09", "time_cdt": "15:00", "city": "Boston",        "team1": "france",    "team2": "morocco",     "score1": 2,    "score2": 0,    "status": "final"},
+    {"source_game_id": 98,  "round": "qf", "date": "2026-07-10", "time_cdt": "14:00", "city": "Los Angeles",   "team1": "spain",     "team2": "belgium",     "score1": None, "score2": None, "status": "scheduled"},
+    {"source_game_id": 99,  "round": "qf", "date": "2026-07-11", "time_cdt": "16:00", "city": "Miami",         "team1": "norway",    "team2": "england",     "score1": None, "score2": None, "status": "scheduled"},
+    {"source_game_id": 100, "round": "qf", "date": "2026-07-11", "time_cdt": "20:00", "city": "Kansas City",   "team1": "argentina", "team2": "switzerland", "score1": None, "score2": None, "status": "scheduled"},
+    # Semifinals, Third Place, Final — teams TBD until the rounds above resolve
+    {"source_game_id": 101, "round": "sf",    "date": "2026-07-14", "time_cdt": "14:00", "city": "Dallas",              "team1": None, "team2": None, "team1_label": "Winner QF1", "team2_label": "Winner QF2", "score1": None, "score2": None, "status": "scheduled"},
+    {"source_game_id": 102, "round": "sf",    "date": "2026-07-15", "time_cdt": "14:00", "city": "Atlanta",             "team1": None, "team2": None, "team1_label": "Winner QF3", "team2_label": "Winner QF4", "score1": None, "score2": None, "status": "scheduled"},
+    {"source_game_id": 103, "round": "third", "date": "2026-07-18", "time_cdt": "16:00", "city": "Miami",               "team1": None, "team2": None, "team1_label": "Loser SF1",  "team2_label": "Loser SF2",  "score1": None, "score2": None, "status": "scheduled"},
+    {"source_game_id": 104, "round": "final",  "date": "2026-07-19", "time_cdt": "14:00", "city": "New York/New Jersey", "team1": None, "team2": None, "team1_label": "Winner SF1", "team2_label": "Winner SF2", "score1": None, "score2": None, "status": "scheduled"},
+]

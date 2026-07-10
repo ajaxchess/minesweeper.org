@@ -3,6 +3,14 @@
 sync_wc2026_scores.py — Fetch match results from worldcup26.ir and update
 the wc2026_matches table so every country page shows current scores.
 
+Handles both stages:
+  - Group matches are matched by (team1_slug, team2_slug) — order-independent.
+  - Knockout matches (r32/r16/qf/sf/third/final) are matched by source_game_id,
+    the stable id from worldcup26.ir's own schedule, since a knockout row's
+    teams aren't known at seed time. Once worldcup26.ir resolves a knockout
+    slot's teams, this script backfills team1_slug/team2_slug on our row —
+    independent of whether that match has been played yet.
+
 Run once daily (e.g. via cron at 09:00 UTC) throughout the tournament.
 
 Usage:
@@ -90,82 +98,132 @@ def build_team_map() -> dict[str, str]:
     return mapping
 
 
+def _sync_group_game(db, game: dict, team_map: dict, dry_run: bool, counters: dict) -> None:
+    home_id  = str(game.get("home_team_id", ""))
+    away_id  = str(game.get("away_team_id", ""))
+    home_slug = team_map.get(home_id)
+    away_slug = team_map.get(away_id)
+
+    if not home_slug or not away_slug:
+        log.warning("  Unknown team id(s): home=%s away=%s — skipping", home_id, away_id)
+        counters["not_found"] += 1
+        return
+
+    try:
+        home_score = int(game["home_score"])
+        away_score = int(game["away_score"])
+    except (KeyError, TypeError, ValueError):
+        log.warning("  Unparseable scores for %s vs %s — skipping", home_slug, away_slug)
+        counters["not_found"] += 1
+        return
+
+    # Find our DB row; teams may be stored in either order
+    row = (
+        db.query(WC2026Match)
+        .filter(
+            (
+                (WC2026Match.team1_slug == home_slug) &
+                (WC2026Match.team2_slug == away_slug)
+            ) | (
+                (WC2026Match.team1_slug == away_slug) &
+                (WC2026Match.team2_slug == home_slug)
+            )
+        )
+        .first()
+    )
+    if not row:
+        log.warning("  No DB row found for %s vs %s — skipping", home_slug, away_slug)
+        counters["not_found"] += 1
+        return
+
+    new_score1, new_score2 = (
+        (home_score, away_score) if row.team1_slug == home_slug else (away_score, home_score)
+    )
+    if row.status == "final" and row.score1 == new_score1 and row.score2 == new_score2:
+        counters["already_current"] += 1
+        return
+
+    log.info(
+        "  %s vs %s  [match %d]  %s→final  %s-%s",
+        row.team1_slug, row.team2_slug, row.id, row.status, new_score1, new_score2,
+    )
+    if not dry_run:
+        row.score1, row.score2, row.status = new_score1, new_score2, "final"
+    counters["updated"] += 1
+
+
+def _sync_knockout_game(db, game: dict, team_map: dict, dry_run: bool, counters: dict) -> None:
+    try:
+        source_id = int(game["id"])
+    except (KeyError, TypeError, ValueError):
+        counters["not_found"] += 1
+        return
+
+    row = db.query(WC2026Match).filter(WC2026Match.source_game_id == source_id).first()
+    if not row:
+        log.warning("  No DB row found for knockout game id=%s — skipping", source_id)
+        counters["not_found"] += 1
+        return
+
+    # Backfill team slugs as soon as worldcup26.ir resolves this bracket slot —
+    # independent of whether the match has been played yet.
+    home_slug = team_map.get(str(game.get("home_team_id", "")))
+    away_slug = team_map.get(str(game.get("away_team_id", "")))
+    if home_slug and away_slug and not row.team1_slug and not row.team2_slug:
+        log.info("  Resolved %s: %s vs %s [match %d]", row.round, home_slug, away_slug, row.id)
+        # Set in-memory either way (also needed for score assignment below);
+        # dry-run never calls db.commit(), so nothing is persisted.
+        row.team1_slug, row.team2_slug = home_slug, away_slug
+        counters["backfilled"] += 1
+
+    if str(game.get("finished", "")).upper() != "TRUE":
+        return  # not played yet — nothing more to sync for this slot
+
+    try:
+        home_score = int(game["home_score"])
+        away_score = int(game["away_score"])
+    except (KeyError, TypeError, ValueError):
+        log.warning("  Unparseable scores for knockout game id=%s — skipping", source_id)
+        counters["not_found"] += 1
+        return
+
+    if not row.team1_slug or not row.team2_slug:
+        log.warning("  Knockout game id=%s finished but teams still unresolved — skipping", source_id)
+        counters["not_found"] += 1
+        return
+
+    new_score1, new_score2 = (
+        (home_score, away_score) if row.team1_slug == home_slug else (away_score, home_score)
+    )
+    if row.status == "final" and row.score1 == new_score1 and row.score2 == new_score2:
+        counters["already_current"] += 1
+        return
+
+    log.info(
+        "  %s: %s vs %s  [match %d]  %s→final  %s-%s",
+        row.round, row.team1_slug, row.team2_slug, row.id, row.status, new_score1, new_score2,
+    )
+    if not dry_run:
+        row.score1, row.score2, row.status = new_score1, new_score2, "final"
+    counters["updated"] += 1
+
+
 def sync(dry_run: bool = False) -> None:
     team_map = build_team_map()
     games    = _fetch("/get/games", key="games")
-
-    finished = [g for g in games if str(g.get("finished", "")).upper() == "TRUE"]
-    log.info("API returned %d total games, %d finished", len(games), len(finished))
+    log.info("API returned %d total games", len(games))
 
     db = SessionLocal()
     try:
-        n_updated = n_already_current = n_not_found = 0
+        counters = {"updated": 0, "backfilled": 0, "already_current": 0, "not_found": 0}
 
-        for game in finished:
-            home_id  = str(game.get("home_team_id", ""))
-            away_id  = str(game.get("away_team_id", ""))
-            home_slug = team_map.get(home_id)
-            away_slug = team_map.get(away_id)
-
-            if not home_slug or not away_slug:
-                log.warning("  Unknown team id(s): home=%s away=%s — skipping", home_id, away_id)
-                n_not_found += 1
-                continue
-
-            # Parse scores — worldcup26.ir returns them as strings
-            try:
-                home_score = int(game["home_score"])
-                away_score = int(game["away_score"])
-            except (KeyError, TypeError, ValueError):
-                log.warning("  Unparseable scores for %s vs %s — skipping", home_slug, away_slug)
-                n_not_found += 1
-                continue
-
-            # Find our DB row; teams may be stored in either order
-            row = (
-                db.query(WC2026Match)
-                .filter(
-                    (
-                        (WC2026Match.team1_slug == home_slug) &
-                        (WC2026Match.team2_slug == away_slug)
-                    ) | (
-                        (WC2026Match.team1_slug == away_slug) &
-                        (WC2026Match.team2_slug == home_slug)
-                    )
-                )
-                .first()
-            )
-
-            if not row:
-                log.warning("  No DB row found for %s vs %s — skipping", home_slug, away_slug)
-                n_not_found += 1
-                continue
-
-            # Assign scores in the same team1/team2 order as stored in our DB
-            if row.team1_slug == home_slug:
-                new_score1, new_score2 = home_score, away_score
+        for game in games:
+            if game.get("type", "group") == "group":
+                if str(game.get("finished", "")).upper() != "TRUE":
+                    continue
+                _sync_group_game(db, game, team_map, dry_run, counters)
             else:
-                new_score1, new_score2 = away_score, home_score
-
-            # Skip if already up to date
-            if (row.status == "final"
-                    and row.score1 == new_score1
-                    and row.score2 == new_score2):
-                n_already_current += 1
-                continue
-
-            log.info(
-                "  %s vs %s  [match %d]  %s→%s  %s-%s → final",
-                row.team1_slug, row.team2_slug, row.id,
-                row.status, "final", new_score1, new_score2,
-            )
-
-            if not dry_run:
-                row.score1 = new_score1
-                row.score2 = new_score2
-                row.status = "final"
-
-            n_updated += 1
+                _sync_knockout_game(db, game, team_map, dry_run, counters)
 
         if not dry_run:
             db.commit()
@@ -174,8 +232,9 @@ def sync(dry_run: bool = False) -> None:
             log.info("Dry run — no changes written.")
 
         log.info(
-            "Summary: %d updated, %d already current, %d not found/skipped",
-            n_updated, n_already_current, n_not_found,
+            "Summary: %d updated, %d knockout teams backfilled, %d already current, %d not found/skipped",
+            counters["updated"], counters["backfilled"],
+            counters["already_current"], counters["not_found"],
         )
 
     except Exception:
