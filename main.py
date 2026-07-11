@@ -351,7 +351,16 @@ def _safe_lang_prefix(lang: str) -> str:
 
 def _safe_relative_url(url: str, fallback: str = "/") -> str:
     """Reject URLs that carry a scheme or netloc (open-redirect guard).
-    urlparse is recognised by CodeQL as a URL sanitizer."""
+    urlparse is recognised by CodeQL as a URL sanitizer.
+
+    Also rejects any backslash: per the WHATWG URL spec, browsers treat \\
+    as equivalent to / for special schemes (http/https/ws/wss/ftp/file), so
+    "/\\evil.com" parses via urlparse as a harmless relative path (empty
+    netloc) but browsers resolve it as //evil.com — a protocol-relative
+    redirect to another origin. urlparse doesn't know about this browser
+    quirk, so it can't be caught by the scheme/netloc check above."""
+    if "\\" in url:
+        return fallback
     parsed = urlparse(url)
     if parsed.scheme or parsed.netloc:
         return fallback
@@ -388,10 +397,14 @@ async def lang_prefix_middleware(request: Request, call_next):
         if lang_param in SUPPORTED_LANGS and lang_param != "en":
             new_path = f"/{lang_param}" + ("" if path == "/" else path)
             redirect_url = new_path + (f"?{other_qs}" if other_qs else "")
-            return RedirectResponse(url=redirect_url, status_code=301)
+            return RedirectResponse(url=_safe_relative_url(redirect_url), status_code=301)
         elif lang_param == "en":
+            # path is the raw request path (request.scope["path"]) — fully
+            # attacker-controlled, unlike the branch above which always has
+            # a fixed "/{lang_param}" prefix. Must go through the
+            # open-redirect guard before being used as a redirect target.
             redirect_url = path + (f"?{other_qs}" if other_qs else "")
-            return RedirectResponse(url=redirect_url, status_code=301)
+            return RedirectResponse(url=_safe_relative_url(redirect_url), status_code=301)
 
     # ── Strip /{lang}/ prefix and rewrite scope path ──────────────────────────
     parts = path.lstrip("/").split("/", 1)
@@ -1252,17 +1265,13 @@ async def archive_index(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/login")
 def legacy_login_redirect(request: Request):
-    next_url = request.query_params.get("next", "/")
-    if not next_url.startswith("/") or next_url.startswith("//"):
-        next_url = "/"
+    next_url = _safe_relative_url(request.query_params.get("next", "/"))
     return RedirectResponse(f"/auth/login?next={quote(next_url, safe='/')}", status_code=302)
 
 @app.get("/auth/login")
 async def login(request: Request):
-    next_url = request.query_params.get("next", "/")
-    # Reject absolute URLs to prevent open-redirect phishing via OAuth flow
-    if not next_url.startswith("/") or next_url.startswith("//"):
-        next_url = "/"
+    # Reject absolute/protocol-relative URLs to prevent open-redirect phishing via OAuth flow
+    next_url = _safe_relative_url(request.query_params.get("next", "/"))
     request.session["next"] = next_url
     redirect_uri = request.url_for("auth_callback")
     return await oauth.google.authorize_redirect(request, redirect_uri)
@@ -1343,9 +1352,9 @@ async def auth_callback(request: Request, db: Session = Depends(get_db)):
                 db.commit()
 
     next_url = request.session.pop("next", "/")
-    if not isinstance(next_url, str) or not next_url.startswith("/") or next_url.startswith("//"):
+    if not isinstance(next_url, str):
         next_url = "/"
-    return RedirectResponse(url=next_url)
+    return RedirectResponse(url=_safe_relative_url(next_url))
 
 @app.get("/auth/logout")
 async def logout(request: Request):
