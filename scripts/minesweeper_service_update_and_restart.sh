@@ -4,7 +4,13 @@
 STATE_DIR="/home/ubuntu/deploy_state"
 REPO_DIR="/home/ubuntu/minesweeper"
 VENV_DIR="/home/ubuntu/minesweeper/venv"
-SERVICE_NAME="minesweeper"
+# Split across two services (see scripts/minesweeper-web.service and
+# scripts/minesweeper-pvp.service): the multi-worker pool for general HTTP
+# traffic, and a single-worker instance that owns duel.py's in-memory
+# game/matchmaking state (routed /duel, /duelold, /pvp, /pvpbeta, /ws/ only —
+# see scripts/minesweeper-split-example.conf). Both run the same codebase, so
+# both must restart on every deploy or one keeps serving stale code.
+SERVICE_NAMES=("minesweeper-web" "minesweeper-pvp")
 source /home/ubuntu/minesweeper/.env
 
 if [ "$(id -u)" -eq 0 ]; then
@@ -59,5 +65,8 @@ echo "Regenerating database.py from template..."
 /usr/bin/sed -i "s/the_password/$DB_PASS/g" database.py
 /usr/bin/sed -i "s/the_db_name/$DB_NAME/g" database.py
 
-sudo systemctl restart "$SERVICE_NAME" || { echo "Error: Failed to restart service"; exit 1; }
+for SERVICE_NAME in "${SERVICE_NAMES[@]}"; do
+    echo "Restarting $SERVICE_NAME..."
+    sudo systemctl restart "$SERVICE_NAME" || { echo "Error: Failed to restart $SERVICE_NAME"; exit 1; }
+done
 echo "Production deployed to commit $LAST_GOOD."

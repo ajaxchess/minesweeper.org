@@ -7,6 +7,7 @@ import re
 import subprocess
 import os
 import hashlib
+import fcntl
 from typing import Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, Query, Response, Form, File, UploadFile, BackgroundTasks
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
@@ -1001,21 +1002,52 @@ def _migrate_numbers_match_puzzle_date():
         db.close()
 
 
+# The app runs as several OS processes (gunicorn's web worker pool plus the
+# single-worker pvp instance — see scripts/minesweeper-web.service and
+# scripts/minesweeper-pvp.service). Each process runs this startup() hook
+# independently, so without a guard every process would start its own
+# BackgroundScheduler and each cron job (score reset at midnight, daily puzzle
+# generation, hourly stats, weekly SEO rankings, etc.) would fire once per
+# process. flock is per-process and non-blocking: only the first process to
+# open+lock this file gets True and runs the scheduler; the rest skip it. The
+# fd is kept open for the process's lifetime — closing it (or process exit)
+# releases the lock so a replacement process can win it next time.
+_SCHEDULER_LOCK_PATH = "/tmp/minesweeper_scheduler.lock"
+_scheduler_lock_file = None
+
+
+def _acquire_scheduler_lock() -> bool:
+    """Return True if this process won the exclusive lock to run the scheduler."""
+    global _scheduler_lock_file
+    lock_file = open(_SCHEDULER_LOCK_PATH, "w")
+    try:
+        fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        lock_file.close()
+        return False
+    _scheduler_lock_file = lock_file  # keep open — closing releases the lock
+    return True
+
+
 # Create DB tables and start scheduler on startup
 @app.on_event("startup")
 def startup():
     init_db()
     _migrate_numbers_match_puzzle_date()
-    scheduler.start()
-    logger.info("Scheduler started — scores reset daily at midnight UTC.")
-    threading.Thread(target=_backfill_web_traffic,         daemon=True).start()
-    threading.Thread(target=generate_tametsi_dailies,      daemon=True).start()
-    threading.Thread(target=generate_numbers_match_daily,  daemon=True).start()
+    if _acquire_scheduler_lock():
+        scheduler.start()
+        logger.info("Scheduler started — scores reset daily at midnight UTC (this process holds the scheduler lock).")
+        threading.Thread(target=_backfill_web_traffic,         daemon=True).start()
+        threading.Thread(target=generate_tametsi_dailies,      daemon=True).start()
+        threading.Thread(target=generate_numbers_match_daily,  daemon=True).start()
+    else:
+        logger.info("Scheduler skipped — another process holds the scheduler lock.")
 
 @app.on_event("shutdown")
 def shutdown():
-    scheduler.shutdown()
-    logger.info("Scheduler shut down.")
+    if scheduler.running:
+        scheduler.shutdown()
+        logger.info("Scheduler shut down.")
 
 # ── Page Routes ───────────────────────────────────────────────────────────────
 

@@ -22,7 +22,15 @@ set -euo pipefail
 APP_USER="ubuntu"
 REPO_DIR="/home/${APP_USER}/minesweeper"
 VENV_DIR="${REPO_DIR}/venv"
-SERVICE_NAME="minesweeper"
+# Split across two services: a multi-worker gunicorn pool for general HTTP
+# traffic, and a single-worker instance that owns duel.py's in-memory
+# game/matchmaking state (only /duel, /duelold, /pvp, /pvpbeta, /ws/ route
+# there — see the Apache vhost below). Both must restart on every deploy;
+# scripts/minesweeper_service_update_and_restart.sh already does this.
+SERVICE_WEB="minesweeper-web"
+SERVICE_PVP="minesweeper-pvp"
+WEB_PORT=8000
+PVP_PORT=8001
 DOMAIN="minesweeper.org"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -108,17 +116,59 @@ ok "database.py generated."
 info "Building minified static assets..."
 sudo -u "$APP_USER" bash "${REPO_DIR}/scripts/build_assets.sh" || warn "Asset build failed (continuing)."
 
-# ── 8. systemd service ────────────────────────────────────────────────────────
-info "Installing systemd service..."
-cat > "/etc/systemd/system/${SERVICE_NAME}.service" <<SERVICE
+# ── 8. systemd services ───────────────────────────────────────────────────────
+info "Installing systemd services..."
+cat > "/etc/systemd/system/${SERVICE_WEB}.service" <<SERVICE
 [Unit]
-Description=Minesweeper FastAPI App
+Description=Minesweeper FastAPI app (web pool — general HTTP traffic)
 After=network.target mysql.service
 
 [Service]
 User=${APP_USER}
 WorkingDirectory=${REPO_DIR}
-ExecStart=${VENV_DIR}/bin/uvicorn main:app --host 127.0.0.1 --port 8000 --workers 1
+# Do NOT route /duel, /duelold, /pvp, /pvpbeta, or /ws/ here — that traffic
+# depends on in-memory state (duel.py's _games / matchmaking queues) that
+# only exists inside a single process. It goes to ${SERVICE_PVP} instead.
+# --workers: size to vCPU count (2x cores is a reasonable starting point).
+ExecStart=${VENV_DIR}/bin/gunicorn main:app \\
+    --worker-class uvicorn.workers.UvicornWorker \\
+    --workers 4 \\
+    --bind 127.0.0.1:${WEB_PORT} \\
+    --timeout 120 \\
+    --graceful-timeout 30 \\
+    --keep-alive 5 \\
+    --access-logfile - \\
+    --error-logfile -
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+
+cat > "/etc/systemd/system/${SERVICE_PVP}.service" <<SERVICE
+[Unit]
+Description=Minesweeper FastAPI app (pvp/duel — single worker, owns in-memory game state)
+After=network.target mysql.service
+
+[Service]
+User=${APP_USER}
+WorkingDirectory=${REPO_DIR}
+# Runs the SAME app (main:app) as ${SERVICE_WEB}, but Apache only routes
+# /duel, /duelold, /pvp, /pvpbeta, and /ws/ here. Those routes read/write
+# duel.py's module-level _games dict and matchmaking queues directly, which
+# only works if every request for a given game lands on the same process —
+# stays a SINGLE worker. Don't raise --workers without moving that state
+# into something shared (e.g. Redis) first.
+ExecStart=${VENV_DIR}/bin/gunicorn main:app \\
+    --worker-class uvicorn.workers.UvicornWorker \\
+    --workers 1 \\
+    --bind 127.0.0.1:${PVP_PORT} \\
+    --timeout 120 \\
+    --graceful-timeout 30 \\
+    --keep-alive 5 \\
+    --access-logfile - \\
+    --error-logfile -
 Restart=always
 RestartSec=5
 
@@ -127,9 +177,9 @@ WantedBy=multi-user.target
 SERVICE
 
 systemctl daemon-reload
-systemctl enable "$SERVICE_NAME"
-systemctl start  "$SERVICE_NAME"
-ok "systemd service '${SERVICE_NAME}' installed and started."
+systemctl enable "$SERVICE_WEB" "$SERVICE_PVP"
+systemctl start  "$SERVICE_WEB" "$SERVICE_PVP"
+ok "systemd services '${SERVICE_WEB}' and '${SERVICE_PVP}' installed and started."
 
 # ── 9. Apache virtual host ────────────────────────────────────────────────────
 info "Configuring Apache reverse proxy..."
@@ -148,11 +198,27 @@ cat > "/etc/apache2/sites-available/${DOMAIN}.conf" <<APACHE
 
     AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json text/plain
 
-    ProxyPass        /ws/ ws://127.0.0.1:8000/ws/
-    ProxyPassReverse /ws/ ws://127.0.0.1:8000/ws/
+    # PVP / duel — pinned to the single-worker instance (in-memory game +
+    # matchmaking state in duel.py). Apache matches ProxyPass in declaration
+    # order, so these specific paths must come before the catch-all "/" below.
+    ProxyPass        /ws/       ws://127.0.0.1:${PVP_PORT}/ws/      upgrade=websocket retry=0
+    ProxyPassReverse /ws/       ws://127.0.0.1:${PVP_PORT}/ws/
 
-    ProxyPass        / http://127.0.0.1:8000/
-    ProxyPassReverse / http://127.0.0.1:8000/
+    ProxyPass        /duel      http://127.0.0.1:${PVP_PORT}/duel    retry=0
+    ProxyPassReverse /duel      http://127.0.0.1:${PVP_PORT}/duel
+
+    ProxyPass        /duelold   http://127.0.0.1:${PVP_PORT}/duelold retry=0
+    ProxyPassReverse /duelold   http://127.0.0.1:${PVP_PORT}/duelold
+
+    ProxyPass        /pvp       http://127.0.0.1:${PVP_PORT}/pvp     retry=0
+    ProxyPassReverse /pvp       http://127.0.0.1:${PVP_PORT}/pvp
+
+    ProxyPass        /pvpbeta   http://127.0.0.1:${PVP_PORT}/pvpbeta retry=0
+    ProxyPassReverse /pvpbeta   http://127.0.0.1:${PVP_PORT}/pvpbeta
+
+    # Everything else — scaled across the gunicorn worker pool
+    ProxyPass        / http://127.0.0.1:${WEB_PORT}/
+    ProxyPassReverse / http://127.0.0.1:${WEB_PORT}/
 
     ErrorLog  \${APACHE_LOG_DIR}/${DOMAIN}-error.log
     CustomLog \${APACHE_LOG_DIR}/${DOMAIN}-access.log combined
@@ -183,8 +249,9 @@ echo "       GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET"
 echo "       GA_TAG, ADMIN_EMAILS"
 echo "  2. Get an SSL certificate:"
 echo "       sudo certbot --apache -d ${DOMAIN} -d www.${DOMAIN}"
-echo "  3. Restart the service:"
-echo "       sudo systemctl restart ${SERVICE_NAME}"
+echo "  3. Restart the services:"
+echo "       sudo systemctl restart ${SERVICE_WEB} ${SERVICE_PVP}"
 echo "  4. Check logs:"
-echo "       sudo journalctl -u ${SERVICE_NAME} -f"
+echo "       sudo journalctl -u ${SERVICE_WEB} -f"
+echo "       sudo journalctl -u ${SERVICE_PVP} -f"
 echo "═══════════════════════════════════════════════════════════"

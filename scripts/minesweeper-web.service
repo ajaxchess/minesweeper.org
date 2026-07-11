@@ -1,0 +1,30 @@
+[Unit]
+Description=Minesweeper FastAPI app (web pool — general HTTP traffic)
+After=network.target mysql.service
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/minesweeper
+# gunicorn manages a pool of UvicornWorker processes for stateless HTTP traffic
+# (games, scores, leaderboards, admin, etc.). Do NOT route /duel, /duelold,
+# /pvp, /pvpbeta, or /ws/ here — those depend on in-memory state (duel.py's
+# _games / matchmaking queues) that only exists inside a single process. That
+# traffic goes to minesweeper-pvp.service instead. See scripts/minesweeper-pvp.service
+# and the Apache vhost for the routing split.
+#
+# --workers: size to vCPU count (2x cores is a reasonable starting point for
+# async/uvicorn workers). Tune based on actual instance size.
+ExecStart=/home/ubuntu/minesweeper/venv/bin/gunicorn main:app \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --workers 4 \
+    --bind 127.0.0.1:8000 \
+    --timeout 120 \
+    --graceful-timeout 30 \
+    --keep-alive 5 \
+    --access-logfile - \
+    --error-logfile -
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,28 @@
+[Unit]
+Description=Minesweeper FastAPI app (pvp/duel — single worker, owns in-memory game state)
+After=network.target mysql.service
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/minesweeper
+# Runs the SAME app (main:app) as minesweeper-web.service, but Apache only ever
+# routes /duel, /duelold, /pvp, /pvpbeta, and /ws/ here. Those routes read and
+# write duel.py's module-level _games dict and matchmaking queues directly —
+# plain in-process Python objects, not backed by the DB or any shared store.
+# That only works if every request/websocket for a given game lands on the
+# same OS process, so this stays a SINGLE worker. Do not raise --workers here
+# without first moving duel.py's state into something shared (e.g. Redis).
+ExecStart=/home/ubuntu/minesweeper/venv/bin/gunicorn main:app \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --workers 1 \
+    --bind 127.0.0.1:8001 \
+    --timeout 120 \
+    --graceful-timeout 30 \
+    --keep-alive 5 \
+    --access-logfile - \
+    --error-logfile -
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
