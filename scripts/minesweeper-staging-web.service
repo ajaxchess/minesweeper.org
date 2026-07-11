@@ -1,0 +1,22 @@
+[Unit]
+Description=Minesweeper STAGING FastAPI app (web pool — general HTTP traffic)
+After=network.target mysql.service
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/git/staging.minesweeper.org
+Environment=ENVIRONMENT=staging
+# Staging is on-demand: started/stopped by
+# scripts/staging_minesweeper_service_update_and_restart.sh around each smoke
+# test run, not always-on like production. Plain uvicorn (no gunicorn) is
+# fine here since it's short-lived. Do NOT route /duel, /duelold, /pvp,
+# /pvpbeta, or /ws/ here — see minesweeper-staging-pvp.service.
+ExecStart=/home/ubuntu/git/staging.minesweeper.org/venv/bin/uvicorn main:app \
+    --host 127.0.0.1 \
+    --port 8002 \
+    --workers 2
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

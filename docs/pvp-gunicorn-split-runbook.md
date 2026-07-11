@@ -1,4 +1,7 @@
-# Production cutover: web/pvp gunicorn split
+# Production + staging cutover: web/pvp split
+
+Steps 0–9 below cover **production**. See the **Staging cutover** section at
+the end for staging's equivalent (different operating model — see there).
 
 Migrates the live EC2 host from a single `minesweeper` uvicorn process to two
 gunicorn-managed services:
@@ -240,3 +243,63 @@ application behavior on a single process.
   keep up, the fix is moving `duel.py`'s state into Redis (pub/sub for
   cross-process broadcast) — not raising `--workers` on that service, which
   would reintroduce the original bug.
+
+---
+
+## Staging cutover
+
+Staging mirrors the same split, but its operating model is different: it's
+normally **stopped**, and `scripts/staging_minesweeper_service_update_and_restart.sh`
+starts it, runs smoke tests, and stops it again on every cron tick (every 5
+minutes) when there's a new commit to validate. That script's result gates
+whether production deploys at all (`minesweeper_last_good_commit`), so get
+this right before touching production.
+
+- **`minesweeper-staging-web`** — plain `uvicorn --workers 2` (no gunicorn —
+  staging is short-lived, gunicorn's process-management benefits don't matter
+  much here, and it avoids needing to add gunicorn to the hash-pinned
+  `requirements.lock`), port 8002 (unchanged).
+- **`minesweeper-staging-pvp`** — plain `uvicorn --workers 1`, port **8052**
+  (not 8050 — that's production's pvp port; keep them distinct so a
+  misconfigured proxy can't accidentally cross the two environments).
+
+Repo dir on disk: `/home/ubuntu/git/staging.minesweeper.org` (this is the
+same directory as `/home/ubuntu/staging-minesweeper` — both paths you'll see
+referenced in older scripts are symlinks to the same place).
+
+### Steps
+
+1. **Pull the code** in the staging repo dir (same as prod step 2, just a
+   different `REPO_DIR`). No dependency changes needed — staging doesn't
+   introduce gunicorn.
+2. **Install the two new units**:
+   ```bash
+   sudo cp scripts/minesweeper-staging-web.service /etc/systemd/system/
+   sudo cp scripts/minesweeper-staging-pvp.service /etc/systemd/system/
+   sudo systemctl daemon-reload
+   ```
+3. **Stop the old single service, don't start the new ones yet** — staging is
+   supposed to be idle between runs:
+   ```bash
+   sudo systemctl stop minesweeper-staging
+   sudo systemctl disable minesweeper-staging
+   sudo systemctl enable minesweeper-staging-web minesweeper-staging-pvp   # enable only — do NOT start; the deploy script starts/stops them
+   ```
+4. **Update the Apache vhost** the same way as production — apply the routing
+   split from `scripts/staging-minesweeper.conf` to
+   `/etc/apache2/sites-enabled/staging.minesweeper.org-le-ssl.conf` (back it
+   up first), then `apache2ctl configtest && systemctl reload apache2`.
+5. **Do one manual dry run** of the deploy script before letting cron pick it
+   up, so you see the two-service start/health/smoke-test/stop cycle succeed
+   at least once under your eyes:
+   ```bash
+   bash /home/ubuntu/git/staging.minesweeper.org/scripts/staging_minesweeper_service_update_and_restart.sh
+   ```
+   Watch for `Both staging services are up. Running smoke tests...` and the
+   `PASS:` lines for all six smoke tests (PvP/Duel now run against 8052,
+   everything else against 8002). If this fails, **do not** let cron retry
+   blindly — the same failure will just repeat every 5 minutes and can leave
+   `minesweeper_blocked_commit` in a stale state.
+6. Confirm the cron job (whatever runs this script — check
+   `sudo crontab -l -u ubuntu` or `/etc/cron.d/`) is still pointed at the
+   same script path; nothing about the cron wiring itself needs to change.

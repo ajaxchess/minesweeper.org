@@ -2,9 +2,16 @@
 
 # staging_minesweeper_service_update_and_restart.sh
 #
-# On-demand staging: only starts the service when there is a new, unvalidated
-# commit.  Runs smoke tests, then STOPS the service to free memory.  Writes
-# the validated commit SHA to a state file that the production deploy script reads.
+# On-demand staging: only starts the services when there is a new, unvalidated
+# commit.  Runs smoke tests against both, then STOPS both to free memory.
+# Writes the validated commit SHA to a state file that the production deploy
+# script reads.
+#
+# Staging mirrors production's web/pvp split (see
+# scripts/minesweeper-web.service / scripts/minesweeper-pvp.service and
+# docs/pvp-gunicorn-split-runbook.md): minesweeper-staging-web serves general
+# HTTP traffic, minesweeper-staging-pvp (single worker) owns duel.py's
+# in-memory game/matchmaking state for /duel, /duelold, /pvp, /pvpbeta, /ws/.
 #
 # Flow:
 #   1. Acquire a lock — exit immediately if another run is in progress.
@@ -12,9 +19,10 @@
 #   3. If the new commit is already in minesweeper_last_good_commit, exit (already validated).
 #   4. If the new commit matches minesweeper_blocked_commit, exit (already failed).
 #   5. Reset to new commit, install deps, regenerate database.py.
-#   6. START the staging service (it is stopped when idle).
-#   7. Wait for /health, run smoke tests.
-#   8. STOP the service regardless of test outcome.
+#   6. START both staging services (they are stopped when idle).
+#   7. Wait for /health on both, run smoke tests (general routes against
+#      -web, pvp/duel routes against -pvp).
+#   8. STOP both services regardless of test outcome.
 #   9. On pass: write validated SHA → production deploy will unblock.
 #      On fail: write blocked SHA → exit 1.
 #
@@ -27,8 +35,10 @@ set -euo pipefail
 STATE_DIR="/home/ubuntu/deploy_state"
 REPO_DIR="/home/ubuntu/git/staging.minesweeper.org"
 VENV_DIR="$REPO_DIR/venv"
-SERVICE_NAME="minesweeper-staging"
-PORT=8002
+SERVICE_WEB="minesweeper-staging-web"
+SERVICE_PVP="minesweeper-staging-pvp"
+WEB_PORT=8002
+PVP_PORT=8052
 source "$REPO_DIR/.env"
 
 # Cron runs without LANG set (C locale).  In C locale, grep -i mis-handles lines
@@ -110,45 +120,58 @@ echo "Regenerating database.py from template..."
 /usr/bin/sed -i "s/the_password/$DB_PASS/g" database.py
 /usr/bin/sed -i "s/the_db_name/$DB_NAME/g" database.py
 
-# ── Start the service (it is stopped when idle) ───────────────────────────────
-# Use restart rather than start: if a previous run left the service running
+# ── Start both services (they are stopped when idle) ──────────────────────────
+# Use restart rather than start: if a previous run left a service running
 # (e.g. on the first transition from always-on staging), restart ensures the
 # new code is loaded; if it was already stopped, restart behaves like start.
-echo "$(date '+%Y-%m-%d %H:%M:%S') Starting service: $SERVICE_NAME (port $PORT)..."
-sudo systemctl restart "$SERVICE_NAME" \
-    || { echo "Error: failed to start $SERVICE_NAME"; exit 1; }
+echo "$(date '+%Y-%m-%d %H:%M:%S') Starting services: $SERVICE_WEB (port $WEB_PORT), $SERVICE_PVP (port $PVP_PORT)..."
+sudo systemctl restart "$SERVICE_WEB" \
+    || { echo "Error: failed to start $SERVICE_WEB"; exit 1; }
+sudo systemctl restart "$SERVICE_PVP" \
+    || { echo "Error: failed to start $SERVICE_PVP"; sudo systemctl stop "$SERVICE_WEB"; exit 1; }
 
-# Wait for uvicorn to finish binding the port (up to 120s).
-READY=0
-for i in $(seq 1 40); do
-    if curl -s --max-time 3 --compressed "http://127.0.0.1:${PORT}/health" | grep -aq '"status"'; then
-        READY=1
-        break
-    fi
-    sleep 3
-done
-if [ "$READY" = "0" ]; then
-    echo "$(date '+%Y-%m-%d %H:%M:%S') ERROR: Staging did not become healthy within 120s. Stopping and aborting."
-    sudo systemctl stop "$SERVICE_NAME"
+# Wait for both to finish binding their ports (up to 120s each, checked in parallel).
+wait_healthy() {
+    local port="$1"
+    for i in $(seq 1 40); do
+        if curl -s --max-time 3 --compressed "http://127.0.0.1:${port}/health" | grep -aq '"status"'; then
+            return 0
+        fi
+        sleep 3
+    done
+    return 1
+}
+
+WEB_READY=0; PVP_READY=0
+wait_healthy "$WEB_PORT" && WEB_READY=1
+wait_healthy "$PVP_PORT" && PVP_READY=1
+
+if [ "$WEB_READY" = "0" ] || [ "$PVP_READY" = "0" ]; then
+    echo "$(date '+%Y-%m-%d %H:%M:%S') ERROR: Staging did not become healthy within 120s (web=$WEB_READY pvp=$PVP_READY). Stopping and aborting."
+    sudo systemctl stop "$SERVICE_WEB" "$SERVICE_PVP"
     exit 1
 fi
-echo "$(date '+%Y-%m-%d %H:%M:%S') Staging service is up. Running smoke tests..."
+echo "$(date '+%Y-%m-%d %H:%M:%S') Both staging services are up. Running smoke tests..."
 echo "  [diag] script loaded from $LOCAL_COMMIT | testing $REMOTE_COMMIT | LANG=${LANG:-unset} LC_ALL=${LC_ALL:-unset}"
 
 # ── Smoke tests ───────────────────────────────────────────────────────────────
-# Tests run against staging's Uvicorn port directly (bypasses Apache).
+# Tests run against staging's Uvicorn ports directly (bypasses Apache). Routes
+# backed by duel.py's in-memory state (pvp/duel) must be tested against the
+# pvp instance specifically — that's the one Apache will actually route them
+# to in production, and it's the process that owns the matchmaking queues.
 SMOKE_FAILED=0
 
 smoke_test() {
     local label="$1"
     local path="$2"
     local expect="$3"
+    local port="${4:-$WEB_PORT}"
     local TMPBODY HTTP_CODE PY_RESULT
 
     TMPBODY=$(mktemp)
     HTTP_CODE=$(curl -s --max-time 15 --compressed \
         -o "$TMPBODY" -w "%{http_code}" \
-        "http://127.0.0.1:${PORT}${path}")
+        "http://127.0.0.1:${port}${path}")
 
     if [ "$HTTP_CODE" != "200" ]; then
         echo "  FAIL: $label ($path) — HTTP $HTTP_CODE"
@@ -191,17 +214,17 @@ PYEOF
     esac
 }
 
-smoke_test "Home"               "/"                                           "minesweeper" || SMOKE_FAILED=1
-smoke_test "PvP"                "/pvp/bot"                                    "PvP Minesweeper" || SMOKE_FAILED=1
-smoke_test "Duel"               "/duel"                                       "Minesweeper" || SMOKE_FAILED=1
-smoke_test "Tentaizu"           "/tentaizu"                                   "Tentaizu" || SMOKE_FAILED=1
-smoke_test "Numbers Match page" "/numbers-match"                              "Numbers Match" || SMOKE_FAILED=1
-smoke_test "Numbers Match API"  "/api/numbers-match-board/$(date +%Y-%m-%d)" "board_data" || SMOKE_FAILED=1
+smoke_test "Home"               "/"                                           "minesweeper"     "$WEB_PORT" || SMOKE_FAILED=1
+smoke_test "PvP"                "/pvp/bot"                                    "PvP Minesweeper"  "$PVP_PORT" || SMOKE_FAILED=1
+smoke_test "Duel"               "/duel"                                       "Minesweeper"      "$PVP_PORT" || SMOKE_FAILED=1
+smoke_test "Tentaizu"           "/tentaizu"                                   "Tentaizu"         "$WEB_PORT" || SMOKE_FAILED=1
+smoke_test "Numbers Match page" "/numbers-match"                              "Numbers Match"    "$WEB_PORT" || SMOKE_FAILED=1
+smoke_test "Numbers Match API"  "/api/numbers-match-board/$(date +%Y-%m-%d)" "board_data"        "$WEB_PORT" || SMOKE_FAILED=1
 
-# ── Stop the service to free memory ───────────────────────────────────────────
-echo "$(date '+%Y-%m-%d %H:%M:%S') Stopping service: $SERVICE_NAME..."
-sudo systemctl stop "$SERVICE_NAME"
-echo "Service stopped."
+# ── Stop both services to free memory ─────────────────────────────────────────
+echo "$(date '+%Y-%m-%d %H:%M:%S') Stopping services: $SERVICE_WEB, $SERVICE_PVP..."
+sudo systemctl stop "$SERVICE_WEB" "$SERVICE_PVP"
+echo "Services stopped."
 
 # ── Record result ─────────────────────────────────────────────────────────────
 if [ "$SMOKE_FAILED" -eq 0 ]; then

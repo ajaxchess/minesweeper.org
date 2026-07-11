@@ -1,0 +1,23 @@
+[Unit]
+Description=Minesweeper STAGING FastAPI app (pvp/duel — single worker, owns in-memory game state)
+After=network.target mysql.service
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/git/staging.minesweeper.org
+Environment=ENVIRONMENT=staging
+# Runs the SAME app as minesweeper-staging-web, but the smoke-test script and
+# Apache only route /duel, /duelold, /pvp, /pvpbeta, and /ws/ here — those
+# routes read/write duel.py's module-level _games dict and matchmaking
+# queues directly, which only works if every request for a given game lands
+# on the same process. Stays a single worker for the same reason as
+# production's minesweeper-pvp.service.
+ExecStart=/home/ubuntu/git/staging.minesweeper.org/venv/bin/uvicorn main:app \
+    --host 127.0.0.1 \
+    --port 8052 \
+    --workers 1
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
