@@ -106,9 +106,21 @@ fi
 info "Generating database.py from template..."
 source "${REPO_DIR}/.env"
 cp "${REPO_DIR}/database_template.py" "${REPO_DIR}/database.py"
-sed -i "s/the_minesweeper_user/${DB_USER}/g" "${REPO_DIR}/database.py"
-sed -i "s/the_password/${DB_PASS}/g"         "${REPO_DIR}/database.py"
-sed -i "s/the_db_name/${DB_NAME}/g"          "${REPO_DIR}/database.py"
+# Literal string replace via Python, not sed — sed's replacement string treats
+# /, &, and \ specially, so a DB_PASS containing any of those silently
+# corrupts database.py instead of erroring. Values are passed as env vars
+# (not interpolated into the script text) so nothing in them can break the
+# shell command either.
+DB_USER="$DB_USER" DB_PASS="$DB_PASS" DB_NAME="$DB_NAME" python3 - "${REPO_DIR}/database.py" <<'PYEOF'
+import os, sys
+from pathlib import Path
+p = Path(sys.argv[1])
+s = p.read_text()
+s = s.replace("the_minesweeper_user", os.environ["DB_USER"])
+s = s.replace("the_password", os.environ["DB_PASS"])
+s = s.replace("the_db_name", os.environ["DB_NAME"])
+p.write_text(s)
+PYEOF
 chown "$APP_USER:$APP_USER" "${REPO_DIR}/database.py"
 ok "database.py generated."
 
