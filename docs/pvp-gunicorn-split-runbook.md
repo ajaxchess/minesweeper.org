@@ -5,7 +5,7 @@ gunicorn-managed services:
 
 - **`minesweeper-web`** — 4 `UvicornWorker` processes on port 8000. All
   stateless HTTP traffic (games, scores, leaderboards, admin, etc.).
-- **`minesweeper-pvp`** — 1 worker on port 8001. Only `/duel`, `/duelold`,
+- **`minesweeper-pvp`** — 1 worker on port 8050. Only `/duel`, `/duelold`,
   `/pvp`, `/pvpbeta`, `/ws/`. These routes read/write `duel.py`'s in-memory
   `_games` dict and matchmaking queues directly — that only works if every
   request for a given game lands on the same OS process, so this stays
@@ -73,7 +73,7 @@ sudo cp scripts/minesweeper-pvp.service /etc/systemd/system/
 sudo systemctl daemon-reload
 ```
 
-Both files hardcode `/home/ubuntu/minesweeper` and ports 8000/8001 — if your
+Both files hardcode `/home/ubuntu/minesweeper` and ports 8000/8050 — if your
 host differs from that, edit before copying.
 
 ## 4. Cut over: stop the old service, start the two new ones
@@ -92,14 +92,14 @@ Both should show `active (running)`. If either fails, check
 `sudo journalctl -u minesweeper-web -n 50` /
 `sudo journalctl -u minesweeper-pvp -n 50` before continuing — common causes
 are the venv not having gunicorn yet (re-run step 2) or a port already in
-use (confirm the old service actually stopped: `sudo ss -ltnp | grep -E ':8000|:8001'`).
+use (confirm the old service actually stopped: `sudo ss -ltnp | grep -E ':8000|:8050'`).
 
 ## 5. Verify both services directly (bypass Apache)
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8000/           # web pool — expect 200
-curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8001/duel       # pvp instance — expect 200
-curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8001/pvp/bot    # pvp instance — expect 200
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8050/duel       # pvp instance — expect 200
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8050/pvp/bot    # pvp instance — expect 200
 ```
 
 If any of these fail, fix it now — don't proceed to touch Apache with a
@@ -129,20 +129,20 @@ The parts that need to change — replace the existing `/ws/` and `/` blocks
 with (order matters, most specific first):
 
 ```apache
-ProxyPass        /ws/       ws://127.0.0.1:8001/ws/      upgrade=websocket retry=0
-ProxyPassReverse /ws/       ws://127.0.0.1:8001/ws/
+ProxyPass        /ws/       ws://127.0.0.1:8050/ws/      upgrade=websocket retry=0
+ProxyPassReverse /ws/       ws://127.0.0.1:8050/ws/
 
-ProxyPass        /duel      http://127.0.0.1:8001/duel    retry=0
-ProxyPassReverse /duel      http://127.0.0.1:8001/duel
+ProxyPass        /duel      http://127.0.0.1:8050/duel    retry=0
+ProxyPassReverse /duel      http://127.0.0.1:8050/duel
 
-ProxyPass        /duelold   http://127.0.0.1:8001/duelold retry=0
-ProxyPassReverse /duelold   http://127.0.0.1:8001/duelold
+ProxyPass        /duelold   http://127.0.0.1:8050/duelold retry=0
+ProxyPassReverse /duelold   http://127.0.0.1:8050/duelold
 
-ProxyPass        /pvp       http://127.0.0.1:8001/pvp     retry=0
-ProxyPassReverse /pvp       http://127.0.0.1:8001/pvp
+ProxyPass        /pvp       http://127.0.0.1:8050/pvp     retry=0
+ProxyPassReverse /pvp       http://127.0.0.1:8050/pvp
 
-ProxyPass        /pvpbeta   http://127.0.0.1:8001/pvpbeta retry=0
-ProxyPassReverse /pvpbeta   http://127.0.0.1:8001/pvpbeta
+ProxyPass        /pvpbeta   http://127.0.0.1:8050/pvpbeta retry=0
+ProxyPassReverse /pvpbeta   http://127.0.0.1:8050/pvpbeta
 
 ProxyPass        / http://127.0.0.1:8000/
 ProxyPassReverse / http://127.0.0.1:8000/

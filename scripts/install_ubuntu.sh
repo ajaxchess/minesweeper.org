@@ -30,7 +30,7 @@ VENV_DIR="${REPO_DIR}/venv"
 SERVICE_WEB="minesweeper-web"
 SERVICE_PVP="minesweeper-pvp"
 WEB_PORT=8000
-PVP_PORT=8001
+PVP_PORT=8050
 DOMAIN="minesweeper.org"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

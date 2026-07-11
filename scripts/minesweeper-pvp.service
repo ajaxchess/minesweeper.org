@@ -15,7 +15,7 @@ WorkingDirectory=/home/ubuntu/minesweeper
 ExecStart=/home/ubuntu/minesweeper/venv/bin/gunicorn main:app \
     --worker-class uvicorn.workers.UvicornWorker \
     --workers 1 \
-    --bind 127.0.0.1:8001 \
+    --bind 127.0.0.1:8050 \
     --timeout 120 \
     --graceful-timeout 30 \
     --keep-alive 5 \
