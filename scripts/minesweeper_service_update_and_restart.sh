@@ -13,6 +13,11 @@ VENV_DIR="/home/ubuntu/minesweeper/venv"
 SERVICE_NAMES=("minesweeper-web" "minesweeper-pvp")
 source /home/ubuntu/minesweeper/.env
 
+FORCE=0
+for arg in "$@"; do
+    [ "$arg" = "--force" ] && FORCE=1
+done
+
 if [ "$(id -u)" -eq 0 ]; then
     echo "Error: This script must not be run as root. Run as the 'ubuntu' user."
     exit 1
@@ -30,20 +35,28 @@ LOCAL_COMMIT=$(git rev-parse HEAD)
 # ── Determine deploy target ───────────────────────────────────────────────────
 # Production only deploys commits that have been validated by staging smoke tests.
 # The staging script writes the last passing commit SHA to minesweeper_last_good_commit.
-LAST_GOOD=$(cat "$STATE_DIR/minesweeper_last_good_commit" 2>/dev/null || echo "")
+# Pass --force to bypass the staging gate and deploy origin/main HEAD directly.
 
-if [ -z "$LAST_GOOD" ]; then
-    # First run: no minesweeper_last_good_commit exists yet.
-    # Assume the current prod state is good and record it.
-    # Staging will overwrite this once it validates a new commit.
-    echo "Initializing minesweeper_last_good_commit to current prod HEAD ($LOCAL_COMMIT)."
-    echo "$LOCAL_COMMIT" > "$STATE_DIR/minesweeper_last_good_commit"
-    LAST_GOOD="$LOCAL_COMMIT"
-fi
+if [ "$FORCE" -eq 1 ]; then
+    LAST_GOOD=$(git rev-parse origin/main)
+    echo "$(date '+%Y-%m-%d %H:%M:%S') --force: bypassing staging gate, targeting origin/main ($LAST_GOOD)."
+    echo "$LAST_GOOD" > "$STATE_DIR/minesweeper_last_good_commit"
+else
+    LAST_GOOD=$(cat "$STATE_DIR/minesweeper_last_good_commit" 2>/dev/null || echo "")
 
-if [ "$LOCAL_COMMIT" = "$LAST_GOOD" ]; then
-    echo "Production is already on last good commit $LAST_GOOD. Nothing to deploy."
-    exit 0
+    if [ -z "$LAST_GOOD" ]; then
+        # First run: no minesweeper_last_good_commit exists yet.
+        # Assume the current prod state is good and record it.
+        # Staging will overwrite this once it validates a new commit.
+        echo "Initializing minesweeper_last_good_commit to current prod HEAD ($LOCAL_COMMIT)."
+        echo "$LOCAL_COMMIT" > "$STATE_DIR/minesweeper_last_good_commit"
+        LAST_GOOD="$LOCAL_COMMIT"
+    fi
+
+    if [ "$LOCAL_COMMIT" = "$LAST_GOOD" ]; then
+        echo "Production is already on last good commit $LAST_GOOD. Nothing to deploy."
+        exit 0
+    fi
 fi
 
 echo "$(date '+%Y-%m-%d %H:%M:%S') Deploy candidate available: $LAST_GOOD. Deploying to production..."
