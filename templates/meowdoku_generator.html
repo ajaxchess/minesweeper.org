@@ -97,11 +97,29 @@
 
 .mk-gen-board-wrap { flex:0 0 auto; }
 
-.mk-gen-grid {
-  cursor:crosshair;
+/* shared grid/cell rules (also in meowdoku.html) */
+.mk-grid {
+  display:grid;
+  grid-template-columns: repeat(var(--mk-n,8), 1fr);
   width: min(480px, 90vw);
   height: min(480px, 90vw);
+  border: 3px solid #222;
+  box-sizing: border-box;
+  user-select: none;
+  touch-action: none;
 }
+.mk-cell {
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:calc(min(480px, 90vw) / var(--mk-n, 8) * 0.5);
+  border: 1px solid rgba(0,0,0,0.12);
+  box-sizing:border-box; position:relative;
+}
+.mk-cell.mk-bt { border-top:    3px solid #222; }
+.mk-cell.mk-bb { border-bottom: 3px solid #222; }
+.mk-cell.mk-bl { border-left:   3px solid #222; }
+.mk-cell.mk-br { border-right:  3px solid #222; }
+
+.mk-gen-grid { cursor:crosshair; }
 .mk-gen-cell { transition:background-color 0.05s; }
 </style>
 {% endblock %}
