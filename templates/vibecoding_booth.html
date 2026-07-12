@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Native Development — Chicago Booth CAO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #090d17;
+  --surface:  #111827;
+  --surface2: #1a2538;
+  --text:     #dce6f5;
+  --text2:    #8a99b8;
+  --accent:   #4580e4;
+  --gold:     #f0a030;
+  --red:      #e05050;
+  --green:    #40b070;
+  --rule:     #1e2d47;
+  --font-d:   'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-b:   'Barlow', system-ui, sans-serif;
+  --mono:     'SF Mono', 'Fira Code', monospace;
+}
+
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font-b); }
+
+#progress-track { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: var(--rule); z-index: 200; }
+#progress-fill  { height: 100%; background: var(--accent); transition: width .35s ease; width: 0; }
+
+.deck  { position: fixed; inset: 0; overflow: hidden; }
+.track { display: flex; height: 100%; transition: transform .45s cubic-bezier(.4,0,.2,1); will-change: transform; }
+
+.slide {
+  min-width: 100vw; height: 100%; display: flex; flex-direction: column;
+  justify-content: center; padding: clamp(2rem,4vw,4rem) clamp(2.5rem,8vw,8rem);
+  position: relative; overflow: hidden;
+}
+
+.nav { position: fixed; bottom: 1.75rem; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 1.25rem; z-index: 200; }
+.nav-btn {
+  background: var(--surface2); border: 1px solid var(--rule); color: var(--text2);
+  width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; font-size: 1rem; transition: background .2s, color .2s, border-color .2s;
+}
+.nav-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.nav-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.nav-btn:disabled { opacity: .3; pointer-events: none; }
+#counter { font-size: .78rem; color: var(--text2); font-variant-numeric: tabular-nums; letter-spacing: .06em; min-width: 4.5em; text-align: center; font-family: var(--mono); }
+
+/* Part label */
+.part-badge {
+  display: inline-block; padding: .25rem .75rem; border: 1px solid var(--rule);
+  font-family: var(--font-d); font-size: .68rem; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--text2); margin-bottom: 1rem; border-radius: 2px;
+}
+
+.eyebrow { font-family: var(--font-d); font-size: .72rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin-bottom: .9rem; }
+
+.slide h1 { font-family: var(--font-d); font-size: clamp(2.8rem,7vw,7rem); font-weight: 800; line-height: .93; text-wrap: balance; letter-spacing: -.025em; }
+.slide h2 { font-family: var(--font-d); font-size: clamp(2rem,4.5vw,3.8rem); font-weight: 700; line-height: 1; text-wrap: balance; letter-spacing: -.015em; margin-bottom: 1.75rem; }
+.slide p  { font-size: clamp(.88rem,1.4vw,1.05rem); line-height: 1.65; color: var(--text2); max-width: 58ch; }
+
+/* ── Title slide ── */
+.slide--title { background: var(--bg); }
+.slide--title::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 75% 45%, rgba(69,128,228,.13) 0%, transparent 55%);
+  pointer-events: none;
+}
+.title-kicker { font-family: var(--font-d); font-size: clamp(1.1rem,2.2vw,1.6rem); font-weight: 600; color: var(--text2); margin-top: 1.25rem; }
+.title-meta { position: absolute; bottom: 4rem; font-size: .82rem; color: var(--text2); line-height: 1.9; }
+.title-meta strong { color: var(--text); font-weight: 600; }
+
+/* ── Discussion slide ── */
+.slide--discussion {
+  background: var(--surface);
+  align-items: flex-start;
+  justify-content: center;
+}
+.slide--discussion::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 60%, rgba(240,160,48,.06) 0%, transparent 55%);
+  pointer-events: none;
+}
+.disc-tag {
+  display: inline-block; padding: .3rem .85rem; background: var(--gold); color: #070b14;
+  font-family: var(--font-d); font-size: .7rem; font-weight: 800; letter-spacing: .16em;
+  text-transform: uppercase; border-radius: 2px; margin-bottom: 1.5rem;
+}
+.disc-q {
+  font-family: var(--font-d); font-size: clamp(1.8rem,4vw,3.2rem); font-weight: 700;
+  line-height: 1.1; max-width: 700px; text-wrap: balance; margin-bottom: 2rem; color: var(--text);
+}
+.disc-prompts { display: flex; flex-direction: column; gap: .55rem; max-width: 680px; }
+.disc-prompt { font-size: clamp(.85rem,1.4vw,1rem); color: var(--text2); padding-left: 1.25rem; position: relative; line-height: 1.5; }
+.disc-prompt::before { content: '—'; position: absolute; left: 0; color: var(--gold); }
+
+/* ── SDLC ── */
+.sdlc-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 1.25rem; max-width: 860px; }
+.sdlc-yr { font-family: var(--font-d); font-size: 1.5rem; font-weight: 700; color: var(--text2); margin-bottom: 1rem; }
+.sdlc-yr.now { color: var(--gold); }
+.sdlc-row { margin-bottom: .75rem; }
+.sdlc-meta { display: flex; justify-content: space-between; font-size: .8rem; color: var(--text2); margin-bottom: .3rem; }
+.sdlc-pct  { color: var(--text); font-weight: 600; }
+.sdlc-pct.hi { color: var(--gold); }
+.bar-bg   { height: 6px; background: var(--rule); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+.bar-fill.hi    { background: var(--gold); }
+.bar-fill.faded { background: var(--accent); opacity: .3; }
+
+/* ── Two-col ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; max-width: 900px; }
+.col-hd { font-family: var(--font-d); font-size: .73rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: var(--accent); margin-bottom: .9rem; }
+.blist { list-style: none; display: flex; flex-direction: column; gap: .6rem; }
+.blist li { font-size: clamp(.82rem,1.35vw,.98rem); color: var(--text2); padding-left: 1.1rem; position: relative; line-height: 1.5; }
+.blist li::before { content: '·'; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+
+/* ── Callout box ── */
+.callout { padding: 1rem 1.25rem; background: rgba(69,128,228,.1); border-left: 3px solid var(--accent); margin-top: 1.5rem; max-width: 700px; }
+.callout.gold { background: rgba(240,160,48,.1); border-color: var(--gold); }
+.callout p { font-size: clamp(.85rem,1.4vw,1rem); max-width: none; line-height: 1.55; }
+.callout strong { color: var(--text); font-weight: 600; }
+
+/* ── Shift arrows ── */
+.shift-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; max-width: 900px; margin-top: .5rem; }
+.shift-card { padding: 1.75rem; border-radius: 4px; position: relative; }
+.shift-left  { background: rgba(69,128,228,.08); border: 1px solid rgba(69,128,228,.3); }
+.shift-right { background: rgba(240,160,48,.08); border: 1px solid rgba(240,160,48,.3); }
+.shift-dir {
+  font-family: var(--font-d); font-size: .72rem; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; margin-bottom: .5rem;
+}
+.shift-left  .shift-dir { color: var(--accent); }
+.shift-right .shift-dir { color: var(--gold); }
+.shift-headline { font-family: var(--font-d); font-size: clamp(1.4rem,2.8vw,2.3rem); font-weight: 700; line-height: 1.1; margin-bottom: .9rem; }
+.shift-body { font-size: clamp(.82rem,1.35vw,.98rem); color: var(--text2); line-height: 1.55; }
+.shift-implication { margin-top: .9rem; padding-top: .9rem; border-top: 1px solid var(--rule); font-size: clamp(.78rem,1.2vw,.9rem); color: var(--text2); line-height: 1.45; }
+.shift-implication strong { color: var(--text); display: block; margin-bottom: .2rem; font-size: clamp(.8rem,1.25vw,.92rem); }
+
+/* ── Build vs Buy ── */
+.bvb-table { width: 100%; max-width: 900px; border-collapse: collapse; margin-top: 1rem; }
+.bvb-table th {
+  font-family: var(--font-d); font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--text2); padding: .6rem .9rem; text-align: left;
+  border-bottom: 1px solid var(--rule);
+}
+.bvb-table th:nth-child(2) { color: var(--text2); }
+.bvb-table th:nth-child(3) { color: var(--text2); }
+.bvb-table th:nth-child(4) { color: var(--gold); }
+.bvb-table td { padding: .7rem .9rem; font-size: clamp(.8rem,1.35vw,.95rem); border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.bvb-table tr:last-child td { border-bottom: none; }
+.bvb-table td:first-child { color: var(--text2); font-weight: 500; }
+.bvb-table td:nth-child(2) { color: var(--text2); }
+.bvb-table td:nth-child(3) { color: var(--red); }
+.bvb-table td:nth-child(4) { color: var(--green); font-weight: 600; }
+.bvb-verdict {
+  margin-top: 1.25rem; display: flex; gap: 1.5rem; flex-wrap: wrap; max-width: 900px;
+}
+.verdict-box { flex: 1; min-width: 200px; padding: 1rem 1.25rem; border-radius: 4px; }
+.verdict-old { background: rgba(224,80,80,.08); border: 1px solid rgba(224,80,80,.25); }
+.verdict-new { background: rgba(64,176,112,.08); border: 1px solid rgba(64,176,112,.25); }
+.verdict-label { font-family: var(--font-d); font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: .35rem; }
+.verdict-old .verdict-label { color: var(--red); }
+.verdict-new .verdict-label { color: var(--green); }
+.verdict-text { font-size: clamp(.82rem,1.35vw,.95rem); color: var(--text2); line-height: 1.5; }
+.verdict-text strong { color: var(--text); }
+
+/* ── Case grid ── */
+.case-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; margin-top: 1rem; max-width: 900px; }
+.case-card { padding: 1.4rem; background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; }
+.case-co { font-family: var(--font-d); font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--accent); margin-bottom: .4rem; }
+.case-headline { font-family: var(--font-d); font-size: clamp(.95rem,1.8vw,1.25rem); font-weight: 700; color: var(--text); margin-bottom: .6rem; line-height: 1.15; }
+.case-detail { font-size: .82rem; color: var(--text2); line-height: 1.5; }
+.case-stat { font-family: var(--font-d); font-size: 1.4rem; font-weight: 800; color: var(--gold); margin-top: .75rem; line-height: 1; }
+.case-stat-label { font-size: .72rem; color: var(--text2); text-transform: uppercase; letter-spacing: .08em; }
+
+/* ── Org reallocation ── */
+.realloc { display: grid; grid-template-columns: 1fr auto 1fr; gap: 2rem; align-items: start; max-width: 860px; margin-top: .75rem; }
+.realloc-col { display: flex; flex-direction: column; gap: .5rem; }
+.realloc-hd { font-family: var(--font-d); font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin-bottom: .35rem; }
+.red-hd  { color: var(--red); }
+.green-hd { color: var(--green); }
+.realloc-item { padding: .55rem .85rem; border-radius: 3px; font-size: clamp(.8rem,1.3vw,.92rem); line-height: 1.4; }
+.from-item { background: rgba(224,80,80,.07); border: 1px solid rgba(224,80,80,.2); color: var(--text2); }
+.to-item   { background: rgba(64,176,112,.07); border: 1px solid rgba(64,176,112,.2); color: var(--text2); }
+.to-item strong, .from-item strong { display: block; font-weight: 600; margin-bottom: .15rem; }
+.to-item strong { color: var(--text); }
+.from-item strong { color: var(--text2); }
+.realloc-arrow { display: flex; align-items: center; justify-content: center; padding-top: 2.5rem; color: var(--rule); font-size: 1.4rem; }
+
+/* ── Start cards ── */
+.start-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; margin-top: 1.25rem; max-width: 900px; }
+.start-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 1.5rem; display: flex; flex-direction: column; }
+.sc-n { font-family: var(--font-d); font-size: 2rem; font-weight: 800; color: var(--accent); opacity: .2; line-height: 1; margin-bottom: .4rem; }
+.sc-t { font-family: var(--font-d); font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: .6rem; }
+.sc-role { font-family: var(--font-d); font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin-bottom: .5rem; }
+.sc-p { font-size: .85rem; color: var(--text2); line-height: 1.55; flex: 1; max-width: none; }
+.sc-action { margin-top: .9rem; font-size: .78rem; color: var(--accent); font-style: italic; }
+
+/* ── Takeaways ── */
+.takeaways { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; margin-top: 1.25rem; max-width: 900px; }
+.taway { padding: 1.4rem; background: var(--surface); border-top: 3px solid var(--accent); }
+.taway:nth-child(2) { border-color: var(--gold); }
+.taway:nth-child(3) { border-color: var(--green); }
+.taway-n { font-family: var(--font-d); font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text2); margin-bottom: .6rem; }
+.taway-headline { font-family: var(--font-d); font-size: clamp(1rem,2vw,1.4rem); font-weight: 700; color: var(--text); margin-bottom: .5rem; line-height: 1.2; }
+.taway p { font-size: .82rem; color: var(--text2); line-height: 1.5; max-width: none; }
+
+/* ── Q&A ── */
+.slide--qa { align-items: center; text-align: center; }
+.qa-contact { display: flex; flex-direction: column; gap: .5rem; margin-top: 1.5rem; }
+.qa-contact a { color: var(--accent); text-decoration: none; font-size: 1rem; }
+.qa-contact a:hover { text-decoration: underline; }
+
+@media (max-width: 640px) {
+  .shift-grid, .two-col, .case-grid, .start-grid, .sdlc-wrap, .bvb-verdict, .realloc, .takeaways { grid-template-columns: 1fr; flex-direction: column; }
+  .realloc-arrow { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-track"><div id="progress-fill"></div></div>
+
+<div class="deck">
+  <div class="track" id="track">
+
+    <!-- 1. Title -->
+    <section class="slide slide--title">
+      <div class="eyebrow">Chicago Booth School of Business &nbsp;·&nbsp; Chief AI Officer Program</div>
+      <h1>AI-Native<br>Development</h1>
+      <div class="title-kicker">What every Chief AI Officer needs to know —<br>and what to do about it this quarter</div>
+      <div class="title-meta">
+        <strong>Richard Cross</strong> &nbsp;·&nbsp; Enlyt Building Technologies<br>
+        <span style="color:var(--text2)">richard.cross@enlyt.io</span>
+      </div>
+    </section>
+
+    <!-- 2. The question that changed -->
+    <section class="slide">
+      <div class="part-badge">The premise</div>
+      <h2>One question changed everything.</h2>
+      <div style="display:grid;grid-template-columns:1fr 3rem 1fr;gap:1.5rem;align-items:center;max-width:820px;margin-top:.5rem">
+        <div style="padding:1.75rem;border:1px solid var(--rule);border-radius:4px;opacity:.55">
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:var(--text2);margin-bottom:.4rem">Before</div>
+          <div style="font-family:var(--font-d);font-size:clamp(1.4rem,2.8vw,2.3rem);font-weight:700;line-height:1.1;margin-bottom:.6rem">Can we<br>build this?</div>
+          <div style="font-size:.88rem;color:var(--text2);line-height:1.5">Gated by developer time, cost, and availability. The answer was usually <em>no</em> or <em>not yet</em>.</div>
+        </div>
+        <div style="display:flex;justify-content:center;color:var(--accent);font-size:1.6rem">→</div>
+        <div style="padding:1.75rem;border:1px solid var(--accent);border-radius:4px;background:rgba(69,128,228,.07)">
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:var(--accent);margin-bottom:.4rem">Now</div>
+          <div style="font-family:var(--font-d);font-size:clamp(1.4rem,2.8vw,2.3rem);font-weight:700;line-height:1.1;margin-bottom:.6rem">Should we<br>build this?</div>
+          <div style="font-size:.88rem;color:var(--text2);line-height:1.5">The bottleneck is now <strong style="color:var(--text)">judgment</strong>, not code. The answer is almost always <em>yes, try it</em>.</div>
+        </div>
+      </div>
+      <div style="margin-top:2rem;font-size:.92rem;color:var(--text2);font-style:italic;max-width:62ch">
+        Coding time has dropped 10–100×. Prototyping is nearly free. That doesn't change the technology — it changes every <strong style="color:var(--text)">organizational decision</strong> downstream of it.
+      </div>
+    </section>
+
+    <!-- 3. SDLC shift — the data -->
+    <section class="slide">
+      <div class="part-badge">The data</div>
+      <h2>Where the time goes has shifted dramatically.</h2>
+      <div class="sdlc-wrap">
+        <div>
+          <div class="sdlc-yr">2023</div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Planning &amp; Requirements</span><span class="sdlc-pct">15%</span></div><div class="bar-bg"><div class="bar-fill" style="width:15%"></div></div></div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Development</span><span class="sdlc-pct">60%</span></div><div class="bar-bg"><div class="bar-fill" style="width:60%"></div></div></div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Testing</span><span class="sdlc-pct">20%</span></div><div class="bar-bg"><div class="bar-fill" style="width:20%"></div></div></div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Deploy</span><span class="sdlc-pct">5%</span></div><div class="bar-bg"><div class="bar-fill" style="width:5%"></div></div></div>
+        </div>
+        <div>
+          <div class="sdlc-yr now">2026</div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Planning &amp; Requirements</span><span class="sdlc-pct hi">22%</span></div><div class="bar-bg"><div class="bar-fill hi" style="width:22%"></div></div></div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Development</span><span class="sdlc-pct">12%</span></div><div class="bar-bg"><div class="bar-fill faded" style="width:12%"></div></div></div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Testing &amp; Judgment</span><span class="sdlc-pct hi">54%</span></div><div class="bar-bg"><div class="bar-fill hi" style="width:54%"></div></div></div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Deploy</span><span class="sdlc-pct hi">12%</span></div><div class="bar-bg"><div class="bar-fill" style="width:12%"></div></div></div>
+        </div>
+      </div>
+      <div class="callout gold" style="max-width:860px">
+        <p>Development shrank from <strong>60% → 12%</strong> of total effort. Requirements and testing together now account for <strong>76%</strong>. Your organizational investments must follow the work — not the old model.</p>
+      </div>
+    </section>
+
+    <!-- 4. Discussion 1 -->
+    <section class="slide slide--discussion">
+      <div class="disc-tag">Discussion</div>
+      <div class="disc-q">Where is your organization's SDLC time currently allocated?</div>
+      <div class="disc-prompts">
+        <div class="disc-prompt">What percentage of your software spend goes to raw development vs. requirements and testing?</div>
+        <div class="disc-prompt">When a project fails, is it usually a development failure — or a requirements failure?</div>
+        <div class="disc-prompt">How much of your testing is done by engineers vs. domain experts and end users?</div>
+      </div>
+    </section>
+
+    <!-- 5. Shift Left -->
+    <section class="slide">
+      <div class="part-badge">Shift left</div>
+      <h2>Requirements clarity is the new bottleneck.</h2>
+      <div class="shift-grid">
+        <div class="shift-card shift-left">
+          <div class="shift-dir">← Shift Left</div>
+          <div class="shift-headline">Invest more in Requirements</div>
+          <div class="shift-body">AI amplifies ambiguity. A vague specification produces a vague product — built 10× faster. Every hour of requirements clarity saves 10 hours of rework.</div>
+          <div class="shift-implication">
+            <strong>What to hire / promote</strong>
+            Product managers, business analysts, and domain experts who can write precise, testable requirements. They are now your most leveraged people.
+          </div>
+        </div>
+        <div class="shift-card shift-right">
+          <div class="shift-dir">→ Shift Right</div>
+          <div class="shift-headline">Invest more in Judgment</div>
+          <div class="shift-body">AI builds fast. Evaluating what it built is the new critical path. Acceptance testing — "did it build the right thing?" — is now the job only humans can do well.</div>
+          <div class="shift-implication">
+            <strong>What to build / fund</strong>
+            Test infrastructure, user research, domain expert review cycles. QA is no longer a cost center — it is the primary value delivery mechanism.
+          </div>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:1.25rem;max-width:860px">
+        <p><strong>The implication for headcount:</strong> You need fewer junior developers and more senior "directors" who write clear specs and judge quality output. The 10× developer of 2026 writes clear requirements, not more lines of code.</p>
+      </div>
+    </section>
+
+    <!-- 6. Discussion 2 -->
+    <section class="slide slide--discussion">
+      <div class="disc-tag">Discussion</div>
+      <div class="disc-q">In your organization, who owns requirements quality?</div>
+      <div class="disc-prompts">
+        <div class="disc-prompt">Do you have a process for writing requirements that are clear enough for AI to implement? Who owns it?</div>
+        <div class="disc-prompt">Who currently does acceptance testing — engineers or domain experts? Should that change?</div>
+        <div class="disc-prompt">What would it mean to treat requirements writing as a core organizational competency rather than a step in a process?</div>
+      </div>
+    </section>
+
+    <!-- 7. Build vs. Buy recalculation -->
+    <section class="slide">
+      <div class="part-badge">Strategic decision</div>
+      <h2>The build-vs-buy calculation has fundamentally changed.</h2>
+      <div style="overflow-x:auto">
+        <table class="bvb-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Buy (SaaS)</th>
+              <th>Build — Traditional</th>
+              <th>Build — AI-Native</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Build cost</td><td>$0</td><td>$300K – $1M</td><td>$20K – $100K</td></tr>
+            <tr><td>Time to value</td><td>Days</td><td>6 – 18 months</td><td>2 – 8 weeks</td></tr>
+            <tr><td>Feature fit</td><td>~80% — vendor roadmap decides the rest</td><td>100% — you control it</td><td>100% — you control it</td></tr>
+            <tr><td>Annual cost</td><td>$30K – $150K/yr (and rising)</td><td>$80K – $200K/yr maintenance</td><td>$20K – $50K/yr maintenance</td></tr>
+            <tr><td>Competitive advantage</td><td>None — competitors have the same tool</td><td>High</td><td>High</td></tr>
+            <tr><td>Vendor lock-in</td><td>High</td><td>None</td><td>None</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="bvb-verdict">
+        <div class="verdict-box verdict-old">
+          <div class="verdict-label">Old conclusion</div>
+          <div class="verdict-text">Build cost was 5–10× SaaS cost. <strong>Buy, unless the need is truly unique.</strong></div>
+        </div>
+        <div class="verdict-box verdict-new">
+          <div class="verdict-label">New conclusion</div>
+          <div class="verdict-text">Build cost is now roughly equal to or less than SaaS — with 100% fit and no lock-in. <strong>Default to build unless speed-to-market is critical.</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Case studies -->
+    <section class="slide">
+      <div class="part-badge">Evidence</div>
+      <h2>Three organizations that changed the calculation.</h2>
+      <div class="case-grid">
+        <div class="case-card">
+          <div class="case-co">Enlyt / Construction</div>
+          <div class="case-headline">Bid Automation</div>
+          <div class="case-detail">Each construction bid required a day: reading specs, calculating materials, writing narrative, formatting. Replaced with a Claude workflow.</div>
+          <div class="case-stat">1–2 hrs</div>
+          <div class="case-stat-label">per bid (was a full day) · 338 projects automated</div>
+        </div>
+        <div class="case-card">
+          <div class="case-co">DonkeyVan / Transport</div>
+          <div class="case-headline">Custom Dispatch App</div>
+          <div class="case-detail">Client needed a working Uber-style dispatch demo before committing to development. Expensive dev shop engagement quoted. Built with AI instead.</div>
+          <div class="case-stat">Hours</div>
+          <div class="case-stat-label">to build full presales demo + pitch deck</div>
+        </div>
+        <div class="case-card">
+          <div class="case-co">Minesweeper.org</div>
+          <div class="case-headline">Replacing the Stack</div>
+          <div class="case-detail">6 SaaS products replaced: Jira, GitLab CI, DataDog, WordPress CMS, translation agency, SEO consultant — all replaced by Claude-driven workflows.</div>
+          <div class="case-stat">$0</div>
+          <div class="case-stat-label">incremental SaaS spend for workflow tools</div>
+        </div>
+      </div>
+      <div class="callout gold" style="margin-top:1.25rem;max-width:900px">
+        <p><strong>The pattern:</strong> In each case, the SaaS or agency alternative would have cost $30K–$150K/year and delivered generic capability. The AI-native custom solution delivered better fit, faster, at a fraction of the cost.</p>
+      </div>
+    </section>
+
+    <!-- 9. Discussion 3 -->
+    <section class="slide slide--discussion">
+      <div class="disc-tag">Discussion</div>
+      <div class="disc-q">Which SaaS products in your stack could you build and own instead?</div>
+      <div class="disc-prompts">
+        <div class="disc-prompt">List three tools your organization pays for that have low feature fit — you only use 60–70% of what they offer.</div>
+        <div class="disc-prompt">For each: what is the annual cost? What would a custom AI-native build actually require?</div>
+        <div class="disc-prompt">Which workflows do you currently outsource (agencies, consultants) that are pure pattern-matching — and could be automated?</div>
+      </div>
+    </section>
+
+    <!-- 10. What to do with your team -->
+    <section class="slide">
+      <div class="part-badge">Organizational action</div>
+      <h2>Reallocate toward judgment, away from production.</h2>
+      <div class="realloc">
+        <div class="realloc-col">
+          <div class="realloc-hd red-hd">Reduce investment in</div>
+          <div class="realloc-item from-item"><strong>Junior developer headcount</strong>Writing code is no longer the bottleneck. Reduce hiring of entry-level coders.</div>
+          <div class="realloc-item from-item"><strong>Generic SaaS subscriptions</strong>Review the stack annually. Build what you can own.</div>
+          <div class="realloc-item from-item"><strong>Manual, repetitive documentation</strong>Bids, reports, status updates, proposals — automate the pattern.</div>
+        </div>
+        <div class="realloc-arrow">→</div>
+        <div class="realloc-col">
+          <div class="realloc-hd green-hd">Increase investment in</div>
+          <div class="realloc-item to-item"><strong>Senior "directors"</strong>People who write clear specs and judge quality output. The 10× developer now sets direction, not lines.</div>
+          <div class="realloc-item to-item"><strong>Domain expert testers</strong>Acceptance testing by people who know the domain is the new critical path.</div>
+          <div class="realloc-item to-item"><strong>Requirements engineering</strong>Product managers, BAs, user researchers. Clarity before build is now your highest-leverage investment.</div>
+          <div class="realloc-item to-item"><strong>AI infrastructure &amp; tooling</strong>Claude Code, model API access, prompt management, evaluation frameworks.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. Getting started -->
+    <section class="slide">
+      <div class="part-badge">Action</div>
+      <h2>Three entry points. Pick one this week.</h2>
+      <div class="start-grid">
+        <div class="start-card">
+          <div class="sc-n">01</div>
+          <div class="sc-role">For the C-Suite</div>
+          <div class="sc-t">Automate a recurring document</div>
+          <p class="sc-p">Identify one document your team produces every week — a bid, a report, a status update, a proposal. Open claude.ai, paste your template, ask Claude to fill it. Try it this week. Measure the time saved.</p>
+          <div class="sc-action">No code, no IT. One afternoon.</div>
+        </div>
+        <div class="start-card">
+          <div class="sc-n">02</div>
+          <div class="sc-role">For internal operations</div>
+          <div class="sc-t">Build one internal tool</div>
+          <p class="sc-p">Give Claude a dataset and ask for a web dashboard or decision support tool. Start with something internal where mistakes are safe — a competitive analysis tracker, a proposal scoring tool, an operations report.</p>
+          <div class="sc-action">Low risk. High signal on organizational readiness.</div>
+        </div>
+        <div class="start-card">
+          <div class="sc-n">03</div>
+          <div class="sc-role">For product leaders</div>
+          <div class="sc-t">Run one build-vs-buy experiment</div>
+          <p class="sc-p">Pick one SaaS product you're about to renew. Get a quote to build it AI-native. Compare feature fit, cost, and timeline. Even if you choose to renew, you now have real data for the next decision.</p>
+          <div class="sc-action">The exercise changes how you see every future procurement.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. Takeaways + Q&A -->
+    <section class="slide">
+      <div class="part-badge">Summary</div>
+      <h2>Three things to take back to your organization.</h2>
+      <div class="takeaways">
+        <div class="taway">
+          <div class="taway-n">Shift Left</div>
+          <div class="taway-headline">Requirements clarity is your highest-leverage investment</div>
+          <p>The cost of ambiguity is 10× higher when AI can build fast. Fund requirements engineering, user research, and product management. Promote the people who write clear specs.</p>
+        </div>
+        <div class="taway">
+          <div class="taway-n">Shift Right</div>
+          <div class="taway-headline">Judgment and acceptance testing are the new critical path</div>
+          <p>Testing shrank when developers wrote the code. It expands when AI does. Your domain experts, QA leads, and user panels are now central to delivery — not a final checkpoint.</p>
+        </div>
+        <div class="taway">
+          <div class="taway-n">Recalculate</div>
+          <div class="taway-headline">Default to build — buy only when speed matters most</div>
+          <p>The build-vs-buy math has changed. Review your SaaS stack. Audit your agencies. Any workflow that is pure pattern-matching is a candidate for replacement. Start with the highest-cost line item.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13. Q&A -->
+    <section class="slide slide--qa">
+      <div class="eyebrow">Chicago Booth &nbsp;·&nbsp; Chief AI Officer Program</div>
+      <h2>Questions?</h2>
+      <div class="qa-contact">
+        <a href="mailto:richard.cross@enlyt.io">richard.cross@enlyt.io</a>
+        <a href="https://minesweeper.org/vibecoding">minesweeper.org/vibecoding</a>
+        <a href="https://github.com/ajaxchess/minesweeper.org">github.com/ajaxchess/minesweeper.org</a>
+      </div>
+    </section>
+
+  </div><!-- /track -->
+</div><!-- /deck -->
+
+<nav class="nav">
+  <button class="nav-btn" id="prev" aria-label="Previous">‹</button>
+  <span id="counter">1 / 13</span>
+  <button class="nav-btn" id="next" aria-label="Next">›</button>
+</nav>
+
+<script>
+(function () {
+  const track   = document.getElementById('track');
+  const fill    = document.getElementById('progress-fill');
+  const counter = document.getElementById('counter');
+  const btnPrev = document.getElementById('prev');
+  const btnNext = document.getElementById('next');
+  const slides  = track.querySelectorAll('.slide');
+  const total   = slides.length;
+  let current   = 0;
+
+  function goTo(n) {
+    if (n < 0 || n >= total) return;
+    current = n;
+    track.style.transform = 'translateX(-' + (current * 100) + 'vw)';
+    counter.textContent   = (current + 1) + ' / ' + total;
+    fill.style.width      = ((current + 1) / total * 100) + '%';
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === total - 1;
+  }
+
+  btnPrev.addEventListener('click', function () { goTo(current - 1); });
+  btnNext.addEventListener('click', function () { goTo(current + 1); });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault(); goTo(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault(); goTo(current - 1);
+    } else if (e.key === 'Home') { goTo(0); }
+      else if (e.key === 'End')  { goTo(total - 1); }
+  });
+
+  var touchX = 0;
+  document.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    var dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 48) goTo(current + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+
+  goTo(0);
+}());
+</script>
+</body>
+</html>

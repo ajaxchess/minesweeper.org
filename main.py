@@ -1025,7 +1025,7 @@ def _migrate_numbers_match_puzzle_date():
 # open+lock this file gets True and runs the scheduler; the rest skip it. The
 # fd is kept open for the process's lifetime — closing it (or process exit)
 # releases the lock so a replacement process can win it next time.
-_SCHEDULER_LOCK_PATH = "/tmp/minesweeper_scheduler.lock"
+_SCHEDULER_LOCK_PATH = "/tmp/minesweeper_scheduler.lock"  # nosec B108 — lock file, no sensitive data written here
 _scheduler_lock_file = None
 
 
@@ -10489,3 +10489,7 @@ def wc2026_admin_update_match(payload: WC2026MatchUpdate,
 @app.get("/vibecoding", response_class=HTMLResponse)
 def vibecoding_talk(request: Request):
     return templates.TemplateResponse("vibecoding.html", {"request": request})
+
+@app.get("/vibecoding/booth", response_class=HTMLResponse)
+def vibecoding_booth(request: Request):
+    return templates.TemplateResponse("vibecoding_booth.html", {"request": request})
