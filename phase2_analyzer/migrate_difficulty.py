@@ -29,7 +29,11 @@ from __future__ import annotations
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_script_dir = os.path.dirname(os.path.abspath(__file__))
+# Remove phase2_analyzer/ from sys.path so it can't shadow stdlib 'types'.
+sys.path = [p for p in sys.path if os.path.normpath(p) != os.path.normpath(_script_dir)]
+sys.path.insert(0, _parent)
 
 STATEMENTS = [
     # MySQL 8 supports IF NOT EXISTS on ADD COLUMN via a plain try; older
