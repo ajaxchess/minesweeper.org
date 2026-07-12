@@ -803,6 +803,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_jigsaw":            "Snap pieces together",
         "nav_sub_schulte_grid":      "Tap numbers in order",
         "nav_sub_sudoku":            "Classic 9\u00d79 logic",
+        "nav_sub_meowdoku":          "Place cats \u00b7 daily logic puzzle",
         "nav_tametsi_hex":            "Tametsi Hex",
         "nav_sub_tametsi_hex":        "Logic puzzles on a hex board",
         "nav_sub_cylinder":          "Left & right edges wrap around",

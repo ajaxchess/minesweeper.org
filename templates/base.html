@@ -357,7 +357,7 @@
 
         <!-- Puzzles -->
         <div class="mega-group" id="mg-puzzles">
-          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">{{ t.nav_puzzles }} ▾</button>
+          <button class="mega-trigger {% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' or mode == 'meowdoku' %}active{% endif %}" onclick="toggleMega(event,'mg-puzzles')" aria-haspopup="true" aria-expanded="false">{{ t.nav_puzzles }} ▾</button>
           <div class="mega-panel">
             <div class="mega-col">
               <a href="{{ lp }}/puzzles" class="mega-card {% if mode=='puzzles' %}active{% endif %}">
@@ -577,7 +577,7 @@
           <a href="/tametsi/hex" class="drawer-link {% if mode=='tametsi-hex' %}active{% endif %}">⬡ Tametsi Hex</a>
         </div>
       </details>
-      <details class="drawer-group"{% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' or request.url.path.startswith('/puzzles') %} open{% endif %}>
+      <details class="drawer-group"{% if 'tentaizu' in mode or 'mosaic' in mode or mode == 'other' or mode == 'tametsi' or mode == 'numbers-match' or mode == 'meowdoku' or request.url.path.startswith('/puzzles') %} open{% endif %}>
         <summary class="drawer-summary">🧩 {{ t.nav_puzzles }}</summary>
         <div class="drawer-links">
           <a href="{{ lp }}/puzzles" class="drawer-link {% if mode=='puzzles' %}active{% endif %}">▦ {{ t.nav_all_puzzles }}</a>

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Meowdoku Generator — Build Your Own Cat Puzzle | minesweeper.org{% endblock %}
+{% block description %}Design your own Meowdoku puzzle. Paint colored regions on a grid, and share it with friends if it's logically solvable.{% endblock %}
+{% block canonical %}https://minesweeper.org/meowdoku/generator{% endblock %}
+
+{% block content %}
+<h1 class="tz-page-h1">✏️ Meowdoku Generator</h1>
+<p class="tz-bridge-sentence">Paint colored regions on the grid. When every region is placed and the puzzle is logically solvable, you can play or share it.</p>
+
+<div class="mk-gen-wrapper">
+
+  <!-- Controls -->
+  <div class="mk-gen-controls">
+    <div class="mk-gen-control-row">
+      <label for="mk-gen-size">Grid size:</label>
+      <select id="mk-gen-size" class="mk-gen-select">
+        {% for sz in range(4, 11) %}
+        <option value="{{ sz }}"{% if sz == 8 %} selected{% endif %}>{{ sz }}×{{ sz }}</option>
+        {% endfor %}
+      </select>
+      <button id="mk-gen-clear-btn" class="mk-gen-btn">Clear</button>
+    </div>
+
+    <div class="mk-gen-palette-label">Select a region color, then paint cells:</div>
+    <div id="mk-gen-palette" class="mk-gen-palette"></div>
+
+    <div id="mk-gen-status" class="mk-gen-status pending">Paint all cells to get started</div>
+
+    <div class="mk-gen-action-row">
+      <button id="mk-gen-play-btn" class="mk-gen-btn mk-gen-btn-primary" disabled>▶ Play this puzzle</button>
+      <button id="mk-gen-share-btn" class="mk-gen-btn" disabled>🔗 Copy Link</button>
+    </div>
+  </div>
+
+  <!-- Board -->
+  <div class="mk-gen-board-wrap">
+    <div id="mk-gen-grid" class="mk-grid mk-gen-grid"></div>
+  </div>
+
+</div>
+
+<!-- How to use -->
+<details class="tz-howto" style="max-width:680px;margin:1.5rem auto 0">
+  <summary>How to use the generator</summary>
+  <div class="tz-howto-body">
+    <ol>
+      <li>Choose a grid size (4×4 to 10×10). The number of colored regions equals the grid size.</li>
+      <li>Select a region color from the palette and paint cells by clicking or dragging.</li>
+      <li>Every cell must be painted, and every region color must be used at least once.</li>
+      <li>The generator checks in real time whether your regions produce a <strong>logically solvable</strong> puzzle — one that can be solved by elimination alone, without trial and error.</li>
+      <li>When valid, click <strong>Play</strong> to solve it yourself, or <strong>Copy Link</strong> to share it.</li>
+    </ol>
+  </div>
+</details>
+
+<style>
+.mk-gen-wrapper {
+  display:flex; gap:24px; flex-wrap:wrap; justify-content:center;
+  max-width:900px; margin:0 auto; padding:0 12px;
+}
+.mk-gen-controls {
+  display:flex; flex-direction:column; gap:12px;
+  min-width:220px; max-width:280px;
+}
+.mk-gen-control-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.mk-gen-select {
+  padding:5px 8px; border-radius:6px; border:1px solid var(--border-color,#ccc);
+  background:var(--surface,#fff); color:var(--text,#333);
+}
+.mk-gen-btn {
+  padding:6px 14px; border-radius:6px; border:1px solid var(--border-color,#ccc);
+  background:var(--surface,#fff); color:var(--text,#333); cursor:pointer; font-size:13px;
+}
+.mk-gen-btn:disabled { opacity:0.45; cursor:default; }
+.mk-gen-btn-primary { background:var(--accent,#2e7d32); color:#fff; border-color:var(--accent,#2e7d32); font-weight:600; }
+.mk-gen-btn-primary:not(:disabled):hover { filter:brightness(1.1); }
+
+.mk-gen-palette-label { font-size:12px; color:var(--text-muted,#666); margin-top:4px; }
+.mk-gen-palette { display:flex; flex-wrap:wrap; gap:6px; }
+.mk-gen-color-btn {
+  width:36px; height:36px; border-radius:6px; border:3px solid transparent;
+  cursor:pointer; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center;
+  transition:transform 0.1s;
+}
+.mk-gen-color-btn.active { border-color:#fff; outline:2px solid #333; transform:scale(1.12); }
+
+.mk-gen-status {
+  padding:8px 12px; border-radius:8px; font-size:14px; font-weight:600;
+}
+.mk-gen-status.pending { background:#f0f0f0; color:#555; }
+.mk-gen-status.valid   { background:#d4edda; color:#155724; }
+.mk-gen-status.invalid { background:#f8d7da; color:#721c24; }
+.mk-gen-status.warn    { background:#fff3cd; color:#856404; }
+
+.mk-gen-action-row { display:flex; gap:8px; flex-wrap:wrap; }
+
+.mk-gen-board-wrap { flex:0 0 auto; }
+
+.mk-gen-grid {
+  cursor:crosshair;
+  width: min(480px, 90vw);
+  height: min(480px, 90vw);
+}
+.mk-gen-cell { transition:background-color 0.05s; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/meowdoku.js?v=1" defer></script>
+<script src="/static/js/meowdoku-generator.js?v=1" defer></script>
+{% endblock %}

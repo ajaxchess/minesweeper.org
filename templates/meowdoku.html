@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Meowdoku — Daily Cat Logic Puzzle | minesweeper.org{% endblock %}
+{% block description %}Meowdoku is a daily logic puzzle. Place one cat in every colored region so no two cats share a row, column, or diagonal. Sizes 4×4 to 10×10 with daily timed leaderboards.{% endblock %}
+{% block canonical %}https://minesweeper.org/meowdoku{% endblock %}
+{% block og_url %}https://minesweeper.org/meowdoku{% endblock %}
+{% block og_type %}game{% endblock %}
+{% block og_title %}Meowdoku — Daily Cat Logic Puzzle{% endblock %}
+{% block og_description %}Place one cat per colored region. No shared rows, columns, or diagonals. A new puzzle every day, 4×4 to 10×10.{% endblock %}
+{% block og_image %}https://minesweeper.org/static/img/og-default.png{% endblock %}
+
+{% block content %}
+<h1 class="tz-page-h1">🐱 Meowdoku</h1>
+<p class="tz-bridge-sentence">Place one cat in every colored region — no shared rows, columns, or diagonals.</p>
+
+<div class="tz-wrapper">
+
+  <!-- Left sidebar ad -->
+  <aside class="ad-sidebar ad-left">
+    <ins class="adsbygoogle" style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899" data-ad-slot="4865894696" data-ad-format="auto"></ins>
+    <script>(function(){var e=document.currentScript.previousElementSibling;if(e)requestAnimationFrame(function(){if(e.offsetWidth>0)(adsbygoogle=window.adsbygoogle||[]).push({});});})()</script>
+  </aside>
+
+  <section class="game-section">
+
+    <!-- Size selector -->
+    <div class="mk-size-row">
+      {% for sz in range(4, 11) %}
+      <button class="mk-size-btn{% if sz == grid_size %} active{% endif %}" data-size="{{ sz }}">{{ sz }}×{{ sz }}</button>
+      {% endfor %}
+    </div>
+
+    <!-- Stats bar -->
+    <div class="game-info">
+      <div class="stat-row">
+        <div class="stat" title="Cats placed / total needed">
+          <span class="stat-icon">🐱</span>
+          <span class="stat-value" id="mk-cat-count">0</span>
+          <span class="stat-sep">/{{ grid_size }}</span>
+        </div>
+        <div class="stat" title="Time elapsed">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="mk-timer">0:00</span>
+        </div>
+        <button id="mk-mode-toggle" class="mk-mode-btn" title="Toggle placement mode">✕ X-mode</button>
+      </div>
+    </div>
+
+    <!-- Board -->
+    <div id="mk-board-wrap" class="mk-board-wrap">
+      <div id="mk-board"
+           data-today="{{ today }}"
+           data-real-today="{{ real_today }}"
+           data-size="{{ grid_size }}"
+           data-custom-board="{{ custom_board }}"
+           data-username="{{ user.display_name if user else '' }}">
+        <div id="mk-grid" class="mk-grid"></div>
+      </div>
+
+      <!-- Win overlay -->
+      <div id="mk-overlay" class="mk-overlay" style="display:none">
+        <div class="mk-overlay-emoji">🎉</div>
+        <div class="mk-overlay-title">Puzzle Solved!</div>
+        <div class="mk-overlay-time">Time: <strong id="mk-win-time">0:00</strong></div>
+        <div id="mk-score-form" class="overlay-score-form" style="display:none">
+          <input id="mk-name-input" type="text" maxlength="32" placeholder="Your name" autocomplete="nickname">
+          <button id="mk-save-btn">Save Score</button>
+        </div>
+        <div class="mk-overlay-btns">
+          <button id="mk-overlay-replay" class="tz-btn-potd">📅 Play Again</button>
+          <a href="/meowdoku/generator" class="btn tz-btn-random">✏️ Make a Puzzle</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <p class="instructions">
+      <strong>Left-click</strong> cycles empty → ✕ → 🐱 &nbsp;|&nbsp;
+      <strong>Right-click</strong> places/removes 🐱 &nbsp;|&nbsp;
+      <strong>Toggle</strong> switches first-tap between ✕ and 🐱
+    </p>
+
+    <!-- How to play -->
+    <details class="tz-howto">
+      <summary>How to play Meowdoku</summary>
+      <div class="tz-howto-body">
+        <ul>
+          <li><strong>One cat per region:</strong> every colored area must contain exactly one 🐱.</li>
+          <li><strong>No shared row or column:</strong> no two cats can occupy the same row or column.</li>
+          <li><strong>No diagonal contact:</strong> cats cannot touch each other, even diagonally.</li>
+          <li><strong>No guessing:</strong> every puzzle is logically solvable. If you're stuck, look for a region, row, or column with only one valid cell remaining.</li>
+        </ul>
+        <p>Left-click marks a cell as "no cat" (✕). Left-click again to promote to 🐱. Right-click goes straight to 🐱. Use the mode toggle to swap which action comes first on tap — handy on mobile.</p>
+      </div>
+    </details>
+
+    <!-- Leaderboard -->
+    <div id="mk-lb-section" class="tz-lb-section" {% if custom_board %}style="display:none"{% endif %}>
+      <div id="mk-lb-title" class="tz-lb-title">🏆 Today's Best — {{ grid_size }}×{{ grid_size }}</div>
+      <div id="mk-lb-content"><div class="lb-loading">Loading…</div></div>
+      <div id="mk-prev-days" class="tz-prev-days"></div>
+    </div>
+
+  </section>
+
+  <!-- Right sidebar ad -->
+  <aside class="ad-sidebar ad-right">
+    <ins class="adsbygoogle" style="display:block;min-height:250px"
+         data-ad-client="ca-pub-8102958922361899" data-ad-slot="4865894696" data-ad-format="auto"></ins>
+    <script>(function(){var e=document.currentScript.previousElementSibling;if(e)requestAnimationFrame(function(){if(e.offsetWidth>0)(adsbygoogle=window.adsbygoogle||[]).push({});});})()</script>
+  </aside>
+
+</div>
+
+<style>
+/* ── Meowdoku board ── */
+.mk-size-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+.mk-size-btn {
+  padding:4px 10px; border-radius:6px; border:1px solid var(--border-color,#ccc);
+  background:var(--surface,#fff); color:var(--text,#333); cursor:pointer; font-size:13px;
+}
+.mk-size-btn.active { background:var(--accent,#2e7d32); color:#fff; border-color:var(--accent,#2e7d32); }
+.mk-mode-btn {
+  padding:4px 10px; border-radius:6px; border:1px solid var(--border-color,#ccc);
+  background:var(--surface,#fff); color:var(--text,#333); cursor:pointer; font-size:13px; white-space:nowrap;
+}
+.mk-mode-btn.mk-mode-cat { background:#c0392b; color:#fff; border-color:#c0392b; }
+
+.mk-board-wrap { position:relative; display:inline-block; max-width:100%; }
+
+.mk-grid {
+  display:grid;
+  grid-template-columns: repeat(var(--mk-n,8), 1fr);
+  width: min(480px, 90vw);
+  height: min(480px, 90vw);
+  border: 3px solid #222;
+  box-sizing: border-box;
+  user-select: none;
+  touch-action: none;
+}
+
+.mk-cell {
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:clamp(10px,4.5vw/var(--mk-n,8)*8,32px);
+  border: 1px solid rgba(0,0,0,0.12);
+  box-sizing:border-box; position:relative;
+  transition: filter 0.05s;
+}
+.mk-cell:hover { filter: brightness(1.12); }
+.mk-cell.mk-bt { border-top:    3px solid #222; }
+.mk-cell.mk-bb { border-bottom: 3px solid #222; }
+.mk-cell.mk-bl { border-left:   3px solid #222; }
+.mk-cell.mk-br { border-right:  3px solid #222; }
+
+.mk-cell.mk-mark-x   { color:rgba(0,0,0,0.45); font-size:0.65em; font-weight:700; }
+.mk-cell.mk-mark-cat { font-size:0.7em; line-height:1; }
+.mk-cell.mk-conflict { outline:3px solid #e74c3c; outline-offset:-3px; animation:mk-pulse 0.3s ease; }
+@keyframes mk-pulse { 0%{filter:brightness(1.4)} 100%{filter:brightness(1)} }
+
+/* Win overlay */
+.mk-overlay {
+  position:absolute; inset:0; background:rgba(10,20,10,0.88);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  border-radius:4px; z-index:10; gap:10px; padding:20px;
+}
+.mk-overlay-emoji { font-size:3rem; }
+.mk-overlay-title { color:#fff; font-size:1.6rem; font-weight:700; }
+.mk-overlay-time  { color:#aed6a0; font-size:1rem; }
+.mk-score-msg     { color:#aed6a0; font-size:0.9rem; }
+.mk-overlay-btns  { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:6px; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/meowdoku.js?v=1" defer></script>
+{% endblock %}

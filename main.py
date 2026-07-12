@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field, field_validator
 from countries import COUNTRIES as ALL_COUNTRIES, VALID_COUNTRY_CODES
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, Pattern, PatternRevision, UserRole, TametsiHexCompletion, TametsiHexTime, TametsiHexUserBoard, SeoRanking, get_db, init_db, SessionLocal
+from database import Score, GameHistory, GameMode, RushScore, TentaizuScore, TentaizuEasyScore, MosaicScore, MosaicEasyScore, MosaicCustomScore, CylinderScore, ToroidScore, HexsweeperScore, GlobesweeperScore, CubesweeperScore, MobiussweeperScore, ReplayScore, UserProfile, PvpResult, ServerStats, WebTrafficStats, GuestScoreArchive, BlogComment, NonosweeperScore, ContactMessage, FifteenPuzzleScore, FifteenPuzzlePhoto, MemberPuzzle, Game2048Score, Game2048HexScore, MahjongScore, MahjongSavedGame, JigsawScore, JigsawSavedGame, JigsawPhoto, SchulteGridScore, SudokuScore, GameReplay, FlaggedScore, TametsiBoard, TametsiDaily, TametsiScore, NumbersMatchDaily, NumbersMatchScore, EvilGameSession, Pattern, PatternRevision, UserRole, TametsiHexCompletion, TametsiHexTime, TametsiHexUserBoard, SeoRanking, MeowdokuScore, get_db, init_db, SessionLocal
 import seo_checker
 from phase2_analyzer import analyze_replay_async
 # Near the top of main.py with the other model imports
@@ -861,6 +861,7 @@ def archive_guest_scores():
             ("game_2048_scores",      "puzzle_date", "time_ms",                           "NULL", "NULL", "NULL",  "NULL", "NULL",       "guest_token"),
             ("mahjong_scores",        "puzzle_date", "time_ms",                           "NULL", "NULL", "NULL",  "NULL", "board_hash", "guest_token"),
             ("numbers_match_scores",  "puzzle_date", "time_secs * 1000",                  "NULL", "NULL", "NULL",  "NULL", "NULL",       "guest_token"),
+            ("meowdoku_scores",       "puzzle_date", "time_secs * 1000",                  "NULL", "NULL", "NULL",  "NULL", "board_hash",  "guest_token"),
         ]
         total = 0
         for tbl, mode_e, time_e, rows_e, cols_e, mines_e, bbbv_e, hash_e, token_e in specs:
@@ -10493,3 +10494,110 @@ def vibecoding_talk(request: Request):
 @app.get("/vibecoding/booth", response_class=HTMLResponse)
 def vibecoding_booth(request: Request):
     return templates.TemplateResponse(request, "vibecoding_booth.html")
+
+
+# ── Meowdoku ──────────────────────────────────────────────────────────────────
+
+@app.get("/meowdoku", response_class=HTMLResponse)
+async def meowdoku_page(
+    request: Request,
+    date_param: str = Query(None, alias="date"),
+    size: int = Query(8, ge=4, le=10),
+    board: str = Query(None),   # custom board hash from generator
+):
+    real_today = date.today().isoformat()
+    puzzle_date = real_today
+    if date_param and re.match(r"^\d{4}-\d{2}-\d{2}$", date_param):
+        puzzle_date = date_param
+    return templates.TemplateResponse(request, "meowdoku.html", {
+        "mode":       "meowdoku",
+        "user":       get_current_user(request),
+        "lang":       get_lang(request),
+        "t":          get_t(request),
+        "today":      puzzle_date,
+        "real_today": real_today,
+        "grid_size":  size,
+        "custom_board": board or "",
+    })
+
+@app.get("/puzzles/meowdoku", response_class=HTMLResponse)
+async def puzzles_meowdoku_redirect(request: Request):
+    prefix = f"/{get_lang(request)}" if get_lang(request) != "en" else ""
+    return RedirectResponse(_safe_relative_url(f"{prefix}/meowdoku"), status_code=301)
+
+@app.get("/meowdoku/generator", response_class=HTMLResponse)
+async def meowdoku_generator_page(request: Request):
+    return templates.TemplateResponse(request, "meowdoku_generator.html", {
+        "mode": "meowdoku",
+        "user": get_current_user(request),
+        "lang": get_lang(request),
+        "t":    get_t(request),
+    })
+
+@app.get("/puzzles/meowdoku/generator", response_class=HTMLResponse)
+async def puzzles_meowdoku_generator_redirect(request: Request):
+    prefix = f"/{get_lang(request)}" if get_lang(request) != "en" else ""
+    return RedirectResponse(_safe_relative_url(f"{prefix}/meowdoku/generator"), status_code=301)
+
+
+class MeowdokuScoreSubmit(BaseModel):
+    name:        str = Field(..., min_length=1, max_length=32)
+    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
+    grid_size:   int = Field(..., ge=4, le=10)
+    time_secs:   int = Field(..., ge=0, le=99999)
+    board_hash:  str = Field("", max_length=128)
+
+    @field_validator("name")
+    @classmethod
+    def sanitize_name(cls, v: str) -> str:
+        v = v.strip()
+        v = "".join(c for c in v if c.isprintable())
+        if not v:
+            raise ValueError("Name must contain printable characters")
+        return v[:32]
+
+
+@app.post("/api/meowdoku-scores", status_code=201)
+@limiter.limit("10/minute")
+def submit_meowdoku_score(payload: MeowdokuScoreSubmit, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        if "guest_token" not in request.session:
+            request.session["guest_token"] = str(uuid.uuid4())
+        guest_token = request.session["guest_token"]
+    else:
+        guest_token = None
+    entry = MeowdokuScore(
+        name        = payload.name,
+        user_email  = user["email"] if user else None,
+        puzzle_date = payload.puzzle_date,
+        grid_size   = payload.grid_size,
+        time_secs   = payload.time_secs,
+        board_hash  = payload.board_hash or None,
+        guest_token = guest_token,
+        client_type = get_client_type(request),
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
+    record_score_submit("meowdoku", str(payload.puzzle_date))
+    record_game_complete("meowdoku", mode="daily", duration_ms=(payload.time_secs or 0) * 1000)
+    return {"ok": True, "id": entry.id}
+
+
+@app.get("/api/meowdoku-scores/{puzzle_date}")
+def get_meowdoku_scores(puzzle_date: str, size: int = Query(8, ge=4, le=10), db: Session = Depends(get_db)):
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
+        raise HTTPException(status_code=400, detail="Invalid date format")
+    q = (
+        db.query(MeowdokuScore)
+        .filter(MeowdokuScore.puzzle_date == puzzle_date, MeowdokuScore.grid_size == size)
+    )
+    q = exclude_flagged(q, MeowdokuScore, db)
+    top = (
+        q.order_by(MeowdokuScore.time_secs.asc(), MeowdokuScore.created_at.asc())
+        .limit(20)
+        .all()
+    )
+    return _enrich_with_profiles(top, db)
