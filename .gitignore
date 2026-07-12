@@ -4,6 +4,7 @@ database.py
 *.pem
 *_credentials
 mobile/app/credentials/
+tips.txt
 
 #Runtime environment
 venv/
