@@ -309,6 +309,25 @@ class MosaicCustomScore(Base):
             "created_at": self.created_at.strftime("%Y-%m-%d"),
         }
 
+# ── Meowdoku Score model ──────────────────────────────────────────────────────
+class MeowdokuScore(Base):
+    __tablename__ = "meowdoku_scores"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    name        = Column(String(32), nullable=False)
+    user_email  = Column(String(256), nullable=True, index=True)
+    puzzle_date = Column(String(10), nullable=False)
+    grid_size   = Column(Integer, nullable=False, default=8)
+    time_secs   = Column(Integer, nullable=False)
+    board_hash  = Column(String(128), nullable=True)
+    guest_token = Column(String(36), nullable=True, index=True)
+    client_type = Column(String(32), nullable=False, server_default="na")
+    created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_meowdoku_scores_date_size_time", "puzzle_date", "grid_size", "time_secs"),
+    )
+
 # ── Cylinder Score model (permanent — never reset) ────────────────────────────
 class CylinderScore(Base):
     __tablename__ = "cylinder_scores"
