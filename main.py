@@ -10488,8 +10488,8 @@ def wc2026_admin_update_match(payload: WC2026MatchUpdate,
 
 @app.get("/vibecoding", response_class=HTMLResponse)
 def vibecoding_talk(request: Request):
-    return templates.TemplateResponse("vibecoding.html", {"request": request})
+    return templates.TemplateResponse(request, "vibecoding.html")
 
 @app.get("/vibecoding/booth", response_class=HTMLResponse)
 def vibecoding_booth(request: Request):
-    return templates.TemplateResponse("vibecoding_booth.html", {"request": request})
+    return templates.TemplateResponse(request, "vibecoding_booth.html")
