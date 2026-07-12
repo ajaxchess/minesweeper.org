@@ -10482,3 +10482,10 @@ def wc2026_admin_update_match(payload: WC2026MatchUpdate,
     row.status  = payload.status
     db.commit()
     return {"ok": True}
+
+
+# ── Vibe Coding talk ──────────────────────────────────────────────────────────
+
+@app.get("/vibecoding", response_class=HTMLResponse)
+def vibecoding_talk(request: Request):
+    return templates.TemplateResponse("vibecoding.html", {"request": request})

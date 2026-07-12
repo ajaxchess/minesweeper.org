@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Coding: AI for Workflow Improvements — Richard Cross</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #090d17;
+  --surface:  #111827;
+  --surface2: #1a2538;
+  --text:     #dce6f5;
+  --text2:    #8a99b8;
+  --accent:   #4580e4;
+  --gold:     #f0a030;
+  --rule:     #1e2d47;
+  --font-d:   'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-b:   'Barlow', system-ui, sans-serif;
+  --mono:     'SF Mono', 'Fira Code', monospace;
+}
+
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font-b); }
+
+/* ── Progress ── */
+#progress-track { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: var(--rule); z-index: 200; }
+#progress-fill  { height: 100%; background: var(--accent); transition: width .35s ease; width: 0; }
+
+/* ── Deck ── */
+.deck  { position: fixed; inset: 0; overflow: hidden; }
+.track { display: flex; height: 100%; transition: transform .45s cubic-bezier(.4,0,.2,1); will-change: transform; }
+
+/* ── Slide base ── */
+.slide {
+  min-width: 100vw; height: 100%; display: flex; flex-direction: column;
+  justify-content: center; padding: clamp(2rem,4vw,4rem) clamp(2.5rem,8vw,8rem);
+  position: relative; overflow: hidden;
+}
+
+/* ── Navigation ── */
+.nav { position: fixed; bottom: 1.75rem; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 1.25rem; z-index: 200; }
+.nav-btn {
+  background: var(--surface2); border: 1px solid var(--rule); color: var(--text2);
+  width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; font-size: 1rem; transition: background .2s, color .2s, border-color .2s;
+  flex-shrink: 0;
+}
+.nav-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.nav-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.nav-btn:disabled { opacity: .3; pointer-events: none; }
+#counter { font-size: .78rem; color: var(--text2); font-variant-numeric: tabular-nums; letter-spacing: .06em; min-width: 4.5em; text-align: center; font-family: var(--mono); }
+
+/* ── Type scale ── */
+.eyebrow {
+  font-family: var(--font-d); font-size: .72rem; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin-bottom: .9rem;
+}
+.slide h1 {
+  font-family: var(--font-d); font-size: clamp(3.2rem,8vw,7.5rem); font-weight: 800;
+  line-height: .93; text-wrap: balance; letter-spacing: -.025em; color: var(--text);
+}
+.slide h2 {
+  font-family: var(--font-d); font-size: clamp(2rem,5vw,4rem); font-weight: 700;
+  line-height: 1; text-wrap: balance; letter-spacing: -.015em; margin-bottom: 1.75rem;
+}
+.slide p {
+  font-size: clamp(.88rem,1.4vw,1.05rem); line-height: 1.65; color: var(--text2); max-width: 58ch;
+}
+
+/* ── Slide: Title ── */
+.slide--title { background: var(--bg); }
+.slide--title::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 75% 45%, rgba(69,128,228,.14) 0%, transparent 55%);
+  pointer-events: none;
+}
+.title-sub { font-family: var(--font-b); font-size: clamp(.95rem,2vw,1.35rem); color: var(--text2); margin-top: 1.25rem; }
+.title-meta { position: absolute; bottom: 4rem; font-size: .82rem; color: var(--text2); line-height: 1.9; }
+.title-meta strong { color: var(--text); font-weight: 600; }
+.sep { margin: 0 .5rem; color: var(--rule); }
+
+/* ── Slide: Agenda ── */
+.agenda { display: flex; flex-direction: column; gap: .6rem; margin-top: .25rem; }
+.agenda-row {
+  display: flex; align-items: baseline; gap: 1.2rem;
+  padding: .65rem .85rem; border-left: 2px solid var(--rule);
+  transition: border-color .2s;
+}
+.agenda-row:hover { border-color: var(--accent); }
+.a-num { font-family: var(--font-d); font-size: .8rem; font-weight: 700; color: var(--accent); letter-spacing: .06em; min-width: 2em; }
+.a-title { font-family: var(--font-d); font-size: clamp(.95rem,1.8vw,1.3rem); font-weight: 700; color: var(--text); }
+.a-desc { font-size: .8rem; color: var(--text2); margin-top: .1rem; }
+
+/* ── Slide: Question changed ── */
+.q-split { display: grid; grid-template-columns: 1fr 3rem 1fr; gap: 1.5rem; align-items: center; max-width: 820px; margin-top: .5rem; }
+.q-card { padding: 1.75rem; border-radius: 4px; }
+.q-before { border: 1px solid var(--rule); opacity: .55; }
+.q-now    { border: 1px solid var(--accent); background: rgba(69,128,228,.07); }
+.q-badge  { font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; color: var(--text2); margin-bottom: .4rem; }
+.q-now .q-badge { color: var(--accent); }
+.q-headline { font-family: var(--font-d); font-size: clamp(1.4rem,2.8vw,2.3rem); font-weight: 700; line-height: 1.1; margin-bottom: .6rem; }
+.q-context { font-size: .85rem; color: var(--text2); line-height: 1.5; }
+.q-arrow { display: flex; justify-content: center; color: var(--accent); font-size: 1.6rem; }
+.q-footer { margin-top: 2rem; font-size: .9rem; color: var(--text2); font-style: italic; max-width: 62ch; }
+
+/* ── Stats bar ── */
+.stats { display: flex; gap: 3rem; margin: 1.25rem 0 1.75rem; flex-wrap: wrap; }
+.stat-val { font-family: var(--font-d); font-size: clamp(2.5rem,5vw,4.2rem); font-weight: 800; color: var(--gold); font-variant-numeric: tabular-nums; line-height: 1; }
+.stat-lbl { font-size: .75rem; color: var(--text2); text-transform: uppercase; letter-spacing: .1em; margin-top: .2rem; }
+
+/* ── Case blocks ── */
+.blocks { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-top: .75rem; }
+.block { padding: 1.2rem; background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; }
+.block-hd { font-family: var(--font-d); font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--accent); margin-bottom: .5rem; }
+.block p { font-size: .88rem; color: var(--text2); max-width: none; line-height: 1.5; }
+
+/* ── Demo divider ── */
+.slide--demo { align-items: center; text-align: center; justify-content: center; }
+.demo-badge {
+  display: inline-block; padding: .35rem 1rem; background: var(--gold); color: #050810;
+  font-family: var(--font-d); font-size: .72rem; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; border-radius: 2px; margin-bottom: 1.4rem;
+}
+.demo-title { font-family: var(--font-d); font-size: clamp(2rem,5vw,3.5rem); font-weight: 700; line-height: 1.1; margin-bottom: 1.5rem; max-width: 600px; text-wrap: balance; }
+.demo-list { list-style: none; display: flex; flex-direction: column; align-items: center; gap: .45rem; }
+.demo-list li { font-size: .92rem; color: var(--text2); }
+.demo-list li::before { content: '— '; color: var(--surface2); }
+
+/* ── Two-col layout ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; max-width: 880px; }
+.col-hd { font-family: var(--font-d); font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: var(--accent); margin-bottom: .9rem; }
+.blist { list-style: none; display: flex; flex-direction: column; gap: .55rem; }
+.blist li { font-size: clamp(.82rem,1.35vw,.98rem); color: var(--text2); padding-left: 1rem; position: relative; line-height: 1.45; }
+.blist li::before { content: '·'; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+
+/* ── Quote ── */
+.quote { border-left: 3px solid var(--accent); padding: 1.25rem 1.5rem; background: var(--surface); max-width: 680px; margin: 1.25rem 0; }
+.qt { font-family: var(--font-d); font-size: clamp(1.15rem,2.4vw,1.75rem); font-weight: 600; font-style: italic; color: var(--text); line-height: 1.3; }
+.qa { font-size: .78rem; color: var(--text2); margin-top: .6rem; letter-spacing: .05em; }
+
+/* ── Replace table ── */
+.rtable { width: 100%; max-width: 820px; border-collapse: collapse; margin-top: .75rem; }
+.rtable td { padding: .65rem .9rem; font-size: clamp(.78rem,1.25vw,.95rem); vertical-align: middle; border-bottom: 1px solid var(--rule); }
+.rtable tr:last-child td { border-bottom: none; }
+.old { color: var(--text2); text-decoration: line-through; opacity: .5; width: 35%; }
+.arr { color: var(--accent); width: 36px; text-align: center; font-size: 1.1rem; }
+.nw  { color: var(--text); }
+
+/* ── Pipeline ── */
+.pipeline { display: flex; gap: 0; margin-top: 1.5rem; max-width: 860px; }
+.pipe {
+  flex: 1; background: var(--surface); border: 1px solid var(--rule);
+  padding: 1.4rem 1.1rem; position: relative;
+}
+.pipe:not(:last-child)::after {
+  content: '›'; position: absolute; right: -13px; top: 50%; transform: translateY(-50%);
+  color: var(--accent); font-size: 1.4rem; z-index: 1; background: var(--bg); padding: 0 2px;
+}
+.pipe-n { font-family: var(--font-d); font-size: 2rem; font-weight: 800; color: var(--accent); opacity: .2; line-height: 1; margin-bottom: .4rem; }
+.pipe-t { font-family: var(--font-d); font-size: .95rem; font-weight: 700; color: var(--text); margin-bottom: .4rem; }
+.pipe-d { font-size: .78rem; color: var(--text2); line-height: 1.4; }
+
+/* ── Timeline ── */
+.timeline { display: flex; align-items: flex-start; margin: 1.25rem 0; max-width: 760px; }
+.tl { flex: 1; position: relative; padding-top: 1.1rem; }
+.tl::before { content: ''; position: absolute; top: .55rem; left: 0; right: 0; height: 1px; background: var(--rule); }
+.tl:first-child::before { left: 50%; }
+.tl:last-child::before  { right: 50%; }
+.tl-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); margin: 0 auto; position: relative; z-index: 1; }
+.tl:last-child .tl-dot { background: var(--gold); width: 11px; height: 11px; margin-top: -1px; }
+.tl-yr { font-family: var(--font-d); font-size: 1.05rem; font-weight: 700; text-align: center; margin-top: .65rem; }
+.tl-lb { font-size: .72rem; color: var(--text2); text-align: center; margin-top: .2rem; line-height: 1.3; padding: 0 .25rem; }
+
+/* ── SDLC bars ── */
+.sdlc-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-top: 1.25rem; max-width: 820px; }
+.sdlc-yr { font-family: var(--font-d); font-size: 1.4rem; font-weight: 700; color: var(--text2); margin-bottom: .9rem; }
+.sdlc-row { margin-bottom: .7rem; }
+.sdlc-meta { display: flex; justify-content: space-between; font-size: .78rem; color: var(--text2); margin-bottom: .3rem; }
+.sdlc-pct { color: var(--text); font-weight: 600; }
+.bar-bg   { height: 5px; background: var(--rule); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+.bar-fill.hi { background: var(--gold); }
+.sdlc-insights { margin-top: 1.5rem; max-width: 820px; display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+.insight { padding: .85rem 1rem; background: var(--surface); border-left: 2px solid var(--accent); }
+.insight p { font-size: .82rem; max-width: none; color: var(--text2); line-height: 1.45; }
+.insight strong { color: var(--text); display: block; font-size: .82rem; margin-bottom: .25rem; font-weight: 600; }
+
+/* ── Start cards ── */
+.start-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; margin-top: 1.5rem; max-width: 880px; }
+.start-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 1.5rem; display: flex; flex-direction: column; }
+.sc-n { font-family: var(--font-d); font-size: 2.2rem; font-weight: 800; color: var(--accent); opacity: .2; line-height: 1; margin-bottom: .4rem; }
+.sc-t { font-family: var(--font-d); font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: .6rem; }
+.sc-p { font-size: .85rem; color: var(--text2); line-height: 1.55; max-width: none; flex: 1; }
+.sc-link { display: inline-block; margin-top: .9rem; font-size: .75rem; color: var(--accent); font-family: var(--mono); text-decoration: none; }
+.sc-link:hover { text-decoration: underline; }
+
+/* ── Contact ── */
+.slide--contact { align-items: center; text-align: center; }
+.contact-links { display: flex; flex-direction: column; gap: .5rem; margin-top: 1.5rem; }
+.contact-links a { color: var(--accent); text-decoration: none; font-size: 1rem; }
+.contact-links a:hover { text-decoration: underline; }
+
+/* ── Appendix divider ── */
+.slide--appendix { align-items: center; text-align: center; background: var(--surface); }
+
+/* ── Bullet list utility ── */
+.ul { list-style: none; display: flex; flex-direction: column; gap: .6rem; margin-top: 1rem; }
+.ul li { font-size: clamp(.85rem,1.4vw,1rem); color: var(--text2); padding-left: 1.1rem; position: relative; line-height: 1.5; }
+.ul li::before { content: '·'; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+
+/* ── Accent utilities ── */
+.acc  { color: var(--accent); }
+.gold { color: var(--gold); }
+.dim  { color: var(--text2); }
+
+@media (max-width: 640px) {
+  .blocks, .two-col, .start-grid, .sdlc-wrap, .sdlc-insights, .q-split, .pipeline {
+    grid-template-columns: 1fr; flex-direction: column;
+  }
+  .q-arrow { display: none; }
+  .pipeline { flex-direction: column; }
+  .pipe:not(:last-child)::after { display: none; }
+  .timeline { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-track"><div id="progress-fill"></div></div>
+
+<div class="deck">
+  <div class="track" id="track">
+
+    <!-- 1. Title -->
+    <section class="slide slide--title">
+      <div class="eyebrow">Enlyt Building Technologies &nbsp;·&nbsp; June 24, 2026</div>
+      <h1>Vibe<br>Coding</h1>
+      <p class="title-sub">AI for Workflow Improvements</p>
+      <div class="title-meta">
+        <strong>Richard Cross</strong><span class="sep">·</span>Enlyt Building Technologies<br>
+        <span style="color:var(--rule)">Presented via Zoom</span>
+      </div>
+    </section>
+
+    <!-- 2. Agenda -->
+    <section class="slide">
+      <h2>Agenda</h2>
+      <div class="agenda">
+        <div class="agenda-row"><div><div class="a-num">01</div></div><div><div class="a-title">What is vibe coding?</div><div class="a-desc">Karpathy's definition &nbsp;·&nbsp; The shift from builder to director</div></div></div>
+        <div class="agenda-row"><div><div class="a-num">02</div></div><div><div class="a-title">Business use cases</div><div class="a-desc">Construction bids &nbsp;·&nbsp; 79 W Monroe &nbsp;·&nbsp; DonkeyVan &nbsp;·&nbsp; Rails</div></div></div>
+        <div class="agenda-row"><div><div class="a-num">03</div></div><div><div class="a-title">Minesweeper.org deep dive</div><div class="a-desc">A production website built entirely with AI (live demo)</div></div></div>
+        <div class="agenda-row"><div><div class="a-num">04</div></div><div><div class="a-title">The SDLC shift</div><div class="a-desc">"Can we?" is dead — "Should we?" is all that's left</div></div></div>
+        <div class="agenda-row"><div><div class="a-num">05</div></div><div><div class="a-title">How to get started</div><div class="a-desc">Three entry points — pick one and try it this week</div></div></div>
+        <div class="agenda-row"><div><div class="a-num">06</div></div><div><div class="a-title">Q&A</div><div class="a-desc">Open discussion — your questions, challenges, and what to try first</div></div></div>
+      </div>
+    </section>
+
+    <!-- 3. What is vibe coding? -->
+    <section class="slide">
+      <div class="eyebrow">What is vibe coding?</div>
+      <h2>Coined by Andrej Karpathy, Feb 2025</h2>
+      <div class="quote">
+        <div class="qt">"I just see stuff, vibe code it, it mostly works"</div>
+        <div class="qa">— Andrej Karpathy, Co-Founder of OpenAI, Feb 2025</div>
+      </div>
+      <ul class="ul">
+        <li>Describe what you want in plain language</li>
+        <li>AI writes the implementation — you review &amp; approve</li>
+        <li>Iterate until it works — no boilerplate, no Stack Overflow</li>
+        <li>You stay in the director's chair, not at the keyboard</li>
+      </ul>
+    </section>
+
+    <!-- 4. The question changed -->
+    <section class="slide">
+      <div class="eyebrow">The shift</div>
+      <h2>The question changed.</h2>
+      <div class="q-split">
+        <div class="q-card q-before">
+          <div class="q-badge">Before</div>
+          <div class="q-headline">Can we<br>build this?</div>
+          <div class="q-context">Gated by developer time, cost, and availability</div>
+        </div>
+        <div class="q-arrow">→</div>
+        <div class="q-card q-now">
+          <div class="q-badge">Now</div>
+          <div class="q-headline">Should we<br>build this?</div>
+          <div class="q-context">The bottleneck is now <strong style="color:var(--text)">judgment</strong>, not code</div>
+        </div>
+      </div>
+      <p class="q-footer">Coding time has dropped 10–100×. Prototyping is nearly free. What does that do to the Software Development Lifecycle?</p>
+    </section>
+
+    <!-- 5. Construction bids -->
+    <section class="slide">
+      <div class="eyebrow">Business case</div>
+      <h2>Construction bid proposals</h2>
+      <div class="stats">
+        <div><div class="stat-val">338</div><div class="stat-lbl">Claude projects</div></div>
+        <div><div class="stat-val">75%</div><div class="stat-lbl">by Mark Hahs</div></div>
+        <div><div class="stat-val">1–2 hrs</div><div class="stat-lbl">per bid (was a day)</div></div>
+      </div>
+      <div class="blocks">
+        <div class="block"><div class="block-hd">The problem</div><p>Each bid: read specs, calculate materials, write narrative, format to client standards. Hours per bid.</p></div>
+        <div class="block"><div class="block-hd">What we did</div><p>Claude projects ingest drawings &amp; specs → output formatted bid: calculations spreadsheet + proposal narrative.</p></div>
+        <div class="block"><div class="block-hd">What happened</div><p>The upstream approval team complained we were submitting <em>too many</em> bids. We had to cut submissions back.</p></div>
+      </div>
+    </section>
+
+    <!-- 6. Demo divider: Rails bid -->
+    <section class="slide slide--demo">
+      <div class="demo-badge">Live Demo</div>
+      <div class="demo-title">Rails 40 E Delaware<br>Construction bid</div>
+      <ul class="demo-list">
+        <li>Starting from the original bid ask for Rails renovation at 40 E Delaware</li>
+        <li>Claude reads scope documents and extracts quantities</li>
+        <li>Live generation of the calculation spreadsheet</li>
+        <li>Proposal narrative formatted to Enlyt's standard</li>
+      </ul>
+    </section>
+
+    <!-- 7. Rails at 40 E Delaware -->
+    <section class="slide">
+      <div class="eyebrow">Example</div>
+      <h2>Rails at 40 E Delaware</h2>
+      <div class="two-col">
+        <div>
+          <div class="col-hd">Setting</div>
+          <p style="max-width:none">Request for Electrical bid for a new Rails retail on Autodesk Construction Cloud. Requirements + Architecture Diagram + Matterport → Claude → formatted bid document.</p>
+          <div style="margin-top:1.25rem">
+            <div class="col-hd">Outcome</div>
+            <p style="max-width:none">They decided to open at 900 N Rush instead — wasted our time, but we saved ~40 hours of bid sizing and avoided a full site visit.</p>
+          </div>
+        </div>
+        <div>
+          <div class="col-hd">Addresses</div>
+          <ul class="blist">
+            <li><span class="acc">40 E Delaware</span> — original bid target</li>
+            <li><span class="dim">900 N Rush</span> — where they actually opened</li>
+            <li>Both locations sized in the same session</li>
+            <li>Zero additional estimating cost on the pivot</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. DonkeyVan presales -->
+    <section class="slide">
+      <div class="eyebrow">Business case</div>
+      <h2>DonkeyVan — Presales demo from zero</h2>
+      <p style="margin-bottom:1.25rem">Prospect: 10 animal trailers, wants Uber-style dispatch &nbsp;·&nbsp; Needed a working demo before committing to development</p>
+      <div class="blocks">
+        <div class="block"><div class="block-hd">What was built</div><p>Working homepage, driver accept screen, and dispatch dashboard — all vibe coded from scratch.</p></div>
+        <div class="block"><div class="block-hd">Also included</div><p>Market analysis and pitch deck generated alongside the product demo — no separate work required.</p></div>
+        <div class="block"><div class="block-hd">The result</div><p>Expensive dev shop engagement replaced. Full presales package delivered in hours, not weeks.</p></div>
+      </div>
+    </section>
+
+    <!-- 9. DonkeyVan SOC 2 -->
+    <section class="slide">
+      <div class="eyebrow">Engineering for Enterprise</div>
+      <h2>DonkeyVan — SOC 2 Compliance</h2>
+      <p style="margin-bottom:1.25rem">Client requires SOC 2 compliance (audit) and full feature set &nbsp;·&nbsp; iOS and Android app built with Claude Code</p>
+      <div class="two-col">
+        <div>
+          <div class="col-hd">Deliverables</div>
+          <ul class="blist">
+            <li>iOS + Android rider app (React Native / Expo)</li>
+            <li>Driver dispatch dashboard</li>
+            <li>Gantt chart and project management artifacts</li>
+            <li>Environment and flow diagrams for SOC 2</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-hd">Observations</div>
+          <ul class="blist">
+            <li>Documentation time savings were significant</li>
+            <li>Claude generated compliance artifacts alongside code</li>
+            <li>Testing remains the major open challenge</li>
+            <li>Acceptance testing is now the developer's primary job</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. Minesweeper.org -->
+    <section class="slide">
+      <div class="eyebrow">Minesweeper.org — a production site built with AI</div>
+      <h2>Dedicated to the HALO Trust &amp; Princess Diana</h2>
+      <div class="timeline">
+        <div class="tl"><div class="tl-dot"></div><div class="tl-yr">1990</div><div class="tl-lb">Bundled with Windows</div></div>
+        <div class="tl"><div class="tl-dot"></div><div class="tl-yr">1999</div><div class="tl-lb">minesweeper.org launched</div></div>
+        <div class="tl"><div class="tl-dot"></div><div class="tl-yr">2007</div><div class="tl-lb">Taken down (security issues)</div></div>
+        <div class="tl"><div class="tl-dot"></div><div class="tl-yr">2012</div><div class="tl-lb">Removed from Windows</div></div>
+        <div class="tl"><div class="tl-dot"></div><div class="tl-yr acc">2026</div><div class="tl-lb" style="color:var(--gold)">Vibe coded &amp; relaunched</div></div>
+      </div>
+      <div class="two-col" style="margin-top:.75rem">
+        <div>
+          <div class="col-hd">Tech stack</div>
+          <ul class="blist">
+            <li>Python backend &nbsp;·&nbsp; JavaScript frontend</li>
+            <li>AWS hosting &nbsp;·&nbsp; Claude Code CI/CD</li>
+            <li>All built by Claude</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-hd">Games shipped</div>
+          <ul class="blist">
+            <li>Classic &nbsp;·&nbsp; Tentaizu &nbsp;·&nbsp; Mosaic &nbsp;·&nbsp; Rush</li>
+            <li>PvP variants — Mosaic built &amp; shipped same-day</li>
+            <li>Open source: <a href="https://github.com/ajaxchess/minesweeper.org" style="color:var(--accent)">github.com/ajaxchess/minesweeper.org</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. What Claude replaced -->
+    <section class="slide">
+      <div class="eyebrow">Minesweeper.org</div>
+      <h2>What Claude replaced</h2>
+      <table class="rtable">
+        <tr><td class="old">Jira / Asana / Monday.com</td><td class="arr">→</td><td class="nw">Features.md + Bugs.md in git &nbsp;·&nbsp; Kanban board at <a href="https://minesweeper.org/admin/kanban" style="color:var(--accent)">minesweeper.org/admin/kanban</a></td></tr>
+        <tr><td class="old">GitLab CI / Azure DevOps</td><td class="arr">→</td><td class="nw">Claude-managed trunk-based pipeline: commit → staging → tests → promote to prod</td></tr>
+        <tr><td class="old">DataDog / Splunk</td><td class="arr">→</td><td class="nw">Operational dashboards surfaced from app telemetry — built by Claude into the admin</td></tr>
+        <tr><td class="old">WordPress / CMS</td><td class="arr">→</td><td class="nw">Blog lives in git as Markdown — Claude collaborates on posts and publishes them</td></tr>
+        <tr><td class="old">Translation agency / Localise</td><td class="arr">→</td><td class="nw">Claude handles all i18n — bugs found by screenshot, fixed in dialog</td></tr>
+        <tr><td class="old">SEO consultant / tools</td><td class="arr">→</td><td class="nw">Weekly Claude Cowork analysis → Markdown issues → admin/analysis — AdSense approved 2nd try</td></tr>
+      </table>
+    </section>
+
+    <!-- 12. CI/CD Pipeline -->
+    <section class="slide">
+      <div class="eyebrow">Vibe Coding Environment with Claude Code</div>
+      <h2>Claude Created CI/CD Pipeline</h2>
+      <div class="pipeline">
+        <div class="pipe"><div class="pipe-n">1</div><div class="pipe-t">Local Dev</div><div class="pipe-d">Mac, Windows &amp; Linux &nbsp;·&nbsp; VS Code + command-line &nbsp;·&nbsp; Claude Code</div></div>
+        <div class="pipe"><div class="pipe-n">2</div><div class="pipe-t">Commit to GitHub</div><div class="pipe-d">All developers commit to main. .gitignore protects secrets. GitHub Actions runs code scan.</div></div>
+        <div class="pipe"><div class="pipe-n">3</div><div class="pipe-t">Staging Build</div><div class="pipe-d">Server pulls GitHub to staging environment, starts server, runs tests, &amp; stops environment.</div></div>
+        <div class="pipe"><div class="pipe-n">4</div><div class="pipe-t">Promote Live</div><div class="pipe-d">Tests pass → code promoted to production automatically.</div></div>
+      </div>
+    </section>
+
+    <!-- 13. Localization & SEO -->
+    <section class="slide">
+      <div class="eyebrow">Minesweeper.org</div>
+      <h2>Localization &amp; SEO</h2>
+      <div class="two-col">
+        <div>
+          <div class="col-hd">Localization</div>
+          <ul class="blist">
+            <li>Claude handles all translations</li>
+            <li>Issues found by screenshot — Claude fixes in dialog</li>
+            <li>No translation agency or Localise required</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-hd">SEO</div>
+          <ul class="blist">
+            <li>Claude Cowork evaluates the site for SEO gaps</li>
+            <li>MCP job updates Markdown with issues, synced to production</li>
+            <li>Gap analysis visible at <a href="https://minesweeper.org/admin/analysis" style="color:var(--accent)">minesweeper.org/admin/analysis</a></li>
+            <li>Devs assigned to fix; progress documented by Claude over time</li>
+            <li>AdSense approved on the 2nd try</li>
+          </ul>
+        </div>
+      </div>
+      <div class="quote" style="margin-top:1.5rem">
+        <div class="qt" style="font-size:clamp(.9rem,1.6vw,1.2rem)">SEO issues are tracked as Markdown in git, visible at admin/analysis, and closed out iteratively — automatically documented by Claude.</div>
+      </div>
+    </section>
+
+    <!-- 14. Iterating on Requirements -->
+    <section class="slide">
+      <div class="eyebrow">Developer workflow</div>
+      <h2>Iterating on Requirements with Claude</h2>
+      <div class="two-col">
+        <div>
+          <div class="col-hd">The process</div>
+          <ul class="blist">
+            <li>Developer writes the initial Feature.md file</li>
+            <li>Asks Claude to review — Claude responds with clarifying questions</li>
+            <li>Developer iterates until the requirements are clear</li>
+            <li>Routes, admin needs, edge cases all discussed before a line is written</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-hd">What gets agreed on</div>
+          <ul class="blist">
+            <li>Basic requirements and acceptance criteria</li>
+            <li>Admin interface requirements</li>
+            <li>Custom board or configuration options</li>
+            <li>Photo upload, API, and third-party integration needs</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:1.5rem;padding:.85rem 1rem;background:var(--surface);border-left:2px solid var(--gold);max-width:600px">
+        <p style="max-width:none;font-size:.88rem">The developer's role shifts from writing code to <strong style="color:var(--text)">writing clear requirements</strong>. Requirements clarity is the new bottleneck.</p>
+      </div>
+    </section>
+
+    <!-- 15. Demo divider: minesweeper.org -->
+    <section class="slide slide--demo">
+      <div class="demo-badge">Live Demo</div>
+      <div class="demo-title">minesweeper.org</div>
+      <ul class="demo-list">
+        <li>Play the game — Classic or Tentaizu</li>
+        <li>Kanban board at <a href="https://minesweeper.org/admin/kanban" style="color:var(--accent)">minesweeper.org/admin/kanban</a> — managed by Claude</li>
+        <li>SEO gap analysis at <a href="https://minesweeper.org/admin/analysis" style="color:var(--accent)">minesweeper.org/admin/analysis</a></li>
+        <li>Features.md and Bugs.md in the git repo — no Jira needed</li>
+      </ul>
+    </section>
+
+    <!-- 16. Minesweeper Bootcamp -->
+    <section class="slide">
+      <div class="eyebrow">Using AI in Education</div>
+      <h2>Minesweeper Bootcamp</h2>
+      <div class="two-col">
+        <div>
+          <div class="col-hd">Mission</div>
+          <ul class="blist">
+            <li>Bootcamp is in data gathering mode — use data to refine curriculum</li>
+            <li>Can we teach someone to get better, or even become a grand master?</li>
+            <li>Platform analyzes your play style across games</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-hd">Platform features</div>
+          <ul class="blist">
+            <li>7 skill levels identified</li>
+            <li>Recommends improvements based on your play</li>
+            <li>Login to save your games and track progress</li>
+            <li>Curriculum developed through multiple Requirements.md sessions</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17. SDLC shift -->
+    <section class="slide">
+      <div class="eyebrow">The SDLC shift</div>
+      <h2>Where the time goes has changed.</h2>
+      <div class="sdlc-wrap">
+        <div>
+          <div class="sdlc-yr">2023</div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Planning</span><span class="sdlc-pct">15%</span></div><div class="bar-bg"><div class="bar-fill" style="width:15%"></div></div></div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Development</span><span class="sdlc-pct">60%</span></div><div class="bar-bg"><div class="bar-fill" style="width:60%"></div></div></div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Testing</span><span class="sdlc-pct">20%</span></div><div class="bar-bg"><div class="bar-fill" style="width:20%"></div></div></div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Deploy</span><span class="sdlc-pct">5%</span></div><div class="bar-bg"><div class="bar-fill" style="width:5%"></div></div></div>
+        </div>
+        <div>
+          <div class="sdlc-yr" style="color:var(--gold)">2026</div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Planning</span><span class="sdlc-pct acc">22%</span></div><div class="bar-bg"><div class="bar-fill hi" style="width:22%"></div></div></div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Development</span><span class="sdlc-pct">12%</span></div><div class="bar-bg"><div class="bar-fill" style="width:12%;opacity:.4"></div></div></div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Testing &amp; Judgment</span><span class="sdlc-pct acc">54%</span></div><div class="bar-bg"><div class="bar-fill hi" style="width:54%"></div></div></div>
+          <div class="sdlc-row"><div class="sdlc-meta"><span>Deploy</span><span class="sdlc-pct acc">12%</span></div><div class="bar-bg"><div class="bar-fill" style="width:12%"></div></div></div>
+        </div>
+      </div>
+      <div class="sdlc-insights">
+        <div class="insight"><strong>Requirements clarity is the new bottleneck</strong><p>The people who write clear specs are now more valuable than people who write code.</p></div>
+        <div class="insight"><strong>QA is the critical path</strong><p>You must judge what Claude built. Acceptance testing is now your most important job.</p></div>
+        <div class="insight"><strong>Prototype more, commit less early</strong><p>Cost to prototype dropped 10–100×. Run the experiment. Then decide if it's worth building.</p></div>
+      </div>
+    </section>
+
+    <!-- 18. How to get started -->
+    <section class="slide">
+      <div class="eyebrow">How to get started</div>
+      <h2>Pick one. Try it this week.</h2>
+      <div class="start-grid">
+        <div class="start-card">
+          <div class="sc-n">01</div>
+          <div class="sc-t">No-code start</div>
+          <p class="sc-p">Automate a document you produce repeatedly — a bid, a report, a proposal, a status update. Open claude.ai, paste your template, ask Claude to fill it.</p>
+          <a href="https://claude.ai" class="sc-link">claude.ai</a>
+        </div>
+        <div class="start-card">
+          <div class="sc-n">02</div>
+          <div class="sc-t">Low-code start</div>
+          <p class="sc-p">Ask Claude to build an internal tool. Give it a dataset and ask for a web page or dashboard. Start with something internal where mistakes are safe.</p>
+          <a href="https://claude.ai" class="sc-link">claude.ai or Claude Cowork</a>
+        </div>
+        <div class="start-card">
+          <div class="sc-n">03</div>
+          <div class="sc-t">Developer start</div>
+          <p class="sc-p">Let Claude own a feature end-to-end. Install Claude Code CLI. Pick one dev task — docs, tests, or a small feature. Don't touch the keyboard. Direct instead.</p>
+          <a href="https://github.com/ajaxchess/minesweeper.org" class="sc-link">github.com/ajaxchess/minesweeper.org</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 19. Questions -->
+    <section class="slide slide--contact">
+      <div class="eyebrow">Q&amp;A</div>
+      <h2>Questions?</h2>
+      <div class="contact-links">
+        <a href="mailto:ajaxchess@gmail.com">ajaxchess@gmail.com</a>
+        <a href="https://minesweeper.org">minesweeper.org</a>
+        <a href="https://github.com/ajaxchess/minesweeper.org">github.com/ajaxchess/minesweeper.org</a>
+        <a href="https://donkeyvan.healthcodex.com">donkeyvan.healthcodex.com</a>
+      </div>
+    </section>
+
+    <!-- 20. Appendix divider -->
+    <section class="slide slide--appendix">
+      <div class="eyebrow">Additional material</div>
+      <h2>Appendix</h2>
+    </section>
+
+    <!-- 21. Agentic Engineering -->
+    <section class="slide">
+      <div class="eyebrow">Appendix</div>
+      <h2>What is Agentic Engineering?</h2>
+      <div class="quote">
+        <div class="qt">"Vibe coding is agentic engineering"</div>
+        <div class="qa">— Andrej Karpathy, Feb 2026 &nbsp;·&nbsp; (Same thing, fancier name)</div>
+      </div>
+      <ul class="ul">
+        <li>Describe what you want in plain language</li>
+        <li>AI writes the implementation — you review &amp; approve</li>
+        <li>Iterate until it works — no boilerplate, no Stack Overflow</li>
+        <li>You stay in the director's chair, not at the keyboard</li>
+        <li style="color:var(--gold)">But now it's OK because it has a fancy name!</li>
+      </ul>
+    </section>
+
+    <!-- 22. Acceptance Testing -->
+    <section class="slide">
+      <div class="eyebrow">Appendix — Acceptance Testing</div>
+      <h2>Developer Input is Essential</h2>
+      <p style="margin-bottom:1.25rem">Example: 15 Puzzle implementation issues found through user testing</p>
+      <div class="two-col">
+        <div>
+          <div class="col-hd">What Claude got wrong</div>
+          <ul class="blist">
+            <li>Half of the 4×4 boards were unsolvable (parity bug)</li>
+            <li>Parity algorithm treated blank as 0 instead of NaN</li>
+            <li>Tiles only moved if you clicked immediately next to the blank</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-hd">How it was found &amp; fixed</div>
+          <ul class="blist">
+            <li>Screenshot + dialog found the parity algorithm error</li>
+            <li>User testing revealed the click behavior issue</li>
+            <li>Dialog with Claude addressed it → new Feature F65 in Features.md</li>
+            <li>The developer's role: understand &amp; debug what Claude builds</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 23. Ajaxchess.com -->
+    <section class="slide">
+      <div class="eyebrow">Appendix — Next chapter</div>
+      <h2>Ajaxchess.com — Can we replicate it?</h2>
+      <div class="two-col">
+        <div>
+          <div class="col-hd">Goal</div>
+          <ul class="blist">
+            <li>Build a chess website using the same approach as minesweeper.org</li>
+            <li>Develop general features on minesweeper.org, sync to ajaxchess.com</li>
+            <li>Actively fundraising — business plan written with Claude</li>
+          </ul>
+        </div>
+        <div>
+          <div class="col-hd">Claude for Entrepreneurs</div>
+          <ul class="blist">
+            <li>Developed Claudebox — internal access controls &amp; file sharing</li>
+            <li>Wrote businessplan.md, iterated with Claude</li>
+            <li>Excel model, deck, and business plan at <a href="https://ajaxchess.com/admin/analysis" style="color:var(--accent)">ajaxchess.com/admin/analysis</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /track -->
+</div><!-- /deck -->
+
+<nav class="nav">
+  <button class="nav-btn" id="prev" aria-label="Previous slide">‹</button>
+  <span id="counter">1 / 23</span>
+  <button class="nav-btn" id="next" aria-label="Next slide">›</button>
+</nav>
+
+<script>
+(function () {
+  const track   = document.getElementById('track');
+  const fill    = document.getElementById('progress-fill');
+  const counter = document.getElementById('counter');
+  const btnPrev = document.getElementById('prev');
+  const btnNext = document.getElementById('next');
+  const slides  = track.querySelectorAll('.slide');
+  const total   = slides.length;
+  let current   = 0;
+
+  function goTo(n) {
+    if (n < 0 || n >= total) return;
+    current = n;
+    track.style.transform = 'translateX(-' + (current * 100) + 'vw)';
+    counter.textContent   = (current + 1) + ' / ' + total;
+    fill.style.width      = ((current + 1) / total * 100) + '%';
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === total - 1;
+  }
+
+  btnPrev.addEventListener('click', function () { goTo(current - 1); });
+  btnNext.addEventListener('click', function () { goTo(current + 1); });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault(); goTo(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault(); goTo(current - 1);
+    } else if (e.key === 'Home') {
+      goTo(0);
+    } else if (e.key === 'End') {
+      goTo(total - 1);
+    }
+  });
+
+  var touchX = 0;
+  document.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    var dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 48) goTo(current + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+
+  goTo(0);
+}());
+</script>
+</body>
+</html>
