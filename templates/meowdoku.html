@@ -142,7 +142,7 @@
 
 .mk-cell {
   display:flex; align-items:center; justify-content:center;
-  cursor:pointer; font-size:clamp(10px,4.5vw/var(--mk-n,8)*8,32px);
+  cursor:pointer; font-size:calc(min(480px, 90vw) / var(--mk-n, 8) * 0.5);
   border: 1px solid rgba(0,0,0,0.12);
   box-sizing:border-box; position:relative;
   transition: filter 0.05s;
@@ -153,8 +153,8 @@
 .mk-cell.mk-bl { border-left:   3px solid #222; }
 .mk-cell.mk-br { border-right:  3px solid #222; }
 
-.mk-cell.mk-mark-x   { color:rgba(0,0,0,0.45); font-size:0.65em; font-weight:700; }
-.mk-cell.mk-mark-cat { font-size:0.7em; line-height:1; }
+.mk-cell.mk-mark-x   { color:rgba(0,0,0,0.45); font-weight:700; }
+.mk-cell.mk-mark-cat { line-height:1; }
 .mk-cell.mk-conflict { outline:3px solid #e74c3c; outline-offset:-3px; animation:mk-pulse 0.3s ease; }
 @keyframes mk-pulse { 0%{filter:brightness(1.4)} 100%{filter:brightness(1)} }
 
