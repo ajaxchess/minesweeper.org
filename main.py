@@ -2076,7 +2076,10 @@ def fifteen_puzzle_howtoplay(request: Request):
     })
 
 
-# ── Meowdoku ──────────────────────────────────────────────────────────────────
+# ── Meowdoku ─────────────────────────────────────────────────────────────────
+# NOTE: keep this section here (before WC2026/vibecoding). Routes with path
+# parameters defined after ~line 9700 return 404 — likely an OTEL
+# FastAPIInstrumentor interaction with the large route table.
 
 @app.get("/meowdoku", response_class=HTMLResponse)
 async def meowdoku_page(
