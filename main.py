@@ -386,6 +386,21 @@ async def lang_prefix_middleware(request: Request, call_next):
     if any(path.startswith(p) for p in _SKIP):
         return await call_next(request)
 
+    # ── Redirect lang subdomains (e.g. de.minesweeper.org) → /{lang} path (301) ──
+    # These subdomains proxy into this same app (see get_lang()'s subdomain
+    # fallback below) and were serving live duplicate content with nothing but
+    # a canonical tag pointing elsewhere — GSC flagged this as weaker than a
+    # real redirect. Absolute URL is built with a hardcoded https://minesweeper.org
+    # origin, so this can't be turned into an open redirect by request data.
+    host = request.headers.get("host", "").split(":")[0]
+    host_parts = host.split(".")
+    if len(host_parts) >= 3 and host_parts[0] in SUPPORTED_LANGS and host_parts[0] != "en":
+        subdomain_lang = host_parts[0]
+        qs = request.url.query
+        redirect_path = f"/{subdomain_lang}" + ("" if path == "/" else path)
+        redirect_url = f"https://minesweeper.org{redirect_path}" + (f"?{qs}" if qs else "")
+        return RedirectResponse(url=redirect_url, status_code=301)
+
     request.state.original_path = path  # pre-rewrite; used by auth ?next= link
 
     # ── Redirect ?lang=XX → /{lang}/path (301) ────────────────────────────────
