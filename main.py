@@ -522,13 +522,20 @@ async def health(request: Request):
     return JSONResponse({"status": "ok", "commit": commit, "environment": _ENVIRONMENT})
 
 @app.get("/sitemap.xml", include_in_schema=False)
-async def sitemap(request: Request):
+async def sitemap(request: Request, db: Session = Depends(get_db)):
+    published_patterns = (
+        db.query(Pattern)
+        .filter(Pattern.status == "published")
+        .order_by(Pattern.slug)
+        .all()
+    )
     return templates.TemplateResponse(
         request,
         "sitemap.xml",
         {"today": date.today().isoformat(),
          "blog_posts": BLOG_POSTS, "sitemap_langs": sorted(REAL_LANGS),
-         "wc2026_countries": WC2026_COUNTRIES},
+         "wc2026_countries": WC2026_COUNTRIES,
+         "published_patterns": published_patterns},
         media_type="application/xml",
     )
 

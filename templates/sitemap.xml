@@ -53,6 +53,20 @@
     <priority>0.8</priority>
   </url>
 
+  <url>
+    <loc>https://minesweeper.org/rush/custom</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/rush/leaderboard</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
   <!-- ── Multiplayer ───────────────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/duel</loc>
@@ -102,6 +116,13 @@
     <lastmod>{{ today }}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/tentaizu/archive</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
   </url>
 
   <!-- ── Mobile app landing pages ────────────────────────────────────────── -->
@@ -156,6 +177,64 @@
     <priority>0.8</priority>
   </url>
 
+  <url>
+    <loc>https://minesweeper.org/mosaic/easy</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/mosaic/replay</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- ── Meowdoku ─────────────────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/meowdoku</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/meowdoku/generator</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- ── Tametsi ──────────────────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/tametsi</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/tametsi/hex</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/tametsi/history</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- ── Numbers Match ────────────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/numbers-match</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 
   <!-- ── Variants ──────────────────────────────────────────────────────────── -->
   <url>
@@ -173,11 +252,27 @@
   </url>
 
   <url>
+    <loc>https://minesweeper.org/puzzles</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
     <loc>https://minesweeper.org/cylinder</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  {% for _diff in ['intermediate', 'expert', 'custom'] %}
+  <url>
+    <loc>https://minesweeper.org/cylinder/{{ _diff }}</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  {% endfor %}
 
   <url>
     <loc>https://minesweeper.org/toroid</loc>
@@ -186,11 +281,75 @@
     <priority>0.8</priority>
   </url>
 
+  {% for _diff in ['intermediate', 'expert', 'custom'] %}
+  <url>
+    <loc>https://minesweeper.org/toroid/{{ _diff }}</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  {% endfor %}
+
   <url>
     <loc>https://minesweeper.org/hexsweeper</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  {% for _diff in ['intermediate', 'expert', 'custom'] %}
+  <url>
+    <loc>https://minesweeper.org/hexsweeper/{{ _diff }}</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  {% endfor %}
+
+  <url>
+    <loc>https://minesweeper.org/globesweeper</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  {% for _diff in ['intermediate', 'expert', 'custom'] %}
+  <url>
+    <loc>https://minesweeper.org/globesweeper/{{ _diff }}</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  {% endfor %}
+
+  <url>
+    <loc>https://minesweeper.org/globesweeper/leaderboard</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/mobiussweeper</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  {% for _diff in ['intermediate', 'expert'] %}
+  <url>
+    <loc>https://minesweeper.org/mobiussweeper/{{ _diff }}</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  {% endfor %}
+
+  <url>
+    <loc>https://minesweeper.org/mobiussweeper/leaderboard</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
   </url>
 
   <url>
@@ -258,6 +417,78 @@
     <priority>0.7</priority>
   </url>
   {% endfor %}
+
+  <!-- ── Mahjong ──────────────────────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/other/mahjong</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/other/mahjong/daily</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/other/mahjong/how-to-play</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/other/mahjong/leaderboard</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- ── Jigsaw ───────────────────────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/other/jigsaw</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/other/jigsaw/daily</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/other/jigsaw/gallery</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/other/jigsaw/generator</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/other/jigsaw/how-to-play</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/other/jigsaw/leaderboard</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
 
   <!-- ── Schulte Grid ──────────────────────────────────────────────────────────── -->
   <url>
@@ -354,6 +585,68 @@
     <lastmod>{{ today }}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+
+  <!-- ── Leaderboard & Archive ─────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/leaderboard</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/archive</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- ── Training ──────────────────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/quests</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/bootcamp</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ── Pattern Wiki ──────────────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/patterns</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  {% for _p in published_patterns %}
+  <url>
+    <loc>https://minesweeper.org/patterns/{{ _p.slug }}</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  {% endfor %}
+
+  <!-- ── Vibecoding ────────────────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/vibecoding</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://minesweeper.org/vibecoding/booth</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
 
   <!-- ── Guides & content ──────────────────────────────────────────────────── -->
