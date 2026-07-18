@@ -8443,6 +8443,17 @@ def _mah_response(lang: str) -> HTMLResponse:
             f'<base href="/{lang_code}/other/mahjong/">',
             1,
         )
+    # The Angular app reads ?board=... client-side — the server sends identical
+    # markup for every board value, so without a canonical tag Google indexes
+    # every ?board= permutation as its own "duplicate" page (GSC: "Duplicate
+    # without user-selected canonical"). canonical_url is built from lang_code
+    # only (untainted, see above) and never includes the query string.
+    canonical_url = f"https://minesweeper.org/{lang_code}/other/mahjong/" if lang_code else "https://minesweeper.org/other/mahjong/"
+    content = content.replace(
+        '<meta property="og:url" content>',
+        f'<meta property="og:url" content="{canonical_url}">\n\t<link rel="canonical" href="{canonical_url}">',
+        1,
+    )
     if mah_lang:
         # Inject before </head> — runs synchronously before Angular's type="module" scripts
         inject = (
