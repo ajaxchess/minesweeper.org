@@ -328,6 +328,18 @@ class MeowdokuScore(Base):
         Index("ix_meowdoku_scores_date_size_time", "puzzle_date", "grid_size", "time_secs"),
     )
 
+    def to_dict(self):
+        return {
+            "id":           self.id,
+            "name":         self.name,
+            "user_email":   self.user_email,
+            "puzzle_date":  self.puzzle_date,
+            "grid_size":    self.grid_size,
+            "time_secs":    self.time_secs,
+            "board_hash":   self.board_hash,
+            "created_at":   self.created_at.strftime("%Y-%m-%d"),
+        }
+
 # ── Cylinder Score model (permanent — never reset) ────────────────────────────
 class CylinderScore(Base):
     __tablename__ = "cylinder_scores"
