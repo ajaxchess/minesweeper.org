@@ -2,7 +2,7 @@
 
 {% set _title = (display_name ~ " | minesweeper.org") if display_name else t.meta_title_jigsaw_daily %}
 {% set _desc  = t.meta_desc_jigsaw_daily %}
-{% set _canon = "https://minesweeper.org/other/jigsaw/daily" %}
+{% set _canon = ("https://minesweeper.org/other/jigsaw/photo/" ~ board_hash) if board_hash else "https://minesweeper.org/other/jigsaw/daily" %}
 
 {% block title %}{{ _title }}{% endblock %}
 {% block description %}{{ _desc }}{% endblock %}

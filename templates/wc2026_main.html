@@ -1,6 +1,9 @@
 {% extends "base.html" %}
+{% set _canon = "https://minesweeper.org/2026worldcup" %}
 {% block title %}{{ t.meta_title_wc2026 }}{% endblock %}
 {% block description %}{{ t.meta_desc_wc2026 }}{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
 
 {% block content %}
 <div class="wc-wrapper">

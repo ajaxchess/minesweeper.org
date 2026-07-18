@@ -1,6 +1,9 @@
 {% extends "base.html" %}
+{% set _canon = "https://minesweeper.org/2026worldcup/" + country.slug %}
 {% block title %}{{ country.name }} — {{ t.wc_country_title_suffix }}{% endblock %}
 {% block description %}Play Tametsi in {{ country.name }}'s World Cup colors and earn points for your team.{% endblock %}
+{% block canonical %}{{ _canon }}{% endblock %}
+{% block og_url %}{{ _canon }}{% endblock %}
 
 {% block content %}
 <div class="wc-wrapper">

@@ -8762,6 +8762,9 @@ def jigsaw_photo_play(request: Request, board_hash: str, difficulty: str = Query
         "display_name":   photo.display_name or "Custom Puzzle",
         "difficulty":     difficulty,
         "pending_review": pending_review,
+        # Not-yet-approved puzzles are only visible to their creator — don't
+        # let them get indexed while pending moderation.
+        "noindex":        pending_review,
     })
 
 
