@@ -17,7 +17,7 @@ apscheduler==3.11.3
 authlib==1.7.2
 httpx==0.28.1
 itsdangerous==2.2.0
-Markdown==3.10.2
+Markdown==3.10.3
 psutil==7.2.2
 better-profanity==0.7.0
 slowapi==0.1.10
