@@ -5,7 +5,7 @@
 # Production uses requirements.txt (no hashes).
 # Staging uses requirements.lock (hash-pinned, all transitive deps).
 
-fastapi==0.138.1
+fastapi==0.141.1
 uvicorn[standard]==0.49.0
 gunicorn==23.0.0
 jinja2==3.1.6
