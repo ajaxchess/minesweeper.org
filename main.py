@@ -2128,7 +2128,7 @@ async def meowdoku_page(
 @app.get("/puzzles/meowdoku", response_class=HTMLResponse)
 async def puzzles_meowdoku_redirect(request: Request):
     prefix = f"/{get_lang(request)}" if get_lang(request) != "en" else ""
-    return RedirectResponse(_safe_relative_url(f"{prefix}/meowdoku"), status_code=301)  # lgtm[py/url-redirection]
+    return RedirectResponse(_safe_relative_url(f"{prefix}/meowdoku"), status_code=301)  # codeql[py/url-redirection]
 
 @app.get("/meowdoku/generator", response_class=HTMLResponse)
 async def meowdoku_generator_page(request: Request):
@@ -2142,7 +2142,7 @@ async def meowdoku_generator_page(request: Request):
 @app.get("/puzzles/meowdoku/generator", response_class=HTMLResponse)
 async def puzzles_meowdoku_generator_redirect(request: Request):
     prefix = f"/{get_lang(request)}" if get_lang(request) != "en" else ""
-    return RedirectResponse(_safe_relative_url(f"{prefix}/meowdoku/generator"), status_code=301)  # lgtm[py/url-redirection]
+    return RedirectResponse(_safe_relative_url(f"{prefix}/meowdoku/generator"), status_code=301)  # codeql[py/url-redirection]
 
 
 class MeowdokuScoreSubmit(BaseModel):
@@ -7762,7 +7762,7 @@ async def admin_pattern_update(slug: str, request: Request, db: Session = Depend
     slug_match = re.fullmatch(r'[a-z0-9][a-z0-9\-]{0,99}', pattern.slug)
     if not slug_match:
         raise HTTPException(status_code=500, detail="Invalid pattern slug")
-    return RedirectResponse(_safe_relative_url(f"/admin/patterns/{slug_match.group()}/edit"), status_code=303)  # lgtm[py/url-redirection]
+    return RedirectResponse(_safe_relative_url(f"/admin/patterns/{slug_match.group()}/edit"), status_code=303)  # codeql[py/url-redirection]
 
 
 @app.post("/admin/patterns/{slug}/delete")
@@ -8332,7 +8332,7 @@ def admin_analysis_by_path(filename: str, folder: Optional[str] = None):
         if not folder_match:
             raise HTTPException(status_code=400, detail="Invalid folder")
         params += f"&folder={quote(folder_match.group(), safe='')}"
-    return RedirectResponse(_safe_relative_url(f"/admin/analysis?{params}"), status_code=302)  # lgtm[py/url-redirection]
+    return RedirectResponse(_safe_relative_url(f"/admin/analysis?{params}"), status_code=302)  # codeql[py/url-redirection]
 
 
 # ── Nonosweeper scores ────────────────────────────────────────────────────────
