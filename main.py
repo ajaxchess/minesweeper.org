@@ -41,7 +41,7 @@ from duelold_routes import duelold_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
 from starlette.config import Config
-from translations import get_lang, get_t, SUPPORTED_LANGS, REAL_LANGS
+from translations import get_lang, get_t, SUPPORTED_LANGS, REAL_LANGS, FUN_LANGS, TRANSLATIONS
 from game_catalog import LEADERBOARD_GROUPS, PUZZLE_GAMES
 from leaderboard_platform import leaderboard_cards, leaderboard_catalog, leaderboard_rows
 from quest_catalog import quest_config
@@ -291,6 +291,7 @@ templates.env.globals["mexico_banner"]         = site_settings.mexico_banner
 templates.env.globals["is_mexico_cinco"]       = site_settings.is_mexico_cinco
 templates.env.globals["is_mexico_independence"] = site_settings.is_mexico_independence
 templates.env.globals["page_localized"]        = True  # default; English-only routes override to False
+templates.env.globals["FUN_LANGS"]            = FUN_LANGS
 
 def _autolink(text):
     """Jinja2 filter: HTML-escape text then wrap bare URLs in <a> tags."""
@@ -2797,10 +2798,11 @@ def game_2048_landing(request: Request):
 def game_2048_daily(request: Request):
     today = date.today().isoformat()
     return templates.TemplateResponse(request, "2048_daily.html", {
-        "mode": "other",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": today,
+        "mode":    "other",
+        "user":    get_current_user(request),
+        "lang":    get_lang(request), "t": get_t(request),
+        "today":   today,
+        "noindex": get_lang(request) != "en",
     })
 
 
@@ -2835,10 +2837,11 @@ def game_2048hex_landing(request: Request):
 def game_2048hex_play(request: Request):
     today = date.today().isoformat()
     return templates.TemplateResponse(request, "2048hex.html", {
-        "mode": "other",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": today,
+        "mode":    "other",
+        "user":    get_current_user(request),
+        "lang":    get_lang(request), "t": get_t(request),
+        "today":   today,
+        "noindex": get_lang(request) != "en",
     })
 
 @app.get("/other/2048hex/leaderboard", response_class=HTMLResponse)
@@ -2973,10 +2976,11 @@ def schulte_landing(request: Request):
 def schulte_play(request: Request):
     today = date.today().isoformat()
     return templates.TemplateResponse(request, "schulte_play.html", {
-        "mode": "other",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": today,
+        "mode":    "other",
+        "user":    get_current_user(request),
+        "lang":    get_lang(request), "t": get_t(request),
+        "today":   today,
+        "noindex": get_lang(request) != "en",
     })
 
 @app.get("/other/schulte/leaderboard", response_class=HTMLResponse)
@@ -4885,8 +4889,9 @@ async def worldsweeper_custom(request: Request, t: int = 3, mines: int = 4):
 @app.get("/worldsweeper/leaderboard", response_class=HTMLResponse)
 async def worldsweeper_leaderboard(request: Request):
     return templates.TemplateResponse(request, "worldsweeper_leaderboard.html", {
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
+        "user":    get_current_user(request),
+        "lang":    get_lang(request), "t": get_t(request),
+        "noindex": get_lang(request) != "en",
     })
 
 
@@ -8700,6 +8705,7 @@ def jigsaw_gallery_page(request: Request):
         "lang":    get_lang(request),
         "t":       get_t(request),
         "images":  images,
+        "noindex": get_lang(request) != "en",
     })
 
 
@@ -10192,6 +10198,7 @@ def _individual_leaderboard(db: Session, limit: int = 20) -> list:
 def wc2026_main(request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
     t    = get_t(request)
+    lang = get_lang(request)
     fan_ctx   = _wc_fan_banner(user, db, request)
     groups    = {g: WC2026_BY_GROUP[g] for g in WC2026_GROUPS}
     country_lb = _fan_country_leaderboard(db)
@@ -10201,9 +10208,12 @@ def wc2026_main(request: Request, db: Session = Depends(get_db)):
     profile = db.query(UserProfile).filter(UserProfile.email == user["email"]).first() if user else None
     user_tz = getattr(profile, "timezone", None) if profile else None
     knockout = _wc_knockout_matches(db, user_tz)
+    # Noindex when this language has no translated wc2026 title (falls back to English).
+    # Automatically lifts once meta_title_wc2026 is added to the language's TRANSLATIONS entry.
+    _noindex = lang != "en" and "meta_title_wc2026" not in TRANSLATIONS.get(lang, {})
     return templates.TemplateResponse(request, "wc2026_main.html", {
         "user": user, "t": t,
-        "lang": get_lang(request),
+        "lang": lang,
         "mode": "wc2026",
         "groups": groups,
         "group_list": WC2026_GROUPS,
@@ -10213,6 +10223,7 @@ def wc2026_main(request: Request, db: Session = Depends(get_db)):
         "guest_team_pts": guest_team_pts,
         "knockout_rounds": knockout["rounds"],
         "next_round": knockout["next_round"],
+        "noindex": _noindex,
         **fan_ctx,
     })
 
@@ -10223,6 +10234,7 @@ def wc2026_country(slug: str, request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Country not found")
     user    = get_current_user(request)
     t       = get_t(request)
+    lang    = get_lang(request)
     country = WC2026_BY_SLUG[slug]
     # Auto-select this country as the fan flag for guests who haven't chosen one yet
     if not user and not request.session.get("wc2026_fan"):
@@ -10251,9 +10263,14 @@ def wc2026_country(slug: str, request: Request, db: Session = Depends(get_db)):
                 db, None, slug, "hard", guest_token=token
             ))
 
+    # Noindex when this language's wc_country_title_suffix is unchanged from English
+    # (title would be identical to the English page). Lifts automatically once a
+    # real translated suffix is added to the language's TRANSLATIONS entry.
+    _en_suffix = TRANSLATIONS["en"]["wc_country_title_suffix"]
+    _noindex = lang != "en" and TRANSLATIONS.get(lang, {}).get("wc_country_title_suffix", _en_suffix) == _en_suffix
     return templates.TemplateResponse(request, "wc2026_country.html", {
         "user": user, "t": t,
-        "lang": get_lang(request),
+        "lang": lang,
         "mode": "wc2026",
         "country": country,
         "matches": matches,
@@ -10263,6 +10280,7 @@ def wc2026_country(slug: str, request: Request, db: Session = Depends(get_db)):
         "board_hard": board_hard,
         "wc2026_teams": WC2026_COUNTRIES,
         "user_tz": user_tz,
+        "noindex": _noindex,
         **fan_ctx,
     })
 

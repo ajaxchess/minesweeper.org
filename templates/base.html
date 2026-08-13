@@ -15,35 +15,7 @@
   {% else %}
     <link rel="canonical" href="{% block canonical %}https://minesweeper.org/{% endblock %}">
   {% endif %}
-  {% if noindex %}<meta name="robots" content="noindex, follow">{% endif %}
-  {# hreflang alternates — only for pages that have localised variants. #}
-  {% if page_localized %}
-  {%- set _bp = request.url.path -%}
-  <link rel="alternate" hreflang="x-default" href="https://minesweeper.org{{ _bp }}">
-  <link rel="alternate" hreflang="en"      href="https://minesweeper.org{{ _bp }}">
-  <link rel="alternate" hreflang="de"      href="https://minesweeper.org/de{{ _bp }}">
-  <link rel="alternate" hreflang="fr"      href="https://minesweeper.org/fr{{ _bp }}">
-  <link rel="alternate" hreflang="es"      href="https://minesweeper.org/es{{ _bp }}">
-  <link rel="alternate" hreflang="pt"      href="https://minesweeper.org/pt{{ _bp }}">
-  <link rel="alternate" hreflang="it"      href="https://minesweeper.org/it{{ _bp }}">
-  <link rel="alternate" hreflang="pl"      href="https://minesweeper.org/pl{{ _bp }}">
-  <link rel="alternate" hreflang="ru"      href="https://minesweeper.org/ru{{ _bp }}">
-  <link rel="alternate" hreflang="uk"      href="https://minesweeper.org/uk{{ _bp }}">
-  <link rel="alternate" hreflang="zh"      href="https://minesweeper.org/zh{{ _bp }}">
-  <link rel="alternate" hreflang="zh-Hant" href="https://minesweeper.org/zh-hant{{ _bp }}">
-  <link rel="alternate" hreflang="ja"      href="https://minesweeper.org/ja{{ _bp }}">
-  <link rel="alternate" hreflang="ko"      href="https://minesweeper.org/ko{{ _bp }}">
-  <link rel="alternate" hreflang="th"      href="https://minesweeper.org/th{{ _bp }}">
-  <link rel="alternate" hreflang="tl"      href="https://minesweeper.org/tl{{ _bp }}">
-  <link rel="alternate" hreflang="da"      href="https://minesweeper.org/da{{ _bp }}">
-  <link rel="alternate" hreflang="nl"      href="https://minesweeper.org/nl{{ _bp }}">
-  <link rel="alternate" hreflang="id"      href="https://minesweeper.org/id{{ _bp }}">
-  <link rel="alternate" hreflang="ms"      href="https://minesweeper.org/ms{{ _bp }}">
-  <link rel="alternate" hreflang="hi"      href="https://minesweeper.org/hi{{ _bp }}">
-  <link rel="alternate" hreflang="bn"      href="https://minesweeper.org/bn{{ _bp }}">
-  <link rel="alternate" hreflang="el"      href="https://minesweeper.org/el{{ _bp }}">
-  {% endif %}
-
+  {% if noindex or lang in FUN_LANGS %}<meta name="robots" content="noindex, follow">{% endif %}
   <link rel="icon" type="image/png" href="/static/favicon.png?v=2" />
   <link rel="stylesheet" href="/static/css/style.css?v=61" />
   {% block extra_head %}{% endblock %}
@@ -107,6 +79,12 @@
   <link rel="alternate" hreflang="th"      href="https://minesweeper.org/th{{ _sfx }}">
   <link rel="alternate" hreflang="tl"      href="https://minesweeper.org/tl{{ _sfx }}">
   <link rel="alternate" hreflang="bn"      href="https://minesweeper.org/bn{{ _sfx }}">
+  <link rel="alternate" hreflang="da"      href="https://minesweeper.org/da{{ _sfx }}">
+  <link rel="alternate" hreflang="nl"      href="https://minesweeper.org/nl{{ _sfx }}">
+  <link rel="alternate" hreflang="id"      href="https://minesweeper.org/id{{ _sfx }}">
+  <link rel="alternate" hreflang="ms"      href="https://minesweeper.org/ms{{ _sfx }}">
+  <link rel="alternate" hreflang="hi"      href="https://minesweeper.org/hi{{ _sfx }}">
+  <link rel="alternate" hreflang="el"      href="https://minesweeper.org/el{{ _sfx }}">
 
   <!-- Open Graph -->
   <meta property="og:type"         content="{% block og_type %}website{% endblock %}">
