@@ -2,15 +2,15 @@
 
 {% if mode == 'beginner' %}
   {% set _diff  = t.nav_beginner %}
-  {% set _desc  = "Play MobiusSweeper — minesweeper on a rotating 3D Möbius strip. Beginner: 4×40 strip, 160 cells, 16 mines. Free to play, no download required." %}
+  {% set _desc  = t.meta_desc_mobiussweeper_beginner %}
   {% set _canon = "https://minesweeper.org/mobiussweeper" %}
 {% elif mode == 'intermediate' %}
   {% set _diff  = t.nav_intermediate %}
-  {% set _desc  = "Play MobiusSweeper — minesweeper on a rotating 3D Möbius strip. Intermediate: 8×80 strip, 640 cells, 64 mines. Free to play, no download required." %}
+  {% set _desc  = t.meta_desc_mobiussweeper_intermediate %}
   {% set _canon = "https://minesweeper.org/mobiussweeper/intermediate" %}
 {% else %}
   {% set _diff  = t.nav_expert %}
-  {% set _desc  = "Play MobiusSweeper — minesweeper on a rotating 3D Möbius strip. Expert: 16×160 strip, 2560 cells, 256 mines. Free to play, no download required." %}
+  {% set _desc  = t.meta_desc_mobiussweeper_expert %}
   {% set _canon = "https://minesweeper.org/mobiussweeper/expert" %}
 {% endif %}
 {% set _title = "MobiusSweeper — " ~ _diff ~ " | minesweeper.org" %}
