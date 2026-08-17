@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Preferences:  prefs:player_name | prefs:default_mode | prefs:default_guess |
 //               prefs:theme | prefs:sound | prefs:autosubmit | prefs:on_win | prefs:on_lose
 // Scores:       scores:{mode}:{guess}  e.g. scores:beginner:guess, scores:expert:noguess
+// Score version key gates one-time migrations (bump SCORE_VERSION to clear stored scores).
 
 const PREFS_KEYS = {
   playerName:   'prefs:player_name',
@@ -16,12 +17,31 @@ const PREFS_KEYS = {
   onLose:       'prefs:on_lose',     // 'summary' | 'newgame'
 };
 
+const SCORE_VERSION_KEY = 'prefs:score_version';
+const SCORE_VERSION     = 'v2'; // bump to wipe local scores on next launch
+
 const MODES   = ['beginner', 'intermediate', 'expert'];
 const GUESSES = ['guess', 'noguess'];
-const MAX_LOCAL_SCORES = 20;
+const MAX_LOCAL_SCORES = 50;
 
 function scoresKey(mode, guess) {
   return `scores:${mode}:${guess}`;
+}
+
+// ── One-time migration ────────────────────────────────────────────────────────
+
+/**
+ * Call once on app startup (App.js useEffect).
+ * If the stored score version doesn't match SCORE_VERSION, all local score
+ * keys are cleared so My Scores starts fresh with date-stamped entries.
+ */
+export async function initStorage() {
+  const stored = await AsyncStorage.getItem(SCORE_VERSION_KEY);
+  if (stored === SCORE_VERSION) return;
+
+  const scoreKeys = MODES.flatMap(m => GUESSES.map(g => scoresKey(m, g)));
+  await AsyncStorage.multiRemove(scoreKeys);
+  await AsyncStorage.setItem(SCORE_VERSION_KEY, SCORE_VERSION);
 }
 
 // ── Preferences ───────────────────────────────────────────────────────────────
@@ -56,7 +76,7 @@ export async function savePrefs(updates) {
 // ── Local scores ──────────────────────────────────────────────────────────────
 
 /**
- * Load the local top-20 scores for a given mode + guess combination.
+ * Load the local top-50 scores for a given mode + guess combination.
  * Returns an array sorted by time_ms ascending (fastest first).
  */
 export async function getLocalScores(mode, guess) {
@@ -66,7 +86,8 @@ export async function getLocalScores(mode, guess) {
 
 /**
  * Insert a new score into local storage.
- * - Deduplicates on (mode + time_ms + board_hash)
+ * - Stamps the current date (ISO string) onto the score record
+ * - Deduplicates on (time_ms + board_hash)
  * - Keeps top MAX_LOCAL_SCORES by time_ms (fastest)
  * - Persists the server id if the submission succeeded
  */
@@ -85,7 +106,8 @@ export async function saveLocalScore(mode, guess, score) {
     return;
   }
 
-  const updated = [...existing, score]
+  const dated   = { ...score, date: new Date().toISOString() };
+  const updated = [...existing, dated]
     .sort((a, b) => a.time_ms - b.time_ms)
     .slice(0, MAX_LOCAL_SCORES);
 

@@ -309,12 +309,20 @@ export default function GameScreen({ navigation }) {
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity
-          style={[styles.toolBtn, styles.scoresBtn]}
-          onPress={() => navigation.navigate('Leaderboard', { mode, noGuess })}
-        >
-          <Text style={{ color: theme.accent, fontSize: 12, fontWeight: '600' }}>Scores</Text>
-        </TouchableOpacity>
+        <View style={styles.scoreBtns}>
+          <TouchableOpacity
+            style={styles.toolBtn}
+            onPress={() => navigation.navigate('Leaderboard', { mode, noGuess })}
+          >
+            <Text style={{ color: theme.accent, fontSize: 12, fontWeight: '600' }}>Leaderboard</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.toolBtn}
+            onPress={() => navigation.navigate('MyScores', { mode, noGuess })}
+          >
+            <Text style={{ color: theme.accent, fontSize: 12, fontWeight: '600' }}>My Scores</Text>
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={styles.toolBtn}
@@ -391,5 +399,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 4, borderBottomWidth: 1, gap: 8,
   },
   toolBtn:   { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 6 },
-  scoresBtn: { marginLeft: 'auto' },
+  scoreBtns: { marginLeft: 'auto', flexDirection: 'row', gap: 4 },
 });

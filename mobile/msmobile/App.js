@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 global.Buffer = global.Buffer ?? Buffer;
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import MobileAds from 'react-native-google-mobile-ads';
 
 // Initialise the AdMob SDK once at app startup
@@ -11,13 +11,15 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { initStorage }             from './src/services/storage';
 
-import GameScreen       from './src/screens/GameScreen';
+import GameScreen        from './src/screens/GameScreen';
 import LeaderboardScreen from './src/screens/LeaderboardScreen';
-import HowToPlayScreen  from './src/screens/HowToPlayScreen';
-import StrategyScreen   from './src/screens/StrategyScreen';
-import SettingsScreen   from './src/screens/SettingsScreen';
-import AboutScreen      from './src/screens/AboutScreen';
+import MyScoresScreen    from './src/screens/MyScoresScreen';
+import HowToPlayScreen   from './src/screens/HowToPlayScreen';
+import StrategyScreen    from './src/screens/StrategyScreen';
+import SettingsScreen    from './src/screens/SettingsScreen';
+import AboutScreen       from './src/screens/AboutScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -55,6 +57,11 @@ function AppNavigator() {
             options={{ title: 'Leaderboard' }}
           />
           <Stack.Screen
+            name="MyScores"
+            component={MyScoresScreen}
+            options={{ title: 'My Scores' }}
+          />
+          <Stack.Screen
             name="HowToPlay"
             component={HowToPlayScreen}
             options={{ title: 'How to Play' }}
@@ -81,6 +88,8 @@ function AppNavigator() {
 }
 
 export default function App() {
+  useEffect(() => { initStorage(); }, []);
+
   return (
     <ThemeProvider>
       <AppNavigator />
