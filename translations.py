@@ -61607,7 +61607,6 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_tentaizu_easy": "Tentaizu helppo",
         "nav_tentaizu_howto": "Kuinka pelata Tentaizua",
         "nav_tametsi": "Tametsti",
-        "nav_tametsti_daily": "Tametsti päivittäinen",
         "nav_sub_cylinder": "Vasen ja oikea reuna kietoutuvat yhteen",
         "nav_sub_toroid": "Kaikki reunat kietoutuvat — donitsi-topologia",
         "nav_sub_replay": "Pelaa tietty lauta tiivisteen avulla",
