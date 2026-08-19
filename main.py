@@ -367,6 +367,13 @@ def _safe_relative_url(url: str, fallback: str = "/") -> str:
         return fallback
     return url
 
+# Pre-computed map of language code → URL path prefix.
+# Values are derived from SUPPORTED_LANGS at import time, never from user input,
+# so dict lookups below cannot produce attacker-controlled redirect targets.
+_LANG_URL_PREFIX: dict[str, str] = {
+    lang: (f"/{lang}" if lang != "en" else "") for lang in SUPPORTED_LANGS
+}
+
 # ── Language-prefix middleware ────────────────────────────────────────────────
 # Registered last → runs outermost (first) for every request.
 # Responsibilities:
@@ -2128,8 +2135,8 @@ async def meowdoku_page(
 
 @app.get("/puzzles/meowdoku", response_class=HTMLResponse)
 async def puzzles_meowdoku_redirect(request: Request):
-    prefix = f"/{get_lang(request)}" if get_lang(request) != "en" else ""
-    return RedirectResponse(_safe_relative_url(f"{prefix}/meowdoku"), status_code=301)  # codeql[py/url-redirection]
+    prefix = _LANG_URL_PREFIX.get(get_lang(request), "")
+    return RedirectResponse(f"{prefix}/meowdoku", status_code=301)
 
 @app.get("/meowdoku/generator", response_class=HTMLResponse)
 async def meowdoku_generator_page(request: Request):
@@ -2142,8 +2149,8 @@ async def meowdoku_generator_page(request: Request):
 
 @app.get("/puzzles/meowdoku/generator", response_class=HTMLResponse)
 async def puzzles_meowdoku_generator_redirect(request: Request):
-    prefix = f"/{get_lang(request)}" if get_lang(request) != "en" else ""
-    return RedirectResponse(_safe_relative_url(f"{prefix}/meowdoku/generator"), status_code=301)  # codeql[py/url-redirection]
+    prefix = _LANG_URL_PREFIX.get(get_lang(request), "")
+    return RedirectResponse(f"{prefix}/meowdoku/generator", status_code=301)
 
 
 class MeowdokuScoreSubmit(BaseModel):
@@ -8337,7 +8344,7 @@ def admin_analysis_by_path(filename: str, folder: Optional[str] = None):
         if not folder_match:
             raise HTTPException(status_code=400, detail="Invalid folder")
         params += f"&folder={quote(folder_match.group(), safe='')}"
-    return RedirectResponse(_safe_relative_url(f"/admin/analysis?{params}"), status_code=302)  # codeql[py/url-redirection]
+    return RedirectResponse(f"/admin/analysis?{params}", status_code=302)
 
 
 # ── Nonosweeper scores ────────────────────────────────────────────────────────
