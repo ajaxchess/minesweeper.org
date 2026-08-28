@@ -405,13 +405,6 @@
 
   <!-- ── Jigsaw ───────────────────────────────────────────────────────────────── -->
   <url>
-    <loc>https://minesweeper.org/other/jigsaw</loc>
-    <lastmod>{{ today }}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
     <loc>https://minesweeper.org/other/jigsaw/daily</loc>
     <lastmod>{{ today }}</lastmod>
     <changefreq>daily</changefreq>
