@@ -111,7 +111,7 @@ a.gv-player-name:hover { text-decoration: underline; }
     <div class="gv-player-row">
       {% if player_country and player_country|length == 2 %}
       <img class="gv-player-flag"
-           src="/static/img/country-flags/{{ player_country }}.png" alt="">
+           src="/static/img/country-flags/{{ player_country }}.png" alt="{{ player_country }}"
       {% endif %}
       {% if player_slug %}
       <a class="gv-player-name" href="/player/{{ player_slug }}">{{ player_name }}</a>

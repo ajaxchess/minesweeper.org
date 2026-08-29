@@ -85,7 +85,7 @@ async function loadScores(mode) {
     body.innerHTML = data.map((s, i) => `
       <tr class="${i % 2 === 1 ? 'lb-even' : ''}">
         <td class="lb-rank">${i + 1}</td>
-        <td class="lb-name">${(s.country ? `<img src="/static/img/country-flags/${escHtml(s.country)}.png" class="lb-flag" alt="">` : '') + (s.profile_url ? `<a href="${escUrl(s.profile_url)}" class="lb-profile-link">${escHtml(s.name)}</a>` : escHtml(s.name))}</td>
+        <td class="lb-name">${(s.country ? `<img src="/static/img/country-flags/${escHtml(s.country)}.png" class="lb-flag" alt="${escHtml(s.country)}">` : '') + (s.profile_url ? `<a href="${escUrl(s.profile_url)}" class="lb-profile-link">${escHtml(s.name)}</a>` : escHtml(s.name))}</td>
         <td class="lb-score">${s.score}</td>
         <td class="lb-score">${s.cleared_mines ?? '—'} mines</td>
         <td class="lb-score">${s.rows_cleared ?? '—'} rows</td>

@@ -119,7 +119,7 @@
         </div>
         <div class="country-edit">
           <img id="country-flag" src="/static/img/country-flags/{{ country }}.png"
-               alt="" style="width:20px;height:14px;object-fit:cover;vertical-align:middle;border-radius:2px;display:{{ 'inline' if country else 'none' }};" />
+               alt="{{ country }}" style="width:20px;height:14px;object-fit:cover;vertical-align:middle;border-radius:2px;display:{{ 'inline' if country else 'none' }};" />
           <select id="country-select" class="favorite-game-select" onchange="saveCountry()">
             <option value="">— none —</option>
             {% for code, name in countries %}
@@ -137,7 +137,7 @@
         <div class="country-edit">
           <img id="wc2026-flag"
                src="/static/img/country-flags/{{ wc2026_fan }}.png"
-               alt=""
+               alt="{{ wc2026_fan }}"
                style="width:20px;height:14px;object-fit:cover;vertical-align:middle;border-radius:2px;display:{{ 'inline' if wc2026_fan else 'none' }};" />
           <select id="wc2026-select" class="favorite-game-select" onchange="saveWC2026Fan()">
             <option value="">— none —</option>

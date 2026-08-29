@@ -142,7 +142,9 @@ var _selectedImg = '';
 
 function openPicker(card) {
   _selectedImg = card.dataset.img;
-  document.getElementById('jgal-modal-thumb').src = '/static/img/puzzle/' + _selectedImg;
+  const thumb = document.getElementById('jgal-modal-thumb');
+  thumb.src = '/static/img/puzzle/' + _selectedImg;
+  thumb.alt = _selectedImg.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
   document.getElementById('jgal-modal').classList.add('show');
 }
 function closeModal() {

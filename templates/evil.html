@@ -161,7 +161,7 @@ async function loadPageLb() {
       return;
     }
     body.innerHTML = data.map((s, i) => {
-      const flag     = s.country ? `<img src="/static/img/country-flags/${s.country}.png" class="lb-flag" alt="">` : '';
+      const flag     = s.country ? `<img src="/static/img/country-flags/${s.country}.png" class="lb-flag" alt="${s.country}">` : '';
       const _pu = safeUrl(s.profile_url);
       const nameCell = _pu
         ? `<a href="${esc(_pu)}" class="lb-profile-link">${flag}${esc(s.name)}</a>`

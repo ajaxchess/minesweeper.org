@@ -107,7 +107,7 @@
         return;
       }
       tbody.innerHTML = scores.map((s, i) => {
-        const flag = s.country ? `<img src="/static/img/country-flags/${s.country}.png" class="lb-flag" alt="">` : '';
+        const flag = s.country ? `<img src="/static/img/country-flags/${s.country}.png" class="lb-flag" alt="${s.country}">` : '';
         const name = flag + (s.profile_url
           ? `<a href="${s.profile_url}">${s.name}</a>`
           : s.name);
