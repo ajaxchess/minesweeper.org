@@ -1,0 +1,4 @@
+# Dev/test-only dependencies — not installed on production or staging servers.
+# Regenerate with:
+#   pip-compile --no-header --no-annotate requirements-dev.in --output-file requirements-dev.txt
+pytest==9.1.1
