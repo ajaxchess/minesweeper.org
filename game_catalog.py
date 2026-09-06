@@ -701,6 +701,13 @@ LEADERBOARD_GROUPS: list[dict[str, object]] = [
                 "play_href": "/other/sudoku/daily",
                 "badge": "Puzzle",
             },
+            {
+                "title": "Meowdoku",
+                "description": "Daily cat-themed Sudoku leaderboard on the game page.",
+                "href": "/meowdoku#meowdoku-lb-section",
+                "play_href": "/meowdoku",
+                "badge": "Daily puzzle",
+            },
         ],
     },
 ]

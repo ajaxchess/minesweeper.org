@@ -362,6 +362,10 @@ def _safe_relative_url(url: str, fallback: str = "/") -> str:
     quirk, so it can't be caught by the scheme/netloc check above."""
     if "\\" in url:
         return fallback
+    if url.startswith("//"):
+        # "///evil.com" fools urlparse (empty netloc) but still resolves as
+        # protocol-relative in browsers — reject any double-leading-slash.
+        return fallback
     parsed = urlparse(url)
     if parsed.scheme or parsed.netloc:
         return fallback

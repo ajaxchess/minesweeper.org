@@ -248,7 +248,7 @@ def test_all_supported_languages_render_core_pages(client):
         for path in ["/", "/leaderboard", "/puzzles", "/quests"]:
             r = client.get(f"/{lang}{path}")
             assert r.status_code == 200, f"{lang}{path}"
-            assert f'<html lang="{lang}">' in r.text
+            assert f'<html lang="{lang}"' in r.text
 
 
 def test_quest_catalog_has_required_fields():

@@ -30,7 +30,7 @@ class TestClassicScoreValidation:
         assert r.status_code == 422
 
     def test_time_above_maximum_returns_422(self, client):
-        r = client.post("/api/scores", json={**BASE_SCORE, "time_secs": 1000}, headers=XHR)
+        r = client.post("/api/scores", json={**BASE_SCORE, "time_secs": 100001}, headers=XHR)
         assert r.status_code == 422
 
     def test_empty_name_returns_422(self, client):

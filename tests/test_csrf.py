@@ -1,10 +1,13 @@
 """
 tests/test_csrf.py — CSRF middleware (X-Requested-With: XMLHttpRequest guard).
 
-All POST /api/* routes must reject requests that lack the custom header.
-Cross-origin pages cannot set custom headers without a CORS preflight,
-making this header unforgeable by third-party attackers.
+The middleware allows requests that carry X-Requested-With: XMLHttpRequest OR
+Content-Type: application/json (both are unforgeable cross-origin without a
+CORS preflight). Tests that expect a 403 must therefore send neither header —
+using content= (raw bytes, no Content-Type) rather than json= (which
+automatically sets Content-Type: application/json and would pass CSRF).
 """
+import json as _json
 from conftest import XHR
 
 # A minimal valid score payload (used only to reach the CSRF check layer)
@@ -19,8 +22,8 @@ _SCORE = {
 
 
 def test_post_without_xhr_header_is_rejected(client):
-    """POST /api/scores without X-Requested-With must return 403."""
-    r = client.post("/api/scores", json=_SCORE)
+    """POST /api/scores with no XHR header and no application/json Content-Type must return 403."""
+    r = client.post("/api/scores", content=_json.dumps(_SCORE).encode())
     assert r.status_code == 403
     assert "CSRF" in r.json().get("detail", "")
 
@@ -49,5 +52,5 @@ def test_csrf_rejects_all_api_post_routes(client):
                                        "cols": 9, "name": "X", "time_secs": 30}),
     ]
     for path, payload in endpoints:
-        r = client.post(path, json=payload)
+        r = client.post(path, content=_json.dumps(payload).encode())
         assert r.status_code == 403, f"{path} did not return 403 without XHR header"

@@ -75,10 +75,13 @@ XHR = {"X-Requested-With": "XMLHttpRequest"}
 @pytest.fixture(autouse=True)
 def clean_db():
     yield
+    from sqlalchemy import inspect as _sa_inspect
     db = _db.SessionLocal()
     try:
+        existing = set(_sa_inspect(_test_engine).get_table_names())
         for table in reversed(_db.Base.metadata.sorted_tables):
-            db.execute(table.delete())
+            if table.name in existing:
+                db.execute(table.delete())
         db.commit()
     finally:
         db.close()

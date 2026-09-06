@@ -4,6 +4,7 @@ tests/test_tametsi_api.py — Integration tests for F79-C: Tametsi API endpoints
 import sys
 import os
 import pytest
+from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -53,7 +54,9 @@ def _seed_board(board_hash=FAKE_HASH):
         db.close()
 
 
-def _seed_daily(board_hash=FAKE_HASH, level="beginner", date_str="2026-05-07"):
+def _seed_daily(board_hash=FAKE_HASH, level="beginner", date_str=None):
+    if date_str is None:
+        date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     _seed_board(board_hash)
     db = _db.SessionLocal()
     try:

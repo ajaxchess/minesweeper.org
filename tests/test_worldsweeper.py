@@ -162,7 +162,8 @@ class TestGlobesweeperValidation:
         assert r.status_code == 422
 
     def test_no_csrf_header_rejected(self, client):
-        r = client.post("/api/worldsweeper-scores", json=BEGINNER_SCORE)
+        import json as _json
+        r = client.post("/api/worldsweeper-scores", content=_json.dumps(BEGINNER_SCORE).encode())
         assert r.status_code == 403
 
     def test_blank_name_rejected(self, client):

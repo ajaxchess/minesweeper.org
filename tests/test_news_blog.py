@@ -2,7 +2,7 @@ def test_news_link_and_logo_render_on_homepage(client):
     r = client.get("/")
     assert r.status_code == 200
     assert 'href="/blog"' in r.text
-    assert ">News<" in r.text
+    assert ">Blog<" in r.text
     assert "/static/img/minesweeper-org-logo.webp" in r.text
     assert "/static/img/minesweeper-org-logo.png" in r.text
     assert "Lady Di's Mines classic Minesweeper logo" in r.text
@@ -20,7 +20,7 @@ def test_blog_index_is_presented_as_news(client):
 def test_blog_post_has_previous_next_navigation(client):
     r = client.get("/blog/traffic-growth")
     assert r.status_code == 200
-    assert "All News" in r.text
+    assert "All Posts" in r.text
     assert "Previous Post" in r.text
     assert "Next Post" in r.text
     assert 'rel="prev"' in r.text
