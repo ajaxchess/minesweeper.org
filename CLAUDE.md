@@ -24,12 +24,36 @@ WebSocket support via mod_proxy_wstunnel.
 - `https://github/ajaxchess/minesweeper.org/` — github repo
 
 ## Key Conventions
-- [any naming conventions, code style preferences]
-- [how routes are organized]
-- [how translations/i18n is handled]
+- Routes live in `main.py`; pvp-specific logic lives in the separate pvp service
+- Translations are in `translations.py` — a large dict keyed by language code
+- `database.py` is **generated** — never edit it directly (see Database Setup below)
+
+## Database Setup
+
+`database_template.py` contains the SQLAlchemy setup with placeholder credentials:
+
+```python
+DB_USER     = "the_minesweeper_user"
+DB_PASSWORD = "the_password"
+DB_NAME     = "the_db_name"
+```
+
+The deploy script (`scripts/minesweeper_service_update_and_restart.sh`) combines
+`database_template.py` with environment-specific secrets from `.env` to generate
+`database.py` at deploy time. `.env` is not committed to git.
+
+**Never edit `database.py` directly.** Edit `database_template.py` for schema or
+connection changes; the generated file will be overwritten on next deploy.
 
 ## Deployment
-- Cron-based auto-deploy every 5 minutes via git pull
-- Runs as ubuntu user
+
+`scripts/minesweeper_service_update_and_restart.sh` runs on the server:
+1. `git fetch` + `git reset --hard origin/main` — hard reset to latest main
+2. Generates `database.py` from `database_template.py` + `.env`
+3. Restarts the web service (uvicorn on port 8000) and pvp service
+
+The staging cron runs first against a staging instance; if smoke tests pass it
+creates an annotated git tag `staging-tested/<commit>` and the production deploy
+can then proceed.
 
 ## Known Issues / Notes

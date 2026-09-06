@@ -1,5 +1,12 @@
 """
-database.py — SQLAlchemy setup for MySQL via PyMySQL
+database_template.py — SQLAlchemy setup with placeholder credentials.
+
+THIS FILE IS A TEMPLATE. Do not import or run it directly.
+
+The deploy script (scripts/minesweeper_service_update_and_restart.sh) substitutes
+the placeholders below with real credentials from the server's .env file and writes
+the result to database.py. Never edit database.py directly — it is regenerated on
+every deploy.
 """
 from sqlalchemy import (
     create_engine, Column, Integer, BigInteger, String, Float,
