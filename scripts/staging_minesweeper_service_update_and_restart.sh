@@ -242,6 +242,22 @@ echo "Services stopped."
 if [ "$SMOKE_FAILED" -eq 0 ]; then
     echo "$REMOTE_COMMIT" > "$STATE_DIR/minesweeper_last_good_commit"
     rm -f "$STATE_DIR/minesweeper_blocked_commit"
+
+    # Annotated tag records the exact commit and time that passed staging.
+    SHORT_COMMIT=$(git -C "$REPO_DIR" rev-parse --short "$REMOTE_COMMIT")
+    TAG_NAME="staging-tested/${SHORT_COMMIT}"
+    TAG_MSG="Staging smoke tests passed $(date -u '+%Y-%m-%d %H:%M:%S UTC') — commit $REMOTE_COMMIT"
+    if git -C "$REPO_DIR" tag -a "$TAG_NAME" "$REMOTE_COMMIT" -m "$TAG_MSG"; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') Tagged $REMOTE_COMMIT as $TAG_NAME"
+        if git -C "$REPO_DIR" push origin "$TAG_NAME"; then
+            echo "$(date '+%Y-%m-%d %H:%M:%S') Pushed $TAG_NAME to origin."
+        else
+            echo "$(date '+%Y-%m-%d %H:%M:%S') WARNING: Could not push $TAG_NAME to origin (tag exists locally)."
+        fi
+    else
+        echo "$(date '+%Y-%m-%d %H:%M:%S') WARNING: Tag $TAG_NAME already exists — skipping (commit re-tested)."
+    fi
+
     echo "$(date '+%Y-%m-%d %H:%M:%S') ✅ Smoke tests passed. Commit $REMOTE_COMMIT written to minesweeper_last_good_commit."
     echo "$(date '+%Y-%m-%d %H:%M:%S') Production deploy will proceed on its next cron tick."
 else

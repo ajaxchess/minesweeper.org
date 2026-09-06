@@ -167,4 +167,20 @@ fi
 
 # ── All tests passed ──────────────────────────────────────────────────────────
 echo "$REMOTE_COMMIT" > "$STATE_DIR/last_good_commit"
+
+# Annotated tag records the exact commit and time that passed staging.
+SHORT_COMMIT=$(git -C "$REPO_DIR" rev-parse --short "$REMOTE_COMMIT")
+TAG_NAME="staging-tested/${SHORT_COMMIT}"
+TAG_MSG="Staging smoke tests passed $(date -u '+%Y-%m-%d %H:%M:%S UTC') — commit $REMOTE_COMMIT"
+if git -C "$REPO_DIR" tag -a "$TAG_NAME" "$REMOTE_COMMIT" -m "$TAG_MSG"; then
+    echo "Tagged $REMOTE_COMMIT as $TAG_NAME"
+    if git -C "$REPO_DIR" push origin "$TAG_NAME"; then
+        echo "Pushed $TAG_NAME to origin."
+    else
+        echo "WARNING: Could not push $TAG_NAME to origin (tag exists locally)."
+    fi
+else
+    echo "WARNING: Tag $TAG_NAME already exists — skipping (commit re-tested)."
+fi
+
 echo "All smoke tests passed. Commit $REMOTE_COMMIT is the deploy candidate for production."
