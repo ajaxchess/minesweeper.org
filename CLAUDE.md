@@ -53,7 +53,10 @@ connection changes; the generated file will be overwritten on next deploy.
 3. Restarts the web service (uvicorn on port 8000) and pvp service
 
 The staging cron runs first against a staging instance; if smoke tests pass it
-creates an annotated git tag `staging-tested/<commit>` and the production deploy
-can then proceed.
+creates an annotated git tag `staging-tested/<short-sha>` on that commit (the
+annotation captures the UTC timestamp of the test run) and writes the SHA to
+`minesweeper_last_good_commit`. Production deploy gates on that file.
+
+See `docs/staging-gate-runbook.md` for the full flow and troubleshooting steps.
 
 ## Known Issues / Notes
