@@ -49,6 +49,13 @@ _db.SessionLocal = sessionmaker(bind=_test_engine, autocommit=False, autoflush=F
 _db._apply_migrations = lambda: None
 
 # ── Import the app after patching ─────────────────────────────────────────────
+# Prevent the scheduler and background threads from starting during tests.
+# The startup() handler starts daemon threads (generate_tametsi_dailies, etc.)
+# that open SQLAlchemy sessions. With StaticPool (one shared connection), those
+# threads corrupt the shared connection and cause db.refresh() to fail in routes.
+import main as _main_module
+_main_module._acquire_scheduler_lock = lambda: False
+
 from main import app, get_db  # noqa: E402
 from fastapi.testclient import TestClient
 
