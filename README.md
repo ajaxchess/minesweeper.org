@@ -69,7 +69,7 @@ This script:
 - Builds minified static assets
 - Installs and starts the `minesweeper` systemd service
 - Configures Apache2 as a reverse proxy with WebSocket support
-- Installs the cron-based auto-deploy (every 5 minutes via `git pull`)
+- Installs the staging-gate deploy cron (every 5 minutes — see [Deployment](#deployment))
 
 ### 4. Get an SSL certificate
 
@@ -124,22 +124,48 @@ uvicorn main:app --reload --host 127.0.0.1 --port 8000
 
 ---
 
+## Testing
+
+```bash
+source venv/bin/activate
+pytest                      # run the full test suite
+pytest -x                   # stop on first failure
+pytest tests/test_routes.py # run a specific file
+```
+
+Tests use an in-memory SQLite database (via SQLAlchemy `StaticPool`) and a full FastAPI test client — no external services required. Bandit SAST runs alongside pytest in CI.
+
+---
+
 ## Deployment
 
-Auto-deploy runs via cron every 5 minutes:
+Production never pulls directly from `origin/main`. Every push goes through a **staging gate** first:
+
+```
+commit → CI (pytest + Bandit) → staging cron → smoke tests → tag + write last-good SHA → production cron → git reset --hard $LAST_GOOD
+```
+
+**Staging cron** (`scripts/staging_minesweeper_service_update_and_restart.sh`, runs every 5 minutes):
+1. `git fetch origin` and `git reset --hard origin/main` on the staging instance
+2. Rebuilds assets, regenerates `database.py`, restarts the staging service
+3. Runs smoke tests against the staging instance
+4. On pass: creates an annotated tag `staging-tested/<short-sha>` and writes the SHA to `deploy_state/minesweeper_last_good_commit`
+5. On fail: leaves `minesweeper_last_good_commit` unchanged — production is not updated
+
+**Production cron** (`scripts/minesweeper_service_update_and_restart.sh`, runs every 5 minutes):
+1. `git fetch origin`
+2. Reads `$LAST_GOOD` from `deploy_state/minesweeper_last_good_commit`
+3. `git reset --hard "$LAST_GOOD"` — hard-resets to the last staging-verified commit
+4. Regenerates `database.py` from `database_template.py` + `.env`
+5. Restarts the web service (uvicorn port 8000) and pvp service
+
+See `docs/staging-gate-runbook.md` for the full flow and troubleshooting steps.
 
 ```bash
 tail -f /var/log/minesweeper-deploy.log   # deploy logs
 sudo systemctl restart minesweeper        # manual restart
 sudo journalctl -u minesweeper -f         # app logs
 ```
-
-The deploy script (`scripts/minesweeper_service_update_and_restart.sh`):
-1. Pulls latest changes from `main`
-2. Runs `scripts/build_assets.sh` to minify JS/CSS
-3. Runs `pip install -r requirements.txt` if needed
-4. Regenerates `database.py` if `database_template.py` changed
-5. Restarts the systemd service
 
 ---
 
@@ -204,6 +230,36 @@ The leaderboard refreshes on every admin page load and shows:
 - **Latest commit SHA** — the current HEAD on the running server, compared against staging to confirm deployments are in sync
 
 This lightweight approach to gamification encourages consistent contribution, surfaces who is actively shipping, and makes the weekly cadence of the team visible at a glance — without requiring any external tooling.
+
+---
+
+## AI-Native Development Workflow
+
+Minesweeper.org is developed using the [AI-Native SDLC Playbook](https://claude.com/blog/the-ai-native-sdlc-playbook) published by Anthropic. All three developers work with **Claude Code** as a collaborative technical lead.
+
+### How it works
+
+**Features start as intent files.** Before writing any code, open an issue as a file in `intent/` using `intent/_template.md`. The file captures what to build and why — not how. Claude Code reads these at session start to understand what is planned and what is actively in flight.
+
+**Status drives the Kanban board.** Each intent file has a `Status:` field (`idea` → `ready` → `in-progress` → `done`). The Kanban board at `/admin/kanban` is generated live from these files — no manual board maintenance needed.
+
+**Completing a feature.** When work is done, add an Implementation Notes section to the intent file, set `Status: done`, and move it to `docs/features/` with `git mv`. Completed specs serve as architectural reference for future features.
+
+```
+intent/MyFeature.md  →  (build it)  →  docs/features/MyFeature.md
+  Status: ready             ↓               Status: done
+                      Status: in-progress
+```
+
+### Key files
+
+| File / Directory | Purpose |
+|---|---|
+| `CLAUDE.md` | Instructions and conventions for Claude Code |
+| `intent/` | Planned features not yet built |
+| `intent/_template.md` | Starting template for new intent files |
+| `docs/features/` | Completed feature specs — architectural reference |
+| `/admin/kanban` | Kanban board driven by `intent/` file statuses |
 
 ---
 
