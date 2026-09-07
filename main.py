@@ -8348,7 +8348,7 @@ def admin_analysis_by_path(filename: str, folder: Optional[str] = None):
         if not folder_match:
             raise HTTPException(status_code=400, detail="Invalid folder")
         params += f"&folder={quote(folder_match.group(), safe='')}"
-    return RedirectResponse(f"/admin/analysis?{params}", status_code=302)
+    return RedirectResponse(_safe_relative_url(f"/admin/analysis?{params}"), status_code=302)  # codeql[py/url-redirection]
 
 
 # ── Nonosweeper scores ────────────────────────────────────────────────────────
