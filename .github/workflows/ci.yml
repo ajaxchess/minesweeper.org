@@ -27,3 +27,14 @@ jobs:
 
       - name: Run pytest
         run: pytest tests/ -v --tb=short
+
+      - name: Install Bandit
+        run: pip install "bandit[toml]==1.9.4"
+
+      - name: Run Bandit (SAST)
+        run: |
+          bandit -r . \
+            --exclude ./venv,./tests,./analysis,./python_prototypes \
+            --severity-level medium \
+            --confidence-level medium \
+            -f txt
