@@ -22,6 +22,44 @@
     'Done':        t.admin_kanban_done,
   } %}
 
+  <style>
+    .kanban-badge-ready {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: #16a34a;
+      color: #fff;
+      vertical-align: middle;
+      margin-left: 4px;
+    }
+    .kanban-badge-intent {
+      display: inline-block;
+      font-size: 0.60rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: var(--text-dim, #888);
+      color: var(--bg, #1a1a1a);
+      vertical-align: middle;
+      margin-left: 4px;
+      opacity: 0.7;
+    }
+    .kanban-spec-link {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      text-decoration: none;
+      float: right;
+      margin-top: 2px;
+    }
+    .kanban-spec-link:hover { text-decoration: underline; }
+  </style>
+
   <div class="kanban-board">
     {% for col in columns %}
     <div class="kanban-col">
@@ -32,9 +70,20 @@
       <div class="kanban-cards">
         {% for card in col.cards %}
         <div class="kanban-card {% if col.name == 'Done' %}kanban-card-done{% elif col.name == 'In Progress' %}kanban-card-active{% elif col.name == 'Review' %}kanban-card-review{% endif %}">
-          {% if card.id %}
-          <span class="kanban-id kanban-id-{{ card.id[0]|lower }}">{{ card.id }}</span>
-          {% endif %}
+          <div style="display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;margin-bottom:2px;">
+            {% if card.id %}
+            <span class="kanban-id kanban-id-{{ card.id[0]|lower }}">{{ card.id }}</span>
+            {% endif %}
+            {% if card.source == 'intent' %}
+            <span class="kanban-badge-intent">spec</span>
+            {% if card.ready %}
+            <span class="kanban-badge-ready">ready</span>
+            {% endif %}
+            {% endif %}
+            {% if card.source == 'intent' and card.url %}
+            <a class="kanban-spec-link" href="{{ card.url }}" target="_blank" rel="noopener">view ↗</a>
+            {% endif %}
+          </div>
           <p class="kanban-desc">{{ card.description }}</p>
           {% if card.assignee %}
           <div class="kanban-assignee">👤 {{ card.assignee }}</div>

@@ -7139,43 +7139,93 @@ def _fmt_bytes(n: int) -> str:
 
 @app.get("/admin/kanban", response_class=HTMLResponse)
 def admin_kanban(request: Request):
-    import re, os
+    import re, os, glob
 
     user = get_current_user(request)
     if not user or user.get("email") not in ADMIN_EMAILS:
         return RedirectResponse("/", status_code=302)
 
-    kanban_path = os.path.join(os.path.dirname(__file__), "KANBAN.md")
-    try:
-        text = open(kanban_path).read()
-    except FileNotFoundError:
-        text = ""
+    base_dir = os.path.dirname(__file__)
+    GITHUB_INTENT = "https://github.com/ajaxchess/minesweeper.org/blob/main/intent/"
+    STATUS_TO_COL = {"idea": "Backlog", "ready": "Backlog", "in-progress": "In Progress", "done": "Done"}
 
-    # Parse columns: split on ## headings
-    columns = []
-    for block in re.split(r'^## ', text, flags=re.MULTILINE):
-        block = block.strip()
-        if not block:
+    # ── Intent files — source of truth for feature work ───────────────────────
+    intent_cards = []
+    for filepath in sorted(glob.glob(os.path.join(base_dir, "intent", "*.md"))):
+        basename = os.path.basename(filepath)
+        if basename.startswith("_"):
             continue
-        lines = block.splitlines()
-        col_name = lines[0].strip()
-        cards = []
-        for line in lines[1:]:
-            line = line.strip()
-            if not line.startswith('- '):
+        try:
+            content = open(filepath).read()
+        except OSError:
+            continue
+        title_m  = re.search(r'^# (.+)$', content, re.MULTILINE)
+        status_m = re.search(r'\*\*Status:\*\*\s*([\w-]+)', content)
+        id_m     = re.search(r'\*\*Feature ID:\*\*\s*(\S+)', content)
+        author_m = re.search(r'\*\*Author:\*\*\s*(.+)$', content, re.MULTILINE)
+
+        status     = (status_m.group(1).strip() if status_m else "idea").lower()
+        title      = title_m.group(1).strip() if title_m else basename.replace(".md", "").replace("_", " ")
+        feature_id = id_m.group(1).strip() if id_m else None
+        if feature_id in (None, "F-", "F-XXX"):
+            feature_id = None
+        author = author_m.group(1).strip() if author_m else None
+
+        intent_cards.append({
+            "id":          feature_id,
+            "description": title,
+            "assignee":    author,
+            "status":      status,
+            "ready":       status == "ready",
+            "filename":    basename,
+            "url":         GITHUB_INTENT + basename,
+            "col":         STATUS_TO_COL.get(status, "Backlog"),
+            "source":      "intent",
+        })
+
+    # ── KANBAN.md — operational and non-feature tasks ─────────────────────────
+    ops_by_col = {}
+    try:
+        text = open(os.path.join(base_dir, "KANBAN.md")).read()
+        for block in re.split(r'^## ', text, flags=re.MULTILINE):
+            block = block.strip()
+            if not block:
                 continue
-            line = line[2:].strip()
-            # Extract assignee (@name at end)
-            assignee_match = re.search(r'@(\S+)$', line)
-            assignee = assignee_match.group(1) if assignee_match else None
-            if assignee:
-                line = line[:assignee_match.start()].strip()
-            # Extract ID prefix (F#, B#, D#)
-            id_match = re.match(r'^([FBD]\d+)\s+', line)
-            card_id = id_match.group(1) if id_match else None
-            description = line[id_match.end():].strip() if id_match else line
-            cards.append({"id": card_id, "description": description, "assignee": assignee})
-        columns.append({"name": col_name, "cards": cards})
+            lines = block.splitlines()
+            col_name = lines[0].strip()
+            for line in lines[1:]:
+                line = line.strip()
+                if not line.startswith("- "):
+                    continue
+                line = line[2:].strip()
+                assignee_match = re.search(r'@(\S+)$', line)
+                assignee = assignee_match.group(1) if assignee_match else None
+                if assignee:
+                    line = line[:assignee_match.start()].strip()
+                id_match = re.match(r'^([FBD]\d+)\s+', line)
+                card_id  = id_match.group(1) if id_match else None
+                description = line[id_match.end():].strip() if id_match else line
+                ops_by_col.setdefault(col_name, []).append({
+                    "id": card_id, "description": description,
+                    "assignee": assignee, "source": "ops",
+                })
+    except FileNotFoundError:
+        pass
+
+    # ── Merge: intent cards first (ready before idea), then ops tasks ──────────
+    col_order = ["Backlog", "In Progress", "Review", "Done"]
+    merged = {name: [] for name in col_order}
+
+    for card in sorted(intent_cards, key=lambda c: (0 if c["status"] == "ready" else 1)):
+        col = card.pop("col")
+        if col in merged:
+            merged[col].append(card)
+
+    for col_name, ops_cards in ops_by_col.items():
+        if col_name in merged:
+            merged[col_name].extend(ops_cards)
+
+    columns = [{"name": name, "cards": merged[name]} for name in col_order]
 
     return templates.TemplateResponse(request, "admin_kanban.html", {
         "user": user,
