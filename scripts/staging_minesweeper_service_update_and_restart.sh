@@ -15,7 +15,7 @@
 #
 # Flow:
 #   1. Acquire a lock — exit immediately if another run is in progress.
-#   2. Fetch origin/main — if no new commit, exit.
+#   2. Fetch origin/main — if disk matches origin AND already validated, exit.
 #   3. If the new commit is already in minesweeper_last_good_commit, exit (already validated).
 #   4. If the new commit matches minesweeper_blocked_commit, exit (already failed).
 #   5. Reset to new commit, install deps, regenerate database.py.
@@ -79,8 +79,12 @@ LOCAL_COMMIT=$(git rev-parse HEAD)
 REMOTE_COMMIT=$(git rev-parse origin/main)
 
 # ── Up-to-date check ─────────────────────────────────────────────────────────
-if [ "$LOCAL_COMMIT" = "$REMOTE_COMMIT" ]; then
-    echo "$(date '+%Y-%m-%d %H:%M:%S') Up to date ($LOCAL_COMMIT). Nothing to do."
+# Exit only if disk is already at origin/main AND smoke tests already validated
+# this exact commit.  If the disk got updated outside this script (e.g. a manual
+# git pull) we still need to run smoke tests and write last_good_commit.
+_LAST_GOOD_NOW=$(cat "$STATE_DIR/minesweeper_last_good_commit" 2>/dev/null || echo "")
+if [ "$LOCAL_COMMIT" = "$REMOTE_COMMIT" ] && [ "$_LAST_GOOD_NOW" = "$REMOTE_COMMIT" ]; then
+    echo "$(date '+%Y-%m-%d %H:%M:%S') Up to date and validated ($LOCAL_COMMIT). Nothing to do."
     exit 0
 fi
 
