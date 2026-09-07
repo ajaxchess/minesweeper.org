@@ -22,11 +22,13 @@ os.environ["RATELIMIT_ENABLED"] = "0"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-# ── Create database.py from template if missing (local dev without MySQL) ─────
+# ── Sync database.py from template (always — keeps models in step with template)
+# database.py is generated at deploy time; in tests we regenerate it here so
+# that adding a model to database_template.py is immediately reflected in the
+# test schema without a manual copy step.
 DB_PY       = os.path.join(ROOT, "database.py")
 TEMPLATE_PY = os.path.join(ROOT, "database_template.py")
-if not os.path.exists(DB_PY):
-    shutil.copy(TEMPLATE_PY, DB_PY)
+shutil.copy(TEMPLATE_PY, DB_PY)
 
 # ── Patch the database module to use SQLite in-memory ─────────────────────────
 # Must happen before main.py is imported so that init_db() uses SQLite.
