@@ -19,6 +19,7 @@ from starlette.middleware.gzip import GZipMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case, text, cast, Date as SQLDate
+from sqlalchemy.exc import IntegrityError
 from pydantic import BaseModel, Field, field_validator
 from countries import COUNTRIES as ALL_COUNTRIES, VALID_COUNTRY_CODES
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -638,6 +639,15 @@ def _mask_email(player_id: str | None) -> str:
         return f"{player_id[:8]}…{player_id[-4:]}"
     return player_id
 
+def get_or_create_guest_token(request: Request, user: dict | None) -> str | None:
+    """Return the session guest token for unauthenticated requests, None for signed-in users."""
+    if user:
+        return None
+    if "guest_token" not in request.session:
+        request.session["guest_token"] = str(uuid.uuid4())
+    return request.session["guest_token"]
+
+
 # ── Client type detection ─────────────────────────────────────────────────────
 def get_client_type(request: Request) -> str:
     """
@@ -925,7 +935,6 @@ def archive_guest_scores():
 
 def generate_tametsi_dailies(date_str: str = None):
     """Pre-generate (or verify) daily Tametsi puzzles for all three levels."""
-    from sqlalchemy.exc import IntegrityError
     if date_str is None:
         date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     all_ok = True
@@ -979,7 +988,6 @@ def generate_tametsi_dailies(date_str: str = None):
 
 def generate_numbers_match_daily(date_str: str = None):
     """Pre-generate (or verify) the Numbers Match daily board for date_str."""
-    from sqlalchemy.exc import IntegrityError
     if date_str is None:
         date_str = numbers_match_today_str()
     db = SessionLocal()
@@ -1439,12 +1447,7 @@ class ScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
 
     client_type = get_client_type(request)
 
@@ -1505,7 +1508,6 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
             client_type  = client_type,
         ))
 
-    from sqlalchemy.exc import IntegrityError
     try:
         db.commit()
     except IntegrityError:
@@ -1693,12 +1695,7 @@ def submit_rewind(payload: RewindSubmit, request: Request, db: Session = Depends
     user       = get_current_user(request)
     user_email = user["email"] if user else None
 
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
 
     client_type = get_client_type(request)
 
@@ -1858,12 +1855,7 @@ class RushScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_rush_score(payload: RushScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = RushScore(
         name          = payload.name,
         user_email    = user["email"] if user else None,
@@ -2178,12 +2170,7 @@ class MeowdokuScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_meowdoku_score(payload: MeowdokuScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = MeowdokuScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
@@ -2227,9 +2214,7 @@ class MeowdokuSavePuzzlePayload(BaseModel):
 
 @app.post("/api/meowdoku/saved-puzzles", status_code=201)
 def save_meowdoku_puzzle(payload: MeowdokuSavePuzzlePayload, request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Sign in to save puzzles")
+    user = require_user(request)
     count = db.query(MeowdokuSavedPuzzle).filter_by(user_email=user["email"]).count()
     if count >= 50:
         raise HTTPException(status_code=400, detail="Saved puzzle limit reached (50)")
@@ -2251,9 +2236,7 @@ def save_meowdoku_puzzle(payload: MeowdokuSavePuzzlePayload, request: Request, d
 
 @app.delete("/api/meowdoku/saved-puzzles/{puzzle_id}", status_code=204)
 def delete_meowdoku_saved_puzzle(puzzle_id: int, request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+    user = require_user(request)
     puzzle = db.query(MeowdokuSavedPuzzle).filter_by(id=puzzle_id, user_email=user["email"]).first()
     if not puzzle:
         raise HTTPException(status_code=404, detail="Not found")
@@ -2293,12 +2276,7 @@ class FifteenPuzzleScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_fifteen_puzzle_score(payload: FifteenPuzzleScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = FifteenPuzzleScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
@@ -2407,9 +2385,7 @@ async def upload_fifteen_puzzle_photo(
     board_hash: str = Form(...),
 ):
     import re, shutil
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Login required")
+    user = require_user(request)
 
     # Validate mode
     if photo_mode not in ("tiles", "reveal"):
@@ -2465,9 +2441,7 @@ async def upload_fifteen_puzzle_photo(
 
 @app.post("/api/fifteen-puzzle/delete-photo/{board_hash}")
 def delete_fifteen_puzzle_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Login required")
+    user = require_user(request)
     photo = db.query(FifteenPuzzlePhoto).filter_by(board_hash=board_hash).first()
     if not photo:
         raise HTTPException(status_code=404, detail="Not found")
@@ -2484,9 +2458,7 @@ def delete_fifteen_puzzle_photo(board_hash: str, request: Request, db: Session =
 
 @app.post("/api/fifteen-puzzle/delete-all-photos")
 def delete_all_fifteen_puzzle_photos(request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Login required")
+    user = require_user(request)
     photos = db.query(FifteenPuzzlePhoto).filter_by(user_email=user["email"]).all()
     for photo in photos:
         filepath = os.path.join("static", "uploads", "15puzzle", photo.filename)
@@ -2938,12 +2910,7 @@ class Game2048HexScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_2048hex_score(payload: Game2048HexScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = Game2048HexScore(
         name          = payload.name,
         user_email    = user["email"] if user else None,
@@ -3082,12 +3049,7 @@ class SchulteScoreSubmit(BaseModel):
 @limiter.limit("20/minute")
 def submit_schulte_score(payload: SchulteScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = SchulteGridScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
@@ -3426,12 +3388,7 @@ class Game2048ScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_2048_score(payload: Game2048ScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = Game2048Score(
         name          = payload.name,
         user_email    = user["email"] if user else None,
@@ -3834,9 +3791,7 @@ async def blog_post(request: Request, slug: str, db: Session = Depends(get_db)):
 @app.post("/api/blog/{slug}/comments")
 @limiter.limit("10/minute")
 async def submit_blog_comment(slug: str, request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Login required")
+    user = require_user(request)
     if slug not in _BLOG_BY_SLUG:
         raise HTTPException(status_code=404, detail="Post not found")
     data = await request.json()
@@ -4167,12 +4122,7 @@ class ReplayScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_replay_score(payload: ReplayScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     # Reject duplicate: same board + variant + player + time already recorded
     if payload.time_ms:
         dup_q = db.query(ReplayScore.id).filter(
@@ -4433,12 +4383,7 @@ class CylinderScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_cylinder_score(payload: CylinderScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = CylinderScore(
         name         = payload.name,
         user_email   = user["email"] if user else None,
@@ -4596,12 +4541,7 @@ class ToroidScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_toroid_score(payload: ToroidScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = ToroidScore(
         name         = payload.name,
         user_email   = user["email"] if user else None,
@@ -4767,12 +4707,7 @@ class HexscoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_hex_score(payload: HexscoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = HexsweeperScore(
         name         = payload.name,
         user_email   = user["email"] if user else None,
@@ -4982,12 +4917,7 @@ class WorldsweeperScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_world_score(payload: WorldsweeperScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = GlobesweeperScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
@@ -5142,12 +5072,7 @@ class CubesweeperScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_cube_score(payload: CubesweeperScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = CubesweeperScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
@@ -5308,12 +5233,7 @@ class MobiussweeperScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_mobius_score(payload: MobiussweeperScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = MobiussweeperScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
@@ -5748,12 +5668,7 @@ class MosaicScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_mosaic_score(payload: MosaicScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = MosaicScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
@@ -5806,12 +5721,7 @@ class MosaicEasyScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_mosaic_easy_score(payload: MosaicEasyScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = MosaicEasyScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
@@ -5873,12 +5783,7 @@ def _mosaic_custom_board_id(rows: int, cols: int, board_hash: str, board_mask: s
 @limiter.limit("10/minute")
 def submit_mosaic_custom_score(payload: MosaicCustomScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     board_id = _mosaic_custom_board_id(payload.rows, payload.cols, payload.board_hash, payload.board_mask)
     entry = MosaicCustomScore(
         board_id    = board_id,
@@ -5932,12 +5837,7 @@ class TentaizuScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_tentaizu_score(payload: TentaizuScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user  = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = TentaizuScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
@@ -6624,6 +6524,14 @@ def _log_admin_access(request: Request, user: dict | None, success: bool, reason
     else:
         msg = f'DENY   {identity!r:40s} -> {path}  reason={reason!r}  [host={host}]'
     _get_admin_logger(log_path).info(msg)
+
+def require_user(request: Request) -> dict:
+    """Return the authenticated user or raise HTTP 401."""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Login required")
+    return user
+
 
 def require_admin(request: Request, user: dict | None) -> None:
     if not user:
@@ -8466,12 +8374,7 @@ class NonosweeperScoreSubmit(BaseModel):
 @limiter.limit("10/minute")
 def submit_nonosweeper_score(payload: NonosweeperScoreSubmit, request: Request, db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = NonosweeperScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
@@ -8939,12 +8842,7 @@ class JigsawScoreSubmit(BaseModel):
 def submit_jigsaw_score(payload: JigsawScoreSubmit, request: Request,
                         db: Session = Depends(get_db)):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = JigsawScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
@@ -9013,9 +8911,7 @@ class JigsawDeleteSavePayload(BaseModel):
 @limiter.limit("30/minute")
 def jigsaw_save_game(payload: JigsawSavePayload, request: Request,
                      db: Session = Depends(get_db)):
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Login required")
+    user = require_user(request)
     import json as _json
     piece_state_json = _json.dumps(payload.piece_state)
     existing = (
@@ -9070,9 +8966,7 @@ def jigsaw_resume_game(request: Request,
 @app.post("/api/jigsaw/delete-save", status_code=200)
 def delete_jigsaw_save(payload: JigsawDeleteSavePayload, request: Request,
                        db: Session = Depends(get_db)):
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Login required")
+    user = require_user(request)
     if payload.difficulty not in _JIGSAW_DIFFICULTIES:
         raise HTTPException(status_code=400, detail="Invalid difficulty")
     save = (
@@ -9090,9 +8984,7 @@ def delete_jigsaw_save(payload: JigsawDeleteSavePayload, request: Request,
 
 @app.post("/api/jigsaw/delete-all-saves", status_code=200)
 def delete_all_jigsaw_saves(request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Login required")
+    user = require_user(request)
     deleted = db.query(JigsawSavedGame).filter_by(user_email=user["email"]).delete()
     db.commit()
     return {"ok": True, "deleted": deleted}
@@ -9108,9 +9000,7 @@ async def upload_jigsaw_photo(
     board_hash: str = Form(...),
 ):
     import re
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Login required")
+    user = require_user(request)
     if not re.match(r'^[A-Za-z0-9_\-]{10,128}$', board_hash):
         raise HTTPException(status_code=400, detail="Invalid board hash")
     if db.query(JigsawPhoto).filter_by(board_hash=board_hash).first():
@@ -9147,9 +9037,7 @@ async def upload_jigsaw_photo(
 
 @app.post("/api/jigsaw/delete-photo/{board_hash}")
 def delete_jigsaw_photo(board_hash: str, request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Login required")
+    user = require_user(request)
     photo = db.query(JigsawPhoto).filter_by(board_hash=board_hash).first()
     if not photo:
         raise HTTPException(status_code=404, detail="Not found")
@@ -9202,7 +9090,6 @@ def get_numbers_match_board(
         db.commit()
         row = None
     if not row:
-        from sqlalchemy.exc import IntegrityError
         result = _nm_generate_daily(date_str)
         try:
             entry = NumbersMatchDaily(
@@ -9565,12 +9452,7 @@ def submit_tametsi_score(
             raise HTTPException(status_code=400, detail="Board hash does not match today's daily puzzle")
 
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
 
     client_type = get_client_type(request)
     entry = TametsiScore(
@@ -9959,12 +9841,7 @@ def submit_numbers_match_score(
     db: Session = Depends(get_db),
 ):
     user = get_current_user(request)
-    if not user:
-        if "guest_token" not in request.session:
-            request.session["guest_token"] = str(uuid.uuid4())
-        guest_token = request.session["guest_token"]
-    else:
-        guest_token = None
+    guest_token = get_or_create_guest_token(request, user)
     entry = NumbersMatchScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
