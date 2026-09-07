@@ -1,3 +1,10 @@
+# League of Minesweeper (iOS / Android App)
+
+**Status:** idea  
+**Feature ID:** F-LOM  
+
+---
+
 Minesweeper.org Presents
 League of Minesweeper
 

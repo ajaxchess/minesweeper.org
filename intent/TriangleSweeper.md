@@ -1,3 +1,10 @@
+# TriangleSweeper (Geodesic Icosahedron Variant)
+
+**Status:** idea  
+**Feature ID:** F-TRI  
+
+---
+
 Triangles overlayed on a solid.
 
 Geodesic Polyhedron 

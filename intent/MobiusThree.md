@@ -1,4 +1,10 @@
-F74 continued
+# Möbius Three (3-Half-Twist Variant)
+
+**Status:** idea  
+**Feature ID:** F74-cont  
+
+---
+
 Create a version of Mobiussweeper with a 3 twist mobius strip.
 Take a strip of paper, make 3 half-twists in it and join the ends to get a 3 half-twisted Möbius band. 
 
