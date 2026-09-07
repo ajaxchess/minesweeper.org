@@ -2220,6 +2220,47 @@ def get_meowdoku_scores(puzzle_date: str, size: int = Query(8, ge=4, le=10), db:
     return _enrich_with_profiles(top, db)
 
 
+class MeowdokuSavePuzzlePayload(BaseModel):
+    board_hash: str = Field(..., min_length=1, max_length=128)
+    grid_size:  int = Field(..., ge=4, le=10)
+
+
+@app.post("/api/meowdoku/saved-puzzles", status_code=201)
+def save_meowdoku_puzzle(payload: MeowdokuSavePuzzlePayload, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Sign in to save puzzles")
+    count = db.query(MeowdokuSavedPuzzle).filter_by(user_email=user["email"]).count()
+    if count >= 50:
+        raise HTTPException(status_code=400, detail="Saved puzzle limit reached (50)")
+    existing = db.query(MeowdokuSavedPuzzle).filter_by(
+        user_email=user["email"], board_hash=payload.board_hash
+    ).first()
+    if existing:
+        return existing.to_dict()
+    puzzle = MeowdokuSavedPuzzle(
+        user_email=user["email"],
+        grid_size=payload.grid_size,
+        board_hash=payload.board_hash,
+    )
+    db.add(puzzle)
+    db.commit()
+    db.refresh(puzzle)
+    return puzzle.to_dict()
+
+
+@app.delete("/api/meowdoku/saved-puzzles/{puzzle_id}", status_code=204)
+def delete_meowdoku_saved_puzzle(puzzle_id: int, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    puzzle = db.query(MeowdokuSavedPuzzle).filter_by(id=puzzle_id, user_email=user["email"]).first()
+    if not puzzle:
+        raise HTTPException(status_code=404, detail="Not found")
+    db.delete(puzzle)
+    db.commit()
+
+
 # ── 15-Puzzle API ──────────────────────────────────────────────────────────────
 
 _VALID_GRID_SIZES = {"3x3", "4x4", "5x5", "6x6", "7x7", "8x8", "9x9", "10x10"}
@@ -3881,10 +3922,11 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
         "wc2026_teams":  WC2026_TEAMS,
         "wc2026_fan":    profile.wc2026_fan    if profile else "",
         "pref_tz":       profile.timezone       if profile else "",
-        "fp_photos":     db.query(FifteenPuzzlePhoto).filter_by(user_email=user["email"]).order_by(FifteenPuzzlePhoto.created_at.desc()).all(),
-        "fp_limit":      getattr(profile, "puzzle_storage_limit", 32) if profile else 32,
-        "jigsaw_saves":  db.query(JigsawSavedGame).filter_by(user_email=user["email"]).order_by(JigsawSavedGame.updated_at.desc()).all(),
-        "today":         datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "fp_photos":      db.query(FifteenPuzzlePhoto).filter_by(user_email=user["email"]).order_by(FifteenPuzzlePhoto.created_at.desc()).all(),
+        "fp_limit":       getattr(profile, "puzzle_storage_limit", 32) if profile else 32,
+        "jigsaw_saves":   db.query(JigsawSavedGame).filter_by(user_email=user["email"]).order_by(JigsawSavedGame.updated_at.desc()).all(),
+        "meowdoku_saves": db.query(MeowdokuSavedPuzzle).filter_by(user_email=user["email"]).order_by(MeowdokuSavedPuzzle.created_at.desc()).all(),
+        "today":          datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "lang": get_lang(request), "t": get_t(request),
     })
 

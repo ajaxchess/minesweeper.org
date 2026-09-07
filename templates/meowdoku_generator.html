@@ -30,6 +30,15 @@
     <div class="mk-gen-action-row">
       <button id="mk-gen-play-btn" class="mk-gen-btn mk-gen-btn-primary" disabled>▶ Play this puzzle</button>
       <button id="mk-gen-share-btn" class="mk-gen-btn" disabled>🔗 Copy Link</button>
+      {% if user %}
+      <button id="mk-gen-save-btn" class="mk-gen-btn" disabled
+              data-msg-saved="{{ t.mk_gen_saved }}"
+              data-msg-error="{{ t.mk_gen_save_error }}">
+        🐾 {{ t.mk_gen_save_btn }}
+      </button>
+      {% else %}
+      <a href="/auth/login?next=/meowdoku/generator" class="mk-gen-btn" style="text-decoration:none;opacity:0.65;font-size:13px;" title="{{ t.mk_gen_save_login }}">🔒 {{ t.mk_gen_save_btn }}</a>
+      {% endif %}
     </div>
   </div>
 
@@ -128,4 +137,33 @@
 {% block scripts %}
 <script src="/static/js/meowdoku.js?v=1" defer></script>
 <script src="/static/js/meowdoku-generator.js?v=1" defer></script>
+{% if user %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const saveBtn = document.getElementById('mk-gen-save-btn');
+  if (!saveBtn) return;
+  const statusEl = document.getElementById('mk-gen-status');
+  const sync = () => { saveBtn.disabled = !statusEl.classList.contains('valid'); };
+  new MutationObserver(sync).observe(statusEl, {attributes: true, attributeFilter: ['class']});
+  saveBtn.addEventListener('click', async () => {
+    saveBtn.disabled = true;
+    const orig = saveBtn.textContent.trim();
+    saveBtn.textContent = '…';
+    try {
+      const res = await fetch('/api/meowdoku/saved-puzzles', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+        body: JSON.stringify({board_hash: boardHash(GEN.regions, GEN.n), grid_size: GEN.n}),
+      });
+      saveBtn.textContent = res.ok ? saveBtn.dataset.msgSaved : saveBtn.dataset.msgError;
+      if (!res.ok) saveBtn.disabled = false;
+      else setTimeout(() => { saveBtn.textContent = orig; }, 3000);
+    } catch {
+      saveBtn.textContent = saveBtn.dataset.msgError;
+      saveBtn.disabled = false;
+    }
+  });
+});
+</script>
+{% endif %}
 {% endblock %}

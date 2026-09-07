@@ -347,6 +347,29 @@ class MeowdokuScore(Base):
             "created_at":   self.created_at.strftime("%Y-%m-%d"),
         }
 
+# ── Meowdoku Saved Puzzle model ───────────────────────────────────────────────
+class MeowdokuSavedPuzzle(Base):
+    __tablename__ = "meowdoku_saved_puzzles"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    user_email = Column(String(256), nullable=False, index=True)
+    grid_size  = Column(Integer, nullable=False)
+    board_hash = Column(String(128), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_meowdoku_saved_user_hash", "user_email", "board_hash", unique=True),
+    )
+
+    def to_dict(self):
+        return {
+            "id":         self.id,
+            "grid_size":  self.grid_size,
+            "board_hash": self.board_hash,
+            "created_at": self.created_at.strftime("%Y-%m-%d"),
+        }
+
+
 # ── Cylinder Score model (permanent — never reset) ────────────────────────────
 class CylinderScore(Base):
     __tablename__ = "cylinder_scores"

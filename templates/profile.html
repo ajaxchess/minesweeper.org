@@ -506,6 +506,40 @@
     {% endif %}
   </div>
 
+  <!-- ── Meowdoku Saved Puzzles ── -->
+  <div class="profile-recent">
+    <h2 class="section-title">🐱 {{ t.profile_mk_saves_title }}
+      <span style="font-size:0.8rem;font-weight:400;color:var(--text-dim);margin-left:0.5rem;">
+        {{ meowdoku_saves|length }}/50
+        · <a href="/meowdoku" style="color:var(--accent2);">{{ t.profile_mk_saves_play }} →</a>
+        · <a href="/meowdoku/generator" style="color:var(--accent2);">Generator</a>
+        {% if meowdoku_saves %}
+        · <button onclick="mkDeleteAllSaves()" style="font-size:0.8rem;background:none;border:none;color:var(--text-dim);cursor:pointer;padding:0;text-decoration:underline;">Delete All</button>
+        {% endif %}
+      </span>
+    </h2>
+    {% if meowdoku_saves %}
+    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:0.5rem;">
+      {% for s in meowdoku_saves %}
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.6rem;display:flex;flex-direction:column;gap:0.4rem;width:140px;">
+        <div style="width:100%;height:70px;background:var(--surface2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:2rem;letter-spacing:-2px;">🐱</div>
+        <div style="font-size:0.82rem;font-weight:600;">{{ s.grid_size }}×{{ s.grid_size }}</div>
+        <div style="font-size:0.72rem;color:var(--text-dim);">{{ s.created_at.strftime("%Y-%m-%d") }}</div>
+        <div style="display:flex;gap:0.4rem;align-items:center;">
+          <a href="/meowdoku?board={{ s.board_hash }}" style="font-size:0.75rem;color:var(--accent2);">{{ t.profile_mk_saves_play }}</a>
+          <button onclick="mkDeleteSave({{ s.id }})"
+                  style="font-size:0.75rem;background:none;border:none;color:var(--text-dim);cursor:pointer;padding:0;margin-left:auto;">{{ t.profile_mk_saves_delete }}</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--text-dim);font-size:0.9rem;margin-top:0.5rem;">
+      {{ t.profile_mk_saves_empty }} <a href="/meowdoku/generator" style="color:var(--accent2);">Generator →</a>
+    </p>
+    {% endif %}
+  </div>
+
   <!-- ── Recent games tabs ── -->
   <div class="profile-recent">
     <h2 class="section-title">{{ t.profile_game_history }}</h2>
@@ -598,6 +632,30 @@ function jigsawDeleteAllSaves() {
     if (!res.ok) throw new Error('Delete failed');
     window.location.reload();
   }).catch(function(err) { alert(err.message); });
+}
+
+function mkDeleteSave(id) {
+  if (!confirm('Delete this saved Meowdoku puzzle?')) return;
+  fetch('/api/meowdoku/saved-puzzles/' + id, {
+    method: 'DELETE',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+  }).then(function(res) {
+    if (!res.ok) throw new Error('Delete failed');
+    window.location.reload();
+  }).catch(function(err) { alert(err.message); });
+}
+
+function mkDeleteAllSaves() {
+  if (!confirm('Delete all saved Meowdoku puzzles? This cannot be undone.')) return;
+  Promise.all(
+    Array.from(document.querySelectorAll('[onclick^="mkDeleteSave"]')).map(btn => {
+      const id = btn.getAttribute('onclick').match(/\d+/)[0];
+      return fetch('/api/meowdoku/saved-puzzles/' + id, {
+        method: 'DELETE',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      });
+    })
+  ).then(() => window.location.reload()).catch(function(err) { alert(err.message); });
 }
 
 let allStats = null;
