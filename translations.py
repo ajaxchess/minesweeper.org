@@ -4978,6 +4978,14 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_meowdoku": "Metu katojn · ĉiutaga logikpuzlo",
         "wc_knockout_stage": "Eliminacia Etapo",
         "wc_next_round_up": "Baldaŭ:",
+        "mk_gen_save_btn":        "Konservi Puzlon",
+        "mk_gen_saved":           "✓ Konservita en profilo!",
+        "mk_gen_save_error":      "Eraro dum konservado — provu denove",
+        "mk_gen_save_login":      "Ensalutu por konservi puzlojn",
+        "profile_mk_saves_title": "Meowdoku Konservitaj Puzloj",
+        "profile_mk_saves_empty": "Ankoraŭ neniaj konservitaj puzloj. Kreu unu en la",
+        "profile_mk_saves_play":  "Ludi",
+        "profile_mk_saves_delete": "Forigi",
     },
 
     "de": {
@@ -15686,6 +15694,14 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "nav_sub_meowdoku": "Aceplay atscay \\u00b7 ailyday ogiclay uzzlepay",
         "wc_knockout_stage": "Ockoutknay Agestay",
         "wc_next_round_up": "Extnay upyay:",
+        "mk_gen_save_btn":        "Avesay Uzzlepay",
+        "mk_gen_saved":           "✓ Avedsay otay ofilepray!",
+        "mk_gen_save_error":      "Erroryay avingsay — ytray againyay",
+        "mk_gen_save_login":      "Ignsay inyay otay avesay uzzlespay",
+        "profile_mk_saves_title": "Eowdokumay Avedsay Uzzlespay",
+        "profile_mk_saves_empty": "Onay avedsay uzzlespay etyay. Eatecray oneyay inyay ethay",
+        "profile_mk_saves_play":  "Ayplay",
+        "profile_mk_saves_delete": "Eleteday",
     },
 
     "uk": {
