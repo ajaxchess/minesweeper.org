@@ -48,9 +48,11 @@ connection changes; the generated file will be overwritten on next deploy.
 ## Deployment
 
 `scripts/minesweeper_service_update_and_restart.sh` runs on the server:
-1. `git fetch` + `git reset --hard origin/main` — hard reset to latest main
-2. Generates `database.py` from `database_template.py` + `.env`
-3. Restarts the web service (uvicorn on port 8000) and pvp service
+1. `git fetch origin` — fetch latest refs without changing working tree
+2. Read `$LAST_GOOD` from `deploy_state/minesweeper_last_good_commit`
+3. `git reset --hard "$LAST_GOOD"` — hard-reset to the last staging-verified commit (NOT `origin/main`)
+4. Generates `database.py` from `database_template.py` + `.env`
+5. Restarts the web service (uvicorn on port 8000) and pvp service
 
 The staging cron runs first against a staging instance; if smoke tests pass it
 creates an annotated git tag `staging-tested/<short-sha>` on that commit (the
