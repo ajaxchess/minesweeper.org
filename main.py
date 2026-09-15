@@ -54,6 +54,9 @@ from schulte_routes import schulte_router
 from meowdoku_routes import meowdoku_router
 from game2048_routes import game2048_router
 from fifteen_puzzle_routes import fifteen_puzzle_router
+from tentaizu_leaderboard_routes import tentaizu_leaderboard_router
+from nonosweeper_routes import nonosweeper_router
+from pvp_leaderboard_routes import pvp_leaderboard_router
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
 from starlette.config import Config
@@ -308,6 +311,9 @@ app.include_router(schulte_router)
 app.include_router(meowdoku_router)
 app.include_router(game2048_router)
 app.include_router(fifteen_puzzle_router)
+app.include_router(tentaizu_leaderboard_router)
+app.include_router(nonosweeper_router)
+app.include_router(pvp_leaderboard_router)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -2629,156 +2635,7 @@ def get_my_first_replay_score(board_hash: str, request: Request, variant: str = 
 
 
 
-# ── PvP Leaderboard & Rankings API ───────────────────────────────────────────
-
-@app.get("/api/pvp/leaderboard")
-def get_pvp_leaderboard(period: str = "alltime",
-                        score_date: Optional[str] = Query(None, alias="date"),
-                        season_num: Optional[int] = Query(None),
-                        submode: Optional[str] = Query(None),
-                        db: Session = Depends(get_db),
-                        response: Response = None):
-    """Return best PvP games ranked by winner's time (fastest first)."""
-    if response:
-        response.headers["Cache-Control"] = "public, max-age=60"
-    if period not in ("daily", "weekly", "monthly", "season", "yearly", "alltime"):
-        period = "alltime"
-
-    q = db.query(PvpResult)
-    if submode in ("standard", "quick"):
-        q = q.filter(PvpResult.submode == submode)
-
-    if period in ("daily", "weekly", "monthly", "season", "yearly"):
-        try:
-            target = date.fromisoformat(score_date) if score_date else date.today()
-        except ValueError:
-            target = date.today()
-        p_start, p_end = get_period_range(period, target, season_num)
-        q = q.filter(PvpResult.created_at >= p_start,
-                     PvpResult.created_at < p_end)
-        if period == "daily":
-            rows = q.order_by(PvpResult.elapsed_ms.asc()).limit(15).all()
-            return [r.to_dict() for r in rows]
-
-    # Best game per winner (dedup by winner_email or winner_name)
-    raw = q.order_by(PvpResult.elapsed_ms.asc()).limit(500).all()
-    seen: set = set()
-    top: list = []
-    for r in raw:
-        key = r.winner_email or r.winner_name or str(r.id)
-        if key not in seen:
-            seen.add(key)
-            top.append(r.to_dict())
-            if len(top) >= 15:
-                break
-    return top
-
-
-@app.get("/api/pvp/rankings")
-def get_pvp_rankings(period: str = "alltime",
-                     score_date: Optional[str] = Query(None, alias="date"),
-                     season_num: Optional[int] = Query(None),
-                     submode: Optional[str] = Query(None),
-                     db: Session = Depends(get_db),
-                     response: Response = None):
-    """Return players ranked by number of PvP wins."""
-    if period not in ("daily", "weekly", "monthly", "season", "yearly", "alltime"):
-        period = "alltime"
-    if response:
-        response.headers["Cache-Control"] = "public, max-age=60"
-
-    q = db.query(PvpResult)
-    if submode in ("standard", "quick"):
-        q = q.filter(PvpResult.submode == submode)
-
-    if period in ("daily", "weekly", "monthly", "season", "yearly"):
-        try:
-            target = date.fromisoformat(score_date) if score_date else date.today()
-        except ValueError:
-            target = date.today()
-        p_start, p_end = get_period_range(period, target, season_num)
-        q = q.filter(PvpResult.created_at >= p_start,
-                     PvpResult.created_at < p_end)
-
-    rows = q.all()
-
-    # Count wins per player
-    wins: dict = {}
-    for r in rows:
-        key   = r.winner_email or r.winner_name or "Anonymous"
-        label = r.winner_name  or "Anonymous"
-        if key not in wins:
-            wins[key] = {"name": label, "email": r.winner_email, "wins": 0}
-        wins[key]["wins"] += 1
-
-    ranked = sorted(wins.values(), key=lambda x: x["wins"], reverse=True)
-    top = ranked[:15]
-
-    # Attach Elo rating and public profile URL for each ranked player
-    emails = [p["email"] for p in top if p.get("email")]
-    if emails:
-        profiles = db.query(UserProfile).filter(UserProfile.email.in_(emails)).all()
-        profile_map = {p.email: p for p in profiles}
-        for p in top:
-            prof = profile_map.get(p.get("email"))
-            p["elo"]     = prof.pvp_elo if prof else None
-            p["country"] = prof.country if prof else None
-            if prof and prof.is_public:
-                p["profile_url"] = f"/u/{prof.vanity_slug or prof.public_id}"
-            else:
-                p["profile_url"] = None
-
-    return top
-
-
-@app.get("/api/pvp/elo-rankings")
-def get_pvp_elo_rankings(db: Session = Depends(get_db), response: Response = None):
-    """Return players ranked by Elo rating (only players who have played at least one match)."""
-    if response:
-        response.headers["Cache-Control"] = "public, max-age=300"
-    winner_emails = db.query(PvpResult.winner_email).filter(PvpResult.winner_email != None)
-    loser_emails  = db.query(PvpResult.loser_email ).filter(PvpResult.loser_email  != None)
-    played_emails = {row[0] for row in winner_emails.union(loser_emails).all()}
-    if not played_emails:
-        return []
-    profiles = (
-        db.query(UserProfile)
-        .filter(UserProfile.email.in_(played_emails))
-        .order_by(UserProfile.pvp_elo.desc())
-        .limit(50)
-        .all()
-    )
-    return [
-        {
-            "name":        p.display_name,
-            "elo":         p.pvp_elo,
-            "country":     p.country,
-            "profile_url": f"/u/{p.vanity_slug or p.public_id}" if p.is_public else None,
-        }
-        for p in profiles
-    ]
-
-
-@app.get("/api/pvp/player-card/{public_id}")
-def pvp_player_card(public_id: str, db: Session = Depends(get_db)):
-    """Lightweight stat card data for the PvP match header mouseover (F69)."""
-    profile = db.query(UserProfile).filter(UserProfile.public_id == public_id).first()
-    if not profile:
-        return {}
-    best_expert = (
-        db.query(func.min(GameHistory.time_secs))
-        .filter(GameHistory.user_email == profile.email, GameHistory.mode == "expert")
-        .scalar()
-    )
-    wins   = db.query(func.count(PvpResult.id)).filter(PvpResult.winner_email == profile.email).scalar() or 0
-    losses = db.query(func.count(PvpResult.id)).filter(PvpResult.loser_email  == profile.email).scalar() or 0
-    return {
-        "name":      profile.display_name,
-        "elo":       profile.pvp_elo,
-        "wins":      wins,
-        "losses":    losses,
-        "best_time": best_expert,
-    }
+# PvP leaderboard and rankings API routes are in pvp_leaderboard_routes.py
 
 
 @app.get("/tentaizu", response_class=HTMLResponse)
@@ -2903,111 +2760,7 @@ async def tentaizu_permalink(request: Request, date_str: str):
     })
 
 
-# ── Tentaizu Leaderboard API ───────────────────────────────────────────────────
-
-class TentaizuScoreSubmit(BaseModel):
-    name:        str = Field(..., min_length=1, max_length=32)
-    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
-    time_secs:   int = Field(..., ge=0, le=99999)
-
-    @field_validator("name")
-    @classmethod
-    def sanitize_name(cls, v: str) -> str:
-        v = v.strip()
-        v = "".join(c for c in v if c.isprintable())
-        if not v:
-            raise ValueError("Name must contain printable characters")
-        return v[:32]
-
-
-@app.post("/api/tentaizu-scores", status_code=201)
-@limiter.limit("10/minute")
-def submit_tentaizu_score(payload: TentaizuScoreSubmit, request: Request, db: Session = Depends(get_db)):
-    user  = get_current_user(request)
-    guest_token = get_or_create_guest_token(request, user)
-    entry = TentaizuScore(
-        name        = payload.name,
-        user_email  = user["email"] if user else None,
-        puzzle_date = payload.puzzle_date,
-        time_secs   = payload.time_secs,
-        guest_token = guest_token,
-        client_type = get_client_type(request),
-    )
-    db.add(entry)
-    db.commit()
-    db.refresh(entry)
-    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
-    record_score_submit("tentaizu", str(payload.puzzle_date))
-    record_game_complete("tentaizu", mode="daily",
-                         duration_ms=(payload.time_secs or 0) * 1000)
-    return {"ok": True, "id": entry.id}
-
-
-@app.get("/api/tentaizu-scores/{puzzle_date}")
-def get_tentaizu_scores(puzzle_date: str, db: Session = Depends(get_db)):
-    import re
-    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
-        raise HTTPException(status_code=400, detail="Invalid date format")
-    q = db.query(TentaizuScore).filter(TentaizuScore.puzzle_date == puzzle_date)
-    q = exclude_flagged(q, TentaizuScore, db)
-    top = (
-        q
-        .order_by(TentaizuScore.time_secs.asc(), TentaizuScore.created_at.asc())
-        .limit(20)
-        .all()
-    )
-    return _enrich_with_profiles(top, db)
-
-
-# ── Tentaizu Easy (5×5) Leaderboard API ───────────────────────────────────────
-
-class TentaizuEasyScoreSubmit(BaseModel):
-    name:        str = Field(..., min_length=1, max_length=32)
-    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
-    time_secs:   int = Field(..., ge=0, le=99999)
-
-    @field_validator("name")
-    @classmethod
-    def sanitize_name(cls, v: str) -> str:
-        v = v.strip()
-        v = "".join(c for c in v if c.isprintable())
-        if not v:
-            raise ValueError("Name must contain printable characters")
-        return v[:32]
-
-
-@app.post("/api/tentaizu-easy-scores", status_code=201)
-@limiter.limit("10/minute")
-def submit_tentaizu_easy_score(payload: TentaizuEasyScoreSubmit, request: Request, db: Session = Depends(get_db)):
-    user  = get_current_user(request)
-    entry = TentaizuEasyScore(
-        name        = payload.name,
-        user_email  = user["email"] if user else None,
-        puzzle_date = payload.puzzle_date,
-        time_secs   = payload.time_secs,
-        client_type = get_client_type(request),
-    )
-    db.add(entry)
-    db.commit()
-    db.refresh(entry)
-    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
-    return {"ok": True, "id": entry.id}
-
-
-@app.get("/api/tentaizu-easy-scores/{puzzle_date}")
-def get_tentaizu_easy_scores(puzzle_date: str, db: Session = Depends(get_db)):
-    import re
-    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
-        raise HTTPException(status_code=400, detail="Invalid date format")
-    q = db.query(TentaizuEasyScore).filter(TentaizuEasyScore.puzzle_date == puzzle_date)
-    q = exclude_flagged(q, TentaizuEasyScore, db)
-    top = (
-        q
-        .order_by(TentaizuEasyScore.time_secs.asc(), TentaizuEasyScore.created_at.asc())
-        .limit(20)
-        .all()
-    )
-    return _enrich_with_profiles(top, db)
+# Tentaizu leaderboard API routes are in tentaizu_leaderboard_routes.py
 
 
 def _build_stats(email: str, db: Session) -> dict:
@@ -3639,72 +3392,8 @@ def patterns_detail(slug: str, request: Request, db: Session = Depends(get_db)):
 
 
 
-# ── Nonosweeper scores ────────────────────────────────────────────────────────
-# NOTE: must appear before the 3-segment archive catch-all below.
-
-class NonosweeperScoreSubmit(BaseModel):
-    name:        str = Field(..., min_length=1, max_length=32)
-    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
-    difficulty:  str = Field(..., pattern=r"^(beginner|intermediate|expert)$")
-    time_secs:   int = Field(..., ge=0, le=99999)
-
-    @field_validator("name")
-    @classmethod
-    def sanitize_name(cls, v: str) -> str:
-        v = v.strip()
-        v = "".join(c for c in v if c.isprintable())
-        if not v:
-            raise ValueError("Name must contain printable characters")
-        return v[:32]
-
-
-@app.post("/api/nonosweeper-scores", status_code=201)
-@limiter.limit("10/minute")
-def submit_nonosweeper_score(payload: NonosweeperScoreSubmit, request: Request, db: Session = Depends(get_db)):
-    user = get_current_user(request)
-    guest_token = get_or_create_guest_token(request, user)
-    entry = NonosweeperScore(
-        name        = payload.name,
-        user_email  = user["email"] if user else None,
-        puzzle_date = payload.puzzle_date,
-        difficulty  = payload.difficulty,
-        time_secs   = payload.time_secs,
-        guest_token = guest_token,
-        client_type = get_client_type(request),
-    )
-    db.add(entry)
-    db.commit()
-    db.refresh(entry)
-    flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
-    record_score_submit("nonosweeper", str(payload.puzzle_date))
-    record_game_complete("nonosweeper", mode=payload.difficulty,
-                         duration_ms=(payload.time_secs or 0) * 1000)
-    return {"ok": True, "id": entry.id}
-
-
-@app.get("/api/nonosweeper-scores/{puzzle_date}")
-def get_nonosweeper_scores(
-    puzzle_date: str,
-    difficulty: str = Query("beginner"),
-    db: Session = Depends(get_db),
-):
-    import re
-    if not re.match(r"^\d{4}-\d{2}-\d{2}$", puzzle_date):
-        raise HTTPException(status_code=400, detail="Invalid date format")
-    if difficulty not in ("beginner", "intermediate", "expert"):
-        difficulty = "beginner"
-    q = db.query(NonosweeperScore).filter(
-        NonosweeperScore.puzzle_date == puzzle_date,
-        NonosweeperScore.difficulty  == difficulty,
-    )
-    q = exclude_flagged(q, NonosweeperScore, db)
-    top = (
-        q
-        .order_by(NonosweeperScore.time_secs.asc(), NonosweeperScore.created_at.asc())
-        .limit(20)
-        .all()
-    )
-    return _enrich_with_profiles(top, db)
+# Nonosweeper score API routes are in nonosweeper_routes.py
+# NOTE: nonosweeper_router is registered before the 3-segment archive catch-all.
 
 
 # ── Archive routes (must be last — parameterised path catches all 3-segment URLs) ─
@@ -3798,56 +3487,7 @@ async def archive_day(
         "noindex":      True,
     })
 
-# ── Nonosweeper ───────────────────────────────────────────────────────────────
-
-@app.get("/nonosweeper", response_class=HTMLResponse)
-async def nonosweeper_page(request: Request, date_param: str = Query(None, alias="date")):
-    print(f"[DEBUG] nonosweeper_page hit: {request.url}", flush=True)
-    import re
-    real_today = date.today().isoformat()
-    puzzle_date = real_today
-    if date_param and re.match(r"^\d{4}-\d{2}-\d{2}$", date_param):
-        puzzle_date = date_param
-    print(f"[DEBUG] nonosweeper_page puzzle_date={puzzle_date}", flush=True)
-    try:
-        response = templates.TemplateResponse(request, "nonosweeper.html", {
-            "mode": "nonosweeper",
-            "user": get_current_user(request),
-            "lang": get_lang(request), "t": get_t(request),
-            "today": puzzle_date,
-            "real_today": real_today,
-            "default_no_guess": True,
-        })
-        print(f"[DEBUG] nonosweeper_page rendered successfully", flush=True)
-        return response
-    except Exception as e:
-        print(f"[DEBUG] nonosweeper_page ERROR: {type(e).__name__}: {e}", flush=True)
-        raise
-
-
-@app.get("/nonosweeper/{date_str}", response_class=HTMLResponse)
-async def nonosweeper_permalink(request: Request, date_str: str):
-    print(f"[DEBUG] nonosweeper_permalink hit: {request.url}, date_str={date_str}", flush=True)
-    import re
-    real_today = date.today().isoformat()
-    if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
-        print(f"[DEBUG] nonosweeper_permalink invalid date_str, redirecting", flush=True)
-        return RedirectResponse("/nonosweeper", status_code=302)
-    try:
-        response = templates.TemplateResponse(request, "nonosweeper.html", {
-            "mode": "nonosweeper",
-            "user": get_current_user(request),
-            "lang": get_lang(request), "t": get_t(request),
-            "today": date_str,
-            "real_today": real_today,
-            "noindex": True,
-            "default_no_guess": True,
-        })
-        print(f"[DEBUG] nonosweeper_permalink rendered successfully", flush=True)
-        return response
-    except Exception as e:
-        print(f"[DEBUG] nonosweeper_permalink ERROR: {type(e).__name__}: {e}", flush=True)
-        raise
+# Nonosweeper page routes are in nonosweeper_routes.py
 
 
 # ── MVS static pages ──────────────────────────────────────────────────────────
