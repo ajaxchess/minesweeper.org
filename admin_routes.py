@@ -40,22 +40,44 @@ from database import (
 from phase2_analyzer import GameAnalysis
 
 from auth import get_current_user
-from translations import get_lang, get_t
+from translations import get_lang, get_t, FUN_LANGS
 import settings as site_settings
 from quest_catalog import quest_config
+from game_catalog import PUZZLE_GAMES
 from wc2026_data import WC2026_BY_SLUG, WC2026_ROUND_LABELS
 from breadcrumbs import get_breadcrumbs as _get_breadcrumbs
 
 admin_router = APIRouter()
 
+def _autolink(text):
+    from markupsafe import Markup, escape
+    if not text:
+        return Markup('')
+    safe = str(escape(text))
+    def _replace(m):
+        url = m.group(0)
+        while url and url[-1] in '.,;:!?)]\'\"':
+            url = url[:-1]
+        return '<a href="{u}" target="_blank" rel="noopener noreferrer">{u}</a>'.format(u=url)
+    return Markup(re.sub(r'https?://[^\s<>"\'\x00-\x1f]+', _replace, safe))  # nosec B704
+
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["get_breadcrumbs"]       = _get_breadcrumbs
-templates.env.globals["quest_config"]          = quest_config
-templates.env.globals["DEFAULT_SKIN"]          = site_settings.DEFAULT_SKIN
-templates.env.globals["active_skin"]           = site_settings.active_skin
-templates.env.globals["solstice_banner"]       = site_settings.solstice_banner
-templates.env.globals["equinox_banner"]        = site_settings.equinox_banner
-templates.env.globals["diana_birthday_banner"] = site_settings.diana_birthday_banner
+templates.env.globals["get_breadcrumbs"]        = _get_breadcrumbs
+templates.env.globals["quest_config"]           = quest_config
+templates.env.globals["puzzle_games"]           = PUZZLE_GAMES
+templates.env.globals["DEFAULT_SKIN"]           = site_settings.DEFAULT_SKIN
+templates.env.globals["active_skin"]            = site_settings.active_skin
+templates.env.globals["solstice_banner"]        = site_settings.solstice_banner
+templates.env.globals["equinox_banner"]         = site_settings.equinox_banner
+templates.env.globals["diana_birthday_banner"]  = site_settings.diana_birthday_banner
+templates.env.globals["mexico_banner"]          = site_settings.mexico_banner
+templates.env.globals["is_mexico_cinco"]        = site_settings.is_mexico_cinco
+templates.env.globals["is_mexico_independence"] = site_settings.is_mexico_independence
+templates.env.globals["page_localized"]         = True
+templates.env.globals["FUN_LANGS"]             = FUN_LANGS
+templates.env.globals["ga_tag"]                = Config(".env")("GA_TAG", default="")
+templates.env.globals["twitter_handle"]        = Config(".env")("TWITTER_HANDLE", default="")
+templates.env.filters["autolink"]              = _autolink
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 _JIGSAW_UPLOAD_DIR = os.path.join("static", "uploads", "jigsaw")
