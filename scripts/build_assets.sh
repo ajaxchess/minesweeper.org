@@ -1,10 +1,17 @@
 #!/bin/bash
-# build_assets.sh — Minify JS and CSS static assets after git pull.
-# Run from the repo root, or called by the deploy script.
+# build_assets.sh — Build minified JS and CSS from static/src/ into the served
+# static/js/ and static/css/ trees. Run from the repo root, or called by the
+# deploy script.
+#
+# Sources live in static/src/. The served copies are BUILD OUTPUT and are
+# overwritten here — never edit them directly.
+# See intent/StaticAssetSourceOfTruth.md (F-ASSETS).
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-JS_DIR="$REPO_DIR/static/js"
-CSS_DIR="$REPO_DIR/static/css"
+SRC_JS="$REPO_DIR/static/src/js"
+SRC_CSS="$REPO_DIR/static/src/css"
+OUT_JS="$REPO_DIR/static/js"
+OUT_CSS="$REPO_DIR/static/css"
 
 echo "=== Building assets ==="
 
@@ -13,23 +20,23 @@ if ! command -v npx &>/dev/null; then
     exit 1
 fi
 
-# Minify each JS file in place
-JS_FILES=(minesweeper.js quests.js duel.js rush.js tentaizu.js tentaizu_easy.js cylinder.js toroid.js replay.js mosaic.js)
-for f in "${JS_FILES[@]}"; do
-    src="$JS_DIR/$f"
-    if [ -f "$src" ]; then
-        npx --yes terser "$src" --compress --mangle --output "$src" 2>/dev/null \
-            && echo "  Minified JS: $f" \
-            || echo "  [WARN] Failed to minify: $f"
-    fi
+for src in "$SRC_JS"/*.js; do
+    [ -e "$src" ] || continue
+    out="$OUT_JS/$(basename "$src")"
+    npx --yes terser "$src" --compress --mangle --output "$out" 2>/dev/null \
+        && echo "  Minified JS: $(basename "$src")" \
+        || echo "  [WARN] Failed to minify: $(basename "$src")"
 done
 
-# Minify CSS in place
-CSS_FILE="$CSS_DIR/style.css"
-if [ -f "$CSS_FILE" ]; then
-    npx --yes csso-cli "$CSS_FILE" --output "$CSS_FILE" 2>/dev/null \
-        && echo "  Minified CSS: style.css" \
-        || echo "  [WARN] Failed to minify: style.css"
-fi
+for src in "$SRC_CSS"/*.css; do
+    [ -e "$src" ] || continue
+    out="$OUT_CSS/$(basename "$src")"
+    npx --yes csso-cli "$src" --output "$out" 2>/dev/null \
+        && echo "  Minified CSS: $(basename "$src")" \
+        || echo "  [WARN] Failed to minify: $(basename "$src")"
+done
+
+# NOTE: static/js/goldberg_prebaked.js is generated prebake data with no
+# readable source. It is not built here and must not be minified in place.
 
 echo "=== Build complete ==="

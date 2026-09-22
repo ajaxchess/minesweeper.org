@@ -1,11 +1,13 @@
 name: Build Assets
 
+# Minified output in static/js/ and static/css/ is BUILT from static/src/.
+# Edit static/src/js/*.js and static/src/css/*.css — never the served copies,
+# which this workflow overwrites. See intent/StaticAssetSourceOfTruth.md.
 on:
   push:
     branches: ["main"]
     paths:
-      - "static/js/**"
-      - "static/css/**"
+      - "static/src/**"
 
 jobs:
   build:
@@ -29,16 +31,22 @@ jobs:
 
       - name: Minify JS
         run: |
-          find static/js -maxdepth 1 -name "*.js" | sort | while read f; do
-            terser "$f" --compress --mangle --output "$f"
-            echo "  Minified JS: $(basename $f)"
+          set -euo pipefail
+          for f in static/src/js/*.js; do
+            [ -e "$f" ] || continue
+            out="static/js/$(basename "$f")"
+            terser "$f" --compress --mangle --output "$out"
+            echo "  $f -> $out"
           done
 
       - name: Minify CSS
         run: |
-          find static/css -maxdepth 1 -name "*.css" | sort | while read f; do
-            csso "$f" --output "$f"
-            echo "  Minified CSS: $(basename $f)"
+          set -euo pipefail
+          for f in static/src/css/*.css; do
+            [ -e "$f" ] || continue
+            out="static/css/$(basename "$f")"
+            csso "$f" --output "$out"
+            echo "  $f -> $out"
           done
 
       - name: Commit built assets
@@ -47,8 +55,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add static/js/*.js static/css/*.css
           if git diff --staged --quiet; then
-            echo "No changes — assets already minified."
+            echo "No changes — assets already up to date."
           else
-            git commit -m "chore: minify static assets [skip ci]"
+            git commit -m "chore: build static assets [skip ci]"
             git push
           fi
