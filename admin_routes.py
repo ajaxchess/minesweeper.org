@@ -44,10 +44,12 @@ from translations import get_lang, get_t
 import settings as site_settings
 from quest_catalog import quest_config
 from wc2026_data import WC2026_BY_SLUG, WC2026_ROUND_LABELS
+from breadcrumbs import get_breadcrumbs as _get_breadcrumbs
 
 admin_router = APIRouter()
 
 templates = Jinja2Templates(directory="templates")
+templates.env.globals["get_breadcrumbs"]       = _get_breadcrumbs
 templates.env.globals["quest_config"]          = quest_config
 templates.env.globals["DEFAULT_SKIN"]          = site_settings.DEFAULT_SKIN
 templates.env.globals["active_skin"]           = site_settings.active_skin
