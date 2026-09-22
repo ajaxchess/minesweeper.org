@@ -1,0 +1,203 @@
+/*
+ * static/css/admin_bootcamp.css — Admin Bootcamp dashboard styling.
+ *
+ * Inherits the dark-friendly admin aesthetic from style.css (`.lb-wrapper`).
+ * Adds bootcamp-specific layout for stat grids, distribution tables, and
+ * the anomaly table.
+ */
+
+.ab-wrapper { color: var(--text, #d4d4d4); }
+
+.ab-nav {
+  text-align: center;
+  color: var(--text-dim, #888);
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+.ab-nav a {
+  color: var(--accent2, #4a9eff);
+  text-decoration: none;
+}
+.ab-nav a:hover { text-decoration: underline; }
+
+/* ── Sections ──────────────────────────────────────────────────────────── */
+.ab-section {
+  margin-bottom: 2rem;
+  background: var(--bg-panel, #1a1a1a);
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+}
+.ab-section-title {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem;
+  color: var(--text, #d4d4d4);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ab-section-note {
+  font-size: 0.85rem;
+  color: var(--text-dim, #888);
+  margin: 0 0 1rem;
+}
+.ab-section-footnote {
+  font-size: 0.75rem;
+  margin: 0.75rem 0 0;
+  font-style: italic;
+}
+
+/* ── Stat grid ─────────────────────────────────────────────────────────── */
+.ab-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+.ab-stat-card {
+  background: var(--bg, #0e0e0e);
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.ab-stat-card--warn  { border-color: #f59e0b; }
+.ab-stat-card--alert { border-color: #ef4444; background: rgba(239,68,68,0.05); }
+
+.ab-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-dim, #888);
+  font-weight: 600;
+}
+.ab-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.3px;
+  color: var(--text, #d4d4d4);
+}
+.ab-stat-sub {
+  font-size: 11px;
+  color: var(--text-dim, #888);
+  margin-top: 4px;
+}
+
+/* ── Tables ────────────────────────────────────────────────────────────── */
+.ab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.ab-table th, .ab-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border, #2a2a2a);
+}
+.ab-table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-dim, #888);
+  font-weight: 600;
+  background: rgba(255,255,255,0.02);
+}
+.ab-table .ab-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.ab-table tbody tr:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+/* ── Distribution bars ─────────────────────────────────────────────────── */
+.ab-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ab-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+.ab-bar-fill--l1 { background: #0066ff; }
+.ab-bar-fill--l2 { background: #00b377; }
+.ab-bar-fill--l3 { background: #e63946; }
+.ab-bar-fill--l4 { background: #4a4abf; }
+.ab-bar-fill--l5 { background: #8b5cf6; }
+.ab-bar-fill--l6 { background: #ec4899; }
+.ab-bar-fill--l7 { background: #14b8a6; }
+
+/* ── Anomaly section ───────────────────────────────────────────────────── */
+.ab-alert-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  background: #ef4444;
+  color: white;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.ab-anomaly-table .ab-player {
+  background: rgba(255,255,255,0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+.ab-link {
+  color: var(--accent2, #4a9eff);
+  text-decoration: none;
+  font-size: 12px;
+}
+.ab-link:hover { text-decoration: underline; }
+
+.ab-empty {
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-dim, #888);
+  background: rgba(80,200,120,0.05);
+  border: 1px solid rgba(80,200,120,0.2);
+  border-radius: 6px;
+}
+
+/* ── Chart ─────────────────────────────────────────────────────────────── */
+.ab-chart-wrap {
+  height: 240px;
+  position: relative;
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────── */
+.ab-footer {
+  margin-top: 2rem;
+  text-align: center;
+  color: var(--text-dim, #888);
+  font-size: 11px;
+}
+.ab-footer code {
+  background: rgba(255,255,255,0.05);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+/* ── Light skin support ────────────────────────────────────────────────── */
+:root[data-skin="light"] .ab-wrapper {
+  --bg: #ffffff;
+  --bg-panel: #f8f9fa;
+  --border: #e1e4e8;
+  --text: #1d1d1f;
+  --text-dim: #6b7280;
+  --accent2: #2563eb;
+}
+:root[data-skin="light"] .ab-table th {
+  background: rgba(0,0,0,0.02);
+}
+:root[data-skin="light"] .ab-bar {
+  background: rgba(0,0,0,0.06);
+}
+:root[data-skin="light"] .ab-empty {
+  background: #d1fae5;
+  border-color: #10b981;
+  color: #065f46;
+}

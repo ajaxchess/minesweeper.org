@@ -1,0 +1,768 @@
+'use strict';
+
+// ── Adjacency colours (same palette as tametsi.js) ────────────────────────────
+const WC_ADJ_COLORS = [
+    '',         // 0 — blank
+    '#1565c0',  // 1
+    '#2e7d32',  // 2
+    '#c62828',  // 3
+    '#0d47a1',  // 4
+    '#b71c1c',  // 5
+    '#00695c',  // 6
+    '#4a148c',  // 7
+    '#424242',  // 8
+];
+
+// ── 3BV computation ───────────────────────────────────────────────────────────
+function wcComputeBBBV(mineLayout, rows, cols, adjArr) {
+    const total = rows * cols;
+    const mineSet = new Set(mineLayout.map(([r, c]) => r * cols + c));
+    const coveredByOpening = new Uint8Array(total);
+    const visitedZero = new Uint8Array(total);
+    let bbbv = 0;
+
+    for (let idx = 0; idx < total; idx++) {
+        if (mineSet.has(idx) || adjArr[idx] !== 0 || visitedZero[idx]) continue;
+        bbbv++;
+        const queue = [idx];
+        visitedZero[idx] = 1;
+        coveredByOpening[idx] = 1;
+        let qi = 0;
+        while (qi < queue.length) {
+            const cur = queue[qi++];
+            const r = Math.floor(cur / cols), c = cur % cols;
+            for (const [nr, nc] of wcNeighbors(r, c, rows, cols)) {
+                const ni = nr * cols + nc;
+                if (mineSet.has(ni)) continue;
+                coveredByOpening[ni] = 1;
+                if (adjArr[ni] === 0 && !visitedZero[ni]) {
+                    visitedZero[ni] = 1;
+                    queue.push(ni);
+                }
+            }
+        }
+    }
+
+    for (let idx = 0; idx < total; idx++) {
+        if (!mineSet.has(idx) && adjArr[idx] > 0 && !coveredByOpening[idx]) bbbv++;
+    }
+
+    return bbbv;
+}
+
+function wcNeighbors(r, c, rows, cols) {
+    const out = [];
+    for (let dr = -1; dr <= 1; dr++)
+        for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const nr = r + dr, nc = c + dc;
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols)
+                out.push([nr, nc]);
+        }
+    return out;
+}
+
+function wcBuildAdj(mineLayout, rows, cols) {
+    const mineSet = new Set(mineLayout.map(([r, c]) => r * cols + c));
+    const adj = new Int8Array(rows * cols);
+    for (const [r, c] of mineLayout) {
+        for (const [nr, nc] of wcNeighbors(r, c, rows, cols)) {
+            const ni = nr * cols + nc;
+            if (!mineSet.has(ni)) adj[ni]++;
+        }
+    }
+    return { mineSet, adj };
+}
+
+// ── Touch handler ─────────────────────────────────────────────────────────────
+function wcAddTouch(el, onTap, onLongPress, onDoubleTap) {
+    let timer = null, moved = false, sx, sy;
+    let lastTap = 0;
+    el.addEventListener('touchstart', e => {
+        if (e.touches.length > 1) { clearTimeout(timer); timer = null; return; }
+        e.preventDefault();
+        moved = false;
+        sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+        timer = setTimeout(() => { timer = null; if (!moved) onLongPress(); }, 500);
+    }, { passive: false });
+    el.addEventListener('touchmove', e => {
+        if (!timer) return;
+        if (Math.abs(e.touches[0].clientX - sx) > 10 ||
+            Math.abs(e.touches[0].clientY - sy) > 10) {
+            moved = true; clearTimeout(timer); timer = null;
+        }
+    }, { passive: true });
+    el.addEventListener('touchend', e => {
+        e.preventDefault();
+        if (timer) {
+            clearTimeout(timer); timer = null;
+            if (!moved) {
+                if (onDoubleTap) {
+                    const now = Date.now();
+                    if (now - lastTap < 300) { lastTap = 0; onDoubleTap(); return; }
+                    lastTap = now;
+                }
+                onTap();
+            }
+        }
+    }, { passive: false });
+    el.addEventListener('touchcancel', () => { clearTimeout(timer); timer = null; });
+}
+
+// ── Mount a single WC board ───────────────────────────────────────────────────
+function wcMountBoard(wrap) {
+    const country    = wrap.dataset.country;
+    const difficulty = wrap.dataset.difficulty;
+    const fanFlagImg = wrap.dataset.fanFlagImg;
+    const primary    = wrap.dataset.primary;
+    const secondary  = wrap.dataset.secondary;
+
+    let board = JSON.parse(wrap.dataset.board);
+    let { mineSet, adj } = wcBuildAdj(board.mine_layout, board.rows, board.cols);
+    let busy = false;
+    // game starts when cell 0 is clicked; auto-detect if a board was already started
+    let started = board.cells.some(s => s === 'revealed');
+    let timerInterval = null, elapsedSec = 0;
+    let leftClicks = 0, rightClicks = 0;
+    let bbbv = wcComputeBBBV(board.mine_layout, board.rows, board.cols, adj);
+
+    // ── DOM skeleton ──────────────────────────────────────────────────────────
+    wrap.innerHTML = '';
+
+    const uid = `wc-${difficulty}`;
+
+    const zoneBar = document.createElement('div');
+    zoneBar.className = 'wc-zone-bar';
+    wrap.appendChild(zoneBar);
+
+    const timerEl = document.createElement('div');
+    timerEl.className = 'wc-timer';
+    timerEl.textContent = '0:00';
+    timerEl.style.display = started ? '' : 'none';
+    wrap.appendChild(timerEl);
+
+    const grid = document.createElement('div');
+    grid.className = 'wc-tmt-grid';
+    grid.id = `${uid}-grid`;
+    wrap.appendChild(grid);
+
+    const msgBanner = document.createElement('div');
+    msgBanner.className = 'wc-msg-banner';
+    msgBanner.id = `${uid}-msg`;
+    msgBanner.style.display = 'none';
+    wrap.appendChild(msgBanner);
+
+    // ── Timer ─────────────────────────────────────────────────────────────────
+    function startTimer() {
+        if (timerInterval) return;
+        timerEl.style.display = '';
+        const t0 = Date.now() - elapsedSec * 1000;
+        timerInterval = setInterval(() => {
+            elapsedSec = (Date.now() - t0) / 1000;
+            const m = Math.floor(elapsedSec / 60);
+            const s = Math.floor(elapsedSec % 60);
+            timerEl.textContent = `${m}:${String(s).padStart(2, '0')}`;
+        }, 500);
+    }
+    function stopTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+
+    // ── Zone bar ──────────────────────────────────────────────────────────────
+    function updateZoneBar() {
+        const flagged = board.cells.filter(s => s === 'flagged').length;
+        zoneBar.innerHTML = `
+            <span class="wc-zone-chip" style="background:${primary};color:${contrastColor(primary)}">
+                <span class="wc-zone-label">Primary</span>
+                <span class="wc-zone-count" id="${uid}-pr">${board.primary_remaining}</span>
+            </span>
+            <span class="wc-zone-chip" style="background:${secondary};color:${contrastColor(secondary)}">
+                <span class="wc-zone-label">Secondary</span>
+                <span class="wc-zone-count" id="${uid}-sc">${board.secondary_remaining}</span>
+            </span>
+            <span class="wc-flag-count">${flagged} / ${board.mines} mines flagged</span>
+        `;
+    }
+
+    function contrastColor(hex) {
+        const r = parseInt(hex.slice(1,3), 16);
+        const g = parseInt(hex.slice(3,5), 16);
+        const b = parseInt(hex.slice(5,7), 16);
+        return (r * 299 + g * 587 + b * 114) / 1000 >= 128 ? '#111' : '#fff';
+    }
+
+    // ── Cell rendering ────────────────────────────────────────────────────────
+    function renderCell(el, idx) {
+        const state = board.cells[idx];
+        const r = Math.floor(idx / board.cols);
+        const zoneColor = r < board.top_rows ? primary : secondary;
+        const textColor = contrastColor(zoneColor);
+
+        el.className = 'wc-cell';
+        el.dataset.idx = idx;
+        el.textContent = '';
+        el.style.cssText = '';
+
+        switch (state) {
+            case 'hidden':
+                el.classList.add('wc-cell-hidden');
+                el.style.background = zoneColor;
+                if (!started && idx === 0) {
+                    el.classList.add('wc-cell-start');
+                    el.textContent = '▶';
+                    el.style.color = contrastColor(zoneColor);
+                    el.style.filter = 'none';
+                }
+                break;
+
+            case 'flagged':
+                el.classList.add('wc-cell-flagged');
+                el.style.background = zoneColor;
+                if (fanFlagImg) {
+                    const img = document.createElement('img');
+                    img.src = `https://flagcdn.com/w20/${fanFlagImg}.png`;
+                    img.alt = '';
+                    img.className = 'wc-flag-img';
+                    el.appendChild(img);
+                } else {
+                    el.textContent = '🚩';
+                }
+                break;
+
+            case 'revealed': {
+                el.classList.add('wc-cell-revealed');
+                const n = adj[idx];
+                if (n > 0) {
+                    el.textContent = n;
+                    el.style.color = WC_ADJ_COLORS[n] || '#333';
+                }
+                break;
+            }
+
+            case 'exploded':
+                el.classList.add('wc-cell-exploded');
+                el.textContent = '💥';
+                break;
+        }
+    }
+
+    // ── Full board render ─────────────────────────────────────────────────────
+    function renderBoard() {
+        const { rows, cols } = board;
+        const cellSize = cols <= 15 ? 30 : cols <= 20 ? 26 : 22;
+        grid.style.setProperty('--wc-cols', cols);
+        grid.style.setProperty('--wc-cell-size', cellSize + 'px');
+        grid.innerHTML = '';
+
+        // Corner spacer
+        grid.appendChild(Object.assign(document.createElement('div'), { className: 'wc-corner' }));
+
+        // Column hints
+        for (let c = 0; c < cols; c++) {
+            const el = document.createElement('div');
+            el.className = 'wc-col-hint';
+            el.dataset.col = c;
+            const rem = document.createElement('span');
+            rem.className = 'wc-h-rem';
+            rem.textContent = board.col_remaining[c];
+            const tot = document.createElement('span');
+            tot.className = 'wc-h-tot';
+            tot.textContent = board.col_counts[c];
+            el.append(rem, tot);
+            if (board.col_remaining[c] === 0) el.classList.add('wc-hint-sat');
+            grid.appendChild(el);
+            el.addEventListener('click', () => {
+                const pinned = el.classList.toggle('wc-pinned');
+                for (let row = 0; row < rows; row++) {
+                    const cell = grid.querySelector(`.wc-cell[data-idx="${row * cols + c}"]`);
+                    if (cell) cell.classList.toggle('wc-col-hl', pinned);
+                }
+            });
+        }
+
+        // Rows
+        for (let r = 0; r < rows; r++) {
+            const rowHint = document.createElement('div');
+            rowHint.className = 'wc-row-hint';
+            rowHint.dataset.row = r;
+            const rem = document.createElement('span');
+            rem.className = 'wc-h-rem';
+            rem.textContent = board.row_remaining[r];
+            const tot = document.createElement('span');
+            tot.className = 'wc-h-tot';
+            tot.textContent = board.row_counts[r];
+            rowHint.append(rem, tot);
+            if (board.row_remaining[r] === 0) rowHint.classList.add('wc-hint-sat');
+            grid.appendChild(rowHint);
+            rowHint.addEventListener('click', () => {
+                const pinned = rowHint.classList.toggle('wc-pinned');
+                for (let c = 0; c < cols; c++) {
+                    const cell = grid.querySelector(`.wc-cell[data-idx="${r * cols + c}"]`);
+                    if (cell) cell.classList.toggle('wc-row-hl', pinned);
+                }
+            });
+
+            for (let c = 0; c < cols; c++) {
+                const idx = r * cols + c;
+                const el = document.createElement('div');
+                el.dataset.idx = idx;
+                renderCell(el, idx);
+                el.addEventListener('click',       () => handleReveal(idx));
+                el.addEventListener('dblclick',    () => handleChord(idx));
+                el.addEventListener('contextmenu', e => { e.preventDefault(); handleFlag(idx); });
+                wcAddTouch(el, () => handleReveal(idx), () => handleFlag(idx), () => handleChord(idx));
+                grid.appendChild(el);
+            }
+        }
+
+        updateZoneBar();
+    }
+
+    // ── Refresh board from API response ───────────────────────────────────────
+    function applyBoardUpdate(data) {
+        board = data;
+        ({ mineSet, adj } = wcBuildAdj(board.mine_layout, board.rows, board.cols));
+
+        for (let idx = 0; idx < board.rows * board.cols; idx++) {
+            const el = grid.querySelector(`.wc-cell[data-idx="${idx}"]`);
+            if (el) renderCell(el, idx);
+        }
+
+        for (let r = 0; r < board.rows; r++) {
+            const hint = grid.querySelector(`.wc-row-hint[data-row="${r}"]`);
+            if (!hint) continue;
+            hint.querySelector('.wc-h-rem').textContent = board.row_remaining[r];
+            hint.classList.toggle('wc-hint-sat', board.row_remaining[r] === 0);
+        }
+        for (let c = 0; c < board.cols; c++) {
+            const hint = grid.querySelector(`.wc-col-hint[data-col="${c}"]`);
+            if (!hint) continue;
+            hint.querySelector('.wc-h-rem').textContent = board.col_remaining[c];
+            hint.classList.toggle('wc-hint-sat', board.col_remaining[c] === 0);
+        }
+
+        updateZoneBar();
+    }
+
+    // ── Interaction ───────────────────────────────────────────────────────────
+    async function handleReveal(idx) {
+        if (busy || board.is_solved) return;
+        if (!started && idx !== 0) return;   // gate: only top-left starts the game
+        if (board.cells[idx] !== 'hidden') return;
+        leftClicks++;
+        busy = true;
+        try {
+            const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/reveal`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idx }),
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!started) { started = true; startTimer(); }
+            applyBoardUpdate(data);
+            if (data.hit_mine) {
+                stopTimer();
+                showExplosionBanner();
+            } else {
+                checkAutoSolve();
+            }
+        } finally {
+            busy = false;
+        }
+    }
+
+    async function handleFlag(idx) {
+        if (busy || board.is_solved || !started) return;
+        if (board.cells[idx] === 'revealed' || board.cells[idx] === 'exploded') return;
+        rightClicks++;
+        busy = true;
+        try {
+            const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/flag`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idx }),
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            applyBoardUpdate(data);
+            checkAutoSolve();
+        } finally {
+            busy = false;
+        }
+    }
+
+    async function handleChord(idx) {
+        if (busy || board.is_solved || !started) return;
+        if (localStorage.getItem('chording') === 'false') return;
+        if (board.cells[idx] !== 'revealed') return;
+        const n = adj[idx];
+        if (n <= 0) return;
+        const r = Math.floor(idx / board.cols), c = idx % board.cols;
+        const nbs = wcNeighbors(r, c, board.rows, board.cols);
+        const flagCount = nbs.filter(([nr, nc]) => board.cells[nr * board.cols + nc] === 'flagged').length;
+        if (flagCount !== n) return;
+        const toReveal = nbs
+            .map(([nr, nc]) => nr * board.cols + nc)
+            .filter(ni => board.cells[ni] === 'hidden');
+        if (toReveal.length === 0) return;
+        busy = true;
+        leftClicks += toReveal.length;
+        try {
+            for (const ni of toReveal) {
+                const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/reveal`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idx: ni }),
+                });
+                if (!res.ok) break;
+                const data = await res.json();
+                applyBoardUpdate(data);
+                if (data.hit_mine) { stopTimer(); showExplosionBanner(); return; }
+            }
+            checkAutoSolve();
+        } finally {
+            busy = false;
+        }
+    }
+
+    function boardAllSafe() {
+        const mineSet = new Set(board.mine_layout.map(([r, c]) => r * board.cols + c));
+        return board.cells.every((state, idx) => mineSet.has(idx) || state === 'revealed');
+    }
+
+    function checkAutoSolve() {
+        if (boardAllSafe()) doSolve();
+    }
+
+    async function doSolve() {
+        const totalClicks = leftClicks + rightClicks;
+        const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/solve`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                time_ms:      Math.round(elapsedSec * 1000),
+                bbbv:         bbbv,
+                left_clicks:  leftClicks,
+                right_clicks: rightClicks,
+            }),
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            showMsg(`Could not submit solve: ${data.error || res.status}`, 'wc-msg-warn');
+            return;
+        }
+        const data = await res.json();
+        if (data.ok) { showSolvedBanner(data); refreshLeaderboard(); }
+    }
+
+    async function refreshLeaderboard() {
+        const wrap = document.getElementById('wcc-lb-wrap');
+        if (!wrap) return;
+        try {
+            const res = await fetch(`/api/wc2026/leaderboard/country/${country}`);
+            if (!res.ok) return;
+            const rows = await res.json();
+            if (!rows.length) return;
+            wrap.innerHTML = `
+                <table class="wc-lb-table">
+                  <thead><tr><th>#</th><th>Player</th><th>Fan of</th><th>Points</th><th>Best Time</th></tr></thead>
+                  <tbody>${rows.map((r, i) => `
+                    <tr>
+                      <td>${i + 1}</td>
+                      <td>${r.display_name}</td>
+                      <td><img src="https://flagcdn.com/w20/${r.fan_flag_img}.png"
+                               style="vertical-align:middle;margin-right:4px;">${r.fan_flag_name}</td>
+                      <td><strong>${r.points}</strong></td>
+                      <td style="color:var(--text-dim);font-size:.85rem;">${r.best_time || '—'}</td>
+                    </tr>`).join('')}
+                  </tbody>
+                </table>`;
+        } catch (_) { /* silently ignore — stale data on failure is acceptable */ }
+    }
+
+    function showSolvedBanner(result) {
+        stopTimer();
+        const elapsed = elapsedSec;
+        const m = Math.floor(elapsed / 60), s = Math.floor(elapsed % 60);
+        const timeStr = elapsed > 0 ? ` in ${m}:${String(s).padStart(2,'0')}` : '';
+        const totalClicks = leftClicks + rightClicks;
+        const effPct = totalClicks > 0 ? ((bbbv / totalClicks) * 100).toFixed(1) : '—';
+
+        msgBanner.className = 'wc-msg-banner wc-msg-solved';
+        msgBanner.innerHTML = '';
+
+        const info = document.createElement('div');
+        info.className = 'wc-solved-text';
+        const capNote = result.capped
+            ? `<div class="wc-solved-stats" style="color:#c62828;">Daily guest cap reached — extra points clamped to 0. Log in to keep earning.</div>`
+            : '';
+        const guestNote = (result.is_guest && !result.capped)
+            ? `<div class="wc-solved-stats">
+                <a href="/auth/login?next=${encodeURIComponent(location.pathname)}">Log in</a>
+                to claim these points and join the biggest fans leaderboard.
+              </div>`
+            : '';
+        info.innerHTML = `<div class="wc-solved-trophy">🏆</div>
+            <strong>Board Solved${timeStr}!</strong><br>
+            +${result.flags_correct} flags &nbsp;+${result.solve_bonus} bonus
+            = <strong>${result.total_points} pts</strong> for your team
+            <div class="wc-solved-stats">3BV: ${bbbv} &nbsp;|&nbsp; Clicks: ${totalClicks} &nbsp;|&nbsp; Efficiency: ${effPct}%</div>
+            ${capNote}
+            ${guestNote}`;
+
+        const btn = document.createElement('button');
+        btn.className = 'wc-try-again-btn';
+        btn.textContent = '🎲 Play Again';
+        btn.addEventListener('click', () => playNewBoard(btn));
+
+        msgBanner.append(info, btn);
+        msgBanner.style.display = 'flex';
+        board.is_solved = true;
+    }
+
+    async function playNewBoard(btn) {
+        if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+        const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/new`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        });
+        if (!res.ok) {
+            if (btn) { btn.disabled = false; btn.textContent = '🎲 Play Again'; }
+            return;
+        }
+        const data = await res.json();
+        board = data;
+        ({ mineSet, adj } = wcBuildAdj(board.mine_layout, board.rows, board.cols));
+        bbbv = wcComputeBBBV(board.mine_layout, board.rows, board.cols, adj);
+        leftClicks = 0; rightClicks = 0;
+        started = false;
+        elapsedSec = 0;
+        stopTimer();
+        timerEl.textContent = '0:00';
+        timerEl.style.display = 'none';
+        msgBanner.style.display = 'none';
+        renderBoard();
+    }
+
+    function showExplosionBanner() {
+        msgBanner.className = 'wc-msg-banner wc-msg-warn';
+        msgBanner.innerHTML = '';
+        const txt = document.createElement('span');
+        txt.textContent = '💥 Mine hit! ';
+        const btn = document.createElement('button');
+        btn.className = 'wc-try-again-btn';
+        btn.textContent = '↩ Try Again';
+        btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            btn.textContent = 'Resetting…';
+            const r = await fetch(`/api/wc2026/board/${country}/${difficulty}/reset`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+            if (r.ok) location.reload();
+            else { btn.disabled = false; btn.textContent = '↩ Try Again'; }
+        });
+        msgBanner.append(txt, btn);
+        msgBanner.style.display = 'flex';
+    }
+
+    function showMsg(text, cls) {
+        msgBanner.className = `wc-msg-banner ${cls}`;
+        msgBanner.textContent = text;
+        msgBanner.style.display = '';
+        setTimeout(() => { if (msgBanner.textContent === text) msgBanner.style.display = 'none'; }, 4000);
+    }
+
+    // Called on page load when the board is visually complete (all non-mine cells
+    // revealed) but is_solved is false — the /solve API call was lost (network drop
+    // or navigation away).
+    async function checkOrphanedSolve() {
+        if (board.is_solved || !boardAllSafe()) return;
+        started = true;
+        try {
+            const res = await fetch(`/api/wc2026/board/${country}/${difficulty}/solve`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ time_ms: null, bbbv, left_clicks: 0, right_clicks: 0 }),
+            });
+            const data = await res.json();
+            if (data.ok) {
+                showSolvedBanner(data);
+                refreshLeaderboard();
+            } else {
+                showOrphanedBanner();
+                refreshLeaderboard();
+            }
+        } catch (_) {
+            showOrphanedBanner();
+        }
+    }
+
+    function showOrphanedBanner() {
+        msgBanner.className = 'wc-msg-banner wc-msg-solved';
+        msgBanner.innerHTML = '';
+        const info = document.createElement('div');
+        info.className = 'wc-solved-text';
+        info.innerHTML = '<strong>✅ Board complete!</strong>';
+        const btn = document.createElement('button');
+        btn.className = 'wc-try-again-btn';
+        btn.textContent = '🎲 Play Again';
+        btn.addEventListener('click', () => playNewBoard(btn));
+        msgBanner.append(info, btn);
+        msgBanner.style.display = 'flex';
+        board.is_solved = true;
+    }
+
+    renderBoard();
+    if (started) startTimer();   // resume timer for partially-played boards
+    checkOrphanedSolve();
+}
+
+// ── CSS injected once ─────────────────────────────────────────────────────────
+(function injectStyles() {
+    if (document.getElementById('wc-tmt-styles')) return;
+    const s = document.createElement('style');
+    s.id = 'wc-tmt-styles';
+    s.textContent = `
+.wc-zone-bar {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: .5rem;
+    flex-wrap: wrap;
+}
+.wc-zone-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    border-radius: 4px;
+    padding: .2rem .5rem;
+    font-size: .8rem;
+    font-weight: 600;
+    border: 1px solid rgba(0,0,0,.15);
+}
+.wc-zone-label { opacity: .8; font-weight: 400; }
+.wc-zone-count { font-size: 1rem; }
+.wc-flag-count { color: var(--text-dim); font-size: .85rem; }
+.wc-timer {
+    font-size: .85rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-dim);
+    margin-bottom: .3rem;
+}
+
+.wc-tmt-grid {
+    display: grid;
+    grid-template-columns: auto repeat(var(--wc-cols), var(--wc-cell-size));
+    gap: 1px;
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.wc-corner { width: var(--wc-cell-size); height: var(--wc-cell-size); }
+.wc-col-hint, .wc-row-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: .65rem;
+    line-height: 1.1;
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 1px;
+    color: var(--text-dim);
+    user-select: none;
+}
+.wc-col-hint { width: var(--wc-cell-size); min-height: var(--wc-cell-size); }
+.wc-row-hint { min-width: var(--wc-cell-size); height: var(--wc-cell-size); }
+.wc-h-rem { font-weight: 700; color: var(--text); }
+.wc-h-tot { color: var(--text-dim); }
+.wc-hint-sat .wc-h-rem { color: #4caf50; }
+.wc-pinned { outline: 2px solid #f5c518; }
+.wc-col-hl, .wc-row-hl { outline: 2px solid rgba(245,197,24,.5) !important; }
+
+.wc-cell {
+    width: var(--wc-cell-size);
+    height: var(--wc-cell-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .75rem;
+    font-weight: 700;
+    border-radius: 2px;
+    cursor: pointer;
+    user-select: none;
+    box-sizing: border-box;
+    border: 1px solid rgba(0,0,0,.15);
+    transition: filter .1s;
+    position: relative;
+    overflow: hidden;
+}
+.wc-cell-hidden {
+    /* dim zone color so white zones become clearly visible as unclicked */
+    filter: brightness(0.82);
+}
+.wc-cell-hidden:hover  { filter: brightness(0.95); }
+.wc-cell-hidden:active { filter: brightness(0.70); }
+.wc-cell-revealed {
+    /* neutral page color — always distinct from zone colors in all themes */
+    background: var(--cell-rev, #c8c8c8);
+    border-color: var(--border, #aaa);
+    font-size: .8rem;
+    cursor: default;
+}
+.wc-cell-flagged { cursor: default; }
+.wc-flag-img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    pointer-events: none;
+}
+.wc-cell-exploded {
+    background: #c00 !important;
+    border-color: #900 !important;
+    font-size: 1rem;
+}
+
+.wc-msg-banner {
+    margin-top: .6rem;
+    padding: .6rem .9rem;
+    border-radius: 6px;
+    font-size: .9rem;
+    align-items: center;
+    gap: .6rem;
+}
+.wc-msg-warn {
+    background: rgba(255,160,0,.15);
+    border: 1px solid rgba(255,160,0,.4);
+    color: var(--text);
+    gap: .6rem;
+    align-items: center;
+}
+.wc-try-again-btn {
+    background: var(--accent, #4a90d9);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: .25rem .7rem;
+    cursor: pointer;
+    font-size: .85rem;
+    white-space: nowrap;
+}
+.wc-try-again-btn:disabled { opacity: .6; cursor: default; }
+.wc-msg-solved {
+    background: rgba(0,180,0,.12);
+    border: 1px solid rgba(0,180,0,.35);
+    color: var(--text);
+}
+.wc-solved-trophy { font-size: 2rem; }
+.wc-solved-text { line-height: 1.5; }
+.wc-solved-stats { margin-top: .3rem; font-size: .8rem; color: var(--text-dim); }
+    `;
+    document.head.appendChild(s);
+}());
+
+// ── Init all boards on page ───────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.wc-tmt-wrap').forEach(wcMountBoard);
+});
