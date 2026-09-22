@@ -20,10 +20,40 @@
 </script>
 {% endblock %}
 
+{% block extra_head %}
+<style>
+  .lb-speff-promo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 0 auto 1.75rem;
+    max-width: 900px;
+    padding: 1rem 1.5rem;
+    background: color-mix(in srgb, var(--accent2) 9%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--accent2) 30%, transparent);
+    border-radius: var(--radius-card);
+  }
+  .lb-speff-promo-body { min-width: 0; }
+  .lb-speff-promo-title { font-size: 1.1rem; font-weight: 700; color: var(--text); margin: .2rem 0 .3rem; }
+  .lb-speff-promo-desc  { font-size: .87rem; color: var(--text-dim); }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="lb-wrapper">
 
   <h1 class="lb-title">{{ t.lb_title }}</h1>
+
+  <section class="lb-speff-promo" aria-label="2026 Speff Championship">
+    <div class="lb-speff-promo-body">
+      <span class="lb-kicker">⚡ 2026 Championship</span>
+      <p class="lb-speff-promo-title">Speff Championship</p>
+      <p class="lb-speff-promo-desc">100% click efficiency &nbsp;·&nbsp; Beginner, Intermediate, Expert &amp; Combined &nbsp;·&nbsp; Logged-in players only</p>
+    </div>
+    <a href="/speff/2026" class="lb-directory-primary" style="white-space:nowrap">View Leaderboard</a>
+  </section>
 
   <section class="lb-personal-panel" aria-labelledby="lb-personal-title">
     {% if user %}
@@ -296,6 +326,7 @@ const CHAMPION_BOARDS = [
   { title: 'PvP Best Times', category: 'pvp', metric: 'pvp-time', periods: SHOWCASE_PERIODS, api: period => `/api/pvp/leaderboard?${periodParams(period)}`, leaderboard: '/pvp/leaderboard', play: '/pvp' },
   staticBoard('PvP Bot', 'pvp', '/pvp/bot', '/pvp/bot', 'Practice mode. Play the bot to sharpen up before live PvP.'),
   staticBoard('Private Duel', 'pvp', '/duel', '/duel', 'Private rooms are played by link, then saved in your account history.'),
+  staticBoard('Speff Championship 2026', 'events', '/speff/2026', '/'),
   staticBoard('World Cup 2026 Countries', 'events', '/2026worldcup', '/2026worldcup'),
   staticBoard('World Cup 2026 Individuals', 'events', '/2026worldcup', '/2026worldcup'),
   staticBoard('Tentaizu Daily', 'puzzles', '/tentaizu#tz-lb-section', '/tentaizu'),
