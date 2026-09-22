@@ -177,7 +177,7 @@ def _combined_board(db: Session, limit: int = 200) -> list:
 @speff_router.get("/speff/2026", response_class=HTMLResponse)
 def speff_2026(request: Request, tab: str = "combined", db: Session = Depends(get_db)):
     lang = get_lang(request)
-    t    = get_t(lang)
+    t    = get_t(request)
     user = get_current_user(request)
     if tab not in _VALID_TABS:
         tab = "combined"
