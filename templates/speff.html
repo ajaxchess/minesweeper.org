@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}{{ year }} Speff Championship | minesweeper.org{% endblock %}
+{% block description %}The {{ year }} Speff (Speed + Efficiency) Championship on minesweeper.org. Only 100% click-efficiency games on standard Beginner, Intermediate, and Expert boards, played by logged-in users in {{ year }}.{% endblock %}
+{% block canonical %}https://minesweeper.org/speff/{{ year }}{% endblock %}
+{% block og_url %}https://minesweeper.org/speff/{{ year }}{% endblock %}
+{% block og_title %}{{ year }} Speff Championship{% endblock %}
+{% block og_description %}Speed + Efficiency minesweeper championship — only perfect-efficiency games count.{% endblock %}
+
+{% block extra_head %}
+<style>
+  .speff-header { text-align: center; padding: 2rem 1rem 1rem; }
+  .speff-tagline { color: var(--text-dim); margin-top: .4rem; font-size: .95rem; }
+  .speff-rule-box {
+    margin: 1rem auto;
+    max-width: 680px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: .75rem 1.2rem;
+    font-size: .88rem;
+    color: var(--text-dim);
+    line-height: 1.55;
+  }
+  .speff-rule-box strong { color: var(--text); }
+  .speff-board-note {
+    text-align: center;
+    font-size: .82rem;
+    color: var(--text-dim);
+    margin: .75rem 0 .5rem;
+    font-family: var(--font-mono);
+  }
+  .speff-combined-note {
+    text-align: center;
+    font-size: .85rem;
+    color: var(--text-dim);
+    margin: .75rem 0 .5rem;
+  }
+  .speff-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--text-dim);
+    font-size: .95rem;
+  }
+  .lb-table td, .lb-table th { padding: .55rem .9rem; }
+  .lb-table th { border-bottom: 1px solid var(--border); color: var(--text-dim); font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; text-align: left; }
+  .lb-table td { border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent); }
+  .lb-table tr:last-child td { border-bottom: none; }
+  .lb-table tr:hover td { background: color-mix(in srgb, var(--surface2) 50%, transparent); }
+  .lb-rank { width: 3rem; font-size: 1.05rem; text-align: center; }
+  .lb-name a { color: var(--accent2); text-decoration: none; }
+  .lb-name a:hover { text-decoration: underline; }
+  .lb-time { font-family: var(--font-mono); text-align: right; color: var(--text); }
+  .lb-time.total { color: var(--accent2); font-weight: 700; }
+  .speff-you td { background: color-mix(in srgb, var(--accent2) 10%, transparent) !important; }
+  .you-badge {
+    display: inline-block;
+    margin-left: .4rem;
+    padding: .05rem .4rem;
+    border-radius: 99px;
+    font-size: .7rem;
+    background: var(--accent2);
+    color: #000;
+    font-weight: 700;
+    vertical-align: middle;
+    line-height: 1.5;
+  }
+  .speff-tabs-wrap { padding: 1rem 1rem .5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lb-wrapper">
+
+  <div class="speff-header">
+    <h1 class="lb-title">{{ year }} Speff Championship</h1>
+    <p class="speff-tagline">Speed + Efficiency &nbsp;·&nbsp; Minesweeper.org</p>
+  </div>
+
+  <div class="speff-rule-box">
+    <strong>Qualifying games:</strong> 100% click efficiency
+    (<code>bbbv = left&nbsp;clicks + chord&nbsp;clicks</code>)
+    on standard Beginner, Intermediate, or Expert boards, played in {{ year }}
+    by logged-in users.
+    Combined requires a qualifying time in all three modes.
+  </div>
+
+  <div class="speff-tabs-wrap">
+    <div class="lb-tabs" role="tablist">
+      <button class="lb-tab{% if tab == 'combined' %} active{% endif %}" data-tab="combined" role="tab">Combined</button>
+      <button class="lb-tab{% if tab == 'beginner' %} active{% endif %}" data-tab="beginner" role="tab">Beginner</button>
+      <button class="lb-tab{% if tab == 'intermediate' %} active{% endif %}" data-tab="intermediate" role="tab">Intermediate</button>
+      <button class="lb-tab{% if tab == 'expert' %} active{% endif %}" data-tab="expert" role="tab">Expert</button>
+    </div>
+  </div>
+
+  {# ── Combined panel ──────────────────────────────────────────────────── #}
+  <div class="lb-table-wrap" id="panel-combined"{% if tab != 'combined' %} style="display:none"{% endif %}>
+    <p class="speff-combined-note">Only players with qualifying times in all three modes. Lowest total time wins.</p>
+    {% if boards.combined %}
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th class="lb-rank">#</th>
+          <th class="lb-name">Player</th>
+          <th class="lb-time">Beginner</th>
+          <th class="lb-time">Intermediate</th>
+          <th class="lb-time">Expert</th>
+          <th class="lb-time total">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in boards.combined %}
+        <tr{% if user and user.email == entry.email %} class="speff-you"{% endif %}>
+          <td class="lb-rank">
+            {% if entry.rank == 1 %}🥇
+            {% elif entry.rank == 2 %}🥈
+            {% elif entry.rank == 3 %}🥉
+            {% else %}{{ entry.rank }}{% endif %}
+          </td>
+          <td class="lb-name">
+            {% if entry.public_id %}<a href="/u/{{ entry.public_id }}">{{ entry.name }}</a>{% else %}{{ entry.name }}{% endif %}
+            {% if user and user.email == entry.email %}<span class="you-badge">you</span>{% endif %}
+          </td>
+          <td class="lb-time">{{ entry.beg_ms | ms_to_s }}</td>
+          <td class="lb-time">{{ entry.int_ms | ms_to_s }}</td>
+          <td class="lb-time">{{ entry.exp_ms | ms_to_s }}</td>
+          <td class="lb-time total">{{ entry.total_ms | ms_to_s }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="speff-empty">No combined scores yet — qualify in all three modes to appear here.</div>
+    {% endif %}
+  </div>
+
+  {# ── Individual mode panels ──────────────────────────────────────────── #}
+  {% set mode_labels = {
+    "beginner":     ("Beginner",     "9×9 · 10 mines"),
+    "intermediate": ("Intermediate", "16×16 · 40 mines"),
+    "expert":       ("Expert",       "30×16 · 99 mines"),
+  } %}
+
+  {% for mode in ["beginner", "intermediate", "expert"] %}
+  {% set label, board_note = mode_labels[mode] %}
+  <div class="lb-table-wrap" id="panel-{{ mode }}"{% if tab != mode %} style="display:none"{% endif %}>
+    <p class="speff-board-note">{{ board_note }}</p>
+    {% if boards[mode] %}
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th class="lb-rank">#</th>
+          <th class="lb-name">Player</th>
+          <th class="lb-time">Best Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in boards[mode] %}
+        <tr{% if user and user.email == entry.email %} class="speff-you"{% endif %}>
+          <td class="lb-rank">
+            {% if entry.rank == 1 %}🥇
+            {% elif entry.rank == 2 %}🥈
+            {% elif entry.rank == 3 %}🥉
+            {% else %}{{ entry.rank }}{% endif %}
+          </td>
+          <td class="lb-name">
+            {% if entry.public_id %}<a href="/u/{{ entry.public_id }}">{{ entry.name }}</a>{% else %}{{ entry.name }}{% endif %}
+            {% if user and user.email == entry.email %}<span class="you-badge">you</span>{% endif %}
+          </td>
+          <td class="lb-time">{{ entry.time_ms | ms_to_s }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="speff-empty">No qualifying scores yet — play a perfect-efficiency {{ label }} game to appear here.</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+</div>
+
+<script>
+(function () {
+  const tabs = document.querySelectorAll('.lb-tab[data-tab]');
+  const panels = {
+    combined:     document.getElementById('panel-combined'),
+    beginner:     document.getElementById('panel-beginner'),
+    intermediate: document.getElementById('panel-intermediate'),
+    expert:       document.getElementById('panel-expert'),
+  };
+
+  function activate(tabId) {
+    Object.keys(panels).forEach(k => {
+      panels[k].style.display = k === tabId ? '' : 'none';
+    });
+    tabs.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tabId);
+    history.replaceState({tab: tabId}, '', url);
+  }
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => activate(btn.dataset.tab));
+  });
+})();
+</script>
+{% endblock %}

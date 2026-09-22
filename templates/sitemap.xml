@@ -67,6 +67,14 @@
     <priority>0.6</priority>
   </url>
 
+  <!-- ── Speff Championship ──────────────────────────────────────────────── -->
+  <url>
+    <loc>https://minesweeper.org/speff/2026</loc>
+    <lastmod>{{ today }}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
   <!-- ── Multiplayer ───────────────────────────────────────────────────────── -->
   <url>
     <loc>https://minesweeper.org/pvp/leaderboard</loc>

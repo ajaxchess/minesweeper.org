@@ -61,6 +61,7 @@ from tentaizu_leaderboard_routes import tentaizu_leaderboard_router
 from nonosweeper_routes import nonosweeper_router
 from pvp_leaderboard_routes import pvp_leaderboard_router
 from wc2026_routes import wc2026_router, WC2026_TEAMS
+from speff_routes import speff_router
 from wc2026_data import WC2026_COUNTRIES, VALID_WC2026_SLUGS
 from duel import cleanup_old_games
 from auth import oauth, get_current_user, set_session_user, clear_session, SECRET_KEY
@@ -315,6 +316,7 @@ app.include_router(tentaizu_leaderboard_router)
 app.include_router(nonosweeper_router)
 app.include_router(pvp_leaderboard_router)
 app.include_router(wc2026_router)
+app.include_router(speff_router)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, https_only=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
