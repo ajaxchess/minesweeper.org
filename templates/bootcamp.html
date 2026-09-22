@@ -217,6 +217,7 @@
     difficulty: "expert",
     initialMode: "standard",
     apiBase: "/api",
+    isAdmin: {{ (is_admin if is_admin is defined else false) | tojson }},
     copy: {
       // Strings that JS needs but the template can't easily inject
       empty:           {{ (t.bootcamp_empty_inline if t and t.bootcamp_empty_inline else "Play a few games to see your diagnosis.") | tojson }},
@@ -239,5 +240,5 @@
     },
   };
 </script>
-<script src="/static/js/bootcamp.js?v=3"></script>
+<script src="/static/js/bootcamp.js?v=4"></script>
 {% endblock %}

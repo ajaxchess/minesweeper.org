@@ -2214,9 +2214,17 @@ async def profile_page(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/bootcamp", response_class=HTMLResponse)
 async def bootcamp_page(request: Request):
+    user = get_current_user(request)
+    # The level-unlock preview (?preview=all) is an admin-only debug aid.
+    # BOOTCAMP_CONFIG.isAdmin gates it client-side; see intent/BootcampPreviewBackdoor.md
+    is_admin = bool(
+        user
+        and user.get("email", "").lower() in {e.lower() for e in ADMIN_EMAILS}
+    )
     return templates.TemplateResponse(request, "bootcamp.html", {
         "mode": "bootcamp",
-        "user": get_current_user(request),
+        "user": user,
+        "is_admin": is_admin,
         "lang": get_lang(request),
         "t": get_t(request),
     })
