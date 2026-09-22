@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"authlib\.integrations\.httpx_client")
+
 from datetime import date, timedelta, datetime, timezone
 from zoneinfo import ZoneInfo
 from urllib.parse import quote, urlparse
