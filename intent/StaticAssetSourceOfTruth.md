@@ -1,6 +1,6 @@
 # Static Assets Have No Source of Truth
 
-**Status:** ready
+**Status:** in-progress
 **Feature ID:** F-ASSETS
 **Author:** Richard Cross
 **Date:** 2026-09-21
@@ -136,4 +136,65 @@ several features from inheriting the same problem.
 
 ## Implementation Notes
 
-_To be filled in after shipping._
+**Implemented 2026-09-22 on `feature/F-ASSETS`. Not yet merged or deployed —
+status moves to `done` after it ships and the first CI build is verified.**
+
+Landed in four commits. The scale was larger than this spec assumed: not a
+bootcamp problem but a repo-wide one. 40 of 41 JS files and all 5 CSS files in
+HEAD were minified single-line, so every readable static source in the repo was
+already gone.
+
+**Provenance method.** Two approaches were tried and discarded before one
+worked. Re-minifying the deployed file and diffing against a rebuilt source is
+meaningless — a second terser pass mangles differently, and `2048.js` came out
+identical in size but different in bytes. String-literal fingerprinting is also
+unsound, because a regex over minified code mis-parses regex literals and
+template strings and produces noise in both directions. What works is
+provenance: find each file's newest readable blob, then classify every commit
+touching it since. **39 of 44 had nothing but `chore: minify static assets`
+commits, so for those the readable blob is by definition the source of what is
+deployed.**
+
+**The five that were hand-edited as minified code** were reconstructed by
+beautifying the bundle either side of each editing commit and diffing those,
+which recovers the semantic change. `meowdoku.js` and `tametsi_hex.js` were
+small enough to port onto their readable ancestors with names and comments
+intact. `bootcamp.js`, `drill.js` and `tametsi_hex_editor.js` were not — the
+`phase5_bootcamp` copy of `bootcamp.js` turned out to be missing the entire
+drill-start handler and View Progress modal, not just the preview block, and
+the two tametsi/drill rewrites ran to 380 and ~700 changed lines. Those three
+take the beautified deployed bundle as their source, carrying a header that
+says so. They are behaviourally identical but their identifiers are terser's
+mangled names, and renaming them back is safe incremental work.
+
+**Verification.** Each reconstructed source was minified and compared to the
+deployed bundle with identifiers normalised, so mangling could not mask real
+differences: `drill.js` and `tametsi_hex_editor.js` at 100%, `meowdoku.js`
+99.28%, `bootcamp.js` 99.23%, `tametsi_hex.js` 98.74%, every remaining region
+inspected and confirmed structural. Then all 44 sources were built with the new
+pipeline and compared end to end: 36 at 98–100%, 8 between 90% and 98%. The low
+band was inspected — `mahjong.js` at 90% is the worst — and is terser
+output-shape drift between versions (comma-sequencing, loop-init hoisting,
+parenthesisation), not behavioural change.
+
+**Build.** The workflow now reads `static/src/{js,css}/` and writes the served
+trees, triggering on `static/src/**` so build output no longer triggers a build
+of itself; both steps gained `set -euo pipefail`, since a terser failure was
+previously swallowed per file. `scripts/build_assets.sh` had drifted to a
+hardcoded ten-file list excluding `bootcamp.js` and `drill.js` while CI globbed
+everything; it now matches CI. Served paths are unchanged, so no template
+references moved.
+
+**Decisions worth knowing.** `goldberg_prebaked.js` (3.3MB of generated prebake
+data) has no readable form by nature and is excluded — the build only produces
+files that have a source, so it now sits untouched rather than being minified
+every run. `static/js/nono.js` was TypeScript with a `.js` extension, already
+`.gitignore`d by `2f03db4b`, and moved to `typescript/nono.ts`. `static/js/`
+and `static/css/` were deliberately left untouched in these commits so the diff
+stays reviewable; the first CI run after merge rebuilds all 44 and commits
+them, which is the intended transition.
+
+**Follow-ups.** The three beautified sources deserve a proper rename pass —
+`bootcamp.js` especially, since F-BC-CONSOLIDATE will be touching it anyway.
+Content-hash filenames replacing the manual `?v=N` cache-busting remain out of
+scope and unaddressed.
