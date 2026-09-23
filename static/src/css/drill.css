@@ -84,9 +84,6 @@
 /* ── Runner ──────────────────────────────────────────────────────────────── */
 .dr-runner {
   position: relative;
-  /* Reserve room at the bottom so the sticky feedback bar never sits on
-     top of the last row of the board. */
-  padding-bottom: 120px;
 }
 
 .dr-progress-bar {
@@ -228,19 +225,10 @@
    Sticky bottom strip — keeps the board fully visible so the player can
    compare their pick to the highlighted optimal cell before continuing. */
 .dr-feedback {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2147483647;
-  display: flex;
-  justify-content: center;
-  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
-  pointer-events: none;          /* let the board own click events */
+  margin-top: 16px;
 }
 .dr-feedback[hidden] { display: none; }
 .dr-feedback-card {
-  pointer-events: auto;
   background: var(--dr-surface);
   border: 1px solid var(--dr-border);
   border-radius: 14px;
