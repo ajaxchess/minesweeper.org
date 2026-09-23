@@ -71,6 +71,7 @@
   color: var(--dr-text-muted);
 }
 .dr-meta-divider { opacity: 0.5; }
+.dr-meta-timer { font-variant-numeric: tabular-nums; min-width: 2.8ch; }
 
 /* ── Loading / error ─────────────────────────────────────────────────────── */
 .dr-loading, .dr-error {

@@ -8,7 +8,7 @@
 {% block og_description %}Click through 10 boards. Find the frontier cell you can prove safe from the numbers.{% endblock %}
 
 {% block extra_head %}
-  <link rel="stylesheet" href="/static/css/drill.css?v=4" />
+  <link rel="stylesheet" href="/static/css/drill.css?v=5" />
 {% endblock %}
 
 {% block content %}
@@ -24,6 +24,8 @@
       <span class="dr-meta-item" id="dr-progress-label">— / —</span>
       <span class="dr-meta-divider">·</span>
       <span class="dr-meta-item" id="dr-accuracy-label">— correct</span>
+      <span class="dr-meta-divider">·</span>
+      <span class="dr-meta-item dr-meta-timer" id="dr-timer-label">0:00</span>
     </div>
   </header>
 
@@ -113,5 +115,5 @@
 
 </div>
 
-<script src="/static/js/drill.js?v=5"></script>
+<script src="/static/js/drill.js?v=6"></script>
 {% endblock %}

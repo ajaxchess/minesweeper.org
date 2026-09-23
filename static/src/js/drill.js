@@ -101,6 +101,31 @@
             }
         };
 
+    var timerInterval = null;
+
+    function startBoardTimer() {
+        stopBoardTimer();
+        var el = document.getElementById("dr-timer-label");
+        if (!el) return;
+        el.textContent = "0:00";
+        timerInterval = setInterval(function() {
+            var elapsed = Math.floor(
+                ((window.performance && performance.now ? performance.now() : Date.now()) - n.boardClickAt) / 1000
+            );
+            if (elapsed < 0) elapsed = 0;
+            var mm = Math.floor(elapsed / 60);
+            var ss = elapsed % 60;
+            el.textContent = mm + ":" + (ss < 10 ? "0" + ss : String(ss));
+        }, 250);
+    }
+
+    function stopBoardTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
     function d(e, t) {
         return fetch(e, Object.assign({
             method: "GET",
@@ -207,11 +232,13 @@
                     }
             })(o);
             n.boardClickAt = window.performance && performance.now ? performance.now() : Date.now();
+            startBoardTimer();
         } else _("Internal error: missing board " + e)
     }
     async function u(e) {
         var l = e.currentTarget;
         if (l && !l.classList.contains("dr-cell--flagged")) {
+            stopBoardTimer();
             l.classList.add("dr-cell--picked");
             var a = document.getElementById("dr-board");
             a && Array.prototype.forEach.call(a.children, function(e) {
@@ -298,6 +325,7 @@
     }
 
     function h(e) {
+        stopBoardTimer();
         if (b("dr-runner"), g("dr-results"), !e) {
             var t = n.drill || {},
                 r = t.attempts || [],
