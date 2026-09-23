@@ -26,6 +26,24 @@
             lastResponse: null
         },
         r = "l5_opening_recognition",
+        DRILL_TITLES = {
+            l1_cut_waste:          "Cut Waste",
+            l2_effective_chord:    "Effective Chording",
+            l3_strategic_nf:       "Strategic No-Flag",
+            l4_pure_efficiency:    "Pure Efficiency",
+            l5_opening_recognition:"Constraint Deduction",
+            l6_flag_value:         "Flag Value",
+            l7_fishing:            "Fishing & Hierarchy",
+        },
+        DRILL_GOALS = {
+            l1_cut_waste:          "Chord or click — pick the single move that reveals the most cells.",
+            l2_effective_chord:    "Find the revealed number where flagging its mines and then chording opens the most territory.",
+            l3_strategic_nf:       "No flags on the board. Read the raw numbers to find a cell you can prove is safe.",
+            l4_pure_efficiency:    "Flags are already placed. Find the revealed number that yields the biggest chord.",
+            l5_opening_recognition:"Flags mark forced mines. Read the numbers to find a frontier cell every adjacent constraint confirms safe.",
+            l6_flag_value:         "Pick the mine to flag that unlocks the most chord opportunities for your next move.",
+            l7_fishing:            "No easy move exists. Chain number constraints to deduce the one cell you can prove safe.",
+        },
         l = {
             l4_pure_efficiency: 1,
             l2_effective_chord: 1,
@@ -362,7 +380,15 @@
     document.addEventListener("DOMContentLoaded", async function() {
         if (t && !Number.isNaN(t)) try {
             var e = await d("/api/drills/" + t);
-            if (n.drill = e, e.completed_at) return n.completed = !0, void h(e.summary || null);
+            if (n.drill = e, (function(dt) {
+                var name = DRILL_TITLES[dt];
+                if (!name) return;
+                var h1 = document.querySelector(".dr-title");
+                if (h1) h1.textContent = name;
+                document.title = name + " — Bootcamp | minesweeper.org";
+                var goalEl = document.getElementById("dr-goal");
+                if (goalEl) goalEl.textContent = DRILL_GOALS[dt] || "";
+            })(e.drill_type), e.completed_at) return n.completed = !0, void h(e.summary || null);
             var r = (e.attempts || []).length;
             n.currentIndex = Math.min(r, e.num_boards - 1), g("dr-runner"), b("dr-loading");
             var l = document.getElementById("dr-next-btn"),

@@ -8,7 +8,7 @@
 {% block og_description %}Click through 10 boards. Find the frontier cell you can prove safe from the numbers.{% endblock %}
 
 {% block extra_head %}
-  <link rel="stylesheet" href="/static/css/drill.css?v=2" />
+  <link rel="stylesheet" href="/static/css/drill.css?v=3" />
 {% endblock %}
 
 {% block content %}
@@ -16,13 +16,17 @@
 
   <header class="dr-header">
     <a class="dr-back" href="/bootcamp">← Bootcamp</a>
-    <h1 class="dr-title">{{ t.drill_title | default("Constraint Deduction") }}</h1>
+    <div class="dr-header-text">
+      <h1 class="dr-title">{{ t.drill_title | default("Constraint Deduction") }}</h1>
+      <p class="dr-goal" id="dr-goal"></p>
+    </div>
     <div class="dr-meta">
       <span class="dr-meta-item" id="dr-progress-label">— / —</span>
       <span class="dr-meta-divider">·</span>
       <span class="dr-meta-item" id="dr-accuracy-label">— correct</span>
     </div>
   </header>
+
 
   {# ── Loading state ───────────────────────────────────────────────────────── #}
   <div id="dr-loading" class="dr-loading">

@@ -48,11 +48,20 @@
   font-weight: 500;
 }
 .dr-back:hover { color: var(--dr-accent); }
+.dr-header-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
 .dr-title {
   font-size: 24px;
   font-weight: 700;
   margin: 0;
-  flex: 1 1 auto;
+}
+.dr-goal {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--dr-text-muted);
+  line-height: 1.4;
 }
 .dr-meta {
   display: flex;
