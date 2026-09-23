@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}Drill — Bootcamp | minesweeper.org{% endblock %}
-{% block description %}Pick-the-best-cell drill: train your opening recognition reflex.{% endblock %}
+{% block description %}Constraint deduction drill: find the cell you can prove safe from visible number constraints.{% endblock %}
 {% block canonical %}https://minesweeper.org/drill/{{ drill_id }}{% endblock %}
 {% block og_url %}https://minesweeper.org/drill/{{ drill_id }}{% endblock %}
-{% block og_title %}Bootcamp drill — Opening Recognition{% endblock %}
-{% block og_description %}Click through 10 boards. Pick the cell with the best next opening.{% endblock %}
+{% block og_title %}Bootcamp drill — Constraint Deduction{% endblock %}
+{% block og_description %}Click through 10 boards. Find the frontier cell you can prove safe from the numbers.{% endblock %}
 
 {% block extra_head %}
   <link rel="stylesheet" href="/static/css/drill.css?v=1" />
@@ -16,7 +16,7 @@
 
   <header class="dr-header">
     <a class="dr-back" href="/bootcamp">← Bootcamp</a>
-    <h1 class="dr-title">{{ t.drill_title | default("Opening Recognition") }}</h1>
+    <h1 class="dr-title">{{ t.drill_title | default("Constraint Deduction") }}</h1>
     <p class="dr-subtitle" style="margin:0;font-size:13px;color:var(--dr-text-muted,#6b7280);font-weight:400;">{{ t.drill_subtitle | default("Click the cell that will reveal the most squares.") }}</p>
     <div class="dr-meta">
       <span class="dr-meta-item" id="dr-progress-label">— / —</span>

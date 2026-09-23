@@ -24,8 +24,8 @@ pick-the-best-cell shell (one click per board):
                            correct flags so a chord is legal. Trains
                            efficient mid-game play.
 
-  l5_opening_recognition — Pick the unrevealed cell that opens the largest
-                           area. Trains opening recognition.
+  l5_opening_recognition — Find the frontier cell you can prove safe from
+                           visible number constraints. Trains constraint deduction.
 
   l6_flag_value          — Pick the provably-mine cell whose flag enables
                            the most chord opportunities. Trains flag-value
@@ -172,12 +172,12 @@ DRILL_NAMES = {
     DRILL_TYPE_L2: "Effective Chording",
     DRILL_TYPE_L3: "Strategic No-Flag",
     DRILL_TYPE_L4: "Pure Efficiency",
-    DRILL_TYPE_L5: "Opening Recognition",
+    DRILL_TYPE_L5: "Constraint Deduction",
     DRILL_TYPE_L6: "Flag Value",
     DRILL_TYPE_L7: "Fishing & Hierarchy",
 }
 
-# Pattern info for L5 Opening Recognition.
+# Pattern info for L5 Constraint Deduction.
 # Every board has the same fundamental challenge — find the provably safe cell.
 L5_PATTERNS: dict[str, dict[str, str]] = {
     "safe_opening": {
@@ -329,7 +329,7 @@ def generate_reason_l5(
 
 
 def generate_l5_opening_board(seed: int, pattern: Optional[str] = None) -> DrillBoard:
-    """L5 Opening Recognition — generate a board with at least one provably safe
+    """L5 Constraint Deduction — generate a board with at least one provably safe
     frontier cell (pressure=0 from satisfied flags) and at least one risky cell."""
     rng = random.Random(seed)
     for _ in range(400):
@@ -700,7 +700,7 @@ def _score_for(board: DrillBoard, r: int, c: int) -> int:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# L5 — Opening Recognition
+# L5 — Constraint Deduction
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _apply_forced_flags_l5(board: DrillBoard) -> None:

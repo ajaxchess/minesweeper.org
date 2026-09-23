@@ -153,7 +153,7 @@
                         const s = document.createElement("div");
                         s.className = "bc-step-label", s.textContent = "L" + e.level;
                         const o = document.createElement("div");
-                        o.className = "bc-step-sublabel", o.textContent = e.name.replace("Cut Wasted Clicks", "Cut Waste").replace("Effective Chording", "Eff. Chording").replace("Strategic No-Flag", "Strategic NF").replace("Pure Efficiency", "Pure Efficiency").replace("Opening Recognition", "Openings").replace("Flag Value", "Flag Value").replace("Fishing & Decision Hierarchy", "Hierarchy"), n.appendChild(a), n.appendChild(s), n.appendChild(o), t.appendChild(n)
+                        o.className = "bc-step-sublabel", o.textContent = e.name.replace("Cut Wasted Clicks", "Cut Waste").replace("Effective Chording", "Eff. Chording").replace("Strategic No-Flag", "Strategic NF").replace("Pure Efficiency", "Pure Efficiency").replace("Constraint Deduction", "Constraint").replace("Flag Value", "Flag Value").replace("Fishing & Decision Hierarchy", "Hierarchy"), n.appendChild(a), n.appendChild(s), n.appendChild(o), t.appendChild(n)
                     });
                     const n = e.filter(e => "complete" === e.status).length;
                     t.dataset.complete = String(n)
