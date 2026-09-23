@@ -269,6 +269,38 @@ def _explain_safe_constraint(board: DrillBoard, r: int, c: int) -> str:
     return "All adjacent number constraints are fully satisfied by the visible flags."
 
 
+def _explain_unsafe_constraint(board: DrillBoard, r: int, c: int) -> str:
+    """One sentence explaining why (r, c) is NOT provably safe."""
+    for nr, nc in _neighbors(r, c):
+        if not (0 <= nr < board.height and 0 <= nc < board.width):
+            continue
+        if (nr, nc) not in board.revealed:
+            continue
+        n_value = board.numbers.get((nr, nc))
+        if n_value is None:
+            continue
+        flagged = sum(
+            1 for ar, ac in _neighbors(nr, nc)
+            if (ar, ac) in board.flags
+        )
+        remaining = n_value - flagged
+        if remaining > 0:
+            unrev = sum(
+                1 for ar, ac in _neighbors(nr, nc)
+                if (ar, ac) not in board.revealed
+                and (ar, ac) not in board.flags
+                and 0 <= ar < board.height
+                and 0 <= ac < board.width
+            )
+            mine_word = "mine" if remaining == 1 else "mines"
+            return (
+                f"The {n_value} at row {nr + 1}, col {nc + 1} still needs "
+                f"{remaining} more {mine_word} flagged among its {unrev} remaining "
+                f"neighbors — your cell could be one of them."
+            )
+    return "An adjacent number still has unflagged mines among its neighbors."
+
+
 def generate_reason_l5(
     board: DrillBoard,
     verdict: EvaluatedClick,
@@ -277,7 +309,6 @@ def generate_reason_l5(
 ) -> str:
     """Plain-English explanation of why the optimal cell is the correct pick."""
     opt_r, opt_c = verdict.optimal_cell
-    opt_s = verdict.optimal_opening_size
     constraint_text = _explain_safe_constraint(board, opt_r, opt_c)
 
     if verdict.is_mine:
@@ -289,12 +320,11 @@ def generate_reason_l5(
     if verdict.is_correct:
         return f"Correct. {constraint_text}"
 
-    # Wrong pick — not a mine, but not provably safe either.
-    chosen_p = _mine_pressure(board, chosen_r, chosen_c)
-    risk_pct = max(1, int(round(chosen_p * 100)))
+    # Wrong pick — not a mine, but not provably safe.
+    unsafe_text = _explain_unsafe_constraint(board, chosen_r, chosen_c)
     return (
-        f"The highlighted cell is provably safe — {constraint_text[0].lower()}{constraint_text[1:]} "
-        f"Your pick carries ~{risk_pct}% mine risk from adjacent constraints."
+        f"Your pick isn't safe: {unsafe_text[0].lower()}{unsafe_text[1:]} "
+        f"The highlighted cell is: {constraint_text[0].lower()}{constraint_text[1:]}"
     )
 
 
