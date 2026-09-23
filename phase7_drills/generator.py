@@ -1290,7 +1290,15 @@ def _try_generate_l3(seed: int) -> Optional[DrillBoard]:
         return None
 
     # Any provably-safe cell is a correct NF read; the biggest flood is optimal.
-    board.correct_cells = set(sizes.keys())
+    # Include tier-2 (constraint-intersection) safe cells in addition to tier-1,
+    # so picks that require subset deduction also earn credit.
+    all_safe = _solver_safe_cells(board) | set(sizes.keys())
+    # Re-filter to unrevealed frontier cells only (solver may include revealed ones).
+    all_safe = {
+        cell for cell in all_safe
+        if cell not in board.revealed and _is_on_frontier(board, *cell)
+    }
+    board.correct_cells = all_safe if all_safe else set(sizes.keys())
     board.optimal_cell = max(sizes, key=sizes.get)
     board.optimal_opening_size = max_size
     return board

@@ -182,8 +182,13 @@ def test_l2_correct_cells_are_provable_flag_then_chords(boards_by_type):
 def test_l3_correct_cells_are_tier1_provable_and_safe(boards_by_type):
     for board in boards_by_type[DRILL_TYPE_L3]:
         assert not board.flags, "L3 is the no-flag drill"
-        safe, _ = gen._tier1_deduce(board)
-        assert board.correct_cells <= safe
+        # At least one tier-1-provable cell must exist (generation gate).
+        tier1_safe, _ = gen._tier1_deduce(board)
+        assert tier1_safe, "L3 board must have at least one tier-1 safe cell"
+        # correct_cells may include tier-2 (subset-deducible) cells too, so we
+        # verify against the full solver rather than tier-1 alone.
+        all_solver_safe = gen._solver_safe_cells(board)
+        assert board.correct_cells <= all_solver_safe
         assert not (board.correct_cells & board.mines)
 
 
