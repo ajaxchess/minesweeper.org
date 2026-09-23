@@ -247,7 +247,7 @@ def submit_board(
         )
         reason = None
         if board.drill_type == generator.DRILL_TYPE_L5:
-            reason = generator.generate_reason_l5(board, verdict)
+            reason = generator.generate_reason_l5(board, verdict, body.chosen_row, body.chosen_col)
         result = DrillBoardResult(
             is_correct=verdict.is_correct,
             is_mine=verdict.is_mine,

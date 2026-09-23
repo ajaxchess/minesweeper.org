@@ -81,19 +81,13 @@ L5_WIDTH = 16
 L5_HEIGHT = 10
 L5_MINES = 26     # ~16% density (intermediate-ish)
 
-# Minimum opening size for the best pick.
-MIN_L5_OPENING = 4
+# Minimum frontier size — need enough cells that finding the safe one
+# is a real task, not a trivial giveaway.
+MIN_L5_FRONTIER = 4
 
-# The best cell's pressure must be at or below this — i.e., the player can
-# look at the surrounding numbers and conclude it's clearly the safest pick.
-L5_BEST_MAX_PRESSURE = 0.34
-
-# Composite score for L5 is (1 - pressure) × opening_size.
-# This rewards picks that are BOTH safe AND productive — exactly what the
-# lesson trains. The "best" cell must beat the runner-up by this multiple
-# so the right answer is unambiguous.
-L5_BEST_MIN_LEAD = 1.5    # best.score must be ≥ 1.5 × second.score
-L5_BEST_MIN_SCORE = 3.0   # best.score must be ≥ 3.0 absolute
+# A risky cell must carry at least this probability so the contrast with
+# the safe (pressure=0) cells is meaningful.
+L5_RISKY_THRESHOLD = 0.25
 
 # Minimum chord-reveal size for L4 — best chord must open at least this many.
 MIN_L4_CHORD_SIZE = 4
@@ -167,7 +161,7 @@ DRILL_PROMPTS = {
     DRILL_TYPE_L2: "Which number gives the best flag-then-chord?",
     DRILL_TYPE_L3: "No flags. Which cell is provably safe?",
     DRILL_TYPE_L4: "Which revealed number would you chord next?",
-    DRILL_TYPE_L5: "Which unrevealed cell would you click next?",
+    DRILL_TYPE_L5: "Which frontier cell can you prove is safe?",
     DRILL_TYPE_L6: "Which cell would you flag next?",
     DRILL_TYPE_L7: "No easy move exists. Which cell can you prove safe?",
 }
@@ -183,36 +177,16 @@ DRILL_NAMES = {
     DRILL_TYPE_L7: "Fishing & Hierarchy",
 }
 
-# Pattern taxonomy for L5 Opening Recognition.
-# Boards are classified into one category so players can drill a specific
-# pattern progressively. Each entry carries a label, tagline, and tip shown
-# above the board as the player works through boards of that pattern.
+# Pattern info for L5 Opening Recognition.
+# Every board has the same fundamental challenge — find the provably safe cell.
 L5_PATTERNS: dict[str, dict[str, str]] = {
-    "cascade": {
-        "label": "Cascade",
-        "tagline": "Find the zero-pressure opening",
+    "safe_opening": {
+        "label": "Constraint Deduction",
+        "tagline": "Find the cell you can prove safe",
         "tip": (
-            "Look for a frontier cell that borders a revealed zero or a number "
-            "whose mines are all accounted for — it is provably safe and opens a "
-            "large area when clicked."
-        ),
-    },
-    "safe_edge": {
-        "label": "Safe Edge",
-        "tagline": "Read the number constraints",
-        "tip": (
-            "The safest cell has neighbors where all adjacent mine counts are "
-            "fully satisfied by flags. Count remaining mines per revealed number, "
-            "then find the frontier cell with zero unflagged mine possibilities."
-        ),
-    },
-    "productive_pick": {
-        "label": "Best Pick",
-        "tagline": "Maximize your opening",
-        "tip": (
-            "When multiple frontier cells carry similar risk, choose the one that "
-            "opens the most territory — look toward open corners and away from "
-            "dense number clusters."
+            "Look for a frontier cell whose neighboring numbers already have all "
+            "their mines flagged. Count remaining unflagged mines per number — a "
+            "cell bordered only by fully-satisfied numbers is provably safe to click."
         ),
     },
 }
@@ -268,93 +242,75 @@ class EvaluatedClick:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def classify_l5_pattern(board: DrillBoard) -> str:
-    """Return 'cascade', 'safe_edge', or 'productive_pick' for an L5 board."""
-    if board.optimal_cell is None:
-        return "productive_pick"
-    p = _mine_pressure(board, *board.optimal_cell)
-    s = board.optimal_opening_size
-    if p == 0.0 and s >= 10:
-        return "cascade"
-    if p <= 0.15:
-        return "safe_edge"
-    return "productive_pick"
+    """All new L5 boards are the 'safe_opening' type."""
+    return "safe_opening"
 
 
-def generate_reason_l5(board: DrillBoard, verdict: EvaluatedClick) -> str:
-    """Plain-English explanation of why the optimal cell is best for L5."""
+def _explain_safe_constraint(board: DrillBoard, r: int, c: int) -> str:
+    """One sentence explaining why (r, c) is provably safe from visible flags."""
+    for nr, nc in _neighbors(r, c):
+        if not (0 <= nr < board.height and 0 <= nc < board.width):
+            continue
+        if (nr, nc) not in board.revealed:
+            continue
+        n_value = board.numbers.get((nr, nc))
+        if n_value is None:
+            return "It borders a revealed blank — every neighbor is guaranteed safe."
+        flagged = sum(
+            1 for ar, ac in _neighbors(nr, nc)
+            if (ar, ac) in board.flags
+        )
+        if flagged >= n_value:
+            mine_word = "mine" if n_value == 1 else "mines"
+            return (
+                f"The {n_value} at row {nr + 1}, col {nc + 1} already has "
+                f"all {n_value} {mine_word} flagged — every other neighbor must be safe."
+            )
+    return "All adjacent number constraints are fully satisfied by the visible flags."
+
+
+def generate_reason_l5(
+    board: DrillBoard,
+    verdict: EvaluatedClick,
+    chosen_r: int,
+    chosen_c: int,
+) -> str:
+    """Plain-English explanation of why the optimal cell is the correct pick."""
     opt_r, opt_c = verdict.optimal_cell
-    opt_p = _mine_pressure(board, opt_r, opt_c)
     opt_s = verdict.optimal_opening_size
-    chosen_s = verdict.opening_size
+    constraint_text = _explain_safe_constraint(board, opt_r, opt_c)
 
     if verdict.is_mine:
-        if opt_p == 0.0:
-            return (
-                f"The highlighted cell is provably safe — it borders only satisfied "
-                f"constraints — and opens {opt_s} cells. "
-                f"Always find the zero-pressure cell before clicking uncertain territory."
-            )
         return (
-            f"The highlighted cell has much lower mine risk and opens {opt_s} cells. "
-            f"Compare adjacent number constraints to find the frontier cell with the "
-            f"smallest remaining mine probability."
+            f"That cell was a mine. The highlighted cell is provably safe — "
+            f"{constraint_text[0].lower()}{constraint_text[1:]}"
         )
 
     if verdict.is_correct:
-        if opt_p == 0.0 and opt_s >= 10:
-            return f"You spotted the cascade — this cell is provably safe and opens {opt_s} cells."
-        if opt_p <= 0.15:
-            return f"Correct. Constraint analysis confirms this cell as safe — opens {opt_s} cells."
-        return f"Correct. Best pick — opens {opt_s} cells."
+        return f"Correct. {constraint_text}"
 
-    if opt_p == 0.0:
-        tail = (
-            f" Clicking it cascades through {opt_s} cells."
-            if opt_s >= 15
-            else f" It opens {opt_s} cells — your pick opened {chosen_s}."
-        )
-        return (
-            "The highlighted cell is provably safe: it borders only satisfied number "
-            "constraints, so no unaccounted mines can be adjacent." + tail
-        )
-    if opt_p <= 0.15:
-        extra = f" — your pick opened only {chosen_s}" if chosen_s < opt_s else ""
-        return (
-            f"The highlighted cell has very low mine risk from adjacent constraints "
-            f"and opens {opt_s} cells{extra}. "
-            f"Find the frontier cell whose neighboring numbers have the fewest remaining "
-            f"unflagged mine possibilities."
-        )
-    extra = f" versus {chosen_s} for your pick" if chosen_s < opt_s else ""
+    # Wrong pick — not a mine, but not provably safe either.
+    chosen_p = _mine_pressure(board, chosen_r, chosen_c)
+    risk_pct = max(1, int(round(chosen_p * 100)))
     return (
-        f"Both cells carry some risk, but the highlighted cell opens {opt_s} cells{extra}. "
-        f"When risk is similar across multiple cells, choose the one with the biggest "
-        f"potential opening."
+        f"The highlighted cell is provably safe — {constraint_text[0].lower()}{constraint_text[1:]} "
+        f"Your pick carries ~{risk_pct}% mine risk from adjacent constraints."
     )
 
 
 def generate_l5_opening_board(seed: int, pattern: Optional[str] = None) -> DrillBoard:
-    """L5 Opening Recognition — see module docstring.
-
-    If `pattern` is one of 'cascade', 'safe_edge', or 'productive_pick', only
-    boards of that category are returned; the generator retries more aggressively
-    to compensate for the reduced acceptance rate.
-    """
+    """L5 Opening Recognition — generate a board with at least one provably safe
+    frontier cell (pressure=0 from satisfied flags) and at least one risky cell."""
     rng = random.Random(seed)
-    max_attempts = 400 if pattern else 200
-    for _ in range(max_attempts):
+    for _ in range(400):
         attempt_seed = rng.randrange(1, 1_000_000_000)
         board = _try_generate_l5(attempt_seed)
         if board is None:
             continue
-        pt = classify_l5_pattern(board)
-        board.pattern_type = pt
-        if pattern and pt != pattern:
-            continue
+        board.pattern_type = "safe_opening"
         return board
     raise RuntimeError(
-        f"Could not generate a valid L5 board after {max_attempts} attempts "
-        f"(seed={seed}, pattern={pattern!r})"
+        f"Could not generate a valid L5 board after 400 attempts (seed={seed})"
     )
 
 
@@ -717,13 +673,53 @@ def _score_for(board: DrillBoard, r: int, c: int) -> int:
 # L5 — Opening Recognition
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _try_generate_l5(seed: int) -> Optional[DrillBoard]:
-    """Build a small skill-based L5 board.
+def _apply_forced_flags_l5(board: DrillBoard) -> None:
+    """Flag cells that are provably mines from visible number constraints.
 
-    The "correct" cell is the frontier cell with the lowest *mine pressure* —
-    a number-based safety estimate — AND a meaningful opening size. We retry
-    until the best cell is clearly safer than every runner-up, so the answer
-    is derivable from the board state alone.
+    Iterates the basic rule: if a revealed number N has exactly N unflagged
+    unrevealed neighbors, all of them must be mines — flag them. Repeats
+    until no new flags can be placed. This creates satisfied constraints
+    whose unflagged neighbors will have pressure=0 in _mine_pressure.
+    """
+    changed = True
+    while changed:
+        changed = False
+        for nr in range(board.height):
+            for nc in range(board.width):
+                if (nr, nc) not in board.revealed:
+                    continue
+                n_value = board.numbers.get((nr, nc))
+                if n_value is None:
+                    continue
+                unrev = []
+                flagged = 0
+                for ar, ac in _neighbors(nr, nc):
+                    if not (0 <= ar < board.height and 0 <= ac < board.width):
+                        continue
+                    if (ar, ac) in board.revealed:
+                        continue
+                    if (ar, ac) in board.flags:
+                        flagged += 1
+                    else:
+                        unrev.append((ar, ac))
+                remaining = n_value - flagged
+                if remaining <= 0:
+                    continue
+                if len(unrev) == remaining:
+                    for cell in unrev:
+                        board.flags.add(cell)
+                    changed = True
+
+
+def _try_generate_l5(seed: int) -> Optional[DrillBoard]:
+    """Build a deterministic L5 board: find the provably safe frontier cell.
+
+    The correct answer is any frontier cell with pressure=0 — every adjacent
+    revealed number already has all its mines flagged. This is fully derivable
+    from the visible board and teaches constraint satisfaction, not guessing.
+
+    Acceptance requires at least one safe cell (pressure=0) AND at least one
+    risky cell (pressure≥L5_RISKY_THRESHOLD) so the player must discriminate.
     """
     rng = random.Random(seed)
     board = DrillBoard(
@@ -735,55 +731,36 @@ def _try_generate_l5(seed: int) -> Optional[DrillBoard]:
     )
     _place_random_mines(board, rng)
     _make_starter_reveal_l5(board, rng)
-
-    # Need numbers before _mine_pressure can read them.
     board.numbers = _compute_numbers(board)
 
-    # Score every frontier cell on (1 - pressure) × opening_size.
-    # That composite rewards picks that are BOTH safe AND productive.
-    scored: list[tuple[tuple[int, int], float, int, float]] = []
-    for r in range(board.height):
-        for c in range(board.width):
-            if (r, c) in board.revealed or (r, c) in board.mines:
-                continue
-            if not _is_on_frontier(board, r, c):
-                continue
-            pressure = _mine_pressure(board, r, c)
-            opening  = _flood_size(board, r, c)
-            score    = (1.0 - pressure) * opening
-            scored.append(((r, c), pressure, opening, score))
+    # Place flags on provably-forced mines so satisfied constraints appear,
+    # making adjacent frontier cells have pressure=0.
+    _apply_forced_flags_l5(board)
 
-    if not scored:
+    frontier = [
+        (r, c)
+        for r in range(board.height)
+        for c in range(board.width)
+        if (r, c) not in board.revealed
+        and (r, c) not in board.flags
+        and _is_on_frontier(board, r, c)
+    ]
+
+    if len(frontier) < MIN_L5_FRONTIER:
         return None
 
-    scored.sort(key=lambda x: -x[3])
-    best_cell, best_pressure, best_opening, best_score = scored[0]
+    pressures = {cell: _mine_pressure(board, *cell) for cell in frontier}
+    safe_cells = [cell for cell in frontier if pressures[cell] == 0.0]
+    risky_cells = [cell for cell in frontier if pressures[cell] >= L5_RISKY_THRESHOLD]
 
-    if best_pressure > L5_BEST_MAX_PRESSURE:
-        return None
-    if best_opening < MIN_L5_OPENING:
-        return None
-    if best_score < L5_BEST_MIN_SCORE:
+    if not safe_cells or not risky_cells:
         return None
 
-    # Runner-up must lag the best by a clear multiple so the answer is
-    # unambiguous to a player who can read the numbers.
-    if len(scored) >= 2:
-        runner_score = scored[1][3]
-        if runner_score <= 0:
-            pass  # any positive lead over zero is fine
-        elif best_score < runner_score * L5_BEST_MIN_LEAD:
-            return None
-
-    # "Correct" cells = anything tied with the best (same score within 1%).
-    correct: set[tuple[int, int]] = set()
-    for cell, _p, _o, score in scored:
-        if score >= best_score * 0.99:
-            correct.add(cell)
-
-    board.correct_cells = correct
-    board.optimal_cell = best_cell
-    board.optimal_opening_size = best_opening
+    # Optimal = the safe cell that opens the most territory (best visual payoff).
+    optimal = max(safe_cells, key=lambda cell: _flood_size(board, *cell))
+    board.correct_cells = set(safe_cells)
+    board.optimal_cell = optimal
+    board.optimal_opening_size = _flood_size(board, *optimal)
     return board
 
 

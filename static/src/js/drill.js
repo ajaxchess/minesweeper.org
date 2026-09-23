@@ -310,39 +310,7 @@
             s = document.getElementById("dr-results-blurb");
         e.accuracy_pct >= 80 ? (i && (i.textContent = "🎯"), c && (c.textContent = "Sharp eye"), s && (s.textContent = "You found the best move on most boards. Keep drilling — this is graduation pace.")) : e.accuracy_pct >= 50 ? (i && (i.textContent = "👀"), c && (c.textContent = "Solid"), s && (s.textContent = "You’re seeing it about half the time. Run this drill daily and watch the score climb.")) : (i && (i.textContent = "🌱"), c && (c.textContent = "Building the reflex"), s && (s.textContent = "Review the highlighted optimal cells as you go — the pattern shows up fast on re-runs."))
     }
-    var L5_PATTERN_OPTIONS = [
-        { value: null,              label: "Mix",       desc: "All three patterns — good for review" },
-        { value: "cascade",        label: "Cascade",    desc: "Find the zero-pressure opening" },
-        { value: "safe_edge",      label: "Safe Edge",  desc: "Read the number constraints" },
-        { value: "productive_pick",label: "Best Pick",  desc: "Maximize your opening" },
-    ];
-
-    function showPatternPicker(onSelect) {
-        var overlay = document.createElement("div");
-        overlay.className = "dr-picker-overlay";
-        var card = document.createElement("div");
-        card.className = "dr-picker-card";
-        card.innerHTML = '<h3 class="dr-picker-title">Choose a pattern to drill</h3>';
-        L5_PATTERN_OPTIONS.forEach(function(opt) {
-            var btn = document.createElement("button");
-            btn.className = "dr-picker-btn";
-            btn.innerHTML = '<strong>' + opt.label + '</strong><span>' + opt.desc + '</span>';
-            btn.addEventListener("click", function() {
-                document.body.removeChild(overlay);
-                onSelect(opt.value);
-            });
-            card.appendChild(btn);
-        });
-        var cancelBtn = document.createElement("button");
-        cancelBtn.className = "dr-picker-cancel";
-        cancelBtn.textContent = "Cancel";
-        cancelBtn.addEventListener("click", function() { document.body.removeChild(overlay); });
-        card.appendChild(cancelBtn);
-        overlay.appendChild(card);
-        document.body.appendChild(overlay);
-    }
-
-    async function startWithPattern(pattern) {
+    async function startNewDrill() {
         try {
             var e = n.drill || {},
                 body = {
@@ -352,7 +320,6 @@
                     mode: e.mode || "standard",
                     num_boards: e.num_boards || 10
                 };
-            if (pattern) body.pattern = pattern;
             var t = await i("/api/drills/start", body);
             window.location.href = "/drill/" + t.drill_id;
         } catch (e) {
@@ -361,12 +328,7 @@
     }
 
     async function f() {
-        var e = n.drill || {};
-        if ((e.drill_type || r) === r) {
-            showPatternPicker(startWithPattern);
-        } else {
-            startWithPattern(null);
-        }
+        startNewDrill();
     }
 
     function p(e, t, n) {

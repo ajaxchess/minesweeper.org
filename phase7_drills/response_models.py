@@ -69,8 +69,8 @@ class DrillStartRequest(BaseModel):
     num_boards: int = Field(10, ge=1, le=20)
     pattern: Optional[str] = Field(
         None,
-        pattern="^(cascade|safe_edge|productive_pick)$",
-        description="L5 only: restrict boards to this pattern category.",
+        pattern="^(safe_opening)$",
+        description="L5 only: reserved for future difficulty categories.",
     )
 
 
