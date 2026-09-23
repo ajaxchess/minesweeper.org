@@ -44,6 +44,33 @@
         d = document.getElementById("bc-main"),
         u = document.querySelectorAll(".bc-mode-tab");
 
+    function buildLevelBody(levelData) {
+        const habits = (levelData.habits || []).map(function(e) {
+            return '<li class="bc-habit">' + ("done" === e.state ? '<span class="bc-habit-check bc-habit-check--done">✓</span>' : "partial" === e.state ? '<span class="bc-habit-check bc-habit-check--partial">◐</span>' : '<span class="bc-habit-check"></span>') + "<span>" + m(e.name) + '</span><span class="bc-habit-progress">' + Math.round(100 * e.progress_pct) + "%</span></li>"
+        }).join("");
+        const drills = (levelData.drills || []).map(function(e, n) {
+            const cls = 0 === n ? "bc-btn bc-btn--primary" : "bc-btn bc-btn--secondary";
+            return '<div class="bc-drill"><div><div class="bc-drill-name">' + m(e.name) + '</div><div class="bc-drill-meta">' + e.board_count + " boards · ~" + e.estimated_minutes + " min · " + m(e.target) + '</div></div><button class="' + cls + '" data-drill-id="' + m(e.drill_id) + '">' + t.startDrill + "</button></div>"
+        }).join("");
+        const grad = levelData.graduation;
+        const gradHtml = grad ? '<div class="bc-graduation"><strong>' + t.graduationLabel + ":</strong> " + m(grad.description) + '<div class="bc-graduation-progress">Currently <strong>' + b(grad.current_value) + "</strong> · target " + b(grad.target_value) + "</div></div>" : "";
+        const citeHtml = levelData.citation_url ? '<div class="bc-citation">From Dard\'s <a href="' + m(levelData.citation_url) + '" target="_blank" rel="noopener">video</a></div>' : "";
+        return '<div><div class="bc-section-label">' + t.habitsLabel + '</div><ul class="bc-habits">' + habits + '</ul></div><div><div class="bc-section-label">' + t.drillsLabel + '</div><div class="bc-drills">' + drills + "</div></div>" + gradHtml + citeHtml + '<div class="bc-level-actions"><button class="bc-btn bc-btn--primary" data-action="start-drill" data-level="' + (levelData.level || "") + '">' + t.startDrill + " today's drill</button><button class=\"bc-btn bc-btn--secondary\" data-action=\"view-progress\" data-level=\"" + (levelData.level || "") + '" data-level-name="' + m(levelData.name || "") + '">' + t.viewProgress + "</button></div>"
+    }
+
+    function loadLevelBodyDiv(levelNum) {
+        const div = document.createElement("div");
+        div.className = "bc-level-body";
+        div.innerHTML = '<div class="bc-level-loading">Loading level details…</div>';
+        fetch(n + "/bootcamp/level/" + levelNum + "?difficulty=" + encodeURIComponent(a) + "&mode=" + encodeURIComponent(s), {
+            credentials: "same-origin",
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        }).then(function(r) { return r.json(); })
+          .then(function(r) { div.innerHTML = buildLevelBody(r); })
+          .catch(function() { div.innerHTML = "<div class=\"bc-level-loading\">Couldn't load level details.</div>"; });
+        return div;
+    }
+
     function m(e) {
         return String(null == e ? "" : e).replace(/[&<>"']/g, function(e) {
             return {
@@ -166,43 +193,26 @@
                             e.className = "bc-section-divider", e.textContent = "── Grand-Master Decision-Making (Part 2) ──", o.appendChild(e)
                         }
                         o.appendChild(function(e) {
-                            const o = document.createElement("div");
-                            o.className = "bc-level-card bc-level-card--" + e.status;
-                            const c = document.createElement("div");
-                            if (c.className = "bc-level-summary", c.innerHTML = '<div class="bc-level-summary-left"><div class="bc-level-num bc-level-num--l' + e.level + '">' + e.level + '</div><div><div class="bc-level-name">' + m(e.name) + '</div><div class="bc-level-tagline">' + m(e.tagline) + '</div></div></div><div class="bc-level-summary-right">' + function(e) {
-                                    return "complete" === e.status ? '<span class="bc-level-status bc-level-status--complete">' + t.completeTag + "</span>" : "current" === e.status ? '<span class="bc-level-status bc-level-status--current">' + t.currentTag + " · " + Math.round(100 * e.mastery) + "%</span>" : 7 === e.level ? '<span class="bc-level-status bc-level-status--locked">' + t.grandMasterTag + "</span>" : '<span class="bc-level-status bc-level-status--locked">' + t.lockedTag + "</span>"
-                                }(e) + ("current" === e.status ? '<span class="bc-level-expand">▾</span>' : "") + "</div>", o.appendChild(c), "current" === e.status) o.appendChild(function(e) {
-                                const o = document.createElement("div");
-                                return o.className = "bc-level-body", o.innerHTML = '<div class="bc-level-loading">Loading level details…</div>', fetch(n + "/bootcamp/level/" + e.level + "?difficulty=" + encodeURIComponent(a) + "&mode=" + encodeURIComponent(s), {
-                                    credentials: "same-origin",
-                                    headers: {
-                                        "X-Requested-With": "XMLHttpRequest"
-                                    }
-                                }).then(function(e) {
-                                    return e.json()
-                                }).then(function(e) {
-                                    o.innerHTML = function(e) {
-                                        const n = (e.habits || []).map(function(e) {
-                                                return '<li class="bc-habit">' + ("done" === e.state ? '<span class="bc-habit-check bc-habit-check--done">✓</span>' : "partial" === e.state ? '<span class="bc-habit-check bc-habit-check--partial">◐</span>' : '<span class="bc-habit-check"></span>') + "<span>" + m(e.name) + '</span><span class="bc-habit-progress">' + Math.round(100 * e.progress_pct) + "%</span></li>"
-                                            }).join(""),
-                                            a = (e.drills || []).map(function(e, n) {
-                                                const a = 0 === n ? "bc-btn bc-btn--primary" : "bc-btn bc-btn--secondary";
-                                                return '<div class="bc-drill"><div><div class="bc-drill-name">' + m(e.name) + '</div><div class="bc-drill-meta">' + e.board_count + " boards · ~" + e.estimated_minutes + " min · " + m(e.target) + '</div></div><button class="' + a + '" data-drill-id="' + m(e.drill_id) + '">' + t.startDrill + "</button></div>"
-                                            }).join(""),
-                                            s = e.graduation,
-                                            o = s ? '<div class="bc-graduation"><strong>' + t.graduationLabel + ":</strong> " + m(s.description) + '<div class="bc-graduation-progress">Currently <strong>' + b(s.current_value) + "</strong> · target " + b(s.target_value) + "</div></div>" : "",
-                                            c = e.citation_url ? '<div class="bc-citation">From Dard’s <a href="' + m(e.citation_url) + '" target="_blank" rel="noopener">video</a></div>' : "";
-                                        return '<div><div class="bc-section-label">' + t.habitsLabel + '</div><ul class="bc-habits">' + n + '</ul></div><div><div class="bc-section-label">' + t.drillsLabel + '</div><div class="bc-drills">' + a + "</div></div>" + o + c + '<div class="bc-level-actions"><button class="bc-btn bc-btn--primary" data-action="start-drill" data-level="' + (e.level || "") + '">' + t.startDrill + ' today’s drill</button><button class="bc-btn bc-btn--secondary" data-action="view-progress" data-level="' + (e.level || "") + '" data-level-name="' + m(e.name || "") + '">' + t.viewProgress + "</button></div>"
-                                    }(e)
-                                }).catch(function() {
-                                    o.innerHTML = '<div class="bc-level-loading">Couldn’t load level details.</div>'
-                                }), o
-                            }(e));
-                            else if ("locked" === e.status) {
-                                const n = document.createElement("div");
-                                n.className = "bc-locked-preview", n.textContent = t.preview + ": " + e.tagline, o.appendChild(n)
+                            const card = document.createElement("div");
+                            card.className = "bc-level-card bc-level-card--" + e.status;
+                            const summary = document.createElement("div");
+                            const isCurrent = "current" === e.status;
+                            const statusBadge = "complete" === e.status
+                                ? '<span class="bc-level-status bc-level-status--complete">' + t.completeTag + "</span>"
+                                : isCurrent
+                                    ? '<span class="bc-level-status bc-level-status--current">' + t.currentTag + " · " + Math.round(100 * e.mastery) + "%</span>"
+                                    : 7 === e.level
+                                        ? '<span class="bc-level-status bc-level-status--locked">' + t.grandMasterTag + "</span>"
+                                        : '<span class="bc-level-status bc-level-status--locked">' + t.lockedTag + "</span>";
+                            summary.className = "bc-level-summary";
+                            summary.dataset.action = "toggle-level";
+                            summary.dataset.level = String(e.level);
+                            summary.innerHTML = '<div class="bc-level-summary-left"><div class="bc-level-num bc-level-num--l' + e.level + '">' + e.level + '</div><div><div class="bc-level-name">' + m(e.name) + '</div><div class="bc-level-tagline">' + m(e.tagline) + '</div></div></div><div class="bc-level-summary-right">' + statusBadge + '<span class="bc-level-expand">' + (isCurrent ? "▾" : "▸") + "</span></div>";
+                            card.appendChild(summary);
+                            if (isCurrent) {
+                                card.appendChild(loadLevelBodyDiv(e.level));
                             }
-                            return o
+                            return card
                         }(e))
                     })
                 }(o),
@@ -231,6 +241,25 @@
                 }), C())
             })
         }), document.addEventListener("click", function(e) {
+            const lv = e.target.closest('[data-action="toggle-level"]');
+            if (lv) {
+                e.preventDefault();
+                const card = lv.closest(".bc-level-card");
+                if (!card) return;
+                if (card.classList.contains("bc-level-card--current")) return;
+                const arrow = lv.querySelector(".bc-level-expand");
+                let body = card.querySelector(".bc-level-body");
+                if (body) {
+                    body.hidden = !body.hidden;
+                    if (arrow) arrow.textContent = body.hidden ? "▸" : "▾";
+                } else {
+                    const levelNum = parseInt(lv.dataset.level, 10);
+                    body = loadLevelBodyDiv(levelNum);
+                    card.appendChild(body);
+                    if (arrow) arrow.textContent = "▾";
+                }
+                return;
+            }
             const t = e.target.closest('[data-action="view-progress"]');
             if (t) return e.preventDefault(), void
             function(e, t) {
@@ -260,7 +289,7 @@
                         n.textContent = (a > 0 ? "+" : "") + a + "% week-over-week", document.getElementById("bc-progress-games").textContent = e.games_in_window, document.getElementById("bc-progress-window").textContent = "over last " + e.days_window + " days";
                         const s = document.getElementById("bc-progress-eta"),
                             o = document.getElementById("bc-progress-eta-sub");
-                        e.current_mastery >= e.target_mastery ? (s.textContent = "Mastered", o.textContent = "You’re above the 85% target") : e.estimated_days_to_master ? (s.textContent = "~" + e.estimated_days_to_master + "d", o.textContent = "at current pace") : (s.textContent = "—", o.textContent = "declining" === e.trend ? "Trend reversing first" : "Pick up the pace");
+                        e.current_mastery >= e.target_mastery ? (s.textContent = "Mastered", o.textContent = "You're above the 85% target") : e.estimated_days_to_master ? (s.textContent = "~" + e.estimated_days_to_master + "d", o.textContent = "at current pace") : (s.textContent = "—", o.textContent = "declining" === e.trend ? "Trend reversing first" : "Pick up the pace");
                         const c = [...e.data_points].reverse(),
                             r = c.map(function(e) {
                                 return e.created_at ? e.created_at.slice(0, 10) : ""
@@ -367,7 +396,7 @@
                     const t = await e.json();
                     window.location.href = "/drill/" + t.drill_id
                 } catch (e) {
-                    t && (t.disabled = !1, t.textContent = "Couldn’t start — retry"), console.error("startDrill failed", e)
+                    t && (t.disabled = !1, t.textContent = "Couldn't start — retry"), console.error("startDrill failed", e)
                 }
             }(parseInt(o.dataset.level, 10), o);
             const c = e.target.closest("[data-drill-id]");
@@ -402,7 +431,7 @@
                         const a = await n.json();
                         window.location.href = "/drill/" + a.drill_id
                     } catch (e) {
-                        n && (n.disabled = !1, n.textContent = "Couldn’t start — retry"), console.error("startDrill failed", e)
+                        n && (n.disabled = !1, n.textContent = "Couldn't start — retry"), console.error("startDrill failed", e)
                     }
                 }(t, parseInt(n[1], 10), c))
             }

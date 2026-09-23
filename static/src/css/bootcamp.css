@@ -306,6 +306,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.bc-level-card--current .bc-level-summary {
+  cursor: default;
 }
 .bc-level-summary-left {
   display: flex;

@@ -58,7 +58,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "bootcamp_preview": "Preview",
         "bootcamp_analyzed_from_last": "Diagnosis based on your last {n} expert games",
         # Drill
-        "drill_title":          "Constraint Deduction",
+        "drill_title":          "Drill",
         "drill_loading":        "Loading drill…",
         "drill_error_title":    "Couldn't load this drill",
         "drill_prompt":         "Which frontier cell can you prove is safe?",
