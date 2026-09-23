@@ -131,7 +131,19 @@
                 function(e) {
                     var t = document.getElementById("dr-board");
                     if (t) {
-                        t.innerHTML = "", t.style.gridTemplateColumns = "repeat(" + e.width + ", 22px)";
+                        t.innerHTML = "";
+                        (function() {
+                            var cols = e.width, rows = e.height;
+                            var wrap = t.closest('.dr-board-wrap') || t.parentElement;
+                            var availW = wrap ? wrap.clientWidth - 26 : 800;
+                            var byW = Math.floor((availW - (cols - 1)) / cols);
+                            var byH = Math.floor((310 - (rows - 1)) / rows);
+                            var px = Math.max(12, Math.min(22, byW, byH));
+                            var fs = Math.max(9, Math.round(px * 0.59));
+                            t.style.setProperty('--dr-cell-size', px + 'px');
+                            t.style.setProperty('--dr-cell-font', fs + 'px');
+                            t.style.gridTemplateColumns = "repeat(" + cols + ", " + px + "px)";
+                        })();
                         for (var n = new Set((e.revealed || []).map(function(e) {
                                 return e[0] + "," + e[1]
                             })), o = new Set((e.flags || []).map(function(e) {
