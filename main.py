@@ -1,5 +1,5 @@
 import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"authlib\.integrations\.httpx_client")
+warnings.filterwarnings("ignore", module=r"authlib")
 
 from datetime import date, timedelta, datetime, timezone
 from zoneinfo import ZoneInfo
