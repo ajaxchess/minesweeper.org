@@ -29,6 +29,8 @@ class DrillBoardVisible(BaseModel):
     encoded as [row, col, count] triples.
     `flags` is the list of pre-placed flags (L1/L4/L7; empty for L2/L3/L5/L6).
     `prompt` is the per-drill instruction shown above the board.
+    `pattern_type`, `pattern_label`, `pattern_tagline`, `pattern_tip` are
+    populated for L5 boards when a pattern was classified.
     """
     drill_type: str
     prompt: str
@@ -38,6 +40,10 @@ class DrillBoardVisible(BaseModel):
     revealed: list[list[int]]
     flags: list[list[int]]
     numbers: list[list[int]]
+    pattern_type: Optional[str] = None
+    pattern_label: Optional[str] = None
+    pattern_tagline: Optional[str] = None
+    pattern_tip: Optional[str] = None
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -61,6 +67,11 @@ class DrillStartRequest(BaseModel):
     difficulty: str = Field("expert", pattern="^(beginner|intermediate|expert)$")
     mode: Literal["standard", "no_guess"] = "standard"
     num_boards: int = Field(10, ge=1, le=20)
+    pattern: Optional[str] = Field(
+        None,
+        pattern="^(cascade|safe_edge|productive_pick)$",
+        description="L5 only: restrict boards to this pattern category.",
+    )
 
 
 class DrillStartResponse(BaseModel):
@@ -103,6 +114,7 @@ class DrillBoardResult(BaseModel):
     optimal_opening_size: int
     revealed_cells: list[list[int]] = []
     optimal_revealed_cells: list[list[int]] = []
+    reason: Optional[str] = None
 
 
 class DrillSummary(BaseModel):

@@ -136,6 +136,10 @@ def _visible_from_solution(sol: dict) -> DrillBoardVisible:
         revealed=vis["revealed"],
         flags=vis["flags"],
         numbers=vis["numbers"],
+        pattern_type=vis.get("pattern_type"),
+        pattern_label=vis.get("pattern_label"),
+        pattern_tagline=vis.get("pattern_tagline"),
+        pattern_tip=vis.get("pattern_tip"),
     )
 
 
@@ -158,7 +162,10 @@ def start_drill(
     base_seed = abs(hash((player_id, datetime.now(timezone.utc).timestamp()))) % 1_000_000_000
 
     boards = generator.generate_drill_set(
-        base_seed, n=body.num_boards, drill_type=body.drill_type
+        base_seed,
+        n=body.num_boards,
+        drill_type=body.drill_type,
+        pattern=body.pattern if body.drill_type == "l5_opening_recognition" else None,
     )
     solutions = [generator.serialize_solution(b) for b in boards]
     visible = [_visible_from_solution(s) for s in solutions]
@@ -238,6 +245,9 @@ def submit_board(
         optimal_revealed_cells = generator.compute_reveal_cells(
             board, verdict.optimal_cell[0], verdict.optimal_cell[1]
         )
+        reason = None
+        if board.drill_type == generator.DRILL_TYPE_L5:
+            reason = generator.generate_reason_l5(board, verdict)
         result = DrillBoardResult(
             is_correct=verdict.is_correct,
             is_mine=verdict.is_mine,
@@ -248,6 +258,7 @@ def submit_board(
             optimal_opening_size=verdict.optimal_opening_size,
             revealed_cells=revealed_cells,
             optimal_revealed_cells=optimal_revealed_cells,
+            reason=reason,
         )
         attempts.append({
             "board_index": body.board_index,

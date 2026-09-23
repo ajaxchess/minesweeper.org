@@ -183,6 +183,40 @@ DRILL_NAMES = {
     DRILL_TYPE_L7: "Fishing & Hierarchy",
 }
 
+# Pattern taxonomy for L5 Opening Recognition.
+# Boards are classified into one category so players can drill a specific
+# pattern progressively. Each entry carries a label, tagline, and tip shown
+# above the board as the player works through boards of that pattern.
+L5_PATTERNS: dict[str, dict[str, str]] = {
+    "cascade": {
+        "label": "Cascade",
+        "tagline": "Find the zero-pressure opening",
+        "tip": (
+            "Look for a frontier cell that borders a revealed zero or a number "
+            "whose mines are all accounted for — it is provably safe and opens a "
+            "large area when clicked."
+        ),
+    },
+    "safe_edge": {
+        "label": "Safe Edge",
+        "tagline": "Read the number constraints",
+        "tip": (
+            "The safest cell has neighbors where all adjacent mine counts are "
+            "fully satisfied by flags. Count remaining mines per revealed number, "
+            "then find the frontier cell with zero unflagged mine possibilities."
+        ),
+    },
+    "productive_pick": {
+        "label": "Best Pick",
+        "tagline": "Maximize your opening",
+        "tip": (
+            "When multiple frontier cells carry similar risk, choose the one that "
+            "opens the most territory — look toward open corners and away from "
+            "dense number clusters."
+        ),
+    },
+}
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Data classes
@@ -215,6 +249,7 @@ class DrillBoard:
     correct_cells: set[tuple[int, int]] = field(default_factory=set)
     optimal_cell: Optional[tuple[int, int]] = None
     optimal_opening_size: int = 0
+    pattern_type: Optional[str] = None
 
 
 @dataclass
@@ -232,16 +267,94 @@ class EvaluatedClick:
 # Public generators
 # ─────────────────────────────────────────────────────────────────────────────
 
-def generate_l5_opening_board(seed: int) -> DrillBoard:
-    """L5 Opening Recognition — see module docstring."""
+def classify_l5_pattern(board: DrillBoard) -> str:
+    """Return 'cascade', 'safe_edge', or 'productive_pick' for an L5 board."""
+    if board.optimal_cell is None:
+        return "productive_pick"
+    p = _mine_pressure(board, *board.optimal_cell)
+    s = board.optimal_opening_size
+    if p == 0.0 and s >= 10:
+        return "cascade"
+    if p <= 0.15:
+        return "safe_edge"
+    return "productive_pick"
+
+
+def generate_reason_l5(board: DrillBoard, verdict: EvaluatedClick) -> str:
+    """Plain-English explanation of why the optimal cell is best for L5."""
+    opt_r, opt_c = verdict.optimal_cell
+    opt_p = _mine_pressure(board, opt_r, opt_c)
+    opt_s = verdict.optimal_opening_size
+    chosen_s = verdict.opening_size
+
+    if verdict.is_mine:
+        if opt_p == 0.0:
+            return (
+                f"The highlighted cell is provably safe — it borders only satisfied "
+                f"constraints — and opens {opt_s} cells. "
+                f"Always find the zero-pressure cell before clicking uncertain territory."
+            )
+        return (
+            f"The highlighted cell has much lower mine risk and opens {opt_s} cells. "
+            f"Compare adjacent number constraints to find the frontier cell with the "
+            f"smallest remaining mine probability."
+        )
+
+    if verdict.is_correct:
+        if opt_p == 0.0 and opt_s >= 10:
+            return f"You spotted the cascade — this cell is provably safe and opens {opt_s} cells."
+        if opt_p <= 0.15:
+            return f"Correct. Constraint analysis confirms this cell as safe — opens {opt_s} cells."
+        return f"Correct. Best pick — opens {opt_s} cells."
+
+    if opt_p == 0.0:
+        tail = (
+            f" Clicking it cascades through {opt_s} cells."
+            if opt_s >= 15
+            else f" It opens {opt_s} cells — your pick opened {chosen_s}."
+        )
+        return (
+            "The highlighted cell is provably safe: it borders only satisfied number "
+            "constraints, so no unaccounted mines can be adjacent." + tail
+        )
+    if opt_p <= 0.15:
+        extra = f" — your pick opened only {chosen_s}" if chosen_s < opt_s else ""
+        return (
+            f"The highlighted cell has very low mine risk from adjacent constraints "
+            f"and opens {opt_s} cells{extra}. "
+            f"Find the frontier cell whose neighboring numbers have the fewest remaining "
+            f"unflagged mine possibilities."
+        )
+    extra = f" versus {chosen_s} for your pick" if chosen_s < opt_s else ""
+    return (
+        f"Both cells carry some risk, but the highlighted cell opens {opt_s} cells{extra}. "
+        f"When risk is similar across multiple cells, choose the one with the biggest "
+        f"potential opening."
+    )
+
+
+def generate_l5_opening_board(seed: int, pattern: Optional[str] = None) -> DrillBoard:
+    """L5 Opening Recognition — see module docstring.
+
+    If `pattern` is one of 'cascade', 'safe_edge', or 'productive_pick', only
+    boards of that category are returned; the generator retries more aggressively
+    to compensate for the reduced acceptance rate.
+    """
     rng = random.Random(seed)
-    for _ in range(200):
+    max_attempts = 400 if pattern else 200
+    for _ in range(max_attempts):
         attempt_seed = rng.randrange(1, 1_000_000_000)
         board = _try_generate_l5(attempt_seed)
-        if board is not None:
-            return board
+        if board is None:
+            continue
+        pt = classify_l5_pattern(board)
+        board.pattern_type = pt
+        if pattern and pt != pattern:
+            continue
+        return board
     raise RuntimeError(
-        f"Could not generate a valid L5 board after 200 attempts (seed={seed})"
+        f"Could not generate a valid L5 board after {max_attempts} attempts "
+        f"(seed={seed}, pattern={pattern!r})"
     )
 
 
@@ -318,11 +431,21 @@ def generate_drill_set(
     base_seed: int,
     n: int = 10,
     drill_type: str = DRILL_TYPE_L5,
+    pattern: Optional[str] = None,
 ) -> list[DrillBoard]:
-    """Generate n boards with distinct, seeded layouts for the given drill type."""
+    """Generate n boards with distinct, seeded layouts for the given drill type.
+
+    `pattern` is only honoured for L5 drills; pass one of 'cascade',
+    'safe_edge', or 'productive_pick' to restrict boards to that category.
+    """
     if drill_type not in _GENERATORS:
         raise ValueError(f"Unknown drill_type: {drill_type!r}")
     rng = random.Random(base_seed)
+    if drill_type == DRILL_TYPE_L5 and pattern:
+        return [
+            generate_l5_opening_board(rng.randrange(1, 1_000_000_000), pattern=pattern)
+            for _ in range(n)
+        ]
     gen = _GENERATORS[drill_type]
     return [gen(rng.randrange(1, 1_000_000_000)) for _ in range(n)]
 
@@ -333,7 +456,7 @@ def generate_drill_set(
 
 def serialize_visible(board: DrillBoard) -> dict:
     """Visible payload sent to the client — NO mines."""
-    return {
+    d: dict = {
         "drill_type": board.drill_type,
         "prompt": DRILL_PROMPTS.get(board.drill_type, ""),
         "width": board.width,
@@ -345,11 +468,18 @@ def serialize_visible(board: DrillBoard) -> dict:
             [r, c, n] for (r, c), n in sorted(board.numbers.items())
         ],
     }
+    if board.drill_type == DRILL_TYPE_L5 and board.pattern_type:
+        pattern_info = L5_PATTERNS.get(board.pattern_type, {})
+        d["pattern_type"] = board.pattern_type
+        d["pattern_label"] = pattern_info.get("label", "")
+        d["pattern_tagline"] = pattern_info.get("tagline", "")
+        d["pattern_tip"] = pattern_info.get("tip", "")
+    return d
 
 
 def serialize_solution(board: DrillBoard) -> dict:
     """Full state we persist server-side so we can validate clicks later."""
-    return {
+    d: dict = {
         "drill_type": board.drill_type,
         "width": board.width,
         "height": board.height,
@@ -362,6 +492,9 @@ def serialize_solution(board: DrillBoard) -> dict:
         "optimal_cell": list(board.optimal_cell) if board.optimal_cell else None,
         "optimal_opening_size": board.optimal_opening_size,
     }
+    if board.pattern_type:
+        d["pattern_type"] = board.pattern_type
+    return d
 
 
 def deserialize_solution(d: dict) -> DrillBoard:
@@ -378,6 +511,7 @@ def deserialize_solution(d: dict) -> DrillBoard:
     board.correct_cells = {tuple(p) for p in d.get("correct_cells", [])}
     board.optimal_cell = tuple(d["optimal_cell"]) if d.get("optimal_cell") else None
     board.optimal_opening_size = int(d.get("optimal_opening_size", 0))
+    board.pattern_type = d.get("pattern_type")
     board.numbers = _compute_numbers(board)
     return board
 

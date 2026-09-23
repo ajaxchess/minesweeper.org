@@ -118,6 +118,27 @@
         return e.replace("{n}", t.opening_size).replace("{m}", t.optimal_opening_size).replace("{q}", Math.round(100 * t.relative_quality))
     }
 
+    function showPatternBanner(board) {
+        var wrap = document.querySelector(".dr-board-wrap");
+        if (!wrap) return;
+        var existing = document.getElementById("dr-pattern-banner");
+        if (board && board.pattern_type && board.pattern_tip) {
+            var banner = existing || document.createElement("div");
+            if (!existing) {
+                banner.id = "dr-pattern-banner";
+                banner.className = "dr-pattern-banner";
+                wrap.parentNode.insertBefore(banner, wrap);
+            }
+            var label = board.pattern_label || board.pattern_type;
+            var tagline = board.pattern_tagline || "";
+            banner.innerHTML = '<span class="dr-pattern-label">' + label + (tagline ? ': ' + tagline : '') + '</span>' +
+                '<span class="dr-pattern-tip">' + board.pattern_tip + '</span>';
+            banner.hidden = false;
+        } else if (existing) {
+            existing.hidden = true;
+        }
+    }
+
     function s() {
         var e = n.currentIndex,
             t = n.drill,
@@ -127,8 +148,10 @@
                 return e.result && e.result.is_correct
             }).length + " correct");
             var d = document.getElementById("dr-progress-fill");
-            d && (d.style.width = e / t.num_boards * 100 + "%"), o.prompt && v("dr-prompt", o.prompt),
-                function(e) {
+            d && (d.style.width = e / t.num_boards * 100 + "%");
+            o.prompt && v("dr-prompt", o.prompt);
+            showPatternBanner(o);
+            (function(e) {
                     var t = document.getElementById("dr-board");
                     if (t) {
                         t.innerHTML = "";
@@ -164,7 +187,8 @@
                                 t.appendChild(f)
                             }
                     }
-                }(o), n.boardClickAt = window.performance && performance.now ? performance.now() : Date.now()
+            })(o);
+            n.boardClickAt = window.performance && performance.now ? performance.now() : Date.now();
         } else _("Internal error: missing board " + e)
     }
     async function u(e) {
@@ -206,7 +230,34 @@
                     a.className = "dr-feedback-icon";
                     var u = (n.drill.boards || [])[n.currentIndex] || {},
                         m = o[u.drill_type || r] || o._default;
-                    e.is_mine ? (a.classList.add("dr-feedback-icon--mine"), a.textContent = "💣", d.textContent = "Mine!", i.textContent = "That cell hides a mine. The best pick (highlighted) opens " + e.optimal_opening_size + " cells.") : e.is_correct ? (a.classList.add("dr-feedback-icon--correct"), a.textContent = "✓", d.textContent = m.okTitle, i.textContent = c(m.okBody, e)) : (a.classList.add("dr-feedback-icon--wrong"), a.textContent = "✗", d.textContent = m.badTitle, i.textContent = c(m.badBody, e));
+                    var bodyText;
+                    if (e.is_mine) {
+                        a.classList.add("dr-feedback-icon--mine"); a.textContent = "💣";
+                        d.textContent = "Mine!";
+                        bodyText = "That cell hides a mine. The best pick (highlighted) opens " + e.optimal_opening_size + " cells.";
+                    } else if (e.is_correct) {
+                        a.classList.add("dr-feedback-icon--correct"); a.textContent = "✓";
+                        d.textContent = m.okTitle;
+                        bodyText = c(m.okBody, e);
+                    } else {
+                        a.classList.add("dr-feedback-icon--wrong"); a.textContent = "✗";
+                        d.textContent = m.badTitle;
+                        bodyText = c(m.badBody, e);
+                    }
+                    i.textContent = bodyText;
+                    var reasonEl = document.getElementById("dr-feedback-reason");
+                    if (e.reason) {
+                        if (!reasonEl) {
+                            reasonEl = document.createElement("p");
+                            reasonEl.id = "dr-feedback-reason";
+                            reasonEl.className = "dr-feedback-reason";
+                            i.parentNode.appendChild(reasonEl);
+                        }
+                        reasonEl.textContent = e.reason;
+                        reasonEl.hidden = false;
+                    } else if (reasonEl) {
+                        reasonEl.hidden = true;
+                    }
                     var h = t && t.completed || n.currentIndex >= n.drill.num_boards - 1;
                     s.textContent = h ? "See results →" : "Next board →", g("dr-feedback")
                 }
@@ -259,19 +310,62 @@
             s = document.getElementById("dr-results-blurb");
         e.accuracy_pct >= 80 ? (i && (i.textContent = "🎯"), c && (c.textContent = "Sharp eye"), s && (s.textContent = "You found the best move on most boards. Keep drilling — this is graduation pace.")) : e.accuracy_pct >= 50 ? (i && (i.textContent = "👀"), c && (c.textContent = "Solid"), s && (s.textContent = "You’re seeing it about half the time. Run this drill daily and watch the score climb.")) : (i && (i.textContent = "🌱"), c && (c.textContent = "Building the reflex"), s && (s.textContent = "Review the highlighted optimal cells as you go — the pattern shows up fast on re-runs."))
     }
-    async function f() {
+    var L5_PATTERN_OPTIONS = [
+        { value: null,              label: "Mix",       desc: "All three patterns — good for review" },
+        { value: "cascade",        label: "Cascade",    desc: "Find the zero-pressure opening" },
+        { value: "safe_edge",      label: "Safe Edge",  desc: "Read the number constraints" },
+        { value: "productive_pick",label: "Best Pick",  desc: "Maximize your opening" },
+    ];
+
+    function showPatternPicker(onSelect) {
+        var overlay = document.createElement("div");
+        overlay.className = "dr-picker-overlay";
+        var card = document.createElement("div");
+        card.className = "dr-picker-card";
+        card.innerHTML = '<h3 class="dr-picker-title">Choose a pattern to drill</h3>';
+        L5_PATTERN_OPTIONS.forEach(function(opt) {
+            var btn = document.createElement("button");
+            btn.className = "dr-picker-btn";
+            btn.innerHTML = '<strong>' + opt.label + '</strong><span>' + opt.desc + '</span>';
+            btn.addEventListener("click", function() {
+                document.body.removeChild(overlay);
+                onSelect(opt.value);
+            });
+            card.appendChild(btn);
+        });
+        var cancelBtn = document.createElement("button");
+        cancelBtn.className = "dr-picker-cancel";
+        cancelBtn.textContent = "Cancel";
+        cancelBtn.addEventListener("click", function() { document.body.removeChild(overlay); });
+        card.appendChild(cancelBtn);
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+    }
+
+    async function startWithPattern(pattern) {
         try {
             var e = n.drill || {},
-                t = await i("/api/drills/start", {
+                body = {
                     drill_type: e.drill_type || r,
                     level: e.level || 5,
                     difficulty: e.difficulty || "expert",
                     mode: e.mode || "standard",
                     num_boards: e.num_boards || 10
-                });
-            window.location.href = "/drill/" + t.drill_id
+                };
+            if (pattern) body.pattern = pattern;
+            var t = await i("/api/drills/start", body);
+            window.location.href = "/drill/" + t.drill_id;
         } catch (e) {
-            _("Could not start a new drill: " + (e.message || "unknown"))
+            _("Could not start a new drill: " + (e.message || "unknown"));
+        }
+    }
+
+    async function f() {
+        var e = n.drill || {};
+        if ((e.drill_type || r) === r) {
+            showPatternPicker(startWithPattern);
+        } else {
+            startWithPattern(null);
         }
     }
 
