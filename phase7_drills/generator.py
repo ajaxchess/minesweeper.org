@@ -104,9 +104,9 @@ CORRECT_THRESHOLD = 0.80
 
 
 # L1 — small board (same rationale as L3/L5/L7: teach pattern, not scanning).
-L1_WIDTH = 16
-L1_HEIGHT = 10
-L1_MINES = 26
+L1_WIDTH = 10
+L1_HEIGHT = 8
+L1_MINES = 16
 
 # L1 — best action (chord or click) must reveal at least this many cells,
 # and both an interesting chord AND an interesting click must exist so the

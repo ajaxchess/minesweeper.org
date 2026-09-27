@@ -210,7 +210,10 @@
                             summary.className = "bc-level-summary";
                             summary.dataset.action = "toggle-level";
                             summary.dataset.level = String(e.level);
-                            summary.innerHTML = '<div class="bc-level-summary-left"><div class="bc-level-num bc-level-num--l' + e.level + '">' + e.level + '</div><div><div class="bc-level-name">' + m(e.name) + '</div><div class="bc-level-tagline">' + m(e.tagline) + '</div></div></div><div class="bc-level-summary-right">' + statusBadge + '<span class="bc-level-expand">' + (isCurrent ? "▾" : "▸") + "</span></div>";
+                            const guideHint = e.level === 1
+                                ? ' <a class="bc-drill-guide" href="/bootcamp/cut-wasted-clicks" onclick="event.stopPropagation()">Pattern guide →</a>'
+                                : "";
+                            summary.innerHTML = '<div class="bc-level-summary-left"><div class="bc-level-num bc-level-num--l' + e.level + '">' + e.level + '</div><div><div class="bc-level-name">' + m(e.name) + guideHint + '</div><div class="bc-level-tagline">' + m(e.tagline) + '</div></div></div><div class="bc-level-summary-right">' + statusBadge + '<span class="bc-level-expand">' + (isCurrent ? "▾" : "▸") + "</span></div>";
                             card.appendChild(summary);
                             if (isCurrent) {
                                 card.appendChild(loadLevelBodyDiv(e.level));
