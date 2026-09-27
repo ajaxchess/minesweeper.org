@@ -410,6 +410,19 @@ async def effective_chord_guide(request: Request):
     })
 
 
+@page_router.get("/bootcamp/strategic-no-flag", response_class=HTMLResponse)
+async def strategic_nf_guide(request: Request):
+    """Pattern guide for the L3 Strategic No-Flag drill."""
+    templates = _get_templates()
+    lang, t = _get_i18n(request)
+    return templates.TemplateResponse(request, "bootcamp_strategic_nf_guide.html", {
+        "mode": "bootcamp",
+        "user": get_current_user(request),
+        "lang": lang,
+        "t": t,
+    })
+
+
 @page_router.get("/drill/{drill_id}", response_class=HTMLResponse)
 async def drill_page(drill_id: int, request: Request):
     """

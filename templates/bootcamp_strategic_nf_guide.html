@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+{% block title %}Strategic No-Flag — Pattern Guide | minesweeper.org{% endblock %}
+{% block description %}Learn the no-flag deduction technique: spot the trapped number, locate the ghost mine, and click the provably safe cell.{% endblock %}
+{% block canonical %}https://minesweeper.org/bootcamp/strategic-no-flag{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/css/drill.css?v=6" />
+{% endblock %}
+
+{% block content %}
+<div class="dr-page cw-guide">
+
+  <header class="dr-header">
+    <a class="dr-back" href="/bootcamp">← Bootcamp</a>
+    <div class="dr-header-text">
+      <h1 class="dr-title">Strategic No-Flag — Pattern Guide</h1>
+      <p class="dr-goal">Level 3 · Read the numbers, find the safe cell — no flags allowed.</p>
+    </div>
+  </header>
+
+  <div class="cw-intro">
+    <p>Level 3 strips away all flags. The board shows only revealed numbers and a field of hidden cells.
+       Your job: use pure logic to locate a cell that <em>must</em> be safe, and click it.
+       No guessing — every correct answer is provable from the numbers alone.</p>
+  </div>
+
+  <!-- Key concept: the ghost mine -->
+  <section class="cw-section">
+    <h2 class="cw-section-title">
+      <span class="cw-pattern-badge cw-badge-chord">Concept</span>
+      The ghost mine — a mine you can prove without placing a flag
+    </h2>
+    <div class="cw-pattern-body">
+      <div class="cw-explainer">
+        <p>The core technique is finding a number that is completely <em>trapped</em> —
+           where every one of its hidden neighbors must be a mine.
+           Once you know where the mine is (even without flagging it), you can use that knowledge
+           to free neighboring cells.</p>
+        <h3 class="cw-step-heading">How to find a ghost mine</h3>
+        <ol class="cw-steps">
+          <li>Find a revealed number on the frontier.</li>
+          <li>Count its hidden (unrevealed) neighbors.</li>
+          <li>If that count <strong>equals the number's value</strong>, every hidden neighbor is a mine.</li>
+          <li>You now have a ghost mine — a proven mine location, no flag needed.</li>
+        </ol>
+        <div class="cw-tip">
+          <span class="cw-tip-icon">💡</span>
+          A <strong class="cw-n cw-n1">1</strong> with exactly one hidden neighbor is the clearest case —
+          that single hidden cell <em>must</em> be the mine.
+        </div>
+      </div>
+      <div class="cw-example-wrap">
+        <div class="cw-example-label">Ghost mine example</div>
+        <!-- 4×3 board, mine at (1,2).
+             (0,1)="1" has only (1,2) as hidden neighbor → ghost mine at (1,2).
+             All other frontier cells are hidden safe. -->
+        <div class="cw-board" style="--cw-cols:4;--cw-rows:3">
+          <!-- Row 0 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1 cw-proof-cell" title="Only 1 hidden neighbor — must be the mine">1</div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <!-- Row 1 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-h cw-mine-to-flag" title="Ghost mine — provably a mine, no flag needed"></div>
+          <div class="cw-cell cw-h"></div>
+          <!-- Row 2 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+        </div>
+        <div class="cw-example-caption">
+          The <span class="cw-highlight-chord">1</span> has exactly one hidden neighbor.
+          That hidden cell is the <span class="cw-highlight-mine">ghost mine</span> — proven, not guessed.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Use the ghost mine to find safety -->
+  <section class="cw-section">
+    <h2 class="cw-section-title">
+      <span class="cw-pattern-badge cw-badge-click">Step 2</span>
+      Use the ghost mine to prove a neighbor is safe
+    </h2>
+    <div class="cw-pattern-body">
+      <div class="cw-explainer">
+        <p>Once you know where a ghost mine is, look at every other revealed number adjacent to it.
+           If that number's mine quota is now fully accounted for by ghost mines,
+           all its remaining hidden neighbors are <strong>safe to click</strong>.</p>
+        <h3 class="cw-step-heading">How to use a ghost mine</h3>
+        <ol class="cw-steps">
+          <li>Find a number adjacent to your ghost mine.</li>
+          <li>Count how many mines it still needs (value minus any other known mines).</li>
+          <li>If the ghost mine accounts for all remaining mines, the other hidden neighbors are safe.</li>
+          <li>Click the safest one — pick the cell that opens the most area.</li>
+        </ol>
+        <div class="cw-tip">
+          <span class="cw-tip-icon">💡</span>
+          You never place a flag — you just hold the ghost mine in your head and use it
+          to unlock adjacent numbers.
+        </div>
+      </div>
+      <div class="cw-example-wrap">
+        <div class="cw-example-label">Safe cell example</div>
+        <!-- Same board. Ghost mine at (1,2) unlocks (0,2) and (0,3) — their mine
+             quota is satisfied by (1,2), so (1,3) is safe. -->
+        <div class="cw-board" style="--cw-cols:4;--cw-rows:3">
+          <!-- Row 0 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-r cw-n1 cw-proof-cell" title="Satisfied — ghost mine accounts for its 1">1</div>
+          <div class="cw-cell cw-r cw-n1 cw-proof-cell" title="Satisfied — ghost mine accounts for its 1">1</div>
+          <!-- Row 1 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-h cw-mine-to-flag" title="Ghost mine"></div>
+          <div class="cw-cell cw-h cw-safe-target" title="Provably safe — click it!"></div>
+          <!-- Row 2 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+        </div>
+        <div class="cw-example-caption">
+          The two <span class="cw-highlight-chord">1</span>s are satisfied by the ghost mine.
+          The <span class="cw-highlight-safe">green cell</span> must be safe — click it.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Strategy -->
+  <section class="cw-section cw-section-compare">
+    <h2 class="cw-section-title">
+      <span class="cw-pattern-badge cw-badge-compare">Strategy</span>
+      Scan the frontier — find the trapped number, unlock the safe cell
+    </h2>
+    <p>The frontier is the edge between revealed and hidden cells — every hidden neighbor of a
+       revealed number. Scan it systematically:</p>
+    <div class="cw-compare-grid">
+      <div class="cw-compare-card">
+        <div class="cw-compare-label cw-badge-chord">Trap</div>
+        <div class="cw-compare-desc">Find a revealed number where hidden-neighbor count equals its value.</div>
+      </div>
+      <div class="cw-compare-vs">→</div>
+      <div class="cw-compare-card">
+        <div class="cw-compare-label cw-badge-click">Unlock</div>
+        <div class="cw-compare-desc">Use that ghost mine to satisfy adjacent numbers — their other hidden neighbors are safe.</div>
+      </div>
+      <div class="cw-compare-vs">→</div>
+      <div class="cw-compare-card">
+        <div class="cw-compare-label cw-badge-compare">Click</div>
+        <div class="cw-compare-desc">Pick the safe cell that opens the most new area when clicked.</div>
+      </div>
+    </div>
+    <p class="cw-compare-conclusion">
+      Every correct answer in Level 3 follows this chain: <strong>trap → ghost mine → safe click</strong>.
+      The only variable is how deep the chain goes before you find safety.
+    </p>
+  </section>
+
+  <!-- CTA -->
+  <div class="cw-cta">
+    <a class="dr-btn dr-btn--secondary" href="/bootcamp">← Back to Bootcamp</a>
+    <button class="dr-btn dr-btn--primary" id="cw-start-drill">▶ Start Drill 3</button>
+  </div>
+
+</div>
+
+<style>
+.cw-guide { max-width: 820px; }
+
+.cw-intro {
+  background: var(--dr-accent-soft);
+  border: 1px solid var(--dr-accent);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+.cw-intro p { margin: 0; }
+
+.cw-section {
+  border: 1px solid var(--dr-border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  background: var(--dr-surface);
+  margin-bottom: 20px;
+}
+.cw-section-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cw-pattern-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+.cw-badge-chord   { background: var(--dr-accent-soft);   color: var(--dr-accent); }
+.cw-badge-click   { background: var(--dr-success-soft);  color: var(--dr-success); }
+.cw-badge-compare { background: var(--dr-warning-soft);  color: var(--dr-warning); }
+
+.cw-pattern-body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 600px) { .cw-pattern-body { grid-template-columns: 1fr; } }
+
+.cw-explainer p { margin: 0 0 10px; font-size: 14px; line-height: 1.6; }
+.cw-step-heading { font-size: 13px; font-weight: 700; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .4px; color: var(--dr-text-muted); }
+.cw-steps { margin: 0 0 12px; padding-left: 20px; font-size: 14px; line-height: 1.7; }
+.cw-steps li { margin-bottom: 2px; }
+
+.cw-tip {
+  background: var(--dr-warning-soft);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.cw-tip-icon { flex-shrink: 0; font-size: 15px; }
+
+/* Mini board */
+.cw-example-wrap { flex-shrink: 0; }
+.cw-example-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--dr-text-muted); margin-bottom: 8px; }
+.cw-board {
+  display: grid;
+  grid-template-columns: repeat(var(--cw-cols), 26px);
+  grid-template-rows: repeat(var(--cw-rows), 26px);
+  gap: 1px;
+  background: var(--dr-border);
+  border: 1px solid var(--dr-border);
+  border-radius: 6px;
+  overflow: hidden;
+  width: max-content;
+}
+.cw-cell {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px; font-weight: 700;
+}
+.cw-r  { background: var(--dr-cell-revealed); }
+.cw-h  { background: var(--dr-cell-hidden); }
+.cw-f  { background: var(--dr-warning-soft); color: var(--dr-danger); font-size: 13px; }
+
+.cw-n1 { color: #1d4ed8; }
+.cw-n2 { color: #047857; }
+.cw-n3 { color: #b91c1c; }
+.cw-n4 { color: #6b21a8; }
+.cw-n { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-weight: 700; }
+
+/* Cells that prove the ghost mine */
+.cw-proof-cell { outline: 1px dashed var(--dr-accent); outline-offset: -2px; }
+
+/* Ghost mine (proven mine, no flag) */
+.cw-mine-to-flag {
+  outline: 2px solid var(--dr-warning);
+  outline-offset: -2px;
+  background: var(--dr-warning-soft);
+}
+
+/* Safe cell to click */
+.cw-safe-target { outline: 2px solid var(--dr-success); outline-offset: -2px; background: var(--dr-success-soft); }
+
+/* Chord target */
+.cw-chord-target { outline: 2px solid var(--dr-accent); outline-offset: -2px; }
+
+/* Cells the chord reveals */
+.cw-target-open { background: var(--dr-cell-hint); }
+
+.cw-example-caption { margin-top: 8px; font-size: 12px; color: var(--dr-text-muted); line-height: 1.5; max-width: 180px; }
+.cw-highlight-chord { font-weight: 700; color: var(--dr-accent); }
+.cw-highlight-open  { font-weight: 700; color: var(--dr-warning); }
+.cw-highlight-mine  { font-weight: 700; color: var(--dr-warning); }
+.cw-highlight-safe  { font-weight: 700; color: var(--dr-success); }
+
+/* Strategy section */
+.cw-section-compare { background: var(--dr-bg); }
+.cw-section-compare > p { font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+.cw-compare-grid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.cw-compare-card { flex: 1; min-width: 130px; background: var(--dr-surface); border: 1px solid var(--dr-border); border-radius: 10px; padding: 14px; }
+.cw-compare-label { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; margin-bottom: 6px; }
+.cw-compare-desc { font-size: 13px; line-height: 1.5; color: var(--dr-text-muted); }
+.cw-compare-vs { font-size: 16px; font-weight: 700; color: var(--dr-text-muted); flex-shrink: 0; }
+.cw-compare-conclusion { font-size: 14px; line-height: 1.6; margin: 0; }
+
+.cw-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+</style>
+
+<script>
+document.getElementById("cw-start-drill").addEventListener("click", async function() {
+  const btn = this;
+  btn.disabled = true;
+  btn.textContent = "Loading…";
+  try {
+    const res = await fetch("/api/drills/start", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ drill_type: "l3_strategic_nf", level: 3, difficulty: "expert", mode: "standard", num_boards: 10 }),
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    window.location.href = "/drill/" + data.drill_id;
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = "Couldn't start — retry";
+  }
+});
+</script>
+{% endblock %}

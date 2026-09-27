@@ -113,6 +113,11 @@ L2_WIDTH = 12
 L2_HEIGHT = 9
 L2_MINES = 18
 
+# L4 — small board; flags are pre-placed, lesson is picking the best chord.
+L4_WIDTH = 12
+L4_HEIGHT = 9
+L4_MINES = 18
+
 # L1 — best action (chord or click) must reveal at least this many cells,
 # and both an interesting chord AND an interesting click must exist so the
 # comparison is a real decision.
@@ -890,7 +895,13 @@ def _is_on_frontier(board: DrillBoard, r: int, c: int) -> bool:
 
 def _try_generate_l4(seed: int) -> Optional[DrillBoard]:
     rng = random.Random(seed)
-    board = _seed_board(seed, DRILL_TYPE_L4)
+    board = DrillBoard(
+        width=L4_WIDTH,
+        height=L4_HEIGHT,
+        num_mines=L4_MINES,
+        seed=seed,
+        drill_type=DRILL_TYPE_L4,
+    )
     _place_random_mines(board, rng)
     _make_starter_reveal(board, rng)
 
