@@ -313,9 +313,10 @@ def jigsaw_photo_play(request: Request, board_hash: str, difficulty: str = Query
         "display_name":   photo.display_name or "Custom Puzzle",
         "difficulty":     difficulty,
         "pending_review": pending_review,
-        # Not-yet-approved puzzles are only visible to their creator — don't
-        # let them get indexed while pending moderation.
-        "noindex":        pending_review,
+        # Noindex when: not yet approved (pending moderation) OR a non-English
+        # locale (same user-generated content repeated across language prefixes
+        # is duplicate content; only the English canonical should be indexed).
+        "noindex":        pending_review or get_lang(request) != "en",
     })
 
 
