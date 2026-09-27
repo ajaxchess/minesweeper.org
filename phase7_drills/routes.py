@@ -397,6 +397,19 @@ async def cut_waste_guide(request: Request):
     })
 
 
+@page_router.get("/bootcamp/effective-chording", response_class=HTMLResponse)
+async def effective_chord_guide(request: Request):
+    """Pattern guide for the L2 Effective Chording drill."""
+    templates = _get_templates()
+    lang, t = _get_i18n(request)
+    return templates.TemplateResponse(request, "bootcamp_effective_chord_guide.html", {
+        "mode": "bootcamp",
+        "user": get_current_user(request),
+        "lang": lang,
+        "t": t,
+    })
+
+
 @page_router.get("/drill/{drill_id}", response_class=HTMLResponse)
 async def drill_page(drill_id: int, request: Request):
     """

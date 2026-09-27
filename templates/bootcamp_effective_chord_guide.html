@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+{% block title %}Effective Chording — Pattern Guide | minesweeper.org{% endblock %}
+{% block description %}Learn the two steps in the Effective Chording drill: spot provable mines, then pick the flag-then-chord with the best payoff.{% endblock %}
+{% block canonical %}https://minesweeper.org/bootcamp/effective-chording{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/css/drill.css?v=6" />
+{% endblock %}
+
+{% block content %}
+<div class="dr-page cw-guide">
+
+  <header class="dr-header">
+    <a class="dr-back" href="/bootcamp">← Bootcamp</a>
+    <div class="dr-header-text">
+      <h1 class="dr-title">Effective Chording — Pattern Guide</h1>
+      <p class="dr-goal">Level 2 · Two steps: prove the mine, then cash in the chord.</p>
+    </div>
+  </header>
+
+  <div class="cw-intro">
+    <p>Level 1 gave you boards where flags were already placed — you just had to find the best chord or click.
+       Level 2 removes the pre-placed flags. Now <strong>you</strong> identify and place the flag first, then chord.
+       The catch: you can only flag a cell when you can <em>prove</em> it's a mine from the current numbers.</p>
+  </div>
+
+  <!-- Step 1: Spot the provable mine -->
+  <section class="cw-section">
+    <h2 class="cw-section-title">
+      <span class="cw-pattern-badge cw-badge-chord">Step 1</span>
+      Find a number whose unflagged hidden neighbors are all provable mines
+    </h2>
+    <div class="cw-pattern-body">
+      <div class="cw-explainer">
+        <p>A hidden cell is a <strong>provable mine</strong> when the numbers force it — no guessing needed.
+           The clearest case: a revealed number whose <em>only</em> remaining hidden neighbor must be the mine.</p>
+        <h3 class="cw-step-heading">How to spot it</h3>
+        <ol class="cw-steps">
+          <li>Find a revealed <strong class="cw-n cw-n1">1</strong> (or higher number).</li>
+          <li>Count its unrevealed, unflagged neighbors.</li>
+          <li>If that count <strong>equals</strong> the number's value, every hidden neighbor is a mine.</li>
+          <li>Flag them — you've just earned the right to chord any number touching those cells.</li>
+        </ol>
+        <div class="cw-tip">
+          <span class="cw-tip-icon">💡</span>
+          In Level 2, no mines come pre-flagged. You have to earn every flag with a deduction.
+          At most <strong>2 flags</strong> are needed per chord opportunity — if you need more, move on.
+        </div>
+      </div>
+      <div class="cw-example-wrap">
+        <div class="cw-example-label">Provable mine example</div>
+        <!-- 4×4 board, mine at (0,2).
+             (0,1)=1 has only (0,2) as its hidden neighbor → tier-1 proof.
+             (1,1)=1 same. Both prove (0,2) is a mine. -->
+        <div class="cw-board" style="--cw-cols:4;--cw-rows:4">
+          <!-- Row 0 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1 cw-proof-cell" title="Only 1 hidden neighbor — it must be the mine">1</div>
+          <div class="cw-cell cw-h cw-mine-to-flag" title="Provable mine — flag it!"></div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <!-- Row 1 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1 cw-proof-cell" title="Only 1 hidden neighbor — it must be the mine">1</div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-h"></div>
+          <!-- Row 2 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-h"></div>
+          <!-- Row 3 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+        </div>
+        <div class="cw-example-caption">
+          Both <span class="cw-highlight-chord">1</span>s have the
+          <span class="cw-highlight-mine">outlined cell</span> as their only hidden neighbor.
+          It must be the mine — flag it.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 2: Chord for payoff -->
+  <section class="cw-section">
+    <h2 class="cw-section-title">
+      <span class="cw-pattern-badge cw-badge-click">Step 2</span>
+      Flag the mine, then chord the best number for maximum reveal
+    </h2>
+    <div class="cw-pattern-body">
+      <div class="cw-explainer">
+        <p>Once you've flagged the proven mine, look at every number adjacent to that flag.
+           Any number whose <strong>flag count now equals its value</strong> is chord-ready.
+           Click it to reveal all its remaining hidden neighbors at once.</p>
+        <h3 class="cw-step-heading">Pick the best chord</h3>
+        <ol class="cw-steps">
+          <li>After flagging, find all numbers that are now chord-ready.</li>
+          <li>For each one, count its hidden (non-flag) neighbors — that's the chord's payoff.</li>
+          <li>Pick the number whose chord reveals the <strong>most cells</strong>.</li>
+        </ol>
+        <div class="cw-tip">
+          <span class="cw-tip-icon">💡</span>
+          Sometimes the same flag enables multiple chords. The drill scores you on the single
+          best click — the chord with the highest individual payoff.
+        </div>
+      </div>
+      <div class="cw-example-wrap">
+        <div class="cw-example-label">Flag-then-chord example</div>
+        <!-- Same board. After flagging (0,2), chord (1,2) reveals (1,3) and (2,3). -->
+        <div class="cw-board" style="--cw-cols:4;--cw-rows:4">
+          <!-- Row 0 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-f" title="Flagged!">🚩</div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <!-- Row 1 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-r cw-chord-target cw-n1" title="Chord-ready — click!">1</div>
+          <div class="cw-cell cw-h cw-target-open"></div>
+          <!-- Row 2 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-h cw-target-open"></div>
+          <!-- Row 3 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+        </div>
+        <div class="cw-example-caption">
+          Flag placed. The <span class="cw-highlight-chord">1</span> at the chord target is now
+          satisfied — clicking it opens the
+          <span class="cw-highlight-open">2 highlighted cells</span>.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The key skill -->
+  <section class="cw-section cw-section-compare">
+    <h2 class="cw-section-title">
+      <span class="cw-pattern-badge cw-badge-compare">Strategy</span>
+      Scan every number — pick the flag-then-chord with the highest payoff
+    </h2>
+    <p>Multiple numbers on the board may have provable flags. Each flag enables one or more chords.
+       Your one click should be the chord (after flagging) that opens the most cells.</p>
+    <div class="cw-compare-grid">
+      <div class="cw-compare-card">
+        <div class="cw-compare-label cw-badge-chord">Scan</div>
+        <div class="cw-compare-desc">Find every number with all-provable unflagged hidden neighbors (≤ 2 flags needed).</div>
+      </div>
+      <div class="cw-compare-vs">→</div>
+      <div class="cw-compare-card">
+        <div class="cw-compare-label cw-badge-click">Count</div>
+        <div class="cw-compare-desc">For each candidate, count: flags placed + cells the chord reveals.</div>
+      </div>
+      <div class="cw-compare-vs">→</div>
+      <div class="cw-compare-card">
+        <div class="cw-compare-label cw-badge-compare">Pick</div>
+        <div class="cw-compare-desc">Click the number with the highest chord reveal count.</div>
+      </div>
+    </div>
+    <p class="cw-compare-conclusion">
+      This two-step rhythm — <strong>prove → flag → chord</strong> — is what separates players who waste flags
+      from those who turn every flag into an instant reveal.
+    </p>
+  </section>
+
+  <!-- CTA -->
+  <div class="cw-cta">
+    <a class="dr-btn dr-btn--secondary" href="/bootcamp">← Back to Bootcamp</a>
+    <button class="dr-btn dr-btn--primary" id="cw-start-drill">▶ Start Drill 2</button>
+  </div>
+
+</div>
+
+<style>
+.cw-guide { max-width: 820px; }
+
+.cw-intro {
+  background: var(--dr-accent-soft);
+  border: 1px solid var(--dr-accent);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+.cw-intro p { margin: 0; }
+
+.cw-section {
+  border: 1px solid var(--dr-border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  background: var(--dr-surface);
+  margin-bottom: 20px;
+}
+.cw-section-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cw-pattern-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+.cw-badge-chord   { background: var(--dr-accent-soft);   color: var(--dr-accent); }
+.cw-badge-click   { background: var(--dr-success-soft);  color: var(--dr-success); }
+.cw-badge-compare { background: var(--dr-warning-soft);  color: var(--dr-warning); }
+
+.cw-pattern-body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 600px) { .cw-pattern-body { grid-template-columns: 1fr; } }
+
+.cw-explainer p { margin: 0 0 10px; font-size: 14px; line-height: 1.6; }
+.cw-step-heading { font-size: 13px; font-weight: 700; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .4px; color: var(--dr-text-muted); }
+.cw-steps { margin: 0 0 12px; padding-left: 20px; font-size: 14px; line-height: 1.7; }
+.cw-steps li { margin-bottom: 2px; }
+
+.cw-tip {
+  background: var(--dr-warning-soft);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.cw-tip-icon { flex-shrink: 0; font-size: 15px; }
+
+/* Mini board */
+.cw-example-wrap { flex-shrink: 0; }
+.cw-example-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--dr-text-muted); margin-bottom: 8px; }
+.cw-board {
+  display: grid;
+  grid-template-columns: repeat(var(--cw-cols), 26px);
+  grid-template-rows: repeat(var(--cw-rows), 26px);
+  gap: 1px;
+  background: var(--dr-border);
+  border: 1px solid var(--dr-border);
+  border-radius: 6px;
+  overflow: hidden;
+  width: max-content;
+}
+.cw-cell {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px; font-weight: 700;
+}
+.cw-r  { background: var(--dr-cell-revealed); }
+.cw-h  { background: var(--dr-cell-hidden); }
+.cw-f  { background: var(--dr-warning-soft); color: var(--dr-danger); font-size: 13px; }
+
+.cw-n1 { color: #1d4ed8; }
+.cw-n2 { color: #047857; }
+.cw-n3 { color: #b91c1c; }
+.cw-n4 { color: #6b21a8; }
+
+/* Cells that prove the mine */
+.cw-proof-cell { outline: 1px dashed var(--dr-accent); outline-offset: -2px; }
+
+/* Hidden mine to be flagged */
+.cw-mine-to-flag {
+  outline: 2px solid var(--dr-warning);
+  outline-offset: -2px;
+  background: var(--dr-warning-soft);
+}
+
+/* Chord target */
+.cw-chord-target { outline: 2px solid var(--dr-accent); outline-offset: -2px; }
+
+/* Cells the chord reveals */
+.cw-target-open { background: var(--dr-cell-hint); }
+
+/* Safe click target */
+.cw-safe-target { outline: 2px solid var(--dr-success); outline-offset: -2px; background: var(--dr-success-soft); }
+
+.cw-example-caption { margin-top: 8px; font-size: 12px; color: var(--dr-text-muted); line-height: 1.5; max-width: 180px; }
+.cw-highlight-chord { font-weight: 700; color: var(--dr-accent); }
+.cw-highlight-open  { font-weight: 700; color: var(--dr-warning); }
+.cw-highlight-mine  { font-weight: 700; color: var(--dr-warning); }
+.cw-highlight-safe  { font-weight: 700; color: var(--dr-success); }
+
+.cw-n { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-weight: 700; }
+
+/* Strategy section */
+.cw-section-compare { background: var(--dr-bg); }
+.cw-section-compare > p { font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+.cw-compare-grid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.cw-compare-card { flex: 1; min-width: 130px; background: var(--dr-surface); border: 1px solid var(--dr-border); border-radius: 10px; padding: 14px; }
+.cw-compare-label { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; margin-bottom: 6px; }
+.cw-compare-desc { font-size: 13px; line-height: 1.5; color: var(--dr-text-muted); }
+.cw-compare-vs { font-size: 16px; font-weight: 700; color: var(--dr-text-muted); flex-shrink: 0; }
+.cw-compare-conclusion { font-size: 14px; line-height: 1.6; margin: 0; }
+
+.cw-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+</style>
+
+<script>
+document.getElementById("cw-start-drill").addEventListener("click", async function() {
+  const btn = this;
+  btn.disabled = true;
+  btn.textContent = "Loading…";
+  try {
+    const res = await fetch("/api/drills/start", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ drill_type: "l2_effective_chord", level: 2, difficulty: "expert", mode: "standard", num_boards: 10 }),
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    window.location.href = "/drill/" + data.drill_id;
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = "Couldn't start — retry";
+  }
+});
+</script>
+{% endblock %}

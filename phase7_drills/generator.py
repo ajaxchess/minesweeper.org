@@ -108,6 +108,11 @@ L1_WIDTH = 10
 L1_HEIGHT = 8
 L1_MINES = 16
 
+# L2 — small board; give enough room for flag-then-chord but no expert scanning.
+L2_WIDTH = 12
+L2_HEIGHT = 9
+L2_MINES = 18
+
 # L1 — best action (chord or click) must reveal at least this many cells,
 # and both an interesting chord AND an interesting click must exist so the
 # comparison is a real decision.
@@ -1188,7 +1193,13 @@ def _try_generate_l2(seed: int) -> Optional[DrillBoard]:
     chord reveal that placing those flags would enable.
     """
     rng = random.Random(seed)
-    board = _seed_board(seed, DRILL_TYPE_L2)
+    board = DrillBoard(
+        width=L2_WIDTH,
+        height=L2_HEIGHT,
+        num_mines=L2_MINES,
+        seed=seed,
+        drill_type=DRILL_TYPE_L2,
+    )
     _place_random_mines(board, rng)
     _make_starter_reveal(board, rng)
     board.numbers = _compute_numbers(board)
