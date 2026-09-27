@@ -157,9 +157,12 @@ def start_drill(
     """Create a fresh drill session for the current player."""
     player_id = _player_id(request)
 
-    # Seed off the wall-clock + player_id so distinct sessions get distinct
-    # boards without exposing predictable seeds.
-    base_seed = abs(hash((player_id, datetime.now(timezone.utc).timestamp()))) % 1_000_000_000
+    # Seed by session count so each new session is a fresh but reproducible set:
+    # same player + same drill type + same attempt number → same boards every time.
+    session_num = db.query(DrillSession).filter_by(
+        player_id=player_id, drill_type=body.drill_type
+    ).count()
+    base_seed = abs(hash((player_id, body.drill_type, session_num))) % 1_000_000_000
 
     boards = generator.generate_drill_set(
         base_seed,
@@ -380,6 +383,19 @@ def get_drill(
 # ═════════════════════════════════════════════════════════════════════════════
 # HTML page
 # ═════════════════════════════════════════════════════════════════════════════
+
+@page_router.get("/bootcamp/cut-wasted-clicks", response_class=HTMLResponse)
+async def cut_waste_guide(request: Request):
+    """Pattern guide for the L1 Cut Wasted Clicks drill."""
+    templates = _get_templates()
+    lang, t = _get_i18n(request)
+    return templates.TemplateResponse(request, "bootcamp_cut_waste_guide.html", {
+        "mode": "bootcamp",
+        "user": get_current_user(request),
+        "lang": lang,
+        "t": t,
+    })
+
 
 @page_router.get("/drill/{drill_id}", response_class=HTMLResponse)
 async def drill_page(drill_id: int, request: Request):

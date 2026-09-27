@@ -445,6 +445,15 @@
 }
 .bc-drill-name { font-weight: 600; }
 .bc-drill-meta { color: var(--bc-text-muted); font-size: 11px; }
+.bc-drill-guide {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--bc-accent, #2563eb);
+  text-decoration: none;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.bc-drill-guide:hover { text-decoration: underline; }
 
 .bc-graduation {
   grid-column: 1 / -1;

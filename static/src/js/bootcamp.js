@@ -50,7 +50,10 @@
         }).join("");
         const drills = (levelData.drills || []).map(function(e, n) {
             const cls = 0 === n ? "bc-btn bc-btn--primary" : "bc-btn bc-btn--secondary";
-            return '<div class="bc-drill"><div><div class="bc-drill-name">' + m(e.name) + '</div><div class="bc-drill-meta">' + e.board_count + " boards · ~" + e.estimated_minutes + " min · " + m(e.target) + '</div></div><button class="' + cls + '" data-drill-id="' + m(e.drill_id) + '">' + t.startDrill + "</button></div>"
+            const guideLink = e.drill_id === "l1_cut_waste"
+                ? ' <a class="bc-drill-guide" href="/bootcamp/cut-wasted-clicks">Learn patterns →</a>'
+                : "";
+            return '<div class="bc-drill"><div><div class="bc-drill-name">' + m(e.name) + guideLink + '</div><div class="bc-drill-meta">' + e.board_count + " boards · ~" + e.estimated_minutes + " min · " + m(e.target) + '</div></div><button class="' + cls + '" data-drill-id="' + m(e.drill_id) + '">' + t.startDrill + "</button></div>"
         }).join("");
         const grad = levelData.graduation;
         const gradHtml = grad ? '<div class="bc-graduation"><strong>' + t.graduationLabel + ":</strong> " + m(grad.description) + '<div class="bc-graduation-progress">Currently <strong>' + b(grad.current_value) + "</strong> · target " + b(grad.target_value) + "</div></div>" : "";
