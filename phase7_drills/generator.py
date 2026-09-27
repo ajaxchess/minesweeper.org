@@ -103,6 +103,11 @@ L5_STARTER_TARGET_REVEAL_FRACTION = 0.35   # denser reveal on the small board
 CORRECT_THRESHOLD = 0.80
 
 
+# L1 — small board (same rationale as L3/L5/L7: teach pattern, not scanning).
+L1_WIDTH = 16
+L1_HEIGHT = 10
+L1_MINES = 26
+
 # L1 — best action (chord or click) must reveal at least this many cells,
 # and both an interesting chord AND an interesting click must exist so the
 # comparison is a real decision.
@@ -1127,7 +1132,13 @@ def _try_generate_l1(seed: int) -> Optional[DrillBoard]:
     meaningful candidate of EACH kind so the comparison is a real decision.
     """
     rng = random.Random(seed)
-    board = _seed_board(seed, DRILL_TYPE_L1)
+    board = DrillBoard(
+        width=L1_WIDTH,
+        height=L1_HEIGHT,
+        num_mines=L1_MINES,
+        seed=seed,
+        drill_type=DRILL_TYPE_L1,
+    )
     _place_random_mines(board, rng)
     _make_starter_reveal(board, rng)
     _place_inferable_flags(board)
