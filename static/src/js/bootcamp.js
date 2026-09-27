@@ -56,6 +56,14 @@
                 ? ' <a class="bc-drill-guide" href="/bootcamp/effective-chording">Learn patterns →</a>'
                 : e.drill_id === "l3_strategic_nf"
                 ? ' <a class="bc-drill-guide" href="/bootcamp/strategic-no-flag">Learn patterns →</a>'
+                : e.drill_id === "l4_pure_efficiency"
+                ? ' <a class="bc-drill-guide" href="/bootcamp/pure-efficiency">Learn patterns →</a>'
+                : e.drill_id === "l5_opening_recognition"
+                ? ' <a class="bc-drill-guide" href="/bootcamp/opening-recognition">Learn patterns →</a>'
+                : e.drill_id === "l6_flag_value"
+                ? ' <a class="bc-drill-guide" href="/bootcamp/flag-value">Learn patterns →</a>'
+                : e.drill_id === "l7_fishing"
+                ? ' <a class="bc-drill-guide" href="/bootcamp/fishing-hierarchy">Learn patterns →</a>'
                 : "";
             return '<div class="bc-drill"><div><div class="bc-drill-name">' + m(e.name) + guideLink + '</div><div class="bc-drill-meta">' + e.board_count + " boards · ~" + e.estimated_minutes + " min · " + m(e.target) + '</div></div><button class="' + cls + '" data-drill-id="' + m(e.drill_id) + '">' + t.startDrill + "</button></div>"
         }).join("");
@@ -220,6 +228,14 @@
                                 ? ' <a class="bc-drill-guide" href="/bootcamp/effective-chording" onclick="event.stopPropagation()">Pattern guide →</a>'
                                 : e.level === 3
                                 ? ' <a class="bc-drill-guide" href="/bootcamp/strategic-no-flag" onclick="event.stopPropagation()">Pattern guide →</a>'
+                                : e.level === 4
+                                ? ' <a class="bc-drill-guide" href="/bootcamp/pure-efficiency" onclick="event.stopPropagation()">Pattern guide →</a>'
+                                : e.level === 5
+                                ? ' <a class="bc-drill-guide" href="/bootcamp/opening-recognition" onclick="event.stopPropagation()">Pattern guide →</a>'
+                                : e.level === 6
+                                ? ' <a class="bc-drill-guide" href="/bootcamp/flag-value" onclick="event.stopPropagation()">Pattern guide →</a>'
+                                : e.level === 7
+                                ? ' <a class="bc-drill-guide" href="/bootcamp/fishing-hierarchy" onclick="event.stopPropagation()">Pattern guide →</a>'
                                 : "";
                             summary.innerHTML = '<div class="bc-level-summary-left"><div class="bc-level-num bc-level-num--l' + e.level + '">' + e.level + '</div><div><div class="bc-level-name">' + m(e.name) + guideHint + '</div><div class="bc-level-tagline">' + m(e.tagline) + '</div></div></div><div class="bc-level-summary-right">' + statusBadge + '<span class="bc-level-expand">' + (isCurrent ? "▾" : "▸") + "</span></div>";
                             card.appendChild(summary);

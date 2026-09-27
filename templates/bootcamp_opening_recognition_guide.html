@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+{% block title %}Opening Recognition — Pattern Guide | minesweeper.org{% endblock %}
+{% block description %}Learn to read the frontier: find the hidden cell whose neighboring numbers are all satisfied, and click it to open a safe cascade.{% endblock %}
+{% block canonical %}https://minesweeper.org/bootcamp/opening-recognition{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/css/drill.css?v=6" />
+{% endblock %}
+
+{% block content %}
+<div class="dr-page cw-guide">
+
+  <header class="dr-header">
+    <a class="dr-back" href="/bootcamp">← Bootcamp</a>
+    <div class="dr-header-text">
+      <h1 class="dr-title">Opening Recognition — Pattern Guide</h1>
+      <p class="dr-goal">Level 5 · Find the frontier cell whose neighbors are all satisfied, then open it.</p>
+    </div>
+  </header>
+
+  <div class="cw-intro">
+    <p>Level 5 boards have mines pre-flagged wherever the numbers force it.
+       Your job is to look at the frontier — the ring of hidden cells touching revealed numbers —
+       and find the one cell that is <em>provably safe</em>.
+       A frontier cell is safe when every revealed number next to it is already <strong>satisfied</strong>
+       (its flag count equals its value). Click that cell to open a new area.</p>
+  </div>
+
+  <!-- What "satisfied" means -->
+  <section class="cw-section">
+    <h2 class="cw-section-title">
+      <span class="cw-pattern-badge cw-badge-chord">Concept</span>
+      A satisfied number has all its mines flagged
+    </h2>
+    <div class="cw-pattern-body">
+      <div class="cw-explainer">
+        <p>A revealed number is <strong>satisfied</strong> when the count of adjacent flags
+           exactly equals its value — every mine it can see is already marked.
+           A satisfied number holds no more secrets: every non-flag hidden neighbor it touches must be safe.</p>
+        <h3 class="cw-step-heading">Read the frontier</h3>
+        <ol class="cw-steps">
+          <li>For each frontier cell, look at every revealed number adjacent to it.</li>
+          <li>Check whether each of those numbers is satisfied (flags = value).</li>
+          <li>If <strong>every</strong> adjacent number is satisfied, the cell is provably safe.</li>
+          <li>If even one adjacent number is not satisfied, the cell carries risk — skip it.</li>
+        </ol>
+        <div class="cw-tip">
+          <span class="cw-tip-icon">💡</span>
+          A "0" is always satisfied — it sees no mines and needs no flags.
+          Any frontier cell adjacent only to 0s and satisfied numbers is always safe.
+        </div>
+      </div>
+      <div class="cw-example-wrap">
+        <div class="cw-example-label">Satisfied vs unsatisfied</div>
+        <!-- Left half shows a satisfied "1" (flag present), right shows unsatisfied "1" (no flag).
+             4×2 layout split by a visual divider. -->
+        <div style="display:flex;gap:16px;align-items:flex-start;">
+          <div>
+            <div class="cw-example-sublabel cw-ok">✓ Satisfied</div>
+            <div class="cw-board" style="--cw-cols:2;--cw-rows:2">
+              <div class="cw-cell cw-r cw-n1 cw-satisfied-cell">1</div>
+              <div class="cw-cell cw-f">🚩</div>
+              <div class="cw-cell cw-h cw-safe-target"></div>
+              <div class="cw-cell cw-r"></div>
+            </div>
+            <div class="cw-example-caption" style="max-width:90px;">Flag count = value. Hidden neighbor is safe.</div>
+          </div>
+          <div>
+            <div class="cw-example-sublabel cw-warn">✗ Unsatisfied</div>
+            <div class="cw-board" style="--cw-cols:2;--cw-rows:2">
+              <div class="cw-cell cw-r cw-n1 cw-unsatisfied-cell">1</div>
+              <div class="cw-cell cw-h cw-risky-cell"></div>
+              <div class="cw-cell cw-h cw-risky-cell"></div>
+              <div class="cw-cell cw-r"></div>
+            </div>
+            <div class="cw-example-caption" style="max-width:90px;">No flag yet. Hidden neighbors carry risk.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scan the frontier -->
+  <section class="cw-section">
+    <h2 class="cw-section-title">
+      <span class="cw-pattern-badge cw-badge-click">Step</span>
+      Scan every frontier cell — find the one with all satisfied neighbors
+    </h2>
+    <div class="cw-pattern-body">
+      <div class="cw-explainer">
+        <p>The board has many frontier cells. Most touch at least one unsatisfied number, making them risky.
+           Your target is the rare cell whose neighbors are <em>all</em> satisfied — that cell has
+           pressure zero and is 100% safe to click.</p>
+        <h3 class="cw-step-heading">Pick the opening</h3>
+        <ol class="cw-steps">
+          <li>Walk the frontier. For each hidden cell, check its revealed neighbors.</li>
+          <li>Mark cells where every neighbor is satisfied — those are your safe candidates.</li>
+          <li>Among safe candidates, pick the one that will open the <strong>most new cells</strong>.</li>
+        </ol>
+        <div class="cw-tip">
+          <span class="cw-tip-icon">💡</span>
+          A safe cell adjacent to a 0 often triggers a cascade — the click opens a whole patch,
+          not just a single cell. Prioritize these for maximum territory.
+        </div>
+      </div>
+      <div class="cw-example-wrap">
+        <div class="cw-example-label">Frontier scan — pick the safe cell</div>
+        <!-- 4×4 board. Mine at (0,2), flag there.
+             Frontier: (1,2) and (1,3).
+             (1,2): adj to satisfied (0,1)=1, (0,3)=1, (1,1)=1 → safe.
+             (1,3): adj to satisfied (0,3)=1 → safe (same reasoning applies).
+             Both safe — pick (1,2) which opens more (floods into blank area).
+             To show contrast, (1,2) is the highlighted correct pick. -->
+        <div class="cw-board" style="--cw-cols:4;--cw-rows:4">
+          <!-- Row 0 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1 cw-satisfied-cell">1</div>
+          <div class="cw-cell cw-f">🚩</div>
+          <div class="cw-cell cw-r cw-n1 cw-satisfied-cell">1</div>
+          <!-- Row 1 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1 cw-satisfied-cell">1</div>
+          <div class="cw-cell cw-h cw-safe-target" title="Safe — all neighbors satisfied"></div>
+          <div class="cw-cell cw-h cw-safe-secondary" title="Also safe"></div>
+          <!-- Row 2 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <!-- Row 3 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+        </div>
+        <div class="cw-example-caption">
+          All three <span class="cw-highlight-sat">outlined 1s</span> are satisfied.
+          The <span class="cw-highlight-safe">green cell</span> is provably safe — click it.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Strategy -->
+  <section class="cw-section cw-section-compare">
+    <h2 class="cw-section-title">
+      <span class="cw-pattern-badge cw-badge-compare">Strategy</span>
+      Satisfied neighbors → safe cell → biggest opening
+    </h2>
+    <p>The flow is always the same three checks:</p>
+    <div class="cw-compare-grid">
+      <div class="cw-compare-card">
+        <div class="cw-compare-label cw-badge-chord">Check</div>
+        <div class="cw-compare-desc">Are all revealed neighbors of this frontier cell satisfied (flags = value)?</div>
+      </div>
+      <div class="cw-compare-vs">→</div>
+      <div class="cw-compare-card">
+        <div class="cw-compare-label cw-badge-click">Filter</div>
+        <div class="cw-compare-desc">Keep only the cells where the answer is yes — those are your safe candidates.</div>
+      </div>
+      <div class="cw-compare-vs">→</div>
+      <div class="cw-compare-card">
+        <div class="cw-compare-label cw-badge-compare">Click</div>
+        <div class="cw-compare-desc">Among safe candidates, pick the one adjacent to the most blank area — it will open the most territory.</div>
+      </div>
+    </div>
+    <p class="cw-compare-conclusion">
+      Level 5 tests your ability to <strong>read satisfaction at a glance</strong>.
+      The skill carries into real expert games — the same scan tells you exactly which
+      frontier click is risk-free.
+    </p>
+  </section>
+
+  <!-- CTA -->
+  <div class="cw-cta">
+    <a class="dr-btn dr-btn--secondary" href="/bootcamp">← Back to Bootcamp</a>
+    <button class="dr-btn dr-btn--primary" id="cw-start-drill">▶ Start Drill 5</button>
+  </div>
+
+</div>
+
+<style>
+.cw-guide { max-width: 820px; }
+
+.cw-intro {
+  background: var(--dr-accent-soft);
+  border: 1px solid var(--dr-accent);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+.cw-intro p { margin: 0; }
+
+.cw-section {
+  border: 1px solid var(--dr-border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  background: var(--dr-surface);
+  margin-bottom: 20px;
+}
+.cw-section-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cw-pattern-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+.cw-badge-chord   { background: var(--dr-accent-soft);   color: var(--dr-accent); }
+.cw-badge-click   { background: var(--dr-success-soft);  color: var(--dr-success); }
+.cw-badge-compare { background: var(--dr-warning-soft);  color: var(--dr-warning); }
+
+.cw-pattern-body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 600px) { .cw-pattern-body { grid-template-columns: 1fr; } }
+
+.cw-explainer p { margin: 0 0 10px; font-size: 14px; line-height: 1.6; }
+.cw-step-heading { font-size: 13px; font-weight: 700; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .4px; color: var(--dr-text-muted); }
+.cw-steps { margin: 0 0 12px; padding-left: 20px; font-size: 14px; line-height: 1.7; }
+.cw-steps li { margin-bottom: 2px; }
+
+.cw-tip {
+  background: var(--dr-warning-soft);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.cw-tip-icon { flex-shrink: 0; font-size: 15px; }
+
+/* Mini board */
+.cw-example-wrap { flex-shrink: 0; }
+.cw-example-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--dr-text-muted); margin-bottom: 8px; }
+.cw-example-sublabel { font-size: 11px; font-weight: 700; margin-bottom: 6px; }
+.cw-example-sublabel.cw-ok   { color: var(--dr-success); }
+.cw-example-sublabel.cw-warn { color: var(--dr-warning); }
+
+.cw-board {
+  display: grid;
+  grid-template-columns: repeat(var(--cw-cols), 26px);
+  grid-template-rows: repeat(var(--cw-rows), 26px);
+  gap: 1px;
+  background: var(--dr-border);
+  border: 1px solid var(--dr-border);
+  border-radius: 6px;
+  overflow: hidden;
+  width: max-content;
+}
+.cw-cell {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px; font-weight: 700;
+}
+.cw-r  { background: var(--dr-cell-revealed); }
+.cw-h  { background: var(--dr-cell-hidden); }
+.cw-f  { background: var(--dr-warning-soft); color: var(--dr-danger); font-size: 13px; }
+
+.cw-n1 { color: #1d4ed8; }
+.cw-n2 { color: #047857; }
+.cw-n3 { color: #b91c1c; }
+.cw-n4 { color: #6b21a8; }
+.cw-n { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-weight: 700; }
+
+/* Satisfied number — green dashed outline */
+.cw-satisfied-cell { outline: 1px dashed var(--dr-success); outline-offset: -2px; }
+
+/* Unsatisfied number — warning dashed outline */
+.cw-unsatisfied-cell { outline: 1px dashed var(--dr-warning); outline-offset: -2px; }
+
+/* Safe frontier cell — solid green outline */
+.cw-safe-target { outline: 2px solid var(--dr-success); outline-offset: -2px; background: var(--dr-success-soft); }
+
+/* Secondary safe cell — lighter green */
+.cw-safe-secondary { outline: 1px dashed var(--dr-success); outline-offset: -2px; }
+
+/* Risky frontier cell — warning background */
+.cw-risky-cell {
+  outline: 1px dashed var(--dr-warning);
+  outline-offset: -2px;
+  background: var(--dr-warning-soft);
+}
+
+/* Ghost mine */
+.cw-mine-to-flag {
+  outline: 2px solid var(--dr-warning);
+  outline-offset: -2px;
+  background: var(--dr-warning-soft);
+}
+
+/* Chord target */
+.cw-chord-target { outline: 2px solid var(--dr-accent); outline-offset: -2px; }
+.cw-proof-cell   { outline: 1px dashed var(--dr-accent); outline-offset: -2px; }
+
+/* Cells opened */
+.cw-target-open { background: var(--dr-cell-hint); }
+
+.cw-example-caption { margin-top: 8px; font-size: 12px; color: var(--dr-text-muted); line-height: 1.5; max-width: 180px; }
+.cw-highlight-chord { font-weight: 700; color: var(--dr-accent); }
+.cw-highlight-open  { font-weight: 700; color: var(--dr-warning); }
+.cw-highlight-mine  { font-weight: 700; color: var(--dr-warning); }
+.cw-highlight-safe  { font-weight: 700; color: var(--dr-success); }
+.cw-highlight-sat   { font-weight: 700; color: var(--dr-success); }
+
+/* Strategy section */
+.cw-section-compare { background: var(--dr-bg); }
+.cw-section-compare > p { font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+.cw-compare-grid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.cw-compare-card { flex: 1; min-width: 130px; background: var(--dr-surface); border: 1px solid var(--dr-border); border-radius: 10px; padding: 14px; }
+.cw-compare-label { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; margin-bottom: 6px; }
+.cw-compare-desc { font-size: 13px; line-height: 1.5; color: var(--dr-text-muted); }
+.cw-compare-vs { font-size: 16px; font-weight: 700; color: var(--dr-text-muted); flex-shrink: 0; }
+.cw-compare-conclusion { font-size: 14px; line-height: 1.6; margin: 0; }
+
+.cw-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+</style>
+
+<script>
+document.getElementById("cw-start-drill").addEventListener("click", async function() {
+  const btn = this;
+  btn.disabled = true;
+  btn.textContent = "Loading…";
+  try {
+    const res = await fetch("/api/drills/start", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ drill_type: "l5_opening_recognition", level: 5, difficulty: "expert", mode: "standard", num_boards: 10 }),
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    window.location.href = "/drill/" + data.drill_id;
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = "Couldn't start — retry";
+  }
+});
+</script>
+{% endblock %}

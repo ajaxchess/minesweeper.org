@@ -423,6 +423,58 @@ async def strategic_nf_guide(request: Request):
     })
 
 
+@page_router.get("/bootcamp/pure-efficiency", response_class=HTMLResponse)
+async def pure_efficiency_guide(request: Request):
+    """Pattern guide for the L4 Pure Efficiency drill."""
+    templates = _get_templates()
+    lang, t = _get_i18n(request)
+    return templates.TemplateResponse(request, "bootcamp_pure_efficiency_guide.html", {
+        "mode": "bootcamp",
+        "user": get_current_user(request),
+        "lang": lang,
+        "t": t,
+    })
+
+
+@page_router.get("/bootcamp/opening-recognition", response_class=HTMLResponse)
+async def opening_recognition_guide(request: Request):
+    """Pattern guide for the L5 Opening Recognition drill."""
+    templates = _get_templates()
+    lang, t = _get_i18n(request)
+    return templates.TemplateResponse(request, "bootcamp_opening_recognition_guide.html", {
+        "mode": "bootcamp",
+        "user": get_current_user(request),
+        "lang": lang,
+        "t": t,
+    })
+
+
+@page_router.get("/bootcamp/flag-value", response_class=HTMLResponse)
+async def flag_value_guide(request: Request):
+    """Pattern guide for the L6 Flag Value drill."""
+    templates = _get_templates()
+    lang, t = _get_i18n(request)
+    return templates.TemplateResponse(request, "bootcamp_flag_value_guide.html", {
+        "mode": "bootcamp",
+        "user": get_current_user(request),
+        "lang": lang,
+        "t": t,
+    })
+
+
+@page_router.get("/bootcamp/fishing-hierarchy", response_class=HTMLResponse)
+async def fishing_hierarchy_guide(request: Request):
+    """Pattern guide for the L7 Fishing & Hierarchy drill."""
+    templates = _get_templates()
+    lang, t = _get_i18n(request)
+    return templates.TemplateResponse(request, "bootcamp_fishing_hierarchy_guide.html", {
+        "mode": "bootcamp",
+        "user": get_current_user(request),
+        "lang": lang,
+        "t": t,
+    })
+
+
 @page_router.get("/drill/{drill_id}", response_class=HTMLResponse)
 async def drill_page(drill_id: int, request: Request):
     """

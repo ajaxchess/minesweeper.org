@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% block title %}Flag Value — Pattern Guide | minesweeper.org{% endblock %}
+{% block description %}Learn to rank provable mines by how much territory each flag would unlock — and place the flag with the highest payoff.{% endblock %}
+{% block canonical %}https://minesweeper.org/bootcamp/flag-value{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/css/drill.css?v=6" />
+{% endblock %}
+
+{% block content %}
+<div class="dr-page cw-guide">
+
+  <header class="dr-header">
+    <a class="dr-back" href="/bootcamp">← Bootcamp</a>
+    <div class="dr-header-text">
+      <h1 class="dr-title">Flag Value — Pattern Guide</h1>
+      <p class="dr-goal">Level 6 · Find the provable mine whose flag unlocks the most new cells.</p>
+    </div>
+  </header>
+
+  <div class="cw-intro">
+    <p>Level 6 combines flagging and chording. The board has several hidden cells that
+       are provably mines — but not every flag is equally useful. Some flags unlock a big chord;
+       others enable nothing at all. Your job is to identify <em>which</em> provable mine is worth
+       flagging right now, based on how much territory it opens.</p>
+  </div>
+
+  <!-- Identify the provable mines -->
+  <section class="cw-section">
+    <h2 class="cw-section-title">
+      <span class="cw-pattern-badge cw-badge-chord">Step 1</span>
+      Find the provable mines — same as Level 3
+    </h2>
+    <div class="cw-pattern-body">
+      <div class="cw-explainer">
+        <p>A provable mine is a hidden cell where the numbers <em>force</em> it to be a mine —
+           a revealed number whose unrevealed-unflagged neighbor count exactly equals its remaining
+           mine quota. All those neighbors must be mines.</p>
+        <h3 class="cw-step-heading">Identify candidates</h3>
+        <ol class="cw-steps">
+          <li>Find a revealed number with remaining quota N.</li>
+          <li>Count its unflagged hidden neighbors.</li>
+          <li>If that count <strong>equals N</strong>, every hidden neighbor is a provable mine — a flag candidate.</li>
+          <li>Repeat for all revealed numbers to build your candidate list.</li>
+        </ol>
+        <div class="cw-tip">
+          <span class="cw-tip-icon">💡</span>
+          Level 6 always has multiple provable mines. Your task isn't just to flag one —
+          it's to flag the <strong>right</strong> one.
+        </div>
+      </div>
+      <div class="cw-example-wrap">
+        <div class="cw-example-label">Two provable mines</div>
+        <!-- 4×4 board. Mines at (0,2) and (3,0).
+             (0,1)="1": only hidden neighbor (0,2) → mine A provable.
+             (2,0)="1": only hidden neighbor (3,0) → mine B provable.
+             Other cells arrange so flagging A enables a chord, flagging B enables nothing. -->
+        <div class="cw-board" style="--cw-cols:4;--cw-rows:4">
+          <!-- Row 0 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1 cw-proof-cell" title="Only hidden neighbor is Mine A">1</div>
+          <div class="cw-cell cw-h cw-mine-to-flag" title="Mine A — provable">A</div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <!-- Row 1 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-h"></div>
+          <!-- Row 2 -->
+          <div class="cw-cell cw-r cw-n1 cw-proof-cell" title="Only hidden neighbor is Mine B">1</div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-h"></div>
+          <!-- Row 3 -->
+          <div class="cw-cell cw-h cw-mine-to-flag" title="Mine B — provable">B</div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+        </div>
+        <div class="cw-example-caption">
+          <span class="cw-highlight-mine">A</span> and <span class="cw-highlight-mine">B</span> are both provable mines. Which one is worth flagging?
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Count the flag value -->
+  <section class="cw-section">
+    <h2 class="cw-section-title">
+      <span class="cw-pattern-badge cw-badge-click">Step 2</span>
+      For each candidate, count how many cells its flag would enable
+    </h2>
+    <div class="cw-pattern-body">
+      <div class="cw-explainer">
+        <p>A flag's value is determined by what chords it enables after being placed.
+           Mentally flag each candidate mine and ask: <em>which revealed numbers become chord-ready?
+           How many cells do those chords reveal?</em></p>
+        <h3 class="cw-step-heading">Score each candidate</h3>
+        <ol class="cw-steps">
+          <li>For each provable mine, mentally place the flag.</li>
+          <li>Find revealed numbers adjacent to that flag that now become chord-ready (their flag count equals their value).</li>
+          <li>For each newly chord-ready number, count its hidden non-flag neighbors — that's the chord's reveal.</li>
+          <li>Sum all reveals: that's the flag's total value.</li>
+        </ol>
+        <div class="cw-tip">
+          <span class="cw-tip-icon">💡</span>
+          A flag on a cell surrounded by already-satisfied numbers or fully-revealed neighbors has
+          zero value — it earns no chord. Look for flags whose adjacent numbers are <em>one flag away</em>
+          from being chord-ready.
+        </div>
+      </div>
+      <div class="cw-example-wrap">
+        <div class="cw-example-label">Flag A → 2 cells open</div>
+        <div class="cw-board" style="--cw-cols:4;--cw-rows:4">
+          <!-- Row 0 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-f" title="Flag A placed">🚩</div>
+          <div class="cw-cell cw-r cw-n1 cw-chord-target" title="Now chord-ready — opens 1 cell">1</div>
+          <!-- Row 1 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-r cw-n1 cw-chord-target" title="Now chord-ready — opens 1 cell">1</div>
+          <div class="cw-cell cw-h cw-target-open"></div>
+          <!-- Row 2 -->
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-h"></div>
+          <!-- Row 3 -->
+          <div class="cw-cell cw-h cw-mine-to-flag" title="Mine B — still unflagged">B</div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+        </div>
+        <div class="cw-example-caption" style="max-width:160px;">
+          Flag A satisfies the two <span class="cw-highlight-chord">chord targets</span> — each opens 1 hidden cell. Flag A = 2 cells total.
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;" class="cw-pattern-body">
+      <div class="cw-explainer">
+        <p>Flag B, on the other hand, is adjacent only to revealed numbers whose other neighbors
+           are already exposed — chording them would open nothing. Flag B has value zero.
+           Always flag the mine with the highest value.</p>
+      </div>
+      <div class="cw-example-wrap">
+        <div class="cw-example-label">Flag B → 0 cells open</div>
+        <div class="cw-board" style="--cw-cols:4;--cw-rows:4">
+          <!-- Row 0 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-h cw-mine-to-flag" title="Mine A — still unflagged">A</div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <!-- Row 1 -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-h"></div>
+          <!-- Row 2 -->
+          <div class="cw-cell cw-r cw-n1">1</div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-h"></div>
+          <!-- Row 3 -->
+          <div class="cw-cell cw-f" title="Flag B placed">🚩</div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
+        </div>
+        <div class="cw-example-caption" style="max-width:160px;">
+          Flag B satisfies its "1" neighbor — but all that "1"s other neighbors are already revealed. Chord opens nothing.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Strategy -->
+  <section class="cw-section cw-section-compare">
+    <h2 class="cw-section-title">
+      <span class="cw-pattern-badge cw-badge-compare">Strategy</span>
+      List candidates → score each → flag the highest
+    </h2>
+    <p>Every provable mine is a flag candidate. Not every candidate is worth flagging <em>now</em>:</p>
+    <div class="cw-compare-grid">
+      <div class="cw-compare-card">
+        <div class="cw-compare-label cw-badge-chord">Find</div>
+        <div class="cw-compare-desc">Scan the board for numbers whose unflagged hidden neighbors equal their remaining quota.</div>
+      </div>
+      <div class="cw-compare-vs">→</div>
+      <div class="cw-compare-card">
+        <div class="cw-compare-label cw-badge-click">Score</div>
+        <div class="cw-compare-desc">For each candidate: mentally flag it, find newly chord-ready numbers, sum their hidden reveals.</div>
+      </div>
+      <div class="cw-compare-vs">→</div>
+      <div class="cw-compare-card">
+        <div class="cw-compare-label cw-badge-compare">Flag</div>
+        <div class="cw-compare-desc">Place the flag that scores highest. A flag that opens zero cells is wasted on this turn.</div>
+      </div>
+    </div>
+    <p class="cw-compare-conclusion">
+      Level 6 rewards <strong>planning one step ahead</strong>: the mine you flag now determines
+      what you can chord next. Think flag → chord as a single two-step move.
+    </p>
+  </section>
+
+  <!-- CTA -->
+  <div class="cw-cta">
+    <a class="dr-btn dr-btn--secondary" href="/bootcamp">← Back to Bootcamp</a>
+    <button class="dr-btn dr-btn--primary" id="cw-start-drill">▶ Start Drill 6</button>
+  </div>
+
+</div>
+
+<style>
+.cw-guide { max-width: 820px; }
+.cw-intro { background:var(--dr-accent-soft);border:1px solid var(--dr-accent);border-radius:10px;padding:14px 18px;font-size:14px;line-height:1.6;margin-bottom:28px; }
+.cw-intro p { margin:0; }
+.cw-section { border:1px solid var(--dr-border);border-radius:14px;padding:22px 24px;background:var(--dr-surface);margin-bottom:20px; }
+.cw-section-title { font-size:17px;font-weight:700;margin:0 0 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
+.cw-pattern-badge { display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase; }
+.cw-badge-chord { background:var(--dr-accent-soft);color:var(--dr-accent); }
+.cw-badge-click { background:var(--dr-success-soft);color:var(--dr-success); }
+.cw-badge-compare { background:var(--dr-warning-soft);color:var(--dr-warning); }
+.cw-pattern-body { display:grid;grid-template-columns:1fr auto;gap:24px;align-items:start; }
+@media(max-width:600px){.cw-pattern-body{grid-template-columns:1fr;}}
+.cw-explainer p { margin:0 0 10px;font-size:14px;line-height:1.6; }
+.cw-step-heading { font-size:13px;font-weight:700;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.4px;color:var(--dr-text-muted); }
+.cw-steps { margin:0 0 12px;padding-left:20px;font-size:14px;line-height:1.7; }
+.cw-steps li { margin-bottom:2px; }
+.cw-tip { background:var(--dr-warning-soft);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.5;display:flex;gap:8px;align-items:flex-start; }
+.cw-tip-icon { flex-shrink:0;font-size:15px; }
+.cw-example-wrap { flex-shrink:0; }
+.cw-example-label { font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--dr-text-muted);margin-bottom:8px; }
+.cw-board { display:grid;grid-template-columns:repeat(var(--cw-cols),26px);grid-template-rows:repeat(var(--cw-rows),26px);gap:1px;background:var(--dr-border);border:1px solid var(--dr-border);border-radius:6px;overflow:hidden;width:max-content; }
+.cw-cell { width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;font-weight:700; }
+.cw-r { background:var(--dr-cell-revealed); }
+.cw-h { background:var(--dr-cell-hidden); }
+.cw-f { background:var(--dr-warning-soft);color:var(--dr-danger);font-size:13px; }
+.cw-n1{color:#1d4ed8;}.cw-n2{color:#047857;}.cw-n3{color:#b91c1c;}.cw-n4{color:#6b21a8;}
+.cw-n{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-weight:700;}
+.cw-proof-cell{outline:1px dashed var(--dr-accent);outline-offset:-2px;}
+.cw-mine-to-flag{outline:2px solid var(--dr-warning);outline-offset:-2px;background:var(--dr-warning-soft);}
+.cw-chord-target{outline:2px solid var(--dr-accent);outline-offset:-2px;}
+.cw-target-open{background:var(--dr-cell-hint);}
+.cw-safe-target{outline:2px solid var(--dr-success);outline-offset:-2px;background:var(--dr-success-soft);}
+.cw-satisfied-cell{outline:1px dashed var(--dr-success);outline-offset:-2px;}
+.cw-unsatisfied-cell{outline:1px dashed var(--dr-warning);outline-offset:-2px;}
+.cw-risky-cell{outline:1px dashed var(--dr-warning);outline-offset:-2px;background:var(--dr-warning-soft);}
+.cw-safe-secondary{outline:1px dashed var(--dr-success);outline-offset:-2px;}
+.cw-example-caption{margin-top:8px;font-size:12px;color:var(--dr-text-muted);line-height:1.5;max-width:180px;}
+.cw-highlight-chord{font-weight:700;color:var(--dr-accent);}
+.cw-highlight-open{font-weight:700;color:var(--dr-warning);}
+.cw-highlight-mine{font-weight:700;color:var(--dr-warning);}
+.cw-highlight-safe{font-weight:700;color:var(--dr-success);}
+.cw-section-compare{background:var(--dr-bg);}
+.cw-section-compare>p{font-size:14px;line-height:1.6;margin:0 0 16px;}
+.cw-compare-grid{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.cw-compare-card{flex:1;min-width:130px;background:var(--dr-surface);border:1px solid var(--dr-border);border-radius:10px;padding:14px;}
+.cw-compare-label{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px;}
+.cw-compare-desc{font-size:13px;line-height:1.5;color:var(--dr-text-muted);}
+.cw-compare-vs{font-size:16px;font-weight:700;color:var(--dr-text-muted);flex-shrink:0;}
+.cw-compare-conclusion{font-size:14px;line-height:1.6;margin:0;}
+.cw-cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;}
+</style>
+
+<script>
+document.getElementById("cw-start-drill").addEventListener("click", async function() {
+  const btn = this;
+  btn.disabled = true;
+  btn.textContent = "Loading…";
+  try {
+    const res = await fetch("/api/drills/start", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ drill_type: "l6_flag_value", level: 6, difficulty: "expert", mode: "standard", num_boards: 10 }),
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    window.location.href = "/drill/" + data.drill_id;
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = "Couldn't start — retry";
+  }
+});
+</script>
+{% endblock %}

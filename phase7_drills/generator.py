@@ -77,9 +77,9 @@ EXPERT_MINES = 99
 # L5 uses a smaller board so the whole frontier is visible at a glance.
 # The lesson is "read the numbers", not "scan a wall of grey." Density is
 # kept moderate so the openings still exist behind the frontier.
-L5_WIDTH = 16
-L5_HEIGHT = 10
-L5_MINES = 26     # ~16% density (intermediate-ish)
+L5_WIDTH = 12
+L5_HEIGHT = 9
+L5_MINES = 18     # ~16% density (intermediate-ish)
 
 # Minimum frontier size — need enough cells that finding the safe one
 # is a real task, not a trivial giveaway.
@@ -117,6 +117,11 @@ L2_MINES = 18
 L4_WIDTH = 12
 L4_HEIGHT = 9
 L4_MINES = 18
+
+# L6 — small board; lesson is scoring provable-mine flags by chord payoff.
+L6_WIDTH = 12
+L6_HEIGHT = 9
+L6_MINES = 18
 
 # L1 — best action (chord or click) must reveal at least this many cells,
 # and both an interesting chord AND an interesting click must exist so the
@@ -187,7 +192,7 @@ DRILL_NAMES = {
     DRILL_TYPE_L2: "Effective Chording",
     DRILL_TYPE_L3: "Strategic No-Flag",
     DRILL_TYPE_L4: "Pure Efficiency",
-    DRILL_TYPE_L5: "Constraint Deduction",
+    DRILL_TYPE_L5: "Opening Recognition",
     DRILL_TYPE_L6: "Flag Value",
     DRILL_TYPE_L7: "Fishing & Hierarchy",
 }
@@ -1016,7 +1021,13 @@ def _flood_size_into(
 
 def _try_generate_l6(seed: int) -> Optional[DrillBoard]:
     rng = random.Random(seed)
-    board = _seed_board(seed, DRILL_TYPE_L6)
+    board = DrillBoard(
+        width=L6_WIDTH,
+        height=L6_HEIGHT,
+        num_mines=L6_MINES,
+        seed=seed,
+        drill_type=DRILL_TYPE_L6,
+    )
     _place_random_mines(board, rng)
     _make_starter_reveal(board, rng)
 
