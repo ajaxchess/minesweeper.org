@@ -36,7 +36,7 @@
            Instead of clicking hidden cells one at a time, one chord click opens all remaining hidden neighbors simultaneously.</p>
         <h3 class="cw-step-heading">How to spot it</h3>
         <ol class="cw-steps">
-          <li>Find a revealed number — say a <strong class="cw-n cw-n4">4</strong>.</li>
+          <li>Find a revealed number — say a <strong class="cw-n cw-n1">1</strong>.</li>
           <li>Count its adjacent flags. If the flag count <strong>equals</strong> the number, it's chord-ready.</li>
           <li>Count the remaining hidden (non-flag) neighbors — that's how many cells the chord will reveal.</li>
         </ol>
@@ -114,37 +114,29 @@
       </div>
       <div class="cw-example-wrap">
         <div class="cw-example-label">Safe click example</div>
-        <!-- Safe cell: the hidden cell at (1,3) is next to "1" with 1 flag and "2" with 2 flags → safe -->
-        <div class="cw-board" style="--cw-cols:5;--cw-rows:4">
-          <!-- Row 0 -->
+        <!-- Mine at (0,2) only. Both 1s see exactly that one flag.
+             Safe target (1,2) is adjacent only to satisfied numbers. -->
+        <div class="cw-board" style="--cw-cols:4;--cw-rows:3">
+          <!-- Row 0: 0, 1, flag, hidden -->
           <div class="cw-cell cw-r"></div>
-          <div class="cw-cell cw-r cw-n1">1</div>
-          <div class="cw-cell cw-r cw-n1">1</div>
-          <div class="cw-cell cw-r cw-n1">1</div>
-          <div class="cw-cell cw-r"></div>
-          <!-- Row 1 -->
           <div class="cw-cell cw-r cw-n1">1</div>
           <div class="cw-cell cw-f">🚩</div>
-          <div class="cw-cell cw-r cw-n2">2</div>
+          <div class="cw-cell cw-h"></div>
+          <!-- Row 1: 0, 1, safe-target, hidden -->
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r cw-n1">1</div>
           <div class="cw-cell cw-safe-target cw-h" title="Provably safe — click!"></div>
           <div class="cw-cell cw-h"></div>
-          <!-- Row 2 -->
-          <div class="cw-cell cw-r cw-n1">1</div>
-          <div class="cw-cell cw-f">🚩</div>
-          <div class="cw-cell cw-r cw-n2">2</div>
-          <div class="cw-cell cw-h"></div>
-          <div class="cw-cell cw-h"></div>
-          <!-- Row 3 -->
+          <!-- Row 2: 0, 0, 0, hidden -->
           <div class="cw-cell cw-r"></div>
-          <div class="cw-cell cw-r cw-n1">1</div>
-          <div class="cw-cell cw-f">🚩</div>
-          <div class="cw-cell cw-h"></div>
+          <div class="cw-cell cw-r"></div>
+          <div class="cw-cell cw-r"></div>
           <div class="cw-cell cw-h"></div>
         </div>
         <div class="cw-example-caption">
-          The <span class="cw-highlight-safe">outlined cell</span> is adjacent only to satisfied numbers
-          (the <span class="cw-highlight-chord">2</span> has 2 flags, the <span class="cw-highlight-chord">1</span>s each have 1).
-          It's safe to click — and may open further cells beyond it.
+          Both <span class="cw-highlight-chord">1</span>s have their one mine flagged — they're satisfied.
+          The <span class="cw-highlight-safe">outlined cell</span> is adjacent only to satisfied numbers,
+          so it's provably safe to click.
         </div>
       </div>
     </div>
