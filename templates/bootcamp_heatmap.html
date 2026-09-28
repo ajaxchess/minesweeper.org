@@ -271,6 +271,124 @@
     :root[data-skin=dark] .hm-cell,
     :root[data-skin=flower] .hm-cell { background: #6b7280; }
 
+    /* ── Trend chart ─────────────────────────────────────────────────────── */
+    .hm-trend {
+      background: var(--bc-surface);
+      border-radius: 14px;
+      padding: 22px 26px;
+      box-shadow: var(--bc-shadow);
+      margin-bottom: 24px;
+    }
+    .hm-trend-heading {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .hm-trend-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 80px;
+    }
+    .hm-trend-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+    .hm-trend-bar-wrap {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      align-items: flex-end;
+    }
+    .hm-trend-bar {
+      width: 100%;
+      background: var(--bc-accent);
+      border-radius: 3px 3px 0 0;
+      min-height: 3px;
+      transition: height 0.3s ease;
+      opacity: 0.8;
+    }
+    .hm-trend-bar:hover { opacity: 1; }
+    .hm-trend-label {
+      font-size: 10px;
+      color: var(--bc-text-muted);
+      margin-top: 4px;
+      white-space: nowrap;
+    }
+    .hm-trend-caption {
+      font-size: 12px;
+      color: var(--bc-text-muted);
+      margin-top: 10px;
+    }
+
+    /* ── Drill-down panel ────────────────────────────────────────────────── */
+    .hm-drill {
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 340px;
+      max-width: 95vw;
+      background: var(--bc-surface);
+      box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .hm-drill-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 22px 14px;
+      border-bottom: 1px solid var(--bc-border);
+    }
+    .hm-drill-title {
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .hm-drill-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--bc-text-muted);
+      padding: 4px;
+      line-height: 1;
+    }
+    .hm-drill-close:hover { color: var(--bc-text); }
+    .hm-drill-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .hm-drill-item { border-bottom: 1px solid var(--bc-border); }
+    .hm-drill-link {
+      display: grid;
+      grid-template-columns: 90px 55px 1fr 20px;
+      gap: 8px;
+      align-items: center;
+      padding: 13px 22px;
+      text-decoration: none;
+      color: var(--bc-text);
+      font-size: 13px;
+      transition: background 0.1s;
+    }
+    .hm-drill-link:hover { background: var(--bc-locked-soft); }
+    .hm-drill-date { color: var(--bc-text-muted); font-size: 12px; }
+    .hm-drill-time { font-variant-numeric: tabular-nums; font-weight: 600; }
+    .hm-drill-cause { font-size: 12px; color: var(--bc-text-muted); }
+    .hm-drill-arrow { color: var(--bc-accent); font-weight: 700; }
+    .hm-drill-loading, .hm-drill-empty {
+      padding: 24px 22px;
+      color: var(--bc-text-muted);
+      font-size: 13px;
+    }
+
     /* ── Responsive ──────────────────────────────────────────────────────── */
     @media (max-width: 900px) {
       .hm-grid { grid-template-columns: 1fr; }
@@ -373,7 +491,7 @@
       {# Heatmap board #}
       <div class="hm-card">
         <div class="hm-card-title" id="hm-board-title">{{ t.heatmap_board_title | default("Death heatmap") }}</div>
-        <div class="hm-card-subtitle">{{ t.heatmap_board_subtitle | default("Hover a cell to see how often you died there.") }}</div>
+        <div class="hm-card-subtitle">{{ t.heatmap_board_subtitle | default("Hover a cell to see deaths. Click a hot cell to review those games.") }}</div>
         <div class="hm-board-wrap">
           <div class="hm-board-inner">
             <div class="hm-board" id="hm-board"></div>
@@ -400,12 +518,24 @@
     {# Insights #}
     <div class="hm-insights" id="hm-insights"></div>
 
+    {# Trend chart #}
+    <div class="hm-trend" id="hm-trend" hidden></div>
+
   </div>{# /hm-main #}
 
 </div>{# /bc-page #}
 
 {# Floating tooltip — follows cursor over hot cells #}
 <div class="hm-tooltip" id="hm-tooltip" hidden></div>
+
+{# Cell drill-down panel #}
+<div class="hm-drill" id="hm-drill" hidden>
+  <div class="hm-drill-header">
+    <div class="hm-drill-title" id="hm-drill-title">Games at cell</div>
+    <button class="hm-drill-close" id="hm-drill-close" aria-label="Close">✕</button>
+  </div>
+  <ul class="hm-drill-list" id="hm-drill-list"></ul>
+</div>
 
 <script>
   window.HM_CONFIG = {
@@ -428,5 +558,5 @@
     },
   };
 </script>
-<script src="/static/js/bootcamp_heatmap.js?v=1"></script>
+<script src="/static/js/bootcamp_heatmap.js?v=2"></script>
 {% endblock %}

@@ -1,1 +1,444 @@
-!function(){"use strict";const e=window.HM_CONFIG||{},t=e.apiBase||"/api",n=e.copy||{};let o="expert",a=90,s="standard";const c=document.getElementById("hm-loading"),d=document.getElementById("hm-logged-out"),i=document.getElementById("hm-empty"),r=document.getElementById("hm-error"),l=document.getElementById("hm-main"),m=document.getElementById("hm-board"),u=document.getElementById("hm-board-title"),h=document.getElementById("hm-tooltip"),g=document.getElementById("hm-legend-max"),p=document.getElementById("hm-cause-list"),f=document.getElementById("hm-cause-subtitle"),y=document.getElementById("hm-region-grid"),b=document.getElementById("hm-insights"),v=document.getElementById("hm-stat-games"),E=document.getElementById("hm-stat-games-meta"),C=document.getElementById("hm-stat-cause"),_=document.getElementById("hm-stat-cause-meta"),w=document.getElementById("hm-stat-region"),I=document.getElementById("hm-stat-region-meta"),x=document.getElementById("hm-stat-survival");function B(e){e&&(e.hidden=!1)}function M(e){e&&(e.hidden=!0)}function k(e){return String(null==e?"":e).replace(/[&<>"']/g,function(e){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[e]})}function L(e){return{center:n.region_center||"Center",edge:n.region_edge||"Edge",corner:n.region_corner||"Corner",denseCluster:n.region_dense||"Dense cluster"}[e]||e}function H(e,t){if(e<=0||t<=0)return null;const n=Math.min(e/t,1);if(n<.25){return`rgba(252,211,77,${(.25+.45*(n/.25)).toFixed(2)})`}if(n<.55){return`rgba(245,158,11,${(.7+.2*((n-.25)/.3)).toFixed(2)})`}if(n<.8){return`rgba(239,68,68,${(.85+.1*((n-.55)/.25)).toFixed(2)})`}const o=(n-.8)/.2,a=Math.round(68-41*o);return`rgba(${Math.round(239-86*o)},${a},${a},1)`}const T={center:{bg:"#fee2e2",pctColor:"#b91c1c"},edge:{bg:"#fef3c7",pctColor:"#b45309"},corner:{bg:"#ede9fe",pctColor:"#7c3aed"},denseCluster:{bg:"#d1fae5",pctColor:"#065f46"}};function N(e,t,n){const o=document.createElement("div");return o.className="hm-insight"+(n?" "+n:""),o.innerHTML='<div class="hm-insight-title">'+k(e)+'</div><div class="hm-insight-body">'+t+"</div>",o}function $(e){!function(e){const t=e.losses||0,n=e.wins||0,o=e.games_analyzed||0,a=o>0?Math.round(100*n/o):0;v.textContent=o,E.textContent=t+" losses · "+n+" wins · "+a+"% win rate";const s=(e.cause_breakdown||[])[0];s&&(C.textContent=s.display_name||s.cause,_.textContent=Math.round(100*s.pct)+"% of deaths · "+s.count+" games");const c=(e.region_breakdown||[])[0];c&&(w.textContent=L(c.region),I.textContent=Math.round(100*c.pct)+"% of deaths");const d=e.avg_survival_pct;x.textContent=null!=d?Math.round(d)+"%":"—"}(e),function(e){const t=e.board_width,n=e.board_height,a={};let s=0;(e.cells||[]).forEach(function(e){a[e.x+","+e.y]=e.death_count,e.death_count>s&&(s=e.death_count)}),m.style.gridTemplateColumns="repeat("+t+", 20px)",m.innerHTML="";for(let e=0;e<n;e++)for(let n=0;n<t;n++){const t=a[n+","+e]||0,o=document.createElement("div");o.className="hm-cell"+(t>0?" has-deaths":""),o.dataset.x=n,o.dataset.y=e,o.dataset.count=t;const c=document.createElement("div");c.className="hm-cell-heat";const d=H(t,s);d&&(c.style.background=d),o.appendChild(c),m.appendChild(o)}const c=o[0].toUpperCase()+o.slice(1);u.textContent="Death heatmap ("+c+" · "+t+"×"+n+")",g&&(g.textContent=s+(s>=12?"+ deaths":" deaths"))}(e),function(e){const t=e.losses||0;f.textContent=t+" lost games classified.",p.innerHTML="",(e.cause_breakdown||[]).forEach(function(e){const t=Math.round(100*e.pct),n=e.color||"#6b7280",o=k(e.display_name||e.cause),a=document.createElement("li");a.className="hm-breakdown-row",a.innerHTML='<span class="hm-swatch" style="background:'+k(n)+'"></span><span class="hm-breakdown-name">'+o+'</span><span class="hm-breakdown-pct">'+t+'%</span><span class="hm-breakdown-count">'+e.count+"</span>",p.appendChild(a);const s=document.createElement("li");s.className="hm-breakdown-bar-wrap",s.innerHTML='<div class="hm-breakdown-bar"><div class="hm-breakdown-bar-fill" style="width:'+t+"%;background:"+k(n)+'"></div></div>',p.appendChild(s)})}(e),function(e){y.innerHTML="",(e.region_breakdown||[]).forEach(function(e){const t=Math.round(100*e.pct),n=T[e.region]||{},o=document.createElement("div");o.className="hm-region-tile",n.bg&&(o.style.background=n.bg),o.innerHTML='<div class="hm-region-name">'+k(L(e.region))+'</div><div class="hm-region-pct"'+(n.pctColor?' style="color:'+n.pctColor+'"':"")+">"+t+'%</div><div class="hm-region-count">'+e.count+" deaths</div>",y.appendChild(o)})}(e),function(e){b.innerHTML="";const t=e.avoidable_pct,o=e.site_avoidable_pct;if(null!=t){const e=null!=o&&t>o,a=(n.insight_avoidable_body||"{pct}% of your losses were classified as avoidable. Site average is {site_pct}%.").replace("{pct}",t).replace("{site_pct}",null!=o?o:"—");b.appendChild(N(n.insight_avoidable_title||"Avoidable deaths",a,e?"warn":""))}const a=e.edge_pct;if(null!=a&&a>0){const e=(n.insight_edge_body||"{pct}% of your deaths happen on the edge.").replace("{pct}",a),t=a>=35?"warn":a<=20?"good":"";b.appendChild(N(n.insight_edge_title||"Edge clustering",e,t))}(e.anomalies||[]).forEach(function(e){b.appendChild(N(e.type.replace(/_/g," "),k(e.detail),"warn"))})}(e)}async function q(){M(l),M(d),M(i),M(r),B(c);const e=t+"/heatmap?difficulty="+encodeURIComponent(o)+"&mode="+encodeURIComponent(s)+"&time_range_days="+encodeURIComponent(a);try{const t=await fetch(e,{credentials:"same-origin",headers:{"X-Requested-With":"XMLHttpRequest"}});if(M(c),401===t.status)return void B(d);if(!t.ok)throw new Error("HTTP "+t.status);const n=await t.json();if(!n.losses||0===n.losses)return void B(i);$(n),B(l)}catch(e){M(c),B(r),console.error("[heatmap] load failed:",e)}}document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll(".hm-chip[data-filter]").forEach(function(e){e.addEventListener("click",function(){const t=e.dataset.filter,n=e.dataset.value;document.querySelectorAll('.hm-chip[data-filter="'+t+'"]').forEach(function(e){e.classList.remove("active")}),e.classList.add("active"),"difficulty"===t&&(o=n),"time"===t&&(a=parseInt(n,10)),"mode"===t&&(s=n),q()})}),m.addEventListener("mouseover",function(e){const t=e.target.closest(".hm-cell");if(!t)return;const n=parseInt(t.dataset.count,10)||0;0!==n?(h.textContent=n+(1===n?" death":" deaths")+" — ("+t.dataset.x+", "+t.dataset.y+")",B(h)):M(h)}),m.addEventListener("mousemove",function(e){h.style.left=e.clientX+12+"px",h.style.top=e.clientY-28+"px"}),m.addEventListener("mouseleave",function(){M(h)}),q()})}();
+(function () {
+  'use strict';
+
+  const CFG = window.HM_CONFIG || {};
+  const API = CFG.apiBase || '/api';
+  const COPY = CFG.copy || {};
+
+  // ── State ─────────────────────────────────────────────────────────────────
+  let difficulty = 'expert';
+  let timeRange  = 90;
+  let mode       = 'standard';
+
+  // ── DOM refs ──────────────────────────────────────────────────────────────
+  const elLoading    = document.getElementById('hm-loading');
+  const elLoggedOut  = document.getElementById('hm-logged-out');
+  const elEmpty      = document.getElementById('hm-empty');
+  const elError      = document.getElementById('hm-error');
+  const elMain       = document.getElementById('hm-main');
+  const elBoard      = document.getElementById('hm-board');
+  const elBoardTitle = document.getElementById('hm-board-title');
+  const elTooltip    = document.getElementById('hm-tooltip');
+  const elLegendMax  = document.getElementById('hm-legend-max');
+  const elCauseList  = document.getElementById('hm-cause-list');
+  const elCauseSubtitle = document.getElementById('hm-cause-subtitle');
+  const elRegionGrid = document.getElementById('hm-region-grid');
+  const elInsights   = document.getElementById('hm-insights');
+  const elStatGames  = document.getElementById('hm-stat-games');
+  const elStatGamesMeta = document.getElementById('hm-stat-games-meta');
+  const elStatCause  = document.getElementById('hm-stat-cause');
+  const elStatCauseMeta = document.getElementById('hm-stat-cause-meta');
+  const elStatRegion = document.getElementById('hm-stat-region');
+  const elStatRegionMeta = document.getElementById('hm-stat-region-meta');
+  const elStatSurvival = document.getElementById('hm-stat-survival');
+  const elTrend      = document.getElementById('hm-trend');
+  const elDrill      = document.getElementById('hm-drill');
+  const elDrillTitle = document.getElementById('hm-drill-title');
+  const elDrillList  = document.getElementById('hm-drill-list');
+  const elDrillClose = document.getElementById('hm-drill-close');
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function show(el) { if (el) el.hidden = false; }
+  function hide(el) { if (el) el.hidden = true; }
+
+  function escH(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function regionLabel(r) {
+    return {
+      center:       COPY.region_center || 'Center',
+      edge:         COPY.region_edge   || 'Edge',
+      corner:       COPY.region_corner || 'Corner',
+      denseCluster: COPY.region_dense  || 'Dense cluster',
+    }[r] || r;
+  }
+
+  // Heat colour: transparent → yellow → amber → red → dark red
+  function heatColor(count, maxCount) {
+    if (count <= 0 || maxCount <= 0) return null;
+    const t = Math.min(count / maxCount, 1);
+    if (t < 0.25) {
+      const r = t / 0.25;
+      return `rgba(252,211,77,${(0.25 + r * 0.45).toFixed(2)})`;
+    }
+    if (t < 0.55) {
+      const r = (t - 0.25) / 0.30;
+      return `rgba(245,158,11,${(0.70 + r * 0.20).toFixed(2)})`;
+    }
+    if (t < 0.80) {
+      const r = (t - 0.55) / 0.25;
+      return `rgba(239,68,68,${(0.85 + r * 0.10).toFixed(2)})`;
+    }
+    const r = (t - 0.80) / 0.20;
+    const g = Math.round(68 - r * 41);
+    return `rgba(${Math.round(239 - r * 86)},${g},${g},1)`;
+  }
+
+  // ── Board rendering ───────────────────────────────────────────────────────
+  function renderBoard(data) {
+    const w = data.board_width;
+    const h = data.board_height;
+
+    const cellMap = {};
+    let maxCount = 0;
+    (data.cells || []).forEach(function (c) {
+      cellMap[c.x + ',' + c.y] = c.death_count;
+      if (c.death_count > maxCount) maxCount = c.death_count;
+    });
+
+    elBoard.style.gridTemplateColumns = 'repeat(' + w + ', 20px)';
+    elBoard.innerHTML = '';
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const count = cellMap[x + ',' + y] || 0;
+        const cell  = document.createElement('div');
+        cell.className = 'hm-cell' + (count > 0 ? ' has-deaths' : '');
+        cell.dataset.x = x;
+        cell.dataset.y = y;
+        cell.dataset.count = count;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'hm-cell-heat';
+        const color = heatColor(count, maxCount);
+        if (color) overlay.style.background = color;
+        cell.appendChild(overlay);
+        elBoard.appendChild(cell);
+      }
+    }
+
+    const diff = difficulty[0].toUpperCase() + difficulty.slice(1);
+    elBoardTitle.textContent = 'Death heatmap (' + diff + ' · ' + w + '×' + h + ')';
+    if (elLegendMax) {
+      elLegendMax.textContent = maxCount + (maxCount >= 12 ? '+ deaths' : ' deaths');
+    }
+  }
+
+  // ── Stat strip ────────────────────────────────────────────────────────────
+  function renderStats(data) {
+    const losses = data.losses || 0;
+    const wins   = data.wins   || 0;
+    const total  = data.games_analyzed || 0;
+    const wr     = total > 0 ? Math.round(100 * wins / total) : 0;
+
+    elStatGames.textContent     = total;
+    elStatGamesMeta.textContent = losses + ' losses · ' + wins + ' wins · ' + wr + '% win rate';
+
+    const topCause = (data.cause_breakdown || [])[0];
+    if (topCause) {
+      elStatCause.textContent    = topCause.display_name || topCause.cause;
+      elStatCauseMeta.textContent = Math.round(topCause.pct * 100) + '% of deaths · ' + topCause.count + ' games';
+    }
+
+    const topRegion = (data.region_breakdown || [])[0];
+    if (topRegion) {
+      elStatRegion.textContent    = regionLabel(topRegion.region);
+      elStatRegionMeta.textContent = Math.round(topRegion.pct * 100) + '% of deaths';
+    }
+
+    const surv = data.avg_survival_pct;
+    elStatSurvival.textContent = (surv != null) ? Math.round(surv) + '%' : '—';
+  }
+
+  // ── Cause breakdown list ──────────────────────────────────────────────────
+  function renderCauses(data) {
+    const losses = data.losses || 0;
+    elCauseSubtitle.textContent = losses + ' lost games classified.';
+
+    elCauseList.innerHTML = '';
+    (data.cause_breakdown || []).forEach(function (c) {
+      const pct   = Math.round(c.pct * 100);
+      const color = c.color || '#6b7280';
+      const name  = escH(c.display_name || c.cause);
+
+      const row = document.createElement('li');
+      row.className = 'hm-breakdown-row';
+      row.innerHTML =
+        '<span class="hm-swatch" style="background:' + escH(color) + '"></span>' +
+        '<span class="hm-breakdown-name">' + name + '</span>' +
+        '<span class="hm-breakdown-pct">' + pct + '%</span>' +
+        '<span class="hm-breakdown-count">' + c.count + '</span>';
+      elCauseList.appendChild(row);
+
+      const barWrap = document.createElement('li');
+      barWrap.className = 'hm-breakdown-bar-wrap';
+      barWrap.innerHTML =
+        '<div class="hm-breakdown-bar">' +
+        '<div class="hm-breakdown-bar-fill" style="width:' + pct + '%;background:' + escH(color) + '"></div>' +
+        '</div>';
+      elCauseList.appendChild(barWrap);
+    });
+  }
+
+  // ── Region grid ───────────────────────────────────────────────────────────
+  const REGION_COLORS = {
+    center:       { bg: '#fee2e2', pctColor: '#b91c1c' },
+    edge:         { bg: '#fef3c7', pctColor: '#b45309' },
+    corner:       { bg: '#ede9fe', pctColor: '#7c3aed' },
+    denseCluster: { bg: '#d1fae5', pctColor: '#065f46' },
+  };
+
+  function renderRegions(data) {
+    elRegionGrid.innerHTML = '';
+    (data.region_breakdown || []).forEach(function (r) {
+      const pct    = Math.round(r.pct * 100);
+      const colors = REGION_COLORS[r.region] || {};
+      const tile   = document.createElement('div');
+      tile.className = 'hm-region-tile';
+      if (colors.bg) tile.style.background = colors.bg;
+      tile.innerHTML =
+        '<div class="hm-region-name">' + escH(regionLabel(r.region)) + '</div>' +
+        '<div class="hm-region-pct"' + (colors.pctColor ? ' style="color:' + colors.pctColor + '"' : '') + '>' + pct + '%</div>' +
+        '<div class="hm-region-count">' + r.count + ' deaths</div>';
+      elRegionGrid.appendChild(tile);
+    });
+  }
+
+  // ── Insights ──────────────────────────────────────────────────────────────
+  function renderInsights(data) {
+    elInsights.innerHTML = '';
+
+    const avoidPct = data.avoidable_pct;
+    const sitePct  = data.site_avoidable_pct;
+    if (avoidPct != null) {
+      const isHigh = sitePct != null && avoidPct > sitePct;
+      const body   = (COPY.insight_avoidable_body || '{pct}% of your losses were classified as avoidable. Site average is {site_pct}%.')
+        .replace('{pct}', avoidPct)
+        .replace('{site_pct}', sitePct != null ? sitePct : '—');
+      elInsights.appendChild(makeInsight(
+        COPY.insight_avoidable_title || 'Avoidable deaths',
+        body,
+        isHigh ? 'warn' : ''
+      ));
+    }
+
+    const edgePct = data.edge_pct;
+    if (edgePct != null && edgePct > 0) {
+      const body = (COPY.insight_edge_body || '{pct}% of your deaths happen on the edge.')
+        .replace('{pct}', edgePct);
+      const level = edgePct >= 35 ? 'warn' : edgePct <= 20 ? 'good' : '';
+      elInsights.appendChild(makeInsight(
+        COPY.insight_edge_title || 'Edge clustering',
+        body,
+        level
+      ));
+    }
+
+    (data.anomalies || []).forEach(function (a) {
+      elInsights.appendChild(makeInsight(a.type.replace(/_/g, ' '), escH(a.detail), 'warn'));
+    });
+  }
+
+  function makeInsight(title, bodyHtml, level) {
+    const div = document.createElement('div');
+    div.className = 'hm-insight' + (level ? ' ' + level : '');
+    div.innerHTML =
+      '<div class="hm-insight-title">' + escH(title) + '</div>' +
+      '<div class="hm-insight-body">' + bodyHtml + '</div>';
+    return div;
+  }
+
+  // ── Trend bar chart ───────────────────────────────────────────────────────
+  function renderTrend(data) {
+    if (!elTrend) return;
+    const trend = data.trend || [];
+    if (trend.length === 0) {
+      hide(elTrend);
+      return;
+    }
+
+    const maxRate = Math.max.apply(null, trend.map(function (t) {
+      return t.standard_avoidable_per_game || 0;
+    }));
+
+    let barsHtml = '';
+    trend.forEach(function (t) {
+      const rate = t.standard_avoidable_per_game || 0;
+      const pct  = maxRate > 0 ? Math.round((rate / maxRate) * 100) : 0;
+      const pctDisp = Math.round(rate * 100);
+      const label = t.week_label.replace(/^\d{4}-/, '');  // e.g. "W32"
+      barsHtml +=
+        '<div class="hm-trend-col">' +
+        '<div class="hm-trend-bar-wrap">' +
+        '<div class="hm-trend-bar" style="height:' + pct + '%" title="' + escH(t.week_label) + ': ' + pctDisp + '% avoidable"></div>' +
+        '</div>' +
+        '<div class="hm-trend-label">' + escH(label) + '</div>' +
+        '</div>';
+    });
+
+    elTrend.innerHTML =
+      '<div class="hm-trend-heading">Avoidable-death rate by week</div>' +
+      '<div class="hm-trend-chart">' + barsHtml + '</div>' +
+      '<div class="hm-trend-caption">Each bar = % of that week\'s losses classified as avoidable</div>';
+
+    show(elTrend);
+  }
+
+  // ── Cell drill-down ───────────────────────────────────────────────────────
+  function openDrillDown(x, y) {
+    if (!elDrill) return;
+    if (elDrillTitle) elDrillTitle.textContent = 'Games that died at (' + x + ', ' + y + ')';
+    if (elDrillList) elDrillList.innerHTML = '<li class="hm-drill-loading">Loading…</li>';
+    show(elDrill);
+
+    const url = API + '/heatmap/cell?x=' + x + '&y=' + y +
+      '&difficulty=' + encodeURIComponent(difficulty) +
+      '&mode=' + encodeURIComponent(mode) +
+      '&time_range_days=' + encodeURIComponent(timeRange);
+
+    fetch(url, {
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (games) {
+      if (!elDrillList) return;
+      if (!games || games.length === 0) {
+        elDrillList.innerHTML = '<li class="hm-drill-empty">No replay data for this cell.</li>';
+        return;
+      }
+      elDrillList.innerHTML = '';
+      games.forEach(function (g) {
+        const secs = g.time_ms > 0 ? (g.time_ms / 1000).toFixed(1) + 's' : '—';
+        const cause = g.death_cause ? g.death_cause.replace(/([A-Z])/g, ' $1').trim() : 'unknown';
+        const li = document.createElement('li');
+        li.className = 'hm-drill-item';
+        li.innerHTML =
+          '<a href="/game/' + escH(g.game_replay_id) + '" class="hm-drill-link">' +
+          '<span class="hm-drill-date">' + escH(g.date) + '</span>' +
+          '<span class="hm-drill-time">' + escH(secs) + '</span>' +
+          '<span class="hm-drill-cause">' + escH(cause) + '</span>' +
+          '<span class="hm-drill-arrow">→</span>' +
+          '</a>';
+        elDrillList.appendChild(li);
+      });
+    })
+    .catch(function () {
+      if (elDrillList) elDrillList.innerHTML = '<li class="hm-drill-empty">Failed to load games.</li>';
+    });
+  }
+
+  // ── Tooltip ───────────────────────────────────────────────────────────────
+  function attachTooltip() {
+    elBoard.addEventListener('mouseover', function (e) {
+      const cell = e.target.closest('.hm-cell');
+      if (!cell) return;
+      const count = parseInt(cell.dataset.count, 10) || 0;
+      if (count === 0) {
+        hide(elTooltip);
+        return;
+      }
+      elTooltip.textContent = count + (count === 1 ? ' death' : ' deaths') +
+        ' — (' + cell.dataset.x + ', ' + cell.dataset.y + ')';
+      show(elTooltip);
+    });
+
+    elBoard.addEventListener('mousemove', function (e) {
+      elTooltip.style.left = (e.clientX + 12) + 'px';
+      elTooltip.style.top  = (e.clientY - 28) + 'px';
+    });
+
+    elBoard.addEventListener('mouseleave', function () {
+      hide(elTooltip);
+    });
+
+    elBoard.addEventListener('click', function (e) {
+      const cell = e.target.closest('.hm-cell.has-deaths');
+      if (!cell) return;
+      openDrillDown(parseInt(cell.dataset.x, 10), parseInt(cell.dataset.y, 10));
+    });
+  }
+
+  // ── Fetch and render ──────────────────────────────────────────────────────
+  function render(data) {
+    renderStats(data);
+    renderBoard(data);
+    renderCauses(data);
+    renderRegions(data);
+    renderInsights(data);
+    renderTrend(data);
+    if (elDrill) hide(elDrill);
+  }
+
+  async function load() {
+    hide(elMain);
+    hide(elLoggedOut);
+    hide(elEmpty);
+    hide(elError);
+    show(elLoading);
+
+    const url = API + '/heatmap?difficulty=' + encodeURIComponent(difficulty) +
+      '&mode=' + encodeURIComponent(mode) +
+      '&time_range_days=' + encodeURIComponent(timeRange);
+
+    try {
+      const res = await fetch(url, {
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      });
+
+      hide(elLoading);
+
+      if (res.status === 401) {
+        show(elLoggedOut);
+        return;
+      }
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+
+      const data = await res.json();
+
+      if (!data.losses || data.losses === 0) {
+        show(elEmpty);
+        return;
+      }
+
+      render(data);
+      show(elMain);
+    } catch (err) {
+      hide(elLoading);
+      show(elError);
+      console.error('[heatmap] load failed:', err);
+    }
+  }
+
+  // ── Filter chip interactions ──────────────────────────────────────────────
+  function initFilters() {
+    document.querySelectorAll('.hm-chip[data-filter]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        const group = chip.dataset.filter;
+        const value = chip.dataset.value;
+
+        document.querySelectorAll('.hm-chip[data-filter="' + group + '"]').forEach(function (c) {
+          c.classList.remove('active');
+        });
+        chip.classList.add('active');
+
+        if (group === 'difficulty') difficulty = value;
+        if (group === 'time')       timeRange  = parseInt(value, 10);
+        if (group === 'mode')       mode       = value;
+
+        load();
+      });
+    });
+  }
+
+  // ── Drill-down close button ────────────────────────────────────────────────
+  function initDrill() {
+    if (elDrillClose) {
+      elDrillClose.addEventListener('click', function () {
+        hide(elDrill);
+      });
+    }
+  }
+
+  // ── Bootstrap ─────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function () {
+    initFilters();
+    initDrill();
+    attachTooltip();
+    load();
+  });
+}());

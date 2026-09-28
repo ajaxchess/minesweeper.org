@@ -326,6 +326,13 @@ class HeatmapAnomaly(BaseModel):
     detail: str
 
 
+class HeatmapCellGame(BaseModel):
+    game_replay_id: int
+    date: str
+    time_ms: int
+    death_cause: Optional[str] = None
+
+
 class HeatmapResponse(BaseModel):
     """GET /api/heatmap response."""
     player_id: str

@@ -60,6 +60,7 @@ from .response_models import (
     HabitProgress,
     HeatmapAnomaly,
     HeatmapCell,
+    HeatmapCellGame,
     HeatmapResponse,
     LevelMastery,
     LevelProgressResponse,
@@ -861,7 +862,7 @@ def get_heatmap(
             )
             for r in data["region_breakdown"]
         ],
-        trend=[],   # production: derive from time-bucketed query
+        trend=[TrendPoint(**t) for t in data["trend"]],
         avg_survival_pct=68.0,
         avoidable_pct=data["avoidable_pct"],
         edge_pct=data["edge_pct"],
@@ -873,3 +874,24 @@ def get_heatmap(
 
 def _safe_pct(num: float, denom: float) -> float:
     return round(100 * num / denom, 1) if denom else 0.0
+
+
+@router.get("/heatmap/cell", response_model=list[HeatmapCellGame])
+@limiter.limit("60/minute")
+def get_heatmap_cell(
+    request: Request,
+    x: int = Query(..., ge=0),
+    y: int = Query(..., ge=0),
+    difficulty: str = Query("expert"),
+    mode: str = Query("standard"),
+    time_range_days: int = Query(90, ge=1, le=365),
+    db: Session = Depends(get_db),
+):
+    player_id = _player_id(request)
+    games = queries.get_heatmap_cell_games(
+        db, player_id, x, y,
+        mode=mode,
+        difficulty=difficulty,
+        time_range_days=time_range_days,
+    )
+    return [HeatmapCellGame(**g) for g in games]

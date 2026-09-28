@@ -933,6 +933,28 @@ def get_heatmap_data(
     avoidable = cause_counts.get("avoidableGuess", 0)
     edge = region_counts.get("edge", 0)
 
+    # Trend: weekly avoidable-deaths-per-total-deaths rate, last 12 weeks
+    week_buckets: dict[str, dict[str, int]] = {}
+    for a in losses:
+        if not a.created_at:
+            continue
+        week = a.created_at.strftime("%Y-W%V")
+        if week not in week_buckets:
+            week_buckets[week] = {"avoidable": 0, "total": 0}
+        week_buckets[week]["total"] += 1
+        if a.death_cause == "avoidableGuess":
+            week_buckets[week]["avoidable"] += 1
+    trend = [
+        {
+            "week_label": wk,
+            "standard_avoidable_per_game": round(
+                wd["avoidable"] / wd["total"], 3
+            ) if wd["total"] else 0.0,
+            "no_guess_avoidable_per_game": None,
+        }
+        for wk, wd in sorted(week_buckets.items())[-12:]
+    ]
+
     return {
         "games_analyzed": len(all_analyses),
         "losses": len(losses),
@@ -942,10 +964,63 @@ def get_heatmap_data(
         "board_height": board_h,
         "cause_breakdown": cause_breakdown,
         "region_breakdown": region_breakdown,
+        "trend": trend,
         "anomalies": anomalies,
         "avoidable_pct": int(100 * avoidable / total_deaths) if total_deaths else 0,
         "edge_pct": int(100 * edge / total_deaths) if total_deaths else 0,
     }
+
+
+def get_heatmap_cell_games(
+    db: Session,
+    player_id: str,
+    x: int,
+    y: int,
+    *,
+    mode: str = "standard",
+    difficulty: str = "expert",
+    time_range_days: int = 90,
+    limit: int = 20,
+) -> list[dict]:
+    """Return up to `limit` games where the player died at board cell (x, y)."""
+    q = (
+        db.query(GameAnalysis)
+        .filter(_player_filter(player_id))
+        .filter(GameAnalysis.death_cause.isnot(None))
+        .filter(GameAnalysis.difficulty == difficulty)
+        .filter(_time_range_filter(time_range_days))
+        .filter(_mode_filter(mode))
+    )
+
+    losses = q.all()
+
+    results = []
+    for a in losses:
+        if a.game_replay_id is None:
+            continue
+        replay = db.query(GameReplay).filter(
+            GameReplay.id == a.game_replay_id
+        ).first()
+        if not replay or not replay.log_json:
+            continue
+        try:
+            log = json.loads(replay.log_json)
+            if not log:
+                continue
+            last = log[-1]
+            if last[3] == x and last[2] == y:
+                results.append({
+                    "game_replay_id": a.game_replay_id,
+                    "date": a.created_at.date().isoformat() if a.created_at else "",
+                    "time_ms": last[0] if last[0] else 0,
+                    "death_cause": a.death_cause,
+                })
+                if len(results) >= limit:
+                    break
+        except (json.JSONDecodeError, IndexError, KeyError, TypeError):
+            continue
+
+    return results
 
 
 # ═════════════════════════════════════════════════════════════════════════════

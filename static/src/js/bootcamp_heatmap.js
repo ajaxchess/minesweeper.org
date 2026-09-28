@@ -31,6 +31,11 @@
   const elStatRegion = document.getElementById('hm-stat-region');
   const elStatRegionMeta = document.getElementById('hm-stat-region-meta');
   const elStatSurvival = document.getElementById('hm-stat-survival');
+  const elTrend      = document.getElementById('hm-trend');
+  const elDrill      = document.getElementById('hm-drill');
+  const elDrillTitle = document.getElementById('hm-drill-title');
+  const elDrillList  = document.getElementById('hm-drill-list');
+  const elDrillClose = document.getElementById('hm-drill-close');
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   function show(el) { if (el) el.hidden = false; }
@@ -77,7 +82,6 @@
     const w = data.board_width;
     const h = data.board_height;
 
-    // Build lookup: (x,y) → death_count
     const cellMap = {};
     let maxCount = 0;
     (data.cells || []).forEach(function (c) {
@@ -106,7 +110,6 @@
       }
     }
 
-    // Update board title and legend max
     const diff = difficulty[0].toUpperCase() + difficulty.slice(1);
     elBoardTitle.textContent = 'Death heatmap (' + diff + ' · ' + w + '×' + h + ')';
     if (elLegendMax) {
@@ -171,7 +174,6 @@
   }
 
   // ── Region grid ───────────────────────────────────────────────────────────
-  // Region heat colours (subtle tinted backgrounds)
   const REGION_COLORS = {
     center:       { bg: '#fee2e2', pctColor: '#b91c1c' },
     edge:         { bg: '#fef3c7', pctColor: '#b45309' },
@@ -199,7 +201,6 @@
   function renderInsights(data) {
     elInsights.innerHTML = '';
 
-    // Avoidable insight
     const avoidPct = data.avoidable_pct;
     const sitePct  = data.site_avoidable_pct;
     if (avoidPct != null) {
@@ -214,7 +215,6 @@
       ));
     }
 
-    // Edge clustering insight
     const edgePct = data.edge_pct;
     if (edgePct != null && edgePct > 0) {
       const body = (COPY.insight_edge_body || '{pct}% of your deaths happen on the edge.')
@@ -227,7 +227,6 @@
       ));
     }
 
-    // Anomalies
     (data.anomalies || []).forEach(function (a) {
       elInsights.appendChild(makeInsight(a.type.replace(/_/g, ' '), escH(a.detail), 'warn'));
     });
@@ -240,6 +239,86 @@
       '<div class="hm-insight-title">' + escH(title) + '</div>' +
       '<div class="hm-insight-body">' + bodyHtml + '</div>';
     return div;
+  }
+
+  // ── Trend bar chart ───────────────────────────────────────────────────────
+  function renderTrend(data) {
+    if (!elTrend) return;
+    const trend = data.trend || [];
+    if (trend.length === 0) {
+      hide(elTrend);
+      return;
+    }
+
+    const maxRate = Math.max.apply(null, trend.map(function (t) {
+      return t.standard_avoidable_per_game || 0;
+    }));
+
+    let barsHtml = '';
+    trend.forEach(function (t) {
+      const rate = t.standard_avoidable_per_game || 0;
+      const pct  = maxRate > 0 ? Math.round((rate / maxRate) * 100) : 0;
+      const pctDisp = Math.round(rate * 100);
+      const label = t.week_label.replace(/^\d{4}-/, '');  // e.g. "W32"
+      barsHtml +=
+        '<div class="hm-trend-col">' +
+        '<div class="hm-trend-bar-wrap">' +
+        '<div class="hm-trend-bar" style="height:' + pct + '%" title="' + escH(t.week_label) + ': ' + pctDisp + '% avoidable"></div>' +
+        '</div>' +
+        '<div class="hm-trend-label">' + escH(label) + '</div>' +
+        '</div>';
+    });
+
+    elTrend.innerHTML =
+      '<div class="hm-trend-heading">Avoidable-death rate by week</div>' +
+      '<div class="hm-trend-chart">' + barsHtml + '</div>' +
+      '<div class="hm-trend-caption">Each bar = % of that week\'s losses classified as avoidable</div>';
+
+    show(elTrend);
+  }
+
+  // ── Cell drill-down ───────────────────────────────────────────────────────
+  function openDrillDown(x, y) {
+    if (!elDrill) return;
+    if (elDrillTitle) elDrillTitle.textContent = 'Games that died at (' + x + ', ' + y + ')';
+    if (elDrillList) elDrillList.innerHTML = '<li class="hm-drill-loading">Loading…</li>';
+    show(elDrill);
+
+    const url = API + '/heatmap/cell?x=' + x + '&y=' + y +
+      '&difficulty=' + encodeURIComponent(difficulty) +
+      '&mode=' + encodeURIComponent(mode) +
+      '&time_range_days=' + encodeURIComponent(timeRange);
+
+    fetch(url, {
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (games) {
+      if (!elDrillList) return;
+      if (!games || games.length === 0) {
+        elDrillList.innerHTML = '<li class="hm-drill-empty">No replay data for this cell.</li>';
+        return;
+      }
+      elDrillList.innerHTML = '';
+      games.forEach(function (g) {
+        const secs = g.time_ms > 0 ? (g.time_ms / 1000).toFixed(1) + 's' : '—';
+        const cause = g.death_cause ? g.death_cause.replace(/([A-Z])/g, ' $1').trim() : 'unknown';
+        const li = document.createElement('li');
+        li.className = 'hm-drill-item';
+        li.innerHTML =
+          '<a href="/game/' + escH(g.game_replay_id) + '" class="hm-drill-link">' +
+          '<span class="hm-drill-date">' + escH(g.date) + '</span>' +
+          '<span class="hm-drill-time">' + escH(secs) + '</span>' +
+          '<span class="hm-drill-cause">' + escH(cause) + '</span>' +
+          '<span class="hm-drill-arrow">→</span>' +
+          '</a>';
+        elDrillList.appendChild(li);
+      });
+    })
+    .catch(function () {
+      if (elDrillList) elDrillList.innerHTML = '<li class="hm-drill-empty">Failed to load games.</li>';
+    });
   }
 
   // ── Tooltip ───────────────────────────────────────────────────────────────
@@ -265,6 +344,12 @@
     elBoard.addEventListener('mouseleave', function () {
       hide(elTooltip);
     });
+
+    elBoard.addEventListener('click', function (e) {
+      const cell = e.target.closest('.hm-cell.has-deaths');
+      if (!cell) return;
+      openDrillDown(parseInt(cell.dataset.x, 10), parseInt(cell.dataset.y, 10));
+    });
   }
 
   // ── Fetch and render ──────────────────────────────────────────────────────
@@ -274,6 +359,8 @@
     renderCauses(data);
     renderRegions(data);
     renderInsights(data);
+    renderTrend(data);
+    if (elDrill) hide(elDrill);
   }
 
   async function load() {
@@ -324,7 +411,6 @@
         const group = chip.dataset.filter;
         const value = chip.dataset.value;
 
-        // Deactivate siblings, activate this chip
         document.querySelectorAll('.hm-chip[data-filter="' + group + '"]').forEach(function (c) {
           c.classList.remove('active');
         });
@@ -339,9 +425,19 @@
     });
   }
 
+  // ── Drill-down close button ────────────────────────────────────────────────
+  function initDrill() {
+    if (elDrillClose) {
+      elDrillClose.addEventListener('click', function () {
+        hide(elDrill);
+      });
+    }
+  }
+
   // ── Bootstrap ─────────────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', function () {
     initFilters();
+    initDrill();
     attachTooltip();
     load();
   });
