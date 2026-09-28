@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateMinDist(newlyCells, distMatrix) {
     const changed = [];
     newlyCells.forEach(cell => {
-      const r = cell[0], c = cell[1];
+      const r = cell[0] | 0, c = cell[1] | 0;
       distMatrix[r][c] = 0;
       for (let dr = -2; dr <= 2; dr++) {
         for (let dc = -2; dc <= 2; dc++) {
