@@ -705,8 +705,20 @@ function showOverlay(msg, won) {
   }
 
   const ngParam = state.noGuess ? '&no_guess=true' : '';
+
+  let winStatsHtml = '';
+  if (won) {
+    const bbbv  = state.bbbv || 0;
+    const total = (state.leftClicks || 0) + (state.rightClicks || 0) + (state.chordClicks || 0);
+    const eff   = total > 0 ? ((bbbv / total) * 100).toFixed(1) : '0.0';
+    const secs  = (state.timeMs || 0) / 1000 || state.elapsed || 0;
+    const bvs   = secs > 0 ? (bbbv / secs).toFixed(2) : '0.00';
+    winStatsHtml = `<span class="overlay-win-stats">${eff}% Efficiency&ensp;·&ensp;${bvs} 3BV/s</span>`;
+  }
+
   el.innerHTML = `
     <span>${msg}</span>
+    ${winStatsHtml}
     ${state.noGuess ? `<span style="font-size:0.75rem;opacity:0.7">${window.T.game_no_guess_mode}</span>` : ''}
     ${scoreForm}
     <button onclick="resetGame()">${window.T.rush_play_again}</button>
