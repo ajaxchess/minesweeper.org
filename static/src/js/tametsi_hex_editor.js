@@ -15,6 +15,16 @@
  * Do not edit static/js/tametsi_hex_editor.js directly — edit this file.
  */
 "use strict";
+
+function thexAttachCopy(container, url) {
+    const btn = container.querySelector('.thex-reset-btn');
+    if (btn) btn.addEventListener('click', function () { navigator.clipboard && navigator.clipboard.writeText(url); });
+}
+
+function thexEscH(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
 const THEX_ED_CELLS = thexBuildCells(3),
     THEX_ED_SET = new Set(THEX_ED_CELLS.map(([e, t]) => `${e},${t}`));
 let thexEd = {
@@ -176,10 +186,11 @@ window.thexEditorSave = function() {
         if (0 === t.size) return n.className = "thex-editor-result thex-editor-result--fail", void(n.innerHTML = "Mark at least one revealed cell — the player needs a starting clue.");
         if (!thexEdSolve(e, t)) return n.className = "thex-editor-result thex-editor-result--fail", void(n.innerHTML = "⚠️ This puzzle requires guessing. Add more revealed cells or rearrange mines until the solver can deduce every cell.");
         const o = thexEdEncode(e, t),
-            l = `${location.origin}${location.pathname}?board=${o}`;
+            l = `${location.origin}${location.pathname}?board=${o}`,
+            lH = thexEscH(l);
         history.replaceState(null, "", `?board=${o}`);
         const r = document.querySelector("[data-thex-authed]") ? '<span style="color:var(--accent2)">✓ Board saved to your profile.</span>' : `<a href="/auth/login?next=${encodeURIComponent("/tametsi/hex?board="+o)}">Sign in</a> to keep this board in your profile.`;
-        n.className = "thex-editor-result thex-editor-result--ok", n.innerHTML = `✅ Solvable — no guessing needed!<br><span class="thex-editor-share-url">${l}</span> <button class="thex-reset-btn" style="margin-left:0.4rem" onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(l)})">Copy link</button><br><small style="color:var(--text-dim);margin-top:0.3rem;display:block">${r}</small>`, fetch("/api/tametsi-hex/editor/save", {
+        n.className = "thex-editor-result thex-editor-result--ok", n.innerHTML = `✅ Solvable — no guessing needed!<br><span class="thex-editor-share-url">${lH}</span> <button class="thex-reset-btn" style="margin-left:0.4rem">Copy link</button><br><small style="color:var(--text-dim);margin-top:0.3rem;display:block">${r}</small>`, thexAttachCopy(n, l), fetch("/api/tametsi-hex/editor/save", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -218,7 +229,7 @@ window.thexEditorSave = function() {
         const n = `${location.origin}${location.pathname}?board=${e}`,
             nH = n.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"),
             o = document.getElementById("thex-editor-result");
-        o && (o.className = "thex-editor-result thex-editor-result--ok", o.innerHTML = `✅ Shared puzzle loaded!<br><span class="thex-editor-share-url">${nH}</span> <button class="thex-reset-btn" style="margin-left:0.4rem" onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(n)})">Copy link</button>`)
+        o && (o.className = "thex-editor-result thex-editor-result--ok", o.innerHTML = `✅ Shared puzzle loaded!<br><span class="thex-editor-share-url">${nH}</span> <button class="thex-reset-btn" style="margin-left:0.4rem">Copy link</button>`, thexAttachCopy(o, n))
     });
 let thexEd2 = {
     tool: "mine",
@@ -442,8 +453,9 @@ window.thexShowEditor2 = function() {
             if (!thexEdSolveCustom(l, r, e, new Set([...t, ...n]), i)) return s.className = "thex-editor-result thex-editor-result--fail", void(s.innerHTML = "⚠️ This puzzle requires guessing. Add more revealed cells or rearrange mines until the solver can deduce every cell.");
             const a = thexEdEncodeCustom(d, l, e, t, n, o),
                 h = `${location.origin}${location.pathname}?board=${a}`,
+                hH = thexEscH(h),
                 c = document.querySelector("[data-thex-authed]") ? '<span style="color:var(--accent2)">✓ Board saved to your profile.</span>' : `<a href="/auth/login?next=${encodeURIComponent("/tametsi/hex?board="+a)}">Sign in</a> to keep this board in your profile.`;
-            s.className = "thex-editor-result thex-editor-result--ok", s.innerHTML = `✅ Solvable — no guessing needed!<br><span class="thex-editor-share-url">${h}</span> <button class="thex-reset-btn" style="margin-left:0.4rem" onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(h)})">Copy link</button><br><small style="color:var(--text-dim);margin-top:0.3rem;display:block">${c}</small>`, fetch("/api/tametsi-hex/editor/save", {
+            s.className = "thex-editor-result thex-editor-result--ok", s.innerHTML = `✅ Solvable — no guessing needed!<br><span class="thex-editor-share-url">${hH}</span> <button class="thex-reset-btn" style="margin-left:0.4rem">Copy link</button><br><small style="color:var(--text-dim);margin-top:0.3rem;display:block">${c}</small>`, thexAttachCopy(s, h), fetch("/api/tametsi-hex/editor/save", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -485,7 +497,12 @@ window.thexShowEditor2 = function() {
     const o = `${location.origin}${location.pathname}?board=${e}`,
         oH = o.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"),
         l = document.getElementById("thex-editor2-result");
-    l && (l.className = "thex-editor-result thex-editor-result--ok", l.style.display = "block", l.innerHTML = `✅ Shared puzzle loaded!<br><span class="thex-editor-share-url">${oH}</span> <button class="thex-reset-btn" style="margin-left:0.4rem" onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(o)})">Copy link</button>`);
+    if (l) {
+        l.className = "thex-editor-result thex-editor-result--ok";
+        l.style.display = "block";
+        l.innerHTML = `✅ Shared puzzle loaded!<br><span class="thex-editor-share-url">${oH}</span> <button class="thex-reset-btn" style="margin-left:0.4rem">Copy link</button>`;
+        thexAttachCopy(l, o);
+    }
     const r = new Set(t.cells.map(([e, t]) => `${e},${t}`)),
         d = new Set([...t.revealedQ, ...t.hiddenQ]),
         s = thexBuildBoard(t.cells, t.mines, r, d.size ? d : null),

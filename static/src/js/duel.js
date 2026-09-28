@@ -859,8 +859,8 @@ document.addEventListener('DOMContentLoaded', () => {
           : '/duel';
         showDuelOverlay(`
           <div class="duel-result">
-            <h2>${headline}</h2>
-            <p>${sub}</p>
+            <h2>${escH(headline)}</h2>
+            <p>${escH(sub)}</p>
             <p class="result-time">Time: ${escH(String(msg.elapsed))}s</p>
             ${hashLine}
             ${rematchBtn}
