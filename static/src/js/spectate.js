@@ -173,7 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
           b.boardLbl.textContent = `⚔️ ${name}`;
           b.scoreEl.textContent  = p.score;
           b.tilesEl.textContent  = `${p.tiles} tiles`;
-          p.cells.forEach(([r, c, val]) => {
+          p.cells.forEach(cell => {
+            const r = cell[0] | 0, c = cell[1] | 0, val = cell[2];
             b.revealed[r][c] = true;
             b.vals[r][c]     = val;
           });
@@ -202,7 +203,8 @@ document.addEventListener('DOMContentLoaded', () => {
         b.scoreEl.textContent = msg.score;
         b.tilesEl.textContent = `${msg.tiles} tiles`;
         if (msg.exploded) b.exploded = true;
-        msg.newly_revealed.forEach(([r, c]) => {
+        msg.newly_revealed.forEach(cell => {
+          const r = cell[0] | 0, c = cell[1] | 0;
           const val        = msg.board_values[`${r},${c}`];
           b.revealed[r][c] = true;
           b.vals[r][c]     = val;
@@ -218,7 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Render the shared opening on both boards
         if (msg.prerev && msg.board_values) {
           boards.forEach(b => {
-            msg.prerev.forEach(([r, c]) => {
+            msg.prerev.forEach(cell => {
+              const r = cell[0] | 0, c = cell[1] | 0;
               const val    = msg.board_values[`${r},${c}`];
               b.revealed[r][c] = true;
               b.vals[r][c]     = val;

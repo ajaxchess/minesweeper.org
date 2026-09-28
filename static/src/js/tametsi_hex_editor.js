@@ -216,8 +216,9 @@ window.thexEditorSave = function() {
         if (!t) return;
         thexShowEditor(t), thexEdShowPlay(t.mines, t.prerev);
         const n = `${location.origin}${location.pathname}?board=${e}`,
+            nH = n.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"),
             o = document.getElementById("thex-editor-result");
-        o && (o.className = "thex-editor-result thex-editor-result--ok", o.innerHTML = `✅ Shared puzzle loaded!<br><span class="thex-editor-share-url">${n}</span> <button class="thex-reset-btn" style="margin-left:0.4rem" onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(n)})">Copy link</button>`)
+        o && (o.className = "thex-editor-result thex-editor-result--ok", o.innerHTML = `✅ Shared puzzle loaded!<br><span class="thex-editor-share-url">${nH}</span> <button class="thex-reset-btn" style="margin-left:0.4rem" onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(n)})">Copy link</button>`)
     });
 let thexEd2 = {
     tool: "mine",
@@ -482,8 +483,9 @@ window.thexShowEditor2 = function() {
     const n = document.getElementById("thex-e2-radius");
     n && (n.value = t.R), thexSelectPuzzle("e2");
     const o = `${location.origin}${location.pathname}?board=${e}`,
+        oH = o.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"),
         l = document.getElementById("thex-editor2-result");
-    l && (l.className = "thex-editor-result thex-editor-result--ok", l.style.display = "block", l.innerHTML = `✅ Shared puzzle loaded!<br><span class="thex-editor-share-url">${o}</span> <button class="thex-reset-btn" style="margin-left:0.4rem" onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(o)})">Copy link</button>`);
+    l && (l.className = "thex-editor-result thex-editor-result--ok", l.style.display = "block", l.innerHTML = `✅ Shared puzzle loaded!<br><span class="thex-editor-share-url">${oH}</span> <button class="thex-reset-btn" style="margin-left:0.4rem" onclick="navigator.clipboard&&navigator.clipboard.writeText(${JSON.stringify(o)})">Copy link</button>`);
     const r = new Set(t.cells.map(([e, t]) => `${e},${t}`)),
         d = new Set([...t.revealedQ, ...t.hiddenQ]),
         s = thexBuildBoard(t.cells, t.mines, r, d.size ? d : null),

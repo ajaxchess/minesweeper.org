@@ -260,7 +260,8 @@ document.addEventListener('DOMContentLoaded', () => {
         Number.isInteger(r) && Number.isInteger(c) &&
         r >= 0 && r < ROWS && c >= 0 && c < COLS;
 
-      resetCells.forEach(([r, c]) => {
+      resetCells.forEach(cell => {
+        const r = cell[0] | 0, c = cell[1] | 0;
         if (!isSafeIdx(r, c)) return;
         rev[r][c]  = false;
         vals[r][c] = null;
@@ -728,7 +729,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Render shared pre-revealed opening on both boards
         if (msg.prerev && msg.board_values) {
           // Apply state first, then compute frontier, then render everything
-          msg.prerev.forEach(([r, c]) => {
+          msg.prerev.forEach(cell => {
+            const r = cell[0] | 0, c = cell[1] | 0;
             const val = msg.board_values[`${r},${c}`];
             revealed[r][c]     = true;
             boardVals[r][c]    = val;
@@ -761,7 +763,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let zoneChanged = [];
         if (IS_BETA) zoneChanged = updateMinDist(newCells, minDist);
         const newKeys = IS_BETA ? new Set(newCells.map(([r, c]) => `${r},${c}`)) : null;
-        newCells.forEach(([r, c]) => {
+        newCells.forEach(cell => {
+          const r = cell[0] | 0, c = cell[1] | 0;
           revealed[r][c]  = true;
           boardVals[r][c] = boardValsM[`${r},${c}`];
           renderCell(r, c);
@@ -847,14 +850,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const rematchBtn = (!IS_PVP && !IS_BOT)
           ? `<button class="duel-play-again duel-rematch-btn" onclick="window.requestRematch()">🔄 Rematch</button>`
           : '';
+        const newDuelHref = IS_PVP
+          ? `/pvp?m=${encodeURIComponent(SUBMODE)}`
+          : IS_BOT
+          ? `/pvp/bot/play?m=${encodeURIComponent(SUBMODE)}&d=${encodeURIComponent(BOT_DIFF)}`
+          : IS_BETA
+          ? `/pvpbeta?m=${encodeURIComponent(SUBMODE)}`
+          : '/duel';
         showDuelOverlay(`
           <div class="duel-result">
             <h2>${headline}</h2>
             <p>${sub}</p>
-            <p class="result-time">Time: ${msg.elapsed}s</p>
+            <p class="result-time">Time: ${escH(String(msg.elapsed))}s</p>
             ${hashLine}
             ${rematchBtn}
-            <a href="${IS_PVP ? `/pvp?m=${SUBMODE}` : IS_BOT ? `/pvp/bot/play?m=${SUBMODE}&d=${BOT_DIFF}` : IS_BETA ? `/pvpbeta?m=${SUBMODE}` : '/duel'}" class="duel-play-again duel-play-again--secondary">⚔️ New Duel</a>
+            <a href="${escH(newDuelHref)}" class="duel-play-again duel-play-again--secondary">⚔️ New Duel</a>
           </div>
         `);
         break;
@@ -919,15 +929,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // Server recognised our player_id and resumed the existing game.
         gameActive = msg.active !== false;
         // Restore own board
-        msg.my_revealed.forEach(([r, c]) => {
-          if (!Number.isInteger(r) || !Number.isInteger(c) || r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+        msg.my_revealed.forEach(cell => {
+          const r = cell[0] | 0, c = cell[1] | 0;
+          if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
           revealed[r][c]  = true;
           boardVals[r][c] = msg.board_values[`${r},${c}`];
         });
         if (IS_BETA) recomputeMinDist(minDist, revealed);
         // Restore opponent board
-        msg.opp_revealed.forEach(([r, c, val]) => {
-          if (!Number.isInteger(r) || !Number.isInteger(c) || r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+        msg.opp_revealed.forEach(cell => {
+          const r = cell[0] | 0, c = cell[1] | 0, val = cell[2];
+          if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
           oppRevealed[r][c]  = true;
           oppBoardVals[r][c] = val;
         });
