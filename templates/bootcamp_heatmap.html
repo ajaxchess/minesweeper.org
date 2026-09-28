@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.heatmap_title | default("Mistake Heatmap") }} — {{ t.nav_bootcamp | default("Bootcamp") }}{% endblock %}
+{% block description %}{{ t.heatmap_subtitle | default("Where you've died, why, and what to do about it.") }}{% endblock %}
+{% block canonical %}https://minesweeper.org/bootcamp/heatmap{% endblock %}
+{% block og_url %}https://minesweeper.org/bootcamp/heatmap{% endblock %}
+{% block og_title %}Mistake Heatmap — Minesweeper Bootcamp{% endblock %}
+{% block og_description %}See exactly which cells you die on, why, and how often. Death cells mapped by cause and region.{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/css/bootcamp.css?v=3" />
+  <style>
+    /* ── Heatmap page layout ─────────────────────────────────────────────── */
+    .hm-breadcrumb {
+      font-size: 13px;
+      color: var(--bc-text-muted);
+      margin-bottom: 16px;
+    }
+    .hm-breadcrumb a {
+      color: var(--bc-accent);
+      text-decoration: none;
+    }
+    .hm-breadcrumb a:hover { text-decoration: underline; }
+
+    /* ── Filter bar ──────────────────────────────────────────────────────── */
+    .hm-filter-bar {
+      display: flex;
+      gap: 12px;
+      background: var(--bc-surface);
+      padding: 12px 16px;
+      border-radius: 10px;
+      box-shadow: var(--bc-shadow);
+      margin-bottom: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .hm-filter-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--bc-text-muted);
+    }
+    .hm-filter-sep { margin-left: 12px; }
+    .hm-chip {
+      padding: 5px 13px;
+      border-radius: 999px;
+      background: var(--bc-locked-soft);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      color: var(--bc-text);
+      transition: background 0.12s, color 0.12s;
+    }
+    .hm-chip:hover { border-color: var(--bc-accent); }
+    .hm-chip.active {
+      background: var(--bc-accent);
+      color: #fff;
+    }
+
+    /* ── Stat strip ──────────────────────────────────────────────────────── */
+    .hm-stat-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .hm-stat-card {
+      background: var(--bc-surface);
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: var(--bc-shadow);
+    }
+    .hm-stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--bc-text-muted);
+      font-weight: 700;
+    }
+    .hm-stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      margin-top: 4px;
+      letter-spacing: -0.5px;
+      font-variant-numeric: tabular-nums;
+    }
+    .hm-stat-meta {
+      font-size: 12px;
+      color: var(--bc-text-muted);
+      margin-top: 3px;
+    }
+
+    /* ── Main grid ───────────────────────────────────────────────────────── */
+    .hm-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .hm-card {
+      background: var(--bc-surface);
+      border-radius: 14px;
+      padding: 22px 26px;
+      box-shadow: var(--bc-shadow);
+    }
+    .hm-card-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      letter-spacing: -0.2px;
+    }
+    .hm-card-subtitle {
+      font-size: 13px;
+      color: var(--bc-text-muted);
+      margin-bottom: 16px;
+    }
+
+    /* ── Board ───────────────────────────────────────────────────────────── */
+    .hm-board-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .hm-board-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 10px;
+      background: #d1d5db;
+      border-radius: 8px;
+      box-shadow: inset 2px 2px 0 #9ca3af, inset -2px -2px 0 #f3f4f6;
+      width: fit-content;
+      min-width: 100%;
+    }
+    .hm-board {
+      display: grid;
+      gap: 1px;
+      background: #9ca3af;
+      border: 2px solid #6b7280;
+      padding: 2px;
+    }
+    .hm-cell {
+      width: 20px;
+      height: 20px;
+      background: #c0c0c0;
+      position: relative;
+      cursor: default;
+    }
+    .hm-cell.has-deaths {
+      cursor: crosshair;
+    }
+    .hm-cell-heat {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .hm-cell:hover .hm-cell-heat {
+      outline: 2px solid var(--bc-accent);
+      outline-offset: -1px;
+    }
+
+    /* ── Legend ──────────────────────────────────────────────────────────── */
+    .hm-legend {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--bc-text-muted);
+    }
+    .hm-legend-gradient {
+      flex: 1;
+      height: 10px;
+      border-radius: 5px;
+      background: linear-gradient(90deg,
+        rgba(229,231,235,0.5) 0%,
+        rgba(252,211,77,0.7) 25%,
+        rgba(245,158,11,0.9) 55%,
+        rgba(239,68,68,0.95) 78%,
+        rgba(153,27,27,1) 100%);
+    }
+
+    /* ── Tooltip ─────────────────────────────────────────────────────────── */
+    .hm-tooltip {
+      position: fixed;
+      z-index: 100;
+      background: var(--bc-text);
+      color: var(--bc-surface);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    /* ── Breakdown sidebar ───────────────────────────────────────────────── */
+    .hm-breakdown-list { list-style: none; margin: 0; padding: 0; }
+    .hm-breakdown-row {
+      display: grid;
+      grid-template-columns: 12px 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--bc-border);
+    }
+    .hm-breakdown-row:last-child { border-bottom: none; }
+    .hm-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .hm-breakdown-name { font-size: 12px; font-weight: 500; }
+    .hm-breakdown-pct { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .hm-breakdown-count { font-size: 11px; color: var(--bc-text-muted); font-variant-numeric: tabular-nums; }
+    .hm-breakdown-bar-wrap { padding: 3px 0 10px 20px; }
+    .hm-breakdown-bar {
+      height: 5px;
+      background: var(--bc-locked-soft);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .hm-breakdown-bar-fill { height: 100%; border-radius: 3px; }
+
+    /* ── Region grid ─────────────────────────────────────────────────────── */
+    .hm-region-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 22px 0 10px;
+    }
+    .hm-region-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .hm-region-tile {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--bc-locked-soft);
+      border: 1px solid var(--bc-border);
+    }
+    .hm-region-name { font-size: 11px; color: var(--bc-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .hm-region-pct { font-size: 20px; font-weight: 700; margin: 3px 0 2px; font-variant-numeric: tabular-nums; }
+    .hm-region-count { font-size: 11px; color: var(--bc-text-muted); font-variant-numeric: tabular-nums; }
+
+    /* ── Insights ────────────────────────────────────────────────────────── */
+    .hm-insights {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .hm-insight {
+      background: var(--bc-surface);
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: var(--bc-shadow);
+      border-left: 4px solid var(--bc-accent);
+    }
+    .hm-insight.warn { border-left-color: #ef4444; }
+    .hm-insight.good { border-left-color: var(--bc-success); }
+    .hm-insight-title { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+    .hm-insight-body { font-size: 13px; color: var(--bc-text-muted); line-height: 1.6; }
+    .hm-insight-body strong { color: var(--bc-text); }
+
+    /* ── Dark / flower skin ──────────────────────────────────────────────── */
+    :root[data-skin=dark] .hm-board-inner,
+    :root[data-skin=flower] .hm-board-inner {
+      background: #374151;
+      box-shadow: inset 2px 2px 0 #4b5563, inset -2px -2px 0 #1f2937;
+    }
+    :root[data-skin=dark] .hm-board,
+    :root[data-skin=flower] .hm-board { background: #4b5563; border-color: #374151; }
+    :root[data-skin=dark] .hm-cell,
+    :root[data-skin=flower] .hm-cell { background: #6b7280; }
+
+    /* ── Responsive ──────────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hm-grid { grid-template-columns: 1fr; }
+      .hm-stat-strip { grid-template-columns: repeat(2, 1fr); }
+      .hm-insights { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .hm-stat-strip { grid-template-columns: 1fr 1fr; }
+      .hm-filter-bar { gap: 8px; }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="bc-page">
+
+  <p class="hm-breadcrumb">
+    <a href="/bootcamp">{{ t.heatmap_back | default("← Bootcamp") }}</a>
+  </p>
+
+  <div class="bc-header">
+    <h1 class="bc-title">{{ t.heatmap_title | default("Mistake Heatmap") }}</h1>
+    <p class="bc-subtitle">{{ t.heatmap_subtitle | default("Where you've died, why, and what to do about it.") }}</p>
+  </div>
+
+  {# ── Loading state ────────────────────────────────────────────────────── #}
+  <div id="hm-loading" class="bc-loading">
+    <p>{{ t.heatmap_loading | default("Loading your heatmap…") }}</p>
+  </div>
+
+  {# ── Logged-out state ─────────────────────────────────────────────────── #}
+  <div id="hm-logged-out" class="bc-empty" hidden>
+    <div class="bc-empty-icon">🔒</div>
+    <h2 class="bc-empty-title">{{ t.heatmap_logged_out_title | default("Sign in to see your heatmap") }}</h2>
+    <p class="bc-empty-body">{{ t.heatmap_logged_out_body | default("Your death pattern is built from your analyzed games. Sign in to unlock it.") }}</p>
+    <a class="bc-empty-cta" href="/login">{{ t.heatmap_logged_out_cta | default("Sign in") }}</a>
+  </div>
+
+  {# ── Empty state ──────────────────────────────────────────────────────── #}
+  <div id="hm-empty" class="bc-empty" hidden>
+    <div class="bc-empty-icon">💣</div>
+    <h2 class="bc-empty-title">{{ t.heatmap_empty_title | default("No analyzed losses yet") }}</h2>
+    <p class="bc-empty-body">{{ t.heatmap_empty_body | default("Play a few expert games and your death pattern will appear here.") }}</p>
+    <a class="bc-empty-cta" href="/">{{ t.heatmap_empty_cta | default("▶ Play a game") }}</a>
+  </div>
+
+  {# ── Error state ──────────────────────────────────────────────────────── #}
+  <div id="hm-error" class="bc-error" hidden>
+    <p>{{ t.heatmap_error | default("Something went wrong loading your heatmap. Please refresh.") }}</p>
+  </div>
+
+  {# ── Main content ─────────────────────────────────────────────────────── #}
+  <div id="hm-main" hidden>
+
+    {# Filter bar #}
+    <div class="hm-filter-bar">
+      <span class="hm-filter-label">{{ t.heatmap_filter_difficulty | default("Difficulty:") }}</span>
+      <button class="hm-chip" data-filter="difficulty" data-value="beginner">{{ t.bootcamp_level_beginner | default("Beginner") }}</button>
+      <button class="hm-chip" data-filter="difficulty" data-value="intermediate">{{ t.bootcamp_level_intermediate | default("Intermediate") }}</button>
+      <button class="hm-chip active" data-filter="difficulty" data-value="expert">{{ t.bootcamp_level_expert | default("Expert") }}</button>
+
+      <span class="hm-filter-label hm-filter-sep">{{ t.heatmap_filter_time | default("Time range:") }}</span>
+      <button class="hm-chip" data-filter="time" data-value="7">{{ t.heatmap_time_7d | default("7 days") }}</button>
+      <button class="hm-chip" data-filter="time" data-value="30">{{ t.heatmap_time_30d | default("30 days") }}</button>
+      <button class="hm-chip active" data-filter="time" data-value="90">{{ t.heatmap_time_90d | default("90 days") }}</button>
+      <button class="hm-chip" data-filter="time" data-value="365">{{ t.heatmap_time_all | default("All time") }}</button>
+
+      <span class="hm-filter-label hm-filter-sep">{{ t.heatmap_filter_mode | default("Mode:") }}</span>
+      <button class="hm-chip active" data-filter="mode" data-value="standard">{{ t.heatmap_mode_standard | default("Standard") }}</button>
+      <button class="hm-chip" data-filter="mode" data-value="no_guess">{{ t.heatmap_mode_no_guess | default("No-Guess") }}</button>
+    </div>
+
+    {# Stat strip #}
+    <div class="hm-stat-strip">
+      <div class="hm-stat-card">
+        <div class="hm-stat-label">{{ t.heatmap_stat_games | default("Games analyzed") }}</div>
+        <div class="hm-stat-value" id="hm-stat-games">—</div>
+        <div class="hm-stat-meta" id="hm-stat-games-meta"></div>
+      </div>
+      <div class="hm-stat-card">
+        <div class="hm-stat-label">{{ t.heatmap_stat_top_cause | default("Most common cause") }}</div>
+        <div class="hm-stat-value" id="hm-stat-cause" style="font-size:17px;line-height:1.3;margin-top:6px;">—</div>
+        <div class="hm-stat-meta" id="hm-stat-cause-meta"></div>
+      </div>
+      <div class="hm-stat-card">
+        <div class="hm-stat-label">{{ t.heatmap_stat_region | default("Hottest region") }}</div>
+        <div class="hm-stat-value" id="hm-stat-region" style="font-size:20px;line-height:1.3;margin-top:6px;">—</div>
+        <div class="hm-stat-meta" id="hm-stat-region-meta"></div>
+      </div>
+      <div class="hm-stat-card">
+        <div class="hm-stat-label">{{ t.heatmap_stat_survival | default("Avg survival") }}</div>
+        <div class="hm-stat-value" id="hm-stat-survival">—</div>
+        <div class="hm-stat-meta">3BV completed before death</div>
+      </div>
+    </div>
+
+    {# Main grid: board + sidebar #}
+    <div class="hm-grid">
+
+      {# Heatmap board #}
+      <div class="hm-card">
+        <div class="hm-card-title" id="hm-board-title">{{ t.heatmap_board_title | default("Death heatmap") }}</div>
+        <div class="hm-card-subtitle">{{ t.heatmap_board_subtitle | default("Hover a cell to see how often you died there.") }}</div>
+        <div class="hm-board-wrap">
+          <div class="hm-board-inner">
+            <div class="hm-board" id="hm-board"></div>
+          </div>
+        </div>
+        <div class="hm-legend">
+          <span>{{ t.heatmap_legend_zero | default("0 deaths") }}</span>
+          <div class="hm-legend-gradient"></div>
+          <span id="hm-legend-max">{{ t.heatmap_legend_max | default("12+ deaths") }}</span>
+        </div>
+      </div>
+
+      {# Breakdown sidebar #}
+      <div class="hm-card">
+        <div class="hm-card-title">{{ t.heatmap_cause_title | default("Death cause") }}</div>
+        <div class="hm-card-subtitle" id="hm-cause-subtitle"></div>
+        <ul class="hm-breakdown-list" id="hm-cause-list"></ul>
+
+        <div class="hm-region-section-title">{{ t.heatmap_region_title | default("By region") }}</div>
+        <div class="hm-region-grid" id="hm-region-grid"></div>
+      </div>
+    </div>
+
+    {# Insights #}
+    <div class="hm-insights" id="hm-insights"></div>
+
+  </div>{# /hm-main #}
+
+</div>{# /bc-page #}
+
+{# Floating tooltip — follows cursor over hot cells #}
+<div class="hm-tooltip" id="hm-tooltip" hidden></div>
+
+<script>
+  window.HM_CONFIG = {
+    apiBase: "/api",
+    copy: {
+      losses:      {{ (t.heatmap_stat_games | default("losses") | tojson) }},
+      deaths:      "deaths",
+      ofDeaths:    "of deaths",
+      gamesLabel:  "games",
+      noDeaths:    "No deaths recorded",
+      siteAvg:     "Site avg",
+      insight_avoidable_title: {{ (t.heatmap_insight_avoidable_title | default("Avoidable deaths") | tojson) }},
+      insight_avoidable_body:  {{ (t.heatmap_insight_avoidable_body | default("{pct}% of your losses were classified as avoidable. Site average is {site_pct}%.") | tojson) }},
+      insight_edge_title:      {{ (t.heatmap_insight_edge_title | default("Edge clustering") | tojson) }},
+      insight_edge_body:       {{ (t.heatmap_insight_edge_body | default("{pct}% of your deaths happen on the edge. Edge cells have fewer neighbors and are harder to disambiguate — flag discipline helps here.") | tojson) }},
+      region_center: {{ (t.heatmap_region_center | default("Center") | tojson) }},
+      region_edge:   {{ (t.heatmap_region_edge | default("Edge") | tojson) }},
+      region_corner: {{ (t.heatmap_region_corner | default("Corner") | tojson) }},
+      region_dense:  {{ (t.heatmap_region_dense | default("Dense cluster") | tojson) }},
+    },
+  };
+</script>
+<script src="/static/js/bootcamp_heatmap.js?v=1"></script>
+{% endblock %}

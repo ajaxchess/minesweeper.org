@@ -1,6 +1,6 @@
 # Bootcamp: Mistake Heatmap Page
 
-**Status:** ready
+**Status:** in-progress
 **Feature ID:** F-BC-HEATMAP
 **Author:** Richard Cross
 **Date:** 2026-09-21

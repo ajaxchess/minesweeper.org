@@ -2229,6 +2229,15 @@ async def bootcamp_page(request: Request):
         "t": get_t(request),
     })
 
+@app.get("/bootcamp/heatmap", response_class=HTMLResponse)
+async def bootcamp_heatmap_page(request: Request):
+    return templates.TemplateResponse(request, "bootcamp_heatmap.html", {
+        "mode": "bootcamp",
+        "user": get_current_user(request),
+        "lang": get_lang(request),
+        "t": get_t(request),
+    })
+
 @app.get("/quests", response_class=HTMLResponse)
 async def quests_page(request: Request):
     return templates.TemplateResponse(request, "quests.html", {
