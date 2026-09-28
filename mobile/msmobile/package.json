@@ -40,7 +40,8 @@
   "private": true,
   "overrides": {
     "form-data": "^4.0.6",
-    "uuid": ">=11.1.1"
+    "uuid": ">=11.1.1",
+    "image-size": ">=2.0.3"
   },
   "devDependencies": {
     "@testing-library/react-native": "^13.3.3",
