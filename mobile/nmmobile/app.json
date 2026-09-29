@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Numbers Match",
+    "slug": "numbers-match-org",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "org.minesweeper.numbersmatch",
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "privacyManifests": {}
+    },
+    "android": {
+      "package": "org.minesweeper.numbersmatch",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d2351d9b-4270-482f-9f16-7629993bf995"
+      }
+    },
+    "owner": "ajaxchess",
+    "plugins": [
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-8102958922361899~3782342262",
+          "iosAppId": "ca-app-pub-8102958922361899~3782342262"
+        }
+      ]
+    ]
+  }
+}
