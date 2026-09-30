@@ -1,6 +1,6 @@
 # Bootcamp: Mistake Heatmap Page
 
-**Status:** in-progress
+**Status:** done
 **Feature ID:** F-BC-HEATMAP
 **Author:** Richard Cross
 **Date:** 2026-09-21
@@ -89,4 +89,8 @@ Dependencies: none hard. Pairs well with F-BC-REPLAY.
 
 ## Implementation Notes
 
-_To be filled in after shipping._
+Built in two phases:
+- **Phase 1** (`eb2a4083`): Route at `/bootcamp/heatmap`, board-grid renderer (30×16 Expert, 9×9 Beginner), heat colour scale, difficulty selector, mode toggle (Standard / No-Guess), empty and error states, translation keys, footer link from `/bootcamp`.
+- **Phase 2** (`93b29f23`): Trend chart (Chart.js line), per-cell drill-down list with links to individual game replays, live trend query wired to the `?days=` time-window parameter.
+
+Deployed and staging-tested by `staging-tested/aaa089d` (2026-09-30). All success criteria verified present in the implementation.
