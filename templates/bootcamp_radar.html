@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.radar_title | default("Skill Radar") }} — {{ t.nav_bootcamp | default("Bootcamp") }}{% endblock %}
+{% block description %}{{ t.radar_subtitle | default("Your 9-axis skill profile vs. expert players, based on your last 50 games.") }}{% endblock %}
+{% block canonical %}https://minesweeper.org/bootcamp/radar{% endblock %}
+{% block og_url %}https://minesweeper.org/bootcamp/radar{% endblock %}
+{% block og_title %}Skill Radar — Minesweeper Bootcamp{% endblock %}
+{% block og_description %}See your 9-axis minesweeper skill profile — speed, efficiency, chord use, pattern recognition and more — compared to expert players.{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/css/bootcamp.css?v=3" />
+  <style>
+    /* ── Radar page layout ───────────────────────────────────────────────── */
+    .br-breadcrumb {
+      font-size: 13px;
+      color: var(--bc-text-muted);
+      margin-bottom: 16px;
+    }
+    .br-breadcrumb a {
+      color: var(--bc-accent);
+      text-decoration: none;
+    }
+    .br-breadcrumb a:hover { text-decoration: underline; }
+
+    /* ── Mode toggle ─────────────────────────────────────────────────────── */
+    .br-mode-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    /* ── Main grid ───────────────────────────────────────────────────────── */
+    .br-grid {
+      display: grid;
+      grid-template-columns: 480px 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 860px) {
+      .br-grid { grid-template-columns: 1fr; }
+    }
+
+    .br-card {
+      background: var(--bc-surface);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: var(--bc-shadow);
+    }
+    .br-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .br-card-sub {
+      font-size: 13px;
+      color: var(--bc-text-muted);
+      margin-bottom: 18px;
+    }
+
+    /* ── Radar chart ─────────────────────────────────────────────────────── */
+    .br-chart-wrap {
+      position: relative;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .br-legend {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      font-size: 13px;
+      margin-top: 14px;
+      color: var(--bc-text-muted);
+    }
+    .br-legend-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+
+    /* ── Axis breakdown ──────────────────────────────────────────────────── */
+    .br-axis-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .br-axis-item {
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--bc-border);
+    }
+    .br-axis-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .br-axis-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 7px;
+    }
+    .br-axis-name {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .br-axis-dard {
+      font-size: 10px;
+      color: var(--bc-purple);
+      font-weight: 700;
+    }
+    .br-axis-values {
+      font-size: 12px;
+      color: var(--bc-text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .br-axis-track {
+      height: 9px;
+      background: var(--bc-locked-soft);
+      border-radius: 5px;
+      position: relative;
+      overflow: visible;
+    }
+    .br-axis-fill {
+      height: 100%;
+      border-radius: 5px;
+      background: linear-gradient(90deg, var(--bc-accent), #60a5fa);
+      transition: width 0.5s ease;
+    }
+    .br-axis-tick {
+      position: absolute;
+      top: -3px;
+      bottom: -3px;
+      width: 2px;
+      background: #1f2937;
+      border-radius: 1px;
+    }
+    .br-axis-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 5px;
+      font-size: 11px;
+      color: var(--bc-text-muted);
+    }
+    .br-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .br-pill--weak     { background: #fee2e2; color: #dc2626; }
+    .br-pill--average  { background: var(--bc-warning-soft); color: #b45309; }
+    .br-pill--strong   { background: var(--bc-success-soft); color: #059669; }
+
+    /* ── Insights row ────────────────────────────────────────────────────── */
+    .br-insights {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 640px) {
+      .br-insights { grid-template-columns: 1fr; }
+    }
+    .br-insight {
+      background: var(--bc-surface);
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: var(--bc-shadow);
+      border-top: 3px solid var(--bc-accent);
+    }
+    .br-insight--strength { border-top-color: var(--bc-success); }
+    .br-insight--weakness { border-top-color: #dc2626; }
+    .br-insight-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--bc-text-muted);
+      font-weight: 700;
+    }
+    .br-insight-value {
+      font-size: 18px;
+      font-weight: 700;
+      margin-top: 5px;
+      line-height: 1.2;
+    }
+    .br-insight-detail {
+      font-size: 12px;
+      color: var(--bc-text-muted);
+      margin-top: 7px;
+      line-height: 1.5;
+    }
+
+    /* ── Recommendation block ────────────────────────────────────────────── */
+    .br-rec {
+      background: linear-gradient(135deg, var(--bc-warning-soft), #fde68a);
+      border-radius: 14px;
+      padding: 22px 26px;
+      box-shadow: var(--bc-shadow);
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+    .br-rec-icon { font-size: 26px; flex-shrink: 0; }
+    .br-rec-title { font-size: 16px; font-weight: 700; margin-bottom: 5px; }
+    .br-rec-body  { font-size: 13px; color: #78350f; line-height: 1.6; }
+    .br-rec-cta {
+      display: inline-flex;
+      align-items: center;
+      margin-top: 12px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: #92400e;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .br-rec-cta:hover { background: #78350f; }
+
+    /* ── Footer stat ─────────────────────────────────────────────────────── */
+    .br-games-meta {
+      text-align: center;
+      font-size: 12px;
+      color: var(--bc-text-muted);
+      margin-bottom: 8px;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="bc-page">
+
+  <div class="br-breadcrumb">
+    <a href="/bootcamp">{{ t.radar_back | default("← Bootcamp") }}</a>
+  </div>
+
+  <header class="bc-header">
+    <h1 class="bc-header-title">{{ t.radar_title | default("Skill Radar") }}</h1>
+    <p class="bc-header-sub">{{ t.radar_subtitle | default("Your 9-axis skill profile vs. expert players, based on your last 50 games.") }}</p>
+  </header>
+
+  {# Mode toggle #}
+  <div class="br-mode-bar">
+    <div class="bc-mode-toggle" role="tablist" aria-label="{{ t.heatmap_filter_mode | default('Mode') }}">
+      <button class="bc-mode-tab bc-mode-tab--active" data-mode="standard" role="tab" aria-selected="true">
+        {{ t.radar_mode_standard | default("Standard") }}
+      </button>
+      <button class="bc-mode-tab" data-mode="no_guess" role="tab" aria-selected="false">
+        {{ t.radar_mode_no_guess | default("No-Guess") }}
+      </button>
+    </div>
+  </div>
+
+  {# Loading #}
+  <div id="br-loading" class="bc-loading">
+    <div class="bc-spinner"></div>
+    <p>{{ t.radar_loading | default("Loading your skill radar…") }}</p>
+  </div>
+
+  {# Empty state (404 — no games analyzed yet) #}
+  <div id="br-empty" class="bc-empty" hidden>
+    <h2 class="bc-empty-title">{{ t.radar_empty_title | default("Not enough games yet") }}</h2>
+    <p class="bc-empty-body">{{ t.radar_empty_body | default("Play and analyze a few expert games and your skill profile will appear here.") }}</p>
+    <a href="/" class="bc-btn bc-btn--primary">▶ {{ t.heatmap_empty_cta | default("Play a game") }}</a>
+  </div>
+
+  {# Error state #}
+  <div id="br-error" class="bc-empty" hidden>
+    <h2 class="bc-empty-title">{{ t.radar_error_title | default("Couldn't load radar") }}</h2>
+    <p class="bc-empty-body">{{ t.radar_error_body | default("Something went wrong. Try refreshing the page.") }}</p>
+  </div>
+
+  {# Main content #}
+  <div id="br-main" hidden>
+
+    {# Main grid: chart + axis breakdown #}
+    <div class="br-grid">
+
+      <div class="br-card">
+        <div class="br-card-title">{{ t.radar_chart_title | default("Skill Profile") }}</div>
+        <div class="br-card-sub">{{ t.radar_chart_subtitle | default("Each axis is your percentile vs. expert players.") }}</div>
+        <div class="br-chart-wrap">
+          <canvas id="br-chart" width="400" height="400"></canvas>
+        </div>
+        <div class="br-legend">
+          <span><span class="br-legend-dot" style="background:#2563eb"></span>{{ t.radar_legend_you | default("You") }}</span>
+          <span><span class="br-legend-dot" style="background:transparent;border:2px dashed #10b981"></span>{{ t.radar_legend_benchmark | default("Top 10%") }}</span>
+        </div>
+      </div>
+
+      <div class="br-card">
+        <div class="br-card-title">{{ t.radar_axes_title | default("Axis Breakdown") }}</div>
+        <div class="br-card-sub">{{ t.radar_axes_subtitle | default("Tick mark shows the top-10% benchmark.") }}</div>
+        <div class="br-axis-list" id="br-axes"></div>
+      </div>
+
+    </div>
+
+    {# Insight cards #}
+    <div class="br-insights" id="br-insights"></div>
+
+    {# Recommendation #}
+    <div id="br-rec"></div>
+
+    {# Games-analyzed footnote #}
+    <p class="br-games-meta" id="br-games-meta"></p>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+window.BOOTCAMP_CONFIG = {
+  apiBase: "/api",
+  difficulty: "expert",
+  initialMode: "standard",
+  copy: {
+    legendYou:        {{ t.radar_legend_you      | default("You")       | tojson }},
+    legendBenchmark:  {{ t.radar_legend_benchmark | default("Top 10%")  | tojson }},
+    insightTop:       {{ t.radar_insight_top      | default("Top axis") | tojson }},
+    insightWeakness:  {{ t.radar_insight_weakness | default("Weakest axis")      | tojson }},
+    insightLeverage:  {{ t.radar_insight_leverage | default("Biggest leverage")  | tojson }},
+    newDardStar:      {{ t.radar_new_dard_star    | default("★ Dard Part-2 skill") | tojson }},
+    gamesAnalyzed:    {{ t.radar_games_analyzed   | default("Based on {n} analyzed games") | tojson }},
+    pillWeak:         {{ "Weak"    | tojson }},
+    pillAverage:      {{ "Average" | tojson }},
+    pillStrong:       {{ "Strong"  | tojson }},
+  },
+};
+</script>
+<script src="/static/js/bootcamp_radar.js?v=1"></script>
+{% endblock %}

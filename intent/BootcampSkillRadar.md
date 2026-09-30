@@ -1,6 +1,6 @@
 # Bootcamp: Skill Radar Page
 
-**Status:** ready
+**Status:** in-progress
 **Feature ID:** F-BC-RADAR
 **Author:** Richard Cross
 **Date:** 2026-09-21
