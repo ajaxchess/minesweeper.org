@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.replay_bc_title | default("Game Replays") }} — Minesweeper Bootcamp{% endblock %}
+{% block description %}{{ t.replay_bc_subtitle | default("Your analyzed games, move by move.") }}{% endblock %}
+{% block canonical %}https://minesweeper.org/bootcamp/replays{% endblock %}
+{% block og_url %}https://minesweeper.org/bootcamp/replays{% endblock %}
+{% block og_title %}Game Replays — Minesweeper Bootcamp{% endblock %}
+{% block og_description %}Review your analyzed expert games move by move with coaching annotations.{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/css/bootcamp.css?v=3" />
+  <style>
+    .brl-breadcrumb { font-size: 13px; color: var(--bc-text-muted); margin-bottom: 16px; }
+    .brl-breadcrumb a { color: var(--bc-accent); text-decoration: none; }
+    .brl-breadcrumb a:hover { text-decoration: underline; }
+
+    .brl-total { font-size: 13px; color: var(--bc-text-muted); margin-bottom: 16px; }
+
+    /* Table */
+    .brl-table-wrap { overflow-x: auto; border-radius: 14px; box-shadow: var(--bc-shadow); margin-bottom: 24px; }
+    .brl-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--bc-surface);
+      border-radius: 14px; overflow: hidden;
+    }
+    .brl-table th {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px;
+      color: var(--bc-text-muted); font-weight: 700;
+      padding: 12px 16px; text-align: left;
+      background: var(--bc-surface);
+      border-bottom: 2px solid var(--bc-border);
+    }
+    .brl-table td {
+      padding: 12px 16px; font-size: 14px;
+      border-bottom: 1px solid var(--bc-border);
+      vertical-align: middle;
+    }
+    .brl-table tr:last-child td { border-bottom: none; }
+    .brl-table tbody tr:hover { background: var(--bc-locked-soft); }
+
+    .brl-outcome {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 999px;
+      font-size: 12px; font-weight: 700;
+    }
+    .brl-outcome--win    { background: var(--bc-success-soft); color: #059669; }
+    .brl-outcome--loss   { background: #fee2e2; color: #dc2626; }
+    .brl-outcome--abandon{ background: var(--bc-locked-soft); color: var(--bc-locked); }
+
+    .brl-badge-count {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; color: var(--bc-text-muted);
+    }
+    .brl-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--bc-warning);
+      display: inline-block;
+    }
+
+    .brl-review-btn {
+      padding: 6px 14px; border-radius: 8px;
+      background: var(--bc-accent); color: #fff;
+      font-size: 12px; font-weight: 600;
+      text-decoration: none; display: inline-block;
+    }
+    .brl-review-btn:hover { opacity: 0.9; }
+
+    .brl-num { font-variant-numeric: tabular-nums; }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="bc-page">
+
+  <div class="brl-breadcrumb">
+    <a href="/bootcamp">{{ t.replay_bc_back | default("← Bootcamp") }}</a>
+  </div>
+
+  <header class="bc-header">
+    <h1 class="bc-header-title">{{ t.replay_bc_title | default("Game Replays") }}</h1>
+    <p class="bc-header-sub">{{ t.replay_bc_subtitle | default("Your analyzed games, move by move. Pick a game to see where you went wrong — and why.") }}</p>
+  </header>
+
+  {# Loading #}
+  <div id="brl-loading" class="bc-loading">
+    <div class="bc-spinner"></div>
+    <p>{{ t.replay_bc_loading | default("Loading your replays…") }}</p>
+  </div>
+
+  {# Empty #}
+  <div id="brl-empty" class="bc-empty" hidden>
+    <h2 class="bc-empty-title">{{ t.replay_bc_empty_title | default("No analyzed replays yet") }}</h2>
+    <p class="bc-empty-body">{{ t.replay_bc_empty_body | default("Play and analyze a few expert games and they'll appear here, ready for move-by-move coaching.") }}</p>
+    <a href="/" class="bc-btn bc-btn--primary">▶ {{ t.heatmap_empty_cta | default("Play a game") }}</a>
+  </div>
+
+  {# Error #}
+  <div id="brl-error" class="bc-empty" hidden>
+    <h2 class="bc-empty-title">{{ t.replay_bc_error_title | default("Couldn't load replays") }}</h2>
+    <p class="bc-empty-body">{{ t.replay_bc_error_body | default("Something went wrong. Try refreshing.") }}</p>
+  </div>
+
+  {# Main #}
+  <div id="brl-main" hidden>
+    <p id="brl-total" class="brl-total"></p>
+    <div class="brl-table-wrap">
+      <table class="brl-table">
+        <thead>
+          <tr>
+            <th>{{ t.replay_bc_col_date      | default("Date") }}</th>
+            <th>{{ t.replay_bc_col_outcome   | default("Outcome") }}</th>
+            <th>{{ t.replay_bc_col_time      | default("Time") }}</th>
+            <th>{{ t.replay_bc_col_ioe       | default("IOE") }}</th>
+            <th>{{ t.replay_bc_col_hierarchy | default("Hierarchy") }}</th>
+            <th>{{ t.replay_bc_col_bvs       | default("3BV") }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="brl-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.REPLAYS_CONFIG = {
+  apiBase: "/api",
+  copy: {
+    win:         {{ t.replay_bc_win     | default("Win")    | tojson }},
+    loss:        {{ t.replay_bc_loss    | default("Loss")   | tojson }},
+    abandon:     {{ t.replay_bc_abandon | default("Abandon")| tojson }},
+    view:        {{ t.replay_bc_view    | default("Review") | tojson }},
+    total:       {{ t.replay_bc_total   | default("{n} analyzed games") | tojson }},
+    annotations: {{ t.replay_bc_annotations | default("{n} coaching notes") | tojson }},
+  },
+};
+</script>
+<script src="/static/js/bootcamp_replays.js?v=1"></script>
+{% endblock %}

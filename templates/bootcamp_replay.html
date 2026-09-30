@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}Replay #{{ game_replay_id }} — Minesweeper Bootcamp{% endblock %}
+{% block description %}Annotated move-by-move coaching replay{% endblock %}
+{% block canonical %}https://minesweeper.org/bootcamp/replay/{{ game_replay_id }}{% endblock %}
+{% block og_url %}https://minesweeper.org/bootcamp/replay/{{ game_replay_id }}{% endblock %}
+{% block og_title %}Replay Analysis — Minesweeper Bootcamp{% endblock %}
+{% block og_description %}Move-by-move coaching annotations on your expert minesweeper game.{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/css/bootcamp.css?v=3" />
+  <style>
+    /* ── Breadcrumb ─────────────────────────────────────────── */
+    .br-breadcrumb { font-size: 13px; color: var(--bc-text-muted); margin-bottom: 12px; }
+    .br-breadcrumb a { color: var(--bc-accent); text-decoration: none; }
+    .br-breadcrumb a:hover { text-decoration: underline; }
+
+    /* ── Game title row ─────────────────────────────────────── */
+    .br-title-row {
+      display: flex; align-items: baseline; gap: 14px;
+      margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .br-title-row h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.4px; }
+    .br-outcome-pill {
+      padding: 3px 12px; border-radius: 999px;
+      font-size: 12px; font-weight: 700;
+    }
+    .br-outcome-pill--win    { background: var(--bc-success-soft); color: #059669; }
+    .br-outcome-pill--loss   { background: #fee2e2; color: #dc2626; }
+    .br-outcome-pill--abandon{ background: var(--bc-locked-soft); color: var(--bc-locked); }
+
+    /* ── Stat strip ─────────────────────────────────────────── */
+    .br-stats {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 900px) { .br-stats { grid-template-columns: repeat(4, 1fr); } }
+    @media (max-width: 560px) { .br-stats { grid-template-columns: repeat(2, 1fr); } }
+    .br-stat {
+      background: var(--bc-surface); border-radius: 10px; padding: 12px 14px;
+      box-shadow: var(--bc-shadow);
+    }
+    .br-stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--bc-text-muted); font-weight: 700; }
+    .br-stat-value { font-size: 20px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; }
+    .br-stat-meta  { font-size: 11px; color: var(--bc-text-muted); margin-top: 2px; }
+
+    /* ── Main grid ──────────────────────────────────────────── */
+    .br-grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .br-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Board card ─────────────────────────────────────────── */
+    .br-board-card {
+      background: var(--bc-surface); border-radius: 14px; padding: 20px;
+      box-shadow: var(--bc-shadow);
+    }
+
+    .br-board-wrap {
+      background: linear-gradient(135deg, #c0c0c0, #a0a0a0);
+      padding: 10px; border-radius: 8px;
+      box-shadow: inset 2px 2px 0 #e0e0e0, inset -2px -2px 0 #707070;
+      display: flex; justify-content: center; align-items: center;
+      margin-bottom: 14px; overflow-x: auto;
+    }
+
+    #br-board {
+      display: grid;
+      gap: 0;
+      background: #808080;
+      border: 3px solid;
+      border-color: #707070 #fff #fff #707070;
+      position: relative;
+      /* grid-template-columns set by JS */
+    }
+
+    .br-cell {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 16px;
+      font-family: -apple-system, sans-serif;
+      user-select: none; position: relative;
+      cursor: default;
+    }
+    .br-cell--unrevealed {
+      background: #c0c0c0;
+      border: 2.5px solid;
+      border-color: #fff #707070 #707070 #fff;
+    }
+    .br-cell--revealed {
+      background: #c0c0c0;
+      border: 1px solid #909090;
+    }
+    .br-cell--flagged {
+      background: #c0c0c0;
+      border: 2.5px solid;
+      border-color: #fff #707070 #707070 #fff;
+    }
+    .br-cell--mine {
+      background: #ff4444;
+      border: 1px solid #909090;
+    }
+    .br-cell--cursor::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(37,99,235,0.35);
+      border: 2px solid var(--bc-accent);
+      box-sizing: border-box;
+      border-radius: 2px;
+      animation: br-pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes br-pulse {
+      0%, 100% { opacity: 0.5; }
+      50%       { opacity: 1; }
+    }
+
+    /* Annotation bubble on cell */
+    .br-annot-dot {
+      position: absolute;
+      top: -7px; right: -7px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      color: #fff; font-size: 9px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+      z-index: 5;
+    }
+    .br-annot-dot--wasted    { background: #f59e0b; }
+    .br-annot-dot--shortcut  { background: #8b5cf6; }
+    .br-annot-dot--opening   { background: #2563eb; }
+    .br-annot-dot--fish      { background: #06b6d4; }
+    .br-annot-dot--flagval   { background: #f97316; }
+    .br-annot-dot--hierarchy { background: #6366f1; }
+    .br-annot-dot--death     { background: #ef4444; }
+
+    /* ── Scrub bar ──────────────────────────────────────────── */
+    .br-playback {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bc-surface);
+      border: 1px solid var(--bc-border);
+      border-radius: 10px; padding: 12px 14px;
+      margin-top: 4px; flex-wrap: wrap;
+    }
+    .br-play-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--bc-accent); color: #fff;
+      border: none; cursor: pointer; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .br-play-btn:hover { opacity: 0.88; }
+    .br-step-btn {
+      background: transparent; border: 1px solid var(--bc-border);
+      border-radius: 7px; padding: 6px 10px;
+      cursor: pointer; font-size: 12px; color: var(--bc-text);
+      font-family: inherit;
+    }
+    .br-step-btn:hover { background: var(--bc-locked-soft); }
+    .br-scrub-wrap { flex: 1; min-width: 120px; }
+    .br-scrub-track {
+      height: 6px; background: var(--bc-border);
+      border-radius: 3px; position: relative; cursor: pointer;
+    }
+    .br-scrub-fill {
+      height: 100%; background: linear-gradient(90deg, var(--bc-accent), #60a5fa);
+      border-radius: 3px; width: 0%; transition: width 0.08s linear;
+    }
+    .br-scrub-thumb {
+      position: absolute; top: -5px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #fff; border: 3px solid var(--bc-accent);
+      transform: translateX(-50%); left: 0%;
+      transition: left 0.08s linear;
+      pointer-events: none;
+    }
+    /* Event markers on scrub track */
+    .br-scrub-mark {
+      position: absolute; top: -2px;
+      width: 10px; height: 10px; border-radius: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+    .br-scrub-mark--wasted    { background: #f59e0b; }
+    .br-scrub-mark--shortcut  { background: #8b5cf6; }
+    .br-scrub-mark--opening   { background: #2563eb; }
+    .br-scrub-mark--fish      { background: #06b6d4; }
+    .br-scrub-mark--flagval   { background: #f97316; }
+    .br-scrub-mark--hierarchy { background: #6366f1; }
+    .br-move-counter {
+      font-size: 12px; color: var(--bc-text-muted);
+      font-variant-numeric: tabular-nums; white-space: nowrap;
+    }
+    .br-move-counter strong { color: var(--bc-text); }
+    .br-speed-sel {
+      padding: 5px 8px; border-radius: 6px;
+      border: 1px solid var(--bc-border);
+      font-size: 12px; background: var(--bc-surface); color: var(--bc-text);
+      font-family: inherit;
+    }
+
+    /* ── Annotation rail ────────────────────────────────────── */
+    .br-rail-card {
+      background: var(--bc-surface); border-radius: 14px; padding: 20px;
+      box-shadow: var(--bc-shadow);
+    }
+    .br-rail-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
+    }
+    .br-rail-title { font-size: 16px; font-weight: 700; }
+
+    /* Filter chips */
+    .br-filters { display: flex; gap: 5px; flex-wrap: wrap; }
+    .br-filter-chip {
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      border: 1.5px solid var(--bc-border);
+      background: var(--bc-surface); color: var(--bc-text-muted);
+      font-family: inherit;
+    }
+    .br-filter-chip:hover { background: var(--bc-locked-soft); }
+    .br-filter-chip.active {
+      background: var(--bc-accent); color: #fff; border-color: var(--bc-accent);
+    }
+
+    /* Annotation list */
+    .br-rail-list {
+      list-style: none; max-height: 520px; overflow-y: auto;
+      padding-right: 4px;
+    }
+    .br-rail-item {
+      display: grid; grid-template-columns: 28px 1fr;
+      gap: 10px; padding: 10px 10px;
+      border-bottom: 1px solid var(--bc-border);
+      cursor: pointer; align-items: start;
+      border-left: 3px solid transparent;
+      transition: background 0.1s;
+    }
+    .br-rail-item:last-child { border-bottom: none; }
+    .br-rail-item:hover { background: var(--bc-locked-soft); }
+    .br-rail-item.active {
+      background: #dbeafe; border-left-color: var(--bc-accent);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .br-rail-item.active { background: #1e3a5f; }
+    }
+    :root[data-theme="dark"] .br-rail-item.active { background: #1e3a5f; }
+
+    .br-rail-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      color: #fff; font-size: 12px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .br-rail-num--wasted    { background: #f59e0b; }
+    .br-rail-num--shortcut  { background: #8b5cf6; }
+    .br-rail-num--opening   { background: #2563eb; }
+    .br-rail-num--fish      { background: #06b6d4; }
+    .br-rail-num--flagval   { background: #f97316; }
+    .br-rail-num--hierarchy { background: #6366f1; }
+    .br-rail-num--death     { background: #ef4444; }
+
+    .br-rail-body {}
+    .br-rail-item-title {
+      font-size: 13px; font-weight: 700; margin-bottom: 3px;
+    }
+    .br-rail-item-body {
+      font-size: 12px; color: var(--bc-text-muted); line-height: 1.5;
+    }
+    .br-rail-item-links {
+      display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap;
+    }
+    .br-rail-item-link {
+      font-size: 11px; color: var(--bc-accent); text-decoration: none; font-weight: 600;
+    }
+    .br-rail-item-link:hover { text-decoration: underline; }
+
+    .br-rail-none {
+      padding: 20px; text-align: center;
+      font-size: 13px; color: var(--bc-text-muted);
+    }
+
+    /* Pending / error states inside the grid */
+    .br-state-box {
+      background: var(--bc-surface); border-radius: 14px; padding: 40px 24px;
+      box-shadow: var(--bc-shadow); text-align: center; grid-column: 1 / -1;
+    }
+    .br-state-box h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .br-state-box p  { font-size: 14px; color: var(--bc-text-muted); line-height: 1.6; }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="bc-page">
+
+  <div class="br-breadcrumb">
+    <a href="/bootcamp/replays">{{ t.replay_one_back | default("← All replays") }}</a>
+  </div>
+
+  {# Loading #}
+  <div id="br-loading" class="bc-loading">
+    <div class="bc-spinner"></div>
+    <p>{{ t.replay_one_loading | default("Loading replay…") }}</p>
+  </div>
+
+  {# Error / Pending / Main — injected by JS #}
+  <div id="br-container"></div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.REPLAY_CONFIG = {
+  gameReplayId: {{ game_replay_id | tojson }},
+  apiBase: "/api",
+  copy: {
+    win:            {{ t.replay_bc_win     | default("Win")    | tojson }},
+    loss:           {{ t.replay_bc_loss    | default("Loss")   | tojson }},
+    abandon:        {{ t.replay_bc_abandon | default("Abandon")| tojson }},
+    play:           {{ t.replay_one_play   | default("Play")   | tojson }},
+    pause:          {{ t.replay_one_pause  | default("Pause")  | tojson }},
+    stepBack:       {{ t.replay_one_step_back | default("◀ Step") | tojson }},
+    stepFwd:        {{ t.replay_one_step_fwd  | default("Step ▶") | tojson }},
+    restart:        {{ t.replay_one_restart   | default("Restart") | tojson }},
+    speed:          {{ t.replay_one_speed     | default("Speed")   | tojson }},
+    moveOf:         {{ t.replay_one_move_of   | default("Move {current} of {total}") | tojson }},
+    annotTitle:     {{ t.replay_one_annotations_title | default("Coaching notes") | tojson }},
+    filterAll:      {{ t.replay_one_filter_all       | default("All")       | tojson }},
+    filterWasted:   {{ t.replay_one_filter_wasted    | default("Wasted")    | tojson }},
+    filterShortcut: {{ t.replay_one_filter_shortcut  | default("Shortcuts") | tojson }},
+    filterOpening:  {{ t.replay_one_filter_opening   | default("Openings")  | tojson }},
+    filterFish:     {{ t.replay_one_filter_fish      | default("Fishing")   | tojson }},
+    filterFlagval:  {{ t.replay_one_filter_flagval   | default("Flag value")| tojson }},
+    filterHierarchy:{{ t.replay_one_filter_hierarchy | default("Hierarchy") | tojson }},
+    noAnnotations:  {{ t.replay_one_no_annotations   | default("No annotations match this filter.") | tojson }},
+    drillCta:       {{ t.replay_one_drill_cta        | default("Drill this →") | tojson }},
+    learnMore:      {{ t.replay_one_learn_more       | default("Learn more →") | tojson }},
+    errorTitle:     {{ t.replay_one_error_title      | default("Couldn't load this replay") | tojson }},
+    errorBody:      {{ t.replay_one_error_body       | default("The replay may not exist or you may not have access.") | tojson }},
+    pendingTitle:   {{ t.replay_one_pending_title    | default("Analysis in progress") | tojson }},
+    pendingBody:    {{ t.replay_one_pending_body     | default("This game is queued for analysis. Check back in a few minutes.") | tojson }},
+  },
+};
+</script>
+<script src="/static/js/bootcamp_replay.js?v=1"></script>
+{% endblock %}
