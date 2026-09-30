@@ -1,6 +1,6 @@
 # Bootcamp: Remove the Preview Backdoor from Production JS
 
-**Status:** in-progress
+**Status:** done
 **Feature ID:** F-BC-PREVIEW
 **Author:** Richard Cross
 **Date:** 2026-09-21
