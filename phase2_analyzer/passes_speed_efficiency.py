@@ -15,6 +15,7 @@ from .simulator import (
     clone_board,
     count_newly_revealed,
     fresh_board,
+    simulate_up_to,
     snapshot_at_each_move,
 )
 from .solver import Solver, DEFAULT_SOLVER, is_in_corner, is_on_edge
@@ -107,15 +108,13 @@ def detect_wasted_clicks(game: Game) -> WastedClickReport:
     """
     wasted: list[WastedClick] = []
 
-    snapshots = list(snapshot_at_each_move(game))
-    # snapshots[i] is the state AFTER move (i-1), with index -1 = pre-game.
-
+    board = fresh_board(game)
     for i, move in enumerate(game.move_log):
-        before = snapshots[i][1]      # state before move i
-        after = snapshots[i + 1][1]   # state after move i
+        before = clone_board(board)   # snapshot before this move
+        apply_move(board, move)       # board is now the state after this move
 
         if move.action == Action.CHORD:
-            if count_newly_revealed(before, after) == 0:
+            if count_newly_revealed(before, board) == 0:
                 wasted.append(WastedClick(
                     move_index=i, move=move, reason="safetyChord"
                 ))
@@ -211,12 +210,14 @@ def detect_stranded_flags(game: Game) -> list[StrandedFlag]:
     Edge bias matches Dard's "stranded mines tend to be around the edges."
     """
     stranded: list[StrandedFlag] = []
-    snapshots = list(snapshot_at_each_move(game))
+    board = fresh_board(game)
 
     for i, move in enumerate(game.move_log):
+        before = clone_board(board)   # snapshot before this move
+        apply_move(board, move)
+
         if move.action != Action.RIGHT_CLICK:
             continue
-        before = snapshots[i][1]
         if before.cells[move.y][move.x].kind != "unrevealed":
             continue
         if _flag_used_later(game, i, move.x, move.y):
@@ -314,8 +315,7 @@ def classify_death(game: Game, solver: Solver = DEFAULT_SOLVER) -> DeathReport |
 
     last_idx = len(game.move_log) - 1
     last_move = game.move_log[last_idx]
-    snapshots = list(snapshot_at_each_move(game))
-    board_before = snapshots[last_idx][1]
+    board_before = simulate_up_to(game, last_idx - 1)  # state before the death click
 
     result = solver.analyze(board_before)
     was_provably_safe = (last_move.x, last_move.y) in result.provably_safe

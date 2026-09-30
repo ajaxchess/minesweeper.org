@@ -37,6 +37,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 import database as _db
 
+# SQLite doesn't know MEDIUMTEXT (a MySQL-only type).  Teach its compiler to
+# treat it as plain TEXT so Base.metadata.create_all() works in tests.
+from sqlalchemy.dialects.sqlite.base import SQLiteTypeCompiler
+SQLiteTypeCompiler.visit_MEDIUMTEXT = lambda self, type_, **kw: self.visit_TEXT(type_, **kw)
+
 # StaticPool: all sessions share one in-memory connection so tables created
 # by init_db() are visible to every subsequent session in the same process.
 _test_engine = create_engine(

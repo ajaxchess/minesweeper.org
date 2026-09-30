@@ -1,6 +1,6 @@
 # Bootcamp: Test Coverage
 
-**Status:** ready
+**Status:** done
 **Feature ID:** F-BC-TESTS
 **Author:** Richard Cross
 **Date:** 2026-09-21
@@ -108,4 +108,32 @@ Dependencies: none. Should precede F-BC-CONSOLIDATE.
 
 ## Implementation Notes
 
-_To be filled in after shipping._
+Two new test files, 34 tests total, all passing:
+
+**`tests/test_bootcamp_analyzer.py`** (22 tests) — unit tests for the phase2 analyzer:
+- `detect_wasted_clicks`: safetyChord and flagOnUnused cases, plus clean-game negative
+- `detect_shortcuts`: missed chord and right-click-on-revealed no-op cases
+- `detect_stranded_flags`: flag on edge not used in chord vs. non-edge flag
+- `classify_death`: forcedGuess, avoidableGuess (with region label), misread, and chord death
+- `detect_guesses`: forced vs. avoidable, including the avoidable-guess region field
+- `diagnose_level`: boundary tests at 0.849/0.851 threshold, multi-axis weakest-axis selection
+- `_finalize_level_mastery`: DARD pass promotion, already-set protection, empty axes
+
+**`tests/test_bootcamp_api.py`** (12 tests) — auth and annotation builder:
+- Auth gate (parametrized): all 8 bootcamp endpoints return 401 with no session
+- Annotation builder: sequential numbering, taken-opening suppression, high-value-flag suppression, empty analysis
+
+**Three bug fixes in `phase2_analyzer/passes_speed_efficiency.py`:**
+- `detect_wasted_clicks`: replaced `list(snapshot_at_each_move(game))` with incremental
+  `clone_board(board)` + `apply_move` — the generator yields the same mutable object at
+  every step, so the list captured all references to the final board state
+- `detect_stranded_flags`: same mutable-snapshot fix
+- `classify_death`: replaced snapshot approach with `simulate_up_to(game, last_idx - 1)` to
+  get the board state before the death click; the old code examined the post-death board
+
+**SQLite/MEDIUMTEXT compatibility fix:**
+- Added `SQLiteTypeCompiler.visit_MEDIUMTEXT` patch in `tests/conftest.py` — MySQL's MEDIUMTEXT
+  type is used in `GameAnalysis` columns and the SQLite compiler can't render it at CREATE TABLE
+  time; the patch teaches SQLite to treat it as plain TEXT for test runs
+- Reverted incorrect `try/except ImportError` in `phase2_analyzer/pipeline.py` (the import
+  never fails — the error is at compile time, not import time)
