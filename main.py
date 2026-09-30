@@ -2241,7 +2241,7 @@ async def bootcamp_heatmap_page(request: Request):
 @app.get("/bootcamp/radar", response_class=HTMLResponse)
 async def bootcamp_radar_page(request: Request):
     return templates.TemplateResponse(request, "bootcamp_radar.html", {
-        "mode": "bootcamp",
+        "mode": "bootcamp-radar",
         "user": get_current_user(request),
         "lang": get_lang(request),
         "t": get_t(request),

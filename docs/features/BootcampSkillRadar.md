@@ -1,6 +1,6 @@
 # Bootcamp: Skill Radar Page
 
-**Status:** in-progress
+**Status:** done
 **Feature ID:** F-BC-RADAR
 **Author:** Richard Cross
 **Date:** 2026-09-21
@@ -88,4 +88,22 @@ where the most existing work is sitting unused.
 
 ## Implementation Notes
 
-_To be filled in after shipping._
+Route, template, and JS all existed. The only work was fixing five field name
+mismatches between the API response and the JS, adding auth headers to the fetch,
+adding one missing translation key, and wiring the nav drawer link.
+
+**Field name fixes in `static/js/bootcamp_radar.js`:**
+- `a.axis` → `a.axis_key` (in `buildChart` and `renderAxes`)
+- `AXIS_LABELS[a.axis]` → `a.display_name` (API provides the label directly)
+- `DARD2_AXES.has(a.axis)` → `a.is_new_dard` (API returns boolean)
+- `i.type` → `i.kind` in `renderInsights`
+- `item.axis` → `item.axis_display` in `renderInsights`
+- `data.recommendation_cta_text` → `data.recommendation_cta_label` in `renderRec`
+- Added `credentials: 'same-origin'` and `X-Requested-With` header to `fetchRadar`
+
+**translations.py:** added `radar_games_analyzed` key.
+
+**templates/base.html:** added Skill Radar sub-link under Bootcamp in the nav drawer.
+
+**main.py:** changed `mode` from `"bootcamp"` to `"bootcamp-radar"` so the drawer
+sub-link activates on this page.

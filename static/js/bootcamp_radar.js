@@ -67,8 +67,10 @@
 
   /* ── Fetch ───────────────────────────────────────────────────────────────── */
   function fetchRadar(mode) {
-    return fetch(`${apiBase}/radar?mode=${mode}`)
-      .then(function (r) {
+    return fetch(`${apiBase}/radar?mode=${mode}`, {
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    }).then(function (r) {
         if (r.status === 404) return null;
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
@@ -78,7 +80,7 @@
   /* ── Chart ───────────────────────────────────────────────────────────────── */
   function buildChart(axes) {
     const labels = axes.map(function (a) {
-      return AXIS_LABELS[a.axis] || a.axis;
+      return a.display_name || AXIS_LABELS[a.axis_key] || a.axis_key;
     });
     const playerData    = axes.map(function (a) { return a.player_percentile;    });
     const benchmarkData = axes.map(function (a) { return a.benchmark_percentile; });
@@ -152,8 +154,8 @@
   /* ── Axis breakdown ──────────────────────────────────────────────────────── */
   function renderAxes(axes) {
     elAxes.innerHTML = axes.map(function (a) {
-      const name       = esc(AXIS_LABELS[a.axis] || a.axis);
-      const dard2      = DARD2_AXES.has(a.axis);
+      const name       = esc(a.display_name || AXIS_LABELS[a.axis_key] || a.axis_key);
+      const dard2      = a.is_new_dard;
       const playerPct  = Math.round(a.player_percentile);
       const benchPct   = Math.round(a.benchmark_percentile);
       const pill       = a.pill || 'average';
@@ -193,8 +195,8 @@
       { key: 'leverage',  label: copy.insightLeverage  || 'Biggest leverage', cls: ''                     },
     ];
     elInsights.innerHTML = configs.map(function (cfg) {
-      const item = insights.find(function (i) { return i.type === cfg.key; }) || {};
-      const axis   = esc(AXIS_LABELS[item.axis] || item.axis || '—');
+      const item = insights.find(function (i) { return i.kind === cfg.key; }) || {};
+      const axis   = esc(item.axis_display || AXIS_LABELS[item.axis_key] || '—');
       const detail = esc(item.detail || '');
       return [
         '<div class="br-insight ' + cfg.cls + '">',
@@ -215,7 +217,7 @@
     const title  = esc(data.recommendation_title);
     const body   = esc(data.recommendation_body || '');
     const ctaUrl = esc(data.recommendation_cta_url || '');
-    const ctaTxt = esc(data.recommendation_cta_text || 'Start drill');
+    const ctaTxt = esc(data.recommendation_cta_label || 'Start drill');
 
     elRec.innerHTML = [
       '<div class="br-rec">',

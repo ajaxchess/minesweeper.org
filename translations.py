@@ -119,6 +119,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "radar_error_title": "Couldn't load radar",
         "radar_error_body": "Something went wrong. Try refreshing the page.",
         "radar_new_dard_star": "★ Dard Part-2 skill",
+        "radar_games_analyzed": "Based on {n} analyzed games",
         "radar_loading": "Loading your skill radar…",
         # Drill
         "drill_title":          "Drill",
