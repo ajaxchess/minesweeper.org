@@ -2,7 +2,12 @@
 database.py
 .env
 *.pem
+*.key
+*.p12
+*.pfx
 *_credentials
+*credentials*
+*_secret.txt
 mobile/app/credentials/
 tips.txt
 
