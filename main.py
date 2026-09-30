@@ -2256,6 +2256,25 @@ async def bootcamp_patterns_page(request: Request):
         "t": get_t(request),
     })
 
+@app.get("/bootcamp/replays", response_class=HTMLResponse)
+async def bootcamp_replays_page(request: Request):
+    return templates.TemplateResponse(request, "bootcamp_replays.html", {
+        "mode": "bootcamp-replays",
+        "user": get_current_user(request),
+        "lang": get_lang(request),
+        "t": get_t(request),
+    })
+
+@app.get("/bootcamp/replay/{game_replay_id}", response_class=HTMLResponse)
+async def bootcamp_replay_page(request: Request, game_replay_id: int):
+    return templates.TemplateResponse(request, "bootcamp_replay.html", {
+        "mode": "bootcamp-replays",
+        "game_replay_id": game_replay_id,
+        "user": get_current_user(request),
+        "lang": get_lang(request),
+        "t": get_t(request),
+    })
+
 @app.get("/quests", response_class=HTMLResponse)
 async def quests_page(request: Request):
     return templates.TemplateResponse(request, "quests.html", {
