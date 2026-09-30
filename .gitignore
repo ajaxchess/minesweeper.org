@@ -8,6 +8,9 @@ database.py
 *_credentials
 *credentials*
 *_secret.txt
+*.ipa
+*.apk
+*.aab
 mobile/app/credentials/
 tips.txt
 
