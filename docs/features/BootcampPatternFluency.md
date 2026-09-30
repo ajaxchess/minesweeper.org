@@ -1,6 +1,6 @@
 # Bootcamp: Pattern Fluency Page
 
-**Status:** ready
+**Status:** done
 **Feature ID:** F-BC-FLUENCY
 **Author:** Richard Cross
 **Date:** 2026-09-21
@@ -87,4 +87,18 @@ Dependencies: none.
 
 ## Implementation Notes
 
-_To be filled in after shipping._
+New page wired to the existing `/api/patterns/fluency` endpoint with no backend changes.
+
+**Files created:**
+- `templates/bootcamp_patterns.html` — Jinja template using `.bc-page` variables; purple/indigo summary card, pattern list with inline CSS for tier-coloured left borders, Windows-95-style mini-board cells, reaction-time bar with benchmark tick, weekly drill-plan prescription card.
+- `static/js/bootcamp_patterns.js` — vanilla JS following the same fetch/render/state pattern as radar and heatmap. Key pieces: `BOARDS` lookup table mapping each `pattern_key` to a mini-board cell grid (10 patterns defined), `buildMiniBoard()` renderer, `renderSummary/PatternList/WeeklyPlan()`, mode toggle, and drill-start delegation.
+
+**Files modified:**
+- `translations.py` — 16 new `fluency_*` keys plus `bootcamp_patterns_link`.
+- `main.py` — new `GET /bootcamp/patterns` route, `mode="bootcamp-patterns"`.
+- `templates/base.html` — "Pattern Fluency" sub-link under Bootcamp in nav drawer.
+- `templates/bootcamp.html` — "Pattern Fluency →" link in page footer.
+
+**Mini-board boards defined:** `pattern_121`, `pattern_1221`, `pattern_232`, `pattern_11_corner`, `pattern_21_edge`, `opening_l_shape_edge`, `opening_2_satisfied`, `opening_potential_2cell`, `fishing_for_1`, `fishing_for_2`.
+
+**Drill start** resolves layer from drill_id prefix (`opening_`/`fish_` → L5, `pat_` → L2) and POSTs to `/api/drills/start`, then navigates to `/drill/{id}`.

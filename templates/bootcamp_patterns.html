@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.fluency_title | default("Pattern Fluency") }} — Minesweeper Bootcamp{% endblock %}
+{% block description %}{{ t.fluency_subtitle | default("How fast you read the patterns that decide expert games.") }}{% endblock %}
+{% block canonical %}https://minesweeper.org/bootcamp/patterns{% endblock %}
+{% block og_url %}https://minesweeper.org/bootcamp/patterns{% endblock %}
+{% block og_title %}Pattern Fluency — Minesweeper Bootcamp{% endblock %}
+{% block og_description %}See which patterns you read fast and which cost you time, and get a drill plan to close the gap.{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="/static/css/bootcamp.css?v=3" />
+  <style>
+    /* ── Breadcrumb ──────────────────────────────────────────────────────────── */
+    .bp-breadcrumb { font-size: 13px; color: var(--bc-text-muted); margin-bottom: 16px; }
+    .bp-breadcrumb a { color: var(--bc-accent); text-decoration: none; }
+    .bp-breadcrumb a:hover { text-decoration: underline; }
+
+    /* ── Summary card ────────────────────────────────────────────────────────── */
+    .bp-summary {
+      background: linear-gradient(135deg, #3730a3 0%, #6d28d9 100%);
+      color: #fff;
+      border-radius: 16px;
+      padding: 26px 28px;
+      margin-bottom: 20px;
+      box-shadow: var(--bc-shadow);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: center;
+    }
+    @media (max-width: 680px) { .bp-summary { grid-template-columns: 1fr; } }
+    .bp-summary-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; font-weight: 600; }
+    .bp-summary-score { font-size: 42px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin: 6px 0 8px; }
+    .bp-summary-detail { font-size: 13px; opacity: 0.9; line-height: 1.5; }
+    .bp-summary-stats {
+      display: flex; gap: 20px; flex-shrink: 0;
+      background: rgba(255,255,255,0.12);
+      padding: 14px 20px;
+      border-radius: 10px;
+    }
+    .bp-summary-stat { text-align: center; }
+    .bp-summary-stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; opacity: 0.75; }
+    .bp-summary-stat-value { font-size: 20px; font-weight: 700; margin-top: 3px; font-variant-numeric: tabular-nums; }
+
+    /* ── Mode bar ────────────────────────────────────────────────────────────── */
+    .bp-mode-bar { display: flex; gap: 8px; margin-bottom: 20px; align-items: center; }
+
+    /* ── Pattern list ────────────────────────────────────────────────────────── */
+    .bp-section-header {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 14px;
+    }
+    .bp-section-title { font-size: 17px; font-weight: 700; }
+    .bp-section-meta { font-size: 12px; color: var(--bc-text-muted); }
+
+    .bp-pattern-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+
+    .bp-row {
+      background: var(--bc-surface);
+      border-radius: 12px;
+      padding: 16px 18px;
+      box-shadow: var(--bc-shadow);
+      display: grid;
+      grid-template-columns: 72px 1fr 200px 90px 110px;
+      gap: 18px;
+      align-items: center;
+      border-left: 4px solid var(--bc-border);
+    }
+    .bp-row--high   { border-left-color: #ef4444; }
+    .bp-row--medium { border-left-color: var(--bc-warning); }
+    .bp-row--low    { border-left-color: var(--bc-success); }
+    @media (max-width: 860px) {
+      .bp-row { grid-template-columns: 60px 1fr 140px; }
+      .bp-row > :nth-child(4), .bp-row > :nth-child(5) { display: none; }
+    }
+    @media (max-width: 560px) {
+      .bp-row { grid-template-columns: 1fr; }
+      .bp-row > :nth-child(1) { display: none; }
+    }
+
+    /* Mini-board */
+    .bp-mini {
+      display: inline-grid;
+      background: #808080;
+      padding: 2px;
+      gap: 1px;
+    }
+    .bp-cell {
+      width: 17px; height: 17px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800;
+    }
+    .bp-cell--u, .bp-cell--F, .bp-cell--S {
+      background: #c0c0c0;
+      border: 1.5px solid;
+      border-color: #fff #707070 #707070 #fff;
+    }
+    .bp-cell--S { box-shadow: inset 0 0 0 2px #10b981; }
+    .bp-cell--N, .bp-cell--O {
+      background: #c0c0c0;
+      border: 1px solid #909090;
+    }
+    .bp-n1 { color: #0000ff; }
+    .bp-n2 { color: #008200; }
+    .bp-n3 { color: #ff0000; }
+    .bp-n4 { color: #000084; }
+
+    /* Pattern info */
+    .bp-pattern-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .bp-pattern-desc { font-size: 12px; color: var(--bc-text-muted); line-height: 1.4; }
+    .bp-pattern-freq { font-size: 11px; color: var(--bc-text-muted); margin-top: 4px; }
+    .bp-dard-tag {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      color: var(--bc-purple); margin-left: 4px;
+    }
+
+    /* Reaction-time bar */
+    .bp-rt-track {
+      height: 7px; background: var(--bc-locked-soft);
+      border-radius: 4px; position: relative; overflow: visible; margin-bottom: 5px;
+    }
+    .bp-rt-fill {
+      height: 100%; border-radius: 4px;
+      background: linear-gradient(90deg, var(--bc-accent), #60a5fa);
+    }
+    .bp-rt-bench {
+      position: absolute; top: -3px; bottom: -3px;
+      width: 2px; background: #1f2937; border-radius: 1px;
+    }
+    .bp-rt-meta {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--bc-text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .bp-rt-meta strong { color: var(--bc-text); }
+
+    /* Leverage */
+    .bp-leverage { text-align: center; }
+    .bp-lev-value { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+    .bp-lev-value--high   { color: #ef4444; }
+    .bp-lev-value--medium { color: var(--bc-warning); }
+    .bp-lev-value--low    { color: var(--bc-success); }
+    .bp-lev-label { font-size: 11px; color: var(--bc-text-muted); margin-top: 2px; }
+
+    /* Drill button / mastered */
+    .bp-drill-btn {
+      padding: 7px 12px; border: none; border-radius: 8px;
+      font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
+      white-space: nowrap; text-align: center;
+    }
+    .bp-drill-btn--primary { background: var(--bc-accent); color: #fff; }
+    .bp-drill-btn--primary:hover { opacity: 0.9; }
+    .bp-drill-btn--mastered {
+      background: var(--bc-success-soft); color: #059669;
+      border: 1px solid #a7f3d0; cursor: default;
+    }
+    .bp-drill-btn--none { background: var(--bc-locked-soft); color: var(--bc-locked); cursor: default; }
+
+    /* Weekly plan */
+    .bp-plan {
+      background: linear-gradient(135deg, var(--bc-warning-soft), #fde68a);
+      border-radius: 14px;
+      padding: 24px 28px;
+      box-shadow: var(--bc-shadow);
+      margin-bottom: 20px;
+    }
+    .bp-plan-title { font-size: 17px; font-weight: 700; color: #78350f; margin-bottom: 4px; }
+    .bp-plan-subtitle { font-size: 13px; color: #92400e; margin-bottom: 18px; line-height: 1.5; }
+    .bp-plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+    @media (max-width: 640px) { .bp-plan-grid { grid-template-columns: 1fr; } }
+    .bp-plan-day { background: #fff; border-radius: 10px; padding: 14px 16px; }
+    .bp-plan-day-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--bc-text-muted); font-weight: 700; }
+    .bp-plan-day-pattern { font-size: 15px; font-weight: 700; margin: 4px 0 6px; }
+    .bp-plan-day-meta { font-size: 12px; color: var(--bc-text-muted); line-height: 1.5; }
+    .bp-plan-note {
+      background: rgba(255,255,255,0.55); border-radius: 8px;
+      padding: 12px 14px; font-size: 13px; color: #78350f; line-height: 1.5;
+    }
+
+    /* Footer meta */
+    .bp-games-meta { text-align: center; font-size: 12px; color: var(--bc-text-muted); margin-bottom: 8px; }
+
+    /* Dark mode */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .bp-plan { background: linear-gradient(135deg, #292100, #3b2400); }
+      :root:not([data-theme="light"]) .bp-plan-title { color: #fcd34d; }
+      :root:not([data-theme="light"]) .bp-plan-subtitle { color: #fbbf24; }
+      :root:not([data-theme="light"]) .bp-plan-day { background: #1c1a00; }
+      :root:not([data-theme="light"]) .bp-plan-note { background: rgba(0,0,0,0.25); color: #fbbf24; }
+    }
+    :root[data-theme="dark"] .bp-plan { background: linear-gradient(135deg, #292100, #3b2400); }
+    :root[data-theme="dark"] .bp-plan-title { color: #fcd34d; }
+    :root[data-theme="dark"] .bp-plan-subtitle { color: #fbbf24; }
+    :root[data-theme="dark"] .bp-plan-day { background: #1c1a00; }
+    :root[data-theme="dark"] .bp-plan-note { background: rgba(0,0,0,0.25); color: #fbbf24; }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="bc-page">
+
+  <div class="bp-breadcrumb">
+    <a href="/bootcamp">{{ t.fluency_back | default("← Bootcamp") }}</a>
+  </div>
+
+  <header class="bc-header">
+    <h1 class="bc-header-title">{{ t.fluency_title | default("Pattern Fluency") }}</h1>
+    <p class="bc-header-sub">{{ t.fluency_subtitle | default("How fast you read the patterns that decide expert games.") }}</p>
+  </header>
+
+  {# Mode toggle #}
+  <div class="bp-mode-bar">
+    <div class="bc-mode-toggle" role="tablist" aria-label="Mode">
+      <button class="bc-mode-tab bc-mode-tab--active" data-mode="standard" role="tab" aria-selected="true">
+        {{ t.radar_mode_standard | default("Standard") }}
+      </button>
+      <button class="bc-mode-tab" data-mode="no_guess" role="tab" aria-selected="false">
+        {{ t.radar_mode_no_guess | default("No-Guess") }}
+      </button>
+    </div>
+  </div>
+
+  {# Loading #}
+  <div id="bp-loading" class="bc-loading">
+    <div class="bc-spinner"></div>
+    <p>{{ t.fluency_loading | default("Loading your pattern profile…") }}</p>
+  </div>
+
+  {# Empty #}
+  <div id="bp-empty" class="bc-empty" hidden>
+    <h2 class="bc-empty-title">{{ t.fluency_empty_title | default("Not enough data yet") }}</h2>
+    <p class="bc-empty-body">{{ t.fluency_empty_body | default("Play and analyze a few expert games and your pattern profile will appear here.") }}</p>
+    <a href="/" class="bc-btn bc-btn--primary">▶ {{ t.heatmap_empty_cta | default("Play a game") }}</a>
+  </div>
+
+  {# Error #}
+  <div id="bp-error" class="bc-empty" hidden>
+    <h2 class="bc-empty-title">{{ t.fluency_error_title | default("Couldn't load patterns") }}</h2>
+    <p class="bc-empty-body">{{ t.fluency_error_body | default("Something went wrong. Try refreshing the page.") }}</p>
+  </div>
+
+  {# Main content #}
+  <div id="bp-main" hidden>
+    <div id="bp-summary"></div>
+    <div class="bp-section-header">
+      <div class="bp-section-title">Patterns ranked by improvement leverage</div>
+      <div class="bp-section-meta">Leverage = seconds saved per game if you matched top-10%</div>
+    </div>
+    <div id="bp-list" class="bp-pattern-list"></div>
+    <div id="bp-plan"></div>
+    <p id="bp-games-meta" class="bp-games-meta"></p>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.FLUENCY_CONFIG = {
+  apiBase:     "/api",
+  initialMode: "standard",
+  copy: {
+    overallLabel:   {{ t.fluency_overall_label  | default("Overall pattern fluency") | tojson }},
+    drilledLabel:   {{ t.fluency_drilled_label  | default("Patterns drilled")        | tojson }},
+    gainLabel:      {{ t.fluency_gain_label     | default("Predicted gain")           | tojson }},
+    leverageLabel:  {{ t.fluency_leverage_label | default("per game")                 | tojson }},
+    masteredLabel:  {{ t.fluency_mastered       | default("Mastered ✓")               | tojson }},
+    drillBtn:       {{ t.fluency_drill_btn      | default("Drill")                    | tojson }},
+    dardLabel:      {{ t.fluency_dard_label     | default("★ Dard Part-2")            | tojson }},
+    planTitle:      {{ t.fluency_plan_title     | default("This week's drill plan")   | tojson }},
+    gamesAnalyzed:  {{ t.fluency_games_analyzed | default("Based on {n} analyzed games") | tojson }},
+  },
+};
+</script>
+<script src="/static/js/bootcamp_patterns.js?v=1"></script>
+{% endblock %}
