@@ -1,6 +1,6 @@
 # Bootcamp: Replay Analysis Page
 
-**Status:** ready
+**Status:** done
 **Feature ID:** F-BC-REPLAY
 **Author:** Richard Cross
 **Date:** 2026-09-21
@@ -99,4 +99,20 @@ Dependencies: none. Strongly recommended before F-EMBED Phase 6.
 
 ## Implementation Notes
 
-_To be filled in after shipping._
+**Pages:** `/bootcamp/replays` (list) and `/bootcamp/replay/{id}` (playback). Two routes added to `main.py`; linked from the bootcamp footer and nav drawer.
+
+**JS modules (reusable for F-EMBED Phase 6):**
+- `MinesweeperReplayBoard` — board state tracker + DOM renderer. Tracks revealed/flagged/cursor state from action stream (`l`/`r`/`c`). Renders annotation bubbles (numbered colored dots) at annotated cells.
+- `ReplayPlayback` — play/pause/step/seek controller. Uses real inter-move timing from `t_ms` deltas (capped at 1 s), scaled by a speed multiplier. Emits `onMove(index)`.
+- `AnnotationRail` — insight list with badge filter chips. Click-to-seek wired to `ReplayPlayback`. Highlights the active annotation as playback moves through the game.
+
+**Design constraints honored:**
+- Board rendered without mine layout (not in API): cursor position + flag state only. Numbers are not shown; the annotation overlays carry the coaching value.
+- `annotation_count` is not in `ReplayListEntry` — dropped from the list table; added IOE, hierarchy, and raw 3BV instead.
+- `created_at` is not in `ReplayResponse` — title line uses difficulty + mode + replay ID instead.
+
+**Files shipped:**
+- `templates/bootcamp_replays.html`, `templates/bootcamp_replay.html`
+- `static/js/bootcamp_replays.js`, `static/js/bootcamp_replay.js`
+- 44 translation keys added to `translations.py`
+- Nav drawer and bootcamp footer updated

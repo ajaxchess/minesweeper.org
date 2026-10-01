@@ -816,6 +816,13 @@ footer a:hover { text-decoration: underline; }
 
 .overlay-score-form button:disabled { opacity: 0.5; cursor: default; }
 
+.overlay-win-stats {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.02em;
+}
+
 .overlay-lb-link {
   color: rgba(255,255,255,0.8);
   font-size: 0.85rem;
