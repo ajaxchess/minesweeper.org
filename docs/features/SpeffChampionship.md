@@ -1,6 +1,6 @@
 # Speff Championship 2026
 
-**Status:** in-progress
+**Status:** done
 **Feature ID:** F-SPEFF-2026
 **Author:** Richard Cross
 **Date:** 2026-09-21
@@ -57,4 +57,18 @@ Year scope: `created_at >= 2026-01-01` and `< 2027-01-01` (UTC)
 
 ## Implementation Notes
 
-_To be filled in after shipping._
+Implemented in `speff_routes.py` and `templates/speff.html`, registered in
+`main.py` as an `APIRouter`.
+
+Four leaderboard queries (Beginner, Intermediate, Expert, Combined) filter
+`GameHistory` for 100%-efficiency games (`bbbv == left_clicks +
+coalesce(chord_clicks, 0)`) on standard board sizes within 2026. Combined
+requires qualifying times in all three modes and ranks by total time. Each
+query returns top 100 by best single-game time (or total for Combined),
+joining `UserProfile` for display name and public ID.
+
+Template renders four tabs with medal emoji for top 3 and a "you" badge for
+the logged-in user's row. Player names link to `/u/{public_id}`.
+
+Route added to `sitemap.xml`. Promoted via a link on the existing
+`/leaderboard` page.

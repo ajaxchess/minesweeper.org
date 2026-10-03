@@ -1,6 +1,6 @@
 # Static Assets Have No Source of Truth
 
-**Status:** in-progress
+**Status:** done
 **Feature ID:** F-ASSETS
 **Author:** Richard Cross
 **Date:** 2026-09-21
