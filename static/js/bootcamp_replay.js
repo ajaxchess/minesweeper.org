@@ -554,7 +554,7 @@
   })
   .then(function (r) {
     if (r.status === 404 || r.status === 403) {
-      showError(copy.errorTitle || 'Couldn't load this replay', copy.errorBody || 'The replay may not exist or you may not have access.');
+      showError(copy.errorTitle || 'Couldn\'t load this replay', copy.errorBody || 'The replay may not exist or you may not have access.');
       return null;
     }
     if (r.status === 425) {
@@ -570,7 +570,7 @@
   })
   .catch(function (err) {
     console.error('[replay]', err);
-    showError(copy.errorTitle || 'Couldn't load this replay', copy.errorBody || 'Something went wrong.');
+    showError(copy.errorTitle || 'Couldn\'t load this replay', copy.errorBody || 'Something went wrong.');
   });
 
 }());
