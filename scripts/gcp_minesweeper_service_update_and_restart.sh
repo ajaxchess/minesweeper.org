@@ -97,8 +97,14 @@ else
     echo "Static assets unchanged — skipping build."
 fi
 
-echo "Installing/updating Python dependencies..."
-"$VENV_DIR/bin/pip" install -r "$REPO_DIR/requirements.txt" --quiet || echo "Warning: pip install failed"
+# Same hash-pinned lockfile staging tested; on failure roll the code back and
+# stop without restarting (see minesweeper_service_update_and_restart.sh).
+echo "Installing/updating Python dependencies (requirements.lock, hash-checked)..."
+if ! "$VENV_DIR/bin/pip" install --quiet --require-hashes -r "$REPO_DIR/requirements.lock"; then
+    echo "ERROR: pip install failed for $LAST_GOOD. Rolling code back to $LOCAL_COMMIT; services NOT restarted."
+    git reset --hard "$LOCAL_COMMIT"
+    exit 1
+fi
 
 echo "Regenerating database.py from template..."
 /usr/bin/cp database_template.py database.py

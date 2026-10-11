@@ -75,7 +75,7 @@ ok "MySQL database and user created."
 info "Creating Python virtual environment..."
 sudo -u "$APP_USER" python3 -m venv "$VENV_DIR"
 sudo -u "$APP_USER" "$VENV_DIR/bin/pip" install --quiet --upgrade pip
-sudo -u "$APP_USER" "$VENV_DIR/bin/pip" install --quiet -r "$REPO_DIR/requirements.txt"
+sudo -u "$APP_USER" "$VENV_DIR/bin/pip" install --quiet --require-hashes -r "$REPO_DIR/requirements.lock"
 ok "Python dependencies installed."
 
 # ── 4. Node.js minification tools ─────────────────────────────────────────────

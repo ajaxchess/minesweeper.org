@@ -1,3 +1,13 @@
+B53 Production installed different Python dependency versions than staging tested.
+   Root cause: staging installs requirements.lock (hash-checked) but production installed
+   requirements.txt without hashes, and a failed pip install only printed a warning. Dependabot
+   bumps only requirements.txt (PR #56), so the files drifted: SQLAlchemy 2.0.53 vs 2.1.3,
+   FastAPI, uvicorn, cryptography, pymysql, markdown, and urllib3 2.7.0 (3 CVEs) vs 2.8.0.
+   Fix: regenerate requirements.lock from requirements.txt (pip-compile --generate-hashes, on Linux);
+   production, GCP scripts and install_ubuntu.sh now install the lock with --require-hashes; a failed
+   production install rolls the code back and exits without restarting;
+   tests/test_requirements_sync.py fails CI when the two files pin different versions.
+
 B52 Numbers Match saves 0:01 as the time for every completed game; on-screen timer stuck at 0:00.
    Root cause: base.html loads minesweeper.js with `defer` (added in f0d4909, 2026-05-13), so it
    now executes AFTER numbers_match.js. Both declare global `startTimer`/`stopTimer`, and the

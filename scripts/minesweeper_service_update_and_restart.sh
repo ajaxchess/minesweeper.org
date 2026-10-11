@@ -69,8 +69,16 @@ fi
 
 git reset --hard "$LAST_GOOD"
 
-echo "Installing/updating Python dependencies..."
-"$VENV_DIR/bin/pip" install -r "$REPO_DIR/requirements.txt" --quiet || echo "Warning: pip install failed"
+# Install from the same hash-pinned lockfile staging tested, so production runs
+# exactly the dependency versions that passed the smoke tests. On failure, put
+# the code back on the previous commit and stop without restarting: the running
+# services keep serving the old version, and the next cron tick retries.
+echo "Installing/updating Python dependencies (requirements.lock, hash-checked)..."
+if ! "$VENV_DIR/bin/pip" install --quiet --require-hashes -r "$REPO_DIR/requirements.lock"; then
+    echo "$(date '+%Y-%m-%d %H:%M:%S') ERROR: pip install failed for $LAST_GOOD. Rolling code back to $LOCAL_COMMIT; services NOT restarted."
+    git reset --hard "$LOCAL_COMMIT"
+    exit 1
+fi
 
 echo "Regenerating database.py from template..."
 /usr/bin/cp database_template.py database.py

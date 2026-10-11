@@ -24,6 +24,15 @@ recover when something goes wrong.
    production server, which only deploys if `minesweeper_last_good_commit` matches
    `origin/main`.
 
+### Dependencies
+
+Staging and production both install `requirements.lock` with
+`pip install --require-hashes`, so production runs the exact dependency versions
+staging tested. If the production install fails, the script resets the code back
+to the previous commit and exits without restarting; the next cron tick retries.
+`requirements.txt` must pin the same versions (enforced by
+`tests/test_requirements_sync.py`).
+
 ---
 
 ## Annotated tags

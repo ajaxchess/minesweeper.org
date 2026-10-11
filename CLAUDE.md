@@ -63,8 +63,16 @@ connection changes; the generated file will be overwritten on next deploy.
 1. `git fetch origin` — fetch latest refs without changing working tree
 2. Read `$LAST_GOOD` from `deploy_state/minesweeper_last_good_commit`
 3. `git reset --hard "$LAST_GOOD"` — hard-reset to the last staging-verified commit (NOT `origin/main`)
-4. Generates `database.py` from `database_template.py` + `.env`
-5. Restarts the web service (uvicorn on port 8000) and pvp service
+4. `pip install --require-hashes -r requirements.lock` — the same lockfile staging
+   tested. On failure it resets back to the previous commit and exits without
+   restarting.
+5. Generates `database.py` from `database_template.py` + `.env`
+6. Restarts the web service (uvicorn on port 8000) and pvp service
+
+`requirements.txt` and `requirements.lock` must pin identical versions
+(`tests/test_requirements_sync.py`). Dependabot only bumps `requirements.txt`;
+regenerate the lock on Linux with the `pip-compile --generate-hashes` command in
+`requirements.in` before merging its PRs.
 
 The staging cron runs first against a staging instance; if smoke tests pass it
 creates an annotated git tag `staging-tested/<short-sha>` on that commit (the

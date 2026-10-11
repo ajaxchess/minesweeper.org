@@ -2,8 +2,11 @@
 #   pip-compile --no-header --no-annotate requirements.in --output-file requirements.txt
 #   pip-compile --generate-hashes --constraint requirements.txt requirements.in --output-file requirements.lock
 #
-# Production uses requirements.txt (no hashes).
-# Staging uses requirements.lock (hash-pinned, all transitive deps).
+# Staging AND production install requirements.lock (hash-pinned, all transitive
+# deps), so production runs exactly what staging tested. requirements.txt is kept
+# for Dependabot, which only bumps that file: after a Dependabot PR, regenerate
+# the lock with the second command above. tests/test_requirements_sync.py fails
+# CI until both files pin identical versions.
 
 fastapi==0.142.2
 uvicorn[standard]==0.54.0
