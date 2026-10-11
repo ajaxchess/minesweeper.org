@@ -1,11 +1,12 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
+# Dependabot version updates. Options:
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Known accepted advisories and npm override rules: docs/security/dependency-risk-register.md
 
 version: 2
 updates:
-  #Python
+  # Python web app. Dependabot only bumps requirements.txt — regenerate
+  # requirements.lock before merging (tests/test_requirements_sync.py fails until you do).
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
@@ -18,17 +19,48 @@ updates:
       python-dependencies:
         patterns:
           - "*"
-  # Python
-  - package-ecosystem: "uv"
-    directory: "/"
+
+  # Minesweeper mobile app (Expo). Expo SDK and React Native majors move
+  # together and need a manual SDK upgrade, so only minor/patch PRs here.
+  - package-ecosystem: "npm"
+    directory: "/mobile/msmobile"
     schedule:
       interval: "weekly"
-    cooldown:
-      default-days: 7
+    open-pull-requests-limit: 5
     commit-message:
-      prefix: ⬆
+      prefix: "chore(deps-msmobile):"
     groups:
-      python-packages:
-        dependency-type: "development"
+      msmobile-dependencies:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "expo"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "expo-*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-native"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
+  # Numbers Match mobile app. Stays on its Expo canary build for now
+  # (decision 2026-10-11), so Expo packages are not updated here.
+  - package-ecosystem: "npm"
+    directory: "/mobile/nmmobile"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps-nmmobile):"
+    groups:
+      nmmobile-dependencies:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "expo"
+      - dependency-name: "expo-*"
+      - dependency-name: "@expo/*"
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-native"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
