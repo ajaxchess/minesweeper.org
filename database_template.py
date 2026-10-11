@@ -1447,6 +1447,8 @@ class NumbersMatchScore(Base):
     lines_added = Column(Integer, nullable=False, default=0)
     guest_token = Column(String(36), nullable=True, index=True)
     client_type = Column(String(32), nullable=False, server_default="na")
+    # One-time nonce from the signed game token (F-NM-VERIFY); NULL for scores saved before it.
+    game_nonce  = Column(String(32), nullable=True)
     created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
@@ -1888,6 +1890,8 @@ def _apply_migrations():
         ("wc2026_matches", "team1_label",    "VARCHAR(64) NULL"),
         ("wc2026_matches", "team2_label",    "VARCHAR(64) NULL"),
         ("wc2026_matches", "source_game_id", "INT NULL"),
+        # Numbers Match verified scores: one-time game token nonce (F-NM-VERIFY, 2026-10-11)
+        ("numbers_match_scores", "game_nonce", "VARCHAR(32) NULL"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:

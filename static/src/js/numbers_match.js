@@ -248,6 +248,31 @@ function collapseEmptyRows() {
     G.board = newBoard;
 }
 
+// ── Move log (F-NM-VERIFY) ───────────────────────────────────────────────────────
+// The server replays this log to compute the score it stores; see
+// numbers_match_engine.py for the format. t = ms since the first cell press.
+function logMove(kind, ...cells) {
+    const t = G.startTime ? Date.now() - G.startTime : 0;
+    G.moves.push([kind, t, ...cells]);
+    return t;
+}
+
+async function requestGameToken(gameId, puzzleId) {
+    try {
+        const r = await fetch('/api/numbers-match-start', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body:    JSON.stringify({ puzzle_id: puzzleId }),
+            cache:   'no-store',
+        });
+        if (!r.ok) return;
+        const data = await r.json();
+        if (G.gameId === gameId) G.gameToken = data.token;
+    } catch {
+        // Without a token the game can still be played; the score just can't be saved.
+    }
+}
+
 // ── Undo history ───────────────────────────────────────────────────────────────
 function saveHistory() {
     G.history.push({
@@ -262,6 +287,7 @@ function saveHistory() {
 
 // ── Actions ────────────────────────────────────────────────────────────────────
 function doMatch(i, j) {
+    const t = logMove('m', i, j);
     saveHistory();
     const prevBoard = [...G.board];
     G.board[i] = 0;
@@ -275,6 +301,7 @@ function doMatch(i, j) {
         G.score += 150;
         G.won = true;
         nmStopTimer();
+        G.elapsed = Math.max(1, Math.floor(t / 1000));   // same rounding as the server replay
         if (G.isPOTD && typeof window.questsHook === 'function')
             window.questsHook('numbers_match_solved');
         renderBoard();
@@ -289,6 +316,7 @@ function doMatch(i, j) {
 
 function doUndo() {
     if (G.undosLeft <= 0 || G.history.length === 0 || G.won) return;
+    logMove('u');
     const snap   = G.history.pop();
     G.board        = snap.board;
     G.score        = Math.max(0, snap.score - UNDO_COST);
@@ -324,6 +352,7 @@ function doHint() {
         setTimeout(() => btn.classList.remove('nm-add-pulse'), 700);
         return;
     }
+    logMove('h');
     G.hintPair  = pair;
     G.hintsLeft--;
     G.score = Math.max(0, G.score - HINT_COST);
@@ -335,6 +364,7 @@ function doAddLines() {
     if (G.won || G.addLinesLeft <= 0) return;
     const remaining = G.board.filter(v => v !== 0);
     if (!remaining.length) return;
+    logMove('a');
     saveHistory();
     while (remaining.length % NM_COLS !== 0) remaining.push(0);
     G.board         = [...G.board, ...remaining];
@@ -469,10 +499,17 @@ async function saveScore(autoName = null) {
     const btn  = document.getElementById('nm-save-btn');
     const name = autoName || inp?.value.trim() || playerName();
     if (!name) { inp?.focus(); return; }
+    if (!G.gameToken) {
+        const msgEl = document.getElementById('nm-score-msg');
+        if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = 'This game could not be verified, so the score was not saved.'; }
+        return;
+    }
     const gameId = G.gameId;
     const payload = {
         name,
         puzzle_date: G.puzzleId,
+        game_token:  G.gameToken,
+        moves:       G.moves,
         score:       G.score,
         time_secs:   Math.max(1, G.elapsed),
         lines_added: G.linesAdded,
@@ -611,7 +648,10 @@ function _startGame(boardData, rows, puzzleId, isPOTD) {
         addLinesLeft:  ADD_LINES_LIMIT,
         won:           false,
         scoreSaved:    false,
+        moves:         [],
+        gameToken:     null,
     };
+    if (isPOTD) requestGameToken(G.gameId, puzzleId);
 
     document.getElementById('nm-overlay').style.display = 'none';
     document.getElementById('nm-score-form').style.display = 'none';

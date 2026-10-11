@@ -3,6 +3,7 @@ tests/test_numbers_match.py — Numbers Match (F-NM): board generator, puzzle-da
 timezone, board/today APIs, score submission + leaderboard ranking, page render,
 and the B52 global-name regression.
 """
+import json
 import re
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,6 +11,8 @@ from pathlib import Path
 import pytest
 
 from conftest import XHR
+import database as _db
+from database import NumbersMatchScore
 import main
 import numbers_match_routes
 import numbers_match_generator as gen
@@ -19,6 +22,9 @@ from numbers_match_generator import (
     board_number,
     generate_daily,
     numbers_match_today_str,
+)
+from numbers_match_engine import (
+    are_adjacent, board_for_puzzle, can_match, collapse_empty_rows, replay,
 )
 
 ROOT  = Path(__file__).resolve().parent.parent
@@ -128,58 +134,171 @@ class TestBoardApi:
         assert client.get(path).status_code == 400
 
 
-# ── Score submission + leaderboard ────────────────────────────────────────────
+# ── Score submission + leaderboard (F-NM-VERIFY) ──────────────────────────────
 
-class TestScores:
-    def test_submit_returns_201_and_keeps_time(self, client):
-        r = client.post("/api/numbers-match-scores", json=score(time_secs=187), headers=XHR)
-        assert r.status_code == 201
-        rows = client.get(f"/api/numbers-match-scores/{DAILY_ID}").json()
-        assert [(s["name"], s["time_secs"]) for s in rows] == [("Alice", 187)]
+_JS = json.loads((ROOT / "tests/fixtures/numbers_match_js_games.json").read_text())
+# A short won game from the real web client, re-timed to 160 ms per match so it
+# passes the "too fast" check and stays inside the 5 s token tolerance.
+_GAME = min((g for g in _JS["games"] if g["won"] and g["puzzle_id"].endswith("-easy-v2")),
+            key=lambda g: len(g["moves"]))
 
-    def test_zero_time_rejected(self, client):
-        r = client.post("/api/numbers-match-scores", json=score(time_secs=0), headers=XHR)
+
+def _timed(moves, ms_per_match=160):
+    t, out = 0, []
+    for m in moves:
+        if m[0] == "m":
+            t += ms_per_match
+        out.append([m[0], t, *m[2:]])
+    return out
+
+
+GAME_ID    = _GAME["puzzle_id"]
+GAME_MOVES = _timed(_GAME["moves"])
+GAME_SCORE = replay(_GAME["board"], _GAME["rows"], GAME_MOVES).score
+
+
+def start(client, puzzle_id=GAME_ID):
+    r = client.post("/api/numbers-match-start", json={"puzzle_id": puzzle_id}, headers=XHR)
+    assert r.status_code == 200, r.text
+    return r.json()["token"]
+
+
+def submit(client, name="Alice", puzzle_id=GAME_ID, moves=GAME_MOVES, token=None, **extra):
+    token = token or start(client, puzzle_id)
+    body = {"name": name, "puzzle_date": puzzle_id, "game_token": token, "moves": moves, **extra}
+    return client.post("/api/numbers-match-scores", json=body, headers=XHR)
+
+
+def _solve_daily(puzzle_id):
+    """Random legal play with the server engine until the daily board is cleared."""
+    import random
+    board, rows = board_for_puzzle(puzzle_id)
+    for seed in range(200):
+        rng, b, r, moves, add_left = random.Random(seed), list(board), rows, [], 5
+        while any(b):
+            pairs = [(i, j) for i in range(len(b)) for j in range(i + 1, len(b))
+                     if can_match(b[i], b[j]) and are_adjacent(b, i, j)]
+            if not pairs:
+                if not add_left:
+                    break
+                rem = [v for v in b if v]
+                rem += [0] * (-len(rem) % 9)
+                b, r, add_left = b + rem, r + len(rem) // 9, add_left - 1
+                moves.append(["a", 0])
+                continue
+            i, j = rng.choice(pairs)
+            moves.append(["m", 0, i, j])
+            b[i] = b[j] = 0
+            if any(b):
+                b, r = collapse_empty_rows(b, r)
+        if not any(b):
+            return _timed(moves)
+    raise AssertionError("no solution found")
+
+
+class TestStartToken:
+    def test_start_returns_token_for_leaderboard_puzzles(self, client):
+        for pid in (f"{TODAY}-{REV}", f"{TODAY}-easy-{REV}", f"{TODAY}-expert-{REV}"):
+            assert start(client, pid)
+
+    @pytest.mark.parametrize("pid", [TODAY, f"{TODAY}-easy", "random-abc", f"{TODAY}-insane-{REV}"])
+    def test_start_rejects_non_leaderboard_puzzles(self, client, pid):
+        r = client.post("/api/numbers-match-start", json={"puzzle_id": pid}, headers=XHR)
+        assert r.status_code == 400
+
+
+class TestVerifiedScores:
+    def test_verified_game_is_saved_with_server_values(self, client):
+        r = submit(client, score=99999, time_secs=1)          # client claims are ignored
+        assert r.status_code == 201, r.text
+        assert r.json()["score"] == GAME_SCORE
+        rows = client.get(f"/api/numbers-match-scores/{GAME_ID}").json()
+        expected_secs = max(1, GAME_MOVES[-1][1] // 1000)
+        assert [(s["name"], s["score"], s["time_secs"]) for s in rows] == [("Alice", GAME_SCORE, expected_secs)]
+
+    def test_daily_game_is_verified(self, client, monkeypatch):
+        # Longer than the 5 s tolerance at 160 ms per match; allow it since the
+        # token is only milliseconds old in a test.
+        monkeypatch.setattr(numbers_match_routes, "TIME_TOLERANCE_MS", 10 * 60 * 1000)
+        pid = f"{TODAY}-{REV}"
+        moves = _solve_daily(pid)
+        r = submit(client, puzzle_id=pid, moves=moves)
+        assert r.status_code == 201, r.text
+
+    def test_legacy_payload_without_moves_rejected(self, client):
+        r = client.post("/api/numbers-match-scores", headers=XHR, json={
+            "name": "Old", "puzzle_date": GAME_ID, "score": 200, "time_secs": 100})
         assert r.status_code == 422
 
-    @pytest.mark.parametrize("pid", [
-        f"{TODAY}-easy-{REV}", f"{TODAY}-medium-{REV}",
-        f"{TODAY}-hard-{REV}", f"{TODAY}-expert-{REV}", TODAY,
-    ])
-    def test_difficulty_puzzle_ids_accepted(self, client, pid):
-        r = client.post("/api/numbers-match-scores", json=score(puzzle_date=pid), headers=XHR)
-        assert r.status_code == 201
-
-    @pytest.mark.parametrize("pid", [f"{TODAY}-insane-{REV}", "2026/10/11", f"{TODAY}-v2x"])
-    def test_bad_puzzle_id_rejected(self, client, pid):
-        r = client.post("/api/numbers-match-scores", json=score(puzzle_date=pid), headers=XHR)
+    def test_forged_token_rejected(self, client):
+        token = start(client)
+        r = submit(client, token=token[:-2] + ("aa" if not token.endswith("aa") else "bb"))
         assert r.status_code == 422
+        assert "token" in r.json()["detail"]
+
+    def test_token_for_other_puzzle_rejected(self, client):
+        token = start(client, f"{TODAY}-easy-{REV}")
+        r = submit(client, token=token)
+        assert r.status_code == 422
+        assert "different puzzle" in r.json()["detail"]
+
+    def test_token_is_single_use(self, client):
+        token = start(client)
+        assert submit(client, token=token).status_code == 201
+        r = submit(client, name="Bob", token=token)
+        assert r.status_code == 422
+        assert "already submitted" in r.json()["detail"]
+
+    def test_tampered_moves_rejected(self, client):
+        moves = [list(m) for m in GAME_MOVES]
+        first = next(m for m in moves if m[0] == "m")
+        first[3] = first[2]
+        r = submit(client, moves=moves)
+        assert r.status_code == 422
+        assert "could not be verified" in r.json()["detail"]
+
+    def test_unfinished_game_rejected(self, client):
+        r = submit(client, moves=GAME_MOVES[:-1])
+        assert r.status_code == 422
+
+    def test_claimed_time_longer_than_real_time_rejected(self, client):
+        moves = [list(m) for m in GAME_MOVES]
+        moves[-1][1] = 10 * 60 * 1000                          # "took 10 minutes", token is seconds old
+        r = submit(client, moves=moves)
+        assert r.status_code == 422
+        assert "longer than the time since" in r.json()["detail"]
+
+    def test_impossibly_fast_game_rejected(self, client):
+        r = submit(client, moves=_timed(_GAME["moves"], ms_per_match=10))
+        assert r.status_code == 422
+        assert "too fast" in r.json()["detail"]
 
     def test_variants_are_isolated(self, client):
-        client.post("/api/numbers-match-scores", json=score(name="Daily"), headers=XHR)
-        client.post("/api/numbers-match-scores",
-                    json=score(name="Easy", puzzle_date=f"{TODAY}-easy-{REV}"), headers=XHR)
-        daily = {s["name"] for s in client.get(f"/api/numbers-match-scores/{DAILY_ID}").json()}
-        easy  = {s["name"] for s in client.get(f"/api/numbers-match-scores/{TODAY}-easy-{REV}").json()}
-        assert daily == {"Daily"}
-        assert easy == {"Easy"}
-
-    def test_ranked_by_score_per_second(self, client):
-        # ratios: Quick 200/50=4.0, Big 300/100=3.0, Slow 200/400=0.5
-        for name, sc, t in [("Slow", 200, 400), ("Big", 300, 100), ("Quick", 200, 50)]:
-            client.post("/api/numbers-match-scores", json=score(name=name, score=sc, time_secs=t), headers=XHR)
-        names = [s["name"] for s in client.get(f"/api/numbers-match-scores/{DAILY_ID}").json()]
-        assert names == ["Quick", "Big", "Slow"]
+        submit(client, name="Easy")
+        other = f"{TODAY}-medium-{REV}"
+        assert client.get(f"/api/numbers-match-scores/{other}").json() == []
+        assert {s["name"] for s in client.get(f"/api/numbers-match-scores/{GAME_ID}").json()} == {"Easy"}
 
     def test_one_row_per_name(self, client):
-        client.post("/api/numbers-match-scores", json=score(name="Alice", time_secs=50), headers=XHR)
-        client.post("/api/numbers-match-scores", json=score(name="alice ", time_secs=500), headers=XHR)
-        rows = client.get(f"/api/numbers-match-scores/{DAILY_ID}").json()
-        assert len(rows) == 1
-        assert rows[0]["time_secs"] == 50
+        submit(client, name="Alice")
+        submit(client, name="alice ")
+        assert len(client.get(f"/api/numbers-match-scores/{GAME_ID}").json()) == 1
 
     def test_scores_get_rejects_bad_id(self, client):
         assert client.get("/api/numbers-match-scores/garbage").status_code == 400
 
+
+def test_leaderboard_ranked_by_score_per_second(client):
+    # Ranking is computed on stored rows; insert them directly.
+    db = _db.SessionLocal()
+    try:
+        for name, sc, t in [("Slow", 200, 400), ("Big", 300, 100), ("Quick", 200, 50)]:
+            db.add(NumbersMatchScore(name=name, puzzle_date=GAME_ID, score=sc, time_secs=t))
+        db.commit()
+    finally:
+        db.close()
+    names = [s["name"] for s in client.get(f"/api/numbers-match-scores/{GAME_ID}").json()]
+    assert names == ["Quick", "Big", "Slow"]
 
 # ── Page ──────────────────────────────────────────────────────────────────────
 

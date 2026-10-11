@@ -9,15 +9,15 @@ import useTimer               from '../hooks/useTimer';
 import BoardView              from '../components/BoardView';
 import WinModal               from '../components/WinModal';
 import AdBanner               from '../components/AdBanner';
-import { fetchBoard }         from '../services/apiService';
+import { fetchBoard, fetchToday, startGame } from '../services/apiService';
 import {
-  generateBoardClient, fmtTime, getTodayString, getAxisCells,
+  generateBoardClient, fmtTime, getAxisCells,
 } from '../gameEngine';
 
 export default function GameScreen({ navigation }) {
   const { theme } = useTheme();
-  const { state, initGame, pressCell, undo, hint, addLines, clearFlash, toggleConnections, dismissWin } = useGameState();
-  const { board, rows, score, selected, hintPair, undosLeft, hintsLeft, addLinesLeft, won, started, isPOTD, puzzleId, linesAdded, addLinesFlash, showConnections } = state;
+  const { state, initGame, pressCell, undo, hint, addLines, setToken, clearFlash, toggleConnections, dismissWin } = useGameState();
+  const { board, rows, score, selected, hintPair, undosLeft, hintsLeft, addLinesLeft, won, started, isPOTD, puzzleId, linesAdded, addLinesFlash, showConnections, moves, gameToken } = state;
 
   const axisCells = useMemo(
     () => (showConnections && selected !== null) ? getAxisCells(board, selected) : [],
@@ -47,31 +47,45 @@ export default function GameScreen({ navigation }) {
   const [mode,     setMode]     = useState('daily');   // 'daily' | 'random'
   const [diffRows, setDiffRows] = useState(4);
 
+  // Leaderboard games need a server token to be saved (F-NM-VERIFY).
+  const beginScoredGame = useCallback((boardData, rows, id) => {
+    initGame(boardData, rows, id, true);
+    startGame(id).then(token => { if (token) setToken(id, token); });
+  }, [initGame, setToken]);
+
   // ── Load daily board ─────────────────────────────────────────────────────────
+  // Same board and puzzle id as the website: New York date + server revision.
   const loadDaily = useCallback(async () => {
     setLoadErr(false);
     setLoading(true);
-    const today = getTodayString();
-    const data  = await fetchBoard(today);
+    const day  = await fetchToday();
+    const data = day && await fetchBoard(day.today, day.revision);
     if (data) {
-      initGame(data.board_data, data.rows, today, true);
+      beginScoredGame(data.board_data, data.rows, `${day.today}-${day.revision}`);
       setMode('daily');
     } else {
       setLoadErr(true);
     }
     setLoading(false);
-  }, [initGame]);
+  }, [beginScoredGame]);
 
-  // ── Generate random board ────────────────────────────────────────────────────
-  const loadRandom = useCallback((rows = diffRows) => {
-    const seed       = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const diffEntry  = DIFFICULTIES.find(d => d.rows === rows);
-    const puzzleId   = diffEntry ? `${getTodayString()}-${diffEntry.key}` : seed;
-    const scored     = !!diffEntry;
-    initGame(generateBoardClient(seed, rows), rows, puzzleId, scored);
+  // ── Difficulty boards ────────────────────────────────────────────────────────
+  // Seeded by the puzzle id, exactly like the website, so every player gets the
+  // same board and the server can rebuild it. Offline, fall back to an unscored
+  // random board.
+  const loadRandom = useCallback(async (rows = diffRows) => {
+    const diffEntry = DIFFICULTIES.find(d => d.rows === rows);
+    const day       = diffEntry ? await fetchToday() : null;
+    if (day) {
+      const id = `${day.today}-${diffEntry.key}-${day.revision}`;
+      beginScoredGame(generateBoardClient(id, rows), rows, id);
+    } else {
+      const seed = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      initGame(generateBoardClient(seed, rows), rows, seed, false);
+    }
     setDiffRows(rows);
     setMode('random');
-  }, [initGame, diffRows]);
+  }, [initGame, beginScoredGame, diffRows]);
 
   // Start with daily on mount
   useEffect(() => { loadDaily(); }, []);
@@ -194,6 +208,8 @@ export default function GameScreen({ navigation }) {
         score={score}
         timeSecs={elapsed}
         linesAdded={linesAdded}
+        moves={moves}
+        gameToken={gameToken}
         isPOTD={isPOTD}
         puzzleId={puzzleId}
         theme={theme}

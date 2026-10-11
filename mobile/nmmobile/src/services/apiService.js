@@ -18,10 +18,39 @@ async function fetchWithTimeout(url, options = {}) {
   }
 }
 
-export async function fetchBoard(dateStr) {
+// Today's puzzle date (America/New_York) and the current board revision, so the
+// app plays the same boards as the website and the server can verify them.
+export async function fetchToday() {
+  try {
+    const res = await fetchWithTimeout(`${BASE_URL}/api/numbers-match-today`, { headers: XHR_HEADERS });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(data.today) || !/^v\d+$/.test(data.revision)) return null;
+    return { today: data.today, revision: data.revision };
+  } catch {
+    return null;
+  }
+}
+
+// Signed one-time token for a leaderboard game; required to submit its score.
+export async function startGame(puzzleId) {
+  try {
+    const res = await fetchWithTimeout(`${BASE_URL}/api/numbers-match-start`, {
+      method:  'POST',
+      headers: { ...XHR_HEADERS, 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ puzzle_id: puzzleId }),
+    });
+    if (!res.ok) return null;
+    return (await res.json()).token ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchBoard(dateStr, revision) {
   try {
     const res = await fetchWithTimeout(
-      `${BASE_URL}/api/numbers-match-board/${dateStr}`,
+      `${BASE_URL}/api/numbers-match-board/${dateStr}?rev=${encodeURIComponent(revision)}`,
       { headers: XHR_HEADERS },
     );
     if (res.ok) return await res.json();

@@ -46,5 +46,6 @@
 - F53 Sudoku — /sudoku
 - D1 Document the environment
 - D2 Add feature request ID to commit messages
+- F-NM-VERIFY Numbers Match verified scores — server replays every game @gisela
 - F-NM Numbers Match — /numbers-match, daily + Easy/Medium/Hard/Expert leaderboards @gisela
 - F100 WC2026 translation backfill — all 27 languages have `wc_guest_login_cta`, `wc_guest_pick_team_prompt`, `wc_change_team`

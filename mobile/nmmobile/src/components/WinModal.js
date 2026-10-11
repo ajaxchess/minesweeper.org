@@ -16,7 +16,7 @@ function StatRow({ label, value, theme }) {
   );
 }
 
-export default function WinModal({ visible, score, timeSecs, linesAdded, isPOTD, puzzleId, theme, onNewDaily, onRandom, onClose }) {
+export default function WinModal({ visible, score, timeSecs, linesAdded, moves, gameToken, isPOTD, puzzleId, theme, onNewDaily, onRandom, onClose }) {
   const [name,         setName]         = useState('');
   const [submitting,   setSubmitting]   = useState(false);
   const [submitted,    setSubmitted]    = useState(false);
@@ -27,17 +27,21 @@ export default function WinModal({ visible, score, timeSecs, linesAdded, isPOTD,
     if (!trimmed || submitting) return;
     setSubmitting(true);
     if (persist) await savePrefs({ playerName: trimmed });
-    const result = await submitNMScore({
+    // The server replays `moves` and stores its own score and time (F-NM-VERIFY);
+    // without a game token the score can't be verified, so don't send it.
+    const result = gameToken ? await submitNMScore({
       name:        trimmed,
       puzzle_date: puzzleId,
+      game_token:  gameToken,
+      moves,
       score,
       time_secs:   Math.max(1, timeSecs),
       lines_added: linesAdded,
-    });
+    }) : null;
     setSubmitting(false);
     setSubmitted(true);
     setSubmitResult(result ? 'ok' : 'error');
-  }, [submitting, puzzleId, score, timeSecs, linesAdded]);
+  }, [submitting, puzzleId, score, timeSecs, linesAdded, moves, gameToken]);
 
   // Auto-save when modal opens if a name is already stored
   useEffect(() => {

@@ -3,7 +3,7 @@ import {
   View, Text, FlatList, TouchableOpacity, StyleSheet, SafeAreaView, ActivityIndicator,
 } from 'react-native';
 import { useTheme }           from '../context/ThemeContext';
-import { fetchNMLeaderboard } from '../services/apiService';
+import { fetchNMLeaderboard, fetchToday } from '../services/apiService';
 import { fmtTime, getTodayString } from '../gameEngine';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
@@ -16,7 +16,7 @@ function countryFlag(code) {
 }
 
 function puzzleLabel(puzzleDate) {
-  const m = puzzleDate.match(/^(\d{4}-\d{2}-\d{2})-?(easy|medium|hard|expert)?$/i);
+  const m = puzzleDate.match(/^(\d{4}-\d{2}-\d{2})-?(easy|medium|hard|expert)?(?:-v\d+)?$/i);
   if (!m) return puzzleDate;
   const diff = m[2] ? m[2].charAt(0).toUpperCase() + m[2].slice(1) : null;
   return diff ? `${diff} · ${m[1]}` : `Daily · ${m[1]}`;
@@ -24,8 +24,9 @@ function puzzleLabel(puzzleDate) {
 
 export default function LeaderboardScreen({ route }) {
   const { theme } = useTheme();
-  const puzzleDate = route?.params?.puzzleDate ?? getTodayString();
+  const requested = route?.params?.puzzleDate ?? null;
 
+  const [puzzleDate, setPuzzleDate] = useState(requested ?? getTodayString());
   const [scores,  setScores]  = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(false);
@@ -33,14 +34,21 @@ export default function LeaderboardScreen({ route }) {
   const load = useCallback(async () => {
     setLoading(true);
     setError(false);
-    const data = await fetchNMLeaderboard(puzzleDate);
+    // Default to today's daily board id, e.g. 2026-10-11-v2 (New York date + revision).
+    let id = requested;
+    if (!id) {
+      const day = await fetchToday();
+      id = day ? `${day.today}-${day.revision}` : getTodayString();
+    }
+    setPuzzleDate(id);
+    const data = await fetchNMLeaderboard(id);
     if (data) {
       setScores(data);
     } else {
       setError(true);
     }
     setLoading(false);
-  }, [puzzleDate]);
+  }, [requested]);
 
   useEffect(() => { load(); }, [load]);
 

@@ -101,6 +101,10 @@ get a `Guest NNNN` name kept in localStorage. Ranking
 2. Score (descending)
 3. Time (ascending)
 
+**Scores are verified on the server** (F-NM-VERIFY): the client sends its move
+log and a signed game token, and the server replays the game and stores the
+score and time it computes. See `NumbersMatchVerifiedScores.md`.
+
 ## Player Tools
 | Tool | Limit | Behaviour |
 |------|-------|-----------|

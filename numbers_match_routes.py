@@ -2,10 +2,14 @@
 numbers_match_routes.py — Page and API route handlers for Numbers Match.
 Mount this router in main.py with: app.include_router(numbers_match_router)
 """
+import logging
 import re as _re
 import uuid
+from datetime import datetime, timezone
 from typing import Optional
 from urllib.parse import urlparse
+
+from itsdangerous import BadSignature, URLSafeTimedSerializer
 
 from fastapi import APIRouter, Request, Depends, HTTPException, Query, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -21,7 +25,7 @@ from database import (
     NumbersMatchScore, NumbersMatchDaily,
     get_db,
 )
-from auth import get_current_user
+from auth import get_current_user, SECRET_KEY
 from translations import get_lang, get_t, SUPPORTED_LANGS
 import settings as site_settings
 from quest_catalog import quest_config
@@ -32,7 +36,11 @@ from numbers_match_generator import (
     NUMBERS_MATCH_BOARD_REVISION,
     numbers_match_today_str,
 )
+from numbers_match_engine import (
+    InvalidReplay, MAX_EVENTS, VERIFIABLE_PUZZLE_ID, board_for_puzzle, replay,
+)
 
+logger = logging.getLogger(__name__)
 numbers_match_router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
 
@@ -291,14 +299,47 @@ async def numbers_match_permalink(request: Request, date_str: str):
     }, headers={"Cache-Control": "no-store"})
 
 
-# ── Numbers Match Score API ────────────────────────────────────────────────────
+# ── Numbers Match Score API (F-NM-VERIFY: server replays every game) ──────────
+#
+# 1. When a leaderboard game starts, the client asks /api/numbers-match-start for a
+#    signed game token (puzzle id + one-time nonce, timestamped by the server).
+# 2. On a win it posts the token and its move log. The server rebuilds the board,
+#    replays every move with numbers_match_engine, and stores the score and time
+#    the replay produces — never the values the client reports.
+# 3. The claimed play time may not exceed the wall-clock time since the token was
+#    issued, and each token can be used for one score only.
+
+GAME_TOKEN_SALT       = "numbers-match-game"
+GAME_TOKEN_MAX_AGE_S  = 24 * 3600
+TIME_TOLERANCE_MS     = 5000   # token fetch latency + clock jitter
+MIN_MS_PER_MATCH      = 150    # two taps per match; faster than any human
+
+_game_tokens = URLSafeTimedSerializer(SECRET_KEY, salt=GAME_TOKEN_SALT)
+
+
+class NumbersMatchStart(BaseModel):
+    puzzle_id: str = Field(..., max_length=40)
+
+
+@numbers_match_router.post("/api/numbers-match-start")
+@limiter.limit("60/minute")
+def start_numbers_match_game(payload: NumbersMatchStart, request: Request, response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    if not VERIFIABLE_PUZZLE_ID.match(payload.puzzle_id):
+        raise HTTPException(status_code=400, detail="Puzzle is not on a leaderboard")
+    token = _game_tokens.dumps({"p": payload.puzzle_id, "n": uuid.uuid4().hex})
+    return {"token": token}
+
 
 class NumbersMatchScoreSubmit(BaseModel):
     name:        str = Field(..., min_length=1, max_length=32)
-    puzzle_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}(-(?:easy|medium|hard|expert))?(-v\d+)?$")
-    score:       int = Field(..., ge=0, le=99999)
-    time_secs:   int = Field(..., ge=1, le=99999)
-    lines_added: int = Field(default=0, ge=0, le=999)
+    puzzle_date: str = Field(..., max_length=40)
+    game_token:  str = Field(..., min_length=1, max_length=300)
+    moves:       list[list[str | int]] = Field(..., min_length=1, max_length=MAX_EVENTS)
+    # Client-side values, kept for drift logging only; the stored ones come from the replay.
+    score:       Optional[int] = Field(default=None, ge=0, le=99999)
+    time_secs:   Optional[int] = Field(default=None, ge=0, le=99999)
+    lines_added: Optional[int] = Field(default=None, ge=0, le=999)
 
     @field_validator("name")
     @classmethod
@@ -310,6 +351,10 @@ class NumbersMatchScoreSubmit(BaseModel):
         return v[:32]
 
 
+def _reject(detail: str):
+    raise HTTPException(status_code=422, detail=detail)
+
+
 @numbers_match_router.post("/api/numbers-match-scores", status_code=201)
 @limiter.limit("10/minute")
 def submit_numbers_match_score(
@@ -318,23 +363,56 @@ def submit_numbers_match_score(
     db: Session = Depends(get_db),
 ):
     from telemetry import record_score_submit, record_game_complete
+
+    try:
+        claims, issued_at = _game_tokens.loads(
+            payload.game_token, max_age=GAME_TOKEN_MAX_AGE_S, return_timestamp=True)
+    except BadSignature:
+        _reject("Invalid or expired game token")
+    if claims.get("p") != payload.puzzle_date:
+        _reject("Game token is for a different puzzle")
+    nonce = claims.get("n")
+    if db.query(NumbersMatchScore.id).filter_by(game_nonce=nonce).first():
+        _reject("This game was already submitted")
+
+    rebuilt = board_for_puzzle(payload.puzzle_date)
+    if rebuilt is None:
+        _reject("Puzzle is not on a leaderboard")
+    board, rows = rebuilt
+    try:
+        result = replay(board, rows, payload.moves)
+    except InvalidReplay as e:
+        logger.info("numbers match replay rejected (%s): %s", payload.puzzle_date, e)
+        _reject(f"Game could not be verified: {e}")
+
+    elapsed_ms = (datetime.now(timezone.utc) - issued_at).total_seconds() * 1000
+    if result.time_ms > elapsed_ms + TIME_TOLERANCE_MS:
+        _reject("Game time is longer than the time since the game started")
+    if result.time_ms < result.matches * MIN_MS_PER_MATCH:
+        _reject("Game was played too fast")
+
+    time_secs = max(1, result.time_ms // 1000)
+    if payload.score is not None and payload.score != result.score:
+        logger.warning("numbers match score drift (%s): client=%s server=%s",
+                       payload.puzzle_date, payload.score, result.score)
+
     user = get_current_user(request)
     guest_token = get_or_create_guest_token(request, user)
     entry = NumbersMatchScore(
         name        = payload.name,
         user_email  = user["email"] if user else None,
         puzzle_date = payload.puzzle_date,
-        score       = payload.score,
-        time_secs   = payload.time_secs,
-        lines_added = payload.lines_added,
+        score       = result.score,
+        time_secs   = time_secs,
+        lines_added = result.lines_added,
         guest_token = guest_token,
         client_type = get_client_type(request),
+        game_nonce  = nonce,
     )
     db.add(entry)
     db.commit()
     db.refresh(entry)
     flag_if_profane(db, entry.__tablename__, entry.id, entry.name)
     record_score_submit("numbers_match", str(payload.puzzle_date))
-    record_game_complete("numbers_match", mode="daily",
-                         duration_ms=payload.time_secs * 1000)
-    return {"ok": True, "id": entry.id}
+    record_game_complete("numbers_match", mode="daily", duration_ms=result.time_ms)
+    return {"ok": True, "id": entry.id, "score": result.score, "time_secs": time_secs}

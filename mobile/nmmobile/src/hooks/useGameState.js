@@ -32,9 +32,19 @@ const INITIAL_STATE = {
   scoreSaved:      false,
   addLinesFlash:   false,
   showConnections: false,
+  // F-NM-VERIFY: the server replays this log (see numbers_match_engine.py).
+  moves:           [],
+  startTime:       null,
+  gameToken:       null,
 };
 
-function reducer(state, action) {
+// ms since the first cell press, 0 before it.
+function moveTime(state, now) {
+  return state.startTime ? now - state.startTime : 0;
+}
+
+// Exported for the server parity fixtures (tests/fixtures/gen_numbers_match_js_games.js).
+export function reducer(state, action) {
   switch (action.type) {
 
     case 'INIT':
@@ -47,11 +57,15 @@ function reducer(state, action) {
         puzzleId: action.puzzleId,
       };
 
+    case 'SET_TOKEN':
+      return action.puzzleId === state.puzzleId ? { ...state, gameToken: action.token } : state;
+
     case 'CELL_PRESS': {
       const { idx } = action;
       if (state.won || state.board[idx] === 0) return state;
 
-      const base = { ...state, hintPair: null, started: true };
+      const startTime = state.startTime ?? action.now;
+      const base = { ...state, hintPair: null, started: true, startTime };
 
       if (state.selected === null) return { ...base, selected: idx };
       if (state.selected === idx)  return { ...base, selected: null };
@@ -79,7 +93,8 @@ function reducer(state, action) {
         if (history.length > 3) history.shift();
 
         const collapsed = won ? { board: newBoard, rows: state.rows } : collapseEmptyRows(newBoard, state.rows);
-        return { ...base, board: collapsed.board, rows: collapsed.rows, score, selected: null, history, won };
+        const moves = [...state.moves, ['m', action.now - startTime, state.selected, idx]];
+        return { ...base, board: collapsed.board, rows: collapsed.rows, score, selected: null, history, won, moves };
       }
 
       return { ...base, selected: idx };
@@ -100,6 +115,7 @@ function reducer(state, action) {
         selected:     null,
         hintPair:     null,
         history,
+        moves:        [...state.moves, ['u', moveTime(state, action.now)]],
       };
     }
 
@@ -114,6 +130,7 @@ function reducer(state, action) {
         hintsLeft:     state.hintsLeft - 1,
         score:         Math.max(0, state.score - HINT_COST),
         addLinesFlash: false,
+        moves:         [...state.moves, ['h', moveTime(state, action.now)]],
       };
     }
 
@@ -147,6 +164,7 @@ function reducer(state, action) {
         hintPair:      null,
         addLinesFlash: false,
         history,
+        moves:         [...state.moves, ['a', moveTime(state, action.now)]],
       };
     }
 
@@ -160,13 +178,16 @@ export default function useGameState() {
 
   const initGame          = useCallback((boardData, rows, puzzleId, isPOTD) =>
     dispatch({ type: 'INIT', boardData, rows, puzzleId, isPOTD }), []);
-  const pressCell         = useCallback((idx) => dispatch({ type: 'CELL_PRESS', idx }), []);
-  const undo              = useCallback(() => dispatch({ type: 'UNDO' }), []);
-  const hint              = useCallback(() => dispatch({ type: 'HINT' }), []);
-  const addLines          = useCallback(() => dispatch({ type: 'ADD_LINES' }), []);
+  // Timestamps are taken here, not in the reducer, so the reducer stays pure.
+  const pressCell         = useCallback((idx) => dispatch({ type: 'CELL_PRESS', idx, now: Date.now() }), []);
+  const undo              = useCallback(() => dispatch({ type: 'UNDO', now: Date.now() }), []);
+  const hint              = useCallback(() => dispatch({ type: 'HINT', now: Date.now() }), []);
+  const addLines          = useCallback(() => dispatch({ type: 'ADD_LINES', now: Date.now() }), []);
+  const setToken          = useCallback((puzzleId, token) =>
+    dispatch({ type: 'SET_TOKEN', puzzleId, token }), []);
   const clearFlash        = useCallback(() => dispatch({ type: 'CLEAR_FLASH' }), []);
   const toggleConnections = useCallback(() => dispatch({ type: 'TOGGLE_CONNECTIONS' }), []);
   const dismissWin        = useCallback(() => dispatch({ type: 'DISMISS_WIN' }), []);
 
-  return { state, initGame, pressCell, undo, hint, addLines, clearFlash, toggleConnections, dismissWin };
+  return { state, initGame, pressCell, undo, hint, addLines, setToken, clearFlash, toggleConnections, dismissWin };
 }
