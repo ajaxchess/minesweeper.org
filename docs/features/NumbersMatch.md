@@ -2,7 +2,9 @@
 
 **Feature ID:** F-NM (formerly F96 — see Features.md)  
 **URL:** /numbers-match (daily permalink: /numbers-match/YYYY-MM-DD)  
-**Code:** numbers_match_routes.py, numbers_match_generator.py, templates/numbers_match.html, static/src/js/numbers_match.js
+**Code:** numbers_match_routes.py, numbers_match_generator.py, numbers_match_engine.py, templates/numbers_match.html, static/src/js/numbers_match.js
+**Mobile web:** /mobile/nmmobile (templates/nmmobile.html, route in main.py) runs the same numbers_match.js
+**Mobile app:** mobile/nmmobile (Expo)
 
 ## Overview
 A number-pairing puzzle game. Clear the board by matching pairs of numbers, either

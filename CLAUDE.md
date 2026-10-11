@@ -106,6 +106,9 @@ built and any decisions made, update Status to `done`, then `git mv` the file to
 understand data models, URL conventions, and design decisions for related features.
 
 ## Known Issues / Notes
+- `numbers_match.js` is loaded by two templates: `numbers_match.html` and the
+  standalone mobile web page `nmmobile.html` (`/mobile/nmmobile`). Bump `?v=` in
+  both together (enforced by `tests/test_numbers_match.py`)
 - Numbers Match rules exist in three places: `static/src/js/numbers_match.js`,
   `mobile/nmmobile/src/gameEngine.js` + `hooks/useGameState.js`, and the server
   replay `numbers_match_engine.py`. After changing any of them, regenerate

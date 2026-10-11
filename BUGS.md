@@ -1,3 +1,12 @@
+B54 /mobile/nmmobile (mobile web Numbers Match) returned HTTP 500 since 2026-05-12.
+   Root cause: a3475a6 translated the template's strings ({{ t.* }}) but the route in main.py
+   never passed `t`, so Jinja raised UndefinedError: 't' is undefined. The page also loaded
+   numbers_match.js?v=17 and style.css?v=48, and had no data-revision / data-timezone, so even
+   once rendered it would run stale cached JS that cannot submit verified scores (F-NM-VERIFY).
+   Fix: pass lang, t, nm_revision and nm_timezone from the route; load the same numbers_match.js
+   and style.css versions as the main page. Tests in tests/test_numbers_match.py check the page
+   renders, uses the same asset versions, and has every element numbers_match.js looks up.
+
 B53 Production installed different Python dependency versions than staging tested.
    Root cause: staging installs requirements.lock (hash-checked) but production installed
    requirements.txt without hashes, and a failed pip install only printed a warning. Dependabot

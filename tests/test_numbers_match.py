@@ -322,6 +322,31 @@ class TestPage:
         assert r.headers["location"] == "/numbers-match"
 
 
+class TestMobileWebPage:
+    """/mobile/nmmobile runs the same numbers_match.js in a standalone template (B54)."""
+
+    def test_renders_with_server_revision_and_timezone(self, client):
+        r = client.get("/mobile/nmmobile")
+        assert r.status_code == 200
+        assert f'data-revision="{REV}"' in r.text
+        assert f'data-timezone="{NUMBERS_MATCH_TZ_NAME}"' in r.text
+
+    def test_loads_same_asset_versions_as_main_page(self):
+        def version(rel, asset):
+            src = (ROOT / rel).read_text(encoding="utf-8")
+            return re.search(re.escape(asset) + r"\?v=(\d+)", src).group(1)
+        # A stale ?v= serves cached JS that doesn't send move logs, so scores fail.
+        assert version("templates/nmmobile.html", "numbers_match.js") == version("templates/numbers_match.html", "numbers_match.js")
+        assert version("templates/nmmobile.html", "style.css") == version("templates/base.html", "style.css")
+
+    @pytest.mark.parametrize("template", ["templates/numbers_match.html", "templates/nmmobile.html"])
+    def test_every_element_the_script_needs_exists(self, template):
+        js = (ROOT / "static/src/js/numbers_match.js").read_text(encoding="utf-8")
+        html = (ROOT / template).read_text(encoding="utf-8")
+        missing = {i for i in re.findall(r"getElementById\('([\w-]+)'\)", js) if f'id="{i}"' not in html}
+        assert not missing, f"{template} lacks elements numbers_match.js uses: {sorted(missing)}"
+
+
 # ── B52 regression: no global-name clashes with base.html's deferred scripts ──
 
 _TOP_LEVEL_NAME = re.compile(r"^(?:async\s+)?function\s+(\w+)|^(?:let|const|var|class)\s+(\w+)", re.M)

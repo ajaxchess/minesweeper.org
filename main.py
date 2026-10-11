@@ -41,6 +41,8 @@ from tametsi_generator import (
 from numbers_match_generator import (
     generate_daily as _nm_generate_daily,
     NUMBERS_MATCH_TZ,
+    NUMBERS_MATCH_TZ_NAME,
+    NUMBERS_MATCH_BOARD_REVISION,
     numbers_match_today_str,
 )
 import database as _db_module
@@ -2129,9 +2131,13 @@ async def mobile_android_landing(request: Request):
 async def mobile_nmmobile(request: Request):
     real_today = numbers_match_today_str()
     return templates.TemplateResponse(request, "nmmobile.html", {
-        "user":       get_current_user(request),
-        "today":      real_today,
-        "real_today": real_today,
+        "user":        get_current_user(request),
+        "lang":        get_lang(request),
+        "t":           get_t(request),
+        "today":       real_today,
+        "real_today":  real_today,
+        "nm_revision": NUMBERS_MATCH_BOARD_REVISION,
+        "nm_timezone": NUMBERS_MATCH_TZ_NAME,
     }, headers={"Cache-Control": "no-store"})
 
 
