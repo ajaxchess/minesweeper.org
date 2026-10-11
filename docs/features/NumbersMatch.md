@@ -1,6 +1,6 @@
 # Numbers Match
 
-**Feature ID:** F96  
+**Feature ID:** F-NM (formerly F96 — see Features.md)  
 **URL:** /numbers-match (daily permalink: /numbers-match/YYYY-MM-DD)  
 **Code:** numbers_match_routes.py, numbers_match_generator.py, templates/numbers_match.html, static/src/js/numbers_match.js
 
@@ -61,9 +61,13 @@ Add Lines lets the game keep progressing.
 - **Difficulty boards (Easy–Expert):** generated in the browser
   (`generateBoardClient`, mulberry32 + FNV-1a) from a seed of date + difficulty +
   revision, so each one is also the same for every player on a given day.
-- **Revision:** `v2` is the current board revision. It is hard-coded in three
-  places that must change together: `NUMBERS_MATCH_BOARD_REVISION` in
-  `numbers_match_routes.py` and `main.py`, and `_serverRevision` in the JS.
+- **Revision and timezone:** defined once in `numbers_match_generator.py`
+  (`NUMBERS_MATCH_BOARD_REVISION = "v2"`, `NUMBERS_MATCH_TZ_NAME`). `main.py` and
+  `numbers_match_routes.py` import them; the page passes them to the JS as
+  `data-revision` / `data-timezone` on `#nm-board`. If the server date API is
+  unreachable, the JS falls back to the browser clock in that timezone. Changing
+  the revision gives every variant a new board and a fresh leaderboard.
+- **Tests:** `tests/test_numbers_match.py`.
 - After a win, the next game of the same variant starts automatically (350 ms).
 
 ## Scoring

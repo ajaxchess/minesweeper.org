@@ -85,6 +85,8 @@
       <div id="nm-board"
            data-today="{{ today }}"
            data-real-today="{{ real_today }}"
+           data-revision="{{ nm_revision }}"
+           data-timezone="{{ nm_timezone }}"
            data-username="{{ user.display_name if user else '' }}">
 
         <div id="nm-loading">{{ t.nm_loading }}</div>
@@ -198,5 +200,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/numbers_match.js?v=19"></script>
+<script src="/static/js/numbers_match.js?v=20"></script>
 {% endblock %}

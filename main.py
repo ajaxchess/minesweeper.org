@@ -38,7 +38,11 @@ from tametsi_generator import (
     daily_rng as _tametsi_daily_rng,
     LEVELS as _TAMETSI_LEVELS,
 )
-from numbers_match_generator import generate_daily as _nm_generate_daily
+from numbers_match_generator import (
+    generate_daily as _nm_generate_daily,
+    NUMBERS_MATCH_TZ,
+    numbers_match_today_str,
+)
 import database as _db_module
 from duel_routes import duel_router
 from duelold_routes import duelold_router
@@ -735,14 +739,6 @@ def reset_scores():
         record_scheduler_run("reset_scores", success=False)
     finally:
         db.close()
-
-
-NUMBERS_MATCH_TZ = ZoneInfo("America/New_York")
-NUMBERS_MATCH_BOARD_REVISION = "v2"
-
-
-def numbers_match_today_str() -> str:
-    return datetime.now(NUMBERS_MATCH_TZ).strftime("%Y-%m-%d")
 
 
 _prev_net_sent: int | None = None

@@ -4,8 +4,6 @@ Mount this router in main.py with: app.include_router(numbers_match_router)
 """
 import re as _re
 import uuid
-from datetime import datetime
-from zoneinfo import ZoneInfo
 from typing import Optional
 from urllib.parse import urlparse
 
@@ -28,7 +26,12 @@ from translations import get_lang, get_t, SUPPORTED_LANGS
 import settings as site_settings
 from quest_catalog import quest_config
 from breadcrumbs import get_breadcrumbs as _get_breadcrumbs
-from numbers_match_generator import generate_daily as _nm_generate_daily
+from numbers_match_generator import (
+    generate_daily as _nm_generate_daily,
+    NUMBERS_MATCH_TZ_NAME,
+    NUMBERS_MATCH_BOARD_REVISION,
+    numbers_match_today_str,
+)
 
 numbers_match_router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
@@ -45,16 +48,6 @@ templates.env.globals["is_mexico_cinco"]       = site_settings.is_mexico_cinco
 templates.env.globals["is_mexico_independence"] = site_settings.is_mexico_independence
 templates.env.globals["ga_tag"]               = ""
 templates.env.globals["get_breadcrumbs"]      = _get_breadcrumbs
-
-
-# ── Local constants ────────────────────────────────────────────────────────────
-
-NUMBERS_MATCH_TZ             = ZoneInfo("America/New_York")
-NUMBERS_MATCH_BOARD_REVISION = "v2"
-
-
-def numbers_match_today_str() -> str:
-    return datetime.now(NUMBERS_MATCH_TZ).strftime("%Y-%m-%d")
 
 
 # ── Shared utilities (mirrors of main.py helpers; no circular-import solution) ──
@@ -179,7 +172,7 @@ def get_numbers_match_today(response: Response):
     response.headers["Cache-Control"] = "no-store"
     return {
         "today": numbers_match_today_str(),
-        "timezone": "America/New_York",
+        "timezone": NUMBERS_MATCH_TZ_NAME,
         "revision": NUMBERS_MATCH_BOARD_REVISION,
     }
 
@@ -274,6 +267,8 @@ async def numbers_match_page(request: Request):
         "t":          get_t(request),
         "today":      real_today,
         "real_today": real_today,
+        "nm_revision": NUMBERS_MATCH_BOARD_REVISION,
+        "nm_timezone": NUMBERS_MATCH_TZ_NAME,
     }, headers={"Cache-Control": "no-store"})
 
 
@@ -290,6 +285,8 @@ async def numbers_match_permalink(request: Request, date_str: str):
         "t":          get_t(request),
         "today":      date_str,
         "real_today": real_today,
+        "nm_revision": NUMBERS_MATCH_BOARD_REVISION,
+        "nm_timezone": NUMBERS_MATCH_TZ_NAME,
         "noindex":    True,
     }, headers={"Cache-Control": "no-store"})
 

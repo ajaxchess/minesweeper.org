@@ -30,7 +30,11 @@ let _showConnections = false; // persists across games; toggled by the Paths but
 let _autoNextTimer = null;
 let _gameSeq = 0;
 let _pendingGameId = 0;    // guards against stale initDailyGame completing after a newer load started
-let _serverRevision = 'v2';
+// Board revision and puzzle-day timezone come from the server
+// (numbers_match_generator.py) via data attributes on #nm-board.
+const _nmBoardData   = document.getElementById('nm-board')?.dataset || {};
+let   _serverRevision = _nmBoardData.revision || '';
+const _nmTimeZone     = _nmBoardData.timezone || 'America/New_York';
 
 // ── Utility ────────────────────────────────────────────────────────────────────
 function fmtTime(s) {
@@ -41,8 +45,16 @@ function esc(s) {
     return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
 
-function utcToday() {
-    return new Date().toISOString().slice(0, 10);
+// Puzzle date (YYYY-MM-DD) in the server's puzzle timezone, used when
+// /api/numbers-match-today is unreachable. en-CA formats as YYYY-MM-DD.
+function nmToday() {
+    try {
+        return new Intl.DateTimeFormat('en-CA', {
+            timeZone: _nmTimeZone, year: 'numeric', month: '2-digit', day: '2-digit',
+        }).format(new Date());
+    } catch {
+        return _nmBoardData.realToday || new Date().toISOString().slice(0, 10);
+    }
 }
 
 async function serverToday() {
@@ -53,9 +65,9 @@ async function serverToday() {
         if (/^v\d+$/.test(data.revision || '')) _serverRevision = data.revision;
         if (/^\d{4}-\d{2}-\d{2}$/.test(data.today)) return data.today;
     } catch {
-        // Fall back to browser UTC if the server date endpoint is unavailable.
+        // Fall back to the browser clock in the puzzle timezone.
     }
-    return utcToday();
+    return nmToday();
 }
 
 function cacheBustUrl(path) {
@@ -548,7 +560,7 @@ async function initDailyGame(dateStr) {
     nmStopTimer();
     rememberVariant('daily');
     _showLoading(true);
-    const requestedDate = dateStr || utcToday();
+    const requestedDate = dateStr || nmToday();
 
     try {
         const r = await fetch(boardUrl(requestedDate), { cache: 'no-store' });
@@ -567,7 +579,7 @@ async function initDailyGame(dateStr) {
 function initRandomGame(rows, dateStr = null) {
     ++_pendingGameId;  // cancel any in-flight initDailyGame
     nmStopTimer();
-    const today    = dateStr || utcToday();
+    const today    = dateStr || nmToday();
     const diffKey  = NM_DIFF_LABELS[rows]?.toLowerCase();
     const seed     = diffKey ? scorePuzzleId(today, diffKey) : Date.now().toString(36);
     const board    = generateBoardClient(seed, rows);

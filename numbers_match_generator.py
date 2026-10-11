@@ -13,11 +13,25 @@ partner (equal value or sum-to-10), and the Add Lines mechanic ensures
 the game can always progress to a full clear.
 """
 
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 import hashlib
 import random
 
 _EPOCH = date(2024, 1, 1)
+
+# Single source of truth for the Numbers Match day and board revision.
+# main.py, numbers_match_routes.py and (via the template's data attributes)
+# static/src/js/numbers_match.js all read these.
+NUMBERS_MATCH_TZ_NAME        = "America/New_York"
+NUMBERS_MATCH_TZ             = ZoneInfo(NUMBERS_MATCH_TZ_NAME)
+NUMBERS_MATCH_BOARD_REVISION = "v2"
+
+
+def numbers_match_today_str(now: datetime | None = None) -> str:
+    """Return the current Numbers Match puzzle date (YYYY-MM-DD) in America/New_York."""
+    now = now or datetime.now(NUMBERS_MATCH_TZ)
+    return now.astimezone(NUMBERS_MATCH_TZ).strftime("%Y-%m-%d")
 
 
 def board_number(date_str: str) -> int:

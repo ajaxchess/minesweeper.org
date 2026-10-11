@@ -29,7 +29,7 @@ WebSocket support via mod_proxy_wstunnel.
   (e.g. `numbers_match_routes.py`)
 - Translations are in `translations.py` — a large dict keyed by language code
 - `database.py` is **generated** — never edit it directly (see Database Setup below)
-- Commit messages carry the feature or bug ID (`F96 ...`, `B52 ...`); bugs are
+- Commit messages carry the feature or bug ID (`F-NM ...`, `B52 ...`). New features use named IDs like `F-NM` or `F-ASSETS`; F96 was reused for two features, so Numbers Match is now `F-NM`; bugs are
   logged in `BUGS.md` with root cause and fix
 - Static assets: edit only `static/src/js/` and `static/src/css/`. The
   `build-assets.yml` workflow minifies them into `static/js/` / `static/css/` and
@@ -98,6 +98,6 @@ built and any decisions made, update Status to `done`, then `git mv` the file to
 understand data models, URL conventions, and design decisions for related features.
 
 ## Known Issues / Notes
-- Numbers Match board revision (`v2`) and timezone (America/New_York) are
-  duplicated in `main.py`, `numbers_match_routes.py` and
-  `static/src/js/numbers_match.js` — change all three together
+- Numbers Match board revision and puzzle timezone live only in
+  `numbers_match_generator.py`; never redefine them elsewhere (enforced by
+  `tests/test_numbers_match.py`)

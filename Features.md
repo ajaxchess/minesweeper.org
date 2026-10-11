@@ -64,7 +64,7 @@ F98 Minesweeper Bootcamp
 
 F97 Tametsi 2026 World Cup celebration
 
-F96 Numbers Match
+F-NM Numbers Match (originally numbered F96; that number was also used for the Phase 1-4 analytics work, so Numbers Match moved to a named ID)
 
 ──────────────────────────────────────────────────────────────────────────────
 
