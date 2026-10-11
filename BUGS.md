@@ -1,3 +1,11 @@
+B52 Numbers Match saves 0:01 as the time for every completed game; on-screen timer stuck at 0:00.
+   Root cause: base.html loads minesweeper.js with `defer` (added in f0d4909, 2026-05-13), so it
+   now executes AFTER numbers_match.js. Both declare global `startTimer`/`stopTimer`, and the
+   later script wins: Numbers Match called minesweeper.js's timer (which updates `state`, not
+   `G`), so `G.startTime` was never set, `G.elapsed` stayed 0, and `Math.max(1, 0)` sent 1s.
+   Fix: rename the Numbers Match functions to `nmStartTimer`/`nmStopTimer` and bump
+   numbers_match.js to ?v=19. Scores saved before the fix keep their 1s time.
+
 B51 CodeQL: Uncontrolled data used in path expression — main.py admin/analysis route.
    Root cause: real_base = os.path.realpath(active_dir) was derived from user-supplied
    `folder` param, making all startsWith(real_base) checks tainted-vs-tainted comparisons

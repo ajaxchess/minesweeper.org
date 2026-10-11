@@ -24,9 +24,21 @@ WebSocket support via mod_proxy_wstunnel.
 - `https://github/ajaxchess/minesweeper.org/` — github repo
 
 ## Key Conventions
-- Routes live in `main.py`; pvp-specific logic lives in the separate pvp service
+- Routes live in `main.py`; pvp-specific logic lives in the separate pvp service.
+  Newer games have their own `<game>_routes.py` APIRouter included from `main.py`
+  (e.g. `numbers_match_routes.py`)
 - Translations are in `translations.py` — a large dict keyed by language code
 - `database.py` is **generated** — never edit it directly (see Database Setup below)
+- Commit messages carry the feature or bug ID (`F96 ...`, `B52 ...`); bugs are
+  logged in `BUGS.md` with root cause and fix
+- Static assets: edit only `static/src/js/` and `static/src/css/`. The
+  `build-assets.yml` workflow minifies them into `static/js/` / `static/css/` and
+  commits the result, so never edit the served copies. Bump the `?v=N` on the
+  template's `<script>`/`<link>` tag when an asset changes
+- `base.html` loads `minesweeper.js`, `rewind.js` and `quests.js` with `defer` on
+  every page, so they run after page-specific scripts and override any global
+  function with the same name. Don't reuse their global names (e.g.
+  `startTimer`, `stopTimer`) — see B52
 
 ## Database Setup
 
@@ -86,3 +98,6 @@ built and any decisions made, update Status to `done`, then `git mv` the file to
 understand data models, URL conventions, and design decisions for related features.
 
 ## Known Issues / Notes
+- Numbers Match board revision (`v2`) and timezone (America/New_York) are
+  duplicated in `main.py`, `numbers_match_routes.py` and
+  `static/src/js/numbers_match.js` — change all three together

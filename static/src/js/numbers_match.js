@@ -140,7 +140,7 @@ function generateBoardClient(seed, rows) {
 }
 
 // ── Timer ──────────────────────────────────────────────────────────────────────
-function startTimer() {
+function nmStartTimer() {
     if (G.timer) return;
     G.startTime = Date.now() - G.elapsed * 1000;
     G.timer = setInterval(() => {
@@ -149,7 +149,7 @@ function startTimer() {
     }, 500);
 }
 
-function stopTimer() {
+function nmStopTimer() {
     clearInterval(G.timer);
     G.timer = null;
     if (G.startTime) G.elapsed = Math.floor((Date.now() - G.startTime) / 1000);
@@ -262,7 +262,7 @@ function doMatch(i, j) {
     if (G.board.every(v => v === 0)) {
         G.score += 150;
         G.won = true;
-        stopTimer();
+        nmStopTimer();
         if (G.isPOTD && typeof window.questsHook === 'function')
             window.questsHook('numbers_match_solved');
         renderBoard();
@@ -338,7 +338,7 @@ function doAddLines() {
 // ── Cell click ─────────────────────────────────────────────────────────────────
 function handleCellClick(idx) {
     if (G.won || G.board[idx] === 0) return;
-    if (!G.startTime) startTimer();
+    if (!G.startTime) nmStartTimer();
 
     G.hintPair = null;
 
@@ -545,7 +545,7 @@ async function loadLeaderboard() {
 // ── Game init ──────────────────────────────────────────────────────────────────
 async function initDailyGame(dateStr) {
     const myPendingId = ++_pendingGameId;
-    stopTimer();
+    nmStopTimer();
     rememberVariant('daily');
     _showLoading(true);
     const requestedDate = dateStr || utcToday();
@@ -566,7 +566,7 @@ async function initDailyGame(dateStr) {
 
 function initRandomGame(rows, dateStr = null) {
     ++_pendingGameId;  // cancel any in-flight initDailyGame
-    stopTimer();
+    nmStopTimer();
     const today    = dateStr || utcToday();
     const diffKey  = NM_DIFF_LABELS[rows]?.toLowerCase();
     const seed     = diffKey ? scorePuzzleId(today, diffKey) : Date.now().toString(36);

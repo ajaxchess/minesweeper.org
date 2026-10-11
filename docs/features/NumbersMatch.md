@@ -1,5 +1,9 @@
 # Numbers Match
 
+**Feature ID:** F96  
+**URL:** /numbers-match (daily permalink: /numbers-match/YYYY-MM-DD)  
+**Code:** numbers_match_routes.py, numbers_match_generator.py, templates/numbers_match.html, static/src/js/numbers_match.js
+
 ## Overview
 A number-pairing puzzle game. Clear the board by matching pairs of numbers, either
 identical (1−1, 7−7) or summing to 10 (1−9, 2−8, 3−7, 4−6, 5−5).
@@ -21,65 +25,88 @@ block the match; empty cells do not.
 the first cell of the next row (col 1, row N+1). This wrap counts as a horizontal
 adjacency only — no diagonal adjacency across the line boundary.
 
+
+In code (`areAdjacent`), the wrap is any reading-order path (left to right, row by
+row) whose cells in between are all empty.
+
 ## Elimination
 Tap a valid pair to remove both numbers from the board, leaving empty cells.
+Rows that become completely empty collapse and are removed from the board.
 
 ## Adding Lines
-If no valid moves remain, the player can append the current remaining numbers
-(in their present order) to the bottom of the board, creating new pairing
-opportunities.
+The player can append the current remaining numbers (in their present order) to
+the bottom of the board, creating new pairing opportunities. Limited to
+**5 per game**. When a hint finds no valid pair, the Add Lines button pulses.
 
 ## Board Layout
-The board has 9 columns. Row count increases with board number:
+The board has 9 columns. Every board starts with a fixed number of rows; the row
+schedule by board number from the original design is not used.
 
-| Board(s) | Rows |
-|----------|------|
-| 1        | 3    |
-| 2–3      | 4    |
-| 4–6      | 5    |
-| 7–10     | 6    |
-| 11–15    | 7    |
-| 16–21    | 8    |
-| 22–28    | 9    |
-| 29–36    | 10   |
-| …        | …    |
+| Mode | Starting rows | Leaderboard puzzle id |
+|------|---------------|-----------------------|
+| Daily | 4 | `YYYY-MM-DD-v2` |
+| Easy | 4 | `YYYY-MM-DD-easy-v2` |
+| Medium | 8 | `YYYY-MM-DD-medium-v2` |
+| Hard | 16 | `YYYY-MM-DD-hard-v2` |
+| Expert | 32 | `YYYY-MM-DD-expert-v2` |
 
-Every board is guaranteed to have at least one solution.
+Boards contain 1–9 repeated and shuffled, so every number has a partner, and
+Add Lines lets the game keep progressing.
 
 ## Board Generation
-- **Daily board:** One shared board per day, the same for all players. Generated
-  from a hash encoding the board number and the placement of all numbers.
-- **Random board:** Players can also generate a random board on demand via a
-  dedicated button.
+- **Daily board:** one shared board per day, the same for all players. The server
+  generates it (`numbers_match_generator.generate_daily`) with a SHA-256 seed of
+  the date plus the revision (`:v2`). The day is the **America/New_York** date
+  (`/api/numbers-match-today`), not the browser's.
+- **Difficulty boards (Easy–Expert):** generated in the browser
+  (`generateBoardClient`, mulberry32 + FNV-1a) from a seed of date + difficulty +
+  revision, so each one is also the same for every player on a given day.
+- **Revision:** `v2` is the current board revision. It is hard-coded in three
+  places that must change together: `NUMBERS_MATCH_BOARD_REVISION` in
+  `numbers_match_routes.py` and `main.py`, and `_serverRevision` in the JS.
+- After a win, the next game of the same variant starts automatically (350 ms).
 
 ## Scoring
 | Event | Points |
 |-------|--------|
 | Pair removed | +1 |
-| Full row cleared | +10 |
 | Far Apart bonus | +1 per empty cell between the pair, max +4 |
+| Full row cleared | +10 |
 | Board cleared | +150 |
+| Hint used | −3 |
+| Undo used | −5 |
 
-The Far Apart bonus applies when matched numbers are not directly adjacent —
-each empty cell along the line between them adds 1 point, capped at 4.
+The score never goes below 0.
 
 ## Timer
-A timer runs for the duration of the game and is recorded on completion.
+The timer starts on the first cell click and stops when the board is cleared.
+The elapsed seconds are submitted as `time_secs` (minimum 1).
+
+See bug B52: from 2026-05-13 until the fix, the timer called minesweeper.js's
+global `startTimer`/`stopTimer` and every web score was saved as 1 second. The
+timer functions are now named `nmStartTimer`/`nmStopTimer`. Do not reuse
+global function names that `minesweeper.js` defines; base.html loads it with
+`defer`, so it runs after this script and overrides them.
 
 ## Leaderboard
-The daily board leaderboard ranks players by:
-1. Score (descending) — primary criterion
-2. Time (ascending) — tiebreaker
+Every daily and difficulty variant has its own leaderboard (top 20, one row per
+name, flagged names excluded). The score is saved automatically on a win; guests
+get a `Guest NNNN` name kept in localStorage. Ranking
+(`get_numbers_match_scores`):
+1. Score ÷ time (descending): a higher score reached faster ranks higher
+2. Score (descending)
+3. Time (ascending)
 
 ## Player Tools
 | Tool | Limit | Behaviour |
 |------|-------|-----------|
-| Undo | 3 per game | Reverses the last elimination |
-| Hint | 9 per game | Highlights a single valid pair |
-| Check | TBD | To be defined after initial implementation |
+| Undo | 3 per game, −5 points | Reverses the last elimination or Add Lines |
+| Hint | 9 per game, −3 points | Highlights a single valid pair |
+| Add Lines | 5 per game | Appends remaining numbers to the bottom |
+| Paths | unlimited toggle | Highlights the row, column, diagonals and wrap cells of the hovered number |
 
 ## Strategies & Tips
 - Focus on smaller numbers first to keep the board open.
 - Clearing full rows earns bonus points — prioritise completing rows.
-- Use Undo sparingly; it is limited to 3 per game.
-- Use Hints when stuck; 9 are available per game.
+- Use Undo sparingly; it is limited to 3 per game and costs 5 points.
+- Use Hints when stuck; 9 are available per game, at 3 points each.
