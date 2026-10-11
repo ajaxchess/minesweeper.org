@@ -1135,6 +1135,9 @@ class SudokuScore(Base):
     board_givens = Column(String(81), nullable=False)    # 81-char givens string for replay
     time_ms      = Column(Integer, nullable=False)
     hints_used   = Column(Integer, nullable=False, default=0)
+    # Bitmask of assists turned on during the game (F-SUDOKU-ASSISTS):
+    # 1 = auto candidates, 2 = auto check. Conflicts and manual notes don't count.
+    assists      = Column(Integer, nullable=False, default=0, server_default="0")
     puzzle_date  = Column(String(10), nullable=False)    # YYYY-MM-DD UTC
     guest_token  = Column(String(36), nullable=True, index=True)
     client_type  = Column(String(32), nullable=False, server_default="web")
@@ -1154,6 +1157,7 @@ class SudokuScore(Base):
             "full_hash":   self.board_hash,
             "time_ms":     self.time_ms,
             "hints_used":  self.hints_used,
+            "assists":     self.assists or 0,
             "puzzle_date": self.puzzle_date,
             "created_at":  self.created_at.strftime("%Y-%m-%d"),
         }
@@ -1892,6 +1896,8 @@ def _apply_migrations():
         ("wc2026_matches", "source_game_id", "INT NULL"),
         # Numbers Match verified scores: one-time game token nonce (F-NM-VERIFY, 2026-10-11)
         ("numbers_match_scores", "game_nonce", "VARCHAR(32) NULL"),
+        # Sudoku assists bitmask: 1 = auto candidates, 2 = auto check (F-SUDOKU-ASSISTS, 2026-10-11)
+        ("sudoku_scores",        "assists",    "INT NOT NULL DEFAULT 0"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:

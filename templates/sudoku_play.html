@@ -32,9 +32,13 @@ window.SUDOKU_CFG = {
   seed:       {{ seed if seed is not none else 'null' }},
   givens:     {{ givens | tojson if givens else 'null' }},
   user:       {{ user | tojson if user else 'null' }},
+  labels:     {
+    autoCandidates: {{ t.sudoku_opt_auto_candidates | tojson }},
+    autoCheck:      {{ t.sudoku_opt_auto_check | tojson }},
+  },
 };
 </script>
-<script src="/static/js/sudoku.js?v=1" defer></script>
+<script src="/static/js/sudoku.js?v=2" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -56,8 +60,20 @@ window.SUDOKU_CFG = {
   <div class="su-toolbar">
     <button id="su-new-game"      class="su-btn">New Game</button>
     <button id="su-hint"          class="su-btn">Hint (<span id="su-hints-used">0</span>)</button>
-    <button id="su-toggle-errors" class="su-btn su-btn--on">Mistakes</button>
     <span   id="su-timer"         class="su-timer">0s</span>
+  </div>
+
+  <!-- Entry mode tabs + assist options (F-SUDOKU-ASSISTS) -->
+  <div class="su-controls">
+    <div class="su-mode-tabs" role="tablist">
+      <button id="su-mode-normal" class="su-mode-tab active" role="tab">{{ t.sudoku_mode_normal }}</button>
+      <button id="su-mode-notes"  class="su-mode-tab"        role="tab" title="N">{{ t.sudoku_mode_notes }}</button>
+    </div>
+    <div class="su-options">
+      <label class="su-option"><input type="checkbox" id="su-opt-auto-check"> {{ t.sudoku_opt_auto_check }}</label>
+      <label class="su-option"><input type="checkbox" id="su-opt-auto-candidates"> {{ t.sudoku_opt_auto_candidates }}</label>
+      <label class="su-option"><input type="checkbox" id="su-opt-conflicts"> {{ t.sudoku_opt_conflicts }}</label>
+    </div>
   </div>
 
   <!-- Loading message (hidden after init) -->
@@ -113,7 +129,14 @@ window.SUDOKU_CFG = {
           click the cell again to cycle through 1–9.</li>
       <li>Press <kbd>⌫</kbd> or <kbd>Delete</kbd> to clear a cell.</li>
       <li>Use the arrow keys to move the selection.</li>
-      <li>Toggle <strong>Mistakes</strong> off to hide error highlighting.</li>
+      <li>Switch to <strong>Notes</strong> (or press <kbd>N</kbd>) to pencil in small
+          candidates instead of answers; tap a digit again to remove it.</li>
+      <li><strong>Auto candidates</strong> fills every empty cell with the digits that
+          still fit; in Notes mode you can cross candidates out.
+          <strong>Auto check</strong> marks wrong answers in red.
+          <strong>Conflicts</strong> highlights digits repeated in a row, column or box.</li>
+      <li>Auto candidates and Auto check are shown next to your time on the
+          leaderboard; Conflicts and your own notes are not.</li>
       <li>Click <strong>Hint</strong> to reveal the correct digit for the selected cell
           (counted on the leaderboard).</li>
     </ul>

@@ -39,7 +39,10 @@ async function loadScores() {
       const name     = flag + (r.profile_url
         ? `<a href="${r.profile_url}" style="color:var(--accent2);">${escHtml(r.name)}</a>`
         : escHtml(r.name));
-      const time     = fmtTime(r.time_ms);
+      // Assists bitmask (F-SUDOKU-ASSISTS): 1 = auto candidates, 2 = auto check
+      const assists  = (r.assists & 1 ? '<span class="su-assist" title="Auto candidates">✎</span>' : '') +
+                       (r.assists & 2 ? '<span class="su-assist" title="Auto check">✓</span>' : '');
+      const time     = fmtTime(r.time_ms) + assists;
       const hints    = r.hints_used > 0 ? r.hints_used : '—';
       const boardLink= `<a href="/other/sudoku/board/${r.full_hash}" title="Replay this board"
                            style="color:var(--text-dim);font-family:monospace;font-size:0.8rem;">${r.board_hash}</a>`;
@@ -116,6 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <p id="lb-note" class="su-lb-note" style="display:none;">
     All-time shows each player's personal best.
   </p>
+  <p class="su-lb-note">✎ Auto candidates &nbsp;·&nbsp; ✓ Auto check — assists used during that game.</p>
 
   <div class="wt-table-wrap">
     <table class="lb-table" style="max-width:700px;margin:0 auto;">

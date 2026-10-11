@@ -8755,6 +8755,52 @@ html[data-skin="flower-light"] .diana-birthday-banner {
 .su-cell--peer       { background: color-mix(in srgb, var(--accent2) 18%, transparent); }
 .su-cell--same-digit { background: color-mix(in srgb, var(--accent2) 32%, transparent); }
 .su-cell--error      { color: #e55; }
+/* Repeated digit in a row, column or box (Conflicts option) */
+.su-cell--conflict   { box-shadow: inset 0 0 0 2px #e55; }
+.su-cell--conflict.su-cell--given { color: #e55; }
+
+/* Candidate notes: 3×3 mini-grid, digit n always in slot n */
+.su-notes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+  padding: 1px;
+  box-sizing: border-box;
+  font-size: clamp(0.45rem, 1.5vw, 0.62rem);
+  line-height: 1;
+  color: var(--accent2);
+}
+.su-notes span { display: flex; align-items: center; justify-content: center; }
+.su-cell--selected .su-notes { color: var(--bg); }
+
+/* Normal / Notes tabs and assist options */
+.su-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  margin: 0 auto 0.6rem;
+  max-width: 450px;
+}
+.su-mode-tabs { display: flex; gap: 0.35rem; }
+.su-mode-tab {
+  padding: 0.3rem 0.9rem;
+  border: 1px solid var(--accent2);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent2);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.su-mode-tab.active { background: var(--accent2); color: var(--bg); font-weight: 600; }
+.su-options { display: flex; flex-wrap: wrap; gap: 0.25rem 0.9rem; font-size: 0.85rem; }
+.su-option  { display: inline-flex; align-items: center; gap: 0.3rem; cursor: pointer; color: var(--text); }
+
+/* Leaderboard: assists used next to the time */
+.su-assist { margin-left: 0.25rem; color: var(--text-dim); font-size: 0.8rem; cursor: help; }
 
 /* Numpad */
 .su-numpad {

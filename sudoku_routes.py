@@ -271,6 +271,8 @@ class SudokuScoreSubmit(BaseModel):
     board_givens: str = Field(..., min_length=81, max_length=81)
     time_ms:      int = Field(..., ge=1, le=86400000)   # max 24 h
     hints_used:   int = Field(0, ge=0, le=81)
+    # Bitmask: 1 = auto candidates, 2 = auto check. Shown on the leaderboard.
+    assists:      int = Field(0, ge=0, le=3)
 
     @field_validator("name")
     @classmethod
@@ -329,6 +331,7 @@ def submit_sudoku_score(payload: SudokuScoreSubmit, request: Request, db: Sessio
         board_givens = payload.board_givens,
         time_ms      = payload.time_ms,
         hints_used   = payload.hints_used,
+        assists      = payload.assists,
         puzzle_date  = payload.puzzle_date,
         guest_token  = guest_token,
         client_type  = get_client_type(request),

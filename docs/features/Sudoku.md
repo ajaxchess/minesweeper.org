@@ -60,10 +60,18 @@ them cleanly from the start.
 - Tap/click a cell to select it, then use any input method above.
 - Tapping an already-selected cell advances the cycle.
 
-### Mistake Highlighting
-- Invalid entries (duplicates in row, column, or 3×3 box) are shown in red.
-- **Togglable** — on by default; a toggle button in the toolbar turns it off for a
-  cleaner solve experience.
+### Notes, Auto Candidates, Auto Check, Conflicts (F-SUDOKU-ASSISTS)
+Replaced the old "Mistakes" toggle (which compared entries with the solution and
+was on by default). See `SudokuAssists.md` for the full spec.
+- **Normal / Notes tabs** (key `N`): Notes mode pencils small candidates in a
+  3×3 mini-grid (digit n always in slot n).
+- **Auto check** — wrong entries (vs. the solution) in red.
+- **Auto candidates** — every empty cell shows the digits that still fit; in
+  Notes mode the player can cross them out.
+- **Conflicts** — digits repeated in a row, column or box are outlined.
+- All three off for new players; the choice is remembered per browser.
+- Auto candidates and Auto check are recorded as assists and shown on the
+  leaderboard; Conflicts and manual notes are not.
 
 ### Hints
 - A "Hint" button reveals the correct value for the selected empty cell.
@@ -139,7 +147,8 @@ migration.
 - Matches minesweeper.org visual style (dark theme default, light theme support).
 - Board rendered as an HTML `<table>` or CSS grid with bold borders separating the
   nine 3×3 boxes.
-- Toolbar above the board: **New Game** | **Hint** | **Mistakes toggle** | elapsed timer.
+- Toolbar above the board: **New Game** | **Hint** | elapsed timer; below it the
+  **Normal / Notes** tabs and the **Auto check / Auto candidates / Conflicts** checkboxes.
 - Number pad below the board: digits 1–9 + Erase button.
 - Given (pre-filled) cells are visually distinct (bolder font, slightly different
   background) and are not editable.

@@ -44,6 +44,7 @@
 - F50 Flower Garden theme — night garden / day garden, mines=🌸, flags=🌷
 - F52 Schulte Grid — /other/schulte @richard
 - F53 Sudoku — /sudoku
+- F-SUDOKU-ASSISTS Sudoku notes, auto candidates, auto check, conflicts @gisela
 - D1 Document the environment
 - D2 Add feature request ID to commit messages
 - F-NM-VERIFY Numbers Match verified scores — server replays every game @gisela

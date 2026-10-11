@@ -1,6 +1,6 @@
 /* sudoku.js — F53 Sudoku game engine
- * Puzzle generation, input handling, timer, hints, score submission.
- * ?v=1
+ * Puzzle generation, input handling, timer, hints, notes, assists, score submission.
+ * ?v=2 (F-SUDOKU-ASSISTS)
  */
 "use strict";
 (function () {
@@ -174,9 +174,33 @@ let board       = null;    // 81 ints, current user state (given cells stay fixe
 let selected    = -1;
 let hintsUsed   = 0;
 let finished    = false;
-let showErrors  = true;
 let givensStr   = null;
 let boardHashP  = null;    // Promise<string>
+
+// ── Notes and assists (F-SUDOKU-ASSISTS) ─────────────────────────────────────
+// Notes mode writes small candidates instead of values. With "auto candidates"
+// on, a cell's candidates are computed from the board and the player can only
+// cross some out (eliminated); with it off, they are the player's own notes.
+let noteMode    = false;
+let notes       = null;    // Array(81) of Set — manual candidates
+let eliminated  = null;    // Array(81) of Set — auto candidates crossed out
+
+// Checkbox options, remembered per browser; all off for a new player.
+const OPTS_KEY = 'su_opts';
+const opts = { autoCheck: false, autoCandidates: false, conflicts: false };
+try { Object.assign(opts, JSON.parse(localStorage.getItem(OPTS_KEY) || '{}')); } catch {}
+function saveOpts() { try { localStorage.setItem(OPTS_KEY, JSON.stringify(opts)); } catch {} }
+
+// Assists turned on at any point during a game, sent with the score and shown on
+// the leaderboard. Conflicts and manual notes are not assists.
+const ASSIST_AUTO_CANDIDATES = 1;
+const ASSIST_AUTO_CHECK      = 2;
+let assists = 0;
+function recordAssists() {
+  if (finished) return;
+  if (opts.autoCandidates) assists |= ASSIST_AUTO_CANDIDATES;
+  if (opts.autoCheck)      assists |= ASSIST_AUTO_CHECK;
+}
 
 // ── Timer ─────────────────────────────────────────────────────────────────────
 let timerActive  = false;
@@ -237,11 +261,48 @@ document.addEventListener('visibilitychange', () => {
 // ── DOM helpers ───────────────────────────────────────────────────────────────
 function $ (id) { return document.getElementById(id); }
 
+// ── Candidates and conflicts ──────────────────────────────────────────────────
+function peersOf(idx) {
+  const r = Math.floor(idx / 9), c = idx % 9;
+  const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
+  const out = new Set();
+  for (let k = 0; k < 9; k++) {
+    out.add(r * 9 + k);
+    out.add(k * 9 + c);
+    out.add((br + Math.floor(k / 3)) * 9 + bc + (k % 3));
+  }
+  out.delete(idx);
+  return out;
+}
+
+// Candidates shown in an empty cell.
+function candidatesFor(idx) {
+  if (board[idx] !== 0) return new Set();
+  if (!opts.autoCandidates) return notes[idx];
+  const r = Math.floor(idx / 9), c = idx % 9;
+  const out = new Set();
+  for (let v = 1; v <= 9; v++)
+    if (isValid(board, r, c, v) && !eliminated[idx].has(v)) out.add(v);
+  return out;
+}
+
+// Cells whose digit repeats in their row, column or box (givens included).
+function findConflicts() {
+  const out = new Set();
+  for (let i = 0; i < 81; i++) {
+    if (!board[i]) continue;
+    for (const p of peersOf(i))
+      if (board[p] === board[i]) { out.add(i); out.add(p); }
+  }
+  return out;
+}
+
 // ── Board rendering ───────────────────────────────────────────────────────────
 function renderBoard() {
   const el = $('su-board');
   if (!el) return;
   el.innerHTML = '';
+  const conflicts = opts.conflicts ? findConflicts() : new Set();
 
   const selRow = selected >= 0 ? Math.floor(selected / 9) : -1;
   const selCol = selected >= 0 ? selected % 9 : -1;
@@ -264,9 +325,23 @@ function renderBoard() {
       cell.textContent = puzzle[i];
     } else if (board[i] !== 0) {
       cell.textContent = board[i];
-      if (showErrors && board[i] !== solution[i])
+      if (opts.autoCheck && board[i] !== solution[i])
         cell.classList.add('su-cell--error');
+    } else {
+      const cand = candidatesFor(i);
+      if (cand.size) {
+        // 3×3 mini-grid: digit n always sits in slot n.
+        const grid = document.createElement('div');
+        grid.className = 'su-notes';
+        for (let v = 1; v <= 9; v++) {
+          const s = document.createElement('span');
+          if (cand.has(v)) s.textContent = v;
+          grid.appendChild(s);
+        }
+        cell.appendChild(grid);
+      }
     }
+    if (conflicts.has(i)) cell.classList.add('su-cell--conflict');
 
     if (i === selected) {
       cell.classList.add('su-cell--selected');
@@ -296,7 +371,7 @@ function onCellClick(idx) {
   if (finished) return;
   if (puzzle[idx] !== 0) { selectCell(idx); return; }  // given — just select
 
-  if (idx === selected) {
+  if (idx === selected && !noteMode) {
     // Tap-to-cycle: advance through 1–9 then blank
     const cur = board[idx] || 0;
     const next = cur >= 9 ? 0 : cur + 1;
@@ -315,13 +390,50 @@ function setCell(idx, num) {
   if (finished || idx < 0 || puzzle[idx] !== 0) return;
   startTimer();
   board[idx] = num;
+  if (num) {
+    // A placed digit replaces the cell's notes and rules itself out of its peers' notes.
+    notes[idx].clear();
+    eliminated[idx].clear();
+    for (const p of peersOf(idx)) notes[p].delete(num);
+  }
   renderBoard();
   checkComplete();
 }
 
+// Notes mode: toggle candidate `num` in the selected empty cell.
+function toggleNote(idx, num) {
+  if (finished || idx < 0 || puzzle[idx] !== 0 || board[idx] !== 0) return;
+  startTimer();
+  if (opts.autoCandidates) {
+    // Only digits the board still allows can be crossed out or restored.
+    const r = Math.floor(idx / 9), c = idx % 9;
+    if (!isValid(board, r, c, num)) return;
+    const set = eliminated[idx];
+    set.has(num) ? set.delete(num) : set.add(num);
+  } else {
+    const set = notes[idx];
+    set.has(num) ? set.delete(num) : set.add(num);
+  }
+  renderBoard();
+}
+
 function onNumpadClick(num) {
   if (finished || selected < 0 || puzzle[selected] !== 0) return;
-  setCell(selected, num);
+  if (num === 0 && board[selected] === 0) {
+    // Erase on an empty cell clears its notes.
+    notes[selected].clear();
+    eliminated[selected].clear();
+    renderBoard();
+    return;
+  }
+  if (noteMode && num > 0) toggleNote(selected, num);
+  else setCell(selected, num);
+}
+
+function setNoteMode(on) {
+  noteMode = on;
+  $('su-mode-normal')?.classList.toggle('active', !on);
+  $('su-mode-notes')?.classList.toggle('active', on);
 }
 
 function onKeyDown(e) {
@@ -329,6 +441,7 @@ function onKeyDown(e) {
   if (e.target.tagName === 'INPUT') return;   // don't intercept name input
   if (e.key >= '1' && e.key <= '9') { e.preventDefault(); onNumpadClick(+e.key); }
   else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { e.preventDefault(); onNumpadClick(0); }
+  else if (e.key === 'n' || e.key === 'N') { e.preventDefault(); setNoteMode(!noteMode); }
   else if (e.key === 'ArrowRight') { e.preventDefault(); moveSelect(0,  1); }
   else if (e.key === 'ArrowLeft')  { e.preventDefault(); moveSelect(0, -1); }
   else if (e.key === 'ArrowDown')  { e.preventDefault(); moveSelect(1,  0); }
@@ -363,9 +476,13 @@ function onComplete() {
   const ms = Math.round(elapsedMs());
 
   $('su-result-time').textContent   = fmtTime(ms);
+  const assistNames = [];
+  if (assists & ASSIST_AUTO_CANDIDATES) assistNames.push(CFG.labels?.autoCandidates || 'Auto candidates');
+  if (assists & ASSIST_AUTO_CHECK)      assistNames.push(CFG.labels?.autoCheck || 'Auto check');
   $('su-result-hints').textContent  =
-    hintsUsed === 0 ? 'No hints used'
-                    : `${hintsUsed} hint${hintsUsed !== 1 ? 's' : ''} used`;
+    (hintsUsed === 0 ? 'No hints used'
+                     : `${hintsUsed} hint${hintsUsed !== 1 ? 's' : ''} used`) +
+    (assistNames.length ? ` · ${assistNames.join(', ')}` : '');
   $('su-result').style.display = '';
 
   if (USER && USER.email) {
@@ -399,6 +516,7 @@ async function doSubmit(name, ms) {
         board_givens: givensStr,
         time_ms:      ms,
         hints_used:   hintsUsed,
+        assists,
       }),
     });
     if (res.ok) {
@@ -428,9 +546,13 @@ function initGame(givensInput) {
   }
 
   board      = [...puzzle];
+  notes      = Array.from({ length: 81 }, () => new Set());
+  eliminated = Array.from({ length: 81 }, () => new Set());
   selected   = -1;
   hintsUsed  = 0;
   finished   = false;
+  assists    = 0;
+  recordAssists();          // options remembered as on count from the start
   timerActive = false;
   timerAccum  = 0;
   timerIval   = null;
@@ -466,13 +588,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const hint_btn = $('su-hint');
     if (hint_btn) hint_btn.addEventListener('click', hint);
 
-    // Mistake highlight toggle
-    const toggle = $('su-toggle-errors');
-    if (toggle) {
-      toggle.classList.toggle('su-btn--on', showErrors);
-      toggle.addEventListener('click', () => {
-        showErrors = !showErrors;
-        toggle.classList.toggle('su-btn--on', showErrors);
+    // Normal / Notes tabs
+    $('su-mode-normal')?.addEventListener('click', () => setNoteMode(false));
+    $('su-mode-notes')?.addEventListener('click',  () => setNoteMode(true));
+    setNoteMode(false);
+
+    // Option checkboxes: auto check, auto candidates, conflicts
+    for (const [id, key] of [['su-opt-auto-check', 'autoCheck'],
+                             ['su-opt-auto-candidates', 'autoCandidates'],
+                             ['su-opt-conflicts', 'conflicts']]) {
+      const box = $(id);
+      if (!box) continue;
+      box.checked = !!opts[key];
+      box.addEventListener('change', () => {
+        opts[key] = box.checked;
+        saveOpts();
+        recordAssists();
         renderBoard();
       });
     }
