@@ -242,6 +242,32 @@ def test_puzzles_dropdown_lists_all_puzzle_games(client):
     assert "A new daily puzzle is generated each day" not in r.text
 
 
+@pytest.mark.parametrize("path", [
+    "/numbers-match", "/other/sudoku/easy", "/tentaizu", "/puzzles",
+])
+def test_puzzles_dropdown_on_router_pages(client, path):
+    """Pages rendered by *_routes.py templates must show the same Puzzles menu (B56)."""
+    r = client.get(path)
+    assert r.status_code == 200
+    for game in PUZZLE_GAMES:
+        assert f"puzzle-nav-logo-{game['slug']}" in r.text, f"{path} lacks {game['slug']}"
+
+
+def test_every_router_template_env_has_site_globals():
+    """Every router's Jinja2Templates gets main's globals and GA tag (B56)."""
+    import sys
+    from fastapi.templating import Jinja2Templates
+    import main
+    routers = [m for m in list(sys.modules.values())
+               if isinstance(getattr(m, "templates", None), Jinja2Templates)
+               and m.templates is not main.templates]
+    assert len(routers) >= 20
+    for mod in routers:
+        g = mod.templates.env.globals
+        assert g.get("puzzle_games") is main.templates.env.globals["puzzle_games"], mod.__name__
+        assert g.get("ga_tag") == main.templates.env.globals["ga_tag"], mod.__name__
+
+
 def test_all_supported_languages_render_core_pages(client):
     assert {option["code"] for option in LANGUAGE_OPTIONS} <= SUPPORTED_LANGS
     for lang in sorted(SUPPORTED_LANGS - {"en"}):

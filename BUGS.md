@@ -1,3 +1,14 @@
+B56 Puzzles menu empty and Google Analytics missing on pages served by *_routes.py modules.
+   Root cause: since the route extraction refactor (883ef01, 2026-09-14) each *_routes.py module
+   builds its own Jinja2Templates with a partial copy of main.py's globals: no puzzle_games (the
+   Puzzles mega-menu and drawer only showed "All Puzzles") and ga_tag = "" (no GA script). Live
+   check 2026-10-12: / and /tentaizu listed 24 puzzles and loaded GA; /numbers-match and
+   /other/sudoku/* listed 0 and had no GA. 20 router modules affected (blog, duel, numbers match,
+   sudoku, mahjong, jigsaw, nonosweeper, wc2026, ...).
+   Fix: main._sync_router_template_globals() copies every global a router lacks and main's GA tag
+   into each router's template environment (router-specific values such as speff's
+   page_localized and each env's url_for are kept). Tests in tests/test_game_catalog.py.
+
 B55 Sudoku scores dated tomorrow in the evening (Americas).
    Root cause: sudoku_routes.py used date.today() (server clock, UTC), so from 20:00 New York
    time the daily puzzle, the score's puzzle_date and the "Today" leaderboard all moved to the

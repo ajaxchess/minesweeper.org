@@ -367,6 +367,30 @@ templates.env.globals["get_breadcrumbs"] = _get_breadcrumbs
 templates.env.globals["quest_config"] = quest_config
 templates.env.globals["puzzle_games"] = PUZZLE_GAMES
 
+
+def _sync_router_template_globals() -> None:
+    """Give every router's Jinja2Templates the site-wide globals main.py defines (B56).
+
+    Each *_routes.py module builds its own Jinja2Templates and copies a partial set
+    of globals, so pages rendered there lost the Puzzles menu (puzzle_games) and
+    Google Analytics (ga_tag = ""). Fill in every global a router lacks and always
+    use main's GA tag; keep values a router sets itself (e.g. speff's
+    page_localized) and its own url_for.
+    """
+    import sys
+    for mod in list(sys.modules.values()):
+        tpl = getattr(mod, "templates", None)
+        if not isinstance(tpl, Jinja2Templates) or tpl is templates:
+            continue
+        for key, value in templates.env.globals.items():
+            if key == "url_for":
+                continue
+            if key == "ga_tag" or key not in tpl.env.globals:
+                tpl.env.globals[key] = value
+
+
+_sync_router_template_globals()
+
 # ── A/B default: no-guess mode split by IP ────────────────────────────────────
 def _ng_default_from_ip(request: Request) -> bool:
     """Return True (no-guess) for ~half of first-time visitors via last bit of IP.
