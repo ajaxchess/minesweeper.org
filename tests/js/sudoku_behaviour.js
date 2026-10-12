@@ -16,7 +16,8 @@ class El {
   set className(v) { this._cls = new Set(v.split(/\s+/).filter(Boolean)); }
   get classList() { const s = this._cls; return { add: c => s.add(c), remove: c => s.delete(c),
     toggle: (c, f) => (f ?? !s.has(c)) ? s.add(c) : s.delete(c), contains: c => s.has(c) }; }
-  set innerHTML(v) { this.children = []; }
+  set innerHTML(v) { this.children = []; this._html = v; }
+  get innerHTML() { return this._html || ''; }
   appendChild(c) { this.children.push(c); }
   addEventListener(t, f) { (this.listeners[t] ||= []).push(f); }
   fire(t) { (this.listeners[t] || []).forEach(f => f({ target: this })); }
@@ -27,6 +28,7 @@ const numpad = Array.from({ length: 9 }, (_, i) => { const e = new El('np' + (i 
 const docListeners = {};
 const store = {};
 let posted = null;
+const later = [];   // timers >= 1 s (the toast hide) run only when the test asks
 const GIVENS = '530070000600195000098000060800060003400803001700020006060000280000419005000080079';
 const ctx = vm.createContext({
   window: { SUDOKU_CFG: { difficulty: 'easy', seed: 1, givens: GIVENS, today: '2026-10-11' } },
@@ -34,9 +36,15 @@ const ctx = vm.createContext({
     querySelectorAll: s => s === '.su-numpad-btn' ? numpad : [],
     addEventListener: (t, f) => (docListeners[t] ||= []).push(f) },
   localStorage: { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = v; } },
-  setTimeout: f => f(), setInterval: () => 1, clearInterval() {},
+  setTimeout: (f, ms) => { if (ms >= 1000) later.push(f); else { try { f(); } catch (e) { console.log('TIMER ERROR', e.message); } } return 1; },
+  clearTimeout() {}, setInterval: () => 1, clearInterval() {},
+  history: { replaceState() {} }, location: { pathname: '/other/sudoku/easy', search: '' },
+  URLSearchParams, Uint32Array,
   performance, crypto: globalThis.crypto, TextEncoder, console, Math, Array, Set, JSON, Object, Number, String, Promise,
-  fetch: async (url, o) => { posted = JSON.parse(o.body); return { ok: true }; },
+  fetch: async (url, o) => {
+    if (o && o.method === 'POST') { posted = JSON.parse(o.body); return { ok: true }; }
+    return { ok: true, json: async () => [] };   // leaderboard GET
+  },
 });
 ctx.window.SUDOKU_CFG && (ctx.SUDOKU_CFG = ctx.window.SUDOKU_CFG);
 vm.runInContext(SRC, ctx);
@@ -104,12 +112,18 @@ ok(!has(2, 'su-cell--error') && cells()[2].textContent === '', 'erase clears the
 // Solve and check the submitted assists bitmask (auto candidates 1 + auto check 2)
 const SOL = '534678912672195348198342567859761423426853791713924856961537284287419635345286179';
 for (let i = 0; i < 81; i++) if (!g[i]) { click(i); press(+SOL[i]); }
-ok(byId('su-result').style.display === '', 'win screen shown');
-byId('su-name').value = 'Tester'; byId('su-submit').fire('click');
-setTimeout(() => {}, 0);
 Promise.resolve().then(() => new Promise(r => globalThis.setTimeout(r, 50))).then(() => {
-  ok(posted && posted.assists === 3, `submitted assists = ${posted && posted.assists} (expected 3)`);
-  ok(/Auto candidates/.test(byId('su-result-hints').textContent), 'result line names the assists');
+  ok(posted && posted.assists === 3, `score saved automatically with assists = ${posted && posted.assists} (expected 3)`);
+  ok(posted && posted.name.startsWith('Guest '), `guest gets an automatic name (${posted && posted.name})`);
+  const toast = byId('su-toast');
+  ok(toast.classList.contains('game-toast--show'), 'result toast shown');
+  ok(/Sudoku solved/.test(toast.innerHTML) && /Auto candidates/.test(toast.innerHTML), 'toast shows the result and the assists');
+  // The stub DOM doesn't parse innerHTML, so the status line is looked up by id.
+  ok(/Score saved for Guest/.test(byId('su-toast-status').textContent), 'toast status updated after saving');
+  // Timers under 1 s run immediately here, so the next game already started.
+  ok(cells().filter(c => c.textContent === '').length >= 40, 'a new puzzle started automatically');
+  later.forEach(f => f());
+  ok(!toast.classList.contains('game-toast--show'), 'toast hides after its timer');
   console.log(fails ? `${fails} FAILED` : 'ALL PASSED');
   process.exit(fails ? 1 : 0);
 });

@@ -8799,6 +8799,40 @@ html[data-skin="flower-light"] .diana-birthday-banner {
 .su-options { display: flex; flex-wrap: wrap; gap: 0.25rem 0.9rem; font-size: 0.85rem; }
 .su-option  { display: inline-flex; align-items: center; gap: 0.3rem; cursor: pointer; color: var(--text); }
 
+/* Game-end toast (F-GAME-END): result shown for 5 s while the next game starts.
+   Shared by Numbers Match (#nm-toast) and Sudoku (#su-toast). */
+.game-toast {
+  position: fixed;
+  top: 76px;
+  left: 50%;
+  z-index: 1000;
+  min-width: 240px;
+  max-width: calc(100vw - 32px);
+  padding: 0.75rem 1.1rem;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--accent2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -12px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+.game-toast--show { opacity: 1; transform: translate(-50%, 0); }
+.game-toast-title  { font-weight: 700; font-size: 1.05rem; }
+.game-toast-detail { font-size: 1.15rem; margin: 0.2rem 0; }
+.game-toast-status { font-size: 0.85rem; color: var(--text-dim); }
+
+/* Sudoku: today's leaderboard under the board */
+.su-lb { max-width: 450px; margin: 1rem auto 0; }
+.su-lb-table { width: 100%; }
+.su-lb-empty { text-align: center; color: var(--text-dim); padding: 0.75rem; }
+.su-name-row { display: flex; align-items: center; gap: 0.5rem; justify-content: center;
+               flex-wrap: wrap; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-dim); }
+.su-name-row .su-name-input { max-width: 180px; }
+
 /* Leaderboard: assists used next to the time */
 .su-assist { margin-left: 0.25rem; color: var(--text-dim); font-size: 0.8rem; cursor: help; }
 

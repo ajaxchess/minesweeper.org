@@ -95,21 +95,37 @@ function playerName() {
     return guest;
 }
 
-function rememberVariant(kind, rows = null) {
-    localStorage.setItem('nm_last_variant', kind === 'daily' ? 'daily' : String(rows || 4));
+// ── Next game after a win (F-GAME-END) ─────────────────────────────────────────
+// After the Daily comes Easy; after a difficulty, another board of the same size.
+// Each day's Daily/Easy/Medium/Hard/Expert board is one fixed, ranked puzzle, so
+// once the player has finished it the next board of that size is a random,
+// unranked practice board.
+const PLAYED_KEY = 'nm_played';
+
+function playedToday(today) {
+    try {
+        const all = JSON.parse(localStorage.getItem(PLAYED_KEY) || '[]');
+        return all.filter(id => id.startsWith(today));
+    } catch { return []; }
 }
 
-async function startLastVariant() {
+function markPlayed(puzzleId) {
+    try {
+        const today = puzzleId.slice(0, 10);
+        const ids = playedToday(today);
+        if (!ids.includes(puzzleId)) ids.push(puzzleId);
+        localStorage.setItem(PLAYED_KEY, JSON.stringify(ids));
+    } catch {}
+}
+
+async function startNextGame(finishedRows) {
     const pendingAtStart = _pendingGameId;
-    const last = localStorage.getItem('nm_last_variant');
     const today = await serverToday();
     if (_pendingGameId !== pendingAtStart) return; // a manual game load started while we awaited
-    if (last === 'daily') {
-        initDailyGame(today);
-        return;
-    }
-    const rows = parseInt(last || G.diffRows || 4, 10);
-    initRandomGame([4, 8, 16, 32].includes(rows) ? rows : 4, today);
+    const rows = [4, 8, 16, 32].includes(finishedRows) ? finishedRows : 4;
+    const rankedId = scorePuzzleId(today, NM_DIFF_LABELS[rows].toLowerCase());
+    if (playedToday(today).includes(rankedId)) initPracticeGame(rows);
+    else initRandomGame(rows, today);
 }
 
 // ── Seeded RNG (mirrors Python generator — used for random-mode boards) ────────
@@ -467,29 +483,43 @@ function updateHUD() {
     document.getElementById('nm-add-btn').disabled     = G.addLinesLeft <= 0;
 }
 
-// ── Win overlay ────────────────────────────────────────────────────────────────
-function showWinOverlay() {
-    document.getElementById('nm-grid').style.display = 'none';
-    const ov = document.getElementById('nm-overlay');
-    ov.style.display = 'flex';
+// ── Game end (F-GAME-END) ──────────────────────────────────────────────────────
+// A toast shows the result for 5 s while the next game starts right away.
+const TOAST_MS = 5000;
+let _toastTimer = null;
 
-    document.getElementById('nm-win-score').textContent = G.score;
-    document.getElementById('nm-win-time').textContent  = fmtTime(G.elapsed);
-
-    const form  = document.getElementById('nm-score-form');
-    const msgEl = document.getElementById('nm-score-msg');
-    const name  = playerName();
-
-    if (G.isPOTD) {
-        form.style.display = 'none';
-        if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = 'Saving score...'; }
-        saveScore(name);
-        _autoNextTimer = setTimeout(startLastVariant, AUTO_NEXT_DELAY_MS);
-    } else {
-        form.style.display = 'none';
-        if (msgEl) msgEl.style.display = 'none';
-        _autoNextTimer = setTimeout(startLastVariant, AUTO_NEXT_DELAY_MS);
+function showGameToast(title, detail, status) {
+    let el = document.getElementById('nm-toast');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'nm-toast';
+        el.className = 'game-toast';
+        el.setAttribute('role', 'status');
+        document.body?.appendChild(el);
     }
+    el.innerHTML = `<div class="game-toast-title">${esc(title)}</div>` +
+                   `<div class="game-toast-detail">${esc(detail)}</div>` +
+                   `<div class="game-toast-status" id="nm-toast-status">${esc(status)}</div>`;
+    el.classList.add('game-toast--show');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => el.classList.remove('game-toast--show'), TOAST_MS);
+}
+
+function setToastStatus(text) {
+    const el = document.getElementById('nm-toast-status');
+    if (el) el.textContent = text;
+}
+
+function showWinOverlay() {
+    showGameToast('🎉 Board cleared!',
+                  `⭐ ${G.score}  ·  ⏱ ${fmtTime(G.elapsed)}`,
+                  G.isPOTD ? 'Saving score…' : 'Practice board — not ranked');
+    if (G.isPOTD) {
+        markPlayed(G.puzzleId);
+        saveScore(playerName());
+    }
+    const rows = /^\d{4}-\d{2}-\d{2}-v\d+$/.test(G.puzzleId) ? 4 : G.diffRows;   // Daily → Easy
+    _autoNextTimer = setTimeout(() => startNextGame(rows), AUTO_NEXT_DELAY_MS);
 }
 
 // ── Score submission ───────────────────────────────────────────────────────────
@@ -500,11 +530,11 @@ async function saveScore(autoName = null) {
     const name = autoName || inp?.value.trim() || playerName();
     if (!name) { inp?.focus(); return; }
     if (!G.gameToken) {
-        const msgEl = document.getElementById('nm-score-msg');
-        if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = 'This game could not be verified, so the score was not saved.'; }
+        setToastStatus('This game could not be verified, so the score was not saved.');
         return;
     }
     const gameId = G.gameId;
+    const puzzleId = G.puzzleId;
     const payload = {
         name,
         puzzle_date: G.puzzleId,
@@ -524,35 +554,34 @@ async function saveScore(autoName = null) {
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body:    JSON.stringify(payload),
         });
-        const msgEl = document.getElementById('nm-score-msg');
         if (r.ok) {
             localStorage.setItem('nm_name', name);
             if (btn) btn.textContent = '✓ Saved!';
-            if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = `✅ Score saved for ${esc(name)}!`; }
-            if (G.gameId === gameId) loadLeaderboard();
+            setToastStatus(`✅ Score saved for ${name}`);
+            // The next game may be a practice board; keep showing this puzzle's ranking then.
+            if (G.gameId === gameId || !G.isPOTD) loadLeaderboard(puzzleId);
         } else {
             if (G.gameId === gameId) G.scoreSaved = false;
             if (btn) { btn.textContent = 'Save Score'; btn.disabled = false; }
-            if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = 'Could not save score. Starting a new game...'; }
+            setToastStatus('Could not save score.');
         }
     } catch {
         if (G.gameId === gameId) G.scoreSaved = false;
         if (btn) { btn.textContent = 'Save Score'; btn.disabled = false; }
-        const msgEl = document.getElementById('nm-score-msg');
-        if (msgEl) { msgEl.style.display = 'block'; msgEl.textContent = 'Network error saving score. Starting a new game...'; }
+        setToastStatus('Network error saving score.');
     }
 }
 
 // ── Leaderboard ────────────────────────────────────────────────────────────────
-async function loadLeaderboard() {
-    if (!G.isPOTD) return;
+async function loadLeaderboard(puzzleId = G.isPOTD ? G.puzzleId : null) {
+    if (!puzzleId) return;
     const el = document.getElementById('nm-lb-content');
     if (!el) return;
     const myId = ++_lbReqId;
     el.innerHTML = '<div class="lb-loading">Loading…</div>';
 
     try {
-        const r    = await fetch(cacheBustUrl(`/api/numbers-match-scores/${G.puzzleId}`), { cache: 'no-store' });
+        const r    = await fetch(cacheBustUrl(`/api/numbers-match-scores/${puzzleId}`), { cache: 'no-store' });
         const data = await r.json();
         if (myId !== _lbReqId) return;   // a newer request already arrived
 
@@ -595,7 +624,6 @@ async function loadLeaderboard() {
 async function initDailyGame(dateStr) {
     const myPendingId = ++_pendingGameId;
     nmStopTimer();
-    rememberVariant('daily');
     _showLoading(true);
     const requestedDate = dateStr || nmToday();
 
@@ -621,8 +649,15 @@ function initRandomGame(rows, dateStr = null) {
     const seed     = diffKey ? scorePuzzleId(today, diffKey) : Date.now().toString(36);
     const board    = generateBoardClient(seed, rows);
     const puzzleId = diffKey ? scorePuzzleId(today, diffKey) : seed;
-    rememberVariant('variant', rows);
     _startGame(board, rows, puzzleId, !!diffKey);
+}
+
+// Random, unranked board of the given size (after the day's ranked one is done).
+function initPracticeGame(rows) {
+    ++_pendingGameId;  // cancel any in-flight initDailyGame
+    nmStopTimer();
+    const seed = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    _startGame(generateBoardClient(seed, rows), rows, seed, false);
 }
 
 function _startGame(boardData, rows, puzzleId, isPOTD) {
@@ -661,17 +696,18 @@ function _startGame(boardData, rows, puzzleId, isPOTD) {
     const isDailyPuzzle = isPOTD && /^\d{4}-\d{2}-\d{2}-v\d+$/.test(puzzleId);
     document.getElementById('nm-mode-label').textContent =
         isDailyPuzzle ? '📅 Daily Puzzle'
-                      : `🎲 ${NM_DIFF_LABELS[rows] || rows + ' rows'}`;
+                      : `🎲 ${NM_DIFF_LABELS[rows] || rows + ' rows'}${isPOTD ? '' : ' · Practice'}`;
 
     document.querySelectorAll('.nm-diff-btn').forEach(btn => {
         btn.classList.toggle('nm-diff-btn--active',
             !isDailyPuzzle && parseInt(btn.dataset.rows) === rows);
     });
 
-    document.getElementById('nm-lb-section').style.display = isPOTD ? 'block' : 'none';
+    // Practice boards have no ranking: keep the last ranked puzzle's leaderboard on screen.
+    if (isPOTD) document.getElementById('nm-lb-section').style.display = 'block';
 
     const lbTitle = document.querySelector('.nm-lb-title');
-    if (lbTitle) {
+    if (lbTitle && isPOTD) {
         lbTitle.textContent = isDailyPuzzle
             ? '🏆 Today\'s Leaderboard'
             : `🏆 ${NM_DIFF_LABELS[rows] || rows + ' rows'} — Today's Best`;

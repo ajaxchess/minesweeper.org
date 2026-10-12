@@ -95,7 +95,10 @@ was on by default). See `SudokuAssists.md` for the full spec.
 
 ### Win Condition
 - All 81 cells correctly filled → puzzle complete.
-- Show a completion modal with time, hints used, and a submit score form.
+- The score is saved automatically (guests: `Guest NNNN` or the name set above the
+  leaderboard), a 5 s toast shows time, hints and assists, and the next game starts:
+  Daily → Easy, otherwise the same level. Today's leaderboard for the current level
+  is always shown under the board. See `GameEndFlow.md` (F-GAME-END).
 
 ---
 

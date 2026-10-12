@@ -343,7 +343,10 @@ class TestMobileWebPage:
     def test_every_element_the_script_needs_exists(self, template):
         js = (ROOT / "static/src/js/numbers_match.js").read_text(encoding="utf-8")
         html = (ROOT / template).read_text(encoding="utf-8")
-        missing = {i for i in re.findall(r"getElementById\('([\w-]+)'\)", js) if f'id="{i}"' not in html}
+        # Elements the script creates itself (e.g. the game-end toast) don't need to be in the page.
+        created = set(re.findall(r"\.id = '([\w-]+)'", js)) | set(re.findall(r'id="([\w-]+)"', js))
+        missing = {i for i in re.findall(r"getElementById\('([\w-]+)'\)", js)
+                   if f'id="{i}"' not in html and i not in created}
         assert not missing, f"{template} lacks elements numbers_match.js uses: {sorted(missing)}"
 
 

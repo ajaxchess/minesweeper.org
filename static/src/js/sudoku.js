@@ -8,7 +8,8 @@
 // ── Server-injected globals ───────────────────────────────────────────────────
 const CFG        = window.SUDOKU_CFG || {};
 const TODAY      = CFG.today      || new Date().toISOString().slice(0, 10);
-const DIFFICULTY = CFG.difficulty || "easy";
+// Difficulty changes in-page when a finished game rolls into the next one (F-GAME-END).
+let   DIFFICULTY = CFG.difficulty || "easy";
 const SEED       = CFG.seed       || 1;
 const GIVENS_STR = CFG.givens     || null;   // 81-char string → replay mode
 const USER       = CFG.user       || null;
@@ -490,76 +491,153 @@ function checkComplete() {
   onComplete();
 }
 
+// ── Game end (F-GAME-END) ─────────────────────────────────────────────────────
+// On a solve: save the score automatically, show a 5 s toast with the result and
+// start the next game right away. Daily → Easy; any other level → same level.
+const TOAST_MS = 5000;
+const NEXT_GAME_DELAY_MS = 400;     // let the toast paint before generation blocks
+let toastTimer = null;
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+function playerName() {
+  if (USER && USER.email) return USER.display_name || USER.email.split('@')[0];
+  try {
+    const saved = (localStorage.getItem('su_name') || '').trim();
+    if (saved) return saved;
+    let guest = (localStorage.getItem('su_guest_name') || '').trim();
+    if (!guest) {
+      guest = `Guest ${Math.floor(1000 + Math.random() * 9000)}`;
+      localStorage.setItem('su_guest_name', guest);
+    }
+    return guest;
+  } catch { return 'Guest'; }
+}
+
+function showToast(title, detail, status) {
+  let el = $('su-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'su-toast';
+    el.className = 'game-toast';
+    el.setAttribute('role', 'status');
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<div class="game-toast-title">${esc(title)}</div>` +
+                 `<div class="game-toast-detail">${esc(detail)}</div>` +
+                 `<div class="game-toast-status" id="su-toast-status">${esc(status)}</div>`;
+  el.classList.add('game-toast--show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('game-toast--show'), TOAST_MS);
+}
+
+function setToastStatus(text) {
+  const el = $('su-toast-status');
+  if (el) el.textContent = text;
+}
+
 function onComplete() {
   finished = true;
   stopTimer();
   const ms = Math.round(elapsedMs());
 
-  $('su-result-time').textContent   = fmtTime(ms);
   const assistNames = [];
   if (assists & ASSIST_AUTO_CANDIDATES) assistNames.push(CFG.labels?.autoCandidates || 'Auto candidates');
   if (assists & ASSIST_AUTO_CHECK)      assistNames.push(CFG.labels?.autoCheck || 'Auto check');
-  $('su-result-hints').textContent  =
-    (hintsUsed === 0 ? 'No hints used'
-                     : `${hintsUsed} hint${hintsUsed !== 1 ? 's' : ''} used`) +
-    (assistNames.length ? ` · ${assistNames.join(', ')}` : '');
-  $('su-result').style.display = '';
+  const extras = [hintsUsed === 1 ? '1 hint' : `${hintsUsed} hints`, ...assistNames];
+  showToast('🎉 Sudoku solved!', `⏱ ${fmtTime(ms)}  ·  ${extras.join(' · ')}`, 'Saving score…');
 
-  if (USER && USER.email) {
-    const nameEl = $('su-result-authed-name');
-    if (nameEl) nameEl.textContent = USER.display_name || USER.email.split('@')[0];
-    $('su-form').style.display = 'none';
-    doSubmit(USER.display_name || USER.email.split('@')[0], ms);
-  } else {
-    const saved = localStorage.getItem('su_name');
-    if (saved) $('su-name').value = saved;
-    $('su-form').style.display = '';
-  }
+  // Capture this game's data before the next game replaces it.
+  doSubmit(playerName(), ms, {
+    difficulty: DIFFICULTY, givens: givensStr, hashP: boardHashP,
+    hints: hintsUsed, assists,
+  });
+
+  setTimeout(startNextGame, NEXT_GAME_DELAY_MS);
 }
 
-async function doSubmit(name, ms) {
-  const feedback = $('su-feedback');
-  if (feedback) feedback.textContent = 'Submitting…';
-  const btn = $('su-submit');
-  if (btn) btn.disabled = true;
-
+async function doSubmit(name, ms, game) {
   try {
-    const hash = await boardHashP;
+    const hash = await game.hashP;
     const res = await fetch('/api/sudoku-scores', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name,
         puzzle_date:  TODAY,
-        difficulty:   DIFFICULTY,
+        difficulty:   game.difficulty,
         board_hash:   hash,
-        board_givens: givensStr,
+        board_givens: game.givens,
         time_ms:      ms,
-        hints_used:   hintsUsed,
-        assists,
+        hints_used:   game.hints,
+        assists:      game.assists,
       }),
     });
-    if (res.ok) {
-      if (feedback) feedback.textContent = 'Score submitted! ✓';
-    } else {
-      if (feedback) feedback.textContent = 'Could not submit score.';
-      if (btn) btn.disabled = false;
-    }
+    setToastStatus(res.ok ? `✅ Score saved for ${name}` : 'Could not save score.');
+    if (res.ok && game.difficulty === DIFFICULTY) loadLeaderboard();
   } catch {
-    if (feedback) feedback.textContent = 'Network error — try again.';
-    if (btn) btn.disabled = false;
+    setToastStatus('Network error saving score.');
+  }
+}
+
+function startNextGame() {
+  if (DIFFICULTY === 'daily') {
+    DIFFICULTY = 'easy';
+    // Keep the URL, subnav and leaderboard in step with the new level.
+    try {
+      history.replaceState(null, '', location.pathname.replace(/\/daily\/?$/, '/easy') + location.search);
+    } catch {}
+    document.querySelectorAll('.su-nav-link').forEach(a =>
+      a.classList.toggle('active', /\/easy$/.test(a.getAttribute('href') || '')));
+  }
+  const seed = crypto.getRandomValues(new Uint32Array(1))[0] || 1;
+  initGame(null, seed);
+  loadLeaderboard();
+}
+
+// ── Leaderboard (always visible under the board) ─────────────────────────────
+const DIFF_LABELS = { daily: 'Daily', easy: 'Easy', medium: 'Medium', hard: 'Hard', expert: 'Expert' };
+let lbReq = 0;
+
+async function loadLeaderboard() {
+  const body = $('su-lb-body');
+  if (!body) return;
+  const title = $('su-lb-title');
+  if (title) title.textContent = `🏆 ${DIFF_LABELS[DIFFICULTY] || DIFFICULTY} — Today`;
+  const my = ++lbReq;
+  try {
+    const params = new URLSearchParams({ difficulty: DIFFICULTY, period: 'today', puzzle_date: TODAY });
+    const rows = await (await fetch('/api/sudoku-scores?' + params, { cache: 'no-store' })).json();
+    if (my !== lbReq) return;
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="4" class="su-lb-empty">No scores yet — be the first!</td></tr>';
+      return;
+    }
+    body.innerHTML = rows.slice(0, 10).map((r, i) => {
+      const name = r.profile_url
+        ? `<a href="${esc(r.profile_url)}" class="lb-profile-link">${esc(r.name)}</a>` : esc(r.name);
+      const marks = (r.assists & 1 ? '<span class="su-assist" title="Auto candidates">✎</span>' : '') +
+                    (r.assists & 2 ? '<span class="su-assist" title="Auto check">✓</span>' : '');
+      return `<tr class="${i % 2 === 1 ? 'lb-even' : ''}"><td>${i + 1}</td><td>${name}</td>` +
+             `<td style="text-align:right;">${fmtTime(r.time_ms)}${marks}</td>` +
+             `<td style="text-align:right;">${r.hints_used > 0 ? r.hints_used : '—'}</td></tr>`;
+    }).join('');
+  } catch {
+    if (my === lbReq) body.innerHTML = '<tr><td colspan="4" class="su-lb-empty">⚠️ Could not load scores.</td></tr>';
   }
 }
 
 // ── Initialisation ────────────────────────────────────────────────────────────
-function initGame(givensInput) {
+function initGame(givensInput, seed = SEED) {
   if (givensInput) {
     puzzle = givensInput.split('').map(Number);
     solution = solvePuzzle(puzzle);
     if (!solution) { console.error('Provided puzzle has no solution'); return; }
     givensStr = givensInput;
   } else {
-    const rng = mkRng(SEED);
+    const rng = mkRng(seed);
     solution = generateSolution(rng);
     puzzle   = createHardestPuzzle(solution, rng, DIFFICULTY);
     givensStr = boardToGivens(puzzle);
@@ -636,24 +714,19 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = dest;
     });
 
-    // Submit (guest)
-    const submitBtn = $('su-submit');
-    if (submitBtn) submitBtn.addEventListener('click', () => {
-      const nameEl = $('su-name');
-      const name = (nameEl.value || '').trim();
-      if (!name) { $('su-feedback').textContent = 'Please enter a name.'; return; }
-      localStorage.setItem('su_name', name);
-      $('su-form').style.display = 'none';
-      doSubmit(name, Math.round(elapsedMs()));
-    });
-
-    // Play again
-    const again = $('su-play-again');
-    if (again) again.addEventListener('click', () => {
-      const dest = DIFFICULTY === 'daily' ? '/other/sudoku/daily'
-                                          : `/other/sudoku/${DIFFICULTY}`;
-      window.location.href = dest;
-    });
+    // Leaderboard + guest name (signed-in players use their profile name)
+    const nameInput = $('su-name');
+    if (nameInput) {
+      if (USER && USER.email) {
+        $('su-name-row')?.remove();
+      } else {
+        try { nameInput.value = localStorage.getItem('su_name') || ''; } catch {}
+        nameInput.addEventListener('change', () => {
+          try { localStorage.setItem('su_name', nameInput.value.trim()); } catch {}
+        });
+      }
+    }
+    loadLeaderboard();
 
   }, 30);
 });

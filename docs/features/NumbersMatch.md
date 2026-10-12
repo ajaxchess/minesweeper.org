@@ -70,7 +70,9 @@ Add Lines lets the game keep progressing.
   unreachable, the JS falls back to the browser clock in that timezone. Changing
   the revision gives every variant a new board and a fresh leaderboard.
 - **Tests:** `tests/test_numbers_match.py`.
-- After a win, the next game of the same variant starts automatically (350 ms).
+- After a win a 5 s toast shows score, time and save status while the next game
+  starts: Daily → today's ranked Easy; a finished ranked board → random practice
+  board of the same size (not ranked). See `GameEndFlow.md` (F-GAME-END).
 
 ## Scoring
 | Event | Points |

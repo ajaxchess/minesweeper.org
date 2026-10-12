@@ -38,7 +38,7 @@ window.SUDOKU_CFG = {
   },
 };
 </script>
-<script src="/static/js/sudoku.js?v=3" defer></script>
+<script src="/static/js/sudoku.js?v=4" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -90,23 +90,22 @@ window.SUDOKU_CFG = {
     <button id="su-erase" class="su-numpad-erase">⌫</button>
   </div>
 
-  <!-- Result panel (hidden until win) -->
-  <div id="su-result" class="su-result" style="display:none;">
-    <p class="su-result-time"  id="su-result-time">—</p>
-    <p class="su-result-hints" id="su-result-hints">—</p>
-
-    <!-- Logged-in auto-submit -->
-    <p id="su-result-authed-name" style="color:var(--text-dim);font-size:0.9rem;"></p>
-
-    <!-- Guest form -->
-    <div id="su-form">
+  <!-- Today's leaderboard for this level, always visible (F-GAME-END).
+       A solved game is saved automatically and the next one starts. -->
+  <section id="su-lb" class="su-lb">
+    <h2 id="su-lb-title" class="su-lb-heading">🏆 Today</h2>
+    <div id="su-name-row" class="su-name-row">
+      <label for="su-name">Your name on the leaderboard</label>
       <input id="su-name" type="text" maxlength="32" placeholder="{{ t['common_name_optional_ph'] }}"
-             class="su-name-input" autocomplete="off" />
-      <button id="su-submit" class="su-btn su-btn--primary">Submit Score</button>
+             class="su-name-input" autocomplete="nickname" />
     </div>
-    <p id="su-feedback" class="su-feedback"></p>
-    <button id="su-play-again" class="su-btn" style="margin-top:0.5rem;">Play Again</button>
-  </div>
+    <table class="lb-table su-lb-table">
+      <thead><tr><th>#</th><th style="text-align:left;">Name</th><th>Time</th><th>Hints</th></tr></thead>
+      <tbody id="su-lb-body"><tr><td colspan="4" class="su-lb-empty">Loading…</td></tr></tbody>
+    </table>
+    <p class="su-lb-note">✎ Auto candidates · ✓ Auto check &nbsp;—&nbsp;
+      <a href="/other/sudoku/scores">All scores</a></p>
+  </section>
 
   <!-- SEO prose -->
   <section class="su-prose">
