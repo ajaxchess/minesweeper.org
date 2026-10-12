@@ -41,6 +41,30 @@ def test_invalid_assists_rejected(client, bad):
     assert r.status_code == 422
 
 
+class _FrozenNow:
+    """01:22 UTC on 2026-10-12 is still 21:22 on 2026-10-11 in New York (B55)."""
+    @staticmethod
+    def now(tz=None):
+        from datetime import datetime, timezone
+        return datetime(2026, 10, 12, 1, 22, tzinfo=timezone.utc).astimezone(tz)
+
+
+@pytest.mark.parametrize("path", ["/other/sudoku/daily", "/other/sudoku/easy", "/other/sudoku/scores"])
+def test_sudoku_day_is_new_york_not_utc(client, monkeypatch, path):
+    import numbers_match_generator
+    monkeypatch.setattr(numbers_match_generator, "datetime", _FrozenNow)
+    r = client.get(path)
+    assert r.status_code == 200
+    assert '"2026-10-11"' in r.text
+    assert '"2026-10-12"' not in r.text
+
+
+def test_sudoku_routes_never_use_server_date():
+    from pathlib import Path
+    src = (Path(__file__).resolve().parent.parent / "sudoku_routes.py").read_text(encoding="utf-8")
+    assert "date.today()" not in src
+
+
 def test_play_page_has_mode_tabs_and_options(client):
     r = client.get("/other/sudoku/easy")
     assert r.status_code == 200

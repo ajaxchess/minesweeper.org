@@ -1138,7 +1138,7 @@ class SudokuScore(Base):
     # Bitmask of assists turned on during the game (F-SUDOKU-ASSISTS):
     # 1 = auto candidates, 2 = auto check. Conflicts and manual notes don't count.
     assists      = Column(Integer, nullable=False, default=0, server_default="0")
-    puzzle_date  = Column(String(10), nullable=False)    # YYYY-MM-DD UTC
+    puzzle_date  = Column(String(10), nullable=False)    # YYYY-MM-DD puzzle day, America/New_York (UTC before B55)
     guest_token  = Column(String(36), nullable=True, index=True)
     client_type  = Column(String(32), nullable=False, server_default="web")
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))

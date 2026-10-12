@@ -1,3 +1,13 @@
+B55 Sudoku scores dated tomorrow in the evening (Americas).
+   Root cause: sudoku_routes.py used date.today() (server clock, UTC), so from 20:00 New York
+   time the daily puzzle, the score's puzzle_date and the "Today" leaderboard all moved to the
+   next day, while Numbers Match uses the America/New_York day. The leaderboard Date column
+   also showed created_at, a UTC timestamp.
+   Fix: Sudoku uses numbers_match_today_str() (America/New_York) for every "today", and the
+   leaderboard Date column shows puzzle_date. Scores saved before the fix keep their UTC date;
+   the daily seed depends only on the date string, so they still match that day's puzzle.
+   Tests in tests/test_sudoku.py freeze the clock at 01:22 UTC.
+
 B54 /mobile/nmmobile (mobile web Numbers Match) returned HTTP 500 since 2026-05-12.
    Root cause: a3475a6 translated the template's strings ({{ t.* }}) but the route in main.py
    never passed `t`, so Jinja raised UndefinedError: 't' is undefined. The page also loaded

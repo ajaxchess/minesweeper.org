@@ -60,6 +60,11 @@ them cleanly from the start.
 - Tap/click a cell to select it, then use any input method above.
 - Tapping an already-selected cell advances the cycle.
 
+### Puzzle Day
+The Sudoku day (daily puzzle seed, score `puzzle_date`, "Today" leaderboard) is the
+America/New_York date, shared with Numbers Match via `numbers_match_today_str()`.
+Before B55 (2026-10-11) it was the server's UTC date.
+
 ### Notes, Auto Candidates, Auto Check, Conflicts (F-SUDOKU-ASSISTS)
 Replaced the old "Mistakes" toggle (which compared entries with the solution and
 was on by default). See `SudokuAssists.md` for the full spec.

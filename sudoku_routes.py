@@ -3,7 +3,6 @@ sudoku_routes.py — Page and API route handlers for Sudoku.
 Mount this router in main.py with: app.include_router(sudoku_router)
 """
 import uuid
-from datetime import date
 from typing import Optional
 from urllib.parse import urlparse
 
@@ -25,6 +24,9 @@ from translations import get_lang, get_t, SUPPORTED_LANGS
 import settings as site_settings
 from quest_catalog import quest_config
 from breadcrumbs import get_breadcrumbs as _get_breadcrumbs
+# The Sudoku day (daily puzzle, score date, "today" leaderboard) follows the same
+# America/New_York puzzle day as Numbers Match, not the server's UTC date (B55).
+from numbers_match_generator import numbers_match_today_str as sudoku_today_str
 
 sudoku_router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
@@ -180,7 +182,7 @@ def _sudoku_seed(difficulty: str, today: str) -> int:
 
 @sudoku_router.get("/other/sudoku/daily", response_class=HTMLResponse)
 def sudoku_daily(request: Request):
-    today = date.today().isoformat()
+    today = sudoku_today_str()
     return templates.TemplateResponse(request, "sudoku_play.html", {
         "mode": "other",
         "user": get_current_user(request),
@@ -192,7 +194,7 @@ def sudoku_daily(request: Request):
 
 @sudoku_router.get("/other/sudoku/easy", response_class=HTMLResponse)
 def sudoku_easy(request: Request):
-    today = date.today().isoformat()
+    today = sudoku_today_str()
     return templates.TemplateResponse(request, "sudoku_play.html", {
         "mode": "other",
         "user": get_current_user(request),
@@ -204,7 +206,7 @@ def sudoku_easy(request: Request):
 
 @sudoku_router.get("/other/sudoku/medium", response_class=HTMLResponse)
 def sudoku_medium(request: Request):
-    today = date.today().isoformat()
+    today = sudoku_today_str()
     return templates.TemplateResponse(request, "sudoku_play.html", {
         "mode": "other",
         "user": get_current_user(request),
@@ -216,7 +218,7 @@ def sudoku_medium(request: Request):
 
 @sudoku_router.get("/other/sudoku/hard", response_class=HTMLResponse)
 def sudoku_hard(request: Request):
-    today = date.today().isoformat()
+    today = sudoku_today_str()
     return templates.TemplateResponse(request, "sudoku_play.html", {
         "mode": "other",
         "user": get_current_user(request),
@@ -228,7 +230,7 @@ def sudoku_hard(request: Request):
 
 @sudoku_router.get("/other/sudoku/expert", response_class=HTMLResponse)
 def sudoku_expert(request: Request):
-    today = date.today().isoformat()
+    today = sudoku_today_str()
     return templates.TemplateResponse(request, "sudoku_play.html", {
         "mode": "other",
         "user": get_current_user(request),
@@ -244,7 +246,7 @@ def sudoku_scores_page(request: Request):
         "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
-        "today": date.today().isoformat(),
+        "today": sudoku_today_str(),
     })
 
 
@@ -257,7 +259,7 @@ def sudoku_play_by_hash(board_hash: str, request: Request, db: Session = Depends
         "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
-        "today": date.today().isoformat(),
+        "today": sudoku_today_str(),
         "difficulty": row.difficulty,
         "seed": None, "givens": row.board_givens,
     })
@@ -362,7 +364,7 @@ def get_sudoku_scores(
     q = exclude_flagged(q, SudokuScore, db)
 
     if period == "today":
-        today = puzzle_date or date.today().isoformat()
+        today = puzzle_date or sudoku_today_str()
         if not re.match(r"^\d{4}-\d{2}-\d{2}$", today):
             raise HTTPException(status_code=400, detail="Invalid date format")
         q = q.filter(SudokuScore.puzzle_date == today) \

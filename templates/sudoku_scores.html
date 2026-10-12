@@ -46,7 +46,8 @@ async function loadScores() {
       const hints    = r.hints_used > 0 ? r.hints_used : '—';
       const boardLink= `<a href="/other/sudoku/board/${r.full_hash}" title="Replay this board"
                            style="color:var(--text-dim);font-family:monospace;font-size:0.8rem;">${r.board_hash}</a>`;
-      const date     = r.created_at || '';
+      // Puzzle day (America/New_York), not the UTC save time (B55)
+      const date     = r.puzzle_date || r.created_at || '';
       return `<tr class="${i % 2 === 1 ? 'lb-even' : ''}">
         <td style="text-align:center;">${rank}</td>
         <td>${name}</td>

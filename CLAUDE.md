@@ -117,3 +117,6 @@ understand data models, URL conventions, and design decisions for related featur
 - Numbers Match board revision and puzzle timezone live only in
   `numbers_match_generator.py`; never redefine them elsewhere (enforced by
   `tests/test_numbers_match.py`)
+- Daily puzzle day: Numbers Match and Sudoku use the America/New_York date
+  (`numbers_match_today_str()`); most other daily games still use the server's UTC
+  `date.today()`. A site-wide decision is pending (see B55)
