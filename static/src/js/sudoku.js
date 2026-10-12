@@ -1,6 +1,6 @@
 /* sudoku.js — F53 Sudoku game engine
  * Puzzle generation, input handling, timer, hints, notes, assists, score submission.
- * ?v=2 (F-SUDOKU-ASSISTS)
+ * ?v=3 (F-SUDOKU-ASSISTS, F-SUDOKU-HARDER)
  */
 "use strict";
 (function () {
@@ -107,7 +107,12 @@ function countSolutions(boardIn) {
 }
 
 // Remove cells from a complete solution while keeping unique solvability
-const GIVENS_TARGET = { daily: 38, easy: 38, medium: 32, hard: 27, expert: 24 };
+// F-SUDOKU-HARDER (2026-10-12): was daily 38, easy 38, medium 32, hard 27, expert 24.
+const GIVENS_TARGET = { daily: 28, easy: 32, medium: 28, hard: 25, expert: 22 };
+// One removal pass rarely gets below ~25 givens, so low targets retry with new
+// removal orders (same seed → same puzzle) and keep the sparsest result.
+const MAX_ATTEMPTS  = { hard: 20, expert: 40 };
+const ATTEMPT_BUDGET_MS = 1500;   // non-daily only; keeps slow phones responsive
 
 function createPuzzle(solution, rng, difficulty) {
   const target = GIVENS_TARGET[difficulty] || 36;
@@ -126,6 +131,21 @@ function createPuzzle(solution, rng, difficulty) {
     }
   }
   return puzzle;
+}
+
+function createHardestPuzzle(solution, rng, difficulty) {
+  const target   = GIVENS_TARGET[difficulty] || 36;
+  const attempts = MAX_ATTEMPTS[difficulty] || 1;
+  const t0 = performance.now();
+  let best = null, bestGivens = 82;
+  for (let a = 0; a < attempts; a++) {
+    const p = createPuzzle(solution, rng, difficulty);
+    const givens = p.filter(Boolean).length;
+    if (givens < bestGivens) { best = p; bestGivens = givens; }
+    if (bestGivens <= target) break;
+    if (difficulty !== 'daily' && performance.now() - t0 > ATTEMPT_BUDGET_MS) break;
+  }
+  return best;
 }
 
 // Deterministic solver (no shuffle) for reconstructing solution from givens
@@ -541,7 +561,7 @@ function initGame(givensInput) {
   } else {
     const rng = mkRng(SEED);
     solution = generateSolution(rng);
-    puzzle   = createPuzzle(solution, rng, DIFFICULTY);
+    puzzle   = createHardestPuzzle(solution, rng, DIFFICULTY);
     givensStr = boardToGivens(puzzle);
   }
 

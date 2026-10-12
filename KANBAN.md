@@ -1,6 +1,7 @@
 # Minesweeper.org Kanban
 
 ## Backlog
+- F-SUDOKU-GRADING Sudoku difficulty by solving technique (intent/SudokuTechniqueGrading.md)
 - F8 Improved Mobile Browser Support
 - F9 SEO improvements
 - F38 Light theme
@@ -44,6 +45,7 @@
 - F50 Flower Garden theme — night garden / day garden, mines=🌸, flags=🌷
 - F52 Schulte Grid — /other/schulte @richard
 - F53 Sudoku — /sudoku
+- F-SUDOKU-HARDER Sudoku fewer givens on every level @gisela
 - F-SUDOKU-ASSISTS Sudoku notes, auto candidates, auto check, conflicts @gisela
 - D1 Document the environment
 - D2 Add feature request ID to commit messages

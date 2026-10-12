@@ -33,8 +33,13 @@ them cleanly from the start.
   *(Curated editorial sets are a future enhancement once an editor is appointed.)*
 - **Random puzzles**: seeded from a random seed at game start; seed is embedded in
   the board hash so the same hash always reproduces the same board.
-- **Difficulty levels**: Easy, Medium, Hard, Expert — determined by number of givens
-  and/or solver technique complexity. Daily is always Easy.
+- **Difficulty levels**: Easy, Medium, Hard, Expert — determined by number of givens.
+  F-SUDOKU-HARDER (2026-10-12) lowered the targets to easy 32, medium 28, hard 25,
+  expert 22 and daily 28 (was 38/32/27/24, daily 38 = easy). One removal pass rarely
+  goes below ~25 givens, so hard and expert retry up to 20 / 40 removal orders from
+  the same seed and keep the sparsest (expert lands on 22–23); non-daily attempts
+  stop after 1.5 s. Grading by solving technique is planned:
+  `intent/SudokuTechniqueGrading.md` (F-SUDOKU-GRADING).
 
 ---
 
