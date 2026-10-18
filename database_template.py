@@ -1163,6 +1163,27 @@ class SudokuScore(Base):
         }
 
 
+# ── Pre-generated Sudoku Puzzle Pool (F-SUDOKU-GRADING) ──────────────────────
+class SudokuPuzzle(Base):
+    __tablename__ = "sudoku_puzzles"
+
+    id              = Column(Integer, primary_key=True, index=True)
+    difficulty      = Column(String(16), nullable=False)       # easy|medium|hard|expert|daily
+    givens          = Column(String(81), nullable=False)        # 81-char string, 0 = empty
+    solution        = Column(String(81), nullable=False)        # 81-char string, complete board
+    board_hash      = Column(String(64), nullable=False, unique=True)
+    givens_count    = Column(Integer, nullable=False)
+    hardest_technique = Column(String(32), nullable=False)      # e.g. "X-Wing"
+    puzzle_date     = Column(String(10), nullable=True)         # set for daily puzzles
+    served_count    = Column(Integer, nullable=False, default=0, server_default="0")
+    created_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_sudoku_puzzles_diff_date", "difficulty", "puzzle_date"),
+        Index("ix_sudoku_puzzles_diff_served", "difficulty", "served_count"),
+    )
+
+
 # ── Contact Message model ─────────────────────────────────────────────────────
 class ContactMessage(Base):
     __tablename__ = "contact_messages"

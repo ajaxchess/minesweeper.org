@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from database import (
     FlaggedScore, UserProfile, GameReplay,
-    SudokuScore,
+    SudokuScore, SudokuPuzzle,
     get_db,
 )
 from auth import get_current_user
@@ -165,14 +165,31 @@ def _enrich_with_profiles(scores: list, db) -> list:
 _SUDOKU_DIFFICULTIES = {"daily", "easy", "medium", "hard", "expert"}
 
 
-@sudoku_router.get("/other/sudoku", response_class=HTMLResponse)
-def sudoku_landing(request: Request):
-    lang = get_lang(request)
-    prefix = _safe_lang_prefix(lang)
-    return RedirectResponse(_safe_relative_url(f"{prefix}/other/sudoku/daily"), status_code=302)
+def _fetch_puzzle(db: Session, difficulty: str, today: str) -> SudokuPuzzle | None:
+    """Fetch a pre-generated puzzle from the pool.
+
+    Daily puzzles are looked up by date. Other difficulties return the
+    least-served puzzle (round-robin) and bump its served_count.
+    """
+    if difficulty == "daily":
+        return db.query(SudokuPuzzle).filter(
+            SudokuPuzzle.difficulty == "daily",
+            SudokuPuzzle.puzzle_date == today,
+        ).first()
+
+    puzzle = db.query(SudokuPuzzle).filter(
+        SudokuPuzzle.difficulty == difficulty,
+        SudokuPuzzle.puzzle_date.is_(None),
+    ).order_by(SudokuPuzzle.served_count.asc(), SudokuPuzzle.id.asc()).first()
+
+    if puzzle:
+        puzzle.served_count += 1
+        db.commit()
+    return puzzle
 
 
 def _sudoku_seed(difficulty: str, today: str) -> int:
+    """Fallback seed for client-side generation when no pre-generated puzzle exists."""
     import hashlib as _hl
     if difficulty == "daily":
         return int(_hl.md5(f"sudoku-daily-{today}".encode(), usedforsecurity=False).hexdigest(), 16) & 0xFFFFFFFF
@@ -180,64 +197,61 @@ def _sudoku_seed(difficulty: str, today: str) -> int:
     return _rand.randint(0, 0xFFFFFFFF)
 
 
-@sudoku_router.get("/other/sudoku/daily", response_class=HTMLResponse)
-def sudoku_daily(request: Request):
+def _sudoku_context(request: Request, db: Session, difficulty: str) -> dict:
+    """Build template context for a Sudoku play page, using a pre-generated
+    puzzle if available and falling back to client-side generation otherwise."""
     today = sudoku_today_str()
-    return templates.TemplateResponse(request, "sudoku_play.html", {
+    puzzle = _fetch_puzzle(db, difficulty, today)
+    if puzzle:
+        givens = puzzle.givens
+        seed = None
+    else:
+        givens = None
+        seed = _sudoku_seed(difficulty, today)
+    return {
         "mode": "other",
         "user": get_current_user(request),
         "lang": get_lang(request), "t": get_t(request),
-        "today": today, "difficulty": "daily",
-        "seed": _sudoku_seed("daily", today), "givens": None,
-    })
+        "today": today, "difficulty": difficulty,
+        "seed": seed, "givens": givens,
+    }
+
+
+@sudoku_router.get("/other/sudoku", response_class=HTMLResponse)
+def sudoku_landing(request: Request):
+    lang = get_lang(request)
+    prefix = _safe_lang_prefix(lang)
+    return RedirectResponse(_safe_relative_url(f"{prefix}/other/sudoku/daily"), status_code=302)
+
+
+@sudoku_router.get("/other/sudoku/daily", response_class=HTMLResponse)
+def sudoku_daily(request: Request, db: Session = Depends(get_db)):
+    return templates.TemplateResponse(request, "sudoku_play.html",
+                                      _sudoku_context(request, db, "daily"))
 
 
 @sudoku_router.get("/other/sudoku/easy", response_class=HTMLResponse)
-def sudoku_easy(request: Request):
-    today = sudoku_today_str()
-    return templates.TemplateResponse(request, "sudoku_play.html", {
-        "mode": "other",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": today, "difficulty": "easy",
-        "seed": _sudoku_seed("easy", today), "givens": None,
-    })
+def sudoku_easy(request: Request, db: Session = Depends(get_db)):
+    return templates.TemplateResponse(request, "sudoku_play.html",
+                                      _sudoku_context(request, db, "easy"))
 
 
 @sudoku_router.get("/other/sudoku/medium", response_class=HTMLResponse)
-def sudoku_medium(request: Request):
-    today = sudoku_today_str()
-    return templates.TemplateResponse(request, "sudoku_play.html", {
-        "mode": "other",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": today, "difficulty": "medium",
-        "seed": _sudoku_seed("medium", today), "givens": None,
-    })
+def sudoku_medium(request: Request, db: Session = Depends(get_db)):
+    return templates.TemplateResponse(request, "sudoku_play.html",
+                                      _sudoku_context(request, db, "medium"))
 
 
 @sudoku_router.get("/other/sudoku/hard", response_class=HTMLResponse)
-def sudoku_hard(request: Request):
-    today = sudoku_today_str()
-    return templates.TemplateResponse(request, "sudoku_play.html", {
-        "mode": "other",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": today, "difficulty": "hard",
-        "seed": _sudoku_seed("hard", today), "givens": None,
-    })
+def sudoku_hard(request: Request, db: Session = Depends(get_db)):
+    return templates.TemplateResponse(request, "sudoku_play.html",
+                                      _sudoku_context(request, db, "hard"))
 
 
 @sudoku_router.get("/other/sudoku/expert", response_class=HTMLResponse)
-def sudoku_expert(request: Request):
-    today = sudoku_today_str()
-    return templates.TemplateResponse(request, "sudoku_play.html", {
-        "mode": "other",
-        "user": get_current_user(request),
-        "lang": get_lang(request), "t": get_t(request),
-        "today": today, "difficulty": "expert",
-        "seed": _sudoku_seed("expert", today), "givens": None,
-    })
+def sudoku_expert(request: Request, db: Session = Depends(get_db)):
+    return templates.TemplateResponse(request, "sudoku_play.html",
+                                      _sudoku_context(request, db, "expert"))
 
 
 @sudoku_router.get("/other/sudoku/scores", response_class=HTMLResponse)

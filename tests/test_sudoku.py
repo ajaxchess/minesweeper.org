@@ -1,5 +1,6 @@
 """
-tests/test_sudoku.py — Sudoku score API: assists bitmask (F-SUDOKU-ASSISTS) and page controls.
+tests/test_sudoku.py — Sudoku score API: assists bitmask (F-SUDOKU-ASSISTS),
+page controls, and pre-generated puzzle serving (F-SUDOKU-GRADING).
 """
 import hashlib
 
@@ -78,3 +79,78 @@ def test_spanish_labels_match_la_nacion_wording(client):
     assert r.status_code == 200
     for label in ("Posibles", "Autocontrol", "Posibles automáticos", "Conflictos"):
         assert label in r.text
+
+
+# ── F-SUDOKU-GRADING: pre-generated puzzle serving ───────────────────────────
+
+def test_daily_serves_pregenerated_puzzle_when_available(client):
+    """When a daily puzzle exists in the pool, the route serves its givens."""
+    from database import get_db, SudokuPuzzle
+    db = next(get_db())
+    puzzle = SudokuPuzzle(
+        difficulty="daily", givens=GIVENS,
+        solution="5" * 81, board_hash=hashlib.sha256(GIVENS.encode()).hexdigest(),
+        givens_count=30, hardest_technique="Hidden Single",
+        puzzle_date=TODAY,
+    )
+    db.add(puzzle)
+    db.commit()
+
+    import numbers_match_generator
+    class _Frozen:
+        @staticmethod
+        def now(tz=None):
+            from datetime import datetime, timezone
+            return datetime(2026, 10, 12, 1, 22, tzinfo=timezone.utc).astimezone(tz)
+    import unittest.mock
+    with unittest.mock.patch.object(numbers_match_generator, "datetime", _Frozen):
+        r = client.get("/other/sudoku/daily")
+    assert r.status_code == 200
+    assert GIVENS in r.text
+    assert "seed" not in r.text or "null" in r.text
+
+
+def test_easy_serves_pregenerated_puzzle(client):
+    """When pool puzzles exist, a non-daily route serves one."""
+    from database import get_db, SudokuPuzzle
+    db = next(get_db())
+    puzzle = SudokuPuzzle(
+        difficulty="easy", givens=GIVENS,
+        solution="5" * 81, board_hash=hashlib.sha256(GIVENS.encode()).hexdigest(),
+        givens_count=30, hardest_technique="Naked Single",
+    )
+    db.add(puzzle)
+    db.commit()
+
+    r = client.get("/other/sudoku/easy")
+    assert r.status_code == 200
+    assert GIVENS in r.text
+
+
+def test_fallback_to_seed_when_no_pool(client):
+    """When the pool is empty, routes fall back to client-side seed generation."""
+    r = client.get("/other/sudoku/hard")
+    assert r.status_code == 200
+    # Should have a numeric seed, not null
+    assert "seed:" in r.text or "seed :" in r.text
+
+
+def test_served_count_incremented(client):
+    """Non-daily puzzles increment served_count on each fetch."""
+    from database import get_db, SudokuPuzzle
+    db = next(get_db())
+    bh = hashlib.sha256(b"test-served-count").hexdigest()
+    puzzle = SudokuPuzzle(
+        difficulty="medium", givens=GIVENS,
+        solution="5" * 81, board_hash=bh,
+        givens_count=28, hardest_technique="Naked Pair",
+        served_count=0,
+    )
+    db.add(puzzle)
+    db.commit()
+    puzzle_id = puzzle.id
+
+    client.get("/other/sudoku/medium")
+    db.expire_all()
+    updated = db.get(SudokuPuzzle, puzzle_id)
+    assert updated.served_count == 1
