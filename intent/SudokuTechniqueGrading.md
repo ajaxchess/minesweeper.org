@@ -45,8 +45,8 @@ puzzles by the hardest technique a human needs to solve them.
 - Difficulty mapping:
   - **Easy**: naked singles + hidden singles only
   - **Medium**: up to naked/hidden pairs
-  - **Hard**: up to pointing pairs / box-line reduction
-  - **Expert**: requires X-Wing, Swordfish, or XY-Wing
+  - **Hard**: up to X-Wing (triples, pointing pairs, X-Wing)
+  - **Expert**: requires Swordfish or XY-Wing
   - **Daily**: medium-level (same as medium)
 - A Python puzzle generator (`sudoku_generator.py`) that creates a valid solved
   board, removes clues, and verifies the puzzle grades into the requested level.

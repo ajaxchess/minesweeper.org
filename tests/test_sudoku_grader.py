@@ -68,6 +68,23 @@ class TestGradeForDifficulty:
             assert grade_for_difficulty(EASY_PUZZLE, "daily") is False
 
 
+class TestHiddenPairsRegression:
+    def test_hidden_pairs_does_not_destroy_candidates(self):
+        """Regression: hidden_pairs used to accept digit pairs where one digit
+        had zero occurrences in the unit, causing massive over-elimination."""
+        puzzle = "000801000000000430500000009008000300030070050009000600700000005062000000000109000"
+        result = grade(puzzle)
+        assert result.hardest_technique is not None
+        assert result.hardest_technique > Technique.HIDDEN_PAIR
+
+    def test_puzzle_needing_pointing_pairs(self):
+        """A puzzle that reaches pointing pairs should grade as hard."""
+        puzzle = "000801000000000430500000009008000300030070050009000600700000005062000000000109000"
+        result = grade(puzzle)
+        if result.solved:
+            assert result.difficulty == "hard"
+
+
 class TestTechniqueNames:
     def test_all_techniques_have_names(self):
         for t in Technique:

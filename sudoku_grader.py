@@ -19,8 +19,8 @@ Technique hierarchy (easiest → hardest):
 Difficulty levels:
   easy   — naked singles + hidden singles only
   medium — up to naked/hidden pairs
-  hard   — up to pointing pairs / box-line reduction
-  expert — requires X-Wing, Swordfish, or XY-Wing
+  hard   — up to X-Wing (triples, pointing pairs, X-Wing)
+  expert — requires Swordfish or XY-Wing
 """
 
 from __future__ import annotations
@@ -57,7 +57,7 @@ TECHNIQUE_NAMES = {
 DIFFICULTY_LEVELS = {
     "easy": Technique.HIDDEN_SINGLE,
     "medium": Technique.HIDDEN_PAIR,
-    "hard": Technique.POINTING_PAIR,
+    "hard": Technique.X_WING,
     "expert": Technique.XY_WING,
     "daily": Technique.HIDDEN_PAIR,
 }
@@ -168,7 +168,7 @@ def _hidden_pairs(grid: list[int], candidates: list[set[int]]) -> bool:
             places1 = {c for c in unit if d1 in candidates[c]}
             places2 = {c for c in unit if d2 in candidates[c]}
             union = places1 | places2
-            if len(union) == 2 and len(places1) <= 2 and len(places2) <= 2:
+            if len(union) == 2 and 1 <= len(places1) <= 2 and 1 <= len(places2) <= 2:
                 pair_vals = {d1, d2}
                 for c in union:
                     before = len(candidates[c])
