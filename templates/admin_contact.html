@@ -21,75 +21,113 @@
     <a href="/admin/seo">🔍 SEO</a>
   </p>
 
-  <!-- Unread messages -->
-  <section class="admin-section">
-    <h2 class="admin-section-title">Unread ({{ unread | length }})
-      {% if unread %}
-      <form method="post" action="/admin/contact/delete-all-unread" style="display:inline;margin-left:1rem"
-            onsubmit="return confirm('Delete all {{ unread | length }} unread message(s)?')">
-        <button class="admin-btn admin-btn-delete" type="submit">🗑 Delete All</button>
-      </form>
-      {% endif %}
-    </h2>
-    {% if unread %}
-    <table class="lb-table admin-comments-table">
-      <thead>
-        <tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Actions</th></tr>
-      </thead>
-      <tbody>
-        {% for m in unread %}
-        <tr>
-          <td>{{ m.name }}</td>
-          <td><a href="mailto:{{ m.email }}">{{ m.email }}</a></td>
-          <td class="admin-comment-body-cell">{{ m.message }}</td>
-          <td style="white-space:nowrap">{{ m.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
-          <td style="white-space:nowrap">
-            <form method="post" action="/admin/contact/{{ m.id }}/mark-read" style="display:inline">
-              <button class="admin-btn admin-btn-approve" type="submit">✅ Mark Read</button>
-            </form>
-            <form method="post" action="/admin/contact/{{ m.id }}/delete" style="display:inline"
-                  onsubmit="return confirm('Delete this message?')">
-              <button class="admin-btn admin-btn-delete" type="submit">🗑 Delete</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% else %}
-    <p style="color:var(--text-dim);padding:1rem 0">No unread messages.</p>
-    {% endif %}
-  </section>
+  <form id="bulk-delete-form" method="post" action="/admin/contact/delete-selected">
+    <div id="bulk-bar" style="display:none;position:sticky;top:0;z-index:10;background:var(--bg2, #1a1a2a);border:1px solid #c0392b;border-radius:6px;padding:0.6rem 1rem;margin-bottom:1rem;text-align:center;">
+      <span id="bulk-count">0</span> selected &nbsp;
+      <button type="submit" class="admin-btn admin-btn-delete" onclick="return confirm('Delete the selected message(s)?')">🗑 Delete Selected</button>
+      &nbsp;
+      <button type="button" class="admin-btn" onclick="clearAll()" style="font-size:0.8rem;">Clear</button>
+    </div>
 
-  <!-- Read messages -->
-  <section class="admin-section">
-    <h2 class="admin-section-title">Read (last 50)</h2>
-    {% if read %}
-    <table class="lb-table admin-comments-table">
-      <thead>
-        <tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Actions</th></tr>
-      </thead>
-      <tbody>
-        {% for m in read %}
-        <tr>
-          <td>{{ m.name }}</td>
-          <td><a href="mailto:{{ m.email }}">{{ m.email }}</a></td>
-          <td class="admin-comment-body-cell">{{ m.message }}</td>
-          <td style="white-space:nowrap">{{ m.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
-          <td style="white-space:nowrap">
-            <form method="post" action="/admin/contact/{{ m.id }}/delete" style="display:inline"
-                  onsubmit="return confirm('Delete this message?')">
-              <button class="admin-btn admin-btn-delete" type="submit">🗑 Delete</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% else %}
-    <p style="color:var(--text-dim);padding:1rem 0">No read messages yet.</p>
-    {% endif %}
-  </section>
+    <!-- Unread messages -->
+    <section class="admin-section">
+      <h2 class="admin-section-title">Unread ({{ unread | length }})
+        {% if unread %}
+        <form method="post" action="/admin/contact/delete-all-unread" style="display:inline;margin-left:1rem"
+              onsubmit="return confirm('Delete all {{ unread | length }} unread message(s)?')">
+          <button class="admin-btn admin-btn-delete" type="submit">🗑 Delete All</button>
+        </form>
+        {% endif %}
+      </h2>
+      {% if unread %}
+      <table class="lb-table admin-comments-table">
+        <thead>
+          <tr>
+            <th style="width:2rem"><input type="checkbox" onchange="toggleSection(this, 'unread')"></th>
+            <th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in unread %}
+          <tr>
+            <td><input type="checkbox" name="msg_ids" value="{{ m.id }}" class="msg-cb unread" onchange="updateCount()"></td>
+            <td>{{ m.name }}</td>
+            <td><a href="mailto:{{ m.email }}">{{ m.email }}</a></td>
+            <td class="admin-comment-body-cell">{{ m.message }}</td>
+            <td style="white-space:nowrap">{{ m.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            <td style="white-space:nowrap">
+              <form method="post" action="/admin/contact/{{ m.id }}/mark-read" style="display:inline">
+                <button class="admin-btn admin-btn-approve" type="submit">✅ Mark Read</button>
+              </form>
+              <form method="post" action="/admin/contact/{{ m.id }}/delete" style="display:inline"
+                    onsubmit="return confirm('Delete this message?')">
+                <button class="admin-btn admin-btn-delete" type="submit">🗑 Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p style="color:var(--text-dim);padding:1rem 0">No unread messages.</p>
+      {% endif %}
+    </section>
+
+    <!-- Read messages -->
+    <section class="admin-section">
+      <h2 class="admin-section-title">Read (last 50)</h2>
+      {% if read %}
+      <table class="lb-table admin-comments-table">
+        <thead>
+          <tr>
+            <th style="width:2rem"><input type="checkbox" onchange="toggleSection(this, 'read')"></th>
+            <th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in read %}
+          <tr>
+            <td><input type="checkbox" name="msg_ids" value="{{ m.id }}" class="msg-cb read" onchange="updateCount()"></td>
+            <td>{{ m.name }}</td>
+            <td><a href="mailto:{{ m.email }}">{{ m.email }}</a></td>
+            <td class="admin-comment-body-cell">{{ m.message }}</td>
+            <td style="white-space:nowrap">{{ m.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            <td style="white-space:nowrap">
+              <form method="post" action="/admin/contact/{{ m.id }}/delete" style="display:inline"
+                    onsubmit="return confirm('Delete this message?')">
+                <button class="admin-btn admin-btn-delete" type="submit">🗑 Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p style="color:var(--text-dim);padding:1rem 0">No read messages yet.</p>
+      {% endif %}
+    </section>
+  </form>
 
 </div>
+
+<script>
+function updateCount() {
+  var n = document.querySelectorAll('.msg-cb:checked').length;
+  var bar = document.getElementById('bulk-bar');
+  document.getElementById('bulk-count').textContent = n;
+  bar.style.display = n > 0 ? '' : 'none';
+}
+function toggleSection(master, cls) {
+  var boxes = document.querySelectorAll('.msg-cb.' + cls);
+  for (var i = 0; i < boxes.length; i++) boxes[i].checked = master.checked;
+  updateCount();
+}
+function clearAll() {
+  var boxes = document.querySelectorAll('.msg-cb');
+  for (var i = 0; i < boxes.length; i++) boxes[i].checked = false;
+  var masters = document.querySelectorAll('th input[type="checkbox"]');
+  for (var i = 0; i < masters.length; i++) masters[i].checked = false;
+  updateCount();
+}
+</script>
 {% endblock %}

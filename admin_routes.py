@@ -1832,6 +1832,19 @@ def admin_contact_delete_all_unread(request: Request, db: Session = Depends(get_
     return RedirectResponse("/admin/contact", status_code=303)
 
 
+@admin_router.post("/admin/contact/delete-selected")
+async def admin_contact_delete_selected(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_admin(request, user)
+    form = await request.form()
+    msg_ids = form.getlist("msg_ids")
+    if msg_ids:
+        ids = [int(i) for i in msg_ids]
+        db.query(ContactMessage).filter(ContactMessage.id.in_(ids)).delete(synchronize_session=False)
+        db.commit()
+    return RedirectResponse("/admin/contact", status_code=303)
+
+
 @admin_router.get("/admin/hscleaning", response_class=HTMLResponse)
 def admin_hscleaning(
     request: Request,
