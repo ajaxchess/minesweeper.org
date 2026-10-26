@@ -1,3 +1,11 @@
+B57 Numbers Match: winning the Daily switched the leaderboard to Easy's.
+   Root cause: F-GAME-END starts the next game right after a win (Daily -> today's ranked Easy),
+   and _startGame loaded the leaderboard of every new ranked game, so the Daily ranking the
+   player had just entered was replaced before they could see it.
+   Fix: games started automatically after a win (autoNext) keep the leaderboard as is; when the
+   finished game's score is saved, showLeaderboardFor() shows that puzzle's ranking. Only a mode
+   the player picks switches it. Covered by tests/js/numbers_match_game_end.js.
+
 B56 Puzzles menu empty and Google Analytics missing on pages served by *_routes.py modules.
    Root cause: since the route extraction refactor (883ef01, 2026-09-14) each *_routes.py module
    builds its own Jinja2Templates with a partial copy of main.py's globals: no puzzle_games (the

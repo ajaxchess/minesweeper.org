@@ -74,15 +74,15 @@ function play(puzzleId, rows) {
 }
 
 const games = [];
-const DIFFS = [['easy', 4], ['medium', 8], ['hard', 16], ['expert', 32]];
+const DIFFS = [['easy', 6], ['medium', 8], ['hard', 16], ['expert', 32]];
 for (let d = 1; d <= 28 && games.filter(g => g.won).length < 60; d++) {
     for (const [diff, rows] of DIFFS) {
-        const g = play(`2026-10-${String(d).padStart(2, '0')}-${diff}-v2`, rows);
+        const g = play(`2026-10-${String(d).padStart(2, '0')}-${diff}-v3`, rows);
         if (g.won || games.filter(x => !x.won).length < 10) games.push(g);
     }
 }
-const vectors = ['2026-10-11-easy-v2', '2026-10-11-expert-v2', 'abc', ''].map(seed => (
-    { seed, rows: 4, board: nm.generateBoardClient(seed, 4) }
+const vectors = ['2026-10-11-easy-v3', '2026-10-11-expert-v3', 'abc', ''].map(seed => (
+    { seed, rows: 6, board: nm.generateBoardClient(seed, 6) }
 ));
 const file = path.join(__dirname, 'numbers_match_js_games.json');
 const previous = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {};

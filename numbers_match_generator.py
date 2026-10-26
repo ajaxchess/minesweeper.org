@@ -25,7 +25,10 @@ _EPOCH = date(2024, 1, 1)
 # static/src/js/numbers_match.js all read these.
 NUMBERS_MATCH_TZ_NAME        = "America/New_York"
 NUMBERS_MATCH_TZ             = ZoneInfo(NUMBERS_MATCH_TZ_NAME)
-NUMBERS_MATCH_BOARD_REVISION = "v2"
+# v3 (2026-10-26, F-NM-ROWS): Daily and Easy grew from 4 to 6 rows; a new
+# revision keeps their puzzle ids and leaderboards apart from the 4-row boards.
+NUMBERS_MATCH_BOARD_REVISION = "v3"
+DAILY_ROWS                   = 6
 
 
 def numbers_match_today_str(now: datetime | None = None) -> str:
@@ -40,8 +43,8 @@ def board_number(date_str: str) -> int:
 
 
 def initial_rows(board_num: int) -> int:
-    """Return the starting row count. Always 4; Add Lines handles progression."""
-    return 4
+    """Return the starting row count (DAILY_ROWS); Add Lines handles progression."""
+    return DAILY_ROWS
 
 
 def generate_daily(date_str: str, seed_suffix: str = "") -> dict:

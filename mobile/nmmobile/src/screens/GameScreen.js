@@ -36,7 +36,7 @@ export default function GameScreen({ navigation }) {
   const elapsed = useTimer(started, won);
 
   const DIFFICULTIES = [
-    { label: 'Easy',   rows: 4,  key: 'easy'   },
+    { label: 'Easy',   rows: 6,  key: 'easy'   },   // 4 → 6 rows in revision v3 (F-NM-ROWS)
     { label: 'Medium', rows: 8,  key: 'medium' },
     { label: 'Hard',   rows: 16, key: 'hard'   },
     { label: 'Expert', rows: 32, key: 'expert' },

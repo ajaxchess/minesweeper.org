@@ -46,11 +46,15 @@ schedule by board number from the original design is not used.
 
 | Mode | Starting rows | Leaderboard puzzle id |
 |------|---------------|-----------------------|
-| Daily | 4 | `YYYY-MM-DD-v2` |
-| Easy | 4 | `YYYY-MM-DD-easy-v2` |
-| Medium | 8 | `YYYY-MM-DD-medium-v2` |
-| Hard | 16 | `YYYY-MM-DD-hard-v2` |
-| Expert | 32 | `YYYY-MM-DD-expert-v2` |
+| Daily | 6 | `YYYY-MM-DD-v3` |
+| Easy | 6 | `YYYY-MM-DD-easy-v3` |
+| Medium | 8 | `YYYY-MM-DD-medium-v3` |
+| Hard | 16 | `YYYY-MM-DD-hard-v3` |
+| Expert | 32 | `YYYY-MM-DD-expert-v3` |
+
+F-NM-ROWS (2026-10-26): Daily and Easy grew from 4 to 6 rows because they were too
+easy; the revision moved from v2 to v3 so the new boards get their own puzzle ids
+and leaderboards (v2 scores stay under their old ids).
 
 Boards contain 1–9 repeated and shuffled, so every number has a partner, and
 Add Lines lets the game keep progressing.
@@ -58,13 +62,13 @@ Add Lines lets the game keep progressing.
 ## Board Generation
 - **Daily board:** one shared board per day, the same for all players. The server
   generates it (`numbers_match_generator.generate_daily`) with a SHA-256 seed of
-  the date plus the revision (`:v2`). The day is the **America/New_York** date
+  the date plus the revision (`:v3`). The day is the **America/New_York** date
   (`/api/numbers-match-today`), not the browser's.
 - **Difficulty boards (Easy–Expert):** generated in the browser
   (`generateBoardClient`, mulberry32 + FNV-1a) from a seed of date + difficulty +
   revision, so each one is also the same for every player on a given day.
 - **Revision and timezone:** defined once in `numbers_match_generator.py`
-  (`NUMBERS_MATCH_BOARD_REVISION = "v2"`, `NUMBERS_MATCH_TZ_NAME`). `main.py` and
+  (`NUMBERS_MATCH_BOARD_REVISION = "v3"`, `NUMBERS_MATCH_TZ_NAME`). `main.py` and
   `numbers_match_routes.py` import them; the page passes them to the JS as
   `data-revision` / `data-timezone` on `#nm-board`. If the server date API is
   unreachable, the JS falls back to the browser clock in that timezone. Changing
@@ -72,7 +76,8 @@ Add Lines lets the game keep progressing.
 - **Tests:** `tests/test_numbers_match.py`.
 - After a win a 5 s toast shows score, time and save status while the next game
   starts: Daily → today's ranked Easy; a finished ranked board → random practice
-  board of the same size (not ranked). See `GameEndFlow.md` (F-GAME-END).
+  board of the same size (not ranked). The leaderboard keeps showing the game
+  just finished (B57) until another ranked game ends or the player picks a mode. See `GameEndFlow.md` (F-GAME-END).
 
 ## Scoring
 | Event | Points |

@@ -45,6 +45,7 @@
 - F50 Flower Garden theme — night garden / day garden, mines=🌸, flags=🌷
 - F52 Schulte Grid — /other/schulte @richard
 - F53 Sudoku — /sudoku
+- F-NM-ROWS Numbers Match Daily and Easy from 4 to 6 rows (revision v3) @gisela
 - F-GAME-END Result toast + automatic next game (Numbers Match, Sudoku); Sudoku leaderboard on the play page @gisela
 - F-SUDOKU-HARDER Sudoku fewer givens on every level @gisela
 - F-SUDOKU-ASSISTS Sudoku notes, auto candidates, auto check, conflicts @gisela

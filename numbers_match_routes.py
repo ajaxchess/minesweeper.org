@@ -35,6 +35,7 @@ from numbers_match_generator import (
     NUMBERS_MATCH_TZ_NAME,
     NUMBERS_MATCH_BOARD_REVISION,
     numbers_match_today_str,
+    DAILY_ROWS,
 )
 from numbers_match_engine import (
     InvalidReplay, MAX_EVENTS, VERIFIABLE_PUZZLE_ID, board_for_puzzle, replay,
@@ -207,7 +208,7 @@ def get_numbers_match_board(
             "revision":    rev,
         }
     row = db.query(NumbersMatchDaily).filter_by(puzzle_date=date_str).first()
-    if row and row.rows != 4:
+    if row and row.rows != DAILY_ROWS:   # stored before a board-size change
         db.delete(row)
         db.commit()
         row = None

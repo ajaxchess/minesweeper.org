@@ -3,7 +3,9 @@
 // ── Constants ─────────────────────────────────────────────────────────────────
 const NM_COLS      = 9;
 const NM_EPOCH     = '2024-01-01';
-const NM_DIFF_LABELS = { 4: 'Easy', 8: 'Medium', 16: 'Hard', 32: 'Expert' };
+// Easy grew from 4 to 6 rows in revision v3 (F-NM-ROWS); mirrors numbers_match_engine.py.
+const NM_DIFF_LABELS = { 6: 'Easy', 8: 'Medium', 16: 'Hard', 32: 'Expert' };
+const NM_EASY_ROWS   = 6;
 const HINT_COST       = 3;   // score penalty per hint used
 const UNDO_COST       = 5;   // score penalty per undo used
 const ADD_LINES_LIMIT = 5;   // max Add Lines uses per game
@@ -118,14 +120,19 @@ function markPlayed(puzzleId) {
     } catch {}
 }
 
+function isDailyId(puzzleId) {
+    return /^\d{4}-\d{2}-\d{2}-v\d+$/.test(puzzleId || '');
+}
+
 async function startNextGame(finishedRows) {
     const pendingAtStart = _pendingGameId;
     const today = await serverToday();
     if (_pendingGameId !== pendingAtStart) return; // a manual game load started while we awaited
-    const rows = [4, 8, 16, 32].includes(finishedRows) ? finishedRows : 4;
+    const rows = NM_DIFF_LABELS[finishedRows] ? finishedRows : NM_EASY_ROWS;
     const rankedId = scorePuzzleId(today, NM_DIFF_LABELS[rows].toLowerCase());
-    if (playedToday(today).includes(rankedId)) initPracticeGame(rows);
-    else initRandomGame(rows, today);
+    // autoNext: keep the finished game's leaderboard on screen (B57).
+    if (playedToday(today).includes(rankedId)) initPracticeGame(rows, true);
+    else initRandomGame(rows, today, true);
 }
 
 // ── Seeded RNG (mirrors Python generator — used for random-mode boards) ────────
@@ -153,7 +160,7 @@ function boardNumber(dateStr) {
 }
 
 function initialRows(boardNum) {
-    return 4;
+    return 6;
 }
 
 function generateBoardClient(seed, rows) {
@@ -518,7 +525,7 @@ function showWinOverlay() {
         markPlayed(G.puzzleId);
         saveScore(playerName());
     }
-    const rows = /^\d{4}-\d{2}-\d{2}-v\d+$/.test(G.puzzleId) ? 4 : G.diffRows;   // Daily → Easy
+    const rows = isDailyId(G.puzzleId) ? NM_EASY_ROWS : G.diffRows;   // Daily → Easy
     _autoNextTimer = setTimeout(() => startNextGame(rows), AUTO_NEXT_DELAY_MS);
 }
 
@@ -558,8 +565,9 @@ async function saveScore(autoName = null) {
             localStorage.setItem('nm_name', name);
             if (btn) btn.textContent = '✓ Saved!';
             setToastStatus(`✅ Score saved for ${name}`);
-            // The next game may be a practice board; keep showing this puzzle's ranking then.
-            if (G.gameId === gameId || !G.isPOTD) loadLeaderboard(puzzleId);
+            // Show the ranking of the game just finished, even though the next one
+            // has already started (B57).
+            showLeaderboardFor(puzzleId);
         } else {
             if (G.gameId === gameId) G.scoreSaved = false;
             if (btn) { btn.textContent = 'Save Score'; btn.disabled = false; }
@@ -641,7 +649,7 @@ async function initDailyGame(dateStr) {
     }
 }
 
-function initRandomGame(rows, dateStr = null) {
+function initRandomGame(rows, dateStr = null, autoNext = false) {
     ++_pendingGameId;  // cancel any in-flight initDailyGame
     nmStopTimer();
     const today    = dateStr || nmToday();
@@ -649,18 +657,20 @@ function initRandomGame(rows, dateStr = null) {
     const seed     = diffKey ? scorePuzzleId(today, diffKey) : Date.now().toString(36);
     const board    = generateBoardClient(seed, rows);
     const puzzleId = diffKey ? scorePuzzleId(today, diffKey) : seed;
-    _startGame(board, rows, puzzleId, !!diffKey);
+    _startGame(board, rows, puzzleId, !!diffKey, autoNext);
 }
 
 // Random, unranked board of the given size (after the day's ranked one is done).
-function initPracticeGame(rows) {
+function initPracticeGame(rows, autoNext = false) {
     ++_pendingGameId;  // cancel any in-flight initDailyGame
     nmStopTimer();
     const seed = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    _startGame(generateBoardClient(seed, rows), rows, seed, false);
+    _startGame(generateBoardClient(seed, rows), rows, seed, false, autoNext);
 }
 
-function _startGame(boardData, rows, puzzleId, isPOTD) {
+// autoNext: started automatically after a win; the leaderboard keeps showing the
+// finished game until its score is saved (B57).
+function _startGame(boardData, rows, puzzleId, isPOTD, autoNext = false) {
     clearInterval(G.timer);
     clearTimeout(_autoNextTimer);
     G = {
@@ -703,21 +713,25 @@ function _startGame(boardData, rows, puzzleId, isPOTD) {
             !isDailyPuzzle && parseInt(btn.dataset.rows) === rows);
     });
 
-    // Practice boards have no ranking: keep the last ranked puzzle's leaderboard on screen.
-    if (isPOTD) document.getElementById('nm-lb-section').style.display = 'block';
-
-    const lbTitle = document.querySelector('.nm-lb-title');
-    if (lbTitle && isPOTD) {
-        lbTitle.textContent = isDailyPuzzle
-            ? '🏆 Today\'s Leaderboard'
-            : `🏆 ${NM_DIFF_LABELS[rows] || rows + ' rows'} — Today's Best`;
-    }
-
     _showLoading(false);
     renderBoard();
     updateHUD();
 
-    if (isPOTD) loadLeaderboard();
+    // Practice boards have no ranking, and after a win the finished game's ranking
+    // stays up: only a ranked game the player picked switches the leaderboard.
+    if (isPOTD && !autoNext) showLeaderboardFor(puzzleId);
+}
+
+function showLeaderboardFor(puzzleId) {
+    document.getElementById('nm-lb-section').style.display = 'block';
+    const lbTitle = document.querySelector('.nm-lb-title');
+    if (lbTitle) {
+        const diff = (puzzleId.match(/-(easy|medium|hard|expert)-v\d+$/) || [])[1];
+        lbTitle.textContent = isDailyId(puzzleId)
+            ? '🏆 Today\'s Leaderboard'
+            : `🏆 ${diff ? diff[0].toUpperCase() + diff.slice(1) : ''} — Today's Best`;
+    }
+    loadLeaderboard(puzzleId);
 }
 
 function _showLoading(show) {

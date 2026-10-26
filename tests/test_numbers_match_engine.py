@@ -69,9 +69,16 @@ def test_unfinished_game_rejected(game):
 # ── Board reconstruction ──────────────────────────────────────────────────────
 
 def test_daily_board_uses_revision_suffix():
-    board, rows = board_for_puzzle("2026-10-11-v2")
-    assert board == generate_daily("2026-10-11", seed_suffix=":v2")["board_data"]
-    assert rows == 4
+    board, rows = board_for_puzzle("2026-10-11-v3")
+    assert board == generate_daily("2026-10-11", seed_suffix=":v3")["board_data"]
+    assert rows == 6
+
+
+def test_daily_and_easy_have_six_rows():
+    """F-NM-ROWS: Daily and Easy grew from 4 to 6 rows; the other levels are unchanged."""
+    assert board_for_puzzle("2026-10-11-v3")[1] == 6
+    assert {d: board_for_puzzle(f"2026-10-11-{d}-v3")[1] for d in ("easy", "medium", "hard", "expert")} \
+        == {"easy": 6, "medium": 8, "hard": 16, "expert": 32}
 
 
 @pytest.mark.parametrize("pid", [

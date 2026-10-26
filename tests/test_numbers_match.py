@@ -47,7 +47,7 @@ class TestGenerator:
 
     def test_daily_board_shape(self):
         b = generate_daily(TODAY)
-        assert b["rows"] == 4
+        assert b["rows"] == 6          # F-NM-ROWS: was 4
         assert len(b["board_data"]) == b["rows"] * 9
         assert all(1 <= v <= 9 for v in b["board_data"])
         # 1-9 repeated: every value appears exactly rows times
@@ -115,7 +115,7 @@ class TestBoardApi:
         data = r.json()
         expected = generate_daily(TODAY, seed_suffix=f":{REV}")
         assert data["board_data"] == expected["board_data"]
-        assert data["rows"] == 4
+        assert data["rows"] == 6
         assert data["revision"] == REV
 
     def test_board_without_revision_is_stored_and_stable(self, client):
@@ -139,7 +139,7 @@ class TestBoardApi:
 _JS = json.loads((ROOT / "tests/fixtures/numbers_match_js_games.json").read_text())
 # A short won game from the real web client, re-timed to 160 ms per match so it
 # passes the "too fast" check and stays inside the 5 s token tolerance.
-_GAME = min((g for g in _JS["games"] if g["won"] and g["puzzle_id"].endswith("-easy-v2")),
+_GAME = min((g for g in _JS["games"] if g["won"] and g["puzzle_id"].endswith(f"-easy-{REV}")),
             key=lambda g: len(g["moves"]))
 
 

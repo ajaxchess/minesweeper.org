@@ -42,7 +42,7 @@ export function boardNumber(dateStr) {
 }
 
 export function initialRows(_boardNum) {
-  return 4;
+  return 6;
 }
 
 export function collapseEmptyRows(board, rows) {

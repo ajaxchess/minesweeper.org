@@ -33,7 +33,9 @@ CLEAR_BONUS     = 150
 ROW_CLEAR_BONUS = 10
 MAX_EVENTS      = 5000
 
-DIFFICULTY_ROWS = {"easy": 4, "medium": 8, "hard": 16, "expert": 32}
+# Easy grew from 4 to 6 rows in revision v3 (F-NM-ROWS); keep in step with the web JS
+# (NM_DIFF_LABELS) and the mobile app (GameScreen DIFFICULTIES).
+DIFFICULTY_ROWS = {"easy": 6, "medium": 8, "hard": 16, "expert": 32}
 
 # Puzzle ids that can be rebuilt on the server:
 #   YYYY-MM-DD-vN               daily board (server-generated, seed suffix ":vN")

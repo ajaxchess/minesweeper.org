@@ -23,8 +23,9 @@ const byId = id => (els[id] ||= stubEl(id));
 const store = {};
 const posts = [];
 const later = [];
+const lbGets = [];   // leaderboard requests, newest last
 const ctx = vm.createContext({
-  document: { getElementById: byId, createElement: () => stubEl(), querySelector: () => null,
+  document: { getElementById: byId, createElement: () => stubEl(), querySelector: sel => sel === '.nm-lb-title' ? byId('lb-title') : null,
               querySelectorAll: () => [], addEventListener() {}, body: { appendChild() {} } },
   window: {}, console, Date, Math, JSON, Intl, Promise,
   localStorage: { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = v; } },
@@ -35,6 +36,7 @@ const ctx = vm.createContext({
     if (url.startsWith('/api/numbers-match-start')) return { ok: true, json: async () => ({ token: 'tok' }) };
     if (o && o.method === 'POST') { posts.push(JSON.parse(o.body)); return { ok: true, json: async () => ({}) }; }
     if (url.startsWith('/api/numbers-match-board')) return { ok: true, json: async () => ({ board_data: [1,9,1,9,1,9,1,9,1, 9,1,9,1,9,1,9,1,9], rows: 2 }) };
+    if (url.startsWith('/api/numbers-match-scores/')) lbGets.push(url.split('?')[0].split('/').pop());
     return { ok: true, json: async () => [] };
   },
 });
@@ -67,13 +69,19 @@ function winCurrent() {
   await tick(); await tick();
   ok(posts.length === 1 && posts[0].puzzle_date === '2026-10-12-v2', 'daily score saved');
   ok(/Score saved/.test(byId('nm-toast-status').textContent), 'toast status says saved');
-  ok(nm.G.puzzleId === '2026-10-12-easy-v2' && nm.G.isPOTD, `after Daily → today's ranked Easy (${nm.G.puzzleId})`);
+  ok(nm.G.puzzleId === '2026-10-12-easy-v2' && nm.G.isPOTD && nm.G.diffRows === 6,
+     `after Daily → today's ranked Easy, 6 rows (${nm.G.puzzleId}, ${nm.G.diffRows} rows)`);
+  // B57: the Daily's ranking stays on screen while the Easy is played.
+  ok(lbGets[lbGets.length - 1] === '2026-10-12-v2', `leaderboard still shows the Daily (${lbGets[lbGets.length - 1]})`);
+  ok(/Today's Leaderboard/.test(byId('lb-title').textContent), `leaderboard title is the Daily's (${byId('lb-title').textContent})`);
 
   // Win the ranked Easy → it's marked played, next is a practice Easy.
   ok(winCurrent(), 'easy board cleared');
   await tick(); await tick();
   ok(posts.length === 2 && posts[1].puzzle_date === '2026-10-12-easy-v2', 'easy score saved');
-  ok(!nm.G.isPOTD && nm.G.diffRows === 4, `after ranked Easy → practice Easy (${nm.G.puzzleId})`);
+  ok(lbGets[lbGets.length - 1] === '2026-10-12-easy-v2' && /Easy/.test(byId('lb-title').textContent),
+     'after winning Easy the leaderboard shows the Easy ranking');
+  ok(!nm.G.isPOTD && nm.G.diffRows === 6, `after ranked Easy → practice Easy (${nm.G.puzzleId})`);
   ok(/Practice/.test(byId('nm-mode-label').textContent), 'label says Practice');
 
   // Practice win: no save, next is another practice board of the same size.
@@ -82,7 +90,8 @@ function winCurrent() {
   ok(/not ranked/.test(byId('nm-toast').innerHTML), 'toast says practice is not ranked');
   await tick(); await tick();
   ok(posts.length === 2, 'practice score not saved');
-  ok(!nm.G.isPOTD && nm.G.puzzleId !== prevId && nm.G.diffRows === 4, 'next practice board started');
+  ok(!nm.G.isPOTD && nm.G.puzzleId !== prevId && nm.G.diffRows === 6, 'next practice board started');
+  ok(lbGets[lbGets.length - 1] === '2026-10-12-easy-v2', 'practice keeps the last ranked leaderboard');
 
   later.forEach(f => f());
   ok(!byId('nm-toast').classList.contains('game-toast--show'), 'toast hides after 5 s timer');

@@ -59,8 +59,8 @@ function play(puzzleId, rows) {
 
 const games = [];
 for (let d = 1; d <= 20 && games.length < 30; d++)
-    for (const [diff, rows] of [['easy', 4], ['medium', 8], ['hard', 16]]) {
-        const g = play(`2026-11-${String(d).padStart(2, '0')}-${diff}-v2`, rows);
+    for (const [diff, rows] of [['easy', 6], ['medium', 8], ['hard', 16]]) {
+        const g = play(`2026-11-${String(d).padStart(2, '0')}-${diff}-v3`, rows);
         if (g.won) games.push(g);
     }
 
