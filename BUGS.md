@@ -1,3 +1,10 @@
+B59 Sudoku: finishing the Daily switched the leaderboard to Easy's (same as B57 in Numbers Match).
+   Root cause: F-GAME-END rolls the Daily into an Easy game in place; startNextGame() then loaded the
+   leaderboard for the new level, and the finished game's save only refreshed it when the levels matched.
+   Fix: the next game leaves the leaderboard alone; once the finished game's score is saved,
+   loadLeaderboard(game.difficulty) shows that level's ranking. Covered by
+   tests/js/sudoku_behaviour.js (fails on the previous sudoku.js).
+
 B58 pip-audit (Security Scan workflow) failed: two new advisories in Python dependencies.
    certifi 2026.4.22 (PYSEC-2026-4320): bundled emSign ECC Root CA - G3 whose intermediates have
    compromised keys — on-path interception of the server's outbound TLS. opentelemetry-api 1.44.0

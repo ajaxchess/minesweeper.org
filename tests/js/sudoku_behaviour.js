@@ -29,24 +29,26 @@ const docListeners = {};
 const store = {};
 let posted = null;
 let puzzleReq = null;
+const lbReqs = [];   // difficulty of each leaderboard request, newest last
 // A graded pool puzzle the server hands out for the next game.
 const POOL = '003020600900305001001806400008102900700000008006708200002609500800203009005010300';
 const later = [];   // timers >= 1 s (the toast hide) run only when the test asks
 const GIVENS = '530070000600195000098000060800060003400803001700020006060000280000419005000080079';
 const ctx = vm.createContext({
-  window: { SUDOKU_CFG: { difficulty: 'easy', seed: 1, givens: GIVENS, today: '2026-10-11' } },
+  window: { SUDOKU_CFG: { difficulty: 'daily', seed: 1, givens: GIVENS, today: '2026-10-11' } },
   document: { getElementById: byId, createElement: () => new El(), hidden: false,
     querySelectorAll: s => s === '.su-numpad-btn' ? numpad : [],
     addEventListener: (t, f) => (docListeners[t] ||= []).push(f) },
   localStorage: { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = v; } },
   setTimeout: (f, ms) => { if (ms >= 1000) later.push(f); else { try { f(); } catch (e) { console.log('TIMER ERROR', e.message); } } return 1; },
   clearTimeout() {}, setInterval: () => 1, clearInterval() {},
-  history: { replaceState() {} }, location: { pathname: '/other/sudoku/easy', search: '' },
+  history: { replaceState() {} }, location: { pathname: '/other/sudoku/daily', search: '' },
   URLSearchParams, Uint32Array,
   performance, crypto: globalThis.crypto, TextEncoder, console, Math, Array, Set, JSON, Object, Number, String, Promise,
   fetch: async (url, o) => {
     if (o && o.method === 'POST') { posted = JSON.parse(o.body); return { ok: true }; }
     if (url.startsWith('/api/sudoku-puzzle')) { puzzleReq = url; return { ok: true, json: async () => ({ givens: POOL }) }; }
+    if (url.startsWith('/api/sudoku-scores')) lbReqs.push(new URLSearchParams(url.split('?')[1]).get('difficulty'));
     return { ok: true, json: async () => [] };   // leaderboard GET
   },
 });
@@ -128,6 +130,10 @@ Promise.resolve().then(() => new Promise(r => globalThis.setTimeout(r, 50))).the
   ok(cells().filter(c => c.textContent === '').length >= 40, 'a new puzzle started automatically');
   ok(puzzleReq === '/api/sudoku-puzzle?difficulty=easy', `next puzzle requested from the server pool (${puzzleReq})`);
   ok(cells().map(c => c.textContent || '0').join('') === POOL, 'next game uses the graded pool puzzle');
+  // B59: after the Daily, the leaderboard shows the Daily ranking, not Easy's.
+  ok(posted.difficulty === 'daily', `finished Daily saved as daily (${posted.difficulty})`);
+  ok(lbReqs[lbReqs.length - 1] === 'daily', `leaderboard shows the Daily after finishing it (${lbReqs[lbReqs.length - 1]})`);
+  ok(/Daily/.test(byId('su-lb-title').textContent), `leaderboard title is the Daily's (${byId('su-lb-title').textContent})`);
   later.forEach(f => f());
   ok(!toast.classList.contains('game-toast--show'), 'toast hides after its timer');
   console.log(fails ? `${fails} FAILED` : 'ALL PASSED');

@@ -576,7 +576,9 @@ async function doSubmit(name, ms, game) {
       }),
     });
     setToastStatus(res.ok ? `✅ Score saved for ${name}` : 'Could not save score.');
-    if (res.ok && game.difficulty === DIFFICULTY) loadLeaderboard();
+    // Show the ranking of the level just finished, even if the next game is
+    // another level (Daily → Easy) (B59).
+    if (res.ok) loadLeaderboard(game.difficulty);
   } catch {
     setToastStatus('Network error saving score.');
   }
@@ -604,21 +606,21 @@ async function startNextGame() {
   } else {
     initGame(null, crypto.getRandomValues(new Uint32Array(1))[0] || 1);
   }
-  loadLeaderboard();
+  // The leaderboard keeps showing the finished game until its score is saved (B59).
 }
 
 // ── Leaderboard (always visible under the board) ─────────────────────────────
 const DIFF_LABELS = { daily: 'Daily', easy: 'Easy', medium: 'Medium', hard: 'Hard', expert: 'Expert' };
 let lbReq = 0;
 
-async function loadLeaderboard() {
+async function loadLeaderboard(difficulty = DIFFICULTY) {
   const body = $('su-lb-body');
   if (!body) return;
   const title = $('su-lb-title');
-  if (title) title.textContent = `🏆 ${DIFF_LABELS[DIFFICULTY] || DIFFICULTY} — Today`;
+  if (title) title.textContent = `🏆 ${DIFF_LABELS[difficulty] || difficulty} — Today`;
   const my = ++lbReq;
   try {
-    const params = new URLSearchParams({ difficulty: DIFFICULTY, period: 'today', puzzle_date: TODAY });
+    const params = new URLSearchParams({ difficulty, period: 'today', puzzle_date: TODAY });
     const rows = await (await fetch('/api/sudoku-scores?' + params, { cache: 'no-store' })).json();
     if (my !== lbReq) return;
     if (!rows.length) {

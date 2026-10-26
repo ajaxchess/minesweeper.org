@@ -45,7 +45,8 @@ and Sudoku (`/other/sudoku/*`).
   other level, another board of the same level.
   - **Sudoku:** every Easy/Medium/Hard/Expert game is a new random, ranked board.
     After the Daily the page switches to Easy in place (URL, subnav and
-    leaderboard follow).
+    leaderboard follow). After a win the leaderboard keeps showing the level just
+    finished (B59; same for Numbers Match, B57) until the next game is finished.
   - **Numbers Match:** each day's Daily/Easy/Medium/Hard/Expert is one fixed,
     server-verified board (F-NM-VERIFY). Daily → today's ranked Easy. Once a
     ranked board is finished (tracked in `localStorage` `nm_played`), the next
