@@ -4,7 +4,7 @@ Known vulnerabilities in third-party dependencies: what was fixed, what is
 accepted, and when to look again. Update this file whenever a Dependabot alert
 is fixed, dismissed or accepted.
 
-**Last audit:** 2026-10-11 (pip-audit on requirements.txt / requirements.lock /
+**Last audit:** 2026-10-26 (B58); previous 2026-10-11 (pip-audit on requirements.txt / requirements.lock /
 requirements-dev.in, `npm audit --package-lock-only` on all three lockfiles).
 
 ---
@@ -29,6 +29,8 @@ developer's machine or a CI build runner.
 
 | Package | Advisory | Where | Fix |
 |---------|----------|-------|-----|
+| certifi 2026.4.22 | PYSEC-2026-4320 / GHSA-6q48-6c7w-9gw2 — bundled emSign ECC Root CA - G3 has intermediates with compromised keys (on-path TLS interception of outbound requests) | requirements.txt / .lock | 2026.10.23 (B58) |
+| opentelemetry-api 1.44.0 | CVE-2026-114603 / GHSA-xcq7-p3pf-p88h — O(N²) `tracestate` parsing; unauthenticated DoS through FastAPI instrumentation (Apache's ~8 KB header limit reduced the impact) | requirements.txt / .lock | OpenTelemetry 1.45.1 / 0.66b1 (B58) |
 | urllib3 2.7.0 | CVE-2026-97687, CVE-2026-97688, CVE-2026-97689 (streaming decompression memory use, proxy TLS config) | requirements.lock (staging only) | Lock regenerated to 2.8.0 (B53) |
 | shell-quote 1.10.0 | [GHSA-pqg4-j6r4-53mv](https://github.com/advisories/GHSA-pqg4-j6r4-53mv) — critical, `quote()` command injection | msmobile, nmmobile (via @expo/cli, react-devtools-core) | npm override `"shell-quote": "^1.12.0"` |
 | uuid 7.0.3 | [GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq) — moderate, missing buffer bounds check | nmmobile (via xcode → @expo/config-plugins) | npm override `"uuid": ">=11.1.1"` (same as msmobile; verified `xcode` still generates UUIDs against the real nmmobile project with uuid 14) |

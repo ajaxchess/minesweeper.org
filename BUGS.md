@@ -1,3 +1,14 @@
+B58 pip-audit (Security Scan workflow) failed: two new advisories in Python dependencies.
+   certifi 2026.4.22 (PYSEC-2026-4320): bundled emSign ECC Root CA - G3 whose intermediates have
+   compromised keys — on-path interception of the server's outbound TLS. opentelemetry-api 1.44.0
+   (CVE-2026-114603): O(N^2) tracestate parsing, reachable on every request through the FastAPI
+   instrumentation (Apache's default ~8 KB header limit reduced the impact).
+   Fix: certifi 2026.10.23; OpenTelemetry 1.45.1 / instrumentation 0.66b1 (pins in requirements.in;
+   requirements.txt and requirements.lock regenerated on Linux, only these packages changed).
+   Verified setup_telemetry() with OTel enabled: a 50 KB tracestate is now cut at 8192 characters.
+   Found while verifying: opentelemetry-instrumentation-sqlalchemy supports SQLAlchemy < 2.1.0 and we
+   run 2.1.3 (since PR #56), so DB queries are not instrumented — not fixed here.
+
 B57 Numbers Match: winning the Daily switched the leaderboard to Easy's.
    Root cause: F-GAME-END starts the next game right after a win (Daily -> today's ranked Easy),
    and _startGame loaded the leaderboard of every new ranked game, so the Daily ranking the
