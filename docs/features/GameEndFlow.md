@@ -61,15 +61,16 @@ and Sudoku (`/other/sudoku/*`).
 
 ## Implementation Notes
 
-- `static/src/js/numbers_match.js` (`?v=22`): `showGameToast()`,
+- `static/src/js/numbers_match.js` (`?v=23`): `showGameToast()`,
   `setToastStatus()`, `startNextGame()`, `initPracticeGame()`, `markPlayed()`;
   `loadLeaderboard(puzzleId)`; replaced `rememberVariant` / `startLastVariant`.
-- `static/src/js/sudoku.js` (`?v=4`): `showToast()`, `playerName()`,
-  `startNextGame()`, `loadLeaderboard()`; `doSubmit()` takes the finished game's
+- `static/src/js/sudoku.js` (`?v=5`): `showToast()`, `playerName()`,
+  `startNextGame()` (asks `GET /api/sudoku-puzzle` for a technique-graded pool
+  puzzle, F-SUDOKU-GRADING; browser generation only as fallback), `loadLeaderboard()`; `doSubmit()` takes the finished game's
   data so the next game can start before the save returns; `initGame(givens, seed)`.
 - `templates/sudoku_play.html`: result panel replaced by the leaderboard section.
 - `static/src/css/style.css` (`?v=63`): `.game-toast*`, `.su-lb*`, `.su-name-row`.
 - Tests (run with `node`; CI is Python-only):
-  `tests/js/numbers_match_game_end.js` (16 checks: toast, save, Daily → ranked
+  `tests/js/numbers_match_game_end.js` (20 checks: toast, save, leaderboard, Daily → ranked
   Easy → practice, practice not saved) and `tests/js/sudoku_behaviour.js`
-  (26 checks, now including auto-save, guest name, toast and next puzzle).
+  (29 checks, now including auto-save, guest name, toast and the graded next puzzle).

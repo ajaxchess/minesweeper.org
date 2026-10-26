@@ -97,3 +97,29 @@ puzzles by the hardest technique a human needs to solve them.
 ## Implementation Notes
 
 *Filled in when work completes.*
+
+---
+
+## Review Notes (2026-10-26, @gisela — for @richard)
+
+Reviewed the shipped implementation (157823f, f115f60). It is live: all five
+play pages serve pool puzzles in production.
+
+- **Fixed in this review:** the in-page "next game" started after a win
+  (F-GAME-END) still generated puzzles in the browser, bypassing grading. It now
+  calls `GET /api/sudoku-puzzle?difficulty=…`, which uses the same
+  `_fetch_puzzle()` pool selection; the browser generator is only a fallback
+  when the pool is empty.
+- **Repeats:** non-daily puzzles are the globally least-served one in a pool of
+  50, so frequent players see the same puzzles again. Design decision 4 says
+  "a puzzle the player hasn't seen" — not implemented yet (could exclude
+  `board_hash`es the player already has in `sudoku_scores`).
+- **Difficulty ceiling:** puzzles that need techniques beyond XY-Wing are
+  discarded as unsolved, so Expert never reaches the hardest puzzles. Consider
+  adding chains / forcing techniques, or accepting "needs more than XY-Wing" as Expert.
+- **Cron:** `scripts/generate_sudoku_pool.py --daily-range 3` must run daily on
+  the server; if a day's daily is missing the page silently falls back to
+  ungraded browser generation. Please confirm the cron is installed.
+- **Status:** the feature is live, so this file should get Implementation Notes,
+  Status `done`, and move to `docs/features/`.
+

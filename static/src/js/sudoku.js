@@ -582,7 +582,7 @@ async function doSubmit(name, ms, game) {
   }
 }
 
-function startNextGame() {
+async function startNextGame() {
   if (DIFFICULTY === 'daily') {
     DIFFICULTY = 'easy';
     // Keep the URL, subnav and leaderboard in step with the new level.
@@ -592,8 +592,18 @@ function startNextGame() {
     document.querySelectorAll('.su-nav-link').forEach(a =>
       a.classList.toggle('active', /\/easy$/.test(a.getAttribute('href') || '')));
   }
-  const seed = crypto.getRandomValues(new Uint32Array(1))[0] || 1;
-  initGame(null, seed);
+  // Ask the server for a technique-graded puzzle from the pool (F-SUDOKU-GRADING);
+  // generate one in the browser only if the pool is empty or unreachable.
+  let givens = null;
+  try {
+    const r = await fetch(`/api/sudoku-puzzle?difficulty=${encodeURIComponent(DIFFICULTY)}`, { cache: 'no-store' });
+    if (r.ok) givens = (await r.json()).givens;
+  } catch {}
+  if (typeof givens === 'string' && /^[0-9]{81}$/.test(givens)) {
+    initGame(givens);
+  } else {
+    initGame(null, crypto.getRandomValues(new Uint32Array(1))[0] || 1);
+  }
   loadLeaderboard();
 }
 

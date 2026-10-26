@@ -154,3 +154,30 @@ def test_served_count_incremented(client):
     db.expire_all()
     updated = db.get(SudokuPuzzle, puzzle_id)
     assert updated.served_count == 1
+
+
+# ── F-GAME-END + F-SUDOKU-GRADING: graded puzzle for the in-page next game ────
+
+def test_next_puzzle_api_serves_pool_puzzle(client):
+    from database import get_db, SudokuPuzzle
+    db = next(get_db())
+    db.add(SudokuPuzzle(difficulty="hard", givens=GIVENS, solution="5" * 81,
+                        board_hash=hashlib.sha256(b"next-hard").hexdigest(),
+                        givens_count=24, hardest_technique="X-Wing", served_count=0))
+    db.commit()
+    r = client.get("/api/sudoku-puzzle", params={"difficulty": "hard"})
+    assert r.status_code == 200
+    assert r.headers["cache-control"] == "no-store"
+    assert r.json() == {"difficulty": "hard", "givens": GIVENS}
+    assert db.query(SudokuPuzzle).filter_by(difficulty="hard").one().served_count == 1
+
+
+def test_next_puzzle_api_empty_pool_returns_null(client):
+    r = client.get("/api/sudoku-puzzle", params={"difficulty": "expert"})
+    assert r.status_code == 200
+    assert r.json()["givens"] is None
+
+
+@pytest.mark.parametrize("bad", ["daily", "insane", ""])
+def test_next_puzzle_api_rejects_daily_and_unknown(client, bad):
+    assert client.get("/api/sudoku-puzzle", params={"difficulty": bad}).status_code == 400

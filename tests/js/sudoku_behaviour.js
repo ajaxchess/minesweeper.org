@@ -28,6 +28,9 @@ const numpad = Array.from({ length: 9 }, (_, i) => { const e = new El('np' + (i 
 const docListeners = {};
 const store = {};
 let posted = null;
+let puzzleReq = null;
+// A graded pool puzzle the server hands out for the next game.
+const POOL = '003020600900305001001806400008102900700000008006708200002609500800203009005010300';
 const later = [];   // timers >= 1 s (the toast hide) run only when the test asks
 const GIVENS = '530070000600195000098000060800060003400803001700020006060000280000419005000080079';
 const ctx = vm.createContext({
@@ -43,6 +46,7 @@ const ctx = vm.createContext({
   performance, crypto: globalThis.crypto, TextEncoder, console, Math, Array, Set, JSON, Object, Number, String, Promise,
   fetch: async (url, o) => {
     if (o && o.method === 'POST') { posted = JSON.parse(o.body); return { ok: true }; }
+    if (url.startsWith('/api/sudoku-puzzle')) { puzzleReq = url; return { ok: true, json: async () => ({ givens: POOL }) }; }
     return { ok: true, json: async () => [] };   // leaderboard GET
   },
 });
@@ -122,6 +126,8 @@ Promise.resolve().then(() => new Promise(r => globalThis.setTimeout(r, 50))).the
   ok(/Score saved for Guest/.test(byId('su-toast-status').textContent), 'toast status updated after saving');
   // Timers under 1 s run immediately here, so the next game already started.
   ok(cells().filter(c => c.textContent === '').length >= 40, 'a new puzzle started automatically');
+  ok(puzzleReq === '/api/sudoku-puzzle?difficulty=easy', `next puzzle requested from the server pool (${puzzleReq})`);
+  ok(cells().map(c => c.textContent || '0').join('') === POOL, 'next game uses the graded pool puzzle');
   later.forEach(f => f());
   ok(!toast.classList.contains('game-toast--show'), 'toast hides after its timer');
   console.log(fails ? `${fails} FAILED` : 'ALL PASSED');

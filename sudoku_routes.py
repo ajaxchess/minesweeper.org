@@ -6,7 +6,7 @@ import uuid
 from typing import Optional
 from urllib.parse import urlparse
 
-from fastapi import APIRouter, Request, Depends, HTTPException, Query
+from fastapi import APIRouter, Request, Depends, HTTPException, Query, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field, field_validator
@@ -359,6 +359,23 @@ def submit_sudoku_score(payload: SudokuScoreSubmit, request: Request, db: Sessio
     record_score_submit("sudoku", payload.puzzle_date)
     record_game_complete("sudoku", mode=payload.difficulty, duration_ms=payload.time_ms)
     return {"ok": True, "id": entry.id}
+
+
+@sudoku_router.get("/api/sudoku-puzzle")
+@limiter.limit("30/minute")
+def get_sudoku_puzzle(request: Request, response: Response, difficulty: str = "easy",
+                      db: Session = Depends(get_db)):
+    """Next technique-graded puzzle for the in-page "next game" (F-GAME-END + F-SUDOKU-GRADING).
+
+    Same pool selection as the play pages; returns givens: null when the pool for
+    this level is empty, and the client falls back to generating one itself.
+    The daily is served by its page only, so it is not available here.
+    """
+    response.headers["Cache-Control"] = "no-store"
+    if difficulty not in _SUDOKU_DIFFICULTIES or difficulty == "daily":
+        raise HTTPException(status_code=400, detail="Invalid difficulty")
+    puzzle = _fetch_puzzle(db, difficulty, sudoku_today_str())
+    return {"difficulty": difficulty, "givens": puzzle.givens if puzzle else None}
 
 
 @sudoku_router.get("/api/sudoku-scores")
