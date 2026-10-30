@@ -1,3 +1,18 @@
+B60 /leaderboard showed no Numbers Match scores and almost no Sudoku scores.
+   Root causes, all in leaderboard_platform.py unless noted:
+   (1) The Numbers Match card compared puzzle_date to the plain date, but ids carry the revision
+       (2026-10-30-v3), so it was always empty; longer periods mixed every level.
+   (2) One row per board_hash: every Sudoku Daily player shares the board, so only the first
+       player of the day was listed.
+   (3) Cards used the server's UTC day while both games use the New York day, so from 8 pm New
+       York the daily cards pointed at tomorrow and went empty.
+   (4) Only the Daily had a card; Easy, Medium, Hard and Expert scores appeared nowhere.
+   (5) main.archive_guest_scores runs at midnight UTC (8 pm New York) and moved that day's guest
+       Numbers Match scores out of the table mid-day.
+   Fix: LeaderboardSpec.puzzle_id_tail / new_york_day / one_row_per_board; level cards for both
+   games; the API no longer forces date.today(), so each card defaults to its own day; the archive
+   keeps the current Numbers Match day. Tests: tests/test_leaderboard_puzzle_cards.py.
+
 B59 Sudoku: finishing the Daily switched the leaderboard to Easy's (same as B57 in Numbers Match).
    Root cause: F-GAME-END rolls the Daily into an Easy game in place; startNextGame() then loaded the
    leaderboard for the new level, and the finished game's save only refreshed it when the levels matched.

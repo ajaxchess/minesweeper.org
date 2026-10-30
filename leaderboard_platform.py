@@ -43,6 +43,7 @@ from database import (
     UserProfile,
     WC2026Score,
 )
+from numbers_match_generator import numbers_match_today_str
 from wc2026_data import WC2026_COUNTRIES
 
 
@@ -74,6 +75,14 @@ class LeaderboardSpec:
     email_field: str = "user_email"
     board_label_fields: tuple[str, ...] = ()
     note: str | None = None
+    # Games whose date field holds a puzzle id, e.g. 2026-10-30-easy-v3: everything
+    # after the date. SQL LIKE pattern, e.g. "-easy-v%". Selects the level (B60).
+    puzzle_id_tail: str | None = None
+    # The game's day is the America/New_York date, not the server's UTC date (B60).
+    new_york_day: bool = False
+    # False when players share boards (a daily, a puzzle pool): one row per board
+    # would hide everyone but the first player (B60).
+    one_row_per_board: bool = True
 
 
 def _season_range(season_num: int | None) -> tuple[date, date]:
@@ -141,7 +150,11 @@ LEADERBOARD_SPECS: tuple[LeaderboardSpec, ...] = (
     LeaderboardSpec("mosaic-daily", "Mosaic Daily", "puzzles", "Mosaic", "/puzzles/mosaic", "/puzzles/mosaic#ms-lb-section", MosaicScore, "time", 320, "Daily", date_string_field="puzzle_date", rank_field="time"),
     LeaderboardSpec("mosaic-easy", "Mosaic Easy", "puzzles", "Mosaic", "/puzzles/mosaic/easy", "/puzzles/mosaic/easy#ms-lb-section", MosaicEasyScore, "time", 330, "Easy", date_string_field="puzzle_date", rank_field="time"),
     LeaderboardSpec("tametsi-beginner", "Tametsi Beginner", "puzzles", "Tametsi", "/puzzles/tametsi", "/puzzles/tametsi#tmt-lb-section", TametsiScore, "time", 340, "Beginner", (("level", "beginner"), ("is_daily", True)), rank_field="time"),
-    LeaderboardSpec("numbers-match", "Numbers Match", "puzzles", "Numbers Match", "/puzzles/numbers-match", "/puzzles/numbers-match#nm-lb-section", NumbersMatchScore, "score", 350, "Daily", date_string_field="puzzle_date", rank_field="score"),
+    LeaderboardSpec("numbers-match", "Numbers Match", "puzzles", "Numbers Match", "/puzzles/numbers-match", "/puzzles/numbers-match#nm-lb-section", NumbersMatchScore, "score", 350, "Daily", date_string_field="puzzle_date", rank_field="score", puzzle_id_tail="-v%", new_york_day=True),
+    LeaderboardSpec("numbers-match-easy", "Numbers Match Easy", "puzzles", "Numbers Match", "/puzzles/numbers-match", "/puzzles/numbers-match#nm-lb-section", NumbersMatchScore, "score", 351, "Easy", date_string_field="puzzle_date", rank_field="score", puzzle_id_tail="-easy-v%", new_york_day=True),
+    LeaderboardSpec("numbers-match-medium", "Numbers Match Medium", "puzzles", "Numbers Match", "/puzzles/numbers-match", "/puzzles/numbers-match#nm-lb-section", NumbersMatchScore, "score", 352, "Medium", date_string_field="puzzle_date", rank_field="score", puzzle_id_tail="-medium-v%", new_york_day=True),
+    LeaderboardSpec("numbers-match-hard", "Numbers Match Hard", "puzzles", "Numbers Match", "/puzzles/numbers-match", "/puzzles/numbers-match#nm-lb-section", NumbersMatchScore, "score", 353, "Hard", date_string_field="puzzle_date", rank_field="score", puzzle_id_tail="-hard-v%", new_york_day=True),
+    LeaderboardSpec("numbers-match-expert", "Numbers Match Expert", "puzzles", "Numbers Match", "/puzzles/numbers-match", "/puzzles/numbers-match#nm-lb-section", NumbersMatchScore, "score", 354, "Expert", date_string_field="puzzle_date", rank_field="score", puzzle_id_tail="-expert-v%", new_york_day=True),
     LeaderboardSpec("15-puzzle", "15-Puzzle", "puzzles", "15-Puzzle", "/puzzles/15-puzzle", "/puzzles/15-puzzle/leaderboard", FifteenPuzzleScore, "time", 360, "4x4", (("grid_size", "4x4"),), date_string_field="puzzle_date", rank_field="time"),
     LeaderboardSpec("2048", "2048", "puzzles", "2048", "/puzzles/2048", "/puzzles/2048/leaderboard", Game2048Score, "score", 370, "Daily", date_string_field="puzzle_date", rank_field="score"),
     LeaderboardSpec("2048-hexagon", "2048 Hexagon", "puzzles", "2048 Hexagon", "/puzzles/2048-hexagon", "/puzzles/2048-hexagon/leaderboard", Game2048HexScore, "score", 380, "Daily", date_string_field="puzzle_date", rank_field="score"),
@@ -150,7 +163,11 @@ LEADERBOARD_SPECS: tuple[LeaderboardSpec, ...] = (
     LeaderboardSpec("jigsaw-intermediate", "Jigsaw Intermediate", "puzzles", "Jigsaw", "/puzzles/jigsaw", "/puzzles/jigsaw/leaderboard", JigsawScore, "time", 410, "Intermediate", (("difficulty", "intermediate"),), date_string_field="puzzle_date", rank_field="time"),
     LeaderboardSpec("jigsaw-expert", "Jigsaw Expert", "puzzles", "Jigsaw", "/puzzles/jigsaw", "/puzzles/jigsaw/leaderboard", JigsawScore, "time", 420, "Expert", (("difficulty", "expert"),), date_string_field="puzzle_date", rank_field="time"),
     LeaderboardSpec("schulte-grid", "Schulte Grid", "puzzles", "Schulte", "/puzzles/schulte-grid", "/puzzles/schulte-grid/leaderboard", SchulteGridScore, "time", 430, "Normal 5x5", (("mode", "normal"), ("board_size", 5)), date_string_field="puzzle_date", rank_field="time"),
-    LeaderboardSpec("sudoku-daily", "Sudoku Daily", "puzzles", "Sudoku", "/puzzles/sudoku", "/puzzles/sudoku/leaderboard", SudokuScore, "time", 440, "Daily", (("difficulty", "daily"), ("variant", "standard")), date_string_field="puzzle_date", rank_field="time"),
+    LeaderboardSpec("sudoku-daily", "Sudoku Daily", "puzzles", "Sudoku", "/puzzles/sudoku", "/puzzles/sudoku/leaderboard", SudokuScore, "time", 440, "Daily", (("difficulty", "daily"), ("variant", "standard")), date_string_field="puzzle_date", rank_field="time", new_york_day=True, one_row_per_board=False),
+    LeaderboardSpec("sudoku-easy", "Sudoku Easy", "puzzles", "Sudoku", "/other/sudoku/easy", "/puzzles/sudoku/leaderboard", SudokuScore, "time", 441, "Easy", (("difficulty", "easy"), ("variant", "standard")), date_string_field="puzzle_date", rank_field="time", new_york_day=True, one_row_per_board=False),
+    LeaderboardSpec("sudoku-medium", "Sudoku Medium", "puzzles", "Sudoku", "/other/sudoku/medium", "/puzzles/sudoku/leaderboard", SudokuScore, "time", 442, "Medium", (("difficulty", "medium"), ("variant", "standard")), date_string_field="puzzle_date", rank_field="time", new_york_day=True, one_row_per_board=False),
+    LeaderboardSpec("sudoku-hard", "Sudoku Hard", "puzzles", "Sudoku", "/other/sudoku/hard", "/puzzles/sudoku/leaderboard", SudokuScore, "time", 443, "Hard", (("difficulty", "hard"), ("variant", "standard")), date_string_field="puzzle_date", rank_field="time", new_york_day=True, one_row_per_board=False),
+    LeaderboardSpec("sudoku-expert", "Sudoku Expert", "puzzles", "Sudoku", "/other/sudoku/expert", "/puzzles/sudoku/leaderboard", SudokuScore, "time", 444, "Expert", (("difficulty", "expert"), ("variant", "standard")), date_string_field="puzzle_date", rank_field="time", new_york_day=True, one_row_per_board=False),
     LeaderboardSpec("pvp-wins", "PvP Wins", "pvp", "PvP", "/pvp", "/pvp/rankings", PvpResult, "wins", 490, "Wins", name_field="winner_name", email_field="winner_email"),
     LeaderboardSpec("pvp-best-times", "PvP Best Times", "pvp", "PvP", "/pvp", "/pvp/leaderboard", PvpResult, "time", 500, "Best Times", rank_field="time", name_field="winner_name", email_field="winner_email"),
     LeaderboardSpec("wc2026-individuals", "World Cup 2026 Individuals", "events", "World Cup 2026", "/2026worldcup", "/2026worldcup", WC2026Score, "score", 600, "Individuals"),
@@ -190,7 +207,10 @@ def _apply_period(query, spec: LeaderboardSpec, period: Period, target: date, se
     if period == "alltime":
         return query
     if period == "daily" and spec.date_string_field:
-        return query.filter(getattr(spec.model, spec.date_string_field) == target.isoformat())
+        field = getattr(spec.model, spec.date_string_field)
+        if spec.puzzle_id_tail:
+            return query.filter(field.like(f"{target.isoformat()}{spec.puzzle_id_tail}"))
+        return query.filter(field == target.isoformat())
     start, end = _period_range(period, target, season_num)
     if start and end:
         return query.filter(spec.model.created_at >= start, spec.model.created_at < end)
@@ -448,7 +468,7 @@ def leaderboard_rows(
     if not spec:
         raise KeyError(leaderboard_id)
     clean_period: Period = period if period in SUPPORTED_PERIODS else "daily"  # type: ignore[assignment]
-    target_date = target or date.today()
+    target_date = target or (date.fromisoformat(numbers_match_today_str()) if spec.new_york_day else date.today())
 
     if spec.id == "pvp-wins":
         return _pvp_win_rows(db, spec, period=clean_period, target=target_date, season_num=season_num, limit=limit)
@@ -460,6 +480,8 @@ def leaderboard_rows(
     query = db.query(spec.model)
     for field, value in spec.filters:
         query = query.filter(getattr(spec.model, field) == value)
+    if spec.puzzle_id_tail:   # also for weekly/monthly/...: stay on this level
+        query = query.filter(getattr(spec.model, spec.date_string_field).like(f"____-__-__{spec.puzzle_id_tail}"))
     query = _apply_period(query, spec, clean_period, target_date, season_num)
     query = _exclude_flagged(query, spec.model, db)
     query = _order_query(query, spec)
@@ -474,7 +496,7 @@ def leaderboard_rows(
     rows: list[Any] = []
     for row in raw:
         user_key   = getattr(row, spec.email_field, None) or getattr(row, spec.name_field, None) or str(getattr(row, "id"))
-        board_hash = getattr(row, "board_hash", None)
+        board_hash = getattr(row, "board_hash", None) if spec.one_row_per_board else None
         if user_key in seen_users:
             continue
         if board_hash and board_hash in seen_hashes:

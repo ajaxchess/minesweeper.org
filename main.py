@@ -958,6 +958,12 @@ def archive_guest_scores():
         ]
         total = 0
         for tbl, mode_e, time_e, rows_e, cols_e, mines_e, bbbv_e, hash_e, token_e in specs:
+            # This job runs at midnight UTC, which is 8 pm in New York: keep the guest
+            # scores of the Numbers Match day still in progress (B60).
+            keep_today, params = "", {}
+            if tbl == "numbers_match_scores":
+                keep_today = " AND puzzle_date NOT LIKE :current_day"
+                params = {"current_day": f"{numbers_match_today_str()}%"}
             result = db.execute(text(f"""
                 INSERT INTO guest_score_archive
                     (source_table, original_id, guest_token, name, game_mode,
@@ -967,10 +973,10 @@ def archive_guest_scores():
                        {time_e}, {rows_e}, {cols_e}, {mines_e}, {bbbv_e}, {hash_e},
                        created_at, :archived_at
                 FROM {tbl}
-                WHERE user_email IS NULL
-            """), {"src": tbl, "archived_at": now})
+                WHERE user_email IS NULL{keep_today}
+            """), {"src": tbl, "archived_at": now, **params})
             total += result.rowcount
-            db.execute(text(f"DELETE FROM {tbl} WHERE user_email IS NULL"))
+            db.execute(text(f"DELETE FROM {tbl} WHERE user_email IS NULL{keep_today}"), params)
         db.commit()
         logger.info(f"archive_guest_scores: archived {total} guest score(s).")
         record_scheduler_run("archive_guest_scores", success=True)
@@ -1299,9 +1305,9 @@ def api_leaderboards_cards(
     if response:
         response.headers["Cache-Control"] = "public, max-age=60"
     try:
-        target = date.fromisoformat(score_date) if score_date else date.today()
+        target = date.fromisoformat(score_date) if score_date else None
     except ValueError:
-        target = date.today()
+        target = None    # each board then uses its own day (see new_york_day)
     return leaderboard_cards(db, period=period, category=category, target=target, season_num=season_num, limit=3)
 
 
@@ -1318,9 +1324,9 @@ def api_leaderboard_rows(
     if response:
         response.headers["Cache-Control"] = "public, max-age=60"
     try:
-        target = date.fromisoformat(score_date) if score_date else date.today()
+        target = date.fromisoformat(score_date) if score_date else None
     except ValueError:
-        target = date.today()
+        target = None    # the board then uses its own day (see new_york_day)
     try:
         return leaderboard_rows(db, leaderboard_id, period=period, target=target, season_num=season_num, limit=limit)
     except KeyError:
