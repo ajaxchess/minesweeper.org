@@ -9065,7 +9065,7 @@ html[data-skin="mexico"] .cell.mine-detonated { background: #3a0000; }
 .nm-cell.nm-selected {
   background: var(--accent2);
   border-color: var(--accent2);
-  color: #000 !important;
+  color: var(--bg) !important;
   transform: scale(1.08);
   box-shadow: 0 0 0 2px var(--accent2);
 }
@@ -9183,6 +9183,59 @@ html[data-skin="mexico"] .cell.mine-detonated { background: #3a0000; }
 }
 
 .nm-overlay-btns button:hover { background: var(--cell-hover); }
+
+/* Number colours (B61): pairs share a colour; each theme needs its own palette,
+   since one colour can't be readable on both dark and light cells. */
+:root {
+  --nm-red: #ff8a80; --nm-blue: #90caf9; --nm-green: #81c784;
+  --nm-orange: #ffb74d; --nm-purple: #e1bee7;
+}
+html[data-skin="classic"], html[data-skin="light"], html[data-skin="flower-light"] {
+  --nm-red: #8e1414; --nm-blue: #0b3d91; --nm-green: #14532d;
+  --nm-orange: #7a3e00; --nm-purple: #5e1190;
+}
+.nm-n1, .nm-n9 { color: var(--nm-red); }
+.nm-n2, .nm-n8 { color: var(--nm-blue); }
+.nm-n3, .nm-n7 { color: var(--nm-green); }
+.nm-n4, .nm-n6 { color: var(--nm-orange); }
+.nm-n5         { color: var(--nm-purple); }
+
+/* Numbers Cleared bar (F-NM-CLEARED) */
+.nm-cleared { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 8px auto 6px; }
+.nm-cleared-label { font-size: 0.75rem; color: var(--text-dim); }
+.nm-cleared-digits { display: flex; gap: 10px; font-weight: 700; color: var(--text); }
+.nm-cleared-digit { min-width: 1ch; text-align: center; }
+.nm-cleared-digit--done { color: var(--text-dim); opacity: 0.6; }
+
+/* Rules popup: the four ways a pair connects */
+#nm-rules-btn { flex: 0 0 auto; min-width: 40px; }
+.nm-rules {
+  position: fixed; top: 76px; left: 50%; transform: translateX(-50%); z-index: 1000;
+  width: min(420px, calc(100vw - 32px)); padding: 0.85rem 1rem;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+.nm-rules[hidden] { display: none; }
+.nm-rules-title { font-weight: 700; text-align: center; margin-bottom: 0.6rem; }
+.nm-rules-close { position: absolute; top: 6px; right: 8px; background: none; border: 0; color: var(--text-dim); cursor: pointer; font-size: 1rem; }
+.nm-rules-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; }
+.nm-rules-grid figure { margin: 0; text-align: center; }
+.nm-rules-grid svg { width: 100%; max-width: 88px; height: auto; }
+.nm-rules-grid figcaption { font-size: 0.75rem; margin-top: 0.2rem; }
+.nm-rule-off { fill: var(--cell-hidden); }
+.nm-rule-on  { fill: var(--accent2); }
+.nm-rule-num, .nm-rule-num-on { font-size: 22px; font-weight: 700; text-anchor: middle; }
+.nm-rule-num    { fill: var(--text-dim); }
+.nm-rule-num-on { fill: var(--bg); }
+
+/* Leaderboard tabs (Numbers Match, Sudoku): which ranking is on screen (B62) */
+.lb-tabs { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin: 0.35rem 0 0.5rem; }
+.lb-tab {
+  padding: 0.2rem 0.6rem; border: 1px solid var(--border); border-radius: 999px;
+  background: transparent; color: var(--text-dim); font-size: 0.8rem; cursor: pointer;
+}
+.lb-tab--active { background: var(--accent2); border-color: var(--accent2); color: var(--bg); font-weight: 600; }
 
 .nm-actions {
   display: flex;

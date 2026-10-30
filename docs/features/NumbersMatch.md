@@ -114,6 +114,11 @@ get a `Guest NNNN` name kept in localStorage. Ranking
 log and a signed game token, and the server replays the game and stores the
 score and time it computes. See `NumbersMatchVerifiedScores.md`.
 
+## Numbers Cleared and Rules
+A row above the board marks the numbers no longer on it, a toast announces each
+one, and the ⓘ button draws the four connection types. See
+`NumbersMatchCleared.md` (F-NM-CLEARED).
+
 ## Player Tools
 | Tool | Limit | Behaviour |
 |------|-------|-----------|

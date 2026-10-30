@@ -6,7 +6,7 @@
   <title>Numbers Match — minesweeper.org</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-  <link rel="stylesheet" href="/static/css/style.css?v=63">
+  <link rel="stylesheet" href="/static/css/style.css?v=64">
 
   <!-- Skin detection (mirrors base.html logic) -->
   <script>
@@ -147,6 +147,7 @@
     <!-- Leaderboard -->
     <div id="nm-lb-section" style="display:none">
       <div class="nm-lb-title">🏆 Today's Leaderboard</div>
+      <div id="nm-lb-tabs" class="lb-tabs"></div>
       <div id="nm-lb-content">
         <div class="lb-loading">{{ t.lb_loading }}</div>
       </div>
@@ -154,6 +155,14 @@
 
   </div>
 
-  <script src="/static/js/numbers_match.js?v=23"></script>
+<script>
+window.NM_T = {{ {
+  'clearedLabel': t.nm_cleared_label, 'clearedToast': t.nm_cleared_toast,
+  'rulesTitle': t.nm_rules_title, 'rulesButton': t.nm_rules_button,
+  'ruleDiagonal': t.nm_rule_diagonal, 'ruleHorizontal': t.nm_rule_horizontal,
+  'ruleVertical': t.nm_rule_vertical, 'ruleLine': t.nm_rule_line
+} | tojson }};
+</script>
+  <script src="/static/js/numbers_match.js?v=24"></script>
 </body>
 </html>

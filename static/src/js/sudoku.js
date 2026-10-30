@@ -613,11 +613,28 @@ async function startNextGame() {
 const DIFF_LABELS = { daily: 'Daily', easy: 'Easy', medium: 'Medium', hard: 'Hard', expert: 'Expert' };
 let lbReq = 0;
 
+// The ranking has its own tabs: after a win it shows the level just finished while
+// the subnav shows the level being played (B62).
+function renderLbTabs(active) {
+  const tabs = $('su-lb-tabs');
+  if (!tabs) return;
+  tabs.innerHTML = '';
+  for (const [key, label] of Object.entries(DIFF_LABELS)) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'lb-tab' + (key === active ? ' lb-tab--active' : '');
+    b.textContent = label;
+    b.addEventListener('click', () => loadLeaderboard(key));
+    tabs.appendChild(b);
+  }
+}
+
 async function loadLeaderboard(difficulty = DIFFICULTY) {
   const body = $('su-lb-body');
   if (!body) return;
   const title = $('su-lb-title');
   if (title) title.textContent = `🏆 ${DIFF_LABELS[difficulty] || difficulty} — Today`;
+  renderLbTabs(difficulty);
   const my = ++lbReq;
   try {
     const params = new URLSearchParams({ difficulty, period: 'today', puzzle_date: TODAY });

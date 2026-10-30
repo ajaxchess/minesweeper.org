@@ -11,19 +11,19 @@ const UNDO_COST       = 5;   // score penalty per undo used
 const ADD_LINES_LIMIT = 5;   // max Add Lines uses per game
 const AUTO_NEXT_DELAY_MS = 350;
 
-// Matching pairs share a color: 1↔9 red, 2↔8 blue, 3↔7 green, 4↔6 orange, 5↔5 purple
-const NM_COLORS = [
-    '',         // 0 — empty
-    '#e53935',  // 1
-    '#1976d2',  // 2
-    '#388e3c',  // 3
-    '#f57c00',  // 4
-    '#7b1fa2',  // 5
-    '#f57c00',  // 6
-    '#388e3c',  // 7
-    '#1976d2',  // 8
-    '#e53935',  // 9
-];
+// Matching pairs share a colour class (.nm-n1 … .nm-n9); the palette per theme is in style.css.
+
+// Text from translations.py, passed by the page as window.NM_T.
+const NM_TEXT = Object.assign({
+    clearedLabel:   'Numbers Cleared',
+    clearedToast:   'No more {n} left on the board',
+    rulesTitle:     'Same numbers or sum of 10',
+    rulesButton:    'How pairs connect',
+    ruleDiagonal:   'Diagonal',
+    ruleHorizontal: 'Horizontal',
+    ruleVertical:   'Vertical',
+    ruleLine:       'Line to line',
+}, window.NM_T || {});
 
 // ── Game state ─────────────────────────────────────────────────────────────────
 let G = {};
@@ -308,9 +308,55 @@ function saveHistory() {
     if (G.history.length > 3) G.history.shift();
 }
 
+// ── Numbers cleared (F-NM-CLEARED) ─────────────────────────────────────────────
+const CLEARED_TOAST_MS = 2500;
+let _clearedTimer = null;
+
+function remainingDigits() {
+    return new Set(G.board.filter(Boolean));
+}
+
+function renderCleared() {
+    let bar = document.getElementById('nm-cleared');
+    if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'nm-cleared';
+        bar.className = 'nm-cleared';
+        const wrap = document.getElementById('nm-board-wrap');
+        wrap?.parentNode?.insertBefore(bar, wrap);
+    }
+    const left = remainingDigits();
+    const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => left.has(n)
+        ? `<span class="nm-cleared-digit">${n}</span>`
+        : `<span class="nm-cleared-digit nm-cleared-digit--done" title="${n}">✓</span>`).join('');
+    bar.innerHTML = `<span class="nm-cleared-label">${esc(NM_TEXT.clearedLabel)}</span>` +
+                    `<span class="nm-cleared-digits">${digits}</span>`;
+}
+
+function hideToast(id) {
+    document.getElementById(id)?.classList.remove('game-toast--show');
+}
+
+function showClearedToast(digits) {
+    hideToast('nm-toast');   // both toasts share the same spot
+    let el = document.getElementById('nm-clear-toast');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'nm-clear-toast';
+        el.className = 'game-toast';
+        el.setAttribute('role', 'status');
+        document.body?.appendChild(el);
+    }
+    el.innerHTML = `<div class="game-toast-title">✓ ${esc(NM_TEXT.clearedToast.replace('{n}', digits.join(', ')))}</div>`;
+    el.classList.add('game-toast--show');
+    clearTimeout(_clearedTimer);
+    _clearedTimer = setTimeout(() => el.classList.remove('game-toast--show'), CLEARED_TOAST_MS);
+}
+
 // ── Actions ────────────────────────────────────────────────────────────────────
 function doMatch(i, j) {
     const t = logMove('m', i, j);
+    const digitsBefore = remainingDigits();
     saveHistory();
     const prevBoard = [...G.board];
     G.board[i] = 0;
@@ -335,6 +381,9 @@ function doMatch(i, j) {
     collapseEmptyRows();
     renderBoard();
     updateHUD();
+    const left = remainingDigits();
+    const gone = [...digitsBefore].filter(d => !left.has(d)).sort();
+    if (gone.length) showClearedToast(gone);
 }
 
 function doUndo() {
@@ -470,7 +519,7 @@ function renderBoard() {
             el.classList.add('nm-empty');
         } else {
             el.textContent = val;
-            el.style.color = NM_COLORS[val] || '';
+            el.classList.add(`nm-n${val}`);
             if (idx === G.selected)  el.classList.add('nm-selected');
             if (hintSet.has(idx))    el.classList.add('nm-hint');
             el.addEventListener('click', () => handleCellClick(idx));
@@ -481,6 +530,7 @@ function renderBoard() {
 }
 
 function updateHUD() {
+    renderCleared();
     document.getElementById('nm-score').textContent    = G.score;
     document.getElementById('nm-undo-btn').textContent = `↩ ${G.undosLeft}`;
     document.getElementById('nm-hint-btn').textContent = `💡 ${G.hintsLeft}`;
@@ -518,6 +568,7 @@ function setToastStatus(text) {
 }
 
 function showWinOverlay() {
+    hideToast('nm-clear-toast');   // the win toast replaces it
     showGameToast('🎉 Board cleared!',
                   `⭐ ${G.score}  ·  ⏱ ${fmtTime(G.elapsed)}`,
                   G.isPOTD ? 'Saving score…' : 'Practice board — not ranked');
@@ -731,7 +782,31 @@ function showLeaderboardFor(puzzleId) {
             ? '🏆 Today\'s Leaderboard'
             : `🏆 ${diff ? diff[0].toUpperCase() + diff.slice(1) : ''} — Today's Best`;
     }
+    renderLbTabs(puzzleId);
     loadLeaderboard(puzzleId);
+}
+
+// The ranking has its own tabs: after a win it shows the game just finished while
+// the mode buttons show the game being played (B62). Labels come from those buttons.
+function renderLbTabs(puzzleId) {
+    const tabs = document.getElementById('nm-lb-tabs');
+    if (!tabs) return;
+    const date = puzzleId.slice(0, 10);
+    const rev  = (puzzleId.match(/-(v\d+)$/) || [])[1] || _serverRevision;
+    const entries = [{ id: `${date}-${rev}`, label: document.getElementById('nm-daily-btn')?.textContent }];
+    document.querySelectorAll('.nm-diff-btn').forEach(btn => {
+        const key = NM_DIFF_LABELS[btn.dataset.rows]?.toLowerCase();
+        if (key) entries.push({ id: `${date}-${key}-${rev}`, label: btn.textContent });
+    });
+    tabs.innerHTML = '';
+    entries.forEach(({ id, label }) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'lb-tab' + (id === puzzleId ? ' lb-tab--active' : '');
+        b.textContent = label;
+        b.addEventListener('click', () => showLeaderboardFor(id));
+        tabs.appendChild(b);
+    });
 }
 
 function _showLoading(show) {
@@ -739,6 +814,63 @@ function _showLoading(show) {
     const grid    = document.getElementById('nm-grid');
     if (loading) loading.style.display = show ? 'block' : 'none';
     if (grid)    grid.style.display    = show ? 'none'  : 'grid';
+}
+
+// ── Rules popup: the four ways a pair can connect ──────────────────────────────
+// Each diagram is a 2×2 sample; `on` are the two matched tiles, `link` draws what
+// joins them. Tile n sits at TILE[n].
+const TILE = [[3, 3], [47, 3], [3, 47], [47, 47]];
+
+function ruleDiagram(values, on, link) {
+    const tiles = values.map((v, i) => {
+        const [x, y] = TILE[i];
+        const active = on.includes(i);
+        return `<rect x="${x}" y="${y}" width="38" height="38" rx="7" class="${active ? 'nm-rule-on' : 'nm-rule-off'}"/>` +
+               `<text x="${x + 19}" y="${y + 27}" class="${active ? 'nm-rule-num-on' : 'nm-rule-num'}">${v}</text>`;
+    }).join('');
+    return `<svg viewBox="0 0 88 88" width="88" height="88" aria-hidden="true">${link}${tiles}</svg>`;
+}
+
+const NM_RULES = [
+    ['ruleDiagonal',   [4, 5, 3, 4], [0, 3], '<rect x="30" y="30" width="28" height="28" rx="6" class="nm-rule-on"/>'],
+    ['ruleHorizontal', [9, 1, 5, 3], [0, 1], '<rect x="30" y="3" width="28" height="38" class="nm-rule-on"/>'],
+    ['ruleVertical',   [5, 7, 3, 7], [1, 3], '<rect x="47" y="30" width="38" height="28" class="nm-rule-on"/>'],
+    // Line to line: the end of a row continues at the start of the next one.
+    ['ruleLine',       [5, 8, 2, 3], [1, 2],
+        '<rect x="74" y="13" width="14" height="18" rx="4" class="nm-rule-on"/>' +
+        '<rect x="0" y="57" width="14" height="18" rx="4" class="nm-rule-on"/>'],
+];
+
+function setupRulesPopup() {
+    const actions = document.querySelector('.nm-actions');
+    if (!actions) return;
+    const btn = document.createElement('button');
+    btn.id = 'nm-rules-btn';
+    btn.type = 'button';
+    btn.textContent = 'ⓘ';
+    btn.title = NM_TEXT.rulesButton;
+    btn.setAttribute('aria-label', NM_TEXT.rulesButton);
+    actions.appendChild(btn);
+
+    const panel = document.createElement('div');
+    panel.id = 'nm-rules';
+    panel.className = 'nm-rules';
+    panel.setAttribute('role', 'dialog');
+    panel.hidden = true;
+    panel.innerHTML =
+        `<button type="button" class="nm-rules-close" aria-label="Close">✕</button>` +
+        `<div class="nm-rules-title">${esc(NM_TEXT.rulesTitle)}</div>` +
+        '<div class="nm-rules-grid">' +
+        NM_RULES.map(([key, values, on, link]) =>
+            `<figure>${ruleDiagram(values, on, link)}<figcaption>${esc(NM_TEXT[key])}</figcaption></figure>`).join('') +
+        '</div>';
+    document.body.appendChild(panel);
+
+    const close = () => { panel.hidden = true; };
+    btn.addEventListener('click', e => { e.stopPropagation(); panel.hidden = !panel.hidden; });
+    panel.querySelector('.nm-rules-close').addEventListener('click', close);
+    document.addEventListener('click', e => { if (!panel.contains(e.target)) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 }
 
 // ── Entry point ────────────────────────────────────────────────────────────────
@@ -763,6 +895,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('nm-overlay-random').addEventListener('click', () =>
         serverToday().then(today => initRandomGame(G.diffRows || 4, today)));
 
+    setupRulesPopup();
     document.getElementById('nm-undo-btn').addEventListener('click', doUndo);
     document.getElementById('nm-hint-btn').addEventListener('click', doHint);
     document.getElementById('nm-add-btn').addEventListener('click',  doAddLines);

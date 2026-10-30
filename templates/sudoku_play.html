@@ -38,7 +38,7 @@ window.SUDOKU_CFG = {
   },
 };
 </script>
-<script src="/static/js/sudoku.js?v=6" defer></script>
+<script src="/static/js/sudoku.js?v=7" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -94,6 +94,7 @@ window.SUDOKU_CFG = {
        A solved game is saved automatically and the next one starts. -->
   <section id="su-lb" class="su-lb">
     <h2 id="su-lb-title" class="su-lb-heading">🏆 Today</h2>
+    <div id="su-lb-tabs" class="lb-tabs"></div>
     <div id="su-name-row" class="su-name-row">
       <label for="su-name">Your name on the leaderboard</label>
       <input id="su-name" type="text" maxlength="32" placeholder="{{ t['common_name_optional_ph'] }}"

@@ -1,3 +1,15 @@
+B62 After finishing a Daily, the mode buttons said Easy while the leaderboard showed the Daily.
+   Both are correct (Easy is being played, the Daily just ended) but one highlighted button read as
+   if the ranking were Easy's. Fix: the leaderboards of Numbers Match and Sudoku have their own tabs
+   (Daily, Easy, Medium, Hard, Expert), so the active tab says which ranking is on screen and any
+   level can be viewed while playing.
+
+B61 Numbers Match number colours unreadable. One fixed palette cannot work on dark and light cells:
+   measured contrast was 1.6-1.8 for the purple 5 on dark skins and 1.5-1.9 for orange on light
+   skins. Fix: colour classes .nm-n1-9 with a palette per theme, all at 4.5:1 or better on every skin
+   (tests/test_numbers_match.py). Selected cells used black text, unreadable on the blue accent of
+   light skins; they now use var(--bg).
+
 B60 /leaderboard showed no Numbers Match scores and almost no Sudoku scores.
    Root causes, all in leaderboard_platform.py unless noted:
    (1) The Numbers Match card compared puzzle_date to the plain date, but ids carry the revision

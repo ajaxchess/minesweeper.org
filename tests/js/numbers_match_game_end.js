@@ -93,6 +93,21 @@ function winCurrent() {
   ok(!nm.G.isPOTD && nm.G.puzzleId !== prevId && nm.G.diffRows === 6, 'next practice board started');
   ok(lbGets[lbGets.length - 1] === '2026-10-12-easy-v2', 'practice keeps the last ranked leaderboard');
 
+  // F-NM-CLEARED: last 5s removed → toast; winning right after replaces it.
+  nm.G.board = [5,5,1,0,0,0,0,0,9, 2,8,0,0,0,0,0,0,0]; nm.G.rows = 2;
+  nm.handleCellClick(0); nm.handleCellClick(1);
+  ok(byId('nm-clear-toast').classList.contains('game-toast--show'), 'toast when a number is gone');
+  ok(/No more 5 left/.test(byId('nm-clear-toast').innerHTML), 'toast names the number');
+  ok(/nm-cleared-digit--done" title="5"/.test(byId('nm-cleared').innerHTML), 'bar marks 5 as cleared');
+  nm.handleCellClick(2); nm.handleCellClick(8);
+  ok(/nm-cleared-digit--done" title="1"/.test(byId('nm-cleared').innerHTML), 'bar updates as numbers clear');
+  // The emptied first row collapsed, so the last pair is now at 0 and 1.
+  nm.handleCellClick(0); nm.handleCellClick(1);
+  ok(nm.G.won, 'board cleared');
+  ok(!byId('nm-clear-toast').classList.contains('game-toast--show'), 'win toast replaces the cleared toast');
+  ok(byId('nm-toast').classList.contains('game-toast--show'), 'win toast shown');
+  await tick(); await tick();
+
   later.forEach(f => f());
   ok(!byId('nm-toast').classList.contains('game-toast--show'), 'toast hides after 5 s timer');
   console.log(fails ? `${fails} FAILED` : 'ALL PASSED');

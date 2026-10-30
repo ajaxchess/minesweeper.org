@@ -370,3 +370,32 @@ def test_numbers_match_js_has_no_global_name_clash_with_deferred_scripts():
     for name in deferred:
         clash = nm & _top_level_names(f"static/src/js/{name}.js")
         assert not clash, f"numbers_match.js redeclares {sorted(clash)} from {name}.js"
+
+
+# ── B61: number colours must be readable on every skin ────────────────────────
+
+def _contrast(a: str, b: str) -> float:
+    def lum(h):
+        h = h.lstrip("#")
+        h = "".join(c * 2 for c in h) if len(h) == 3 else h[:6]
+        rgb = [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+        r, g, bl = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in rgb]
+        return 0.2126 * r + 0.7152 * g + 0.0722 * bl
+    hi, lo = sorted((lum(a), lum(b)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def test_number_palette_is_readable_on_every_skin():
+    css = (ROOT / "static/src/css/style.css").read_text(encoding="utf-8")
+    blocks = re.findall(r"(--nm-red:[^}]*)\}", css)
+    assert len(blocks) == 2
+    dark, light = [dict(re.findall(r"--nm-(\w+):\s*(#[0-9a-fA-F]{3,6})", b)) for b in blocks]
+    light_skins = {"classic", "light", "flower-light"}
+    cells = [("default", re.search(r"--cell-hidden:\s*(#[0-9a-fA-F]{3,6})", css).group(1))]
+    cells += re.findall(r'html\[data-skin="([\w-]+)"\]\s*\{[^}]*?--cell-hidden:\s*(#[0-9a-fA-F]{3,6})', css)
+    assert len(cells) >= 6
+    for skin, bg in cells:
+        palette = light if skin in light_skins else dark
+        for name, colour in palette.items():
+            ratio = _contrast(colour, bg)
+            assert ratio >= 4.5, f"{name} {colour} on {skin} {bg}: {ratio:.1f}"
