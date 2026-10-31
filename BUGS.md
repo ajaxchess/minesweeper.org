@@ -1,3 +1,28 @@
+B65 After finishing the Daily the mode buttons still highlighted Easy, next to a ranking on Diario.
+   The B62 tabs did not fix it: the buttons jumped to the next game the moment it started, and the
+   Numbers Match Daily button was never highlighted at all, not even while playing the Daily.
+   Fix: the Daily button is highlighted; after a win the Numbers Match mode bar and the Sudoku subnav
+   and URL stay on the finished level until the player's first move in the next game. The board
+   underneath is already the next game.
+
+B64 Numbers Match colours went by pair (7 and 3 alike, 8 and 2, 9 and 1, 6 and 4), so different
+   numbers looked the same. That was the original design, kept by B61. Fix: nine colours, one per
+   number, on web and in the mobile app, which also gets its first palette per theme. All at 4.5:1 or
+   better (tests/test_numbers_match.py).
+
+B63 Staging tested a leftover process instead of the commit under test.
+   Commit 45e5cf4 was blocked with HTTP 500 on /numbers-match, though the same commit returns 200
+   on a clean Linux checkout with Python 3.14 and the exact lockfile. The staging service log showed
+   "[Errno 98] Address already in use" on every start: a process outside systemd held port 8002, so
+   the service never started and that process answered /health and the smoke tests. It runs the old
+   translations from memory but Jinja2 reads the new templates from disk, so the new keys are
+   undefined and tojson raises TypeError, which matches the 500. The gate's hole is wider than this
+   commit: old code can also pass the smoke tests for a commit that never ran. Here the leftover
+   (uvicorn, PPID 1, cwd staging) started 2026-10-30 02:51:58 UTC, after the last staging-tested
+   tag (e0107cd, 01:33:09 UTC), so no commit was approved by it. Fix: before starting,
+   the staging script stops both services and exits without blocking the commit if a port is still
+   in use. See "A port is held by a leftover process" in docs/staging-gate-runbook.md.
+
 B62 After finishing a Daily, the mode buttons said Easy while the leaderboard showed the Daily.
    Both are correct (Easy is being played, the Daily just ended) but one highlighted button read as
    if the ranking were Easy's. Fix: the leaderboards of Numbers Match and Sudoku have their own tabs

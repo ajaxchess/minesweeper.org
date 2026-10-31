@@ -387,9 +387,13 @@ def _contrast(a: str, b: str) -> float:
 
 def test_number_palette_is_readable_on_every_skin():
     css = (ROOT / "static/src/css/style.css").read_text(encoding="utf-8")
-    blocks = re.findall(r"(--nm-red:[^}]*)\}", css)
+    blocks = re.findall(r"(--nm-1:[^}]*)\}", css)
     assert len(blocks) == 2
-    dark, light = [dict(re.findall(r"--nm-(\w+):\s*(#[0-9a-fA-F]{3,6})", b)) for b in blocks]
+    dark, light = [dict(re.findall(r"--nm-(\d):\s*(#[0-9a-fA-F]{3,6})", b)) for b in blocks]
+    for palette in (dark, light):  # B64: colours go by number, not by pair
+        assert len(palette) == 9 and len(set(palette.values())) == 9
+    for n in range(1, 10):
+        assert f".nm-n{n} {{ color: var(--nm-{n}); }}" in css
     light_skins = {"classic", "light", "flower-light"}
     cells = [("default", re.search(r"--cell-hidden:\s*(#[0-9a-fA-F]{3,6})", css).group(1))]
     cells += re.findall(r'html\[data-skin="([\w-]+)"\]\s*\{[^}]*?--cell-hidden:\s*(#[0-9a-fA-F]{3,6})', css)
@@ -399,3 +403,14 @@ def test_number_palette_is_readable_on_every_skin():
         for name, colour in palette.items():
             ratio = _contrast(colour, bg)
             assert ratio >= 4.5, f"{name} {colour} on {skin} {bg}: {ratio:.1f}"
+
+    # The mobile app has its own copy of both palettes, on its own cell colours.
+    theme_js = (ROOT / "mobile/nmmobile/src/context/ThemeContext.js").read_text(encoding="utf-8")
+    mobile_light, mobile_dark = [
+        re.findall(r"#[0-9a-fA-F]{6}", b) for b in re.findall(r"numbers:\s*\[(.*?)\]", theme_js)
+    ]
+    assert mobile_light == list(light.values())
+    assert mobile_dark == list(dark.values())
+    light_cell, dark_cell = re.findall(r"cellCovered:\s*'(#[0-9a-fA-F]{6})'", theme_js)
+    assert min(_contrast(c, light_cell) for c in mobile_light) >= 4.5
+    assert min(_contrast(c, dark_cell) for c in mobile_dark) >= 4.5

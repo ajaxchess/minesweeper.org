@@ -74,6 +74,13 @@ function winCurrent() {
   // B57: the Daily's ranking stays on screen while the Easy is played.
   ok(lbGets[lbGets.length - 1] === '2026-10-12-v2', `leaderboard still shows the Daily (${lbGets[lbGets.length - 1]})`);
   ok(/Today's Leaderboard/.test(byId('lb-title').textContent), `leaderboard title is the Daily's (${byId('lb-title').textContent})`);
+  // B65: the mode bar stays on the finished game until the first move of the next one.
+  ok(byId('nm-daily-btn').classList.contains('nm-diff-btn--active'), 'Daily button stays highlighted after the win');
+  ok(/Daily/.test(byId('nm-mode-label').textContent), `mode label stays on the Daily (${byId('nm-mode-label').textContent})`);
+  nm.handleCellClick(nm.G.board.findIndex(v => v));
+  ok(!byId('nm-daily-btn').classList.contains('nm-diff-btn--active'), 'first move clears the Daily highlight');
+  ok(/Easy/.test(byId('nm-mode-label').textContent), `first move switches the label to Easy (${byId('nm-mode-label').textContent})`);
+  nm.G.selected = null;
 
   // Win the ranked Easy → it's marked played, next is a practice Easy.
   ok(winCurrent(), 'easy board cleared');
@@ -82,7 +89,9 @@ function winCurrent() {
   ok(lbGets[lbGets.length - 1] === '2026-10-12-easy-v2' && /Easy/.test(byId('lb-title').textContent),
      'after winning Easy the leaderboard shows the Easy ranking');
   ok(!nm.G.isPOTD && nm.G.diffRows === 6, `after ranked Easy → practice Easy (${nm.G.puzzleId})`);
-  ok(/Practice/.test(byId('nm-mode-label').textContent), 'label says Practice');
+  nm.handleCellClick(nm.G.board.findIndex(v => v));
+  ok(/Practice/.test(byId('nm-mode-label').textContent), 'label says Practice after the first move');
+  nm.G.selected = null;
 
   // Practice win: no save, next is another practice board of the same size.
   const prevId = nm.G.puzzleId;

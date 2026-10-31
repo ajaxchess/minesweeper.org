@@ -79,6 +79,12 @@ Add Lines lets the game keep progressing.
   board of the same size (not ranked). The leaderboard keeps showing the game
   just finished (B57) until another ranked game ends or the player picks a mode. See `GameEndFlow.md` (F-GAME-END).
 
+## Number Colours
+Each number 1-9 has its own colour, so pairs do not share one (B64). There is one
+palette for light skins and one for dark skins, at 4.5:1 or better on every cell
+background. Web: `--nm-1` … `--nm-9` in `style.css`. Mobile app: `numbers` in
+`ThemeContext.js`, with the same values (enforced by `tests/test_numbers_match.py`).
+
 ## Scoring
 | Event | Points |
 |-------|--------|
@@ -116,7 +122,7 @@ score and time it computes. See `NumbersMatchVerifiedScores.md`.
 
 ## Numbers Cleared and Rules
 A row above the board marks the numbers no longer on it, a toast announces each
-one, and the ⓘ button draws the four connection types. See
+one, and the four connection types are drawn below the row. See
 `NumbersMatchCleared.md` (F-NM-CLEARED).
 
 ## Player Tools

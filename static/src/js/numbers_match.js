@@ -11,14 +11,13 @@ const UNDO_COST       = 5;   // score penalty per undo used
 const ADD_LINES_LIMIT = 5;   // max Add Lines uses per game
 const AUTO_NEXT_DELAY_MS = 350;
 
-// Matching pairs share a colour class (.nm-n1 … .nm-n9); the palette per theme is in style.css.
+// Each number has its own colour class (.nm-n1 … .nm-n9); the palette per theme is in style.css.
 
 // Text from translations.py, passed by the page as window.NM_T.
 const NM_TEXT = Object.assign({
     clearedLabel:   'Numbers Cleared',
     clearedToast:   'No more {n} left on the board',
     rulesTitle:     'Same numbers or sum of 10',
-    rulesButton:    'How pairs connect',
     ruleDiagonal:   'Diagonal',
     ruleHorizontal: 'Horizontal',
     ruleVertical:   'Vertical',
@@ -324,6 +323,7 @@ function renderCleared() {
         bar.className = 'nm-cleared';
         const wrap = document.getElementById('nm-board-wrap');
         wrap?.parentNode?.insertBefore(bar, wrap);
+        wrap?.parentNode?.insertBefore(rulesPanel(), wrap);
     }
     const left = remainingDigits();
     const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => left.has(n)
@@ -415,6 +415,7 @@ function findHint() {
 }
 
 function doHint() {
+    syncModeBar();
     if (G.hintsLeft <= 0 || G.won) return;
     G.selected = null;
     const pair = findHint();
@@ -433,6 +434,7 @@ function doHint() {
 }
 
 function doAddLines() {
+    syncModeBar();
     if (G.won || G.addLinesLeft <= 0) return;
     const remaining = G.board.filter(v => v !== 0);
     if (!remaining.length) return;
@@ -453,6 +455,7 @@ function doAddLines() {
 function handleCellClick(idx) {
     if (G.won || G.board[idx] === 0) return;
     if (!G.startTime) nmStartTimer();
+    syncModeBar();
 
     G.hintPair = null;
 
@@ -746,6 +749,7 @@ function _startGame(boardData, rows, puzzleId, isPOTD, autoNext = false) {
         scoreSaved:    false,
         moves:         [],
         gameToken:     null,
+        modeBarPending: autoNext,
     };
     if (isPOTD) requestGameToken(G.gameId, puzzleId);
 
@@ -754,15 +758,7 @@ function _startGame(boardData, rows, puzzleId, isPOTD, autoNext = false) {
     document.getElementById('nm-score-msg').style.display = 'none';
     document.getElementById('nm-timer').textContent     = '0:00';
 
-    const isDailyPuzzle = isPOTD && /^\d{4}-\d{2}-\d{2}-v\d+$/.test(puzzleId);
-    document.getElementById('nm-mode-label').textContent =
-        isDailyPuzzle ? '📅 Daily Puzzle'
-                      : `🎲 ${NM_DIFF_LABELS[rows] || rows + ' rows'}${isPOTD ? '' : ' · Practice'}`;
-
-    document.querySelectorAll('.nm-diff-btn').forEach(btn => {
-        btn.classList.toggle('nm-diff-btn--active',
-            !isDailyPuzzle && parseInt(btn.dataset.rows) === rows);
-    });
+    if (!autoNext) renderModeBar();
 
     _showLoading(false);
     renderBoard();
@@ -771,6 +767,27 @@ function _startGame(boardData, rows, puzzleId, isPOTD, autoNext = false) {
     // Practice boards have no ranking, and after a win the finished game's ranking
     // stays up: only a ranked game the player picked switches the leaderboard.
     if (isPOTD && !autoNext) showLeaderboardFor(puzzleId);
+}
+
+function renderModeBar() {
+    const isDailyPuzzle = G.isPOTD && isDailyId(G.puzzleId);
+    document.getElementById('nm-mode-label').textContent =
+        isDailyPuzzle ? '📅 Daily Puzzle'
+                      : `🎲 ${NM_DIFF_LABELS[G.diffRows] || G.diffRows + ' rows'}${G.isPOTD ? '' : ' · Practice'}`;
+
+    document.getElementById('nm-daily-btn').classList.toggle('nm-diff-btn--active', isDailyPuzzle);
+    document.querySelectorAll('.nm-diff-btn').forEach(btn => {
+        btn.classList.toggle('nm-diff-btn--active',
+            !isDailyPuzzle && parseInt(btn.dataset.rows) === G.diffRows);
+    });
+}
+
+// After a win the mode bar stays on the finished game until the player touches the
+// next one (B65).
+function syncModeBar() {
+    if (!G.modeBarPending) return;
+    G.modeBarPending = false;
+    renderModeBar();
 }
 
 function showLeaderboardFor(puzzleId) {
@@ -786,8 +803,8 @@ function showLeaderboardFor(puzzleId) {
     loadLeaderboard(puzzleId);
 }
 
-// The ranking has its own tabs: after a win it shows the game just finished while
-// the mode buttons show the game being played (B62). Labels come from those buttons.
+// The ranking has its own tabs, so any level can be viewed while playing (B62).
+// Labels come from the mode buttons.
 function renderLbTabs(puzzleId) {
     const tabs = document.getElementById('nm-lb-tabs');
     if (!tabs) return;
@@ -841,36 +858,18 @@ const NM_RULES = [
         '<rect x="0" y="57" width="14" height="18" rx="4" class="nm-rule-on"/>'],
 ];
 
-function setupRulesPopup() {
-    const actions = document.querySelector('.nm-actions');
-    if (!actions) return;
-    const btn = document.createElement('button');
-    btn.id = 'nm-rules-btn';
-    btn.type = 'button';
-    btn.textContent = 'ⓘ';
-    btn.title = NM_TEXT.rulesButton;
-    btn.setAttribute('aria-label', NM_TEXT.rulesButton);
-    actions.appendChild(btn);
-
+// Always on screen, under the cleared numbers row.
+function rulesPanel() {
     const panel = document.createElement('div');
     panel.id = 'nm-rules';
     panel.className = 'nm-rules';
-    panel.setAttribute('role', 'dialog');
-    panel.hidden = true;
     panel.innerHTML =
-        `<button type="button" class="nm-rules-close" aria-label="Close">✕</button>` +
         `<div class="nm-rules-title">${esc(NM_TEXT.rulesTitle)}</div>` +
         '<div class="nm-rules-grid">' +
         NM_RULES.map(([key, values, on, link]) =>
             `<figure>${ruleDiagram(values, on, link)}<figcaption>${esc(NM_TEXT[key])}</figcaption></figure>`).join('') +
         '</div>';
-    document.body.appendChild(panel);
-
-    const close = () => { panel.hidden = true; };
-    btn.addEventListener('click', e => { e.stopPropagation(); panel.hidden = !panel.hidden; });
-    panel.querySelector('.nm-rules-close').addEventListener('click', close);
-    document.addEventListener('click', e => { if (!panel.contains(e.target)) close(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    return panel;
 }
 
 // ── Entry point ────────────────────────────────────────────────────────────────
@@ -895,7 +894,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('nm-overlay-random').addEventListener('click', () =>
         serverToday().then(today => initRandomGame(G.diffRows || 4, today)));
 
-    setupRulesPopup();
     document.getElementById('nm-undo-btn').addEventListener('click', doUndo);
     document.getElementById('nm-hint-btn').addEventListener('click', doHint);
     document.getElementById('nm-add-btn').addEventListener('click',  doAddLines);

@@ -410,6 +410,7 @@ function selectCell(idx) {
 function setCell(idx, num) {
   if (finished || idx < 0 || puzzle[idx] !== 0) return;
   startTimer();
+  showPlayedLevel();
   board[idx] = num;
   if (num) {
     // A placed digit replaces the cell's notes and rules itself out of its peers' notes.
@@ -425,6 +426,7 @@ function setCell(idx, num) {
 function toggleNote(idx, num) {
   if (finished || idx < 0 || puzzle[idx] !== 0 || board[idx] !== 0) return;
   startTimer();
+  showPlayedLevel();
   if (opts.autoCandidates) {
     // Only digits the board still allows can be crossed out or restored.
     const r = Math.floor(idx / 9), c = idx % 9;
@@ -584,15 +586,24 @@ async function doSubmit(name, ms, game) {
   }
 }
 
+// After the Daily the subnav and URL stay on it until the player's first move in
+// the Easy game (B65).
+let levelSwitchPending = false;
+
+function showPlayedLevel() {
+  if (!levelSwitchPending) return;
+  levelSwitchPending = false;
+  try {
+    history.replaceState(null, '', location.pathname.replace(/\/daily\/?$/, '/easy') + location.search);
+  } catch {}
+  document.querySelectorAll('.su-nav-link').forEach(a =>
+    a.classList.toggle('active', /\/easy$/.test(a.getAttribute('href') || '')));
+}
+
 async function startNextGame() {
   if (DIFFICULTY === 'daily') {
     DIFFICULTY = 'easy';
-    // Keep the URL, subnav and leaderboard in step with the new level.
-    try {
-      history.replaceState(null, '', location.pathname.replace(/\/daily\/?$/, '/easy') + location.search);
-    } catch {}
-    document.querySelectorAll('.su-nav-link').forEach(a =>
-      a.classList.toggle('active', /\/easy$/.test(a.getAttribute('href') || '')));
+    levelSwitchPending = true;
   }
   // Ask the server for a technique-graded puzzle from the pool (F-SUDOKU-GRADING);
   // generate one in the browser only if the pool is empty or unreachable.
@@ -613,8 +624,7 @@ async function startNextGame() {
 const DIFF_LABELS = { daily: 'Daily', easy: 'Easy', medium: 'Medium', hard: 'Hard', expert: 'Expert' };
 let lbReq = 0;
 
-// The ranking has its own tabs: after a win it shows the level just finished while
-// the subnav shows the level being played (B62).
+// The ranking has its own tabs, so any level can be viewed while playing (B62).
 function renderLbTabs(active) {
   const tabs = $('su-lb-tabs');
   if (!tabs) return;

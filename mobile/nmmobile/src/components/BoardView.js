@@ -2,7 +2,7 @@ import React, { memo, useCallback, useMemo } from 'react';
 import {
   View, Text, TouchableOpacity, FlatList, StyleSheet, useWindowDimensions,
 } from 'react-native';
-import { NM_COLS, NM_COLORS } from '../gameEngine';
+import { NM_COLS } from '../gameEngine';
 
 const CELL_MARGIN = 3; // 1.5px each side
 
@@ -18,7 +18,7 @@ const Cell = memo(function Cell({ value, idx, isSelected, isHinted, isReachable,
 
   const bg       = isSelected ? theme.accent2 : isHinted ? '#f9a825' : theme.cellCovered;
   const border   = isSelected ? theme.accent2 : isHinted ? '#f9a825' : isReachable ? theme.accent : theme.border;
-  const numColor = (isSelected || isHinted) ? '#000000' : (NM_COLORS[value] || theme.text);
+  const numColor = (isSelected || isHinted) ? '#000000' : (theme.numbers[value] || theme.text);
 
   return (
     <TouchableOpacity

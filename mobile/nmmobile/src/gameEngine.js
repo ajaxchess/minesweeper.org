@@ -3,20 +3,6 @@
 export const NM_COLS = 9;
 export const NM_EPOCH = '2024-01-01';
 
-// Pair colours: 1↔9 red, 2↔8 blue, 3↔7 green, 4↔6 orange, 5↔5 purple
-export const NM_COLORS = [
-  '',
-  '#e53935', // 1
-  '#1976d2', // 2
-  '#388e3c', // 3
-  '#f57c00', // 4
-  '#7b1fa2', // 5
-  '#f57c00', // 6
-  '#388e3c', // 7
-  '#1976d2', // 8
-  '#e53935', // 9
-];
-
 // ── Seeded RNG ─────────────────────────────────────────────────────────────────
 function mulberry32(seed) {
   return () => {

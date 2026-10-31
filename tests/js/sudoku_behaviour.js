@@ -24,6 +24,10 @@ class El {
 }
 const els = {};
 const byId = id => (els[id] ||= new El(id));
+const navLinks = ['/other/sudoku/daily', '/other/sudoku/easy'].map(href => {
+  const a = new El(); a.getAttribute = () => href; return a; });
+navLinks[0].classList.add('active');
+let urlNow = '/other/sudoku/daily';
 const numpad = Array.from({ length: 9 }, (_, i) => { const e = new El('np' + (i + 1)); e.dataset.num = String(i + 1); return e; });
 const docListeners = {};
 const store = {};
@@ -37,12 +41,12 @@ const GIVENS = '5300700006001950000980000608000600034008030017000200060600002800
 const ctx = vm.createContext({
   window: { SUDOKU_CFG: { difficulty: 'daily', seed: 1, givens: GIVENS, today: '2026-10-11' } },
   document: { getElementById: byId, createElement: () => new El(), hidden: false,
-    querySelectorAll: s => s === '.su-numpad-btn' ? numpad : [],
+    querySelectorAll: s => s === '.su-numpad-btn' ? numpad : s === '.su-nav-link' ? navLinks : [],
     addEventListener: (t, f) => (docListeners[t] ||= []).push(f) },
   localStorage: { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = v; } },
   setTimeout: (f, ms) => { if (ms >= 1000) later.push(f); else { try { f(); } catch (e) { console.log('TIMER ERROR', e.message); } } return 1; },
   clearTimeout() {}, setInterval: () => 1, clearInterval() {},
-  history: { replaceState() {} }, location: { pathname: '/other/sudoku/daily', search: '' },
+  history: { replaceState: (a, b, url) => { urlNow = url; } }, location: { pathname: '/other/sudoku/daily', search: '' },
   URLSearchParams, Uint32Array,
   performance, crypto: globalThis.crypto, TextEncoder, console, Math, Array, Set, JSON, Object, Number, String, Promise,
   fetch: async (url, o) => {
@@ -134,6 +138,13 @@ Promise.resolve().then(() => new Promise(r => globalThis.setTimeout(r, 50))).the
   ok(posted.difficulty === 'daily', `finished Daily saved as daily (${posted.difficulty})`);
   ok(lbReqs[lbReqs.length - 1] === 'daily', `leaderboard shows the Daily after finishing it (${lbReqs[lbReqs.length - 1]})`);
   ok(/Daily/.test(byId('su-lb-title').textContent), `leaderboard title is the Daily's (${byId('su-lb-title').textContent})`);
+  // B65: the subnav and URL stay on the Daily until the first move of the next game.
+  ok(navLinks[0].classList.contains('active') && !navLinks[1].classList.contains('active'), 'subnav stays on Daily after the win');
+  ok(urlNow === '/other/sudoku/daily', `URL stays on the Daily after the win (${urlNow})`);
+  const empty = cells().findIndex(c => c.textContent === '');
+  click(empty); press(9);
+  ok(navLinks[1].classList.contains('active') && !navLinks[0].classList.contains('active'), 'first move moves the subnav to Easy');
+  ok(urlNow === '/other/sudoku/easy', `first move moves the URL to Easy (${urlNow})`);
   later.forEach(f => f());
   ok(!toast.classList.contains('game-toast--show'), 'toast hides after its timer');
   console.log(fails ? `${fails} FAILED` : 'ALL PASSED');

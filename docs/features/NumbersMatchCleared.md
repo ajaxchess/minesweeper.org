@@ -1,4 +1,4 @@
-# Numbers Match — Cleared Numbers and Rules Popup
+# Numbers Match — Cleared Numbers and Rules
 
 **Status:** done
 **Feature ID:** F-NM-CLEARED (part of F-NM)
@@ -19,8 +19,8 @@ only described in text below the board. Reference: the Numbers Match mobile app.
 - [x] A "Numbers Cleared" row above the board shows 1–9, with a check for each
       number no longer on the board.
 - [x] A short toast announces when the last of a number is removed.
-- [x] An ⓘ button opens a popup drawing the four ways a pair can connect:
-      diagonal, horizontal, vertical, line to line.
+- [x] The four ways a pair can connect are drawn under the row, always on
+      screen: diagonal, horizontal, vertical, line to line.
 
 ---
 
@@ -39,6 +39,8 @@ as faint ghosts, as the reference app does.
   back. Add Lines cannot revive a cleared number: it only copies what remains.
 - The toast lasts 2.5 s. It shares its spot with the win toast, so each one
   hides the other.
+- The rules started as a popup behind an ⓘ button and moved to the page itself
+  (2026-10-30), because most players would never open it.
 - The elements are created by the script, so both templates stay identical.
   Text comes from `window.NM_T` (translations.py, `nm_cleared_*`, `nm_rule*`;
   en and es, other languages fall back to English).
@@ -47,8 +49,7 @@ as faint ghosts, as the reference app does.
 
 ## Implementation Notes
 
-`static/src/js/numbers_match.js` (`?v=24`): `renderCleared()`,
-`showClearedToast()`, `setupRulesPopup()`, `ruleDiagram()`. Styles in
-`static/src/css/style.css` (`?v=64`). Tests: `tests/js/numbers_match_game_end.js`.
+`static/src/js/numbers_match.js`: `renderCleared()`, `showClearedToast()`,
+`rulesPanel()`, `ruleDiagram()`. Styles in `static/src/css/style.css`. Tests: `tests/js/numbers_match_game_end.js`.
 Also verified end to end in a real browser (Edge via Playwright) on a local
 server: a real game verified by the server, dark and light themes, phone width.
