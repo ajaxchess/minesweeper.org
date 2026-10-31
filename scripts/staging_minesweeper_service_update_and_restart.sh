@@ -136,6 +136,21 @@ s = s.replace("the_db_name", os.environ["DB_NAME"])
 p.write_text(s)
 PYEOF
 
+# ── Refuse to test a leftover process ─────────────────────────────────────────
+# A process outside systemd holding a port makes the service crash-loop with
+# "Address already in use" while /health and the smoke tests are answered by the
+# leftover, which has the OLD code in memory. Old code could pass the gate for a
+# commit that never ran, or fail it for no real reason (B63). Exit without
+# blocking the commit: the next cron run retests it once the port is free.
+sudo systemctl stop "$SERVICE_WEB" "$SERVICE_PVP"
+for port in "$WEB_PORT" "$PVP_PORT"; do
+    if [ -n "$(ss -ltnH "sport = :$port")" ]; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') ERROR: port $port is in use with the staging services stopped. Not testing. See 'A port is held by a leftover process' in docs/staging-gate-runbook.md."
+        ss -ltnp "sport = :$port"
+        exit 1
+    fi
+done
+
 # ── Start both services (they are stopped when idle) ──────────────────────────
 # Use restart rather than start: if a previous run left a service running
 # (e.g. on the first transition from always-on staging), restart ensures the

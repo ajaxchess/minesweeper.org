@@ -79,6 +79,24 @@ rm /home/ubuntu/deploy_state/minesweeper_blocked_commit
 
 The next cron tick will re-test the current `origin/main`.
 
+### A port is held by a leftover process
+
+Symptoms: the script stops with `port 8002 is in use` (or 8052), or the service
+log repeats `[Errno 98] Address already in use`. Something outside systemd is
+listening on the port, so the service cannot start. Before the check existed
+(B63) the leftover answered the smoke tests with old code in memory.
+
+```bash
+# On the staging server: who holds the ports, where it runs, and since when
+sudo ss -ltnp 'sport = :8002 or sport = :8052'
+ps -o pid,lstart,cmd -p <pid>
+sudo readlink /proc/<pid>/cwd
+```
+
+Stop it only if its working directory is `/home/ubuntu/git/staging.minesweeper.org`.
+Then check that the ports are free. If the commit was blocked by this, clear the
+block (see above) so the next cron run retests it.
+
 ### Manually running the staging script
 
 ```bash
