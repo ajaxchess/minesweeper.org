@@ -1,0 +1,97 @@
+name: Dependabot Auto-Merge
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependabot-meta:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    outputs:
+      update-type: ${{ steps.metadata.outputs.update-type }}
+      ecosystem: ${{ steps.metadata.outputs.package-ecosystem }}
+      dependency-names: ${{ steps.metadata.outputs.dependency-names }}
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+  regenerate-lock:
+    needs: dependabot-meta
+    if: needs.dependabot-meta.outputs.ecosystem == 'pip'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Install pip-tools
+        run: pip install pip-tools
+
+      - name: Regenerate requirements.lock
+        run: |
+          pip-compile \
+            --generate-hashes \
+            --constraint requirements.txt \
+            requirements.in \
+            --output-file requirements.lock
+
+      - name: Check for lock changes
+        id: diff
+        run: |
+          if git diff --quiet requirements.lock; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit updated lock file
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add requirements.lock
+          git commit -m "chore: regenerate requirements.lock for Dependabot bump"
+          git push
+
+  auto-merge:
+    needs: [dependabot-meta, regenerate-lock]
+    if: |
+      always() &&
+      needs.dependabot-meta.result == 'success' &&
+      (needs.regenerate-lock.result == 'success' || needs.regenerate-lock.result == 'skipped') &&
+      needs.dependabot-meta.outputs.update-type == 'version-update:semver-patch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for CI checks
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          running-workflow-name: auto-merge
+          allowed-conclusions: success,skipped
+
+      - name: Enable auto-merge
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add label
+        run: gh pr edit "$PR_URL" --add-label "auto-merged"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
