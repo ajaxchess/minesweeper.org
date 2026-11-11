@@ -79,6 +79,10 @@
 </div>
 
 <script>
+// Score names and other API strings are user-supplied: escape before innerHTML.
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 async function loadBoard(mode, noGuess) {
   const bodyId = 'lb-body-' + mode + (noGuess ? '-ng' : '');
   const tbody  = document.getElementById(bodyId);
@@ -93,12 +97,12 @@ async function loadBoard(mode, noGuess) {
     tbody.innerHTML = scores.map((s, i) => `
       <tr>
         <td>${i + 1}</td>
-        <td>${s.name}</td>
+        <td>${escHtml(s.name)}</td>
         <td>${(s.time_ms / 1000).toFixed(2)}s</td>
         <td>${s.bbbv ?? '—'}</td>
         <td>${s.bbbv_s ?? '—'}</td>
         <td>${s.eff ?? '—'}</td>
-        <td>${s.created_at}</td>
+        <td>${escHtml(s.created_at)}</td>
       </tr>`).join('');
   } catch (e) {
     tbody.innerHTML = '<tr><td colspan="7" style="color:var(--text-dim);">Failed to load.</td></tr>';

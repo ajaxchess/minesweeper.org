@@ -82,7 +82,6 @@ class Score(Base):
         return {
             "id":           self.id,
             "name":         self.name,
-            "user_email":   self.user_email,
             "mode":         self.mode,
             "time_secs":    self.time_secs,
             "time_ms":      self.time_ms,
@@ -339,7 +338,6 @@ class MeowdokuScore(Base):
         return {
             "id":           self.id,
             "name":         self.name,
-            "user_email":   self.user_email,
             "puzzle_date":  self.puzzle_date,
             "grid_size":    self.grid_size,
             "time_secs":    self.time_secs,
@@ -729,7 +727,6 @@ class PvpResult(Base):
         return {
             "id":           self.id,
             "winner_name":  self.winner_name,
-            "winner_email": self.winner_email,
             "loser_name":   self.loser_name,
             "elapsed_ms":   self.elapsed_ms,
             "submode":      self.submode,

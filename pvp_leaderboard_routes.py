@@ -179,6 +179,10 @@ def get_pvp_rankings(period: str = "alltime",
             else:
                 p["profile_url"] = None
 
+    # The email only keys the profile lookup above; it is not part of the response.
+    for p in top:
+        p.pop("email", None)
+
     return top
 
 

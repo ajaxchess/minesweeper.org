@@ -2626,21 +2626,23 @@ def get_replay_scores(board_hash: str, variant: str = "standard", db: Session = 
     def sort_ms(d: dict) -> int:
         return d["time_ms"] if d.get("time_ms") else d["time_secs"] * 1000
 
-    all_dicts = [s.to_dict() for s in replay_rows] + [s.to_dict() for s in global_rows]
-    all_dicts.sort(key=sort_ms)
+    # Emails stay server-side: they key the dedup and the profile lookup but are
+    # never part of the serialized rows.
+    all_pairs = [(s.user_email, s.to_dict()) for s in list(replay_rows) + list(global_rows)]
+    all_pairs.sort(key=lambda pair: sort_ms(pair[1]))
 
     seen: set = set()
-    top: list = []
-    for d in all_dicts:
-        key = d.get("user_email") or d.get("name")
+    top_pairs: list = []
+    for email, d in all_pairs:
+        key = email or d.get("name")
         if key not in seen:
             seen.add(key)
-            top.append(d)
-            if len(top) >= 15:
+            top_pairs.append((email, d))
+            if len(top_pairs) >= 15:
                 break
 
     # ── Enrich with profile URLs ───────────────────────────────────────────────
-    emails = [d["user_email"] for d in top if d.get("user_email")]
+    emails = [email for email, _ in top_pairs if email]
     url_map: dict = {}
     if emails:
         profiles = (
@@ -2656,8 +2658,10 @@ def get_replay_scores(board_hash: str, variant: str = "standard", db: Session = 
             elif p.public_id:
                 url_map[p.email] = f"/u/{p.public_id}"
 
-    for d in top:
-        d["profile_url"] = url_map.get(d.get("user_email")) if d.get("user_email") else None
+    top: list = []
+    for email, d in top_pairs:
+        d["profile_url"] = url_map.get(email) if email else None
+        top.append(d)
 
     return top
 

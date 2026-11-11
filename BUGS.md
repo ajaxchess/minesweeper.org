@@ -1,3 +1,22 @@
+B67 Stored XSS on leaderboard pages: user-supplied strings reached innerHTML unescaped.
+   Score names are free text (printable characters, 32 max), and nine leaderboard templates wrote
+   them straight into innerHTML: Cubesweeper, Mobiussweeper, Worldsweeper, 15 Puzzle, Jigsaw,
+   Schulte, 2048, 2048 Hex and Mahjong. One anonymous score with markup in the name ran script for
+   every visitor of that page. Two more paths: the Sudoku scores page printed board_hash, which the
+   API accepted as any 64 characters, and the World Cup country leaderboard (tametsi_wc.js) printed
+   the profile display name. Fix: every one of those renderers escapes the name, country, profile
+   URL and date; POST /api/sudoku-scores only accepts a sha256 hex board_hash.
+   tests/test_public_output_safety.py scans every template and static/src/js file for a
+   user-supplied field interpolated without escaping.
+
+B66 Public score APIs returned players' email addresses.
+   Score.to_dict(), MeowdokuScore.to_dict() and PvpResult.to_dict() included the account email, and
+   /api/pvp/rankings kept it on each row, so GET /api/scores/{mode}, /api/replay-scores,
+   /api/meowdoku-scores/{date}, /api/pvp/leaderboard and /api/pvp/rankings exposed the email of
+   every logged-in player listed. Fix: the three to_dict() methods no longer carry an email and the
+   rankings rows drop it before returning. The per-board list (/api/replay-scores) used the
+   serialized email to keep one row per account; it now reads the email from the row server-side.
+
 B65 After finishing the Daily the mode buttons still highlighted Easy, next to a ranking on Diario.
    The B62 tabs did not fix it: the buttons jumped to the next game the moment it started, and the
    Numbers Match Daily button was never highlighted at all, not even while playing the Daily.

@@ -457,6 +457,12 @@ function wcMountBoard(wrap) {
         if (data.ok) { showSolvedBanner(data); refreshLeaderboard(); }
     }
 
+    // Display names are user-chosen: escape everything the API returns before innerHTML.
+    function wcEsc(s) {
+        return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     async function refreshLeaderboard() {
         const wrap = document.getElementById('wcc-lb-wrap');
         if (!wrap) return;
@@ -471,11 +477,11 @@ function wcMountBoard(wrap) {
                   <tbody>${rows.map((r, i) => `
                     <tr>
                       <td>${i + 1}</td>
-                      <td>${r.display_name}</td>
-                      <td><img src="https://flagcdn.com/w20/${r.fan_flag_img}.png"
-                               style="vertical-align:middle;margin-right:4px;">${r.fan_flag_name}</td>
-                      <td><strong>${r.points}</strong></td>
-                      <td style="color:var(--text-dim);font-size:.85rem;">${r.best_time || '—'}</td>
+                      <td>${wcEsc(r.display_name)}</td>
+                      <td><img src="https://flagcdn.com/w20/${encodeURIComponent(r.fan_flag_img)}.png"
+                               style="vertical-align:middle;margin-right:4px;">${wcEsc(r.fan_flag_name)}</td>
+                      <td><strong>${wcEsc(r.points)}</strong></td>
+                      <td style="color:var(--text-dim);font-size:.85rem;">${wcEsc(r.best_time || '—')}</td>
                     </tr>`).join('')}
                   </tbody>
                 </table>`;

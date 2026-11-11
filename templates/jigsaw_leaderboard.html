@@ -117,6 +117,10 @@ table.jlb-table a:hover { text-decoration:underline; }
 </div>
 
 <script>
+// Score names and other API strings are user-supplied: escape before innerHTML.
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 (function () {
   'use strict';
   let currentDiff = 'beginner';
@@ -151,9 +155,9 @@ table.jlb-table a:hover { text-decoration:underline; }
           : '—';
         return `<tr>
           <td>${i + 1}</td>
-          <td>${(s.country ? `<img src="/static/img/country-flags/${s.country}.png" class="lb-flag" alt="${s.country}">` : '') + (s.profile_url ? `<a href="${s.profile_url}">${s.name}</a>` : s.name)}</td>
+          <td>${(s.country ? `<img src="/static/img/country-flags/${encodeURIComponent(s.country)}.png" class="lb-flag" alt="${escHtml(s.country)}">` : '') + (s.profile_url ? `<a href="${escHtml(s.profile_url)}">${escHtml(s.name)}</a>` : escHtml(s.name))}</td>
           <td>${fmt(s.time_ms)}</td>
-          <td>${s.puzzle_date}</td>
+          <td>${escHtml(s.puzzle_date)}</td>
           <td>${thumb}</td>
         </tr>`;
       }).join('');

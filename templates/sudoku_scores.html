@@ -35,17 +35,17 @@ async function loadScores() {
 
     tbody.innerHTML = rows.map((r, i) => {
       const rank     = i + 1;
-      const flag     = r.country ? `<img src="/static/img/country-flags/${r.country}.png" class="lb-flag" alt="${r.country}">` : '';
+      const flag     = r.country ? `<img src="/static/img/country-flags/${encodeURIComponent(r.country)}.png" class="lb-flag" alt="${escHtml(r.country)}">` : '';
       const name     = flag + (r.profile_url
-        ? `<a href="${r.profile_url}" style="color:var(--accent2);">${escHtml(r.name)}</a>`
+        ? `<a href="${escHtml(r.profile_url)}" style="color:var(--accent2);">${escHtml(r.name)}</a>`
         : escHtml(r.name));
       // Assists bitmask (F-SUDOKU-ASSISTS): 1 = auto candidates, 2 = auto check
       const assists  = (r.assists & 1 ? '<span class="su-assist" title="Auto candidates">✎</span>' : '') +
                        (r.assists & 2 ? '<span class="su-assist" title="Auto check">✓</span>' : '');
       const time     = fmtTime(r.time_ms) + assists;
       const hints    = r.hints_used > 0 ? r.hints_used : '—';
-      const boardLink= `<a href="/other/sudoku/board/${r.full_hash}" title="Replay this board"
-                           style="color:var(--text-dim);font-family:monospace;font-size:0.8rem;">${r.board_hash}</a>`;
+      const boardLink= `<a href="/other/sudoku/board/${encodeURIComponent(r.full_hash)}" title="Replay this board"
+                           style="color:var(--text-dim);font-family:monospace;font-size:0.8rem;">${escHtml(r.board_hash)}</a>`;
       // Puzzle day (America/New_York), not the UTC save time (B55)
       const date     = r.puzzle_date || r.created_at || '';
       return `<tr class="${i % 2 === 1 ? 'lb-even' : ''}">
@@ -54,7 +54,7 @@ async function loadScores() {
         <td style="text-align:right;">${time}</td>
         <td style="text-align:right;">${hints}</td>
         <td style="text-align:right;">${boardLink}</td>
-        <td style="text-align:right;color:var(--text-dim);font-size:0.8rem;">${date}</td>
+        <td style="text-align:right;color:var(--text-dim);font-size:0.8rem;">${escHtml(date)}</td>
       </tr>`;
     }).join('');
   } catch {
@@ -69,7 +69,7 @@ function fmtTime(ms) {
 }
 
 function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 document.addEventListener('DOMContentLoaded', () => {

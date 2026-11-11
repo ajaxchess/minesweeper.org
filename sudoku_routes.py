@@ -283,7 +283,7 @@ class SudokuScoreSubmit(BaseModel):
     name:         str = Field(..., min_length=1, max_length=32)
     puzzle_date:  str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
     difficulty:   str = Field(..., min_length=1, max_length=16)
-    board_hash:   str = Field(..., min_length=64, max_length=64)
+    board_hash:   str = Field(..., pattern=r"^[0-9a-f]{64}$")  # sha256 hex of the givens
     board_givens: str = Field(..., min_length=81, max_length=81)
     time_ms:      int = Field(..., ge=1, le=86400000)   # max 24 h
     hints_used:   int = Field(0, ge=0, le=81)
