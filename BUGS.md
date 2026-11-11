@@ -1,3 +1,15 @@
+B68 Bootcamp analyzer read every mine layout with the wrong bit order.
+   The browser writes board_hash with bit i = cell i, least significant bit first in each byte
+   (calcBoardHash in minesweeper.js; replay.js and rewind.js decode it the same way).
+   phase2_analyzer/pipeline.py read each byte most significant bit first, so the mines of every
+   stored game were mirrored within each group of eight cells and the analysis ran on a board the
+   player never saw: wasted clicks, missed openings, guesses, death cause and the bootcamp level
+   were all computed from it. Found while building F-MS-VERIFY: the layout differed in 30 of 30
+   games recorded from the real script. Fix: decode least significant bit first. ANALYZER_VERSION
+   goes to 1.1 and both backfills now also redo analyses made by another version, walking forward
+   by id so a replay that cannot be analyzed is not retried forever. After deploy, run
+   `python -m phase2_analyzer.backfill_with_progress` on the server to recompute stored analyses.
+
 B67 Stored XSS on leaderboard pages: user-supplied strings reached innerHTML unescaped.
    Score names are free text (printable characters, 32 max), and nine leaderboard templates wrote
    them straight into innerHTML: Cubesweeper, Mobiussweeper, Worldsweeper, 15 Puzzle, Jigsaw,

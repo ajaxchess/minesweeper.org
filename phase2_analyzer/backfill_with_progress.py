@@ -19,6 +19,10 @@ Run it under nohup for a fire-and-forget multi-hour backfill:
 
 Safe to interrupt (Ctrl-C or kill <pid>) — resumes where it left off because
 of the unique constraint on game_analyses.game_replay_id.
+
+A replay is pending when it has no analysis, or when its analysis was made by a
+different ANALYZER_VERSION. So after a version bump (e.g. 1.1, B68) the same
+command re-analyzes every stored game; nothing has to be deleted first.
 """
 
 from __future__ import annotations
@@ -34,7 +38,7 @@ from typing import Iterator
 # Imports — assume we're running inside ~/git/minesweeper.org/ with venv active
 try:
     from database import SessionLocal, GameReplay
-    from phase2_analyzer import GameAnalysis, analyze_game, persist_analysis
+    from phase2_analyzer import ANALYZER_VERSION, GameAnalysis, analyze_game, persist_analysis
     from phase2_analyzer.pipeline import _game_from_replay
 except ImportError as e:
     print(f"ERROR: must run from minesweeper.org project root with venv active: {e}",
@@ -69,12 +73,17 @@ def _fmt_eta(seconds: float) -> str:
     return f"{seconds / 3600:.2f}h"
 
 
+def _pending():
+    """No analysis yet, or one made by another analyzer version."""
+    return GameAnalysis.id.is_(None) | (GameAnalysis.analyzer_version != ANALYZER_VERSION)
+
+
 def _count_pending(db) -> tuple[int, int]:
     """Return (total_pending, recoverable_pending).
        Recoverable = has both board_hash and log_json populated."""
     base = (db.query(GameReplay)
               .outerjoin(GameAnalysis, GameAnalysis.game_replay_id == GameReplay.id)
-              .filter(GameAnalysis.id.is_(None)))
+              .filter(_pending()))
     total = base.count()
     recoverable = (base
         .filter(GameReplay.board_hash.isnot(None))
@@ -85,7 +94,7 @@ def _count_pending(db) -> tuple[int, int]:
     return total, recoverable
 
 
-def _fetch_pending_ids(db, limit: int) -> list[int]:
+def _fetch_pending_ids(db, limit: int, after_id: int = 0) -> list[int]:
     """Fetch IDs of pending replays that have the required fields populated.
 
     Pre-Phase-1 captures often have empty board_hash (client/server schema
@@ -95,7 +104,8 @@ def _fetch_pending_ids(db, limit: int) -> list[int]:
     """
     rows = (db.query(GameReplay.id)
               .outerjoin(GameAnalysis, GameAnalysis.game_replay_id == GameReplay.id)
-              .filter(GameAnalysis.id.is_(None))
+              .filter(_pending())
+              .filter(GameReplay.id > after_id)
               .filter(GameReplay.board_hash.isnot(None))
               .filter(GameReplay.board_hash != "")
               .filter(GameReplay.log_json.isnot(None))
@@ -144,6 +154,7 @@ def backfill(batch_size: int = 200, limit: int | None = None) -> None:
     skipped = 0
     last_log_time = start
     last_log_count = 0
+    last_id = 0   # walk forward by id: a replay that errors is not fetched again this run
 
     while not _STOP_REQUESTED:
         if limit and analyzed >= limit:
@@ -152,9 +163,10 @@ def backfill(batch_size: int = 200, limit: int | None = None) -> None:
         db = SessionLocal()
         try:
             remaining = batch_size if not limit else min(batch_size, limit - analyzed)
-            pending_ids = _fetch_pending_ids(db, remaining)
+            pending_ids = _fetch_pending_ids(db, remaining, after_id=last_id)
             if not pending_ids:
                 break
+            last_id = pending_ids[-1]
 
             for rid in pending_ids:
                 if _STOP_REQUESTED:
@@ -162,7 +174,13 @@ def backfill(batch_size: int = 200, limit: int | None = None) -> None:
                 replay = db.query(GameReplay).filter_by(id=rid).first()
                 if not replay:
                     continue
-                game = _game_from_replay(replay)
+                try:
+                    game = _game_from_replay(replay)
+                except Exception as exc:                       # noqa: BLE001 — malformed stored log
+                    errors += 1
+                    if errors <= 10:
+                        print(f"   ⚠ Replay #{rid}: {type(exc).__name__}: {exc}", file=sys.stderr)
+                    continue
                 if game is None:
                     # Slipped through the fetch filter — log it once for visibility
                     skipped += 1

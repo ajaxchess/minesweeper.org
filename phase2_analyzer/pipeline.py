@@ -260,7 +260,10 @@ class GameAnalysis(Base):
 # Persistence
 # ═════════════════════════════════════════════════════════════════════════════
 
-ANALYZER_VERSION = "1.0"
+# Bump when a change makes stored analyses wrong; the backfill re-analyzes every
+# row whose analyzer_version differs.
+#   1.1 — B68: mine layouts were decoded with the wrong bit order.
+ANALYZER_VERSION = "1.1"
 
 
 def persist_analysis(
@@ -414,16 +417,16 @@ def _game_from_replay(replay) -> Optional[Game]:
 
 def _decode_board_hash(board_hash: str, rows: int, cols: int) -> list[list[bool]]:
     """
-    Decode the base64 bit-array of mine positions. Mirrors the JS-side
-    decodeBoardHash() in static/js/replay.js.
+    Decode the base64 bit-array of mine positions written by calcBoardHash() in
+    static/src/js/minesweeper.js: bit i is cell i (row * cols + col), least
+    significant bit first within each byte. Mirrors decodeBoardHash() in replay.js.
     """
     import base64
     raw = base64.b64decode(board_hash)
     layout = [[False] * cols for _ in range(rows)]
     for idx in range(rows * cols):
-        byte_idx = idx // 8
-        bit_idx = idx % 8
-        if byte_idx < len(raw) and (raw[byte_idx] >> (7 - bit_idx)) & 1:
+        byte_idx = idx >> 3
+        if byte_idx < len(raw) and (raw[byte_idx] >> (idx & 7)) & 1:
             layout[idx // cols][idx % cols] = True
     return layout
 
@@ -434,39 +437,45 @@ def _decode_board_hash(board_hash: str, rows: int, cols: int) -> list[list[bool]
 
 def backfill_analyses(db_session_factory, batch_size: int = 100) -> int:
     """
-    Run the analyzer over every game_replays row that doesn't already have a
-    GameAnalysis. Returns count of newly-analyzed games.
+    Run the analyzer over every game_replays row that has no GameAnalysis, or
+    whose analysis was made by another ANALYZER_VERSION. Returns the count of
+    games analyzed.
 
-    Safe to interrupt and resume — picks up where it left off via the
-    unique constraint on game_replay_id.
+    Safe to interrupt and resume: persist_analysis() overwrites the row for a
+    game_replay_id and stamps the current version, so finished rows drop out.
     """
     db = db_session_factory()
     analyzed = 0
+    last_id = 0   # walk forward by id so a replay that cannot be analyzed is not retried forever
     try:
         from database import GameReplay
 
         while True:
-            # Find unanalyzed replays
             sql = text("""
                 SELECT gr.id
                 FROM game_replays gr
                 LEFT JOIN game_analyses ga ON ga.game_replay_id = gr.id
-                WHERE ga.id IS NULL
+                WHERE gr.id > :last_id
+                  AND (ga.id IS NULL OR ga.analyzer_version <> :version)
                 ORDER BY gr.id ASC
                 LIMIT :batch
             """)
-            ids = [r[0] for r in db.execute(sql, {"batch": batch_size})]
+            ids = [r[0] for r in db.execute(
+                sql, {"batch": batch_size, "last_id": last_id, "version": ANALYZER_VERSION})]
             if not ids:
                 break
+            last_id = ids[-1]
 
             for replay_id in ids:
                 replay = db.query(GameReplay).filter_by(id=replay_id).first()
                 if not replay:
                     continue
-                game = _game_from_replay(replay)
-                if game is None:
-                    continue
                 try:
+                    # Inside the try: a stored log can be malformed, and one bad
+                    # replay must not stop the whole backfill.
+                    game = _game_from_replay(replay)
+                    if game is None:
+                        continue
                     analysis = analyze_game(game)
                     persist_analysis(db, replay.id, game, analysis)
                     analyzed += 1
