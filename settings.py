@@ -21,7 +21,9 @@ ALLOWED_SKINS: tuple[str, ...] = ('default', 'dark', 'light', 'tentaizu', 'diana
 # 'enforce' — a classic score is listed only if the server replayed its move log.
 # 'observe' — replay and record the outcome, but list every score as before.
 # 'off'     — no replay.
-SCORE_VERIFICATION_MODE: str = 'enforce'
+# Rollout: starts in 'observe' so false failures can be checked on real traffic
+# (scores.verification, /admin/hscleaning) before switching to 'enforce'.
+SCORE_VERIFICATION_MODE: str = 'observe'
 # Mobile app builds do not send a move log yet; list their scores unverified until
 # they do. The app is identified by a request header, so this is also a bypass.
 SCORE_VERIFICATION_APP_GRACE: bool = True

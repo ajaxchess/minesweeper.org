@@ -147,9 +147,11 @@ the click counts are counted from the log.
 
 **Rollout switch** — `settings.SCORE_VERIFICATION_MODE`
 
-- `enforce` (default): as described above.
-- `observe`: replay candidates and record the status, but list everything as
-  before. Useful for a few days after deploy to measure false failures.
+- `enforce`: as described above.
+- `observe` (current, since 2026-11-11): replay candidates and record the status,
+  but list everything as before. The site runs in this mode first to measure false
+  failures on real traffic; switch to `enforce` once `failed` and `unverified`
+  rows on `/admin/hscleaning` are explained.
 - `off`: no replay, no status.
 
 **Data model**

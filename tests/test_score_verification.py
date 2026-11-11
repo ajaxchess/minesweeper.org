@@ -22,6 +22,12 @@ with open(os.path.join(ROOT, "tests", "fixtures", "minesweeper_js_games.json"), 
     JS_GAMES = json.load(fh)
 
 
+@pytest.fixture(autouse=True)
+def enforce_mode(monkeypatch):
+    """The site ships in 'observe' during rollout; these tests describe 'enforce'."""
+    monkeypatch.setattr(site_settings, "SCORE_VERIFICATION_MODE", "enforce")
+
+
 def listed_names(client, mode="beginner", period="alltime", **params):
     r = client.get(f"/api/scores/{mode}", params={"period": period, **params})
     assert r.status_code == 200
@@ -229,6 +235,11 @@ def test_observe_mode_records_the_outcome_but_lists_everything(client, monkeypat
     assert post(client, BARE).json()["listed"] is True
     assert stored("Forger").verification == "unverified"
     assert listed_names(client) == ["Forger"]
+
+
+def test_mode_setting_is_one_of_the_three_known_values(monkeypatch):
+    monkeypatch.undo()   # look at the shipped value, not the one this module forces
+    assert site_settings.SCORE_VERIFICATION_MODE in ("enforce", "observe", "off")
 
 
 def test_off_mode_changes_nothing(client, monkeypatch):
