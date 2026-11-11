@@ -43,6 +43,7 @@ from database import (
     UserProfile,
     WC2026Score,
 )
+from score_verification import listed_scores
 from numbers_match_generator import numbers_match_today_str
 from wc2026_data import WC2026_COUNTRIES
 
@@ -478,6 +479,8 @@ def leaderboard_rows(
         return _wc2026_country_rows(db, spec, limit=limit)
 
     query = db.query(spec.model)
+    if spec.model is Score:
+        query = listed_scores(query)   # F-MS-VERIFY: only replayed scores are listed
     for field, value in spec.filters:
         query = query.filter(getattr(spec.model, field) == value)
     if spec.puzzle_id_tail:   # also for weekly/monthly/...: stay on this level

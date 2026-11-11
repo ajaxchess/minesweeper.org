@@ -2,6 +2,7 @@
 tests/test_scores.py — Classic Minesweeper score submission and retrieval.
 """
 import pytest
+import ms_games
 from conftest import XHR
 
 BEGINNER_SCORE = {
@@ -59,30 +60,28 @@ class TestScoreRetrieval:
         assert isinstance(r.json(), list)
 
     def test_submitted_score_appears_in_leaderboard(self, client):
-        # Use period=alltime to avoid timezone-dependent daily date filter
-        client.post("/api/scores", json=BEGINNER_SCORE, headers=XHR)
+        # Use period=alltime to avoid timezone-dependent daily date filter.
+        # Only a game the server can replay is listed (F-MS-VERIFY).
+        ms_games.post(client, name="Alice")
         r = client.get("/api/scores/beginner?period=alltime")
         assert r.status_code == 200
         names = [s["name"] for s in r.json()]
         assert "Alice" in names
 
     def test_leaderboard_ordered_by_time(self, client):
-        fast = {**BEGINNER_SCORE, "name": "Fast", "time_secs": 10, "time_ms": 10_000}
-        slow = {**BEGINNER_SCORE, "name": "Slow", "time_secs": 120, "time_ms": 120_000}
-        client.post("/api/scores", json=slow, headers=XHR)
-        client.post("/api/scores", json=fast, headers=XHR)
+        ms_games.post(client, name="Slow", time_ms=120_000)
+        ms_games.post(client, name="Fast", time_ms=10_000, mines=list(range(40, 50)))
         r = client.get("/api/scores/beginner?period=alltime")
         scores = r.json()
-        times = [s["time_ms"] for s in scores]
-        assert times == sorted(times)
+        assert [(s["name"], s["time_ms"]) for s in scores] == [("Fast", 10_000), ("Slow", 120_000)]
 
     def test_invalid_mode_returns_error(self, client):
         r = client.get("/api/scores/ultrahard")
         assert r.status_code in (400, 404, 422)
 
     def test_multiple_modes_are_independent(self, client):
-        client.post("/api/scores", json=BEGINNER_SCORE,    headers=XHR)
-        client.post("/api/scores", json=INTERMEDIATE_SCORE, headers=XHR)
+        ms_games.post(client, name="Alice", mode="beginner")
+        ms_games.post(client, name="Bob",   mode="intermediate")
         beg = client.get("/api/scores/beginner?period=alltime").json()
         mid = client.get("/api/scores/intermediate?period=alltime").json()
         beg_names = {s["name"] for s in beg}

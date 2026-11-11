@@ -114,6 +114,13 @@ understand data models, URL conventions, and design decisions for related featur
   replay `numbers_match_engine.py`. After changing any of them, regenerate
   `tests/fixtures/numbers_match_js_games.json` with both `gen_numbers_match_*`
   scripts so the parity tests check the new rules
+- Classic Minesweeper click rules exist in two places: `reveal()`, `chord()` and
+  `flag()` in `static/src/js/minesweeper.js`, and the server replay
+  `minesweeper_engine.py` (F-MS-VERIFY). After changing either, regenerate
+  `tests/fixtures/minesweeper_js_games.json` with
+  `node tests/fixtures/gen_minesweeper_js_games.js` so the parity test checks the
+  new rules. List classic scores only through
+  `score_verification.listed_scores()`, never with a bare `db.query(Score)`
 - Numbers Match board revision and puzzle timezone live only in
   `numbers_match_generator.py`; never redefine them elsewhere (enforced by
   `tests/test_numbers_match.py`)

@@ -76,6 +76,7 @@ from translations import get_lang, get_t, SUPPORTED_LANGS, REAL_LANGS, FUN_LANGS
 from game_catalog import LEADERBOARD_GROUPS, PUZZLE_GAMES
 from leaderboard_platform import leaderboard_cards, leaderboard_catalog, leaderboard_rows
 from quest_catalog import quest_config
+import score_verification
 import settings as site_settings
 import logging
 import psutil
@@ -1475,6 +1476,11 @@ class ScoreSubmit(BaseModel):
     left_clicks:  Optional[int]  = Field(None, ge=0, le=99999)
     right_clicks: Optional[int]  = Field(None, ge=0, le=99999)
     chord_clicks: Optional[int]  = Field(None, ge=0, le=99999)
+    # F-MS-VERIFY: start token, chord setting and move log [[t_ms, type, r, c], …].
+    # All optional — a score without them is saved but not listed on a leaderboard.
+    game_token:   Optional[str]  = Field(None, max_length=300)
+    chording:     bool           = True
+    log:          Optional[list] = Field(None, max_length=10_000)
 
     @field_validator("name")
     @classmethod
@@ -1496,6 +1502,14 @@ class ScoreSubmit(BaseModel):
             if v > max_mines:
                 raise ValueError(f"Too many mines for this board size")
         return v
+
+
+@app.post("/api/scores/start")
+@limiter.limit("120/minute")
+def start_score_game(request: Request, response: Response):
+    """Issue the signed, timestamped start token for one classic game (F-MS-VERIFY)."""
+    response.headers["Cache-Control"] = "no-store"
+    return {"token": score_verification.new_game_token()}
 
 
 @app.post("/api/scores", status_code=201)
@@ -1523,44 +1537,61 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
         if existing:
             return JSONResponse({"ok": True, "id": existing.id}, status_code=200)
 
+    # F-MS-VERIFY: a score that could reach a high score list is replayed from its
+    # move log. A verified score takes its time, 3BV and click counts from the replay.
+    status, replayed, nonce, reason = score_verification.verify(db, payload, client_type)
+    if reason:
+        logger.info("score not listed (%s): mode=%s time_ms=%s client=%s — %s",
+                    status, payload.mode.value, payload.time_ms, client_type, reason)
+    stats = dict(
+        time_secs    = payload.time_secs,
+        time_ms      = payload.time_ms,
+        bbbv         = payload.bbbv,
+        left_clicks  = payload.left_clicks,
+        right_clicks = payload.right_clicks,
+        chord_clicks = payload.chord_clicks,
+    )
+    if replayed:
+        stats = dict(
+            time_secs    = max(1, replayed.last_t_ms // 1000),
+            time_ms      = replayed.last_t_ms,
+            bbbv         = replayed.bbbv,
+            left_clicks  = replayed.left_clicks,
+            right_clicks = replayed.right_clicks,
+            chord_clicks = replayed.chord_clicks,
+        )
+
     score = Score(
         name         = payload.name,
         user_email   = user["email"] if user else None,
         mode         = payload.mode,
-        time_secs    = payload.time_secs,
-        time_ms      = payload.time_ms,
         rows         = payload.rows,
         cols         = payload.cols,
         mines        = payload.mines,
         no_guess     = payload.no_guess,
         board_hash   = payload.board_hash,
-        bbbv         = payload.bbbv,
-        left_clicks  = payload.left_clicks,
-        right_clicks = payload.right_clicks,
-        chord_clicks = payload.chord_clicks,
         guest_token  = guest_token,
         client_type  = client_type,
+        verification = status,
+        game_nonce   = nonce,
+        **stats,
     )
     db.add(score)
 
-    # Persist permanent history for logged-in users
-    if user:
+    # Persist permanent history for logged-in users (not for a game whose replay failed:
+    # history feeds the best times on the public profile)
+    if user and status != score_verification.FAILED:
         db.add(GameHistory(
             user_email   = user["email"],
             name         = payload.name,
             mode         = payload.mode,
-            time_secs    = payload.time_secs,
-            time_ms      = payload.time_ms,
             rows         = payload.rows,
             cols         = payload.cols,
             mines        = payload.mines,
             no_guess     = payload.no_guess,
             board_hash   = payload.board_hash,
-            bbbv         = payload.bbbv,
-            left_clicks  = payload.left_clicks,
-            right_clicks = payload.right_clicks,
-            chord_clicks = payload.chord_clicks,
             client_type  = client_type,
+            **stats,
         ))
 
     try:
@@ -1570,13 +1601,16 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
         existing = db.query(Score).filter(Score.board_hash == payload.board_hash).first()
         if existing:
             return JSONResponse({"ok": True, "id": existing.id}, status_code=200)
+        if nonce:   # two requests raced on one start token
+            return JSONResponse({"detail": "This game was already submitted"}, status_code=409)
         raise
     db.refresh(score)
     flag_if_profane(db, score.__tablename__, score.id, score.name)
     record_score_submit("minesweeper", payload.mode.value)
     record_game_complete("minesweeper", mode=payload.mode.value,
-                         duration_ms=payload.time_ms or (payload.time_secs or 0) * 1000)
-    return {"ok": True, "id": score.id}
+                         duration_ms=stats["time_ms"] or (stats["time_secs"] or 0) * 1000)
+    listed = score_verification.mode() != "enforce" or status in (None, *score_verification.LISTED_STATUSES)
+    return {"ok": True, "id": score.id, "listed": listed}
 
 
 def _enrich_with_profiles(scores: list, db) -> list:
@@ -1644,7 +1678,7 @@ def _dedup_by_user(raw: list, limit: int = 100) -> list:
 
 def _get_archive_scores_day(db: Session, mode: str, target: date, no_guess: bool) -> list:
     raw = (
-        db.query(Score)
+        score_verification.listed_scores(db.query(Score))
         .filter(
             Score.mode == mode,
             Score.user_email.isnot(None),
@@ -1663,7 +1697,7 @@ def _get_archive_scores_month(db: Session, mode: str, year: int, month: int, no_
     start = date(year, month, 1)
     end   = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
     raw = (
-        db.query(Score)
+        score_verification.listed_scores(db.query(Score))
         .filter(
             Score.mode == mode,
             Score.user_email.isnot(None),
@@ -1826,7 +1860,7 @@ def get_scores(mode: GameMode, no_guess: bool = False,
         ng_filter = Score.no_guess == True
     else:
         ng_filter = (Score.no_guess == False) | Score.no_guess.is_(None)
-    q = db.query(Score).filter(Score.mode == mode, ng_filter)
+    q = score_verification.listed_scores(db.query(Score).filter(Score.mode == mode, ng_filter))
     q = exclude_flagged(q, Score, db)
 
     if period in ("daily", "weekly", "monthly", "season", "yearly"):
@@ -2603,7 +2637,7 @@ def get_replay_scores(board_hash: str, variant: str = "standard", db: Session = 
             else_=Score.time_secs * 1000
         )
         global_rows = (
-            db.query(Score)
+            score_verification.listed_scores(db.query(Score))
             .filter(Score.board_hash == board_hash, Score.no_guess == False)
             .order_by(global_sort.asc(), Score.created_at.asc())
             .limit(500)
@@ -2615,7 +2649,7 @@ def get_replay_scores(board_hash: str, variant: str = "standard", db: Session = 
             else_=Score.time_secs * 1000
         )
         global_rows = (
-            db.query(Score)
+            score_verification.listed_scores(db.query(Score))
             .filter(Score.board_hash == board_hash, Score.no_guess == True)
             .order_by(global_sort.asc(), Score.created_at.asc())
             .limit(500)

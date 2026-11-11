@@ -71,11 +71,16 @@ class Score(Base):
     chord_clicks = Column(Integer, nullable=True)
     guest_token  = Column(String(36), nullable=True, index=True)  # links guest score to login session
     client_type  = Column(String(32), nullable=False, server_default="na")  # chrome/firefox/safari/edge/mobile_browser/ios_app/android_app/na
+    # F-MS-VERIFY: NULL (saved before the feature) / verified / app / unchecked / unverified / failed.
+    # List scores through score_verification.listed_scores(), never directly.
+    verification = Column(String(16), nullable=True)
+    game_nonce   = Column(String(32), nullable=True)  # one-time start token nonce of a verified score
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Fast lookups by mode + time for leaderboard queries
     __table_args__ = (
         Index("ix_scores_mode_time", "mode", "time_secs"),
+        Index("ux_scores_game_nonce", "game_nonce", unique=True),
     )
 
     def to_dict(self):
@@ -1743,6 +1748,20 @@ def _create_phase1_indexes(conn):
             conn.commit()
 
 
+def _create_scores_nonce_index(conn):
+    """Unique index on scores.game_nonce so one start token saves one score (F-MS-VERIFY)."""
+    exists = conn.execute(
+        text(
+            "SELECT COUNT(*) FROM information_schema.statistics "
+            "WHERE table_schema = DATABASE() "
+            "AND table_name = 'scores' AND index_name = 'ux_scores_game_nonce'"
+        )
+    ).scalar()
+    if not exists:
+        conn.execute(text("CREATE UNIQUE INDEX `ux_scores_game_nonce` ON `scores` (`game_nonce`)"))
+        conn.commit()
+
+
 def _migrate_wc2026_guest_play(conn):
     """Make WC2026 email columns nullable and add guest_token indexes.
 
@@ -1916,6 +1935,9 @@ def _apply_migrations():
         ("numbers_match_scores", "game_nonce", "VARCHAR(32) NULL"),
         # Sudoku assists bitmask: 1 = auto candidates, 2 = auto check (F-SUDOKU-ASSISTS, 2026-10-11)
         ("sudoku_scores",        "assists",    "INT NOT NULL DEFAULT 0"),
+        # Classic verified scores: replay outcome + one-time token nonce (F-MS-VERIFY, 2026-11-11)
+        ("scores",               "verification", "VARCHAR(16) NULL"),
+        ("scores",               "game_nonce",   "VARCHAR(32) NULL"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:
@@ -1931,6 +1953,7 @@ def _apply_migrations():
                 conn.execute(text(f"ALTER TABLE `{table}` ADD COLUMN `{column}` {col_def}"))
                 conn.commit()
         _create_phase1_indexes(conn)
+        _create_scores_nonce_index(conn)
         _migrate_wc2026_guest_play(conn)
         _migrate_wc2026_knockout(conn)
 

@@ -17,6 +17,17 @@ from functools import lru_cache
 DEFAULT_SKIN: str = 'dark'
 ALLOWED_SKINS: tuple[str, ...] = ('default', 'dark', 'light', 'tentaizu', 'diana', 'flower', 'flower-light', 'mexico')
 
+# ── Classic score verification (F-MS-VERIFY) ─────────────────────────────────
+# 'enforce' — a classic score is listed only if the server replayed its move log.
+# 'observe' — replay and record the outcome, but list every score as before.
+# 'off'     — no replay.
+SCORE_VERIFICATION_MODE: str = 'enforce'
+# Mobile app builds do not send a move log yet; list their scores unverified until
+# they do. The app is identified by a request header, so this is also a bypass.
+SCORE_VERIFICATION_APP_GRACE: bool = True
+# Rows shown on a classic high score list; only scores that could reach one are replayed.
+SCORE_LIST_SIZE: int = 15
+
 # ── PvP opponent board delay ───────────────────────────────────────────────────
 # Seconds to delay showing the opponent's board moves to the player.
 # 0 = real-time (no delay). Adjust to change competitive feel.

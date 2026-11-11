@@ -161,7 +161,28 @@ function freshState(rows, cols, mines, noGuess = false, chording = true) {
     bbbv:        null,
     rewindLog:   [],    // [[t_ms, type, r, c], …] — F74 Rewind
     rewindSent:  false, // guard against duplicate /api/rewind submissions
+    gameTokenP:  null,  // Promise<string|null> — F-MS-VERIFY start token
   };
+}
+
+// ── F-MS-VERIFY — start token ────────────────────────────────────────────────
+// Requested in the background on the first click. The server signs the time it
+// issued the token, so a score cannot claim less time than really passed. The
+// score is still saved without one; it just is not listed on a leaderboard.
+function fetchGameToken() {
+  return fetch('/api/scores/start', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+    body:    '{}',
+  }).then(r => (r.ok ? r.json() : null))
+    .then(d => (d && d.token) || null)
+    .catch(() => null);
+}
+
+// Never hold the score back for a slow token request.
+function gameTokenOrNull(tokenP, waitMs = 3000) {
+  if (!tokenP) return Promise.resolve(null);
+  return Promise.race([tokenP, new Promise(res => setTimeout(() => res(null), waitMs))]);
 }
 
 // ── F74 Rewind — event recording ─────────────────────────────────────────────
@@ -491,6 +512,7 @@ function reveal(r, c) {
     state.board      = board;
     state.started    = true;
     state.startTime  = performance.now();
+    state.gameTokenP = fetchGameToken();
     state.boardHash  = calcBoardHash(state.rows, state.cols, mineSet);
     state.bbbv       = calc3BV(board, state.rows, state.cols, mineSet);
     startTimer();
@@ -762,20 +784,28 @@ async function submitScore(autoName = null) {
 
   if (!name) { if (msgEl) msgEl.textContent = '⚠️ Please enter your name.'; return; }
 
+  // The game this score belongs to: `state` is replaced when a new game starts.
+  const game = state;
+  const gameToken = await gameTokenOrNull(game.gameTokenP);
+
   const payload = {
     name,
     mode:         board.dataset.mode,
-    time_secs:    state.elapsed,
-    time_ms:      state.timeMs,
-    rows:         state.rows,
-    cols:         state.cols,
-    mines:        state.mines,
-    no_guess:     state.noGuess,
-    board_hash:   state.boardHash,
-    bbbv:         state.bbbv,
-    left_clicks:  state.leftClicks,
-    right_clicks: state.rightClicks,
-    chord_clicks: state.chordClicks,
+    time_secs:    game.elapsed,
+    time_ms:      game.timeMs,
+    rows:         game.rows,
+    cols:         game.cols,
+    mines:        game.mines,
+    no_guess:     game.noGuess,
+    board_hash:   game.boardHash,
+    bbbv:         game.bbbv,
+    left_clicks:  game.leftClicks,
+    right_clicks: game.rightClicks,
+    chord_clicks: game.chordClicks,
+    // F-MS-VERIFY: the server replays the log on the board to check the win.
+    game_token:   gameToken,
+    chording:     game.chording,
+    log:          game.rewindLog,
   };
 
   try {

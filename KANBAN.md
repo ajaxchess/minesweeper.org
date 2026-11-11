@@ -12,6 +12,7 @@
 - F86 Independence Day Theme — site default on July 4 @earl
 
 ## In Progress
+- F-MS-VERIFY Classic Minesweeper verified scores — server replays the move log (intent/MinesweeperVerifiedScores.md) @richard
 
 ## Review
 

@@ -126,11 +126,12 @@ never promote an unreplayed score onto a list.
    the board, timestamps never decreasing.
 4. Replaying the log never reveals a mine, and the board is won exactly on the
    last entry.
-5. The claimed `time_ms` is within 1.5 s after the last log entry, and is not
-   longer than the wall-clock time since the token was issued plus 5 s.
+5. The timestamp of the winning click is not longer than the wall-clock time since
+   the token was issued plus 5 s.
 
-For a verified score the server stores the 3BV it computes from the board and the
-click counts it counts from the log.
+For a verified score the server ignores the numbers in the request: the stored
+time is the timestamp of the winning click, the 3BV is computed from the board and
+the click counts are counted from the log.
 
 **Rules the engine must share with `minesweeper.js`**
 
@@ -176,4 +177,30 @@ click counts it counts from the log.
 
 ## Implementation Notes
 
-*Filled in when work completes.*
+Built 2026-11-11, not yet deployed. Status stays `in-progress` until the open
+questions are answered and the first production day has been checked.
+
+- `minesweeper_engine.py` — pure replay engine and 3BV, no web or database imports.
+- `score_verification.py` — candidate test, token, status values and
+  `listed_scores()`, the one filter every public classic list goes through
+  (`/api/scores/{mode}`, the archive pages, `/api/replay-scores`, the leaderboard
+  hub in `leaderboard_platform.py`).
+- `POST /api/scores/start` issues the token; `POST /api/scores` accepts
+  `game_token`, `chording` and `log` and answers `listed: true|false`.
+- `scores.verification` and `scores.game_nonce` (unique index) are added by
+  `_apply_migrations()`. The migration is MySQL DDL and could only be exercised on
+  SQLite locally: watch the first staging start.
+- `minesweeper.js` requests the token on the first click and sends the log with the
+  score (`?v=12`). The score reads from the finished game, because the next game
+  can already have started while the token request is awaited.
+- Parity: `tests/fixtures/gen_minesweeper_js_games.js` plays 30 games through the
+  real script (all five modes, chording on and off, flag mode, question marks,
+  no-op clicks) and saves the request bodies; `tests/test_minesweeper_engine.py`
+  replays them. `tests/test_score_verification.py` covers the API.
+- A game whose replay fails is not written to `game_history`, which feeds the best
+  times on public profiles.
+- `/admin/hscleaning` shows each score's status.
+
+Not done: the no-guess flag is still taken from the request (checking it needs a
+solver), and guests' site-wide one-score-per-board rule is unchanged (Open
+Question 3).
