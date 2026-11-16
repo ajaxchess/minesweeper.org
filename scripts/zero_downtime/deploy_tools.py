@@ -11,7 +11,7 @@ even when a copy's virtualenv is broken.
     watch-verdict  Roll back? Apache access-log lines on stdin; prints JSON.
     write-alert    Write the /admin deploy banner (admin_routes.read_deploy_alert).
 
-See intent/ZeroDowntimeDeploy.md, decisions 4, 5 and 7.
+See docs/features/ZeroDowntimeDeploy.md, decisions 4, 5 and 7.
 """
 from __future__ import annotations
 

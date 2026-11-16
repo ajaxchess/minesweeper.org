@@ -1,7 +1,7 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────────────────────
 # pvp_catchup.sh — nightly: bring PvP up to the website's commit (F-ZERO-DOWNTIME,
-# intent/ZeroDowntimeDeploy.md decision 7). PvP skips deploys that don't affect
+# docs/features/ZeroDowntimeDeploy.md decision 7). PvP skips deploys that don't affect
 # it, so without this it could fall behind indefinitely.
 #
 # Cron, 4 AM US Central in winter (5 AM in summer; the server runs on UTC):

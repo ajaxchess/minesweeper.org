@@ -1,7 +1,7 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────────────────────
 # deploy.sh — zero-downtime production deploy of the minesweeper.org website
-# (F-ZERO-DOWNTIME; design: intent/ZeroDowntimeDeploy.md;
+# (F-ZERO-DOWNTIME; design: docs/features/ZeroDowntimeDeploy.md;
 #  operations: docs/zero-downtime-deploy-runbook.md)
 #
 # Two copies of the site, blue (port 8010) and green (8011), sit behind an Apache

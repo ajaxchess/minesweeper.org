@@ -1131,7 +1131,7 @@ def _migrate_numbers_match_puzzle_date():
 _SCHEDULER_LOCK_PATH = os.environ.get(  # nosec B108 — lock file, no sensitive data written here
     "MINESWEEPER_SCHEDULER_LOCK", "/tmp/minesweeper_scheduler.lock")
 # 'off' for the PvP service: it can run code up to a day older than the website,
-# so it must never run the daily jobs (intent/ZeroDowntimeDeploy.md).
+# so it must never run the daily jobs (docs/features/ZeroDowntimeDeploy.md).
 def _switch_on(value: str) -> bool:
     return value.strip().lower() not in ("off", "0", "false", "no")
 

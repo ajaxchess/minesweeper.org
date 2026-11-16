@@ -1,6 +1,6 @@
 # Zero-Downtime Deploys — Runbook
 
-Feature: F-ZERO-DOWNTIME. Design and decisions: `intent/ZeroDowntimeDeploy.md`.
+Feature: F-ZERO-DOWNTIME. Design and decisions: `docs/features/ZeroDowntimeDeploy.md`.
 Code: `scripts/zero_downtime/`. Tests: `tests/test_zero_downtime_*.py`.
 **Live since 2026-11-16 00:50 UTC** (cutover notes at the end).
 

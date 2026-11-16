@@ -1,6 +1,6 @@
 # shellcheck shell=bash
 # lib.sh — shared by deploy.sh and pvp_catchup.sh (F-ZERO-DOWNTIME).
-# Layout and reasoning: intent/ZeroDowntimeDeploy.md, docs/zero-downtime-deploy-runbook.md.
+# Layout and reasoning: docs/features/ZeroDowntimeDeploy.md, docs/zero-downtime-deploy-runbook.md.
 
 BASE="${MS_ZD_BASE:-/home/ubuntu}"
 LIVE_LINK="$BASE/minesweeper"                  # symlink → minesweeper-blue | minesweeper-green

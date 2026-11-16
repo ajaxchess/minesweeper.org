@@ -17,6 +17,7 @@
 ## Review
 
 ## Done
+- F-ZERO-DOWNTIME Zero-downtime deploys: blue/green website copies behind an Apache balancer, automatic rollback, PvP restarts only when affected (docs/features/ZeroDowntimeDeploy.md) @richard
 - F1 User Profile — Login with Google, save user info in database
 - F2 Multiplayer game mode — WebSockets, match history
 - F3 No Guessing mode

@@ -1,6 +1,6 @@
 # Zero-Downtime Deploys for the Main Website
 
-**Status:** in-progress
+**Status:** done
 **Feature ID:** F-ZERO-DOWNTIME
 **Author:** Richard Cross
 **Date:** 2026-11-14
@@ -257,7 +257,13 @@ reviewed and merged* *(2026-11-14)*.
 ## Implementation Notes
 
 **Code built 2026-11-15. Cut over 2026-11-16 00:50 UTC** (log in the runbook).
-Status stays `in-progress` until the first real deploy through `deploy.sh`.
+
+- **First real deploy** (`5cf34092`, 2026-11-16 01:05 UTC): green prepared and
+  smoke-tested in 22 s, switch at 01:05:25, PvP correctly left alone (docs and
+  scripts only), 5-minute watch saw 955 requests and no errors, the next cron
+  tick waited for the lock. A load loop during the deploy: 947 requests, all
+  200, slowest 0.91 s. Before this feature a deploy froze the site for up to
+  about 40 s.
 
 - Cutover measurement: with Apache health checks, 1,175 requests across two
   switches under load, none failed and none slower than 2 s (slowest 1.7 s).
