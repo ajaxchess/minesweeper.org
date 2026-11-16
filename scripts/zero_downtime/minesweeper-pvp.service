@@ -1,0 +1,32 @@
+# minesweeper-pvp.service — PvP / duel service for zero-downtime deploys (F-ZERO-DOWNTIME).
+# Replaces scripts/minesweeper-pvp.service at the cutover. Differences:
+#   - runs from its own copy (/home/ubuntu/minesweeper-pvp), which deploy.sh changes
+#     only when it restarts PvP, so PvP never reads files from another commit;
+#   - never runs the daily jobs (MINESWEEPER_SCHEDULER=off): it can be up to a day
+#     behind the website.
+[Unit]
+Description=Minesweeper PvP/duel (single worker, owns in-memory game state)
+After=network.target mysql.service
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/minesweeper-pvp
+Environment=MINESWEEPER_SCHEDULER=off
+Environment=MINESWEEPER_UPLOADS_DIR=/home/ubuntu/minesweeper-shared/uploads
+# SINGLE worker: duel.py keeps games and matchmaking queues in process memory.
+ExecStart=/home/ubuntu/minesweeper-pvp/venv/bin/gunicorn main:app \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --workers 1 \
+    --bind 127.0.0.1:8050 \
+    --timeout 120 \
+    --graceful-timeout 30 \
+    --keep-alive 5 \
+    --access-logfile - \
+    --error-logfile -
+KillMode=mixed
+TimeoutStopSec=45
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

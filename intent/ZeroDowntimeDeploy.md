@@ -197,26 +197,34 @@ of it the old copy loading.
   about 3.3 GB available, so two copies fit.
 - CPU is tighter: the server has 2 cores, and four workers loading the app take
   about 35 seconds of CPU each. While the new copy loads, live traffic is slower.
-  The new copy starts at lower priority (`nice`).
+  The new copy loads with a low systemd `CPUWeight` (20) and is raised to normal
+  (100) once it passes its health check.
 
 ### 9. Files that must not live in any copy
 
-Shared in `/home/ubuntu/minesweeper-shared/`, symlinked into all three copies:
+Shared in `/home/ubuntu/minesweeper-shared/`:
 
-- `.env`
-- `static/uploads/` — jigsaw photos uploaded by players
-- Hand-placed, gitignored folders: `static/html`, `static/mvs`, `analysis`,
-  `business`, `minesweeperbootcamp`
-- Any other gitignored path found in the live directory at cutover time
+- `.env`, symlinked into all three copies.
+- **Players' uploads** (15 Puzzle and Jigsaw photos) in `uploads/`. Not a symlink:
+  `static/uploads/` also holds 13 files committed to git, and a checkout would
+  write through a symlink. Instead the app reads and writes uploads through
+  `settings.upload_dir()`, which follows `MINESWEEPER_UPLOADS_DIR` (unset outside
+  production, so `static/uploads/` as before), and Apache serves `/static/uploads`
+  from the shared folder.
+- Hand-placed, gitignored files (`analysis/`, `static/html/`, `static/mvs/`,
+  `minesweeperbootcamp/`, the résumé in `business/`, …): each path git reports as
+  ignored in the live checkout is copied once and symlinked into every copy.
 
 ### 10. One-time server cutover
 
 *Richard with Claude, in a working session at a quiet hour, after the code is
 reviewed and merged* *(2026-11-14)*.
 
-- **Prerequisite:** production must first catch up with this week's commits. The
-  staging gate has been blocked since 2026-11-11 by the old
-  `minesweeper-staging.service` holding port 8002; Richard is handling it.
+- **Prerequisite:** production must first catch up with this week's commits.
+  *Met 2026-11-15:* the staging gate, blocked since 2026-11-11 by the old
+  `minesweeper-staging.service` holding port 8002, was cleared and `e1c660c` was
+  deployed at 03:15 UTC.
+- Step by step, with checks and a back-out: `docs/zero-downtime-deploy-runbook.md`.
 - Enable `proxy_balancer`, `lbmethod_byrequests` and `slotmem_shm` (installed,
   not enabled); edit the minesweeper.org vhost; one graceful Apache reload.
 - Create the three worktrees, their virtualenvs and the shared folder.
@@ -244,4 +252,30 @@ reviewed and merged* *(2026-11-14)*.
 
 ## Implementation Notes
 
-*Filled in when work completes.*
+**Code built 2026-11-15; server cutover not done yet** (Status stays `in-progress`).
+
+- `scripts/zero_downtime/`: `deploy.sh` (deploy, `--force`, `--rollback`,
+  `--status`), `pvp_catchup.sh`, `lib.sh`, `deploy_tools.py` (PvP rules, rollback
+  threshold, alert file), `setup_copies.sh` (one-time copies), the two systemd
+  units and the Apache snippet.
+- App: the scheduler retries its lock every 10 s and can be switched off
+  (`MINESWEEPER_SCHEDULER=off`, used by PvP); the lock path is configurable
+  (`MINESWEEPER_SCHEDULER_LOCK`). Production previously shared
+  `/tmp/minesweeper_scheduler.lock` with staging on the same host, so whichever
+  started first ran the daily jobs; production now uses its own lock file.
+- App: `/admin` deploy banner and dismiss (`admin_routes.read_deploy_alert`).
+- App: uploads through `settings.upload_dir()` (decision 9).
+- `--rollback` when both copies are on the same commit is a plain switch, nothing
+  blocked: used to prove a switch under load at the cutover.
+- Tests: `tests/test_zero_downtime_app.py` (rules, banner, scheduler) and
+  `tests/test_zero_downtime_deploy.py`, which runs the real `deploy.sh` end to end
+  against git worktrees with stand-in systemctl and web servers: deploy, PvP skip
+  and restart, failed health check, automatic rollback, manual rollback, locking,
+  nightly catch-up.
+- Not testable off the server, so checked during the cutover: Apache balancer
+  failover on a refused port (including POSTs), systemd `KillMode=mixed` graceful
+  stop, and the real Apache log format.
+- Known residual risk: a request that reaches the old copy in the last few
+  milliseconds before its workers close their listening socket can be reset and
+  return a 502 (it was already accepted, so Apache can't fail it over). At about
+  one request every two seconds this should be rare; runbook step 8 measures it.

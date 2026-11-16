@@ -57,6 +57,11 @@ The deploy script (`scripts/minesweeper_service_update_and_restart.sh`) combines
 **Never edit `database.py` directly.** Edit `database_template.py` for schema or
 connection changes; the generated file will be overwritten on next deploy.
 
+**Schema changes must work with the previous release** (F-ZERO-DOWNTIME). During
+a deploy the old copy keeps serving for a few seconds after the new copy has run
+its startup migrations. Add columns and tables freely; to drop or rename one, use
+two deploys (stop using it, then remove it).
+
 ## Deployment
 
 `scripts/minesweeper_service_update_and_restart.sh` runs on the server:
@@ -80,6 +85,14 @@ annotation captures the UTC timestamp of the test run) and writes the SHA to
 `minesweeper_last_good_commit`. Production deploy gates on that file.
 
 See `docs/staging-gate-runbook.md` for the full flow and troubleshooting steps.
+
+**Zero-downtime deploys (F-ZERO-DOWNTIME) — cutover pending.** Once the cutover in
+`docs/zero-downtime-deploy-runbook.md` is done, production runs two alternating
+copies (`minesweeper-web@blue` on 8010, `@green` on 8011) behind an Apache
+balancer, deployed by `scripts/zero_downtime/deploy.sh`, and the steps above
+describe the old script. PvP runs from its own copy and restarts only when a
+deploy affects it (`scripts/zero_downtime/deploy_tools.py`). Players' uploads go
+through `settings.upload_dir()` — never hard-code `static/uploads`.
 
 ## Intent Workflow
 

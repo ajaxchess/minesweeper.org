@@ -80,7 +80,7 @@ templates.env.globals["twitter_handle"]        = Config(".env")("TWITTER_HANDLE"
 templates.env.filters["autolink"]              = _autolink
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-_JIGSAW_UPLOAD_DIR = os.path.join("static", "uploads", "jigsaw")
+_JIGSAW_UPLOAD_DIR = site_settings.upload_dir("jigsaw")
 
 _APACHE_LOG_GLOB = "/var/log/apache2/minesweeper.org-ssl-access.log*"
 _LOG_RE_URL = __import__("re").compile(
@@ -359,7 +359,7 @@ def admin_delete_15puzzle_photo(board_hash: str, request: Request, db: Session =
     photo = db.query(FifteenPuzzlePhoto).filter_by(board_hash=board_hash).first()
     if not photo:
         raise HTTPException(status_code=404, detail="Not found")
-    filepath = os.path.join("static", "uploads", "15puzzle", photo.filename)
+    filepath = os.path.join(site_settings.upload_dir("15puzzle"), photo.filename)
     if os.path.exists(filepath):
         os.remove(filepath)
     db.delete(photo)
@@ -398,7 +398,7 @@ def admin_delete_member_puzzle(board_hash: str, request: Request, db: Session = 
     puzzle = db.query(MemberPuzzle).filter_by(board_hash=board_hash).first()
     if not puzzle:
         raise HTTPException(status_code=404, detail="Not found")
-    upload_dir = os.path.join("static", "uploads", "15puzzle")
+    upload_dir = site_settings.upload_dir("15puzzle")
     for fname in (puzzle.tile_filename, puzzle.reveal_filename):
         if fname:
             fpath = os.path.join(upload_dir, fname)
@@ -496,6 +496,41 @@ def admin_unapprove_jigsaw_photo(board_hash: str, request: Request, db: Session 
     photo.approved = False
     db.commit()
     return RedirectResponse("/admin/jigsaw-photos", status_code=303)
+
+
+# ── Deploy alert (F-ZERO-DOWNTIME) ───────────────────────────────────────────
+# scripts/zero_downtime/deploy.sh writes this file when a deploy fails its health
+# check or is rolled back. The dashboard shows it until an admin dismisses it.
+DEPLOY_ALERT_PATH = os.environ.get(
+    "MINESWEEPER_DEPLOY_ALERT", "/home/ubuntu/deploy_state/minesweeper_deploy_alert.json")
+
+
+def read_deploy_alert() -> dict | None:
+    """The current deploy alert, or None. An unreadable file still shows a banner."""
+    try:
+        with open(DEPLOY_ALERT_PATH, encoding="utf-8") as fh:
+            alert = json.load(fh)
+    except FileNotFoundError:
+        return None
+    except (OSError, ValueError):
+        return {"reason": f"The deploy alert file could not be read: {DEPLOY_ALERT_PATH}"}
+    if not isinstance(alert, dict):
+        return {"reason": f"The deploy alert file is not in the expected format: {DEPLOY_ALERT_PATH}"}
+    log = alert.get("log")
+    alert["log"] = [str(line) for line in log][-40:] if isinstance(log, list) else []
+    return alert
+
+
+@admin_router.post("/admin/deploy-alert/dismiss")
+def admin_dismiss_deploy_alert(request: Request):
+    """Hide the deploy banner. The last dismissed alert is kept next to it."""
+    user = get_current_user(request)
+    require_admin(request, user)
+    try:
+        os.replace(DEPLOY_ALERT_PATH, DEPLOY_ALERT_PATH.removesuffix(".json") + ".dismissed.json")
+    except FileNotFoundError:
+        pass
+    return RedirectResponse("/admin", status_code=303)
 
 
 @admin_router.get("/admin", response_class=HTMLResponse)
@@ -672,6 +707,7 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         "alert_operations":    alert_operations,
         "alert_blog":          alert_blog,
         "alert_contact":       alert_contact,
+        "deploy_alert":        read_deploy_alert(),
     })
 
 @admin_router.get("/admin/bootcamp", response_class=HTMLResponse)

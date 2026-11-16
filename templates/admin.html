@@ -4,6 +4,28 @@
 {% block content %}
 <div class="lb-wrapper">
 
+  {% if deploy_alert %}
+  {# F-ZERO-DOWNTIME: written by scripts/zero_downtime/deploy.sh #}
+  <div role="alert" style="border:2px solid #d9534f;border-radius:8px;padding:1rem 1.25rem;margin:0 0 1.5rem;background:rgba(217,83,79,0.12);">
+    <strong>⚠ Deploy problem{% if deploy_alert.kind %}: {{ deploy_alert.kind | replace("_", " ") }}{% endif %}</strong>
+    <p style="margin:0.5rem 0;">{{ deploy_alert.reason }}</p>
+    <p style="margin:0 0 0.5rem;font-size:0.85rem;color:var(--text-dim);">
+      {% if deploy_alert.time %}{{ deploy_alert.time }} · {% endif %}
+      {% if deploy_alert.commit %}commit <code>{{ deploy_alert.commit[:8] }}</code>{% endif %}
+      {% if deploy_alert.serving %} · the site is serving <code>{{ deploy_alert.serving[:8] }}</code>{% endif %}
+    </p>
+    {% if deploy_alert.log %}
+    <details><summary style="cursor:pointer;">Deploy log</summary>
+      <pre style="white-space:pre-wrap;font-size:0.75rem;max-height:20rem;overflow:auto;">{{ deploy_alert.log | join("\n") }}</pre>
+    </details>
+    {% endif %}
+    <form method="post" action="/admin/deploy-alert/dismiss" style="margin-top:0.75rem;">
+      <button type="submit">Dismiss</button>
+      <span style="font-size:0.8rem;color:var(--text-dim);">Full log: <code>/tmp/minesweeper-deploy.log</code> on the server. Runbook: <code>docs/zero-downtime-deploy-runbook.md</code>.</span>
+    </form>
+  </div>
+  {% endif %}
+
   <h1 class="lb-title">Admin Dashboard</h1>
   <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;">{{ today }} · signed in as {{ user.email }}</p>
   <p style="text-align:center;margin-bottom:1.5rem;">

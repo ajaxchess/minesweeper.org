@@ -1,0 +1,40 @@
+# minesweeper-web@.service — one copy of the minesweeper.org website (F-ZERO-DOWNTIME).
+# Instances: minesweeper-web@blue (port 8010) and minesweeper-web@green (port 8011).
+# Normally only one runs; deploy.sh starts the idle one, checks it, then stops the
+# live one. Apache balances over both ports and sends requests to whichever is up.
+# Install: sudo cp 'scripts/zero_downtime/minesweeper-web@.service' /etc/systemd/system/
+#          sudo systemctl daemon-reload
+[Unit]
+Description=Minesweeper website, %i copy (blue/green deploys)
+After=network.target mysql.service
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/minesweeper-%i
+# MS_WEB_PORT — written by setup_copies.sh.
+EnvironmentFile=/home/ubuntu/minesweeper-shared/web-%i.env
+# Both copies share one scheduler lock, separate from staging's.
+Environment=MINESWEEPER_SCHEDULER_LOCK=/tmp/minesweeper_prod_scheduler.lock
+# Players' uploads live outside the copies; Apache serves them as /static/uploads.
+Environment=MINESWEEPER_UPLOADS_DIR=/home/ubuntu/minesweeper-shared/uploads
+# Never route /duel, /duelold, /pvp, /pvpbeta or /ws/ here: they need duel.py's
+# in-memory state, which lives only in minesweeper-pvp.service.
+ExecStart=/home/ubuntu/minesweeper-%i/venv/bin/gunicorn main:app \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --workers 4 \
+    --bind 127.0.0.1:${MS_WEB_PORT} \
+    --timeout 120 \
+    --graceful-timeout 30 \
+    --keep-alive 5 \
+    --access-logfile - \
+    --error-logfile -
+# Let gunicorn stop its workers gracefully: SIGTERM goes to the master only.
+KillMode=mixed
+TimeoutStopSec=45
+Restart=on-failure
+RestartSec=5
+
+[Install]
+# deploy.sh enables the live copy and disables the idle one, so a reboot starts
+# only the copy that was serving.
+WantedBy=multi-user.target

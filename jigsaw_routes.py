@@ -162,7 +162,7 @@ def _enrich_with_profiles(scores: list, db) -> list:
 # ── Jigsaw Puzzle ─────────────────────────────────────────────────────────────
 
 _JIGSAW_PUZZLE_DIR = os.path.join("static", "img", "puzzle")
-_JIGSAW_UPLOAD_DIR = os.path.join("static", "uploads", "jigsaw")
+_JIGSAW_UPLOAD_DIR = site_settings.upload_dir("jigsaw")
 _JIGSAW_DIFFICULTIES = ("beginner", "intermediate", "expert")
 
 

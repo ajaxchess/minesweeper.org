@@ -13,6 +13,18 @@
 
 from datetime import date, datetime, timedelta
 from functools import lru_cache
+import os
+
+# ── Uploaded photos (15 Puzzle, Jigsaw) ──────────────────────────────────────
+# Players' uploads must outlive a deploy. In production the website runs from two
+# alternating copies (F-ZERO-DOWNTIME), so uploads live in one shared folder that
+# Apache serves as /static/uploads; elsewhere they stay in static/uploads.
+UPLOADS_DIR: str = os.environ.get("MINESWEEPER_UPLOADS_DIR", os.path.join("static", "uploads"))
+
+
+def upload_dir(kind: str) -> str:
+    """Folder for one kind of upload ('15puzzle', 'jigsaw'), served at /static/uploads/<kind>/."""
+    return os.path.join(UPLOADS_DIR, kind)
 
 DEFAULT_SKIN: str = 'dark'
 ALLOWED_SKINS: tuple[str, ...] = ('default', 'dark', 'light', 'tentaizu', 'diana', 'flower', 'flower-light', 'mexico')

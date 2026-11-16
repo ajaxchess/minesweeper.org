@@ -1124,8 +1124,22 @@ def _migrate_numbers_match_puzzle_date():
 # open+lock this file gets True and runs the scheduler; the rest skip it. The
 # fd is kept open for the process's lifetime — closing it (or process exit)
 # releases the lock so a replacement process can win it next time.
-_SCHEDULER_LOCK_PATH = "/tmp/minesweeper_scheduler.lock"  # nosec B108 — lock file, no sensitive data written here
+#
+# Every process that may run the jobs must use the same lock path. In production
+# both website copies (blue and green, F-ZERO-DOWNTIME) set MINESWEEPER_SCHEDULER_LOCK
+# to the same file; staging keeps the default so it never takes production's lock.
+_SCHEDULER_LOCK_PATH = os.environ.get(  # nosec B108 — lock file, no sensitive data written here
+    "MINESWEEPER_SCHEDULER_LOCK", "/tmp/minesweeper_scheduler.lock")
+# 'off' for the PvP service: it can run code up to a day older than the website,
+# so it must never run the daily jobs (intent/ZeroDowntimeDeploy.md).
+def _switch_on(value: str) -> bool:
+    return value.strip().lower() not in ("off", "0", "false", "no")
+
+
+_SCHEDULER_ENABLED = _switch_on(os.environ.get("MINESWEEPER_SCHEDULER", "on"))
+SCHEDULER_LOCK_RETRY_SECS = 10
 _scheduler_lock_file = None
+_scheduler_waiter_stop = threading.Event()
 
 
 def _acquire_scheduler_lock() -> bool:
@@ -1141,22 +1155,50 @@ def _acquire_scheduler_lock() -> bool:
     return True
 
 
+def _start_scheduler():
+    scheduler.start()
+    logger.info("Scheduler started — scores reset daily at midnight UTC (this process holds the scheduler lock).")
+    threading.Thread(target=_backfill_web_traffic,         daemon=True).start()
+    threading.Thread(target=generate_tametsi_dailies,      daemon=True).start()
+    threading.Thread(target=generate_numbers_match_daily,  daemon=True).start()
+
+
+def _wait_for_scheduler_lock(stop, acquire, start, interval: float) -> bool:
+    """Retry the lock until this process wins it, or until `stop` is set.
+
+    During a blue/green switch the old copy holds the lock until it stops, so the
+    new copy must pick it up afterwards, not only at startup. Also covers a crashed
+    worker that held it."""
+    while not stop.wait(interval):
+        if acquire():
+            start()
+            return True
+    return False
+
+
 # Create DB tables and start scheduler on startup
 @app.on_event("startup")
 def startup():
     init_db()
     _migrate_numbers_match_puzzle_date()
-    if _acquire_scheduler_lock():
-        scheduler.start()
-        logger.info("Scheduler started — scores reset daily at midnight UTC (this process holds the scheduler lock).")
-        threading.Thread(target=_backfill_web_traffic,         daemon=True).start()
-        threading.Thread(target=generate_tametsi_dailies,      daemon=True).start()
-        threading.Thread(target=generate_numbers_match_daily,  daemon=True).start()
+    if not _SCHEDULER_ENABLED:
+        logger.info("Scheduler disabled for this service (MINESWEEPER_SCHEDULER=off).")
+    elif _acquire_scheduler_lock():
+        _start_scheduler()
     else:
-        logger.info("Scheduler skipped — another process holds the scheduler lock.")
+        logger.info("Scheduler waiting — another process holds the scheduler lock; retrying every %ss.",
+                    SCHEDULER_LOCK_RETRY_SECS)
+        # Look the functions up at call time so tests can replace them.
+        threading.Thread(
+            target=_wait_for_scheduler_lock,
+            args=(_scheduler_waiter_stop, lambda: _acquire_scheduler_lock(),
+                  lambda: _start_scheduler(), SCHEDULER_LOCK_RETRY_SECS),
+            daemon=True, name="scheduler-lock-wait",
+        ).start()
 
 @app.on_event("shutdown")
 def shutdown():
+    _scheduler_waiter_stop.set()
     if scheduler.running:
         scheduler.shutdown()
         logger.info("Scheduler shut down.")

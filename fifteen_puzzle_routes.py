@@ -412,7 +412,7 @@ async def upload_fifteen_puzzle_photo(
 
     # Save file — filename is server-generated (UUID), board_hash stored in DB only
     _ext_map = {"image/jpeg": ".jpg", "image/png": ".png"}
-    upload_dir = os.path.join("static", "uploads", "15puzzle")
+    upload_dir = site_settings.upload_dir("15puzzle")
     os.makedirs(upload_dir, exist_ok=True)
     filename = uuid.uuid4().hex + _ext_map[content_type]
     filepath = os.path.join(upload_dir, filename)
@@ -444,7 +444,7 @@ def delete_fifteen_puzzle_photo(board_hash: str, request: Request, db: Session =
     if photo.user_email != user["email"] and user.get("email") not in ADMIN_EMAILS:
         raise HTTPException(status_code=403, detail="Forbidden")
     # Delete file from disk
-    filepath = os.path.join("static", "uploads", "15puzzle", photo.filename)
+    filepath = os.path.join(site_settings.upload_dir("15puzzle"), photo.filename)
     if os.path.exists(filepath):
         os.remove(filepath)
     db.delete(photo)
@@ -457,7 +457,7 @@ def delete_all_fifteen_puzzle_photos(request: Request, db: Session = Depends(get
     user = require_user(request)
     photos = db.query(FifteenPuzzlePhoto).filter_by(user_email=user["email"]).all()
     for photo in photos:
-        filepath = os.path.join("static", "uploads", "15puzzle", photo.filename)
+        filepath = os.path.join(site_settings.upload_dir("15puzzle"), photo.filename)
         if os.path.exists(filepath):
             os.remove(filepath)
         db.delete(photo)
@@ -540,7 +540,7 @@ async def upload_member_puzzle(
 
     # Filenames are server-generated (UUID-based); board_hash is stored in the DB record only
     _ext_map = {"image/jpeg": ".jpg", "image/png": ".png"}
-    upload_dir = os.path.join("static", "uploads", "15puzzle")
+    upload_dir = site_settings.upload_dir("15puzzle")
     upload_dir_abs = os.path.abspath(upload_dir)
     os.makedirs(upload_dir_abs, exist_ok=True)
 
