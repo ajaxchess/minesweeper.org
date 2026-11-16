@@ -1,3 +1,11 @@
+B69 Minesweeper Android app (msmobile) used the iOS AdMob IDs.
+   app.json set androidAppId to the iOS app ID (~3782342262) and AdBanner.js used the iOS banner
+   unit (/1016578124) for Android too. AdMob IDs belong to one platform, so Android banners would
+   not fill and the traffic risked being flagged as invalid. Found while comparing Android 1.0.0
+   with 1.0.12. Fix: Android app ID ~6698276763 and banner unit /4239634384. The app ID is built
+   into the Android manifest, so it needs a new build: versionCode 13 (submitted 2026-11-16) still
+   has the iOS IDs and should not be promoted.
+
 B68 Bootcamp analyzer read every mine layout with the wrong bit order.
    The browser writes board_hash with bit i = cell i, least significant bit first in each byte
    (calcBoardHash in minesweeper.js; replay.js and rewind.js decode it the same way).

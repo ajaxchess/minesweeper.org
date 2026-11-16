@@ -22,7 +22,7 @@
     },
     "android": {
       "package": "org.minesweeper.app",
-      "versionCode": 11,
+      "versionCode": 13,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
@@ -42,7 +42,7 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-8102958922361899~3782342262",
+          "androidAppId": "ca-app-pub-8102958922361899~6698276763",
           "iosAppId": "ca-app-pub-8102958922361899~3782342262"
         }
       ],

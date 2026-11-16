@@ -7,9 +7,10 @@
  * autoSubmit is enabled).  Changing the key causes React to unmount and
  * remount the BannerAd, which requests a fresh ad from AdMob.
  *
- * TODO: replace Android ad unit with real ID once Android app is approved in AdMob:
- *   Android ad unit: ca-app-pub-8102958922361899/XXXXXXXXXX
- *   Android App ID (app.json): ca-app-pub-3940256099942544~3347511713 → real ID
+ * AdMob IDs are per platform; never reuse one platform's IDs on the other.
+ *   iOS:     app ca-app-pub-8102958922361899~3782342262, banner .../1016578124
+ *   Android: app ca-app-pub-8102958922361899~6698276763, banner .../4239634384
+ * The app IDs are set in app.json (react-native-google-mobile-ads plugin).
  */
 
 import React from 'react';
@@ -18,7 +19,7 @@ import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 
 const AD_UNIT_ID = Platform.select({
   ios:     'ca-app-pub-8102958922361899/1016578124',
-  android: 'ca-app-pub-8102958922361899/1016578124',
+  android: 'ca-app-pub-8102958922361899/4239634384',
 });
 
 export default function AdBanner({ refreshKey = 0 }) {

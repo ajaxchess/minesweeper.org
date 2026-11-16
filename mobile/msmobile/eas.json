@@ -38,8 +38,7 @@
         "appleTeamId": "JGY24WS6U2"
       },
       "android": {
-        "serviceAccountKeyPath": "./google-play-service-account.json",
-        "track": "internal"
+        "track": "alpha"
       }
     }
   }
