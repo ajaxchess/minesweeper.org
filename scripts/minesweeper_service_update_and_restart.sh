@@ -1,4 +1,7 @@
 #!/bin/bash
+# RETIRED 2026-11-16 by F-ZERO-DOWNTIME: production deploys now run
+# scripts/zero_downtime/deploy.sh. Kept for the back-out in
+# docs/zero-downtime-deploy-runbook.md; not in cron.
 
 # --- Configuration ---
 STATE_DIR="/home/ubuntu/deploy_state"

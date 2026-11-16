@@ -2,6 +2,7 @@
 
 Feature: F-ZERO-DOWNTIME. Design and decisions: `intent/ZeroDowntimeDeploy.md`.
 Code: `scripts/zero_downtime/`. Tests: `tests/test_zero_downtime_*.py`.
+**Live since 2026-11-16 00:50 UTC** (cutover notes at the end).
 
 ## How it works
 
@@ -17,8 +18,9 @@ Apache (minesweeper.org)                              └─ 127.0.0.1:8011  min
 
 - Normally one website copy runs. A deploy updates the idle copy, starts it,
   checks `/health` (must report the target commit) and the smoke-test pages,
-  then stops the live copy. Apache sends each request to whichever port answers,
-  so there is no gap and **Apache is never reloaded by a deploy**.
+  then stops the live copy. Apache health-checks both ports every 2 seconds and
+  sends requests only to a copy that answers, so there is no gap and **Apache is
+  never reloaded by a deploy**.
 - PvP restarts only when the deploy changes something PvP uses
   (`scripts/zero_downtime/deploy_tools.py`, "restart unless clearly unrelated"),
   and nightly if it is behind (`pvp_catchup.sh`). Each PvP restart interrupts
@@ -129,7 +131,7 @@ journalctl -u minesweeper-web@blue -n 30 --no-pager | grep -i scheduler
 ### 4. Apache
 
 ```
-sudo a2enmod proxy_balancer lbmethod_byrequests slotmem_shm
+sudo a2enmod proxy_balancer lbmethod_byrequests slotmem_shm proxy_hcheck
 sudo cp /etc/apache2/sites-enabled/default-ssl.conf /home/ubuntu/minesweeper-shared/default-ssl.conf.pre-zd
 sudoedit /etc/apache2/sites-enabled/default-ssl.conf     # apply scripts/zero_downtime/minesweeper.org-vhost.conf
 sudo apachectl configtest
@@ -205,6 +207,27 @@ to `/home/ubuntu/minesweeper/scripts/archive_anon_pvp.py`.
 Watch `/tmp/minesweeper-deploy.log` when the next commit passes staging. Then fill
 in Implementation Notes in the intent file and set its Status to `done`.
 
+### Cutover log (2026-11-16, Richard with Claude)
+
+- 00:45 `36cdb8ca` deployed by the old pipeline; 00:46 old deploy cron off;
+  `setup_copies.sh` took 1.5 minutes; 26 uploads copied.
+- **Order changed:** PvP (step 7) went first. The old PvP service held the
+  scheduler lock; restarting it with the scheduler off handed the lock to the old
+  website service, so the overlap in steps 3–5 ran only blue's scheduler on its
+  new lock file plus the old service — 00:49:15–00:49:51, clear of the hour.
+- 00:49:32 Apache reloaded onto the balancer; 00:49:51 old `minesweeper-web`
+  stopped and disabled; live symlink → `minesweeper-blue`.
+- **Step 8, first run:** 753 requests, none failed, but 4 took 6–11 s, all while
+  the incoming copy was loading: gunicorn opens its port before its workers are
+  ready, and Apache sent requests to it. Fixed with Apache health checks
+  (`proxy_hcheck`, `hcuri=/health`), reloaded 00:54:20.
+- **Step 8, second run:** 1,175 requests (GET and POST) across two switches;
+  none failed, none over 2 s (slowest 1.7 s, during the incoming copy's load).
+- Cron switched to `deploy.sh` and `pvp_catchup.sh`; `archive_anon_pvp.py` now
+  runs from `/home/ubuntu/minesweeper`. Old crontab: `/home/ubuntu/crontab.pre-zd.txt`.
+- Apache backups: `/home/ubuntu/minesweeper-shared/default-ssl.conf.pre-zd`
+  (before the cutover) and `default-ssl.conf.balancer-v1` (before health checks).
+
 ### Back-out (from any step)
 
 ```
@@ -216,5 +239,5 @@ sudo cp /home/ubuntu/minesweeper-shared/minesweeper-pvp.service.pre-zd /etc/syst
 sudo systemctl daemon-reload && sudo systemctl restart minesweeper-pvp
 sudo systemctl disable --now minesweeper-web@blue minesweeper-web@green
 rsync -a /home/ubuntu/minesweeper-shared/uploads/ /home/ubuntu/git/minesweeper.org/static/uploads/
-# crontab: restore the old deploy line, remove the new ones
+crontab /home/ubuntu/crontab.pre-zd.txt
 ```

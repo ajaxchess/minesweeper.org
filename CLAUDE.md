@@ -86,11 +86,12 @@ annotation captures the UTC timestamp of the test run) and writes the SHA to
 
 See `docs/staging-gate-runbook.md` for the full flow and troubleshooting steps.
 
-**Zero-downtime deploys (F-ZERO-DOWNTIME) — cutover pending.** Once the cutover in
-`docs/zero-downtime-deploy-runbook.md` is done, production runs two alternating
-copies (`minesweeper-web@blue` on 8010, `@green` on 8011) behind an Apache
-balancer, deployed by `scripts/zero_downtime/deploy.sh`, and the steps above
-describe the old script. PvP runs from its own copy and restarts only when a
+**Zero-downtime deploys (F-ZERO-DOWNTIME) — live since 2026-11-16.** Production
+runs two alternating copies (`minesweeper-web@blue` on 8010, `@green` on 8011)
+behind an Apache balancer with health checks, deployed by
+`scripts/zero_downtime/deploy.sh` (cron, every 5 minutes). The numbered steps
+above describe the retired script, kept only for the back-out. Operations:
+`docs/zero-downtime-deploy-runbook.md`; `deploy.sh --status` shows what runs where. PvP runs from its own copy and restarts only when a
 deploy affects it (`scripts/zero_downtime/deploy_tools.py`). Players' uploads go
 through `settings.upload_dir()` — never hard-code `static/uploads`.
 

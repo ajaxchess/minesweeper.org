@@ -95,6 +95,10 @@ Decisions marked *(2026-11-14)* were settled in the design interview with Richar
 - When a port refuses connections, Apache retries the request on the other port.
   A stopped copy therefore costs nothing, and the switch happens by starting and
   stopping copies — **no Apache reload per deploy**.
+- Apache also health-checks both ports (`mod_proxy_hcheck`, `/health` every 2 s)
+  and sends traffic only to a copy that answers. Added at the cutover: gunicorn
+  opens its port before its workers have loaded the app, so without the check a
+  copy that is still loading received requests that waited up to 11 s.
 - Connection reuse to the backends is turned off (`disablereuse=On`). Otherwise a
   POST can be sent on a connection the old copy has just closed and come back as
   a 502. Connections are to localhost, so this costs very little.
@@ -252,7 +256,12 @@ reviewed and merged* *(2026-11-14)*.
 
 ## Implementation Notes
 
-**Code built 2026-11-15; server cutover not done yet** (Status stays `in-progress`).
+**Code built 2026-11-15. Cut over 2026-11-16 00:50 UTC** (log in the runbook).
+Status stays `in-progress` until the first real deploy through `deploy.sh`.
+
+- Cutover measurement: with Apache health checks, 1,175 requests across two
+  switches under load, none failed and none slower than 2 s (slowest 1.7 s).
+  Before the health checks were added, 4 of 753 took 6–11 s.
 
 - `scripts/zero_downtime/`: `deploy.sh` (deploy, `--force`, `--rollback`,
   `--status`), `pvp_catchup.sh`, `lib.sh`, `deploy_tools.py` (PvP rules, rollback
