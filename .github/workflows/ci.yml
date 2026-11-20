@@ -38,3 +38,41 @@ jobs:
             --severity-level medium \
             --confidence-level medium \
             -f txt
+
+  # Expo apps: fail when a dependency doesn't match the app's Expo SDK
+  # (Dependabot bumps passed CI before because nothing checked this).
+  mobile:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: msmobile
+            node: "20"
+            jest: true
+          - app: nmmobile
+            node: "22"   # Expo SDK 58 needs Node 22.13+
+            jest: false
+    defaults:
+      run:
+        working-directory: mobile/${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: mobile/${{ matrix.app }}/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Expo SDK version check
+        run: npx expo install --check
+        env:
+          CI: "1"
+
+      - name: Jest
+        if: ${{ matrix.jest }}
+        run: npx jest --ci
