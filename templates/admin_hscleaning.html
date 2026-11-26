@@ -12,6 +12,7 @@
     <a href="/admin/kanban">📋 {{ t.admin_kanban_board }}</a> &nbsp;|&nbsp;
     <a href="/admin/blog">💬 {{ t.admin_blog_comments }}</a> &nbsp;|&nbsp;
     <a href="/admin/analysis">📊 {{ t.admin_analysis }}</a> &nbsp;|&nbsp;
+    <a href="/admin/score-verification">✅ Score Verification</a> &nbsp;|&nbsp;
     <a href="/admin/web_traffic">🌐 Web Traffic</a> &nbsp;|&nbsp;
     <a href="/admin/contact">✉ Contact</a> &nbsp;|&nbsp;
     <a href="/admin/15puzzle-photos">🖼 15P Photos</a> &nbsp;|&nbsp;
@@ -132,7 +133,7 @@
           <td>{{ s.mode.value }}</td>
           <td>{{ "%.3f"|format((s.time_ms / 1000) if s.time_ms else s.time_secs) }}s</td>
           <td>{{ "✓" if s.no_guess else "" }}</td>
-          <td style="font-size:0.8rem;">{{ s.verification or "" }}</td>
+          <td style="font-size:0.8rem;"{% if s.verification_reason %} title="{{ s.verification_reason }}"{% endif %}>{{ s.verification or "" }}</td>
           <td style="font-size:0.75rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ s.board_hash or '' }}">{{ (s.board_hash or "")[:16] }}{% if s.board_hash and s.board_hash|length > 16 %}…{% endif %}</td>
           <td style="font-size:0.8rem;">{{ s.user_email or "guest" }}</td>
           <td style="font-size:0.8rem;">{{ s.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
@@ -224,7 +225,7 @@
             <td>{{ s.mode.value }}</td>
             <td>{{ "%.3f"|format((s.time_ms / 1000) if s.time_ms else s.time_secs) }}s</td>
             <td>{{ "✓" if s.no_guess else "" }}</td>
-          <td style="font-size:0.8rem;">{{ s.verification or "" }}</td>
+          <td style="font-size:0.8rem;"{% if s.verification_reason %} title="{{ s.verification_reason }}"{% endif %}>{{ s.verification or "" }}</td>
             <td style="font-size:0.8rem;">{{ s.user_email or "guest" }}</td>
             <td style="font-size:0.8rem;">{{ s.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
             <td>

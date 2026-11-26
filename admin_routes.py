@@ -2015,6 +2015,100 @@ def admin_hscleaning(
     })
 
 
+# ── F-MS-VERIFY-STATS: classic score verification statistics ──────────────────
+_SV_PERIODS = (1, 7, 30, 90)
+# Display order and labels for scores.verification values; None = saved before F-MS-VERIFY
+# or verification did not apply (switched off, or a mode the engine has no rules for).
+_SV_STATUSES = (
+    ("verified",   "Verified",   "Replayed and passed"),
+    ("failed",     "Failed",     "Replayed and failed"),
+    ("unverified", "Unverified", "Could reach a list, but sent no token or move log"),
+    ("app",        "App",        "Mobile app, listed under the grace rule"),
+    ("unchecked",  "Unchecked",  "Too slow to reach a list, not replayed"),
+    (None,         "Not applied", "Verification off, or a mode it does not cover"),
+)
+_SV_REJECTED = ("failed", "unverified")
+
+
+def _sv_key(value) -> str:
+    return value if value else "none"
+
+
+def _sv_pass_rate(counts: dict) -> float | None:
+    checked = counts.get("verified", 0) + sum(counts.get(s, 0) for s in _SV_REJECTED)
+    return round(100.0 * counts.get("verified", 0) / checked, 1) if checked else None
+
+
+@admin_router.get("/admin/score-verification", response_class=HTMLResponse)
+def admin_score_verification(request: Request, days: int = 7, db: Session = Depends(get_db)):
+    user = get_current_user(request)
+    require_admin(request, user)
+
+    days = days if days in _SV_PERIODS else 7
+    since = datetime.now(timezone.utc).replace(tzinfo=None, hour=0, minute=0, second=0,
+                                               microsecond=0) - timedelta(days=days - 1)
+    base = db.query(Score).filter(Score.created_at >= since)
+
+    def grouped(*cols):
+        return (db.query(*cols, Score.verification, func.count(Score.id))
+                .filter(Score.created_at >= since)
+                .group_by(*cols, Score.verification).all())
+
+    totals = {_sv_key(s): n for s, n in
+              db.query(Score.verification, func.count(Score.id))
+              .filter(Score.created_at >= since).group_by(Score.verification).all()}
+    total = sum(totals.values())
+
+    def table(rows, label_of):
+        out: dict = {}
+        for *keys, status, n in rows:
+            label = label_of(*keys)
+            out.setdefault(label, {})[_sv_key(status)] = n
+        result = []
+        for label, counts in out.items():
+            counts["total"] = sum(counts.values())
+            result.append({"label": label, "counts": counts, "rate": _sv_pass_rate(counts)})
+        return result
+
+    by_day = sorted(table(grouped(func.date(Score.created_at)), lambda d: str(d)),
+                    key=lambda r: r["label"], reverse=True)
+    by_mode = sorted(table(grouped(Score.mode), lambda m: getattr(m, "value", m) or "—"),
+                     key=lambda r: -r["counts"]["total"])
+    by_client = sorted(table(grouped(Score.client_type), lambda c: c or "na"),
+                       key=lambda r: -r["counts"]["total"])
+
+    reasons = (db.query(Score.verification, Score.verification_reason, func.count(Score.id))
+               .filter(Score.created_at >= since, Score.verification.in_(_SV_REJECTED))
+               .group_by(Score.verification, Score.verification_reason)
+               .order_by(func.count(Score.id).desc()).all())
+    rejected_total = sum(totals.get(s, 0) for s in _SV_REJECTED)
+
+    recent = (base.filter(Score.verification.in_(_SV_REJECTED))
+              .order_by(Score.created_at.desc()).limit(50).all())
+
+    return templates.TemplateResponse(request, "admin_score_verification.html", {
+        "user": user,
+        "lang": get_lang(request),
+        "t": get_t(request),
+        "days": days,
+        "periods": _SV_PERIODS,
+        "since": since.date().isoformat(),
+        "statuses": [(_sv_key(k), label, desc) for k, label, desc in _SV_STATUSES],
+        "totals": totals,
+        "total": total,
+        "pass_rate": _sv_pass_rate(totals),
+        "rejected_total": rejected_total,
+        "by_day": by_day,
+        "by_mode": by_mode,
+        "by_client": by_client,
+        "reasons": [{"status": s, "reason": r or "not recorded", "n": n} for s, r, n in reasons],
+        "recent": recent,
+        "sv_mode": site_settings.SCORE_VERIFICATION_MODE,
+        "app_grace": site_settings.SCORE_VERIFICATION_APP_GRACE,
+        "list_size": site_settings.SCORE_LIST_SIZE,
+    })
+
+
 @admin_router.post("/admin/hscleaning/delete/{score_id}")
 def admin_hscleaning_delete(
     score_id: int,

@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Score Verification — Admin{% endblock %}
+
+{% block content %}
+{# F-MS-VERIFY-STATS: how classic score verification (F-MS-VERIFY) is going #}
+<style>
+  .sv-wrap { max-width: 1100px; margin: 0 auto; }
+  .sv-periods { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; margin: 0 0 1.25rem; }
+  .sv-periods a { padding: .35rem .9rem; border-radius: 999px; border: 1px solid var(--border, #444); text-decoration: none; font-size: .9rem; }
+  .sv-periods a.on { background: var(--accent, #3b82f6); border-color: var(--accent, #3b82f6); color: #fff; font-weight: 700; }
+  .sv-mode { text-align: center; font-size: .9rem; color: var(--text-dim); margin: 0 0 1.5rem; }
+  .sv-mode b { color: inherit; }
+  .sv-pill { display: inline-block; padding: .1rem .55rem; border-radius: 999px; font-size: .78rem; font-weight: 700; }
+  .sv-pill.observe { background: #fef3c7; color: #7c4a00; }
+  .sv-pill.enforce { background: #dcfce7; color: #14532d; }
+  .sv-pill.off { background: #e5e7eb; color: #374151; }
+  .sv-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .75rem; margin-bottom: 2rem; }
+  .sv-card { border: 1px solid var(--border, #444); border-radius: 10px; padding: .8rem 1rem; }
+  .sv-card .n { font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .sv-card .k { font-size: .85rem; font-weight: 700; }
+  .sv-card .d { font-size: .75rem; color: var(--text-dim); margin-top: .2rem; line-height: 1.3; }
+  .sv-card.verified .n { color: #16a34a; }
+  .sv-card.failed .n, .sv-card.unverified .n { color: #dc2626; }
+  .sv-card.rate { border-width: 2px; }
+  .sv-scroll { overflow-x: auto; }
+  .sv-scroll .lb-table td, .sv-scroll .lb-table th { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sv-num { text-align: right; }
+  .sv-bad { color: #dc2626; font-weight: 700; }
+  .sv-note { font-size: .8rem; color: var(--text-dim); margin: .5rem 0 0; }
+</style>
+
+<div class="lb-wrapper sv-wrap">
+
+  <h1 class="lb-title">✅ Score Verification</h1>
+  <p style="text-align:center;margin-bottom:1rem;">
+    <a href="/admin">⬅ {{ t.admin_dashboard }}</a> &nbsp;|&nbsp;
+    <a href="/admin/hscleaning">🧹 HS Cleaning</a> &nbsp;|&nbsp;
+    <a href="/admin/operations">⚙ {{ t.admin_operations }}</a>
+  </p>
+
+  <p class="sv-mode">
+    Mode <span class="sv-pill {{ sv_mode }}">{{ sv_mode }}</span>
+    {% if sv_mode == "observe" %}— scores are replayed and the result recorded, but every score is still listed.
+    {% elif sv_mode == "enforce" %}— only verified, app and older scores are listed.
+    {% else %}— no scores are replayed.{% endif %}
+    &nbsp;·&nbsp; App grace rule <b>{{ "on" if app_grace else "off" }}</b>
+    &nbsp;·&nbsp; Replayed when the score could reach the top {{ list_size }}.
+  </p>
+
+  <nav class="sv-periods" aria-label="Period">
+    {% for p in periods %}
+    <a href="/admin/score-verification?days={{ p }}" class="{{ 'on' if p == days }}">{{ "Today" if p == 1 else "Last " ~ p ~ " days" }}</a>
+    {% endfor %}
+  </nav>
+
+  <!-- ── Totals ─────────────────────────────────────────────────────────── -->
+  <div class="sv-cards">
+    <div class="sv-card rate">
+      <div class="k">Pass rate</div>
+      <div class="n">{{ "%.1f"|format(pass_rate) ~ "%" if pass_rate is not none else "—" }}</div>
+      <div class="d">Verified ÷ (verified + failed + unverified)</div>
+    </div>
+    <div class="sv-card">
+      <div class="k">All classic scores</div>
+      <div class="n">{{ "{:,}".format(total) }}</div>
+      <div class="d">Since {{ since }} (UTC)</div>
+    </div>
+    {% for key, label, desc in statuses %}
+    <div class="sv-card {{ key }}">
+      <div class="k">{{ label }}</div>
+      <div class="n">{{ "{:,}".format(totals.get(key, 0)) }}</div>
+      <div class="d">{{ desc }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% macro breakdown(title, rows, first) %}
+  <section class="admin-section" style="margin-bottom:2rem;">
+    <h2 class="admin-section-title">{{ title }}</h2>
+    {% if rows %}
+    <div class="sv-scroll">
+      <table class="lb-table">
+        <thead><tr>
+          <th>{{ first }}</th><th class="sv-num">Total</th>
+          {% for key, label, desc in statuses %}<th class="sv-num" title="{{ desc }}">{{ label }}</th>{% endfor %}
+          <th class="sv-num">Pass rate</th>
+        </tr></thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td>{{ r.label }}</td>
+            <td class="sv-num">{{ r.counts.total }}</td>
+            {% for key, label, desc in statuses %}
+            {% set n = r.counts.get(key, 0) %}
+            <td class="sv-num{% if n and key in ('failed', 'unverified') %} sv-bad{% endif %}">{{ n or "·" }}</td>
+            {% endfor %}
+            <td class="sv-num">{{ "%.1f"|format(r.rate) ~ "%" if r.rate is not none else "—" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p style="color:var(--text-dim);font-size:0.9rem;">No classic scores in this period.</p>
+    {% endif %}
+  </section>
+  {% endmacro %}
+
+  {{ breakdown("By day (UTC)", by_day, "Day") }}
+  {{ breakdown("By game mode", by_mode, "Mode") }}
+  {{ breakdown("By client", by_client, "Client") }}
+
+  <!-- ── Why scores fail ────────────────────────────────────────────────── -->
+  <section class="admin-section" style="margin-bottom:2rem;">
+    <h2 class="admin-section-title">Why scores fail</h2>
+    {% if reasons %}
+    <div class="sv-scroll">
+      <table class="lb-table">
+        <thead><tr><th>Reason</th><th>Status</th><th class="sv-num">Scores</th><th class="sv-num">Share</th></tr></thead>
+        <tbody>
+          {% for r in reasons %}
+          <tr>
+            <td>{{ r.reason }}</td>
+            <td>{{ r.status }}</td>
+            <td class="sv-num">{{ r.n }}</td>
+            <td class="sv-num">{{ "%.1f"|format(100.0 * r.n / rejected_total) }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="sv-note">Scores saved before reasons were recorded (Nov 26, 2026) show “not recorded”; the server log has their reason.</p>
+    {% else %}
+    <p style="color:var(--text-dim);font-size:0.9rem;">No failed or unverified scores in this period.</p>
+    {% endif %}
+  </section>
+
+  <!-- ── Recent failures ────────────────────────────────────────────────── -->
+  <section class="admin-section" style="margin-bottom:2rem;">
+    <h2 class="admin-section-title">Most recent failed and unverified scores</h2>
+    {% if recent %}
+    <div class="sv-scroll">
+      <table class="lb-table">
+        <thead><tr>
+          <th>ID</th><th>When (UTC)</th><th>Name</th><th>Mode</th><th class="sv-num">Time</th>
+          <th>Client</th><th>Status</th><th>Reason</th>
+        </tr></thead>
+        <tbody>
+          {% for s in recent %}
+          <tr>
+            <td style="color:var(--text-dim);font-size:0.8rem;">{{ s.id }}</td>
+            <td style="font-size:0.8rem;"><a href="/admin/hscleaning?mode={{ s.mode.value }}&date_str={{ s.created_at.strftime('%Y-%m-%d') }}">{{ s.created_at.strftime("%Y-%m-%d %H:%M") }}</a></td>
+            <td>{{ s.name }}{% if not s.user_email %} <span style="color:var(--text-dim);font-size:0.75rem;">(guest)</span>{% endif %}</td>
+            <td>{{ s.mode.value }}{% if s.no_guess %} NG{% endif %}</td>
+            <td class="sv-num">{{ "%.3f"|format((s.time_ms / 1000) if s.time_ms else s.time_secs) }}s</td>
+            <td style="font-size:0.8rem;">{{ s.client_type }}</td>
+            <td class="sv-bad" style="font-size:0.8rem;">{{ s.verification }}</td>
+            <td style="font-size:0.8rem;white-space:normal;">{{ s.verification_reason or "not recorded" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="sv-note">The last 50 in this period. The date opens that day in HS Cleaning.</p>
+    {% else %}
+    <p style="color:var(--text-dim);font-size:0.9rem;">None in this period.</p>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}

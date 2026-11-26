@@ -74,6 +74,7 @@ class Score(Base):
     # F-MS-VERIFY: NULL (saved before the feature) / verified / app / unchecked / unverified / failed.
     # List scores through score_verification.listed_scores(), never directly.
     verification = Column(String(16), nullable=True)
+    verification_reason = Column(String(64), nullable=True)  # why a score failed/unverified (F-MS-VERIFY-STATS)
     game_nonce   = Column(String(32), nullable=True)  # one-time start token nonce of a verified score
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -1938,6 +1939,8 @@ def _apply_migrations():
         # Classic verified scores: replay outcome + one-time token nonce (F-MS-VERIFY, 2026-11-11)
         ("scores",               "verification", "VARCHAR(16) NULL"),
         ("scores",               "game_nonce",   "VARCHAR(32) NULL"),
+        # Why a classic score failed verification (F-MS-VERIFY-STATS, 2026-11-26)
+        ("scores",               "verification_reason", "VARCHAR(64) NULL"),
     ]
     with engine.connect() as conn:
         for table, column, col_def in migrations:

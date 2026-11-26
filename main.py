@@ -1615,6 +1615,7 @@ def submit_score(payload: ScoreSubmit, request: Request, db: Session = Depends(g
         guest_token  = guest_token,
         client_type  = client_type,
         verification = status,
+        verification_reason = reason[:64] if reason else None,
         game_nonce   = nonce,
         **stats,
     )
