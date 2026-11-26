@@ -33,7 +33,7 @@ import WinModal                                  from '../components/WinModal';
 import WinToast                                  from '../components/WinToast';
 import AdBanner                                  from '../components/AdBanner';
 import { getPrefs, saveLocalScore }              from '../services/storage';
-import { submitScore }                           from '../services/apiService';
+import { submitScore, fetchGameToken, withMoveLog } from '../services/apiService';
 import { calc3BV, calcBoardHash }                from '../gameEngine';
 
 function formatTime(ms) {
@@ -60,8 +60,14 @@ export default function GameScreen({ navigation }) {
   const {
     rows, cols, mines, board, mineSet, revealed, flagged,
     explodedIdx, over, won, mode, noGuess, started,
-    leftClicks, rightClicks, chordClicks,
+    leftClicks, rightClicks, chordClicks, gameId, log,
   } = state;
+
+  // ── Start token (F-MS-VERIFY-APP): one per game, fetched when the game is set up
+  const gameTokenRef = useRef(null);
+  useEffect(() => {
+    gameTokenRef.current = fetchGameToken();
+  }, [gameId]);
 
   // ── Local UI state ────────────────────────────────────────────────────────
   const [flagMode,      setFlagMode]      = useState(false);
@@ -149,6 +155,9 @@ export default function GameScreen({ navigation }) {
   // ── Auto-new-game: submit score, show toast, reset after 5 s ─────────────
   const handleAutoNewGame = useCallback(async () => {
     if (!board || !mineSet) return;
+    // Taken now: newGame() below replaces both before the submission finishes.
+    const moveLog = log;
+    const tokenP  = gameTokenRef.current;
 
     const bbbv       = calc3BV(board, rows, cols, mineSet);
     const boardHash  = calcBoardHash(rows, cols, mineSet);
@@ -179,7 +188,7 @@ export default function GameScreen({ navigation }) {
         right_clicks: rightClicks,
         chord_clicks: chordClicks,
       };
-      const result = await submitScore(payload).catch(() => null);
+      const result = await submitScore(await withMoveLog(payload, moveLog, tokenP)).catch(() => null);
       await saveLocalScore(mode, guessKey, {
         ...payload,
         ...(result?.id != null ? { id: result.id } : {}),
@@ -199,7 +208,7 @@ export default function GameScreen({ navigation }) {
     }, 5000);
   // Board/game values are stable after won=true; newGame is stable
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [board, mineSet, rows, cols, elapsedMs, leftClicks, rightClicks, chordClicks, mode, noGuess, mines, newGame]);
+  }, [board, mineSet, rows, cols, elapsedMs, leftClicks, rightClicks, chordClicks, mode, noGuess, mines, newGame, log]);
 
   // ── Press routing ─────────────────────────────────────────────────────────
   const handlePressCell = useCallback((idx) => {
@@ -349,6 +358,7 @@ export default function GameScreen({ navigation }) {
         mode={mode} noGuess={noGuess} rows={rows} cols={cols} mines={mines}
         board={board} mineSet={mineSet} elapsedMs={elapsedMs}
         leftClicks={leftClicks} rightClicks={rightClicks} chordClicks={chordClicks}
+        log={log} gameTokenP={gameTokenRef.current}
         theme={theme} onNewGame={handleNewGame}
         autoSubmit={autoSubmit}
       />

@@ -33,7 +33,7 @@ import {
 
 import { calc3BV, calcBoardHash } from '../gameEngine';
 import { getPrefs, savePrefs, saveLocalScore } from '../services/storage';
-import { submitScore } from '../services/apiService';
+import { submitScore, withMoveLog } from '../services/apiService';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -68,6 +68,8 @@ export default function WinModal({
   leftClicks,
   rightClicks,
   chordClicks,
+  log,
+  gameTokenP,
   theme,
   onNewGame,
   autoSubmit = false,
@@ -137,7 +139,9 @@ export default function WinModal({
       chord_clicks: chordClicks,
     };
 
-    const result = await submitScore(payload);
+    // The move log and start token go to the server only (F-MS-VERIFY-APP);
+    // the copy kept on the phone stays small.
+    const result = await submitScore(await withMoveLog(payload, log, gameTokenP));
     await saveLocalScore(mode, guessKey, {
       ...payload,
       ...(result?.id != null ? { id: result.id } : {}),

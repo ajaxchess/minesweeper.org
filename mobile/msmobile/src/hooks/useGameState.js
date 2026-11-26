@@ -6,6 +6,14 @@
  *
  * Mines are NOT placed until the first cell is tapped (first-click safety).
  * Before first click the board is in "pending" state — all cells covered.
+ *
+ * Move log (F-MS-VERIFY-APP): every move the reducer performs is recorded as
+ * [t_ms, type, row, col] — 'l' reveal, 'r' flag toggle, 'c' chord — with t_ms
+ * counted from the first reveal. The server replays it with these exact rules
+ * (minesweeper_engine.replay(app_rules=True)) before the score is trusted, so a
+ * change to REVEAL, TOGGLE_FLAG, CHORD or bfsReveal must also change the server
+ * replay; regenerate tests/fixtures/msmobile_games.json with
+ * `node tests/fixtures/gen_msmobile_games.js` (repo root) so the parity test checks it.
  */
 
 import { useReducer, useCallback } from 'react';
@@ -18,10 +26,13 @@ import {
 
 // ── State shape ───────────────────────────────────────────────────────────────
 
-function makeInitialState(mode = 'beginner', noGuess = false) {
+let nextGameId = 1;
+
+export function makeInitialState(mode = 'beginner', noGuess = false) {
   const { rows, cols, mines } = BOARD_SIZES[mode];
   const n = rows * cols;
   return {
+    gameId:      nextGameId++,   // a new start token is fetched for each game
     mode,
     noGuess,
     rows,
@@ -38,7 +49,17 @@ function makeInitialState(mode = 'beginner', noGuess = false) {
     leftClicks:  0,
     rightClicks: 0,
     chordClicks: 0,
+    startTime:   null,           // action.now of the first reveal
+    log:         [],             // move log, see the header
   };
+}
+
+// One move log entry. `now` comes from the action (Date.now() at the tap), so the
+// reducer stays pure. Never goes backwards, which the server would reject.
+function logMove(state, now, type, idx, startTime = state.startTime) {
+  const last = state.log.length ? state.log[state.log.length - 1][0] : 0;
+  const t = startTime != null && now != null ? Math.max(last, Math.round(now - startTime)) : last;
+  return [...state.log, [t, type, Math.floor(idx / state.cols), idx % state.cols]];
 }
 
 // ── BFS reveal helper ─────────────────────────────────────────────────────────
@@ -70,7 +91,7 @@ function checkWon(revealed, mineSet, total) {
 
 // ── Reducer ───────────────────────────────────────────────────────────────────
 
-function reducer(state, action) {
+export function reducer(state, action) {
   switch (action.type) {
 
     case 'NEW_GAME':
@@ -92,6 +113,8 @@ function reducer(state, action) {
       let board    = state.board;
       let mineSet  = state.mineSet;
       let leftClicks = state.leftClicks + 1;
+      const startTime = started ? state.startTime : (action.now ?? null);
+      const log = logMove(state, action.now, 'l', idx, startTime);
 
       // First click — place mines now (safe zone around clicked cell)
       if (!started) {
@@ -109,7 +132,7 @@ function reducer(state, action) {
         const revealAll = new Uint8Array(rows * cols).fill(0);
         for (const mi of mineSet) revealAll[mi] = 1;
         return { ...state, board, mineSet, started: true, over: true,
-                 revealed: revealAll, explodedIdx: idx, leftClicks };
+                 revealed: revealAll, explodedIdx: idx, leftClicks, startTime, log };
       }
 
       // Safe cell — BFS reveal
@@ -125,6 +148,8 @@ function reducer(state, action) {
         won:      isWon,
         over:     isWon,
         leftClicks,
+        startTime,
+        log,
       };
     }
 
@@ -140,6 +165,7 @@ function reducer(state, action) {
         ...state,
         flagged:     nextFlagged,
         rightClicks: state.rightClicks + 1,
+        log:         logMove(state, action.now, 'r', idx),
       };
     }
 
@@ -179,12 +205,12 @@ function reducer(state, action) {
         const revealAll = new Uint8Array(rows * cols).fill(0);
         for (const mi of mineSet) revealAll[mi] = 1;
         return { ...state, over: true, revealed: revealAll, explodedIdx,
-                 chordClicks: state.chordClicks + 1 };
+                 chordClicks: state.chordClicks + 1, log: logMove(state, action.now, 'c', idx) };
       }
 
       const isWon = checkWon(nextRevealed, mineSet, rows * cols);
       return { ...state, revealed: nextRevealed, won: isWon, over: isWon,
-               chordClicks: state.chordClicks + 1 };
+               chordClicks: state.chordClicks + 1, log: logMove(state, action.now, 'c', idx) };
     }
 
     default:
@@ -200,9 +226,9 @@ export default function useGameState(initialMode = 'beginner', initialNoGuess = 
   const newGame      = useCallback((mode, noGuess) => dispatch({ type: 'NEW_GAME',    mode, noGuess }), []);
   const setMode      = useCallback((mode)          => dispatch({ type: 'SET_MODE',    mode }),          []);
   const setNoGuess   = useCallback((noGuess)       => dispatch({ type: 'SET_NO_GUESS', noGuess }),      []);
-  const revealCell   = useCallback((idx)           => dispatch({ type: 'REVEAL',      idx }),           []);
-  const toggleFlag   = useCallback((idx)           => dispatch({ type: 'TOGGLE_FLAG', idx }),           []);
-  const chordCell    = useCallback((idx)           => dispatch({ type: 'CHORD',       idx }),           []);
+  const revealCell   = useCallback((idx) => dispatch({ type: 'REVEAL',      idx, now: Date.now() }), []);
+  const toggleFlag   = useCallback((idx) => dispatch({ type: 'TOGGLE_FLAG', idx, now: Date.now() }), []);
+  const chordCell    = useCallback((idx) => dispatch({ type: 'CHORD',       idx, now: Date.now() }), []);
 
   return { state, newGame, setMode, setNoGuess, revealCell, toggleFlag, chordCell };
 }

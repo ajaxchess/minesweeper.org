@@ -115,8 +115,14 @@ def _parse_log(log, rows: int, cols: int) -> list[tuple[int, str, int]]:
 
 
 def replay(rows: int, cols: int, mines: frozenset[int], log, *,
-           chording: bool = True, evil: bool = False) -> ReplayResult:
-    """Replay the log; return the result of a won game or raise ReplayError."""
+           chording: bool = True, evil: bool = False, app_rules: bool = False) -> ReplayResult:
+    """Replay the log; return the result of a won game or raise ReplayError.
+
+    app_rules (F-MS-VERIFY-APP): replay with the mobile app's rules from
+    mobile/msmobile/src/hooks/useGameState.js instead of the website's. Two
+    differences: a long press toggles a flag on and off (no question mark), and
+    opening an empty area also opens cells the player had flagged.
+    """
     n = rows * cols
     moves = _parse_log(log, rows, cols)
     nbrs, counts = _adjacency(rows, cols, mines)
@@ -146,7 +152,7 @@ def replay(rows: int, cols: int, mines: frozenset[int], log, *,
             revealed[cur] = True
             hidden -= 1
             if counts[cur] == 0:
-                queue.extend(j for j in nbrs[cur] if not revealed[j] and not mark[j])
+                queue.extend(j for j in nbrs[cur] if not revealed[j] and (app_rules or not mark[j]))
         if hidden == len(mines):
             won = True
 
@@ -159,7 +165,7 @@ def replay(rows: int, cols: int, mines: frozenset[int], log, *,
             reveal(idx)
         elif kind == RIGHT:
             if not revealed[idx]:
-                mark[idx] = (mark[idx] + 1) % 3
+                mark[idx] = (mark[idx] + 1) % (2 if app_rules else 3)
         elif chording and revealed[idx] and counts[idx] > 0:
             if sum(1 for j in nbrs[idx] if mark[j] == 1) == counts[idx]:
                 for j in nbrs[idx]:

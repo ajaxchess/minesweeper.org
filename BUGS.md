@@ -1,3 +1,10 @@
+B71 The Minesweeper Android app reported itself as the iOS app.
+   mobile/msmobile/src/services/apiService.js hard-coded `X-Client-Type: ios_app` for every
+   request, so scores.client_type said ios_app for Android players too and the score
+   verification statistics could not tell the two apps apart. Found while planning
+   F-MS-VERIFY-APP. Fix: send android_app when Platform.OS is 'android' (as nmmobile already
+   does). Takes effect with the next app build; older Android scores stay labelled ios_app.
+
 B70 A deploy failed because two workers added the same column at once.
    Every gunicorn worker runs init_db()'s column migrations at startup. Each checks
    information_schema and, if the column is missing, runs ALTER TABLE ... ADD COLUMN. For

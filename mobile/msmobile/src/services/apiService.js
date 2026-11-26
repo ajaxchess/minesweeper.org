@@ -3,6 +3,8 @@
  *
  * HTTP client for the minesweeper.org API.
  *
+ *   fetchGameToken()                  — POST /api/scores/start
+ *   withMoveLog(payload, log, tokenP) — add the F-MS-VERIFY-APP fields
  *   submitScore(payload)              — POST /api/scores
  *   fetchLeaderboard(mode, ...)       — GET  /api/scores/{mode}
  *
@@ -11,13 +13,17 @@
  * The spec forbids retry logic — do not add it here.
  */
 
+import { Platform } from 'react-native';
+
 const BASE_URL    = 'https://minesweeper.org';
 const TIMEOUT_MS  = 10_000;
 
 // Required on every request per APISpec.md csrf_xhr_check middleware.
+// X-Client-Type tells the server which app sent a score (it was 'ios_app' on Android too).
+export const CLIENT_TYPE = Platform.OS === 'android' ? 'android_app' : 'ios_app';
 const XHR_HEADERS = {
   'X-Requested-With': 'XMLHttpRequest',
-  'X-Client-Type':    'ios_app',
+  'X-Client-Type':    CLIENT_TYPE,
 };
 
 async function fetchWithTimeout(url, options) {
@@ -28,6 +34,48 @@ async function fetchWithTimeout(url, options) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+// ── Verified scores (F-MS-VERIFY-APP) ─────────────────────────────────────────
+
+/**
+ * POST /api/scores/start — the signed start token for one game.
+ * Fetched when a game is set up; resolves to null when offline.
+ * @returns {Promise<string|null>}
+ */
+export async function fetchGameToken() {
+  try {
+    const res = await fetchWithTimeout(`${BASE_URL}/api/scores/start`, {
+      method:  'POST',
+      headers: { ...XHR_HEADERS, 'Content-Type': 'application/json' },
+      body:    '{}',
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return typeof data?.token === 'string' ? data.token : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Add the start token and move log to a score, so the server can replay the game
+ * with the app's rules. Waits up to `waitMs` for a token still on its way; a score
+ * without one is still saved, just not verified.
+ */
+export async function withMoveLog(payload, log, tokenP, waitMs = 3000) {
+  if (!Array.isArray(log) || log.length === 0) return payload;
+  const token = await Promise.race([
+    Promise.resolve(tokenP).catch(() => null),
+    new Promise(resolve => setTimeout(() => resolve(null), waitMs)),
+  ]);
+  return {
+    ...payload,
+    log,
+    rules:    'msmobile',
+    chording: true,
+    ...(token ? { game_token: token } : {}),
+  };
 }
 
 // ── Score submission ───────────────────────────────────────────────────────────

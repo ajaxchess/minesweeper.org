@@ -11,7 +11,7 @@ import subprocess
 import os
 import hashlib
 import fcntl
-from typing import Optional
+from typing import Literal, Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, Query, Response, Form, File, UploadFile, BackgroundTasks
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -1523,6 +1523,8 @@ class ScoreSubmit(BaseModel):
     game_token:   Optional[str]  = Field(None, max_length=300)
     chording:     bool           = True
     log:          Optional[list] = Field(None, max_length=10_000)
+    # F-MS-VERIFY-APP: whose click rules the log follows ('msmobile' = the mobile app).
+    rules:        Literal["web", "msmobile"] = "web"
 
     @field_validator("name")
     @classmethod

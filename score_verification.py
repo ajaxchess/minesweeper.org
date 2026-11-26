@@ -107,7 +107,8 @@ def _replay_submission(db, payload, now: datetime) -> tuple[ReplayResult, str]:
         raise ReplayError("board_hash does not match the mine count")
 
     result = replay(payload.rows, payload.cols, mines, payload.log,
-                    chording=payload.chording, evil=(game_mode == "evil"))
+                    chording=payload.chording, evil=(game_mode == "evil"),
+                    app_rules=(getattr(payload, "rules", "web") == "msmobile"))
 
     if issued_at.tzinfo is None:
         issued_at = issued_at.replace(tzinfo=timezone.utc)

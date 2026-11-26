@@ -135,6 +135,11 @@ understand data models, URL conventions, and design decisions for related featur
   `node tests/fixtures/gen_minesweeper_js_games.js` so the parity test checks the
   new rules. List classic scores only through
   `score_verification.listed_scores()`, never with a bare `db.query(Score)`
+- The Minesweeper app (`mobile/msmobile`) has its own click rules in
+  `src/hooks/useGameState.js` (two-state flags; flood fill opens flagged cells). The
+  server replays app scores with them (`replay(app_rules=True)`, F-MS-VERIFY-APP).
+  After changing the app's reducer or `gameEngine.js`, regenerate
+  `tests/fixtures/msmobile_games.json` with `node tests/fixtures/gen_msmobile_games.js`
 - Numbers Match board revision and puzzle timezone live only in
   `numbers_match_generator.py`; never redefine them elsewhere (enforced by
   `tests/test_numbers_match.py`)
