@@ -1,6 +1,6 @@
 # Classic Minesweeper App — Move Log for Verified Scores
 
-**Status:** idea
+**Status:** in-progress
 **Feature ID:** F-MS-VERIFY-APP
 **Author:** Richard Cross
 **Date:** 2026-11-26
@@ -73,6 +73,11 @@ and so cannot close the hole, until the app sends a move log the server can repl
    the player had flagged by mistake; the server leaves marked cells closed. A game
    with a wrong flag inside an empty area wins in the app but not on the server.
    Recommended: change the app to leave flagged cells closed, as the website does.
+
+**Decided 2026-11-26:** the server learns the app's rules; the app's gameplay does not
+change. The app sends `"rules": "msmobile"` with its log, and `minesweeper_engine.replay()`
+then plays two-state flags and lets the flood fill open flagged cells, exactly like
+`useGameState.js`. Scores without `rules` replay with the website's rules as before.
 
 **Other points:**
 - `t_ms` counts from the first reveal; the server checks that the last move is no
