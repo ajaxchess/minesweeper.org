@@ -1,3 +1,13 @@
+B70 A deploy failed because two workers added the same column at once.
+   Every gunicorn worker runs init_db()'s column migrations at startup. Each checks
+   information_schema and, if the column is missing, runs ALTER TABLE ... ADD COLUMN. For
+   F-MS-VERIFY-STATS (scores.verification_reason) two workers of the new green copy both saw the
+   column missing; the second ALTER failed with MySQL 1060 "Duplicate column name", the worker
+   exited and gunicorn shut the copy down. The deploy health check caught it (2026-11-26 22:25 UTC,
+   ec88f241 blocked, blue kept serving). Earlier migrations had the same race and won it by timing.
+   Fix: the migration loop ignores error 1060 (the column is there, which is what it wanted) and
+   re-raises anything else.
+
 B69 Minesweeper Android app (msmobile) used the iOS AdMob IDs.
    app.json set androidAppId to the iOS app ID (~3782342262) and AdBanner.js used the iOS banner
    unit (/1016578124) for Android too. AdMob IDs belong to one platform, so Android banners would

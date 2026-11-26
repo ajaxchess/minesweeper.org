@@ -12,6 +12,7 @@ from sqlalchemy import (
     create_engine, Column, Integer, BigInteger, String, Float,
     DateTime, Date, Enum, Index, Boolean, text, Text, JSON, UniqueConstraint
 )
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from datetime import datetime, timezone
 import enum
@@ -1953,8 +1954,16 @@ def _apply_migrations():
                 {"tbl": table, "col": column},
             ).scalar()
             if not exists:
-                conn.execute(text(f"ALTER TABLE `{table}` ADD COLUMN `{column}` {col_def}"))
-                conn.commit()
+                # Every gunicorn worker runs these migrations at startup. Two can both see
+                # the column missing; the slower one's ALTER then fails with MySQL 1060
+                # "Duplicate column name", which must not stop the worker (B70).
+                try:
+                    conn.execute(text(f"ALTER TABLE `{table}` ADD COLUMN `{column}` {col_def}"))
+                    conn.commit()
+                except OperationalError as exc:
+                    conn.rollback()
+                    if getattr(exc.orig, "args", (None,))[0] != 1060:
+                        raise
         _create_phase1_indexes(conn)
         _create_scores_nonce_index(conn)
         _migrate_wc2026_guest_play(conn)

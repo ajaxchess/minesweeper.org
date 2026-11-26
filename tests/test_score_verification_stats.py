@@ -89,3 +89,10 @@ def test_page_is_admin_only(client, monkeypatch):
 
 def test_dashboard_links_to_the_page(client, admin):
     assert 'href="/admin/score-verification"' in client.get("/admin", cookies=admin).text
+
+
+def test_migration_tolerates_a_column_another_worker_just_added(monkeypatch):
+    """B70: two workers both see the column missing; the second ALTER gets MySQL 1060."""
+    import inspect
+    src = inspect.getsource(db_module)
+    assert "!= 1060" in src and "except OperationalError" in src
