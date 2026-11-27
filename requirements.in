@@ -17,7 +17,7 @@ sqlalchemy==2.1.9
 pymysql==1.2.4
 cryptography==50.0.2
 apscheduler==3.11.3
-authlib==1.9.9
+authlib==1.9.10
 httpx==0.28.1
 itsdangerous==2.2.0
 Markdown==3.11.3
