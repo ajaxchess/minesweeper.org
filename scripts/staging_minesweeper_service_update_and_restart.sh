@@ -114,7 +114,7 @@ echo "Reset to $REMOTE_COMMIT complete."
 
 # ── Update Python dependencies ────────────────────────────────────────────────
 echo "Installing/updating Python dependencies..."
-"$VENV_DIR/bin/pip" install --require-hashes -r "$REPO_DIR/requirements.lock" \
+"$VENV_DIR/bin/pip" install --disable-pip-version-check --require-hashes -r "$REPO_DIR/requirements.lock" \
     || { echo "ERROR: pip install failed — hash mismatch or missing package. Aborting."; exit 1; }
 
 # ── Regenerate database.py from template ─────────────────────────────────────

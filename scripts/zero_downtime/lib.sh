@@ -113,7 +113,7 @@ prepare_copy() {
     git -C "$dir" fetch --quiet origin || log "Warning: git fetch failed in $dir; using local objects."
     git -C "$dir" checkout --quiet --force --detach "$commit" || { log "ERROR: cannot check out $commit in $dir"; return 1; }
     log "Installing dependencies in $dir (requirements.lock, hash-checked)..."
-    "$dir/venv/bin/pip" install --quiet --require-hashes -r "$dir/requirements.lock" \
+    "$dir/venv/bin/pip" install --quiet --disable-pip-version-check --require-hashes -r "$dir/requirements.lock" \
         || { log "ERROR: pip install failed in $dir"; return 1; }
     generate_database_py "$dir"
 }
